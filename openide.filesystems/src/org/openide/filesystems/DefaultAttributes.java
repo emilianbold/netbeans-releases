@@ -73,7 +73,7 @@ import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -238,7 +238,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             // However, OpenVMS now supports a file name beginning with "."
             // So we now have to copy the existing "_nbattrs." file into ".nbattrs"
             //
-            if ((Utilities.getOperatingSystem() == Utilities.OS_VMS) && (arr[0] != null) && (f != null)) {
+            if ((BaseUtilities.getOperatingSystem() == BaseUtilities.OS_VMS) && (arr[0] != null) && (f != null)) {
                 if (arr[0].equalsIgnoreCase("_nbattrs.")) {
                     try {
                         deleteFile(f + "/" + arr[0]); // NOI18N
@@ -264,7 +264,7 @@ public class DefaultAttributes extends Object implements AbstractFileSystem.Attr
             // However, OpenVMS now supports a file name beginning with "."
             // So we now have to copy the existing "_nbattrs." file into ".nbattrs"
             //
-            if ((Utilities.getOperatingSystem() == Utilities.OS_VMS) && (arr[i] != null) && (f != null)) {
+            if ((BaseUtilities.getOperatingSystem() == BaseUtilities.OS_VMS) && (arr[i] != null) && (f != null)) {
                 if (arr[i].equalsIgnoreCase("_nbattrs.")) {
                     try {
                         File fp = new File(f + "/" + ".nbattrs");

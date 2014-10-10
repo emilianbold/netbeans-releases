@@ -62,7 +62,15 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.24</specification-version>
+                        <specification-version>9.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -81,7 +89,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.libs.svnClientAdapter.svnkit</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>
                 <friend>org.netbeans.modules.extbrowser.chrome</friend>
-                <friend>org.netbeans.modules.extexecution.impl</friend>
+                <friend>org.netbeans.modules.extexecution.process</friend>
                 <friend>org.netbeans.modules.keyring.impl</friend>
                 <friend>org.netbeans.modules.libs.djnsswt</friend>
                 <friend>org.netbeans.modules.masterfs.linux</friend>

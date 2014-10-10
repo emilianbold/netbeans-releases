@@ -51,7 +51,7 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -78,7 +78,7 @@ public final class AntProjectNode extends DataNode implements ChangeListener {
         Image i = getBasicIcon();
         try {
             // #25248: annotate the build script icon
-            i = getDataObject().getPrimaryFile().getFileSystem().getStatus().
+            i = FileUIUtils.getImageDecorator(getDataObject().getPrimaryFile().getFileSystem()).
                 annotateIcon(i, type, getDataObject().files());
         } catch (FileStateInvalidException fsie) {
             AntModule.err.notify(ErrorManager.INFORMATIONAL, fsie);

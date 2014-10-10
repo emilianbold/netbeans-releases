@@ -327,8 +327,10 @@ public class BaseDocumentTest extends NbTestCase {
         doc.insertString(0, "a\nbc", null);
         int offset = Utilities.getRowStart(doc, doc.getLength() + 1);
         assertEquals("Invalid offset", 2, offset); // NOI18N
-        offset = Utilities.getFirstNonWhiteBwd(doc, 2, doc.getLength() + 1);
-        assertEquals("Invalid offset", 2, offset); // NOI18N
+        offset = Utilities.getFirstNonWhiteBwd(doc, doc.getLength(), 0);
+        assertEquals("Invalid offset", doc.getLength() - 1, offset); // NOI18N
+        offset = Utilities.getFirstNonWhiteBwd(doc, 1, 0);
+        assertEquals("Invalid offset", 0, offset); // NOI18N
         offset = Utilities.getRowLastNonWhite(doc, doc.getLength() + 1);
         assertEquals("Invalid offset", 3, offset); // NOI18N
         offset = Utilities.getRowEnd(doc, doc.getLength() + 1);

@@ -55,6 +55,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -591,6 +592,7 @@ public class AnnotationProviderTest extends NbTestCase {
             
             ic.add (new MyPool ());
             ic.add (new ConsistencyCheckProvider ());
+            ic.add (new NbMutexEventProvider());
         }
     }
 }

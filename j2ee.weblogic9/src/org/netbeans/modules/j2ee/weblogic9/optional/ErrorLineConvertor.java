@@ -68,7 +68,7 @@ import org.openide.windows.OutputListener;
  * @author ads
  *
  */
-class ErrorLineConvertor implements LineConvertor {
+public class ErrorLineConvertor implements LineConvertor {
 
     /* (non-Javadoc)
      * @see org.netbeans.api.extexecution.print.LineConvertor#convert(java.lang.String)
@@ -150,19 +150,22 @@ class ErrorLineConvertor implements LineConvertor {
                 int lastDotIdx = classWithMethod.lastIndexOf('.');
                 if (lastDotIdx > -1) {
                     int lastParenthIdx = logLine.lastIndexOf(')');
-                    int lastColonIdx = logLine.lastIndexOf(':');
-                    if (lastParenthIdx > -1 && lastColonIdx > -1) {
-                        String lineNum = logLine.substring(lastColonIdx + 1,
-                                lastParenthIdx);
-                        try {
-                            lineNo = Integer.valueOf(lineNum).intValue();
+                                            String content = null;
+                    if (lastParenthIdx > -1) {
+                        content = logLine.substring(parenthIdx + 1, lastParenthIdx);
+                    }
+                    if (content != null) {
+                        int lastColonIdx = content.lastIndexOf(':');
+                        if (lastColonIdx > -1) {
+                            String lineNum = content.substring(lastColonIdx + 1);
+                            try {
+                                lineNo = Integer.valueOf(lineNum).intValue();
+                            } catch(NumberFormatException nfe) {
+                                // ignore it
+                                Logger.getLogger(ErrorLineConvertor.class.getName()).log(Level.INFO, null, nfe);
+                            }
+                            message = previousMessage;
                         }
-                        catch (NumberFormatException nfe) {
-                            // ignore it
-                            Logger.getLogger(ErrorLineConvertor.class.getName()).log(
-                                    Level.INFO, null, nfe);
-                        }
-                        message = previousMessage;
                     }
                     int firstDolarIdx = classWithMethod.indexOf('$'); // > -1
                                                                       // for

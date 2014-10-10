@@ -146,7 +146,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -178,7 +178,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>9.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -209,12 +217,16 @@
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
                 <friend>com.oracle.tools.ide.projectless.debug.impl.gdb</friend>
                 <friend>com.sun.tools.cnd.accessor</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdbserver</friend>
+                <package>org.netbeans.modules.cnd.debugger.gdb2</package>
                 <package>org.netbeans.modules.cnd.debugger.gdb2.options</package>
             </friend-packages>
         </data>

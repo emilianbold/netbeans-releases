@@ -69,7 +69,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.libs.jstestdriver.api.JsTestDriver;
 import org.netbeans.libs.jstestdriver.api.ServerListener;
 import org.netbeans.libs.jstestdriver.api.TestListener;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.Report;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;

@@ -71,9 +71,6 @@ public class WLSharedState {
     /* <i>GuardedBy("this")</i> */
     private boolean restartNeeded;
 
-    /* <i>GuardedBy("this")</i> */
-    private Process serverProcess;
-
     public WLSharedState(InstanceProperties ip) {
         this.ip = ip;
     }
@@ -105,14 +102,6 @@ public class WLSharedState {
 
     public synchronized void setRestartNeeded(boolean restartNeeded) {
         this.restartNeeded = restartNeeded;
-    }
-
-    public synchronized Process getServerProcess() {
-        return serverProcess;
-    }
-
-    public synchronized void setServerProcess(Process serverProcess) {
-        this.serverProcess = serverProcess;
     }
 
     private class DomainChangeListener implements FileChangeListener {

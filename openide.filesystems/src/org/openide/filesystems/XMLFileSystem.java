@@ -74,7 +74,7 @@ import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -240,12 +240,12 @@ public final class XMLFileSystem extends AbstractFileSystem {
     * for this filesystem.
     * @param cap capabilities for this filesystem
      * @deprecated Useless.
-    */
     @Deprecated
     public XMLFileSystem(FileSystemCapability cap) {
         this();
         setCapability(cap);
     }
+    */
 
     /** Getter of url field.
      * @return URL associated with XMLFileSystem or null if no URL was set.
@@ -1113,7 +1113,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 
                 if ("file".equals(protocol)) { //NOI18N
                     try {
-                        File f = Utilities.toFile(URI.create(url.toExternalForm()));
+                        File f = BaseUtilities.toFile(URI.create(url.toExternalForm()));
                         if (!f.equals(lastFile)) {
                             lastFile = f;
                             lastFileDate = new Date(f.lastModified());

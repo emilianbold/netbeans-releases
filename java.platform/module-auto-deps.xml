@@ -58,4 +58,17 @@ made subject to such option by the copyright holder.
             </implies>
         </transformation>
     </transformationgroup>
+    <transformationgroup>
+        <description>#243100: Separate desktop-independent utilities</description>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="org.netbeans.modules.java.platform" spec="1.36"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.netbeans.modules.java.platform.ui" spec="1.36"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>    
 </transformations>

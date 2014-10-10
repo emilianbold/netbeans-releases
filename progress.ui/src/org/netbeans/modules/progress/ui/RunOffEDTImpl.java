@@ -360,7 +360,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
 
     @Override
     public <T> Future<T> showProgressDialogAndRunLater (ProgressRunnable<T> operation, ProgressHandle handle, boolean includeDetailLabel) {
-       AbstractWindowRunner<T> wr = new ProgressBackgroundRunner<T>(operation, handle, includeDetailLabel, operation instanceof Cancellable);
+       AbstractWindowRunner<T> wr = new ProgressBackgroundRunner<T>(operation, 
+               handle, includeDetailLabel, operation instanceof Cancellable);
        Future<T> result = wr.start();
        assert EventQueue.isDispatchThread() == (result != null);
        if (result == null) {
@@ -394,7 +395,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
     @Override
     public void showProgressDialogAndRun(Runnable toRun, ProgressHandle handle, boolean includeDetailLabel) {
        boolean showCancelButton = toRun instanceof Cancellable;
-       AbstractWindowRunner<Void> wr = new ProgressBackgroundRunner<Void>(toRun, handle, includeDetailLabel, showCancelButton);
+       AbstractWindowRunner<Void> wr = new ProgressBackgroundRunner<Void>(toRun, 
+               handle, includeDetailLabel, showCancelButton);
        wr.start();
         try {
             try {
@@ -462,8 +464,8 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress, Progress2 {
         private final ProgressRunnable<T> toRun;
         ProgressBackgroundRunner(ProgressRunnable<T> toRun, String displayName, boolean includeDetail, boolean showCancel) {
             super (showCancel ?
-                ProgressHandleFactory.createHandle(displayName, (Cancellable) toRun) :
-                ProgressHandleFactory.createHandle(displayName), includeDetail, showCancel);
+                ProgressHandleFactory.createHandle(displayName, (Cancellable) toRun, null) :
+                ProgressHandleFactory.createHandle(displayName, (Action)null), includeDetail, showCancel);
             this.toRun = toRun;
         }
 

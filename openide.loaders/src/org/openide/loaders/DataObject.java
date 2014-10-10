@@ -56,6 +56,7 @@ import java.lang.annotation.Target;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -123,6 +124,15 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
 
     private static final Logger OBJ_LOG = Logger.getLogger(DataObject.class.getName());
 
+    /**
+     * CAS for {@link DataObject#changeSupport}.
+     */
+    private static final AtomicReferenceFieldUpdater<DataObject, PropertyChangeSupport> changeSupportUpdater =
+        AtomicReferenceFieldUpdater.newUpdater(
+            DataObject.class,
+            PropertyChangeSupport.class,
+            "changeSupport");   //NOI18N
+
     /** all modified data objects contains DataObjects.
     * ! Use syncModified for modifications instead !*/
     private static final ModifiedRegistry modified = new ModifiedRegistry();
@@ -148,10 +158,11 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     /** the loader for this data object */
     private final DataLoader loader;
 
-    /** property change listener support 
-        *  @GuardedBy(LOCK)
-        */
-    private PropertyChangeSupport changeSupport;
+    /** property change listener support.
+     * Threading: lock free, changes HAS to go through {@link DataObject#changeSupportUpdater}.
+     */
+    private volatile PropertyChangeSupport changeSupport;
+
     /** vetoable property change listener support 
         *  @GuardedBy(LOCK)
         */
@@ -1050,22 +1061,24 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
      * @param l the listener to add
     */
     public void addPropertyChangeListener (PropertyChangeListener l) {
-        synchronized (LOCK) {
-            if (changeSupport == null) {
-                changeSupport = new PropertyChangeSupport(this);
+        PropertyChangeSupport sup = changeSupport;
+        if (sup == null) {
+            sup = new PropertyChangeSupport(this);
+            if (!changeSupportUpdater.compareAndSet(this, null, sup)) {
+                sup = changeSupport;
             }
-            changeSupport.addPropertyChangeListener(l);
         }
+        assert sup != null;
+        sup.addPropertyChangeListener(l);
     }
 
     /** Remove a property change listener.
      * @param l the listener to remove
     */
     public void removePropertyChangeListener (PropertyChangeListener l) {
-        synchronized (LOCK) {
-            if (changeSupport != null) {
-                changeSupport.removePropertyChangeListener(l);
-            }
+        final PropertyChangeSupport sup = changeSupport;
+        if (sup != null) {
+            sup.removePropertyChangeListener(l);
         }
     }
 
@@ -1077,14 +1090,10 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @param newValue new value
     */
     protected final void firePropertyChange (String name, Object oldValue, Object newValue) {
-        PropertyChangeSupport ch;
-        synchronized (LOCK) {
-            ch = changeSupport;
-            if (ch == null) {
-                return;
-            }
+        PropertyChangeSupport ch = changeSupport;
+        if (ch != null) {
+            ch.firePropertyChange(name, oldValue, newValue);
         }
-        ch.firePropertyChange(name, oldValue, newValue);
     }
 
     //

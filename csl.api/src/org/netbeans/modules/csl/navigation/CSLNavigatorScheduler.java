@@ -44,15 +44,13 @@ package org.netbeans.modules.csl.navigation;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.parsing.api.ParserManager;
 
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -81,7 +79,7 @@ public class CSLNavigatorScheduler extends Scheduler {
                 ClassMemberNavigatorSourceFactory f = ClassMemberNavigatorSourceFactory.getInstance();
                 if (f != null && f.getContext() != null) {
                     final FileObject fileObject = f.getContext().lookup(FileObject.class);
-                    if (fileObject != null && fileObject.isValid() && Util.canBeParsed(fileObject.getMIMEType())) {
+                    if (fileObject != null && fileObject.isValid() && ParserManager.canBeParsed(fileObject.getMIMEType())) {
                         final Source source = Source.create (fileObject);
                         if (source != null) {
                             schedule (source, new SchedulerEvent (CSLNavigatorScheduler.this) {});

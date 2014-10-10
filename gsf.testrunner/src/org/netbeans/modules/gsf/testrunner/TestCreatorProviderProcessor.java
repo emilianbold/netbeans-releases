@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @ServiceProvider(service=Processor.class)
 @SupportedAnnotationTypes("org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Registration")

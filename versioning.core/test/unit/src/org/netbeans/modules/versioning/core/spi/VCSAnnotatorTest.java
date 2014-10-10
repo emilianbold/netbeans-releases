@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import java.io.File;
 import java.util.*;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.StatusDecorator;
 
 /**
  * Versioning SPI unit tests of VCSAnnotator.
@@ -73,7 +74,7 @@ public class VCSAnnotatorTest extends NbTestCase {
     public void testAnnotator() throws FileStateInvalidException {
         FileObject fo = FileUtil.toFileObject(dataRootDir);
         FileSystem fs = fo.getFileSystem();
-        FileSystem.Status status = fs.getStatus();
+        StatusDecorator status = fs.getDecorator();
         
         Set<FileObject> sof = new HashSet<FileObject>();
         sof.add(fo);

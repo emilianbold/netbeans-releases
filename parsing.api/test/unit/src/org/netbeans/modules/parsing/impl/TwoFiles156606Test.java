@@ -58,6 +58,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ParsingTestBase;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -82,19 +83,23 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class TwoFiles156606Test extends NbTestCase {
+public class TwoFiles156606Test extends ParsingTestBase {
     
     public TwoFiles156606Test (String testName) {
         super (testName);
     }
 
+    @Override
+    protected Class[] getServices() {
+        return new Class[] { MyScheduler.class };
+    }
+    
     /**
      * @throws java.lang.Exception
      */
     public void testTwoFiles156606 () throws Exception {
 
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final CountDownLatch        latch1 = new CountDownLatch (1);
         final CountDownLatch        latch2 = new CountDownLatch (2);
         final int[]                 fooParser = {1};

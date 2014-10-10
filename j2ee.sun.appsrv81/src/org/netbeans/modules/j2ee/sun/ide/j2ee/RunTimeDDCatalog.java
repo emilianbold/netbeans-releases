@@ -61,7 +61,7 @@ import org.netbeans.modules.xml.api.model.DTDUtil;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.xml.sax.EntityResolver;
@@ -74,7 +74,7 @@ import org.xml.sax.SAXException;
  * @author Ludo
  */
 
-public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogReader, CatalogDescriptor,org.xml.sax.EntityResolver  {
+public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogReader, CatalogDescriptor2,org.xml.sax.EntityResolver  {
     
     private static final String XML_XSD="http://www.w3.org/2001/xml.xsd"; // NOI18N
     private static final String XML_XSD_DEF="<?xml version='1.0'?><xs:schema targetNamespace=\"http://www.w3.org/XML/1998/namespace\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xml:lang=\"en\"><xs:attribute name=\"lang\" type=\"xs:language\"><xs:annotation><xs:documentation>In due course, we should install the relevant ISO 2- and 3-letter codes as the enumerated possible values . . .</xs:documentation></xs:annotation></xs:attribute></xs:schema>"; // NOI18N
@@ -302,8 +302,8 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
-    public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"; // NOI18N
     }
     
     /**

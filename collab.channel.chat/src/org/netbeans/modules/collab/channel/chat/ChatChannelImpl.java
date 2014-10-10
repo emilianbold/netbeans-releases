@@ -52,11 +52,9 @@ import org.openide.util.*;
 
 import java.beans.*;
 
-import java.util.*;
 
 import javax.swing.*;
 
-import org.netbeans.modules.collab.*;
 
 
 /**

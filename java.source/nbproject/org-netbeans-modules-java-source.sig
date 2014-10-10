@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 0.134.1
+#Version 0.135.0
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotatedType(com.sun.source.tree.AnnotatedTypeTree,{com.sun.source.tree.TreeVisitor%1})
@@ -1038,10 +1038,6 @@ meth public java.lang.String getOldText()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.lang.String toString()
 meth public org.netbeans.api.java.source.ModificationResult$Difference$Kind getKind()
- anno 0 org.netbeans.api.annotations.common.NonNull()
-meth public org.openide.text.PositionRef getEndPosition()
- anno 0 org.netbeans.api.annotations.common.NonNull()
-meth public org.openide.text.PositionRef getStartPosition()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public void exclude(boolean)
 meth public void setCommitToGuards(boolean)

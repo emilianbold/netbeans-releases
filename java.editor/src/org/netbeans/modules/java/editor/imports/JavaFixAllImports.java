@@ -94,8 +94,8 @@ import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
 import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.editor.base.imports.UnusedImports;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.openide.DialogDescriptor;
@@ -258,7 +258,7 @@ public class JavaFixAllImports {
         
         if (removeUnusedImports) {
             //compute imports to remove:
-            List<TreePathHandle> unusedImports = SemanticHighlighter.computeUnusedImports(wc);
+            List<TreePathHandle> unusedImports = UnusedImports.computeUnusedImports(wc);
             unusedImports.addAll(getImportsFromSamePackage(wc));
             someImportsWereRemoved = !unusedImports.isEmpty();
 

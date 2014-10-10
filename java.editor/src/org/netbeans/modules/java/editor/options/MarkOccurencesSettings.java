@@ -54,19 +54,6 @@ public class MarkOccurencesSettings {
     
     private static final String MARK_OCCURENCES = "MarkOccurences"; // NOI18N
 
-    public static String ON_OFF = "OnOff"; // NOI18N
-    public static String TYPES = "Types"; // NOI18N
-    public static String METHODS = "Methods"; // NOI18N
-    public static String CONSTANTS = "Constants"; // NOI18N
-    public static String FIELDS = "Fields"; // NOI18N
-    public static String LOCAL_VARIABLES = "LocalVariables"; // NOI18N
-    public static String EXCEPTIONS = "Exceptions"; // NOI18N
-    public static String EXIT = "Exit"; // NOI18N
-    public static String IMPLEMENTS = "Implements"; // NOI18N
-    public static String OVERRIDES = "Overrides"; // NOI18N
-    public static String BREAK_CONTINUE = "BreakContinue"; // NOI18N
-    public static String KEEP_MARKS = "KeepMarks"; // NOI18N
-    
     private MarkOccurencesSettings() {
     }
 

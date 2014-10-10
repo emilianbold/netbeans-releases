@@ -55,7 +55,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.openide.util.Utilities;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.util.BaseUtilities;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -163,17 +164,17 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             update = false;
             LibrariesStorage.LOG.log(Level.FINE, "LibraryDeclarationHandlerImpl library {0} type {1} found", new Object[] { this.libraryName, this.libraryType });
         }
-        if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), localizingBundle)) {
+        if (!update || !BaseUtilities.compareObjects(this.library.getLocalizingBundle(), localizingBundle)) {
             this.library.setLocalizingBundle (this.localizingBundle);
         }
-        if (!update || !Utilities.compareObjects(this.library.getName(), libraryName)) {
+        if (!update || !BaseUtilities.compareObjects(this.library.getName(), libraryName)) {
             this.library.setName (this.libraryName);
         }
-        if (!update || !Utilities.compareObjects(this.library.getDescription(), libraryDescription)) {
+        if (!update || !BaseUtilities.compareObjects(this.library.getDescription(), libraryDescription)) {
             this.library.setDescription (this.libraryDescription);
         }
-        Util.setDisplayName(this.library,displayName);
-        Util.setProperties(this.library, properties);
+        LibrariesSupport.setDisplayName(this.library,displayName);
+        LibrariesSupport.setProperties(this.library, properties);
         for (Map.Entry<String,List<URL>> entry : contentTypes.entrySet()) {
             String contentType = entry.getKey();
             List<URL> cp = entry.getValue();

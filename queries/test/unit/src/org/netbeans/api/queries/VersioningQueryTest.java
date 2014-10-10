@@ -53,7 +53,7 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.netbeans.spi.queries.VersioningQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -75,37 +75,37 @@ public class VersioningQueryTest extends NbTestCase {
     
     public void testIsManaged() throws IOException {
         File file = new File(home, "aFile.vcs");
-        assertTrue(VersioningQuery.isManaged(Utilities.toURI(file)));
+        assertTrue(VersioningQuery.isManaged(BaseUtilities.toURI(file)));
     }
     
     public void testIsNotManaged() throws IOException {
         File file = new File(home, "aFile.txt");
-        assertFalse(VersioningQuery.isManaged(Utilities.toURI(file)));
+        assertFalse(VersioningQuery.isManaged(BaseUtilities.toURI(file)));
     }
     
     public void testGetRemoteLocation() throws IOException {
         File file = new File(home, "aFile.vcs");
-        assertEquals(Utilities.toURI(file).toString(), VersioningQuery.getRemoteLocation(Utilities.toURI(file)));
+        assertEquals(BaseUtilities.toURI(file).toString(), VersioningQuery.getRemoteLocation(BaseUtilities.toURI(file)));
     }
     
     public void testNoRemoteLocation() throws IOException {
         File file = new File(home, "aFile.txt");
-        assertNull(VersioningQuery.getRemoteLocation(Utilities.toURI(file)));
+        assertNull(VersioningQuery.getRemoteLocation(BaseUtilities.toURI(file)));
     }
     
     public void testNormalized() throws IOException {
         File file = new File(home, "../aFile.txt");
         Exception exception = null;
         try {
-            VersioningQuery.isManaged(Utilities.toURI(file));
+            VersioningQuery.isManaged(BaseUtilities.toURI(file));
         } catch (IllegalArgumentException e) {
             exception = e;
         }
         assertNotNull(exception);
-        URI uri = Utilities.toURI(file);
+        URI uri = BaseUtilities.toURI(file);
         exception = null;
         try {
-            VersioningQuery.getRemoteLocation(Utilities.toURI(file));
+            VersioningQuery.getRemoteLocation(BaseUtilities.toURI(file));
         } catch (IllegalArgumentException e) {
             exception = e;
         }
@@ -116,14 +116,14 @@ public class VersioningQueryTest extends NbTestCase {
 
         @Override
         public boolean isManaged(URI uri) {
-            File file = Utilities.toFile(uri);
+            File file = BaseUtilities.toFile(uri);
             String path = file.getAbsolutePath();
             return path.endsWith(".vcs");
         }
 
         @Override
         public String getRemoteLocation(URI uri) {
-            File file = Utilities.toFile(uri);
+            File file = BaseUtilities.toFile(uri);
             String path = file.getAbsolutePath();
             return path.endsWith(".vcs") ? uri.toString() : null;
         }

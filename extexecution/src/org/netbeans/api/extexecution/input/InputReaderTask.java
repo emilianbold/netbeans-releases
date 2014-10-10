@@ -44,9 +44,9 @@
 
 package org.netbeans.api.extexecution.input;
 
+import org.netbeans.modules.extexecution.input.BaseInputProcessor;
+import org.netbeans.modules.extexecution.input.DelegatingInputProcessor;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Cancellable;
@@ -97,31 +97,14 @@ import org.openide.util.Parameters;
  * </div>
  *
  * @author Petr Hejl
+ * @deprecated use {@link org.netbeans.api.extexecution.base.input.InputReaderTask}
  */
 public final class InputReaderTask implements Runnable, Cancellable {
 
-    private static final Logger LOGGER = Logger.getLogger(InputReaderTask.class.getName());
+    private final org.netbeans.api.extexecution.base.input.InputReaderTask delegate;
 
-    private static final int MIN_DELAY = 50;
-
-    private static final int MAX_DELAY = 300;
-
-    private static final int DELAY_INCREMENT = 50;
-
-    private final InputReader inputReader;
-
-    private final InputProcessor inputProcessor;
-
-    private final boolean draining;
-
-    private boolean cancelled;
-
-    private boolean running;
-
-    private InputReaderTask(InputReader inputReader, InputProcessor inputProcessor, boolean draining) {
-        this.inputReader = inputReader;
-        this.inputProcessor = inputProcessor;
-        this.draining = draining;
+    private InputReaderTask(org.netbeans.api.extexecution.base.input.InputReaderTask delegate) {
+        this.delegate = delegate;
     }
 
     /**
@@ -138,7 +121,8 @@ public final class InputReaderTask implements Runnable, Cancellable {
     public static InputReaderTask newTask(@NonNull InputReader reader, @NullAllowed InputProcessor processor) {
         Parameters.notNull("reader", reader);
 
-        return new InputReaderTask(reader, processor, false);
+        return new InputReaderTask(org.netbeans.api.extexecution.base.input.InputReaderTask.newTask(
+                new BaseInputReader(reader), processor == null ? null : new BaseInputProcessor(processor)));
     }
 
     /**
@@ -156,7 +140,8 @@ public final class InputReaderTask implements Runnable, Cancellable {
     public static InputReaderTask newDrainingTask(@NonNull InputReader reader, @NullAllowed InputProcessor processor) {
         Parameters.notNull("reader", reader);
 
-        return new InputReaderTask(reader, processor, true);
+        return new InputReaderTask(org.netbeans.api.extexecution.base.input.InputReaderTask.newDrainingTask(
+                new BaseInputReader(reader), processor == null ? null : new BaseInputProcessor(processor)));
     }
 
     /**
@@ -166,89 +151,7 @@ public final class InputReaderTask implements Runnable, Cancellable {
      * It is not allowed to invoke run multiple times.
      */
     public void run() {
-        synchronized (this) {
-            if (running) {
-                throw new IllegalStateException("Already running task");
-            }
-            running = true;
-        }
-
-        boolean interrupted = false;
-        try {
-            long delay = MIN_DELAY;
-            int emptyReads = 0;
-
-            while (true) {
-                synchronized (this) {
-                    if (Thread.currentThread().isInterrupted() || cancelled) {
-                        interrupted = Thread.interrupted();
-                        break;
-                    }
-                }
-
-                int count = inputReader.readInput(inputProcessor);
-
-                // compute the delay based on how often we really get the data
-                if (count > 0) {
-                    delay = MIN_DELAY;
-                    emptyReads = 0;
-                } else {
-                    // increase the delay only slowly - once for
-                    // MAX_DELAY / DELAY_INCREMENT unsuccesfull read attempts
-                    if (emptyReads > (MAX_DELAY / DELAY_INCREMENT)) {
-                        emptyReads = 0;
-                        delay = Math.min(delay + DELAY_INCREMENT, MAX_DELAY);
-                    } else {
-                        emptyReads++;
-                    }
-                }
-
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.log(Level.FINEST, "Task {0} sleeping for {1} ms",
-                            new Object[] {Thread.currentThread().getName(), delay});
-                }
-                try {
-                    // give the producer some time to write the output
-                    Thread.sleep(delay);
-                } catch (InterruptedException e) {
-                    interrupted = true;
-                    break;
-                }
-            }
-
-            synchronized (this) {
-                if (Thread.currentThread().isInterrupted() || cancelled) {
-                    interrupted = Thread.interrupted();
-                }
-            }
-        } catch (Exception ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        } finally {
-            // drain the rest
-            if (draining) {
-                try {
-                    while (inputReader.readInput(inputProcessor) > 0) {
-                        LOGGER.log(Level.FINE, "Draining the rest of the reader");
-                    }
-                } catch (IOException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                }
-            }
-
-            // perform cleanup
-            try {
-                if (inputProcessor != null) {
-                    inputProcessor.close();
-                }
-                inputReader.close();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            } finally {
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
+        delegate.run();
     }
 
     /**
@@ -258,12 +161,31 @@ public final class InputReaderTask implements Runnable, Cancellable {
      * @return <code>true</code> if the task was successfully cancelled
      */
     public boolean cancel() {
-        synchronized (this) {
-            if (cancelled) {
-                return false;
+        return delegate.cancel();
+    }
+    
+    private static class BaseInputReader implements org.netbeans.api.extexecution.base.input.InputReader {
+        
+        private final InputReader delegate;
+
+        public BaseInputReader(InputReader delegate) {
+            this.delegate = delegate;
+        }
+
+        public int readInput(org.netbeans.api.extexecution.base.input.InputProcessor processor) throws IOException {
+            InputProcessor p = null;
+            if (processor != null) {
+                if (processor instanceof BaseInputProcessor) {
+                    p = ((BaseInputProcessor) processor).getDelegate();
+                } else {
+                    p = new DelegatingInputProcessor(processor);
+                }
             }
-            cancelled = true;
-            return true;
+            return delegate.readInput(p);
+        }
+
+        public void close() throws IOException {
+            delegate.close();
         }
     }
 }

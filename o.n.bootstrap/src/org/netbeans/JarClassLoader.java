@@ -90,7 +90,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
+import org.openide.util.Exceptions;
 
 /**
  * A ProxyClassLoader capable of loading classes from a set of jar files
@@ -176,7 +177,7 @@ public class JarClassLoader extends ProxyClassLoader {
     }
 
     final void addURL(URL location) throws IOException, URISyntaxException {
-        File f = Utilities.toFile(location.toURI());
+        File f = BaseUtilities.toFile(location.toURI());
         assert f.exists() : "URL must be existing local file: " + location;
 
         List<Source> arr = new ArrayList<Source>(Arrays.asList(sources));
@@ -210,7 +211,23 @@ public class JarClassLoader extends ProxyClassLoader {
             arr[3], arr[4], arr[5], sealBase);
     }
     
-    private Boolean patchingBytecode;
+    /**
+     * Bytecode patching helper
+     */
+    private PatchByteCode patchingBytecode;
+    
+    byte[] getClassData(String name) {
+        String path = name.replace('.', '/').concat(".class"); // NOI18N
+        for( int i=0; i<sources.length; i++ ) {
+            final Source src = sources[i];
+            byte[] data = src.getClassData(path);
+            if (data != null) {
+                return data;
+            }
+        }
+        return null;
+    }
+    
     @Override
     protected Class doLoadClass(String pkgName, String name) {
         String path = name.replace('.', '/').concat(".class"); // NOI18N
@@ -223,18 +240,17 @@ public class JarClassLoader extends ProxyClassLoader {
 
             synchronized (sources) {
                 if (patchingBytecode == null) {
-                    patchingBytecode = findResource("META-INF/.bytecodePatched") != null; // NOI18N
-                    if (patchingBytecode) {
+                    Enumeration<URL> res = findResources("META-INF/.bytecodePatched"); // NOI18N
+                    if (res.hasMoreElements()) {
                         LOGGER.log(Level.FINE, "Patching bytecode in {0}", this);
                     }
+                    patchingBytecode = PatchByteCode.fromStream(res, this);
                 }
             }
-            if (patchingBytecode) {
-                try {
-                    data = PatchByteCode.patch(data);
-                } catch (Exception x) {
-                    LOGGER.log(Level.INFO, "Could not bytecode-patch " + name, x);
-                }
+            try {
+                data = patchingBytecode.apply(name, data);
+            } catch (Exception x) {
+                LOGGER.log(Level.INFO, "Could not bytecode-patch " + name, x);
             }
             
             // Note that we assume that if we are defining a class in this package,
@@ -479,7 +495,7 @@ public class JarClassLoader extends ProxyClassLoader {
                     return this;
                 }
             }
-            return "jar:" + Utilities.toURI(new VFile()) + "!/"; // NOI18N
+            return "jar:" + BaseUtilities.toURI(new VFile()) + "!/"; // NOI18N
         }
 
         @Override
@@ -838,7 +854,7 @@ public class JarClassLoader extends ProxyClassLoader {
             String tmp = getURL().toExternalForm();
             if (tmp.startsWith("jar:file:") && tmp.endsWith("!/")) {
                 String path = tmp.substring(9, tmp.length() - 2).replace("%20", " ");
-                if (Utilities.isWindows()) {
+                if (BaseUtilities.isWindows()) {
                     if (path.startsWith("/")) { // NOI18N
                         path = path.substring(1);
                     }
@@ -852,10 +868,28 @@ public class JarClassLoader extends ProxyClassLoader {
 
     static class DirSource extends Source {
         File dir;
+        Manifest manifest;
         
         DirSource(File file) throws MalformedURLException {
-            super(Utilities.toURI(file).toURL());
+            super(BaseUtilities.toURI(file).toURL());
             dir = file;
+        }
+        
+        public Manifest getManifest() {
+            Manifest mf = manifest;
+            if (mf != null) {
+                return mf;
+            }
+            File maniF = new File(new File(dir, "META-INF"), "MANIFEST.MF");
+            mf = new Manifest();
+            if (maniF.canRead()) {
+                try (InputStream istm = new FileInputStream(maniF)) {
+                    mf.read(istm);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return manifest = mf;
         }
         
         public String getPath() {
@@ -864,7 +898,7 @@ public class JarClassLoader extends ProxyClassLoader {
 
         protected URL doGetResource(String name) throws MalformedURLException {
             File resFile = new File(dir, name);
-            return resFile.exists() ? Utilities.toURI(resFile).toURL() : null;
+            return resFile.exists() ? BaseUtilities.toURI(resFile).toURL() : null;
         }
         
         protected byte[] readClass(String path) throws IOException {
@@ -987,7 +1021,7 @@ public class JarClassLoader extends ProxyClassLoader {
             AGAIN: for (;;) try {
                 final URI uri = new URI(filePath);
                 if (uri.getScheme().equals("file")) {
-                    jar = Utilities.toFile(uri).getPath();
+                    jar = BaseUtilities.toFile(uri).getPath();
                 } else {
                     jar = null;
                 }

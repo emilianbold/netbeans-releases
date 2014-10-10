@@ -45,7 +45,6 @@
 package org.openide.filesystems;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,7 +56,6 @@ import java.util.StringTokenizer;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.util.actions.SystemAction;
 
 /**
  * General base class for filesystems which proxy to others.
@@ -287,64 +285,6 @@ public class MultiFileSystem extends FileSystem {
         return root;
     }
 
-    /** Merge actions from all delegates.
-     * @deprecated actions should be provided by higher level parts of the
-     * system, not something as low level as filesystems
-     */
-    @Deprecated
-    public @Override SystemAction[] getActions() {
-        List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
-        Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen
-
-        FileSystem[] del = this.getDelegates();
-
-        for (int i = 0; i < del.length; i++) {
-            if (del[i] == null) {
-                continue;
-            }
-
-            SystemAction[] acts = del[i].getActions();
-
-            for (int j = 0; j < acts.length; j++) {
-                if (uniq.add(acts[j])) {
-                    al.add(acts[j]);
-                }
-            }
-        }
-
-        return al.toArray(new SystemAction[al.size()]);
-    }
-
-    /**
-     * Merge actions from all delegates.
-     *
-     * @deprecated actions should be provided by higher level parts of the
-     * system, not something as low level as filesystems
-     */
-    @Deprecated
-    public @Override SystemAction[] getActions(final Set<FileObject> foSet) {
-        List<SystemAction> al = new ArrayList<SystemAction>(101); // randomly choosen constant
-        Set<SystemAction> uniq = new HashSet<SystemAction>(101); // not that randommly choosen
-
-        final FileSystem[] del = this.getDelegates();
-
-        for (int i = 0; i < del.length; i++) {
-            if (del[i] == null) {
-                continue;
-            }
-
-            final SystemAction[] acts = del[i].getActions(foSet);
-
-            for (int j = 0; j < acts.length; j++) {
-                if (uniq.add(acts[j])) {
-                    al.add(acts[j]);
-                }
-            }
-        }
-
-        return al.toArray(new SystemAction[al.size()]);
-    }
-
     @Deprecated // have to override for compat
     public @Override FileObject find(String aPackage, String name, String ext) {
         // create enumeration of name to look for
@@ -552,26 +492,6 @@ public class MultiFileSystem extends FileSystem {
     * @param fo file object that change its actual filesystem
     */
     protected void markUnimportant(FileObject fo) {
-    }
-
-    /** Lets any sub filesystems prepare the environment.
-     * If they do not support it, it does not care.
-     * @deprecated Useless.
-     */
-    @Deprecated
-    public @Override void prepareEnvironment(FileSystem.Environment env)
-    throws EnvironmentNotSupportedException {
-        FileSystem[] layers = getDelegates();
-
-        for (int i = 0; i < layers.length; i++) {
-            if (layers[i] != null) {
-                try {
-                    layers[i].prepareEnvironment(env);
-                } catch (EnvironmentNotSupportedException ense) {
-                    // Fine.
-                }
-            }
-        }
     }
 
     /** Notifies all encapsulated filesystems in advance

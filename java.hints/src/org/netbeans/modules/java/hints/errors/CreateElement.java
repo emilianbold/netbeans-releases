@@ -422,7 +422,7 @@ public final class CreateElement implements ErrorRule<Void> {
             }
         }
         // check if this may be tested above, just after assignment to a type
-        if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.OTHER || type.getKind() == TypeKind.EXECUTABLE) {
+        if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.OTHER || type.getKind() == TypeKind.NONE || type.getKind() == TypeKind.EXECUTABLE) {
             return result;
         }
 

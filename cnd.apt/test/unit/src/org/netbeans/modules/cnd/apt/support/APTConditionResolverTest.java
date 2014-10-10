@@ -207,10 +207,5 @@ public class APTConditionResolverTest {
         public FileObject findResource(String name) {
             throw new UnsupportedOperationException();
         }
-
-        @Override
-        public org.openide.util.actions.SystemAction[] getActions() {
-            throw new UnsupportedOperationException();
-        }
     }
 }

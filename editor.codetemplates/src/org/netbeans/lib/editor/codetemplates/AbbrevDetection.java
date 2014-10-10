@@ -143,6 +143,7 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     
     /** Document for which this abbreviation detection was constructed. */
     private Document doc;
+    private DocumentListener weakDocL;
     
     /**
      * Offset after the last typed character of the collected abbreviation.
@@ -173,15 +174,14 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
         component.addCaretListener(this);
         doc = component.getDocument();
         if (doc != null) {
-            doc.addDocumentListener(this);
+            listenOnDoc();
         }
 
         String mimeType = DocumentUtilities.getMimeType(component);
         if (mimeType != null) {
             mimePath = MimePath.parse(mimeType);
             prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
-            weakPrefsListener = WeakListeners.create(PreferenceChangeListener.class, this, prefs);
-            prefs.addPreferenceChangeListener(weakPrefsListener);
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
         }
         
         // Load the settings
@@ -201,12 +201,17 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
         });
         surroundsWithTimer.setRepeats(false);
     }
+    
+    private void listenOnDoc() {
+        weakDocL = WeakListeners.document(this, doc);
+        doc.addDocumentListener(weakDocL);
+    }
 
     private void uninstall() {
         assert component != null : "Can't call uninstall before the construction finished";
         component.removeCaretListener(this);
         if (doc != null) {
-            doc.addDocumentListener(this);
+            listenOnDoc();
         }
 
         component.removeKeyListener(this);
@@ -250,13 +255,14 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
 
     public void propertyChange(PropertyChangeEvent evt) {
         if ("document".equals(evt.getPropertyName())) { //NOI18N
-            if (doc != null) {
-                doc.removeDocumentListener(this);
+            if (doc != null && weakDocL != null) {
+                doc.removeDocumentListener(weakDocL);
+                weakDocL = null;
             }
             
             doc = component.getDocument();
             if (doc != null) {
-                doc.addDocumentListener(this);
+                listenOnDoc();
             }
 
             // unregister and destroy the old preferences (if we have any)

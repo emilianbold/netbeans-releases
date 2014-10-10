@@ -54,7 +54,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @ServiceProvider(service=GuiUtilsProvider.class, position=10)
 public class JavaGuiUtilsProvider extends GuiUtilsProvider {

@@ -70,6 +70,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -114,8 +115,9 @@ public final class ImportClass implements ErrorRule<Void> {
     public ImportClass() {
     }
     
+    @Override
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList(
+        return new HashSet<>(Arrays.asList(
                 "compiler.err.cant.resolve",
                 "compiler.err.cant.resolve.location",
                 "compiler.err.cant.resolve.location.args",
@@ -124,6 +126,7 @@ public final class ImportClass implements ErrorRule<Void> {
                 "compiler.err.not.def.public.cant.access"));
     }
     
+    @Override
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {
         resume();
 
@@ -210,7 +213,7 @@ public final class ImportClass implements ErrorRule<Void> {
 
         List<Element> filtered = candidates.first();
         List<Element> unfiltered = candidates.second();
-        List<Fix> fixes = new ArrayList<Fix>();
+        List<Fix> fixes = new ArrayList<>();
         
         if (unfiltered != null && filtered != null) {
             ReferencesCount referencesCount = ReferencesCount.get(info.getClasspathInfo());
@@ -223,10 +226,11 @@ public final class ImportClass implements ErrorRule<Void> {
                 
                 boolean prefered = filtered.contains(element);
                 
-                if (prefered)
+                if (prefered) {
                     sort.append("A#");
-                else
+                } else {
                     sort.append("Z#");
+                }
                 
                 int order = Utilities.getImportanceLevel(info, referencesCount, element);
                 String orderString = Integer.toHexString(order);
@@ -245,6 +249,7 @@ public final class ImportClass implements ErrorRule<Void> {
         return fixes;
     }
     
+    @Override
     public synchronized void cancel() {
         ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.cancel called."); //NOI18N
         
@@ -255,10 +260,12 @@ public final class ImportClass implements ErrorRule<Void> {
         }
     }
     
+    @Override
     public String getId() {
         return ImportClass.class.getName();
     }
     
+    @Override
     public String getDisplayName() {
         return "Add Import Fix";
     }
@@ -286,7 +293,7 @@ public final class ImportClass implements ErrorRule<Void> {
     
     public Pair<List<Element>, List<Element>> getCandidateFQNs(CompilationInfo info, FileObject file, String simpleName, Data<Void> data) {
             //compute imports:
-            Map<String, List<String>> candidates = new HashMap<String, List<String>>();
+            Map<String, List<String>> candidates = new HashMap<>();
             ComputeImports imp = new ComputeImports();
             
             setComputeImports(imp);
@@ -301,23 +308,24 @@ public final class ImportClass implements ErrorRule<Void> {
                 return null;
             }
             
+            ElementUtilities eu = info.getElementUtilities();
             for (String sn : rawCandidates.a.keySet()) {
-                List<String> c = new ArrayList<String>();
+                List<String> c = new ArrayList<>();
                 
                 for (Element te : rawCandidates.a.get(sn)) {
-                    c.add(Utilities.getElementName(te, true).toString());
+                    c.add(eu.getElementName(te, true).toString());
                 }
                 
                 candidates.put(sn, c);
             }
             
-            Map<String, List<String>> notFilteredCandidates = new HashMap<String, List<String>>();
+            Map<String, List<String>> notFilteredCandidates = new HashMap<>();
             
             for (String sn : rawCandidates.b.keySet()) {
-                List<String> c = new ArrayList<String>();
+                List<String> c = new ArrayList<>();
                 
                 for (Element te : rawCandidates.b.get(sn)) {
-                    c.add(Utilities.getElementName(te, true).toString());
+                    c.add(eu.getElementName(te, true).toString());
                 }
                 
                 notFilteredCandidates.put(sn, c);
@@ -363,22 +371,27 @@ public final class ImportClass implements ErrorRule<Void> {
         }
 
         @Messages("Change_to_import_X=Change to import {1}{0}")
+        @Override
         public String getText() {
             String displayName = replacePathHandle == null ? NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn}) : Bundle.Change_to_import_X(fqn + suffix, statik ? "static " : "");
-            if (isValid)
+            if (isValid) {
                 return displayName;
-            else
+            } else {
                 return JavaFixAllImports.NOT_VALID_IMPORT_HTML + displayName;
+            }
         }
 
         @Messages("WRN_FileInvalid=Cannot resolve file - already deleted?")
+        @Override
         public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);            
             
             Task task = new Task<WorkingCopy>() {
+                    @Override
                     public void run(WorkingCopy copy) throws Exception {
-                        if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
-                           return;
+                        if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                            return;
+                        }
 
                         //XXX:
                         if (replacePathHandle != null) {
@@ -457,6 +470,7 @@ public final class ImportClass implements ErrorRule<Void> {
             return false;
         }
 
+        @Override
         public CharSequence getSortText() {
             return sortText;
         }

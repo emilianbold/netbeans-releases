@@ -47,7 +47,7 @@ import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Stack;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -64,7 +64,7 @@ public class Utils {
             return true;
         }
         assert userDef == null : "Wrong value " + userDef;
-        if (Utilities.isMac()) {
+        if (BaseUtilities.isMac()) {
             return false;
         }
         return null;

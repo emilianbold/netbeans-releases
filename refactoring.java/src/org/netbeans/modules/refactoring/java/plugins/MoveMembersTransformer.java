@@ -709,7 +709,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     final TreePath returnPath = new TreePath(resolvedPath, returnType);
                     Element returnTypeEl = trees.getElement(returnPath);
                     if(returnTypeEl != null && returnTypeEl.getKind() != ElementKind.TYPE_PARAMETER && isElementBeingMoved(returnTypeEl) == null) {
-                        returnType = make.QualIdent(returnTypeEl);
+                        returnType = GeneratorUtilities.get(workingCopy).importFQNs(returnType);
                     }
                     newMember = make.Method(modifiers, methodTree.getName(), returnType, typeParameters, newParameters, methodTree.getThrows(), body, (ExpressionTree) methodTree.getDefaultValue());
 

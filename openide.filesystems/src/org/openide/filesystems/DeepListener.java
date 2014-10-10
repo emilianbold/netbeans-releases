@@ -52,7 +52,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.WeakSet;
 
 /**
@@ -71,7 +71,7 @@ implements FileChangeListener, Runnable, Callable<Boolean>, FileFilter {
     private final int hash;
 
     DeepListener(FileChangeListener listener, File path, FileFilter ff, Callable<Boolean> stop) {
-        super(listener, Utilities.activeReferenceQueue());
+        super(listener, BaseUtilities.activeReferenceQueue());
         this.path = path;
         this.stop = stop;
         this.filter = ff;

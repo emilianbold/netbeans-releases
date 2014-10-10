@@ -97,6 +97,9 @@
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages/>

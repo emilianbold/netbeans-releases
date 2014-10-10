@@ -45,7 +45,7 @@
 package org.netbeans;
 
 import java.util.logging.Level;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import java.util.*;
 
 /** Thread which fires changes in the modules.
@@ -144,10 +144,10 @@ final class ChangeFirer {
         public boolean equals(Object o) {
             if (! (o instanceof Change)) return false;
             Change c = (Change) o;
-            return Utilities.compareObjects(prop, c.prop) &&
-                   Utilities.compareObjects(source, c.source) &&
-                   Utilities.compareObjects(old, c.old) &&
-                   Utilities.compareObjects(nue, c.nue);
+            return BaseUtilities.compareObjects(prop, c.prop) &&
+                   BaseUtilities.compareObjects(source, c.source) &&
+                   BaseUtilities.compareObjects(old, c.old) &&
+                   BaseUtilities.compareObjects(nue, c.nue);
         }
         public int hashCode() {
             return source.hashCode() ^ (prop == null ? 0 : prop.hashCode());

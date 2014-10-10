@@ -101,7 +101,6 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
 import org.netbeans.modules.java.editor.codegen.ui.EqualsHashCodePanel;
 import org.openide.DialogDescriptor;
@@ -121,21 +120,27 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
         
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
-            TreePath path = context.lookup(TreePath.class);
-            path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
-            if (component == null || controller == null || path == null)
+            if (component == null || controller == null) {
                 return ret;
+            }
+            TreePath path = context.lookup(TreePath.class);
+            path = controller.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+            if (path == null) {
+                return ret;
+            }
             try {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 Element elem = controller.getTrees().getElement(path);
                 if (elem != null) {
                     EqualsHashCodeGenerator gen = createEqualsHashCodeGenerator(component, controller, elem);
-                    if (gen != null)
+                    if (gen != null) {
                         ret.add(gen);
+                    }
                 }
             } catch (IOException ioe) {
             }
@@ -143,7 +148,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
     }
 
-    private JTextComponent component;
+    final private JTextComponent component;
     final ElementNode.Description description;
     final boolean generateEquals;
     final boolean generateHashCode;
@@ -157,17 +162,21 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
     }
 
+    @Override
     public String getDisplayName() {
-        if( generateEquals && generateHashCode )
+        if (generateEquals && generateHashCode) {
             return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_and_hashcode"); //NOI18N
-        if( !generateEquals )
+        }
+        if (!generateEquals) {
             return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_hashcode"); //NOI18N
+        }
         return org.openide.util.NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals"); //NOI18N
     }
     
     static EqualsHashCodeGenerator createEqualsHashCodeGenerator(JTextComponent component, CompilationController cc, Element el) throws IOException {
-        if (el.getKind() != ElementKind.CLASS)
+        if (el.getKind() != ElementKind.CLASS) {
             return null;
+        }
         //#125114: ignore anonymous innerclasses:
         if (el.getSimpleName() == null || el.getSimpleName().length() == 0) {
             return null;
@@ -176,13 +185,15 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
         ExecutableElement[] equalsHashCode = overridesHashCodeAndEquals(cc, typeElement, null);
         
-        List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
+        List<ElementNode.Description> descriptions = new ArrayList<>();
         for (VariableElement variableElement : ElementFilter.fieldsIn(typeElement.getEnclosedElements())) {
-            if (!ERROR.contentEquals(variableElement.getSimpleName()) && !variableElement.getModifiers().contains(Modifier.STATIC))
+            if (!ERROR.contentEquals(variableElement.getSimpleName()) && !variableElement.getModifiers().contains(Modifier.STATIC)) {
                 descriptions.add(ElementNode.Description.create(cc, variableElement, null, true, isUsed(cc, variableElement, equalsHashCode)));
+            }
         }
-        if (descriptions.isEmpty() || (equalsHashCode[0] != null && equalsHashCode[1] != null))
+        if (descriptions.isEmpty() || (equalsHashCode[0] != null && equalsHashCode[1] != null)) {
             return null;
+        }
         return new EqualsHashCodeGenerator(
             component,
             ElementNode.Description.create(cc, typeElement, descriptions, false, false),
@@ -305,6 +316,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             class FillIn implements Task<CompilationController> {
                 EqualsHashCodeGenerator gen;
                 
+                @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     Element e = handle.resolveElement(cc);
@@ -329,14 +341,16 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
     }
     
+    @Override
     public void invoke() {
         final int caretOffset = component.getCaretPosition();
         final EqualsHashCodePanel panel = new EqualsHashCodePanel(description, generateEquals, generateHashCode);
         String title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode"); //NOI18N
-        if( !generateEquals )
+        if (!generateEquals) {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_hashcode"); //NOI18N
-        else if( !generateHashCode )
+        } else if (!generateHashCode) {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals"); //NOI18N
+        }
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
@@ -345,24 +359,27 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             if (js != null) {
                 try {
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
+                        @Override
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             Element e = description.getElementHandle().resolve(copy);
                             TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
-                            path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+                            path = copy.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                             if (path == null) {
                                 String message = NbBundle.getMessage(EqualsHashCodeGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
-                                ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
-                                if( generateEquals ) {
-                                    for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
+                                ArrayList<VariableElement> equalsElements = new ArrayList<>();
+                                if (generateEquals) {
+                                    for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables()) {
                                         equalsElements.add((VariableElement)elementHandle.resolve(copy));
                                     }
-                                ArrayList<VariableElement> hashCodeElements = new ArrayList<VariableElement>();
-                                if( generateHashCode ) {
-                                    for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables())
+                                }
+                                ArrayList<VariableElement> hashCodeElements = new ArrayList<>();
+                                if (generateHashCode) {
+                                    for (ElementHandle<? extends Element> elementHandle : panel.getHashCodeVariables()) {
                                         hashCodeElements.add((VariableElement)elementHandle.resolve(copy));
+                                    }
                                 }
                                 generateEqualsAndHashCode(
                                     copy, path, 
@@ -396,7 +413,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         if (te != null) {
             ClassTree nue = (ClassTree)path.getLeaf();
             Scope scope = wc.getTrees().getScope(path);
-            List<Tree> members = new ArrayList<Tree>();
+            List<Tree> members = new ArrayList<>();
             if (hashCodeFields != null) {
                 members.add(createHashCodeMethod(wc, hashCodeFields, scope));
             }
@@ -424,7 +441,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         TypeElement objElement = wc.getElements().getTypeElement("java.lang.Object"); //NOI18N
         List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "obj", objElement != null ? make.Type(objElement.asType()) : make.Identifier("Object"), null)); //NOI18N
         
-        List<StatementTree> statements = new ArrayList<StatementTree>();
+        List<StatementTree> statements = new ArrayList<>();
         //if (obj == null) return false;
         statements.add(make.If(make.Binary(Tree.Kind.EQUAL_TO, make.Identifier("obj"), make.Identifier("null")), make.Return(make.Identifier("false")), null)); //NOI18N
         //if (getClass() != obj.getClass()) return false;
@@ -451,7 +468,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
 
         int startNumber = generatePrimeNumber(2, 10);
         int multiplyNumber = generatePrimeNumber(10, 100);
-        List<StatementTree> statements = new ArrayList<StatementTree>();
+        List<StatementTree> statements = new ArrayList<>();
         //int hash = <startNumber>;
         statements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "hash", make.PrimitiveType(TypeKind.INT), make.Literal(startNumber))); //NOI18N        
         for (VariableElement ve : hashCodeFields) {
@@ -468,11 +485,13 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
 
     private static boolean isPrimeNumber(int n) {
         int squareRoot = (int) Math.sqrt(n) + 1;
-        if (n % 2 == 0)
+        if (n % 2 == 0) {
             return false;
+        }
         for (int cntr = 3; cntr < squareRoot; cntr++) {
-            if (n % cntr == 0)
+            if (n % cntr == 0) {
                 return false;
+            }
         }
         return true;
     }
@@ -486,19 +505,21 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         
         Random r = new Random(System.currentTimeMillis());
         int proposed = r.nextInt(higherLimit - lowerLimit) + lowerLimit;        
-        while (!isPrimeNumber(proposed))
+        while (!isPrimeNumber(proposed)) {
             proposed++;
+        }
         if (proposed > higherLimit) {
             proposed--;
-            while (!isPrimeNumber(proposed))
+            while (!isPrimeNumber(proposed)) {
                 proposed--;
+            }
         }
         return proposed;
     }
     
     private static ModifiersTree prepareModifiers(WorkingCopy wc, Set<Modifier> mods, TreeMaker make) {
 
-        List<AnnotationTree> annotations = new LinkedList<AnnotationTree>();
+        List<AnnotationTree> annotations = new LinkedList<>();
 
         if (GeneratorUtils.supportsOverride(wc)) {
             TypeElement override = wc.getElements().getTypeElement("java.lang.Override");
@@ -584,7 +605,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     private static final Map<Acceptor, String> HASH_CODE_PATTERNS;
 
     static {
-        EQUALS_PATTERNS = new LinkedHashMap<Acceptor, String>();
+        EQUALS_PATTERNS = new LinkedHashMap<>();
 
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.BOOLEAN, KindOfType.BYTE, KindOfType.SHORT, KindOfType.INT, KindOfType.LONG, KindOfType.CHAR), "this.{VAR} != other.{VAR}");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.FLOAT), "java.lang.Float.floatToIntBits(this.{VAR}) != java.lang.Float.floatToIntBits(other.{VAR})");
@@ -596,7 +617,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
         EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
 
-        HASH_CODE_PATTERNS = new LinkedHashMap<Acceptor, String>();
+        HASH_CODE_PATTERNS = new LinkedHashMap<>();
 
         HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.BYTE, KindOfType.SHORT, KindOfType.INT, KindOfType.CHAR), "this.{VAR}");
         HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.LONG), "(int) (this.{VAR} ^ (this.{VAR} >>> 32))");
@@ -627,6 +648,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             this.kinds.addAll(Arrays.asList(moreKinds));
         }
 
+        @Override
         public boolean accept(CompilationInfo info, TypeMirror tm) {
             return kinds.contains(detectKind(info, tm));
         }
@@ -648,8 +670,11 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             this.minimalVersion = minimalVersion;
         }
 
+        @Override
         public boolean accept(CompilationInfo info, TypeMirror tm) {
-            if (minimalVersion != null && minimalVersion.compareTo(info.getSourceVersion()) > 0) return false;
+            if (minimalVersion != null && minimalVersion.compareTo(info.getSourceVersion()) > 0) {
+                return false;
+            }
             
             TypeElement clazz = info.getElements().getTypeElement(fqn);
 

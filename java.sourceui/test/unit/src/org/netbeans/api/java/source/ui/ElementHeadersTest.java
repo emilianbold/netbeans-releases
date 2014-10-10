@@ -40,8 +40,11 @@
 package org.netbeans.api.java.source.ui;
 
 import com.sun.source.util.TreePath;
+
 import java.io.File;
+
 import javax.swing.text.Document;
+
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;

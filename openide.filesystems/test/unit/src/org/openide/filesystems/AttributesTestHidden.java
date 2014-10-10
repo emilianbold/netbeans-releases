@@ -48,7 +48,7 @@ package org.openide.filesystems;
 import java.util.*;
 import java.io.*;
 import java.lang.reflect.Method;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -306,7 +306,7 @@ public class AttributesTestHidden extends TestBaseHid {
         ).getBytes());
         fos.close();
 
-        XMLFileSystem xfs = new XMLFileSystem(Utilities.toURI(f).toURL());
+        XMLFileSystem xfs = new XMLFileSystem(BaseUtilities.toURI(f).toURL());
         FileObject template = xfs.findResource("Templates/Other/special");
         assertNotNull("template found", template);
         FileObject foTested = testedFS.getRoot().createData("copiedTemplate");

@@ -71,7 +71,7 @@ import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * @author rm111737
@@ -97,7 +97,7 @@ public class FileObj extends BaseFileObj {
     public OutputStream getOutputStream(final FileLock lock) throws IOException {
         ProvidedExtensions extensions = getProvidedExtensions();
         File file = getFileName().getFile();
-        if (!Utilities.isWindows() && !file.isFile()) {
+        if (!BaseUtilities.isWindows() && !file.isFile()) {
             throw new IOException(file.getAbsolutePath());
         }
         return getOutputStream(lock, extensions, this);
@@ -121,7 +121,7 @@ public class FileObj extends BaseFileObj {
             throw fnf;
         }
 
-        if (!Utilities.isWindows() && !f.isFile()) {
+        if (!BaseUtilities.isWindows() && !f.isFile()) {
             throw new IOException(f.getAbsolutePath());
         }
         
@@ -225,7 +225,7 @@ public class FileObj extends BaseFileObj {
         MutualExclusionSupport<FileObj>.Closeable closeableReference = null;
         
         try {
-            if (Utilities.isWindows()) {
+            if (BaseUtilities.isWindows()) {
                 // #157056 - don't try to open locked windows files (ntuser.dat, ntuser.dat.log1, ...)
                 if (getNameExt().toLowerCase().startsWith("ntuser.dat")) {  //NOI18N
                     return new ByteArrayInputStream(new byte[] {});
@@ -273,7 +273,7 @@ public class FileObj extends BaseFileObj {
     public boolean isReadOnly() {
         final File f = getFileName().getFile();
         boolean res;
-        if (!Utilities.isWindows() && !f.isFile()) {
+        if (!BaseUtilities.isWindows() && !f.isFile()) {
             res = true;
         } else {
             res = super.isReadOnly();
@@ -285,7 +285,7 @@ public class FileObj extends BaseFileObj {
     @Override
     public boolean canWrite() {
         final File f = getFileName().getFile();        
-        if (!Utilities.isWindows() && !f.isFile()) {
+        if (!BaseUtilities.isWindows() && !f.isFile()) {
             return false;
         }                
         return super.canWrite();

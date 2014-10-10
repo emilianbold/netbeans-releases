@@ -108,6 +108,25 @@ is the proper place.
 
     <changes>
         
+
+        <change id="ProjectManagerImplementation">
+            <api name="general"/>
+            <summary>SPI interface for <code>ProjectManager</code></summary>
+            <version major="1" minor="59"/>
+            <date day="7" month="4" year="2014"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a SPI internface for <code>ProjectManager</code> allowing
+                    different implementations of <code>ProjectManager</code>
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project" name="ProjectManagerImplementation"/>
+            <class package="org.netbeans.api.project" name="ProjectManager"/>
+            <issue number="210465"/>
+        </change>
+        
          <change id="ProjectManager.Result">
             <api name="general"/>
             <summary>More information in <code>ProjectManager.Result</code></summary>

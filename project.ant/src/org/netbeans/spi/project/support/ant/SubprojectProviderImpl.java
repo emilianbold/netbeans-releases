@@ -45,15 +45,14 @@
 package org.netbeans.spi.project.support.ant;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 
@@ -99,7 +98,7 @@ final class SubprojectProviderImpl implements SubprojectProvider {
                             foreignProjects.add(p);
                         }
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                         // skip it
                     }
                 }
