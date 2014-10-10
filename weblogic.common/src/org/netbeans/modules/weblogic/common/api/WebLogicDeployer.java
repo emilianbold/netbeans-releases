@@ -66,6 +66,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
@@ -116,31 +118,57 @@ public final class WebLogicDeployer {
 
             @Override
             public Collection<Application> call() throws Exception {
-                ApplicationLineProcessor processor = new ApplicationLineProcessor();
-                BaseExecutionService service = createService("-listapps", processor); // NOI18N
-                Future<Integer> result = service.run();
-                try {
-                    Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
-                    if (value != 0) {
-                        throw new IOException("Command failed");
-                    } else {
-                        List<Application> apps = new ArrayList<>();
-                        for(String app : processor.getApplications()) {
-                            apps.add(new Application(app, null));
+                return config.getRemote().executeAction(new WebLogicRemote.JmxAction<Collection<Application>>() {
+
+                    @Override
+                    public Collection<Application> execute(MBeanServerConnection connection) throws Exception {
+                        List<Application> result = new ArrayList<>();
+                        ObjectName service = new ObjectName("com.bea:Name=DomainRuntimeService," // NOI18N
+                                    + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean"); // NOI18N
+                        ObjectName domainConfig = (ObjectName) connection.getAttribute(service,
+                                    "DomainConfiguration"); // NOI18N
+                        ObjectName beans[] = (ObjectName[]) connection.getAttribute(domainConfig, "AppDeployments"); // NOI18N
+                        for (ObjectName bean : beans) {
+                            String name = (String) connection.getAttribute(bean, "Name"); // NOI18N
+                            String type = (String) connection.getAttribute(bean, "Type"); // NOI18N
+                            if ("AppDeployment".equals(type)) { // NOI18N
+                                String contextRoot = null;
+                                ObjectName[] targets = (ObjectName[]) connection.getAttribute(bean, "Targets"); // NOI18N
+                                if (targets != null && targets.length > 0) {
+                                    String server = (String) connection.getAttribute(targets[0], "Name"); // NOI18N
+                                    ObjectName serverRuntime = (ObjectName) connection.invoke(
+                                            service, "lookupServerRuntime", new Object[]{server}, new String[] {"java.lang.String"}); // NOI18N
+                                    if (serverRuntime != null) {
+                                        ObjectName appRuntime = (ObjectName) connection.invoke(
+                                                serverRuntime, "lookupApplicationRuntime", new Object[]{name}, new String[] {"java.lang.String"}); // NOI18N
+                                        if (appRuntime != null) {
+                                            ObjectName[] runtimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
+                                            if (runtimes != null) {
+                                                for (ObjectName runtime : runtimes) {
+                                                    String runtimeType = (String) connection.getAttribute(runtime, "Type"); // NOI18N
+                                                    if ("WebAppComponentRuntime".equals(runtimeType)) { // NOI18N
+                                                        contextRoot = (String) connection.getAttribute(runtime, "ContextRoot"); // NOI18N
+                                                        if (contextRoot != null) {
+                                                            // XXX may there be multiple web apps in ear?
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if (contextRoot != null) {
+                                    result.add(new Application(name,
+                                            new URL("http://" + config.getHost() + ":" + config.getPort() + contextRoot))); // NOI18N
+                                } else {
+                                    result.add(new Application(name, null));
+                                }
+                            }
                         }
-                        return apps;
+                        return result;
                     }
-                } catch (InterruptedException | TimeoutException ex) {
-                    result.cancel(true);
-                    throw ex;
-                } catch (ExecutionException ex) {
-                    Throwable cause = ex.getCause();
-                    if (cause instanceof Exception) {
-                        throw (Exception) cause;
-                    } else {
-                        throw ex;
-                    }
-                }
+                }, nonProxy);
             }
         });
     }
