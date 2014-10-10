@@ -58,7 +58,9 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
 /**
@@ -99,7 +101,8 @@ public class MacroExpansionUsagesTestCase extends MacroExpansionDocProviderImplB
             BaseDocument doc = getBaseDocument(getDataFile(objectSource));
             assertNotNull(doc);
 
-            mp.expand(doc, 0, 0);
+            CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+            mp.expand(doc, csmFile, 0, 0, true);
 
             int line = (Integer) params[0];
             int column = (Integer) params[1];
