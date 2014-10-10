@@ -39,53 +39,55 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui.customizer;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
-import org.netbeans.spi.project.ui.CustomizerProvider2;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.javascript2.nodejs.editor;
 
-public final class NodeJsCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 
-    public static final String CUSTOMIZER_IDENT = "NodeJs"; // NOI18N
+/**
+ *
+ * @author Petr Pisl
+ */
+public class NodeJsContextTest extends JsTestBase {
 
-
-    @NbBundle.Messages("NodeJsCustomizerProvider.name=Node.js")
-    @Override
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
-                Bundle.NodeJsCustomizerProvider_name(), null);
+    public NodeJsContextTest(String testName) {
+        super(testName);
     }
-
-    @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        Project project = context.lookup(Project.class);
-        assert project != null;
-        return new NodeJsCustomizerPanel(category, project);
+    
+    public void testContext01() throws Exception {
+        checkCompletionContext("testfiles/context/context01.js");
     }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org.netbeans.modules.web.clientproject", // NOI18N
-            position = 320)
-    public static NodeJsCustomizerProvider createCustomizer() {
-        return new NodeJsCustomizerProvider();
+    
+    public void testSimpleServer() throws Exception {
+        checkCompletionContext("testfiles/context/simpleServer.js");
     }
-
-    public static void openCustomizer(Project project, ValidationResult result) {
-        openCustomizer(project, NodeJsPreferencesValidator.getCustomizerCategory(result));
+    
+    public void testOnEvents() throws Exception {
+        checkCompletionContext("testfiles/context/eventer.js");
     }
-
-    public static void openCustomizer(Project project, String category) {
-        assert project != null;
-        assert category != null;
-        CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
-        assert customizerProvider != null : "CustomizerProvider2 must be found in lookup of " + project.getClass().getName();
-        customizerProvider.showCustomizer(category, null);
+    
+    private void checkCompletionContext(final String filePath) throws Exception {
+        Source testSource = getTestSource(getTestFile(filePath));
+        Snapshot snapshot = testSource.createSnapshot();
+        CharSequence text = snapshot.getText();
+        StringBuilder sb = new StringBuilder();
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, 0);
+        NodeJsContext contextPrevious = null;
+        for (int offset = 0; offset < text.length(); offset++) {
+            NodeJsContext context = NodeJsContext.findContext(ts , offset);
+            if (!context.equals(contextPrevious)) {
+                sb.append('[').append(context).append(']');
+                contextPrevious = context;
+            }
+            sb.append(text.charAt(offset));
+        }
+        assertDescriptionMatches(filePath, sb.toString(), false, ".context");
     }
-
 }

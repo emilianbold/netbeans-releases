@@ -63,7 +63,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -195,7 +195,7 @@ public final class PackageJson {
 
     @CheckForNull
     private File findPackageJson(String sourceType) {
-        for (File root : FileUtils.getRoots(project, sourceType)) {
+        for (File root : NodeJsUtils.getRoots(project, sourceType)) {
             return new File(root, FILENAME);
         }
         return null;
