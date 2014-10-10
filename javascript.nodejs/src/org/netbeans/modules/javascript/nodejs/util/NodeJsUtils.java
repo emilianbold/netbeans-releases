@@ -41,7 +41,16 @@
  */
 package org.netbeans.modules.javascript.nodejs.util;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public final class NodeJsUtils {
 
@@ -49,7 +58,55 @@ public final class NodeJsUtils {
     }
 
     public static boolean isJsLibrary(Project project) {
-        return FileUtils.getSiteRoots(project).isEmpty();
+        return getSiteRoots(project).isEmpty();
+    }
+
+    @CheckForNull
+    public static File getSourceRoot(Project project) {
+        for (File root : getSourceRoots(project)) {
+            return root;
+        }
+        return null;
+    }
+
+    @CheckForNull
+    public static File getSiteRoot(Project project) {
+        for (File root : getSiteRoots(project)) {
+            return root;
+        }
+        return null;
+    }
+
+    @CheckForNull
+    public static File getTestRoot(Project project) {
+        for (File root : getTestRoots(project)) {
+            return root;
+        }
+        return null;
+    }
+
+    public static List<File> getSourceRoots(Project project) {
+        return getRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5);
+    }
+
+    public static List<File> getSiteRoots(Project project) {
+        return getRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
+    }
+
+    public static List<File> getTestRoots(Project project) {
+        return getRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST);
+    }
+
+    public static List<File> getRoots(Project project, String type) {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(type);
+        List<File> roots = new ArrayList<>(sourceGroups.length);
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            File root = FileUtil.toFile(rootFolder);
+            assert root != null : rootFolder;
+            roots.add(root);
+        }
+        return roots;
     }
 
 }

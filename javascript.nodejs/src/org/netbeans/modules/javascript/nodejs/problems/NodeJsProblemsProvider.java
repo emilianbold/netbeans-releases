@@ -48,20 +48,30 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -70,9 +80,11 @@ import org.openide.util.WeakListeners;
 public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
     private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
-    final Project project;
-    final PreferenceChangeListener optionsListener = new OptionsListener();
-    final PreferenceChangeListener preferencesListener = new PreferencesListener();
+    private final Project project;
+    private final PreferenceChangeListener optionsListener = new OptionsListener();
+    private final PreferenceChangeListener preferencesListener = new PreferencesListener();
+    private final ChangeListener projectSourcesListener = new ProjectSourcesListener();
+    private final FileChangeListener nodeSourcesListener = new NodeSourcesListener();
 
     // @GuardedBy("this")
     private NodeJsSupport nodeJsSupport;
@@ -106,6 +118,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
                     return Collections.emptyList();
                 }
                 Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
+                checkSources(currentProblems);
                 checkOptions(currentProblems);
                 checkPreferences(currentProblems);
                 checkNode(currentProblems);
@@ -117,11 +130,38 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
     synchronized NodeJsSupport getNodeJsSupport() {
         if (nodeJsSupport == null) {
             nodeJsSupport = NodeJsSupport.forProject(project);
-            nodeJsSupport.getPreferences().addPreferenceChangeListener(preferencesListener);
-            NodeJsOptions options = NodeJsOptions.getInstance();
-            options.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, optionsListener, options));
+            addListeners();
         }
         return nodeJsSupport;
+    }
+
+    private void addListeners() {
+        assert nodeJsSupport != null;
+        // preferences
+        nodeJsSupport.getPreferences().addPreferenceChangeListener(preferencesListener);
+        // options
+        NodeJsOptions options = NodeJsOptions.getInstance();
+        options.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, optionsListener, options));
+        // project sources
+        Sources sources = ProjectUtils.getSources(project);
+        sources.addChangeListener(WeakListeners.change(projectSourcesListener, sources));
+        // node sources
+        FileUtil.addFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
+    }
+
+    @NbBundle.Messages({
+        "NodeJsProblemProvider.sources.none.title=No Source folder defined",
+        "# {0} - project name",
+        "NodeJsProblemProvider.sources.none.description=Node.js runs JavaScript files underneath Source folder. But no Source folder is defined in project {0}.",
+    })
+    void checkSources(Collection<ProjectProblem> currentProblems) {
+        if (NodeJsUtils.getSourceRoots(project).isEmpty()) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.NodeJsProblemProvider_sources_none_title(),
+                    Bundle.NodeJsProblemProvider_sources_none_description(ProjectUtils.getInformation(project).getDisplayName()),
+                    new CustomizerProblemResolver(project, "NO_SOURCES", WebClientProjectConstants.CUSTOMIZER_SOURCES_IDENT)); // NOI18N
+            currentProblems.add(problem);
+        }
     }
 
     void checkOptions(Collection<ProjectProblem> currentProblems) {
@@ -160,7 +200,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         ProjectProblem problem = ProjectProblem.createError(
                 message,
                 message,
-                new CustomizerProblemResolver(project, validationResult));
+                new CustomizerProblemResolver(project, "INVALID_PREFERENCES", validationResult)); // NOI18N
         currentProblems.add(problem);
     }
 
@@ -214,7 +254,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         // pretend invalid node path
         ValidationResult result = new ValidationResult();
         ValidationUtils.validateNode(result, null);
-        return new CustomizerProblemResolver(project, result);
+        return new CustomizerProblemResolver(project, "INVALID_NODE", result); // NOI18N
     }
 
     void fireProblemsChanged() {
@@ -227,9 +267,6 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
-            if (!getNodeJsSupport().getPreferences().isEnabled()) {
-                return;
-            }
             fireProblemsChanged();
         }
 
@@ -239,9 +276,24 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
-            if (!getNodeJsSupport().getPreferences().isEnabled()) {
-                return;
-            }
+            fireProblemsChanged();
+        }
+
+    }
+
+    private final class ProjectSourcesListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            fireProblemsChanged();
+        }
+
+    }
+
+    private final class NodeSourcesListener extends FileChangeAdapter {
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
             fireProblemsChanged();
         }
 

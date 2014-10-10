@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript.v8debug;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,6 +74,7 @@ import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.lib.v8debug.client.ClientConnection;
+import org.netbeans.lib.v8debug.client.IOListener;
 import org.netbeans.lib.v8debug.commands.Backtrace;
 import org.netbeans.lib.v8debug.commands.Frame;
 import org.netbeans.lib.v8debug.commands.Scripts;
@@ -88,8 +90,12 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOColorPrint;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -98,6 +104,7 @@ import org.openide.util.RequestProcessor;
 public final class V8Debugger {
     
     private static final Logger LOG = Logger.getLogger(V8Debugger.class.getName());
+    private static final boolean SHOW_V8_PROTOCOL = Boolean.getBoolean("show.v8.protocol");
     
     private final String host;
     private final int port;
@@ -141,6 +148,9 @@ public final class V8Debugger {
         this.host = properties.getHostName();
         this.port = properties.getPort();
         this.connection = new ClientConnection(properties.getHostName(), properties.getPort());
+        if (SHOW_V8_PROTOCOL) {
+            connection.addIOListener(new CommListener());
+        }
         this.scriptsHandler = new ScriptsHandler(properties.getLocalPath(), properties.getServerPath(), this);
         this.breakpointsHandler = new BreakpointsHandler(this);
         this.finishCallback = finishCallback;
@@ -531,6 +541,40 @@ public final class V8Debugger {
                 }
             }
         });
+    }
+    
+    @NbBundle.Messages("V8DebugProtocolPane=V8 Debug Protocol")
+    private final class CommListener implements IOListener {
+        
+        private final Color sentColor = Color.GREEN.darker();
+        private final Color receivedColor = Color.BLUE;
+        private final InputOutput ioLogger = IOProvider.getDefault().getIO(Bundle.V8DebugProtocolPane(), false);
+
+        @Override
+        public synchronized void sent(String str) {
+            try {
+                IOColorPrint.print(ioLogger, str, sentColor);
+                ioLogger.getOut().println();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        public synchronized void received(String str) {
+            try {
+                IOColorPrint.print(ioLogger, str, receivedColor);
+                ioLogger.getOut().println();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        @Override
+        public void closed() {
+            ioLogger.getOut().close();
+        }
+
     }
 
     public interface Listener {

@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.profiler.nbimpl.actions;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.v2.ProfilerSession;
@@ -59,7 +57,6 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jiri Sedlacek
  */
 public class ProjectSensitivePerformer implements ProjectActionPerformer {
-    private static final Logger LOG = Logger.getLogger(ProjectSensitivePerformer.class.getName());
     
     final private String command;
     final private boolean attach;
@@ -79,6 +76,7 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
     
     
     static boolean supportsProfileProject(String command, Project project) {
+        if (project == null) return false;
         ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         try {
             if (ap != null && contains(ap.getSupportedActions(), command)) {
@@ -87,19 +85,20 @@ public class ProjectSensitivePerformer implements ProjectActionPerformer {
                 return ppp.isProfilingSupported() && ap.isActionEnabled(command, project.getLookup());
             }
         } catch (IllegalArgumentException e) {
-            LOG.log(Level.WARNING, null, e);
+            // command not supported
         }
         return false;
     }
     
     static boolean supportsAttachProject(Project project) {
+        if (project == null) return false;
+        
         ProjectProfilingSupport ppp = ProjectProfilingSupport.get(project);
         return ppp == null ? false : ppp.isAttachSupported();
     }
     
     @Override
     public boolean enable(Project project) {
-        if (project == null) return false;
         if (attach) return supportsAttachProject(project);
         else return supportsProfileProject(command, project);
     }

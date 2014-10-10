@@ -50,21 +50,22 @@ import org.openide.util.HelpCtx;
  */
 public class NewClientSideProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private final boolean library;
+    private final String projectNameTemplate;
 
     private volatile WizardDescriptor wizardDescriptor;
     // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
     private volatile NewClientSideProject clientSideProject;
 
 
-    public NewClientSideProjectPanel(boolean library) {
-        this.library = library;
+    public NewClientSideProjectPanel(String projectNameTemplate) {
+        assert projectNameTemplate != null;
+        this.projectNameTemplate = projectNameTemplate;
     }
 
     @Override
     public NewClientSideProject getComponent() {
         if (clientSideProject == null) {
-            clientSideProject = new NewClientSideProject(library);
+            clientSideProject = new NewClientSideProject(projectNameTemplate);
         }
         return clientSideProject;
     }

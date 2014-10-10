@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.nodejs.editor;
 import java.util.Arrays;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 
@@ -54,22 +55,39 @@ import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 public enum NodeJsContext {
 
     MODULE_PATH,
+    ASSIGN_LISTENER,
+    AFTER_ASSIGNMENT,
     UNKNOWN;
 
     public static NodeJsContext findContext(TokenSequence<? extends JsTokenId> ts, final int offset) {
         ts.move(offset);
-        if (ts.moveNext()) {
+        if (ts.moveNext() || ts.movePrevious()) {
             Token<? extends JsTokenId> token = ts.token();
-            if (token.id() == JsTokenId.STRING || token.id() == JsTokenId.STRING_END) {
+            JsTokenId tokenId = token.id();
+            if (tokenId == JsTokenId.STRING || tokenId == JsTokenId.STRING_END) {
                 token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
                         JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA));
-                if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
-                    token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
-                    if (token.id() == JsTokenId.IDENTIFIER) {
+                tokenId = token.id();
+                if (tokenId == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
+                    tokenId = token.id();
+                    if (tokenId == JsTokenId.IDENTIFIER) {
                         if (NodeJsUtils.REQUIRE_METHOD_NAME.equals(token.text().toString())) {
                             return MODULE_PATH;
                         }
+                        if (NodeJsUtils.ON_METHOD_NAME.equals(token.text().toString())) {
+                            return ASSIGN_LISTENER;
+                        }
                     }
+                }
+            } else {
+                if ((tokenId == JsTokenId.OPERATOR_ASSIGNMENT || tokenId == JsTokenId.WHITESPACE || tokenId == JsTokenId.IDENTIFIER) && ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
+                    tokenId = token.id();
+                }
+                if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
+                    // offer require()
+                    return AFTER_ASSIGNMENT;
                 }
             }
         }

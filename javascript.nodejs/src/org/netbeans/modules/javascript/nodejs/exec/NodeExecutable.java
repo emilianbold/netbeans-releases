@@ -82,6 +82,7 @@ import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProv
 import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
 import org.netbeans.modules.javascript.nodejs.util.ExternalExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
@@ -335,7 +336,7 @@ public class NodeExecutable {
         if (packageJson.exists()) {
             return new File(packageJson.getPath()).getParentFile();
         }
-        File sourceRoot = FileUtils.getSourceRoot(project);
+        File sourceRoot = NodeJsUtils.getSourceRoot(project);
         if (sourceRoot != null) {
             return sourceRoot;
         }
