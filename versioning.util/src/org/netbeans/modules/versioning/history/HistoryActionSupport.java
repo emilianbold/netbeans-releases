@@ -86,7 +86,7 @@ class HistoryActionSupport<H> {
             }
         }
         assert he != null;
-        return he.getRevisionShort();
+        return he == null ? null : he.getRevisionShort();
     }
 
     protected void performAction(Node[] activatedNodes) {

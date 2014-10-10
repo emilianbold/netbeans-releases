@@ -72,6 +72,7 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.server.ui.common.ErrorNode;
 import org.netbeans.modules.team.server.ui.common.LinkButton;
 import org.netbeans.modules.team.server.ui.common.EditInstanceAction;
@@ -108,7 +109,12 @@ class ServerPanel extends JPanel {
         public void propertyChange( PropertyChangeEvent evt ) {
             switch (evt.getPropertyName()) {
                 case TeamServer.PROP_NAME:
-                    title.setText(server.getDisplayName());
+                    UIUtils.runInAWT(new Runnable(){
+                        @Override
+                        public void run() {
+                            title.setText(server.getDisplayName());
+                        }
+                    });
                     break;
                 case TeamServer.PROP_LOGIN:
                     rebuild();
