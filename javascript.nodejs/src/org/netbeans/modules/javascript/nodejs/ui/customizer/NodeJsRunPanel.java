@@ -131,9 +131,18 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         return validateData().getFirstErrorMessage();
     }
 
+    @NbBundle.Messages("NodeJsRunPanel.sources.none=Source folder is needed to run project JavaScript files (set it in Sources category).")
     @Override
     public String getWarningMessage() {
-        return validateData().getFirstWarningMessage();
+        String warning = validateData().getFirstWarningMessage();
+        if (warning != null) {
+            return warning;
+        }
+        // #247853
+        if (NodeJsUtils.getSourceRoots(project).isEmpty()) {
+            return Bundle.NodeJsRunPanel_sources_none();
+        }
+        return null;
     }
 
     @Override
