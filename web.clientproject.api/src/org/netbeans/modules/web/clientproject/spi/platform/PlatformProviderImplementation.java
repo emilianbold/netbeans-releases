@@ -78,9 +78,9 @@ public interface PlatformProviderImplementation {
     String PROP_START_FILE = "START_FILE"; // NOI18N
     /**
      * Property name for changes in run configuration.
-     * @since 1.71
+     * @since 1.72
      */
-    String PROP_RUN_CONFIGRATION = "RUN_CONFIGRATION"; // NOI18N
+    String PROP_RUN_CONFIGURATION = "RUN_CONFIGURATION"; // NOI18N
 
 
     /**
