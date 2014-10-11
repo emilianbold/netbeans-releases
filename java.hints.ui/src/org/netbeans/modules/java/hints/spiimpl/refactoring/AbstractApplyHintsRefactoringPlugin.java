@@ -275,7 +275,8 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         private final Set<ModificationResult> enabledResults;
 
         private ModificationResultElement(FileObject parentFile, JavaFix jf, ModificationResult modification, Set<ModificationResult> enabledResults) {
-            PositionRef s = modification.getDifferences(parentFile).iterator().next().getStartPosition();
+            // FIXME - unwanted openide.text dependency
+            PositionRef s = (PositionRef)modification.getDifferences(parentFile).iterator().next().getStartPosition();
             this.bounds = new PositionBounds(s, s);
             this.displayText = jf.toEditorFix().getText();
             this.parentFile = parentFile;

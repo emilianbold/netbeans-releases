@@ -44,20 +44,18 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.InputOutput;
 
 /**
  *
  * @author Libor Kotouc
  */
 public class OpenServerLogAction extends NodeAction {
-    
+
     public OpenServerLogAction() {
     }
 
@@ -68,17 +66,14 @@ public class OpenServerLogAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         for (Node activatedNode : activatedNodes) {
             Object node = activatedNode.getLookup().lookup(WLManagerNode.class);
-            
+
             if (!(node instanceof WLManagerNode)) {
                 continue;
             }
-            
+
             WLDeploymentManager dm = ((WLManagerNode)node).getDeploymentManager();
-            InputOutput io = UISupport.getServerIO(dm.getUri());
-            if (io != null) {
-                io.select();
-            }
-        }        
+            dm.getLogManager().openLog();
+        }
     }
 
     public HelpCtx getHelpCtx() {
@@ -92,5 +87,5 @@ public class OpenServerLogAction extends NodeAction {
     public boolean asynchronous() {
         return false;
     }
-    
+
 }

@@ -54,14 +54,15 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManage
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
-import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasourceManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestinationDeployment;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDriverDeployer;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLIncrementalDeployment;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLTargetModuleIDResolver;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
@@ -116,7 +117,11 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      */
     @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        return new WLFindJSPServlet((WLDeploymentManager) dm);
+        WLDeploymentManager manager = (WLDeploymentManager) dm;
+        if (!manager.isRemote()) {
+            return new WLFindJSPServlet(manager);
+        }
+        return null;
     }
 
     @Override
@@ -151,45 +156,39 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
 
     @Override
     public ServerLibraryManager getServerLibraryManager(DeploymentManager dm) {
-        return new WLServerLibraryManager((WLDeploymentManager) dm);
+        WLDeploymentManager manager = (WLDeploymentManager) dm;
+        if (!manager.isRemote()) {
+            return new WLServerLibraryManager(manager);
+        }
+        return null;
+    }
+
+    @Override
+    public TargetModuleIDResolver getTargetModuleIDResolver(DeploymentManager dm) {
+        return new WLTargetModuleIDResolver((WLDeploymentManager) dm);
     }
 
     private static class WLServerInstanceDescriptor implements ServerInstanceDescriptor {
 
-        private final String host;
-
-        private int port;
-        
-        private final boolean remote;
+        private final WLDeploymentManager manager;
 
         public WLServerInstanceDescriptor(WLDeploymentManager manager) {
-            String uri = manager.getInstanceProperties().getProperty(InstanceProperties.URL_ATTR);
-            // it is guaranteed it is WL
-            String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
-
-            host = parts[0];
-            try {
-                port = parts.length > 1 ? Integer.parseInt(parts[1]) : WLDeploymentFactory.DEFAULT_PORT;
-            } catch (NumberFormatException ex) {
-                // leave default
-                port = WLDeploymentFactory.DEFAULT_PORT;
-            }
-            remote = manager.isRemote();
+            this.manager = manager;
         }
 
         @Override
         public String getHostname() {
-            return host;
+            return manager.getCommonConfiguration().getHost();
         }
 
         @Override
         public int getHttpPort() {
-            return port;
+            return manager.getCommonConfiguration().getPort();
         }
 
         @Override
         public boolean isLocal() {
-            return !remote;
+            return !manager.isRemote();
         }
     }
 }

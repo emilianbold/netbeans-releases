@@ -54,7 +54,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.projectapi.TimedWeakReference;
+import org.netbeans.modules.projectapi.nb.NbProjectManagerAccessor;
+import org.netbeans.modules.projectapi.nb.TimedWeakReference;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
@@ -108,7 +109,7 @@ public class ProjectManagerTest extends NbTestCase {
         mysteryproject = scratch.createFolder("mystery");
         MockLookup.setInstances(TestUtil.testProjectFactory());
         pm = ProjectManager.getDefault();
-        pm.reset();
+        NbProjectManagerAccessor.reset();
     }
     
     @Override
@@ -475,6 +476,6 @@ public class ProjectManagerTest extends NbTestCase {
      * @param pm PM to reset
      */
     public static void resetProjectManager(ProjectManager pm) {
-        pm.reset();
+        NbProjectManagerAccessor.reset();
     }
 }

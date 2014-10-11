@@ -56,7 +56,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
 import org.openide.util.RequestProcessor;
@@ -69,10 +69,10 @@ import org.openide.util.lookup.ServiceProviders;
  * @author nenik
  */
 @ServiceProviders({
-    @ServiceProvider(service=AnnotationProvider.class),
+    @ServiceProvider(service=BaseAnnotationProvider.class),
     @ServiceProvider(service=Watcher.class)
 })
-public final class Watcher extends AnnotationProvider {
+public final class Watcher extends BaseAnnotationProvider {
     static final Logger LOG = Logger.getLogger(Watcher.class.getName());
     private static final Map<FileObject,int[]> MODIFIED = new WeakHashMap<FileObject, int[]>();
     private final Ext<?> ext;
@@ -141,9 +141,7 @@ public final class Watcher extends AnnotationProvider {
     public @Override String annotateName(String name, Set<? extends FileObject> files) {
         return null;
     }
-    public @Override Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-        return null;
-    }
+
     public @Override String annotateNameHtml(String name, Set<? extends FileObject> files) {
         return null;
     }

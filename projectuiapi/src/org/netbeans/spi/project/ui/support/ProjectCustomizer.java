@@ -704,7 +704,7 @@ public final class ProjectCustomizer {
             FileObject fo = folder.getPrimaryFile();
             String dn = fo.getNameExt();
             try {
-                dn = fo.getFileSystem().getStatus().annotateName(fo.getNameExt(), Collections.singleton(fo));
+                dn = fo.getFileSystem().getDecorator().annotateName(fo.getNameExt(), Collections.singleton(fo));
             } catch (FileStateInvalidException ex) {
                 LOG.log(Level.WARNING, "Cannot retrieve display name for folder " + fo.getPath(), ex);
             }

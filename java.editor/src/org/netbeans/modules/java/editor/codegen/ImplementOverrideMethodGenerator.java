@@ -44,25 +44,28 @@
 package org.netbeans.modules.java.editor.codegen;
 
 import com.sun.source.util.TreePath;
+
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
 import org.netbeans.modules.java.editor.codegen.ui.ImplementOverridePanel;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
@@ -82,56 +85,67 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
 
         @Override
         public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
-            TreePath path = context.lookup(TreePath.class);
-            path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
-            if (component == null || controller == null || path == null)
+            if (component == null || controller == null) {
                 return ret;
+            }
+            TreePath path = context.lookup(TreePath.class);
+            path = controller.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+            if (path == null) {
+                return ret;
+            }
             try {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             } catch (IOException ioe) {
                 return ret;
             }
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (typeElement == null)
+            if (typeElement == null) {
                 return ret;
+            }
+            ElementUtilities eu = controller.getElementUtilities();
             if (typeElement.getKind().isClass() || typeElement.getKind().isInterface() && SourceVersion.RELEASE_8.compareTo(controller.getSourceVersion()) <= 0) {
-                Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
-                for (ExecutableElement method : GeneratorUtils.findUndefs(controller, typeElement)) {
+                Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<>();
+                for (ExecutableElement method : eu.findUnimplementedMethods(typeElement)) {
                     List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
                     if (descriptions == null) {
-                        descriptions = new ArrayList<ElementNode.Description>();
+                        descriptions = new ArrayList<>();
                         map.put(method.getEnclosingElement(), descriptions);
                     }
                     descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
                 }
-                List<ElementNode.Description> implementDescriptions = new ArrayList<ElementNode.Description>();
-                for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet())
+                List<ElementNode.Description> implementDescriptions = new ArrayList<>();
+                for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
                     implementDescriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
-                if (!implementDescriptions.isEmpty())
+                }
+                if (!implementDescriptions.isEmpty()) {
                     ret.add(new ImplementOverrideMethodGenerator(component, ElementHandle.create(typeElement), ElementNode.Description.create(implementDescriptions), true));
+                }
             }
             if (typeElement.getKind().isClass() || typeElement.getKind().isInterface()) {
-                Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<Element, List<ElementNode.Description>>();
-                ArrayList<Element> orderedElements = new ArrayList<Element>();
-                for (ExecutableElement method : GeneratorUtils.findOverridable(controller, typeElement)) {
+                Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<>();
+                ArrayList<Element> orderedElements = new ArrayList<>();
+                for (ExecutableElement method : eu.findOverridableMethods(typeElement)) {
                     List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
                     if (descriptions == null) {
-                        descriptions = new ArrayList<ElementNode.Description>();
+                        descriptions = new ArrayList<>();
                         Element e = method.getEnclosingElement();
                         map.put(e, descriptions);
-                        if( !orderedElements.contains( e ) )
+                        if( !orderedElements.contains( e ) ) {
                             orderedElements.add( e );
+                        }
                     }
                     descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
                 }
-                List<ElementNode.Description> overrideDescriptions = new ArrayList<ElementNode.Description>();
-                for (Element e : orderedElements)
+                List<ElementNode.Description> overrideDescriptions = new ArrayList<>();
+                for (Element e : orderedElements) {
                     overrideDescriptions.add(ElementNode.Description.create(controller, e, map.get( e ), false, false));
-                if (!overrideDescriptions.isEmpty())
+                }
+                if (!overrideDescriptions.isEmpty()) {
                     ret.add(new ImplementOverrideMethodGenerator(component, ElementHandle.create(typeElement), ElementNode.Description.create(overrideDescriptions), false));
+                }
             }
             return ret;
         }
@@ -173,12 +187,12 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             Element e = handle.resolve(copy);
                             TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
-                            path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+                            path = copy.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                             if (path == null) {
                                 String message = NbBundle.getMessage(ImplementOverrideMethodGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
-                                ArrayList<ExecutableElement> methodElements = new ArrayList<ExecutableElement>();
+                                ArrayList<ExecutableElement> methodElements = new ArrayList<>();
                                 for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods()) {
                                     ExecutableElement methodElement = (ExecutableElement)elementHandle.resolve(copy);
                                     if (methodElement != null) {
@@ -186,10 +200,11 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                                     }
                                 }
                                 if (!methodElements.isEmpty()) {
-                                    if (isImplement)
+                                    if (isImplement) {
                                         GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements, caretOffset);
-                                    else
+                                    } else {
                                         GeneratorUtils.generateMethodOverrides(copy, path, methodElements, caretOffset);
+                                    }
                                 }
                             }
                         }

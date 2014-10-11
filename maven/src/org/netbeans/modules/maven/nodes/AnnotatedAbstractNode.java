@@ -48,12 +48,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -185,7 +180,7 @@ public abstract class AnnotatedAbstractNode extends AbstractNode implements File
                     assert fo != null;
                     FileSystem fs = fo.getFileSystem();
                     assert fs != null;
-                    return fs.getStatus().annotateIcon(img, param, files);
+                    return FileUIUtils.getImageDecorator(fs).annotateIcon(img, param, files);
                 } catch (FileStateInvalidException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }

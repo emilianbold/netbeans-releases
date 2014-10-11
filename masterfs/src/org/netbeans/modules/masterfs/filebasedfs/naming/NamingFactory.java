@@ -50,7 +50,7 @@ import java.util.*;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * @author Radek Matous
@@ -60,7 +60,7 @@ public final class NamingFactory {
     private static int namesCount;
 
     public static FileNaming fromFile(File file) {
-        if (Utilities.isWindows() && file.getPath().length() == 2 && file.getPath().charAt(1) == ':') {
+        if (BaseUtilities.isWindows() && file.getPath().length() == 2 && file.getPath().charAt(1) == ':') {
             file = new File(file.getPath() + File.separator);
         }
         final Deque<FileInfo> queue = new ArrayDeque<FileInfo>();

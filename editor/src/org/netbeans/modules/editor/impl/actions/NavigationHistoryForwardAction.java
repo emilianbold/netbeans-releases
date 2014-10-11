@@ -48,6 +48,8 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -74,7 +76,7 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
     
     private static final Logger LOG = Logger.getLogger(NavigationHistoryForwardAction.class.getName());
     
-    private final JTextComponent component;
+    private final Reference<JTextComponent> componentRef;
     private final NavigationHistory.Waypoint waypoint;
     private final JPopupMenu popupMenu;
     private boolean updatePopupMenu = false;
@@ -86,7 +88,7 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
     private NavigationHistoryForwardAction(JTextComponent component, NavigationHistory.Waypoint waypoint, String actionName) {
         super(BaseKit.jumpListNextAction);
         
-        this.component = component;
+        this.componentRef = new WeakReference<>(component);
         this.waypoint = waypoint;
         
         putValue("menuText", NbBundle.getMessage(NavigationHistoryBackAction.class,
@@ -120,8 +122,9 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
                             }
 
                             if (lastFileName == null || !fileName.equals(lastFileName)) {
-                                if (lastFileName != null) {
-                                    popupMenu.add(new NavigationHistoryForwardAction(NavigationHistoryForwardAction.this.component, lastWpt,
+                                JTextComponent c = componentRef.get();
+                                if (lastFileName != null && c != null) {
+                                    popupMenu.add(new NavigationHistoryForwardAction(c, lastWpt,
                                             count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
                                 }
                                 lastFileName = fileName;
@@ -132,8 +135,9 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
                             }
                         }
 
-                        if (lastFileName != null) {
-                            popupMenu.add(new NavigationHistoryForwardAction(NavigationHistoryForwardAction.this.component, lastWpt,
+                        JTextComponent c = componentRef.get();
+                        if (lastFileName != null && c != null) {
+                            popupMenu.add(new NavigationHistoryForwardAction(c, lastWpt,
                                     count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
                         }
                     }

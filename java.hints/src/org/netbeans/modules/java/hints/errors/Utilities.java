@@ -479,13 +479,9 @@ public class Utilities {
             if (differences != null) {
                 for (Difference d : differences) {
                     if (d.getNewText() != null) { //to filter out possible removes
-                        final PositionRef start = d.getStartPosition();
-                        Document doc = start.getCloneableEditorSupport().getDocument();
+                        final Position start = d.getStartPosition();
+                        Document doc = d.openDocument();
 
-                        if (doc == null) {
-                            doc = start.getCloneableEditorSupport().openDocument();
-                        }
-                        
                         final Position[] pos = new Position[2];
                         final Document fdoc = doc;
                         

@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.junit;
 
+import org.netbeans.modules.junit.api.JUnitSettings;
+import org.netbeans.modules.junit.api.JUnitTestUtil;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.filesystems.FileObject;
 import com.sun.source.tree.AnnotationTree;
@@ -342,7 +344,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                 = findTestableMethods(workingCopy, srcTopClass);
         boolean srcHasTestableMethods = !srcMethods.isEmpty();
 
-        final String testClassSimpleName = TestUtil.getSimpleName(testClassName);
+        final String testClassSimpleName = JUnitTestUtil.getSimpleName(testClassName);
 
         ClassTree tstTopClass = findClass(testClassSimpleName, tstTopClasses);
         
@@ -1252,7 +1254,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 //            
 //            fillGeneral(tstClass);
 //
-//            List innerClasses = TestUtil.filterFeatures(srcClass,
+//            List innerClasses = JUnitTestUtil.filterFeatures(srcClass,
 //                                                        JavaClass.class);
 //
 //            /* Create test classes for inner classes: */
@@ -1268,9 +1270,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 //                 * and create one if it does not exist:
 //                 */
 //                String innerTestClsName
-//                        = TestUtil.getTestClassName(innerCls.getSimpleName());
+//                        = JUnitTestUtil.getTestClassName(innerCls.getSimpleName());
 //                JavaClass innerTestCls
-//                        = TestUtil.getClassBySimpleName(tstClass,
+//                        = JUnitTestUtil.getClassBySimpleName(tstClass,
 //                                                        innerTestClsName);
 //                if (innerTestCls == null) {
 //                    innerTestCls = tgtPkg.getJavaClass().createJavaClass();
@@ -1292,7 +1294,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 //            }
 //
 //            /* Create missing test methods: */
-//            List srcMethods = TestUtil.filterFeatures(srcClass, Method.class);
+//            List srcMethods = JUnitTestUtil.filterFeatures(srcClass, Method.class);
 //            for (Iterator i = srcMethods.iterator(); i.hasNext(); ) {
 //                Method sm = (Method) i.next();
 //                if (isMethodAcceptable(sm) &&
@@ -1339,7 +1341,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 //                                "testName",             // parameter name
 //                                Collections.EMPTY_LIST, // annotations
 //                                false,                  // not final
-//                                TestUtil.getTypeReference(   // type
+//                                JUnitTestUtil.getTypeReference(   // type
 //                                        tgtPkg, "String"),              //NOI18N
 //                                0,                      // dimCount
 //                                false);                 // is not var.arg.

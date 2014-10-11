@@ -51,8 +51,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.impl.Installer;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -69,7 +68,7 @@ import org.openide.util.test.TestFileUtils;
  *
  * @author Tomas Zezula
  */
-public class SnapshotSizeTest extends NbTestCase {
+public class SnapshotSizeTest extends ParsingTestBase {
 
     private static final String EXT = "foo";    //NOI18N
     private static final String MIME = "text/x-foo";    //NOI18N
@@ -149,7 +148,7 @@ public class SnapshotSizeTest extends NbTestCase {
     private static void setBigFileSize(int size) {
         if (size >= 0) {
             System.setProperty("parse.max.file.size", Integer.toString(size));  //NOI18N
-            assertEquals(Installer.MAX_FILE_SIZE, size);
+            assertEquals(Utilities.getMaxFileSize(), size);
         } else {
             System.getProperties().remove("parse.max.file.size");   //NOI18N
         }

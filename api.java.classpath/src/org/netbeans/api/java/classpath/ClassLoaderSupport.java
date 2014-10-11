@@ -45,12 +45,19 @@
 package org.netbeans.api.java.classpath;
 
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.spi.java.classpath.ClassLoaderFactory;
 
-import org.openide.execution.NbClassLoader;
 import org.openide.filesystems.*;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /** Classloader for the filesystem pool. Attaches itself as a listener to
@@ -59,17 +66,16 @@ import org.openide.util.WeakListeners;
  * on next request for current one new is created.
  *
  * @author Jaroslav Tulach
+ * @author Tomas Zezula
  */
-class ClassLoaderSupport extends NbClassLoader
-    implements FileChangeListener, PropertyChangeListener {
+class ClassLoaderSupport extends ClassLoader implements FileChangeListener, PropertyChangeListener {
     
-    public static ClassLoader create(ClassPath cp) {
-        return create (cp, ClassLoader.getSystemClassLoader());
+    static ClassLoader create(ClassPath cp) {
+        return new ClassLoaderSupport(cp, ClassLoader.getSystemClassLoader());
     }
-    
-    static ClassLoader create (final ClassPath cp, final ClassLoader parentClassLoader) {
-        return new ClassLoaderSupport(cp, parentClassLoader);
-    }
+
+    private static final ClassLoader NULL = new NullClassLoader();
+    private static final ClassLoaderFactory DEFAULT = new DefaultClassLoaderFactory();
 
     /** change listener */
     private org.openide.filesystems.FileChangeListener listener;
@@ -87,16 +93,26 @@ class ClassLoaderSupport extends NbClassLoader
     /**
      * The ClassPath to load classes from.
      */
-    private ClassPath   classPath;
+    private final ClassPath  classPath;
+    private final ClassLoader delegate;
 
     /** Constructor that attaches itself to the filesystem pool.
     */
     @SuppressWarnings("LeakingThisInConstructor")
     private ClassLoaderSupport (final ClassPath cp, final ClassLoader parentClassLoader) {
-        super(cp.getRoots(), parentClassLoader, null);
+        super(parentClassLoader);
         this.classPath = cp;
-
-        setDefaultPermissions(getAllPermissions());
+        ClassLoaderFactory factory = Lookup.getDefault().lookup(ClassLoaderFactory.class);
+        if (factory == null) {
+            factory = DEFAULT;
+        }
+        this.delegate = factory.createClassLoader(NULL, this.classPath.getRoots());
+        if (delegate == null) {
+            throw new IllegalStateException(String.format(
+                "ClassLoaderFactory %s : %s returned a null ClassLoader.",  //NOI18N
+                factory,
+                factory.getClass()));
+        }
         listener = FileUtil.weakFileChangeListener(this, null);
         propListener = WeakListeners.propertyChange (this, null);
         cp.addPropertyChangeListener(propListener);
@@ -110,7 +126,7 @@ class ClassLoaderSupport extends NbClassLoader
      */
     @Override
     protected Class findClass (String name) throws ClassNotFoundException {
-        Class c = super.findClass (name);
+        Class c = delegate.loadClass (name);
         if (c != null) {
             org.openide.filesystems.FileObject fo;
             String resName = name.replace('.', '/') + ".class"; // NOI18N
@@ -131,7 +147,7 @@ class ClassLoaderSupport extends NbClassLoader
      */
     @Override
     public URL findResource (String name) {
-        URL url = super.findResource (name);
+        URL url = delegate.getResource (name);
         if (url != null) {
             FileObject fo = classPath.findResource(name);
             if (fo != null) {
@@ -291,6 +307,51 @@ class ClassLoaderSupport extends NbClassLoader
             if (e.getValue() == Boolean.TRUE) {
                 ((FileObject)e.getKey()).removeFileChangeListener(listener);
             }
+        }
+    }
+
+    private static final class NullClassLoader extends ClassLoader {
+        NullClassLoader() {
+            super(null);
+        }
+
+        @Override
+        protected Package getPackage(String name) {
+            return null;
+        }
+
+        @Override
+        protected Package[] getPackages() {
+            return new Package[0];
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            return null;
+        }
+
+        @Override
+        public URL getResource(String name) {
+            return null;
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            return Collections.enumeration(Collections.<URL>emptySet());
+        }
+    }
+
+    private static final class DefaultClassLoaderFactory implements ClassLoaderFactory {
+        @Override
+        @NonNull
+        public ClassLoader createClassLoader(
+            @NullAllowed final ClassLoader parentLoader,
+            @NonNull FileObject... roots) {
+            final URL[] urls = new URL[roots.length];
+            for (int i=0; i< roots.length; i++) {
+                urls[i] = roots[i].toURL();
+            }
+            return new URLClassLoader(urls, parentLoader);
         }
     }
 }

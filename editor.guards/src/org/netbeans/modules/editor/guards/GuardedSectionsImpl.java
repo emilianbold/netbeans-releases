@@ -63,13 +63,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
-import org.openide.text.NbDocument;
 
 /**
  *
@@ -178,7 +179,7 @@ public final class GuardedSectionsImpl {
         final SimpleSectionImpl[] sect = new SimpleSectionImpl[1];
         final BadLocationException[] blex = new BadLocationException[1];
         
-        NbDocument.runAtomic(doc, new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
                 try {
                     int where = pos.getOffset();
@@ -189,8 +190,8 @@ public final class GuardedSectionsImpl {
                     blex[0] = ex;
                 }
             }
-        });
-        
+        };
+        doRunAtomic(doc, r);
         if (blex[0] == null) {
             synchronized (this.sections) {
                 sections.put(name, sect[0]);
@@ -202,6 +203,11 @@ public final class GuardedSectionsImpl {
                     ).initCause(blex[0]);
         }
 
+    }
+    
+    static void doRunAtomic(Document doc, Runnable r) {
+        AtomicLockDocument ald = LineDocumentUtils.asRequired(doc, AtomicLockDocument.class);
+        ald.runAtomic(r);
     }
     
     /** Create new interior guarded section at a specified place.
@@ -221,7 +227,7 @@ public final class GuardedSectionsImpl {
         final InteriorSectionImpl[] sect = new InteriorSectionImpl[1];
         final BadLocationException[] blex = new BadLocationException[1];
         
-        NbDocument.runAtomic(doc, new Runnable() {
+        Runnable r = new Runnable() {
             public void run() {
                 try {
                     int where = pos.getOffset();
@@ -238,7 +244,8 @@ public final class GuardedSectionsImpl {
                     blex[0] = ex;
                 }
             }
-        });
+        };
+        doRunAtomic(doc, r);
         
         if (blex[0] == null) {
             synchronized (this.sections) {

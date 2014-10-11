@@ -46,7 +46,6 @@ package org.netbeans.modules.editor.guards;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.openide.text.NbDocument;
 
 /**
  * A range bounded by two {@link Position}s. This class is derived from
@@ -245,7 +244,7 @@ public final class PositionBounds {
                 }
             };
 
-        NbDocument.runAtomic(doc, run);
+        GuardedSectionsImpl.doRunAtomic(doc, run);
 
         if (hold[0] != null) {
             throw hold[0];

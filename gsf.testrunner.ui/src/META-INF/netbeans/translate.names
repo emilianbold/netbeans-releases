@@ -1,0 +1,4 @@
+# Changed filename of actions
+Actions/UnitTests/org-netbeans-modules-gsf-testrunner-TestCreatorAction.instance=Actions/UnitTests/org-netbeans-modules-gsf-testrunner-ui-TestCreatorAction.instance
+Actions/CommonTestRunner/org-netbeans-modules-gsf-testrunner-TestMethodRunnerAction.instance=Actions/CommonTestRunner/org-netbeans-modules-gsf-testrunner-ui-TestMethodRunnerAction.instance
+Actions/CommonTestRunner/org-netbeans-modules-gsf-testrunner-TestMethodDebuggerAction.instance=Actions/CommonTestRunner/org-netbeans-modules-gsf-testrunner-ui-TestMethodDebuggerAction.instance

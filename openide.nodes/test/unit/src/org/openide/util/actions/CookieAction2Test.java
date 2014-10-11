@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import org.netbeans.junit.MemoryFilter;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.OpenCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -236,6 +237,7 @@ public class CookieAction2Test extends NbTestCase {
         public void set(Lookup lkp) {
             setLookups(new Lookup[]  {
                 lkp,
+                Lookups.singleton(new NbMutexEventProvider()),
                 Lookups.singleton(this)
             });
         }

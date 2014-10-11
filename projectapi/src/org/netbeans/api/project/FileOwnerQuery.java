@@ -57,7 +57,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.Mutex;
 
 /**
  * Find the project which owns a file.
@@ -77,11 +76,24 @@ public class FileOwnerQuery {
     // XXX acquire the appropriate ProjectManager.mutex for the duration of calls
 
     private static final Logger LOG = Logger.getLogger(FileOwnerQuery.class.getName());
-
-    private static Lookup.Result<FileOwnerQueryImplementation> implementations;
+    private static final Lookup.Result<FileOwnerQueryImplementation> implementations;
+    static {
+        implementations = Lookup.getDefault().lookupResult(FileOwnerQueryImplementation.class);
+        implementations.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged (LookupEvent ev) {
+                synchronized (FileOwnerQuery.class) {
+                    cache = null;
+                    changeId++;
+                }
+            }});
+    }
 
     /** Cache of all available FileOwnerQueryImplementation instances. */
-    private static volatile List<FileOwnerQueryImplementation> cache;
+    //@GuardedBy("FileOwnerQuery.class")
+    private static List<FileOwnerQueryImplementation> cache;
+    //@GuardedBy("FileOwnerQuery.class")
+    private static long changeId;
     
     private FileOwnerQuery() {}
 
@@ -268,29 +280,24 @@ public class FileOwnerQuery {
      */
 
     private static List<FileOwnerQueryImplementation> getInstances() {
-        final List<FileOwnerQueryImplementation> fpRes = cache;
-        if (fpRes != null) {
-            return fpRes;
+        List<FileOwnerQueryImplementation> res;
+        long currentId;
+        synchronized (FileOwnerQuery.class) {
+            res = cache;
+            currentId = changeId;
         }
-        return ProjectManager.mutex().readAccess(new Mutex.Action<List<FileOwnerQueryImplementation>>() {
-            @Override
-            public List<FileOwnerQueryImplementation> run() {
-                synchronized (FileOwnerQuery.class) {
-                    if (implementations == null) {
-                        implementations = Lookup.getDefault().lookupResult(FileOwnerQueryImplementation.class);
-                        implementations.addLookupListener(new LookupListener() {
-                            public void resultChanged (LookupEvent ev) {
-                                cache = null;
-                            }});
-                    }
-                    List<FileOwnerQueryImplementation> res = cache;
-                    if (res == null) {
-                        cache = res = new ArrayList<FileOwnerQueryImplementation>(implementations.allInstances());
-                    }
-                    return res;
-                }
+        if (res != null) {
+            return res;
+        }
+        res = new ArrayList<FileOwnerQueryImplementation>(implementations.allInstances());
+        synchronized (FileOwnerQuery.class) {
+            if (currentId == changeId) {
+                cache = res;
+            } else if (cache != null) {
+                res = cache;
             }
-        });
+            return res;
+        }
         
     }
     

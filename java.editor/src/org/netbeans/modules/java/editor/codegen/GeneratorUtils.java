@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
@@ -51,36 +50,22 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.Trees;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Types;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
@@ -88,13 +73,11 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CodeStyle;
-import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -113,92 +96,12 @@ import org.openide.util.NbBundle;
 public class GeneratorUtils {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(GeneratorUtils.class.getName());
-    private static final String ERROR = "<error>"; //NOI18N
     public static final int GETTERS_ONLY = 1;
     public static final int SETTERS_ONLY = 2;
 
     private GeneratorUtils() {
     }
     
-    public static List<? extends ExecutableElement> findUndefs(CompilationInfo info, TypeElement impl) {
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
-            ERR.log(ErrorManager.INFORMATIONAL, "findUndefs(" + info + ", " + impl + ")");
-        List<? extends ExecutableElement> undef = info.getElementUtilities().findUnimplementedMethods(impl);
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
-            ERR.log(ErrorManager.INFORMATIONAL, "undef=" + undef);
-        return undef;
-    }
-    
-    public static List<? extends ExecutableElement> findOverridable(CompilationInfo info, TypeElement impl) {
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
-            ERR.log(ErrorManager.INFORMATIONAL, "findOverridable(" + info + ", " + impl + ")");
-        List<ExecutableElement> overridable = new ArrayList<ExecutableElement>();
-        final Set<Modifier> notOverridable = EnumSet.copyOf(NOT_OVERRIDABLE);
-        if (!impl.getModifiers().contains(Modifier.ABSTRACT)) {
-            notOverridable.add(Modifier.ABSTRACT);
-        }
-        for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(impl))) {
-            Set<Modifier> set = EnumSet.copyOf(notOverridable);                
-            set.removeAll(ee.getModifiers());                
-            if (set.size() == notOverridable.size()
-                    && !overridesPackagePrivateOutsidePackage(ee, impl) //do not offer package private methods in case they're from different package
-                    && !isOverridden(info, ee, impl)) {
-                overridable.add(ee);
-            }
-        }
-        Collections.reverse(overridable);
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
-            ERR.log(ErrorManager.INFORMATIONAL, "overridable=" + overridable);
-
-        return overridable;
-    }
-
-    public static Map<? extends TypeElement, ? extends List<? extends VariableElement>> findAllAccessibleFields(CompilationInfo info, TypeElement clazz) {
-        Map<TypeElement, List<? extends VariableElement>> result = new HashMap<TypeElement, List<? extends VariableElement>>();
-
-        result.put(clazz, findAllAccessibleFields(info, clazz, clazz));
-
-        for (TypeElement te : getAllParents(clazz)) {
-            result.put(te, findAllAccessibleFields(info, clazz, te));
-        }
-
-        return result;
-    }
-    
-    public static void scanForFieldsAndConstructors(CompilationInfo info, final TreePath clsPath, final Set<VariableElement> initializedFields, final Set<VariableElement> uninitializedFields, final List<ExecutableElement> constructors) {
-        final Trees trees = info.getTrees();
-        new TreePathScanner<Void, Boolean>() {
-            @Override
-            public Void visitVariable(VariableTree node, Boolean p) {
-                if (ERROR.contentEquals(node.getName()))
-                    return null;
-                Element el = trees.getElement(getCurrentPath());
-                if (el != null && el.getKind() == ElementKind.FIELD && !el.getModifiers().contains(Modifier.STATIC) && node.getInitializer() == null && !initializedFields.remove(el))
-                    uninitializedFields.add((VariableElement)el);
-                return null;
-            }
-            @Override
-            public Void visitAssignment(AssignmentTree node, Boolean p) {
-                Element el = trees.getElement(new TreePath(getCurrentPath(), node.getVariable()));
-                if (el != null && el.getKind() == ElementKind.FIELD && !uninitializedFields.remove(el))
-                    initializedFields.add((VariableElement)el);
-                return null;
-            }
-            @Override
-            public Void visitClass(ClassTree node, Boolean p) {
-                //do not analyse the inner classes:
-                return p ? super.visitClass(node, false) : null;
-            }
-            @Override
-            public Void visitMethod(MethodTree node, Boolean p) {
-                Element el = trees.getElement(getCurrentPath());
-                if (el != null && el.getKind() == ElementKind.CONSTRUCTOR)
-                    constructors.add((ExecutableElement)el);
-                return null;
-            }
-        }.scan(clsPath, Boolean.TRUE);
-    }
-
     public static void generateAllAbstractMethodImplementations(WorkingCopy wc, TreePath path) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
@@ -262,7 +165,7 @@ public class GeneratorUtils {
         ClassTree clazz = (ClassTree)path.getLeaf();
         TypeElement te = (TypeElement) wc.getTrees().getElement(path);
         GeneratorUtilities gu = GeneratorUtilities.get(wc);
-        List<Tree> members = new ArrayList<Tree>();
+        List<Tree> members = new ArrayList<>();
         for (ExecutableElement inheritedConstructor : inheritedConstructors) {
             members.add(gu.createConstructor(te, initFields, inheritedConstructor));
         }
@@ -275,68 +178,34 @@ public class GeneratorUtils {
         if (te != null) {
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
             ClassTree clazz = (ClassTree)path.getLeaf();
-            List<Tree> members = new ArrayList<Tree>();
+            List<Tree> members = new ArrayList<>();
             for(VariableElement element : fields) {
-                if (type != SETTERS_ONLY)
+                if (type != SETTERS_ONLY) {
                     members.add(gu.createGetter(te, element));
-                if (type != GETTERS_ONLY)
+                }
+                if (type != GETTERS_ONLY) {
                     members.add(gu.createSetter(te, element));
+                }
             }
             wc.rewrite(clazz, insertClassMembers(wc, clazz, members, offset));
         }
     }
     
-    public static boolean hasGetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods, CodeStyle cs) {
-        CharSequence name = field.getSimpleName();
-        assert name.length() > 0;
-        TypeMirror type = field.asType();
-        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
-        String getterName = CodeStyleUtils.computeGetterName(name, org.netbeans.modules.editor.java.Utilities.isBoolean(type), isStatic, cs);
-        Types types = info.getTypes();
-        List<ExecutableElement> candidates = methods.get(getterName);
-        if (candidates != null) {
-            for (ExecutableElement candidate : candidates) {
-                if ((!candidate.getModifiers().contains(Modifier.ABSTRACT) || candidate.getEnclosingElement() == typeElement)
-                        && candidate.getParameters().isEmpty()
-                        && types.isSameType(candidate.getReturnType(), type))
-                    return true;
-            }
-        }
-        return false;
-    }
-    
-    public static boolean hasSetter(CompilationInfo info, TypeElement typeElement, VariableElement field, Map<String, List<ExecutableElement>> methods, CodeStyle cs) {
-        CharSequence name = field.getSimpleName();
-        assert name.length() > 0;
-        TypeMirror type = field.asType();
-        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
-        String setterName = CodeStyleUtils.computeSetterName(name, isStatic, cs);
-        Types types = info.getTypes();
-        List<ExecutableElement> candidates = methods.get(setterName);
-        if (candidates != null) {
-            for (ExecutableElement candidate : candidates) {
-                if ((!candidate.getModifiers().contains(Modifier.ABSTRACT) || candidate.getEnclosingElement() == typeElement)
-                        && candidate.getReturnType().getKind() == TypeKind.VOID
-                        && candidate.getParameters().size() == 1
-                        && types.isSameType(candidate.getParameters().get(0).asType(), type))
-                    return true;
-            }
-        }
-        return false;
-    }
-    
     public static ClassTree insertClassMembers(WorkingCopy wc, ClassTree clazz, List<? extends Tree> members, int offset) throws IllegalStateException {
-        if (members.isEmpty())
+        if (members.isEmpty()) {
             return clazz;
-        if (offset < 0 || getCodeStyle(wc).getClassMemberInsertionPoint() != CodeStyle.InsertionPoint.CARET_LOCATION)
+        }
+        if (offset < 0 || getCodeStyle(wc).getClassMemberInsertionPoint() != CodeStyle.InsertionPoint.CARET_LOCATION) {
             return GeneratorUtilities.get(wc).insertClassMembers(clazz, members);
+        }
         int index = 0;
         SourcePositions sp = wc.getTrees().getSourcePositions();
         GuardedDocument gdoc = null;
         try {
             Document doc = wc.getDocument();
-            if (doc != null && doc instanceof GuardedDocument)
+            if (doc != null && doc instanceof GuardedDocument) {
                 gdoc = (GuardedDocument)doc;
+            }
         } catch (IOException ioe) {}
         Tree lastMember = null;
         Tree nextMember = null;
@@ -493,62 +362,6 @@ public class GeneratorUtils {
         return CodeStyle.getDefault((Document)null);
     }
     
-    private static List<? extends VariableElement> findAllAccessibleFields(CompilationInfo info, TypeElement accessibleFrom, TypeElement toScan) {
-        List<VariableElement> result = new ArrayList<VariableElement>();
-
-        for (VariableElement ve : ElementFilter.fieldsIn(toScan.getEnclosedElements())) {
-            //check if ve is accessible from accessibleFrom:
-            if (ve.getModifiers().contains(Modifier.PUBLIC)) {
-                result.add(ve);
-                continue;
-            }
-            if (ve.getModifiers().contains(Modifier.PRIVATE)) {
-                if (accessibleFrom == toScan)
-                    result.add(ve);
-                continue;
-            }
-            if (ve.getModifiers().contains(Modifier.PROTECTED)) {
-                if (getAllParents(accessibleFrom).contains(toScan))
-                    result.add(ve);
-                continue;
-            }
-            //TODO:package private:
-        }
-
-        return result;
-    }
-    
-    public static Collection<TypeElement> getAllParents(TypeElement of) {
-        Set<TypeElement> result = new HashSet<TypeElement>();
-        
-        for (TypeMirror t : of.getInterfaces()) {
-            TypeElement te = (TypeElement) ((DeclaredType)t).asElement();
-            
-            if (te != null) {
-                result.add(te);
-                result.addAll(getAllParents(te));
-            } else {
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log(ErrorManager.INFORMATIONAL, "te=null, t=" + t);
-                }
-            }
-        }
-        
-        TypeMirror sup = of.getSuperclass();
-        TypeElement te = sup.getKind() == TypeKind.DECLARED ? (TypeElement) ((DeclaredType)sup).asElement() : null;
-        
-        if (te != null) {
-            result.add(te);
-            result.addAll(getAllParents(te));
-        } else {
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "te=null, t=" + of);
-            }
-        }
-        
-        return result;
-    }
-
     /**
      * @param info tested file's info
      * @return true if SourceVersion of source represented by provided info supports Override
@@ -559,7 +372,7 @@ public class GeneratorUtils {
     }
 
     private static List<TypeElement> getAllClasses(TypeElement of) {
-        List<TypeElement> result = new ArrayList<TypeElement>();
+        List<TypeElement> result = new ArrayList<>();
         TypeMirror sup = of.getSuperclass();
         TypeElement te = sup.getKind() == TypeKind.DECLARED ? (TypeElement) ((DeclaredType)sup).asElement() : null;
         
@@ -576,52 +389,6 @@ public class GeneratorUtils {
         return result;
     }
     
-    private static boolean isOverridden(CompilationInfo info, ExecutableElement methodBase, TypeElement origin) {
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "isOverridden(" + info + ", " + methodBase + ", " + origin + ")");
-        }
-        
-        Element impl = info.getElementUtilities().getImplementationOf(methodBase, origin);
-        if (impl == null || impl == methodBase && origin != methodBase.getEnclosingElement()) {
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "no overriding methods");
-            }
-            return false;
-        }
-
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "overrides:");
-            ERR.log(ErrorManager.INFORMATIONAL, "impl=" + impl.getEnclosingElement());
-            ERR.log(ErrorManager.INFORMATIONAL, "methodImpl=" + impl);
-        }
-                
-        return true;
-    }
-
-    private static final Set<Modifier> NOT_OVERRIDABLE = EnumSet.of(Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);
-
-    public static boolean isAccessible(TypeElement from, Element what) {
-        if (what.getModifiers().contains(Modifier.PUBLIC))
-            return true;
-
-        TypeElement fromTopLevel = SourceUtils.getOutermostEnclosingTypeElement(from);
-        TypeElement whatTopLevel = SourceUtils.getOutermostEnclosingTypeElement(what);
-
-        if (fromTopLevel.equals(whatTopLevel))
-            return true;
-
-        if (what.getModifiers().contains(Modifier.PRIVATE))
-            return false;
-
-        if (what.getModifiers().contains(Modifier.PROTECTED)) {
-            if (getAllClasses(fromTopLevel).contains(SourceUtils.getEnclosingTypeElement(what)))
-                return true;
-        }
-
-        //package private:
-        return ((PackageElement) fromTopLevel.getEnclosingElement()).getQualifiedName().toString().contentEquals(((PackageElement) whatTopLevel.getEnclosingElement()).getQualifiedName());
-    }
-    
     static DialogDescriptor createDialogDescriptor( JComponent content, String label ) {
         JButton[] buttons = new JButton[2];
         buttons[0] = new JButton(NbBundle.getMessage(GeneratorUtils.class, "LBL_generate_button") );
@@ -631,28 +398,6 @@ public class GeneratorUtils {
         
     }
     
-    /**
-     * Detects if this element overrides package private element from superclass
-     * outside package
-     * @param ee elememt to test
-     * @return true if it does
-     */ 
-    private static boolean overridesPackagePrivateOutsidePackage(ExecutableElement ee, TypeElement impl) {
-        String elemPackageName = getPackageName(ee);
-        String currentPackageName = getPackageName(impl);
-        if(!ee.getModifiers().contains(Modifier.PRIVATE) && !ee.getModifiers().contains(Modifier.PUBLIC) && !ee.getModifiers().contains(Modifier.PROTECTED) && !currentPackageName.equals(elemPackageName))
-            return true;
-        else
-            return false;
-    }
-
-    private static String getPackageName(Element e) {
-        while (e.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
-            e = e.getEnclosingElement();
-        }
-        return ((PackageElement) e.getEnclosingElement()).getQualifiedName().toString();
-    }
-
     public static void guardedCommit(JTextComponent component, ModificationResult mr) throws IOException {
         try {
             mr.commit();

@@ -178,15 +178,15 @@ public final class  UiUtils {
     @Deprecated
     public static final class PrintPart {
         private PrintPart() {}
-        public static final String ANNOTATIONS = "%annotations"; //NOI18N
-        public static final String NAME = "%name%"; //NOI18N
-        public static final String TYPE = "%type%"; //NOI18N
-        public static final String THROWS = "%throws%"; //NOI18N
-        public static final String IMPLEMENTS = "%implements%"; //NOI18N
-        public static final String EXTENDS = "%extends%"; //NOI18N
-        public static final String TYPEPARAMETERS = "%typeparameters%"; //NOI18N
-        public static final String FLAGS = "%flags%"; //NOI18N
-        public static final String PARAMETERS = "%parameters%"; //NOI18N
+        public static final String ANNOTATIONS = VeryPretty.ANNOTATIONS;
+        public static final String NAME = VeryPretty.NAME;
+        public static final String TYPE = VeryPretty.TYPE;
+        public static final String THROWS = VeryPretty.THROWS;
+        public static final String IMPLEMENTS = VeryPretty.IMPLEMENTS;
+        public static final String EXTENDS = VeryPretty.EXTENDS;
+        public static final String TYPEPARAMETERS = VeryPretty.TYPEPARAMETERS;
+        public static final String FLAGS = VeryPretty.FLAGS;
+        public static final String PARAMETERS = VeryPretty.PARAMETERS;
     }
     
     /**

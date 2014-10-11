@@ -47,7 +47,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -57,17 +56,12 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.parsing.api.ParsingTestBase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTest;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -86,10 +80,14 @@ import org.openide.util.RequestProcessor;
 /**
  * @author Tomas Zezula
  */
-public class CancelSupportTest extends NbTestCase {
+public class CancelSupportTest extends ParsingTestBase {
 
+    public static final int TIME = Integer.getInteger("RepositoryUpdaterTest.timeout", 5000);                 //NOI18N
+    public static final int NEGATIVE_TIME = Integer.getInteger("RepositoryUpdaterTest.negative-timeout", 5000); //NOI18N
+    /*
     private static final int TIME = RepositoryUpdaterTest.TIME;
     public static final int NEGATIVE_TIME = RepositoryUpdaterTest.NEGATIVE_TIME;
+    */
     private static final String EXTENSION = "test"; //NOI18N
     private static final String MIME = "text/x-test";   //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(CancelSupportTest.class);
@@ -121,7 +119,6 @@ public class CancelSupportTest extends NbTestCase {
         cache = SourceAccessor.getINSTANCE().getCache(src);
         task = new TestTask();
         cancelTask = new CancelTask();
-        Utilities.setIndexingStatus(new IS());
         tpLogger = Logger.getLogger(TaskProcessor.class.getName());
         tpLevel = tpLogger.getLevel();
         tpLogger.setLevel(Level.FINE);
@@ -134,7 +131,6 @@ public class CancelSupportTest extends NbTestCase {
         task.signalProgress();
         tpLogger.removeHandler(tpHandler);
         tpLogger.setLevel(tpLevel);
-        Utilities.setIndexingStatus(null);
         TaskProcessor.removePhaseCompletionTasks(Arrays.asList(task, cancelTask), src);
         super.tearDown();        
     }
@@ -357,12 +353,14 @@ public class CancelSupportTest extends NbTestCase {
         }
     }
 
+    /*
     private static final class IS implements Utilities.IndexingStatus {
         @Override
         public Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
             return Collections.<RepositoryUpdater.IndexingState>emptySet();
         }
     }
+    */
 
     private static interface Action {
         void run(Object[] params) throws Exception;

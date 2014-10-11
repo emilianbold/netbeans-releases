@@ -45,8 +45,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.sampler.Sampler;
+import org.netbeans.modules.parsing.implspi.ProfilerSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Self profiling Support
@@ -55,15 +56,21 @@ import org.openide.util.Exceptions;
 final class SelfProfile {
     private static final Logger LOG = Logger.getLogger(SelfProfile.class.getName());
     
-    private final Sampler profiler;
+    private final ProfilerSupport profiler;
     private final long time;
     private volatile boolean profiling;
 
     SelfProfile (long when) {
         time = when;
-        this.profiler = Sampler.createSampler("taskcancel"); // NOI18N;
+        
+        ProfilerSupport.Factory f = Lookup.getDefault().lookup(ProfilerSupport.Factory.class);
+        if (f != null) {
+            this.profiler = f.create("taskcancel"); // NOI18N
+        } else {
+            this.profiler = null;
+        }
         this.profiling = true;
-
+    
         LOG.finest("STARTED");  //NOI18N
         if (profiler != null) {
             profiler.start();
@@ -115,7 +122,7 @@ final class SelfProfile {
             DataOutputStream dos = new DataOutputStream(out);
             LOG.finest("LOGGED");  //NOI18N
             if (profiler != null) {
-                profiler.stopAndWriteTo(dos);
+                profiler.stopAndSnapshot(dos);
                 LOG.log(
                     Level.FINE,
                     "Obtaining snapshot for {0} ms.",   //NOI18N

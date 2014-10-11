@@ -91,11 +91,11 @@ import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexReaderInjection;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * Note - there can be only a single IndexWriter at a time for the dir index. For consistency, the Writer is
@@ -902,7 +902,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     //The posix::fsync(int) is very slow on Linux ext3,
                     //minimize number of files sync is done on.
                     //http://netbeans.org/bugzilla/show_bug.cgi?id=208224
-                    final boolean alwaysCFS = Utilities.getOperatingSystem() == Utilities.OS_LINUX;
+                    final boolean alwaysCFS = BaseUtilities.getOperatingSystem() == BaseUtilities.OS_LINUX;
                     if (alwaysCFS) {
                         //TieredMergePolicy has better performance:
                         //http://blog.mikemccandless.com/2011/02/visualizing-lucenes-segment-merges.html
@@ -1045,7 +1045,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         
         private synchronized void hit() {
             if (reader != null) {
-                final URI uri = Utilities.toURI(folder);
+                final URI uri = BaseUtilities.toURI(folder);
                 if (memDir != null) {
                     IndexCacheFactory.getDefault().getRAMCache().put(uri, this);
                     if (ref != null) {
@@ -1204,7 +1204,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             private final AtomicLong size = new AtomicLong();  //clearHRef may be called by more concurrently (read lock).
 
             private CleanReference(final RAMDirectory[] dir) {
-                super (dir, Utilities.activeReferenceQueue());
+                super (dir, BaseUtilities.activeReferenceQueue());
                 final IndexCacheFactory.RAMContoller c = IndexCacheFactory.getDefault().getRAMController();
                 final boolean doHardRef = !c.isFull();
                 if (doHardRef) {

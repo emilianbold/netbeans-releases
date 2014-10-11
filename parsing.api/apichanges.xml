@@ -110,6 +110,68 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="Source.Context.Lookup">
+          <api name="ParsingAPI"/>
+          <summary>Source provides access to Lookup</summary>
+          <version major="9" minor="2"/>
+          <date day="18" month="6" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility source="compatible" binary="compatible" addition="yes"/>
+          <description>
+              <p>
+                  In the presence of multiple scopes or users, the parsing system needs
+                  to access the proper context even though the work is done by different 
+                  threads. It also has to propagate the proper context back to the user
+                  tasks.
+              </p>
+              <p>
+                  Source can now be created with a Lookup that provides such proper context,
+                  or automatically uses Lookup.getDefault if no explicit Lookup is given.
+              </p>
+          </description>
+          <issue number="247161"/>
+      </change>
+    <change id="Parsing.Netbeans.Cleanup">
+          <api name="ParsingAPI"/>
+          <summary>Parsing API cleaned up from IDE dependencies</summary>
+          <version major="9" minor="1"/>
+          <date day="6" month="5" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility source="compatible" binary="compatible" semantic="incompatible" modification="yes"/>
+          <description>
+              <p>
+                The Parsing API dependended on Windows System, Editor Registry, Data Systems and other IDE artifacts. All those
+                dependencies were externalized as 'private SPIs' in the package <code>org.netbeans.modules.parsing.impspi</code>.
+                The implementation that uses the other NetBeans IDE APIs resides in module <code>parsing.nb</code>.
+                No API change was done, but the execution now relies on a proper binding to be present in the running application
+                or a testsuite.
+              </p>
+              <p>
+                Basic testing environment was provided in unit tests, which implements basic of the externalized functions. However
+                if a test need to check reparsing after document change, or data object change. Full implementation may be needed -
+                the implementor can use a <code>test-dependency</code> to the <code>org.netbeans.modules.parsing.nb</code> module.
+              </p>
+          </description>
+      </change>
+      <change id="Separate.Parsing.Indexing">
+          <api name="ParsingAPI"/>
+          <summary>Indexing API separated to its own module</summary>
+          <version major="9" minor="0"/>
+          <date day="20" month="4" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility source="incompatible" binary="compatible" semantic="compatible" modification="yes"/>
+          <description>
+              <p>
+                  Historically the module offered both APIs for Parsing (invoking parser, implementing parser) and
+                  Indexing (refresh index, index SPIs). Those APIs are typically used by unrelated pieces of code,
+                  possibly with the exception of "refresh" actions.
+              </p>
+              <p>
+                  The indexing now resides separately in its <code>parsing.indexing</code> module. Binary compatibility
+                  is kept by using module-auto-deps.xml.
+              </p>
+          </description>
+      </change>
       <change id="SuspendStatus.isSuspendSupported">
           <api name="ParsingAPI"/>
           <summary>Added <code>SuspendStatus.isSuspendSupported</code></summary>

@@ -49,6 +49,20 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="image.for.files">
+            <api name="masterfs"/>
+            <summary>Split image handling into UI module</summary>
+            <version major="2" minor="50"/>
+            <date day="3" month="10" year="2014"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="incompatible" deletion="yes"/>
+            <description>
+                Image handling moved to <code>masterfs.ui</code> module, AnnotationProvider
+                API changed.
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="BaseAnnotationProvider"/>
+            <issue number="247200"/>
+        </change>
         <change id="actions.for.files">
             <api name="masterfs"/>
             <summary>Deprecating actions(Set of FileObjects)</summary>

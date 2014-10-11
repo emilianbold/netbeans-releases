@@ -220,5 +220,16 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-maven-util" value="${javadoc.web.root}/org-netbeans-modules-maven-util"/>
 <property name="javadoc.docs.org-netbeans-modules-bugtracking" value="${javadoc.web.root}/org-netbeans-modules-bugtracking"/>
 <property name="javadoc.docs.org-netbeans-core-multitabs" value="${javadoc.web.root}/org-netbeans-core-multitabs"/>
+<property name="javadoc.docs.org-openide-util-base" value="${javadoc.web.root}/org-openide-util-base"/>
 <property name="javadoc.docs.org-netbeans-api-maven" value="${javadoc.web.root}/org-netbeans-api-maven"/>
 <property name="javadoc.docs.org-netbeans-api-html4j" value="${javadoc.web.root}/org-netbeans-api-html4j"/>
+<property name="javadoc.docs.org-openide-filesystems-compat8" value="${javadoc.web.root}/org-openide-filesystems-compat8"/>
+<property name="javadoc.docs.org-netbeans-modules-parsing-indexing" value="${javadoc.web.root}/org-netbeans-modules-parsing-indexing"/>
+<property name="javadoc.docs.org-netbeans-modules-extexecution-base" value="${javadoc.web.root}/org-netbeans-modules-extexecution-base"/>
+<property name="javadoc.docs.org-netbeans-modules-java-platform-ui" value="${javadoc.web.root}/org-netbeans-modules-java-platform-ui"/>
+<property name="javadoc.docs.org-netbeans-modules-projectuiapi-base" value="${javadoc.web.root}/org-netbeans-modules-projectuiapi-base"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-document" value="${javadoc.web.root}/org-netbeans-modules-editor-document"/>
+<property name="javadoc.docs.org-netbeans-modules-java-source-base" value="${javadoc.web.root}/org-netbeans-modules-java-source-base"/>
+<property name="javadoc.docs.org-netbeans-modules-project-ant-ui" value="${javadoc.web.root}/org-netbeans-modules-project-ant-ui"/>
+<property name="javadoc.docs.org-netbeans-modules-java-project-ui" value="${javadoc.web.root}/org-netbeans-modules-java-project-ui"/>
+<property name="javadoc.docs.org-netbeans-modules-xml-catalog-ui" value="${javadoc.web.root}/org-netbeans-modules-xml-catalog-ui"/>

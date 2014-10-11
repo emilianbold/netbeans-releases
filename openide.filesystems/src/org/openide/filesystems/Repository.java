@@ -631,7 +631,7 @@ public class Repository implements Serializable {
         while (iter.hasNext()) {
             FileSystem fs = (FileSystem) iter.next();
 
-            if (!fs.isDefault() && !fs.isPersistent()) {
+            if (!fs.isDefault()) {
                 oos.writeObject(new NbMarshalledObject(fs));
             }
         }
@@ -688,7 +688,7 @@ public class Repository implements Serializable {
         while (ee.hasMoreElements()) {
             fs = ee.nextElement();
 
-            if (!fs.isPersistent()) {
+            if (!fs.isDefault()) {
                 removeFileSystem(fs);
             }
         }

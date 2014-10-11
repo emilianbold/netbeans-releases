@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.zip.CRC32;
+import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.openide.util.NbPreferences;
 
 /**

@@ -68,10 +68,10 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.Status;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.ImageDecorator;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -255,8 +255,8 @@ public class ProjectsRootNodeTest extends NbTestCase {
             TestFS() throws Exception {
                 super(FileUtil.createMemoryFileSystem());
             }
-            public @Override Status getStatus() {
-                return new HtmlStatus() {
+            
+            class S implements StatusDecorator, ImageDecorator {
                     public String annotateName(String name, Set<? extends FileObject> files) {
                         badgedFiles = files;
                         return name + nameBadge;
@@ -269,7 +269,10 @@ public class ProjectsRootNodeTest extends NbTestCase {
                         badgedFiles = files;
                         return badging ? new BadgedImage(icon) : icon;
                     }
-                };
+            }
+            
+            public @Override StatusDecorator getDecorator() {
+                return new S();
             }
             void fireChange(boolean icon, boolean name, FileObject... files) {
                 fireFileStatusChanged(new FileStatusEvent(this, new HashSet<FileObject>(Arrays.asList(files)), icon, name));

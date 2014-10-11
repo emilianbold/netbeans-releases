@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.junit;
 
+import org.netbeans.modules.junit.api.JUnitSettings;
+import org.netbeans.modules.junit.api.JUnitTestUtil;
 import java.util.logging.Level;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -95,7 +97,6 @@ import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.Location;
-import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
@@ -104,12 +105,8 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -118,15 +115,20 @@ import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.junit.Bundle.*;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
+import org.netbeans.api.actions.Savable;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
 import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
 import static org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA;
 import org.netbeans.modules.gsf.testrunner.api.UnitTestsUsage;
 import org.netbeans.modules.java.testrunner.GuiUtils;
+import org.netbeans.modules.junit.api.JUnitUtils;
 import static org.openide.ErrorManager.ERROR;
 import static org.openide.ErrorManager.WARNING;
 import static org.openide.NotifyDescriptor.CANCEL_OPTION;
 import static org.openide.NotifyDescriptor.WARNING_MESSAGE;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Utilities;
 
 /**
@@ -852,7 +854,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         progress.show();
 
         String msg = NbBundle.getMessage(
-                    JUnitTestCreatorProvider.class,
+                    DefaultPlugin.class,
                     "MSG_StatusBar_CreateTest_Begin");                  //NOI18N
         progress.displayStatusText(msg);
         generatingIntegrationTest = Boolean.TRUE.equals(params.get(CreateTestParam.INC_GENERATE_INTEGRATION_TEST));
@@ -1015,7 +1017,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 Mutex.EVENT.writeAccess(new Runnable() {
 
                     public void run() {
-                        TestUtil.notifyUser(finalMessage, NotifyDescriptor.INFORMATION_MESSAGE);
+                        JUnitTestUtil.notifyUser(finalMessage, NotifyDescriptor.INFORMATION_MESSAGE);
                     }
                 });
             }
@@ -1117,7 +1119,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                 case JUNIT3:
                     return true;
                 case JUNIT4:
-                    String sourceLevel = TestUtil.getSourceLevel(selectedFiles[0]);
+                    String sourceLevel = JUnitTestUtil.getSourceLevel(selectedFiles[0]);
                     if (sourceLevel == null) {    //could not get source level
                         return true;
                     }
@@ -1147,7 +1149,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                     }
                     return true;
                 case JUNIT4:
-                    String sourceLevel = TestUtil.getSourceLevel(selectedFiles[0]);
+                    String sourceLevel = JUnitTestUtil.getSourceLevel(selectedFiles[0]);
                     if ((sourceLevel != null)
                             && (sourceLevel.compareTo("1.5")) >= 0) {   //NOI18N
                         if (storeSettings) {
@@ -1179,7 +1181,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         String msgKey;
         boolean offerJUnit4;
         boolean showSourceLevelReqs;
-        String sourceLevel = TestUtil.getSourceLevel(selectedFiles[0]);
+        String sourceLevel = JUnitTestUtil.getSourceLevel(selectedFiles[0]);
         if (sourceLevel == null) {
             msgKey = "MSG_select_junit_version_srclvl_unknown";         //NOI18N
             offerJUnit4 = true;
@@ -1432,7 +1434,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 + ')');
         }
 
-        final Collection<FileObject> testFolders = Utils.getTestFolders(project);
+        final Collection<FileObject> testFolders = JUnitUtils.getTestFolders(project);
         if (testFolders.isEmpty()) {
             LOG_JUNIT_VER.finest(" - no unit test folders found");           //NOI18N
         }
@@ -1683,7 +1685,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             Collections.<FileObject>emptyList();
         }
 
-        final Collection<FileObject> testFolders = Utils.getTestFolders(project);
+        final Collection<FileObject> testFolders = JUnitUtils.getTestFolders(project);
         if (testFolders.isEmpty()) {
             Collections.<FileObject>emptyList();
         }
@@ -1815,15 +1817,15 @@ public final class DefaultPlugin extends JUnitPlugin {
                     String srcClassNameFull = clsToTest.getQualifiedName();
                     if ((requestedTestClassName != null)
                             && !mainClassProcessed
-                            && TestUtil.getSimpleName(srcClassNameFull)
+                            && JUnitTestUtil.getSimpleName(srcClassNameFull)
                                    .equals(sourceFile.getName())) {
                         testClassName = requestedTestClassName;
                         mainClassProcessed = true;
                     } else {
                         if(generatingIntegrationTest) {
-                            testClassName = TestUtil.getIntegrationTestClassName(srcClassNameFull);
+                            testClassName = JUnitTestUtil.getIntegrationTestClassName(srcClassNameFull);
                         } else {
-                            testClassName = TestUtil.getTestClassName(srcClassNameFull);
+                            testClassName = JUnitTestUtil.getTestClassName(srcClassNameFull);
                         }
                     }
                     String testResourceName = testClassName.replace('.', '/');
@@ -1918,7 +1920,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 parentSuite,
                                 progress);
             }
-        } else if (srcFileObj.isData() && TestUtil.isJavaFile(srcFileObj)) {
+        } else if (srcFileObj.isData() && JUnitTestUtil.isJavaFile(srcFileObj)) {
             results = createSingleTest(srcFileObj,
                                        (String) null, //use the default clsName
                                        testCreator,
@@ -1968,7 +1970,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         String dotPkg = pkg.replace('/', '.');
         String fullSuiteName = rootFolderName.concat((suiteName != null)
                                ? pkg + '/' + suiteName
-                               : (generatingIntegrationTest ? TestUtil.convertPackage2ITSuiteName(pkg) : TestUtil.convertPackage2SuiteName(pkg)));
+                               : (generatingIntegrationTest ? JUnitTestUtil.convertPackage2ITSuiteName(pkg) : JUnitTestUtil.convertPackage2SuiteName(pkg)));
 
         String classNames = makeListOfClasses(classesToInclude, null);
         String classes = makeListOfClasses(classesToInclude, ".class"); //NOI18N
@@ -2072,7 +2074,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         setAnnotationsSupport(targetFolder, junitVer, templateParams);
         TestCreator testCreator = new TestCreator(params, junitVer);
         final ClasspathInfo cpInfo = ClasspathInfo.create(targetRootFolder);
-        List<String> testClassNames = TestUtil.getJavaFileNames(targetFolder,
+        List<String> testClassNames = JUnitTestUtil.getJavaFileNames(targetFolder,
                                                                 cpInfo);
         
         final String templateId;
@@ -2177,7 +2179,7 @@ public final class DefaultPlugin extends JUnitPlugin {
         final boolean supported;
         switch (junitVer) {
             case JUNIT3:
-                supported = TestUtil.areAnnotationsSupported(testFolder);
+                supported = JUnitTestUtil.areAnnotationsSupported(testFolder);
                 break;
             case JUNIT4:
                 supported = true;
@@ -2196,7 +2198,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      *
      */
     private static void save(DataObject dataObj) throws IOException {
-        SaveCookie sc = dataObj.getCookie(SaveCookie.class);
+        Savable sc = dataObj.getLookup().lookup(Savable.class);
         if (null != sc) {
             sc.save();
         }
@@ -2233,7 +2235,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      */
     private static void noTemplateMessage(String temp) {
         String msg = NbBundle.getMessage(
-                JUnitTestCreatorProvider.class,
+                DefaultPlugin.class,
                 "MSG_template_not_found",                           //NOI18N
                 temp);
         NotifyDescriptor descr = new NotifyDescriptor.Message(
@@ -2260,8 +2262,8 @@ public final class DefaultPlugin extends JUnitPlugin {
      *         andKey.
      */
     private static String strReason(TestabilityResult reason, String commaKey, String andKey) {
-        String strComma = NbBundle.getMessage(JUnitTestCreatorProvider.class,commaKey);
-        String strAnd = NbBundle.getMessage(JUnitTestCreatorProvider.class,andKey);
+        String strComma = NbBundle.getMessage(DefaultPlugin.class,commaKey);
+        String strAnd = NbBundle.getMessage(DefaultPlugin.class,andKey);
         String strReason = reason.getReason( // string representation of the reasons
                         strComma.substring(1, strComma.length()-1),
                         strAnd.substring(1, strAnd.length()-1));

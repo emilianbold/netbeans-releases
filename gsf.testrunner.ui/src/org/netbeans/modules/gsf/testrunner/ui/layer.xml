@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Windows2">
+        <folder name="Modes">
+            <folder name="output">        <!-- "output" is defined in core/ui -->
+                <file name="gsf-testrunner-results.wstcref" url="gsf-testrunner-results.wstcref">
+                    <attr name="position" intvalue="1950"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="Components">
+            <file name="gsf-testrunner-results.settings" url="gsf-testrunner-results.settings"/>
+        </folder>
+    </folder>
+</filesystem>
