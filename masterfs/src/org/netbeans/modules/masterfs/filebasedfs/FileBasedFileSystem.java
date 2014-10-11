@@ -83,7 +83,7 @@ public class FileBasedFileSystem extends FileSystem {
     transient private RootObj<? extends FileObject> root;
     transient private final StatusImpl status = new StatusImpl();
     transient private static  int modificationInProgress;
-    
+
     public FileBasedFileSystem() {
         if (BaseUtilities.isWindows()) {
             RootObjWindows realRoot = new RootObjWindows();
@@ -268,9 +268,18 @@ public class FileBasedFileSystem extends FileSystem {
         /** result with providers */
         protected org.openide.util.Lookup.Result<BaseAnnotationProvider> annotationProviders;
         private Collection<? extends BaseAnnotationProvider> previousProviders;
-        
 
         {
+            //Force Lookup to load AnnotationProvider to correctly
+            //set BaseAnnotationProvider <- AnnotationProvider class hierarchy.
+            try {
+                Class.forName(
+                    "org.netbeans.modules.masterfs.ui.Init",    //NOI18N
+                    true,
+                    Lookup.getDefault().lookup(ClassLoader.class));
+            } catch (ClassNotFoundException e) {
+                //pass - no masterfs.ui module no @ServiceProvider(service=AnnotationProvider.class) hack needed.
+            }
             annotationProviders = Lookup.getDefault().lookup(new Lookup.Template<BaseAnnotationProvider>(BaseAnnotationProvider.class));
             annotationProviders.addLookupListener(this);
             resultChanged(null);
