@@ -240,6 +240,15 @@ made subject to such option by the copyright holder.
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
 
+                        <file name="HelloCMakeWorld" url="samples/hellocmake.zip">
+                            <attr name="position" intvalue="835"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/hellocmake.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
+                        </file>
+
                         <file name="HelloQtWorld" url="samples/helloqt.zip">
                             <attr name="position" intvalue="840"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -765,6 +774,10 @@ made subject to such option by the copyright holder.
         <!-- MakeProject Extension Points-->
         <folder name="org-netbeans-modules-cnd-makeproject">
             <folder name="MoreBuildActions">
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.instance"/>
+                    <attr name="position" intvalue="50"/>
+                </file>                                
                 <file name="org-netbeans-modules-project-ui-CleanProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
                     <attr name="position" intvalue="100"/>
@@ -776,10 +789,6 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.instance"/>
                     <attr name="position" intvalue="300"/>
-                </file>                                
-                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.instance"/>
-                    <attr name="position" intvalue="400"/>
                 </file>                                
             </folder>
             
