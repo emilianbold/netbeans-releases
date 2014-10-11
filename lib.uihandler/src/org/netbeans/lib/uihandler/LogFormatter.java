@@ -60,6 +60,9 @@ import static java.util.Calendar.*;
  * @author Jindrich Sedek
  */
 class LogFormatter extends XMLFormatter{
+    
+    private static final int MAX_NUM_CAUSE = 20; // Do not recurse more than this number of causes during exception printing
+    
     private final Pattern javaHome;
     private final Pattern userHome;
     private final Pattern netbeansUserDir;
@@ -194,6 +197,10 @@ class LogFormatter extends XMLFormatter{
     
     
     private void printCause(Throwable th, StringBuffer sb, StackTraceElement[] causedTrace){
+        printCause(th, sb, causedTrace, 0);
+    }
+    
+    private void printCause(Throwable th, StringBuffer sb, StackTraceElement[] causedTrace, int depth){
         sb.append("  <exception>\n");// NOI18N
         sb.append("   <message>");// NOI18N
         escape(sb, th.toString());
@@ -213,8 +220,8 @@ class LogFormatter extends XMLFormatter{
         sb.append(framesInCommon);
         sb.append("</more>\n");// NOI18N
         sb.append("  </exception>\n");// NOI18N
-        if (th.getCause() != null){
-            printCause(th.getCause(), sb, trace);
+        if (th.getCause() != null && depth < MAX_NUM_CAUSE){
+            printCause(th.getCause(), sb, trace, depth + 1);
         }
     }
     
