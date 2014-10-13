@@ -44,7 +44,12 @@ package org.netbeans.modules.web.clientproject.validation;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -62,6 +67,18 @@ public final class RunProjectValidator {
 
     public ValidationResult getResult() {
         return result;
+    }
+
+    public RunProjectValidator validate(ClientSideProject project, boolean validateStartFile) {
+        if (validateStartFile) {
+            String[] startFileParts = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile());
+            File siteRoot = getSiteRoot(project);
+            validateStartFile(getSiteRoot(project), resolveFile(siteRoot, startFileParts[0]));
+        }
+        if (!project.isUsingEmbeddedServer()) {
+            validateProjectUrl(project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL));
+        }
+        return this;
     }
 
     @NbBundle.Messages({
@@ -82,11 +99,11 @@ public final class RunProjectValidator {
             return this;
         }
         if (startFile == null || !startFile.isFile()) {
-            result.addError(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_invalid()));
+            result.addWarning(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_invalid()));
             return this;
         }
         if (!FileUtil.isParentOf(FileUtil.toFileObject(siteRootFolder), FileUtil.toFileObject(startFile))) {
-            result.addError(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_notUnderSiteRoot()));
+            result.addWarning(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_notUnderSiteRoot()));
         }
         return this;
     }
@@ -98,25 +115,42 @@ public final class RunProjectValidator {
     })
     public RunProjectValidator validateProjectUrl(String projectUrl) {
         if (projectUrl == null || projectUrl.isEmpty()) {
-            result.addError(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_missing()));
+            result.addWarning(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_missing()));
             return this;
         }
         if (!projectUrl.startsWith("http://") // NOI18N
                 && !projectUrl.startsWith("https://") // NOI18N
                 && !projectUrl.startsWith("file://")) { // NOI18N
-            result.addError(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_invalidProtocol()));
+            result.addWarning(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_invalidProtocol()));
             return this;
         }
         try {
             URL url = new URL(projectUrl);
             String host = url.getHost();
             if (host == null || host.isEmpty()) {
-                result.addError(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_invalid()));
+                result.addWarning(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_invalid()));
             }
         } catch (MalformedURLException ex) {
-            result.addError(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_invalid()));
+            result.addWarning(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_invalid()));
         }
         return this;
+    }
+
+    @CheckForNull
+    private File getSiteRoot(ClientSideProject project) {
+        FileObject siteRootFolder = project.getSiteRootFolder();
+        if (siteRootFolder == null) {
+            return null;
+        }
+        return FileUtil.toFile(siteRootFolder);
+    }
+
+    @CheckForNull
+    private File resolveFile(File root, String child) {
+        if (root == null) {
+            return null;
+        }
+        return new File(root, child);
     }
 
 }
