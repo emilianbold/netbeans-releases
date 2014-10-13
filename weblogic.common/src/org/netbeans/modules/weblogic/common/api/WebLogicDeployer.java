@@ -685,30 +685,6 @@ public final class WebLogicDeployer {
 
     }
 
-    private static class ApplicationLineProcessor implements LineProcessor {
-
-        private final List<String> applications = new ArrayList<>();
-
-        @Override
-        public synchronized void processLine(String line) {
-            if (line.startsWith(" ")) {
-                applications.add(line.trim());
-            }
-        }
-
-        @Override
-        public void reset() {
-        }
-
-        @Override
-        public void close() {
-        }
-
-        public synchronized List<String> getApplications() {
-            return applications;
-        }
-    }
-
     private static class LastLineProcessor implements LineProcessor {
 
         private static final Pattern STACK_TRACE_PATTERN = Pattern.compile("^\\s+((at)|(\\.\\.\\.)).*$"); // NOI18N
