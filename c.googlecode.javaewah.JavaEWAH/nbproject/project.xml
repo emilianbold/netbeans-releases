@@ -3,12 +3,12 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>javaewah.dummy</code-name-base>
+            <code-name-base>com.googlecode.javaewah.JavaEWAH</code-name-base>
             <module-dependencies/>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>javaewah-dummy.jar</runtime-relative-path>
-                <binary-origin>external/javaewah-dummy.jar</binary-origin>
+                <runtime-relative-path>com-googlecode-javaewah-JavaEWAH.jar</runtime-relative-path>
+                <binary-origin>external/JavaEWAH-0.7.9.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
