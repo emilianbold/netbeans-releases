@@ -47,11 +47,13 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.validation.RunProjectValidator;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
@@ -84,11 +86,14 @@ public class BrowserActionProvider implements ActionProvider {
         } else {
             WebServer.getWebserver().stop(project);
         }
-        String startFile = project.getStartFile();
-        String splt[] = ClientSideProjectUtilities.splitPathAndFragment(startFile);
-        String justStartFile = splt[0];
-        String fragment = splt[1];
         if (COMMAND_RUN.equals(command)) {
+            if (!validateRun(true)) {
+                return;
+            }
+            String startFile = project.getStartFile();
+            String splt[] = ClientSideProjectUtilities.splitPathAndFragment(startFile);
+            String justStartFile = splt[0];
+            String fragment = splt[1];
             FileObject siteRoot = project.getSiteRootFolder();
             if (siteRoot == null) {
                 ProjectProblems.showAlert(project);
@@ -112,6 +117,9 @@ public class BrowserActionProvider implements ActionProvider {
             }
             browseFile(support, fo, fragment);
         } else if (COMMAND_RUN_SINGLE.equals(command)) {
+            if (!validateRun(false)) {
+                return;
+            }
             FileObject fo = getFile(context);
             if (fo != null) {
                 browseFile(support, fo);
@@ -147,4 +155,18 @@ public class BrowserActionProvider implements ActionProvider {
             wb.createNewBrowserPane(features).showURL(url);
         }
     }
+
+    private boolean validateRun(boolean validateStartFile) {
+        ValidationResult result = new RunProjectValidator()
+                .validate(project, validateStartFile)
+                .getResult();
+        boolean errors = result.hasErrors()
+                || result.hasWarnings();
+        if (errors) {
+            CustomizerProviderImpl cust = project.getLookup().lookup(CustomizerProviderImpl.class);
+            cust.showCustomizer(CompositePanelProviderImpl.RUN);
+        }
+        return !errors;
+    }
+
 }

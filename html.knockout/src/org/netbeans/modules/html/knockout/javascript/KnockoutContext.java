@@ -77,6 +77,12 @@ public enum KnockoutContext {
      * component: {name: 'mycomponent', | }
      */
     COMPONENT_CONF_PARAMS,
+    /**
+     * Value for 'params' in configuration object. All parameters of component
+     * specified with 'name' should be offered. component: {name: 'mycomponent',
+     * params: { | } }
+     */
+    COMPONENT_CONF_PARAMS_VALUE,
     UNKNOWN;
 
     private static final String KO_COMPONENT = "component"; //NOI18N
@@ -124,6 +130,8 @@ public enum KnockoutContext {
                             return DATA_BINDING;
                         }
                     }
+                } else {
+                    return UNKNOWN;
                 }
             }
         }
@@ -147,6 +155,9 @@ public enum KnockoutContext {
                     jsToken = LexerUtils.followsToken(jsTs, JsTokenId.IDENTIFIER, true, false, JsTokenId.OPERATOR_COLON, JsTokenId.WHITESPACE);
                     if (jsToken == null || (jsToken.id() == JsTokenId.IDENTIFIER && jsToken.text().toString().equals(KO_COMPONENT))) {
                         return COMPONENT_CONF_EMPTY;
+                    } else if (jsToken.id() == JsTokenId.IDENTIFIER && COMPONENT_PARAMS_PROP.equals(jsToken.text().toString())) {
+                        // we are in empty params: { | } configuration object
+                        return COMPONENT_CONF_PARAMS_VALUE;
                     }
                 } else if (jsToken.id() == JsTokenId.OPERATOR_COLON) {
                     // we are in the value
@@ -160,17 +171,25 @@ public enum KnockoutContext {
                 } else if (jsToken.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
                     // we are after configuration object
                     return UNKNOWN;
-                }
-                if (jsToken != null && jsToken.id() == JsTokenId.OPERATOR_COMMA) {
-                    // just be sure that we don't have "params" twice
-                    jsToken = LexerUtils.followsToken(jsTs, Arrays.asList(JsTokenId.IDENTIFIER), true, false,
-                            JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.STRING, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END, JsTokenId.OPERATOR_COLON);
-                    if (jsToken != null && jsToken.id() == JsTokenId.IDENTIFIER && !jsToken.text().toString().equals(COMPONENT_PARAMS_PROP)) {
-                        return COMPONENT_CONF_PARAMS;
+                } else if (jsToken.id() == JsTokenId.OPERATOR_COMMA) {
+                    // we are after comma, it can be either after name property "name: 'my-component', |"
+                    // or it can be in params configuration object "name: 'my-component', params: {param1: value1, |}"
+                    // To determine the case, go back to last opening curly bracket and check whether it belongs to the value of params property.
+                    jsToken = LexerUtils.followsToken(jsTs, Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY), true, false,
+                            JsTokenId.WHITESPACE, JsTokenId.NUMBER, JsTokenId.IDENTIFIER, JsTokenId.STRING, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END, JsTokenId.OPERATOR_COMMA, JsTokenId.OPERATOR_COLON);
+                    if (jsToken != null) {
+                        jsToken = LexerUtils.followsToken(jsTs, Arrays.asList(JsTokenId.IDENTIFIER), true, false,
+                                JsTokenId.WHITESPACE, JsTokenId.OPERATOR_COLON);
+                        if (jsToken != null && jsToken.id() == JsTokenId.IDENTIFIER && jsToken.text().toString().equals(COMPONENT_PARAMS_PROP)) {
+                            // identifier with 'params' text has been found, we are in params conf. object
+                            return COMPONENT_CONF_PARAMS_VALUE;
+                        } else {
+                            // no identifier before '{' => CC should offer params property
+                            return COMPONENT_CONF_PARAMS;
+                        }
                     }
                 }
             }
-
         }
 
         return UNKNOWN;

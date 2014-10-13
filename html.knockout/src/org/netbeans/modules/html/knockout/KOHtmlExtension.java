@@ -180,38 +180,80 @@ public class KOHtmlExtension extends HtmlExtension {
                     if (embedded != null) {
                         if (embedded.isEmpty()) {
                             //no prefix
-                            return getBindingItems("", context.getOriginalOffset());
+                            if (context.getAttributeName().equals(KOUtils.KO_PARAMS_ATTR_NAME)) {
+                                // we are in params attribute of KO custom element
+                                return getCustomElementParameters(
+                                        context.getResult().getSnapshot().getSource().getFileObject(),
+                                        context.getCurrentNode().id().toString(),
+                                        "", context.getOriginalOffset());
+                            } else {
+                                // we are in data-bind attribute
+                                return getBindingItems("", context.getOriginalOffset());
+                            }
                         }
                         int ediff = embedded.move(context.getOriginalOffset());
                         if (ediff == 0 && embedded.movePrevious() || embedded.moveNext()) {
                             //we are on a token of ko-data-bind token sequence
                             Token<KODataBindTokenId> etoken = embedded.token();
-                            switch (etoken.id()) {
-                                case KEY:
-                                    //ke|
-                                    CharSequence prefix = ediff == 0 ? etoken.text() : etoken.text().subSequence(0, ediff);
-                                    if (ediff == 0 && (etoken.offset(tokenHierarchy) + etoken.length()) != context.getOriginalOffset()) {
-                                        // offer all bindings in case of caret placed before binding: <body data-bind="^attr: ">
-                                        prefix = ""; //NOI18N
-                                    }
-                                    return getBindingItems(prefix, embedded.offset());
-                                case COMMA:
-                                    //key:value,|
-                                    return getBindingItems("", context.getOriginalOffset());
-                                case WS:
-                                    //key: value, |
-                                    if (embedded.movePrevious()) {
-                                        switch (embedded.token().id()) {
-                                            case COMMA:
-                                                return getBindingItems("", context.getOriginalOffset());
+                            if (context.getAttributeName().equals(KOUtils.KO_PARAMS_ATTR_NAME)) {
+                                // we are in params attribute of KO custom element
+                                FileObject fo = context.getResult().getSnapshot().getSource().getFileObject();
+                                String elementName = context.getCurrentNode().id().toString();
+                                switch (etoken.id()) {
+                                    case KEY:
+                                        //ke|
+                                        CharSequence prefix = ediff == 0 ? etoken.text() : etoken.text().subSequence(0, ediff);
+                                        if (ediff == 0 && (etoken.offset(tokenHierarchy) + etoken.length()) != context.getOriginalOffset()) {
+                                            // offer all bindings in case of caret placed before binding: <body data-bind="^attr: ">
+                                            prefix = ""; //NOI18N
                                         }
-                                    } else {
+                                        return getCustomElementParameters(fo, elementName, prefix, embedded.offset());
+                                    case COMMA:
+                                        //key:value,|
+                                        return getCustomElementParameters(fo, elementName, "", context.getOriginalOffset());
+                                    case WS:
+                                        //key: value, |
+                                        if (embedded.movePrevious()) {
+                                            switch (embedded.token().id()) {
+                                                case COMMA:
+                                                    return getCustomElementParameters(fo, elementName, "", context.getOriginalOffset());
+                                            }
+                                        } else {
+                                            //just WS is before the caret, no token before |
+                                            return getCustomElementParameters(fo, elementName, "", context.getOriginalOffset());
+
+                                        }
+                                        break;
+                                }
+                            } else {
+                                // we are in data-bind attribute
+                                switch (etoken.id()) {
+                                    case KEY:
+                                        //ke|
+                                        CharSequence prefix = ediff == 0 ? etoken.text() : etoken.text().subSequence(0, ediff);
+                                        if (ediff == 0 && (etoken.offset(tokenHierarchy) + etoken.length()) != context.getOriginalOffset()) {
+                                            // offer all bindings in case of caret placed before binding: <body data-bind="^attr: ">
+                                            prefix = ""; //NOI18N
+                                        }
+                                        return getBindingItems(prefix, embedded.offset());
+                                    case COMMA:
+                                        //key:value,|
+                                        return getBindingItems("", context.getOriginalOffset());
+                                    case WS:
+                                        //key: value, |
+                                        if (embedded.movePrevious()) {
+                                            switch (embedded.token().id()) {
+                                                case COMMA:
+                                                    return getBindingItems("", context.getOriginalOffset());
+                                            }
+                                        } else {
                                         //just WS is before the caret, no token before
                                         //   |
-                                        return getBindingItems("", context.getOriginalOffset());
+                                            return getBindingItems("", context.getOriginalOffset());
 
-                                    }
-                                    break;
+                                        }
+                                        break;
+                                }
                             }
                         }
                     }
@@ -403,6 +445,32 @@ public class KOHtmlExtension extends HtmlExtension {
         }
         if (knockoutIndex != null) {
             return knockoutIndex.getCustomElements(prefix, false);
+        }
+        return Collections.emptyList();
+    }
+
+    private List<CompletionItem> getCustomElementParameters(FileObject fo, String elementName, CharSequence prefix, int offset) {
+        if (fo == null) {
+            return Collections.emptyList();
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return Collections.emptyList();
+        }
+        KnockoutIndex knockoutIndex = null;
+        try {
+            knockoutIndex = KnockoutIndex.get(project);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (knockoutIndex != null) {
+            List<CompletionItem> items = new ArrayList<>();
+            for (String paramName : knockoutIndex.getCustomElementParameters(elementName)) {
+                if (LexerUtils.startsWith(paramName, prefix, true, false)) {
+                    items.add(new KOParamsCompletionItem(paramName, offset));
+                }
+            }
+            return items;
         }
         return Collections.emptyList();
     }

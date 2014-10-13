@@ -43,8 +43,10 @@ package org.netbeans.modules.javascript2.knockout.index;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
@@ -125,6 +127,29 @@ public class KnockoutIndex {
         return Collections.emptyList();
     }
 
+    public Collection<String> getCustomElementParameters(final String elementName) {
+        Collection<? extends IndexResult> result = null;
+        try {
+            result = querySupport.query(KnockoutIndexer.CUSTOM_ELEMENT, elementName, QuerySupport.Kind.PREFIX, KnockoutIndexer.CUSTOM_ELEMENT);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (result != null && !result.isEmpty()) {
+            List<String> parameters = new ArrayList<>();
+            for (IndexResult indexResult : result) {
+                Collection<KnockoutCustomElement> possibleCustomElements = createCustomElements(indexResult);
+                for (KnockoutCustomElement customElement : possibleCustomElements) {
+                    if (customElement.getName().equals(elementName)) {
+                        parameters.addAll(customElement.getParameters());
+                        break;
+                    }
+                }
+            }
+            return Collections.unmodifiableList(parameters);
+        }
+        return Collections.emptyList();
+    }
+
     private Collection<KnockoutCustomElement> createCustomElements(final IndexResult indexResult) {
         String[] values = indexResult.getValues(KnockoutIndexer.CUSTOM_ELEMENT);
         Collection<KnockoutCustomElement> result = new ArrayList<>(values.length);
@@ -132,7 +157,14 @@ public class KnockoutIndex {
             if (value != null && !value.isEmpty() && value.indexOf(':') > 0) {
                 String[] split = value.split(":");
                 int offset = Integer.parseInt(split[2]);
-                result.add(new KnockoutCustomElement(split[0], split[1], indexResult.getFile().toURL(), offset));
+                List<String> parameters = new ArrayList<>();
+                if (split.length == 4) {
+                    String[] params = split[3].split(";"); //NOI18N
+                    if (params.length != 0) {
+                        parameters.addAll(Arrays.<String>asList(params));
+                    }
+                }
+                result.add(new KnockoutCustomElement(split[0], split[1], parameters, indexResult.getFile().toURL(), offset));
             }
         }
         return result;
