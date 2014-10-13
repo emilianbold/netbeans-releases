@@ -100,6 +100,8 @@ import org.openide.util.Exceptions;
  * 
  * Change History:
  * 
+ * V96 - NB 8.1
+ *    Introduce pre-build step
  * V95 - NB 8.0.1
  *    Introduce resolving symbolic links (RESOLVE_SYMBOLIC_LINKS)
  * V94 - NB 8.0
@@ -291,7 +293,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 95;
+    public final static int CURRENT_VERSION = 96;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -345,6 +347,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PRE_BUILD_ELEMENT = "preBuild"; // NOI18N
     protected final static String PRE_BUILD_WORKING_DIR_ELEMENT = "preBuildCommandWorkingDir"; // NOI18N
     protected final static String PRE_BUILD_COMMAND_ELEMENT = "preBuildCommand"; // NOI18N
+    protected final static String PRE_BUILD_FIRST_ELEMENT = "preBuildFirst"; // NOI18N
     // Compile
     protected static final String COMPILE_ID = "compile"; // NOI18N
     protected final static String COMPILE_DIR_ELEMENT = "compiledir"; // NOI18N
@@ -726,6 +729,9 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementOpen(PRE_BUILD_ELEMENT);
         xes.element(PRE_BUILD_WORKING_DIR_ELEMENT, makeConfiguration.getPreBuildConfiguration().getPreBuildCommandWorkingDir().getValue());
         xes.element(PRE_BUILD_COMMAND_ELEMENT, makeConfiguration.getPreBuildConfiguration().getPreBuildCommand().getValue());
+        if (makeConfiguration.getPreBuildConfiguration().getPreBuildFirst().getValue()) {
+            xes.element(PRE_BUILD_FIRST_ELEMENT, "true"); //NOI18N
+        }
         xes.elementClose(PRE_BUILD_ELEMENT);
         writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
         xes.elementClose(MAKEFILE_TYPE_ELEMENT);
