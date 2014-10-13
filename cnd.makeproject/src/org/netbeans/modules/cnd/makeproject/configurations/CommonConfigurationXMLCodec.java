@@ -730,7 +730,7 @@ public abstract class CommonConfigurationXMLCodec
         xes.element(PRE_BUILD_WORKING_DIR_ELEMENT, makeConfiguration.getPreBuildConfiguration().getPreBuildCommandWorkingDir().getValue());
         xes.element(PRE_BUILD_COMMAND_ELEMENT, makeConfiguration.getPreBuildConfiguration().getPreBuildCommand().getValue());
         if (makeConfiguration.getPreBuildConfiguration().getPreBuildFirst().getValue()) {
-            xes.element(PRE_BUILD_FIRST_ELEMENT, "true");
+            xes.element(PRE_BUILD_FIRST_ELEMENT, "true"); //NOI18N
         }
         xes.elementClose(PRE_BUILD_ELEMENT);
         writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());

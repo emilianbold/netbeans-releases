@@ -641,7 +641,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             ((MakeConfiguration) currentConf).getPreBuildConfiguration().getPreBuildCommand().setValue(val);
         } else if (element.equals(PRE_BUILD_FIRST_ELEMENT)) {
             String val = getString(currentText);
-            ((MakeConfiguration) currentConf).getPreBuildConfiguration().getPreBuildFirst().setValue("true".equals(val));
+            ((MakeConfiguration) currentConf).getPreBuildConfiguration().getPreBuildFirst().setValue("true".equals(val)); //NOI18N
         } else if (element.equals(EXECUTABLE_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));
