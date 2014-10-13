@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.nodejs.editor;
 import java.util.Arrays;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 
@@ -92,5 +91,16 @@ public enum NodeJsContext {
             }
         }
         return UNKNOWN;
+    }
+    
+    public static String getEventEmiterName(TokenSequence<? extends JsTokenId> ts, final int offset) {
+        if (findContext(ts, offset) == ASSIGN_LISTENER) {
+            if (ts.movePrevious() && ts.token().id() == JsTokenId.OPERATOR_DOT) {
+                if (ts.movePrevious() && ts.token().id() == JsTokenId.IDENTIFIER) {
+                    return ts.token().text().toString();
+                }
+            }
+        }
+        return null;
     }
 }

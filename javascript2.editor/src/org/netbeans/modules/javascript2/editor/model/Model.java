@@ -72,6 +72,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -156,6 +157,18 @@ public final class Model {
         this.returnTypesFromFrameworks = new HashMap<String, Map<Integer, List<TypeUsage>>>();
     }
 
+    /**
+     * 
+     * @param parserResult
+     * @return the model, if the parser result is created on top of a js source
+     */
+    public static Model getModel(final ParserResult parserResult) {
+        if (parserResult instanceof JsParserResult) {
+            return ((JsParserResult)parserResult).getModel();
+        }
+        return null;
+    }
+    
     private synchronized ModelVisitor getModelVisitor() {
         boolean resolveWindowProperties = false;
         if (visitor == null) {
@@ -533,8 +546,25 @@ public final class Model {
         return result;
     }
     
-    
-
+    /**
+     * 
+     * @param name can not be null. Single name of the variable
+     * @param offset the variable is defined in the context (or higher) of this offset
+     * @return 
+     */
+    public JsObject findVariable(final String name, final int offset) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+        Collection<? extends JsObject> variables = getVariables(offset);
+        for (JsObject jsObject: variables) {
+            if (name.equals(jsObject.getName())) {
+                return jsObject;
+            }
+        }
+        return null;
+    }
+   
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
         Set<String> alreadyResolved = new HashSet<String>();
         resolveLocalTypes(object, docHolder, alreadyResolved);
