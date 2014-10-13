@@ -46,9 +46,17 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.MacroExpandedEditorPanel;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -70,6 +78,7 @@ public class PreBuildConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
     private StringConfiguration preBuildCommandWorkingDir;
     private StringConfiguration preBuildCommand;
+    private BooleanConfiguration preBuildFirst;
     
     private static final RequestProcessor RP = new RequestProcessor("MakeConfiguration", 1); // NOI18N
     
@@ -78,6 +87,7 @@ public class PreBuildConfiguration implements Cloneable {
         this.makeConfiguration = makeConfiguration;
         preBuildCommandWorkingDir = new StringConfiguration(null, "."); // NOI18N
         preBuildCommand = new StringConfiguration(null, ""); // NOI18N
+        preBuildFirst = new BooleanConfiguration(false);
     }
     
     // MakeConfiguration
@@ -86,6 +96,14 @@ public class PreBuildConfiguration implements Cloneable {
     }
     public MakeConfiguration getMakeConfiguration() {
         return makeConfiguration;
+    }
+    
+    public void setPreBuildFirst(BooleanConfiguration preBuildFirst){
+        this.preBuildFirst = preBuildFirst;
+    }
+    
+    public BooleanConfiguration getPreBuildFirst(){
+        return preBuildFirst;
     }
     
     // Working Dir
@@ -138,6 +156,7 @@ public class PreBuildConfiguration implements Cloneable {
     public void assign(PreBuildConfiguration conf) {
         getPreBuildCommandWorkingDir().assign(conf.getPreBuildCommandWorkingDir());
         getPreBuildCommand().assign(conf.getPreBuildCommand());
+        getPreBuildFirst().assign(conf.getPreBuildFirst());
     }
 
     @Override
@@ -145,6 +164,7 @@ public class PreBuildConfiguration implements Cloneable {
         PreBuildConfiguration clone = new PreBuildConfiguration(getMakeConfiguration());
         clone.setPreBuildCommandWorkingDir(getPreBuildCommandWorkingDir().clone());
         clone.setPreBuildCommand(getPreBuildCommand().clone());
+        clone.setPreBuildFirst(getPreBuildFirst().clone());
         return clone;
     }
 
@@ -156,9 +176,9 @@ public class PreBuildConfiguration implements Cloneable {
         set.setDisplayName(getString("PreBuildTxt"));
         set.setShortDescription(getString("PreBuildHint"));
         set.put(new DirStringNodeProp(getPreBuildCommandWorkingDir(), "PreBuildWorkingDirectory", getString("PreBuildWorkingDirectory_LBL"), getString("PreBuildWorkingDirectory_TT"))); // NOI18N
-        set.put(new StringNodeProp(getPreBuildCommand(), "PreBuildCommandLine", getString("PreBuildCommandLine_LBL"), getString("PreBuildCommandLine_TT"))); // NOI18N
+        set.put(new PreviewStringNodeProp(getPreBuildCommand(), "PreBuildCommandLine", getString("PreBuildCommandLine_LBL"), getString("PreBuildCommandLine_TT"))); // NOI18N
+        set.put(new BooleanNodeProp(getPreBuildFirst(), true, "PreBuildFirst",  getString("PreBuildFirst_LBL"), getString("PreBuildFirst_TT"))); // NOI18N
         sheet.put(set);
-        
         return sheet;
     }
     
@@ -266,4 +286,53 @@ public class PreBuildConfiguration implements Cloneable {
         }
         return bundle.getString(s);
     }
+    
+    private final class PreviewStringNodeProp extends StringNodeProp {
+        private PreviewStringNodeProp(StringConfiguration stringConfiguration, String txt1, String txt2, String txt3) {
+            super(stringConfiguration, txt1, txt2, txt3);
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            Map<String,String> macros = new HashMap<>();
+            CompilerSet cs = makeConfiguration.getCompilerSet().getCompilerSet();
+            if (cs != null) {
+                Tool tool = cs.getTool(PredefinedToolKind.CCompiler);
+                if (tool != null) {
+                    macros.put(PreBuildSupport.C_COMPILER_MACRO, tool.getPath());
+                }
+                tool = cs.getTool(PredefinedToolKind.CCCompiler);
+                if (tool != null) {
+                    macros.put(PreBuildSupport.CPP_COMPILER_MACRO, tool.getPath());
+                }
+            }
+            return new PreviewCommandLinePropEditor(macros);
+        }
+    }
+    
+    private static class PreviewCommandLinePropEditor extends PropertyEditorSupport implements ExPropertyEditor {
+
+        private PropertyEnv env;
+        private final Map<String,String> macros;
+        private PreviewCommandLinePropEditor(Map<String,String> macros) {
+            this.macros = macros;
+        }
+
+        @Override
+        public java.awt.Component getCustomEditor() {
+            MacroExpandedEditorPanel commandLineEditorPanel = new MacroExpandedEditorPanel(this, env, macros);
+            return commandLineEditorPanel;
+        }
+
+        @Override
+        public boolean supportsCustomEditor() {
+            return true;
+        }
+
+        @Override
+        public void attachEnv(PropertyEnv env) {
+            this.env = env;
+        }
+    }
+
 }
