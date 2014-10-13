@@ -83,6 +83,7 @@ public final class CachingArchiveProvider {
     private static final String PATH_CT_SYM = "lib/ct.sym";     //NOI18N
     private static final String PATH_RT_JAR_IN_CT_SYM = "META-INF/sym/rt.jar/"; //NOI18N
     private static final boolean USE_CT_SYM = !Boolean.getBoolean("CachingArchiveProvider.disableCtSym");   //NOI18N
+    private static final Pair<Archive,URI> EMPTY = Pair.of(null, null);
     //@GuardedBy("CachingArchiveProvider.class")
     private static CachingArchiveProvider instance;
 
@@ -113,8 +114,8 @@ public final class CachingArchiveProvider {
      *  Can be called only from UnitTests or {@link CachingArchiveProvider#getDefault} !!!!!
      */
     private CachingArchiveProvider() {
-        archives = new HashMap<URI,Archive>();
-        ctSymToJar = new HashMap<URI,URI>();
+        archives = new HashMap<>();
+        ctSymToJar = new HashMap<>();
     }
     
     /** Gets archive for given file.
@@ -131,7 +132,9 @@ public final class CachingArchiveProvider {
             archive = archives.get(rootURI);
         }
         if (archive == null) {
-            archive = create(root, cacheFile);
+            final Pair<Archive,URI> becomesArchive = create(root, cacheFile);
+            archive = becomesArchive.first();
+            URI uriToCtSym = becomesArchive.second();
             if (archive != null) {
                 synchronized (this) {
                     // optimize for no collision
@@ -139,6 +142,8 @@ public final class CachingArchiveProvider {
                     if (oldArchive != null) {
                         archive = oldArchive;
                         archives.put(rootURI, archive);
+                    } else if (uriToCtSym != null) {
+                        ctSymToJar.put(uriToCtSym, rootURI);
                     }
                 }
             }
@@ -238,7 +243,7 @@ public final class CachingArchiveProvider {
         if (f == null || !f.exists()) {
             return false;
         }
-        final Pair<File, String> res = mapJarToCtSym(f, root);
+        final Pair<File, String> res = mapJarToCtSym(f);
         return res.second() != null;
 
     }
@@ -255,15 +260,16 @@ public final class CachingArchiveProvider {
     
     /** Creates proper archive for given file.
      */
-    private Archive create( URL root, boolean cacheFile ) {
+    @NonNull
+    private Pair<Archive,URI> create( URL root, boolean cacheFile ) {
         String protocol = root.getProtocol();
         if ("file".equals(protocol)) {      //NOI18N
             File f = BaseUtilities.toFile(URI.create(root.toExternalForm()));
             if (f.isDirectory()) {
-                return new FolderArchive (f);
+                return Pair.<Archive,URI>of(new FolderArchive (f), null);
             }
             else {
-                return null;
+                return EMPTY;
             }
         }
         if ("jar".equals(protocol)) {       //NOI18N
@@ -272,36 +278,48 @@ public final class CachingArchiveProvider {
             if ("file".equals(protocol)) {  //NOI18N
                 File f = BaseUtilities.toFile(URI.create(inner.toExternalForm()));
                 if (f.isFile()) {
-                    final Pair<File,String> resolved = mapJarToCtSym(f, root);
-                    return resolved.second() == null ?
-                        new CachingArchive(
-                            resolved.first(),
-                            resolved.second(),
-                            cacheFile) :
-                        new CTSymArchive(
-                            f,
-                            null,
-                            resolved.first(),
-                            resolved.second());
+                    final Pair<File,String> resolved = mapJarToCtSym(f);
+                    if (resolved.second() == null) {
+                        return Pair.<Archive,URI>of(
+                            new CachingArchive(
+                                resolved.first(),
+                                resolved.second(),
+                                cacheFile),
+                            null);
+                    } else {
+                        URI uriInCtSym;
+                        try {
+                            uriInCtSym = toURI(resolved);
+                        } catch (IllegalArgumentException e) {
+                            uriInCtSym = null;
+                        }
+                        return Pair.<Archive,URI>of(
+                            new CTSymArchive(
+                                f,
+                                null,
+                                resolved.first(),
+                                resolved.second()),
+                            uriInCtSym
+                        );
+                    }
                 } else {
-                    return null;
+                    return EMPTY;
                 }
             }
-        }                
+        }
         //Slow
         FileObject fo = URLMapper.findFileObject(root);
         if (fo != null) {
-            return new FileObjectArchive (fo);
+            return Pair.<Archive,URI>of(new FileObjectArchive (fo), null);
         }
         else {
-            return null;
+            return EMPTY;
         }
     }
     
     @NonNull
     private Pair<File,String> mapJarToCtSym(
-        @NonNull final File file,
-        @NonNull final URL originalRoot) {
+        @NonNull final File file) {
         if (USE_CT_SYM && NAME_RT_JAR.equals(file.getName())) {
             final FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
@@ -329,22 +347,6 @@ public final class CachingArchiveProvider {
                             final FileObject ctSym = jdkFolder.getFileObject(PATH_CT_SYM);
                             File ctSymFile;
                             if (ctSym != null && (ctSymFile = FileUtil.toFile(ctSym)) != null) {
-                                try {
-                                    final URL root = FileUtil.getArchiveRoot(BaseUtilities.toURI(ctSymFile).toURL());
-                                    synchronized (this) {
-                                    ctSymToJar.put(
-                                            new URI(
-                                                String.format(
-                                                    "%s%s", //NOI18N
-                                                    root.toExternalForm(),
-                                                    PATH_RT_JAR_IN_CT_SYM)),
-                                            originalRoot.toURI());
-                                    }
-                                } catch (MalformedURLException e) {
-                                    Exceptions.printStackTrace(e);
-                                } catch (URISyntaxException e) {
-                                    Exceptions.printStackTrace(e);
-                                }
                                 return Pair.<File,String>of(ctSymFile,PATH_RT_JAR_IN_CT_SYM);
                             }
                         }
@@ -361,6 +363,19 @@ public final class CachingArchiveProvider {
             return url.toURI();
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex);
+        }
+    }
+
+    @NonNull
+    private static URI toURI(@NonNull final Pair<File,String> path) {
+        try {
+            final URL root = FileUtil.getArchiveRoot(BaseUtilities.toURI(path.first()).toURL());
+            return new URI(String.format(
+                "%s%s", //NOI18N
+                root.toExternalForm(),
+                PATH_RT_JAR_IN_CT_SYM));
+        } catch (MalformedURLException | URISyntaxException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 }
