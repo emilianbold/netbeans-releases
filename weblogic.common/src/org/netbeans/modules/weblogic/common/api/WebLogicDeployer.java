@@ -178,10 +178,6 @@ public final class WebLogicDeployer {
             @NullAllowed String name) {
 
         List<String> params = new ArrayList<>();
-        if (name != null) {
-            params.add("-name"); // NOI18N
-            params.add(name);
-        }
         if (file.isDirectory()) {
             params.add("-nostage"); // NOI18N
             params.add("-source"); // NOI18N
