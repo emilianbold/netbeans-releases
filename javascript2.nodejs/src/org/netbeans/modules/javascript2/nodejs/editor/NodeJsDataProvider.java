@@ -58,8 +58,11 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -129,6 +132,7 @@ public class NodeJsDataProvider {
     private static final String METHODS = "methods";    //NOI18N
     private static final String PROPERTIES = "properties";  //NOI18N
     private static final String CLASSES = "classes";    //NOI18N
+    private static final String EVENTS = "events";    //NOI18N
 
     private static final WeakHashMap<Project, NodeJsDataProvider> cache = new WeakHashMap<Project, NodeJsDataProvider>();
     private static NodeJsDataProvider noProjectInstance = null;
@@ -233,6 +237,72 @@ public class NodeJsDataProvider {
         return modules;
     }
 
+    public Map<String, Collection<String>> getAllEvents() {
+        HashMap<String, Collection<String>> result = new HashMap<>();
+        String content = getContentApiFile();
+        if (content != null && !content.isEmpty()) {
+            JSONObject root = (JSONObject) JSONValue.parse(content);
+            JSONArray globals = getJSONArrayProperty(root, GLOBALS);
+            if (globals != null) {
+                for (Object jsonValue : globals) {
+                    if (jsonValue instanceof JSONObject) {
+                        getNameOfEventsRecursively((JSONObject)jsonValue, result);
+                    }
+                }
+            }
+            JSONArray modules = getJSONArrayProperty(root, MODULES);
+            if (modules != null) {
+                for (Object jsonValue : modules) {
+                    if (jsonValue instanceof JSONObject) {
+                        getNameOfEventsRecursively((JSONObject)jsonValue, result);
+                    }
+                }
+            }
+            JSONArray vars = getJSONArrayProperty(root, VARS);
+            if (vars != null) {
+                for (Object jsonValue : vars) {
+                    if (jsonValue instanceof JSONObject) {
+                        getNameOfEventsRecursively((JSONObject)jsonValue, result);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    private void getNameOfEventsRecursively(JSONObject object, Map<String, Collection<String>> result) {
+        JSONArray events = getJSONArrayProperty(object, EVENTS);
+        if (events != null) {
+            String objectName = getJSONStringProperty(object, NAME);
+            StringBuilder docHeader = new StringBuilder();
+            docHeader.append("<h2>").append(objectName).append("</h2>");    //NOI18N
+            for (Object jsonValue : events) {
+                if (jsonValue instanceof JSONObject) {
+                    JSONObject event = (JSONObject) jsonValue;
+                    String name = getJSONStringProperty(event, NAME);
+                    Collection<String> documentations = result.get(name);
+                    if (documentations == null) {
+                        documentations = new ArrayList<String>();
+                        result.put(name, documentations);
+                    }
+                    String documentation = getJSONStringProperty(event, DESCRIPTION);
+                    if (documentation != null && !documentation.isEmpty()) {
+                        documentations.add(docHeader.toString() + documentation);
+                    }
+                }
+            }
+        }
+        JSONArray classes = getJSONArrayProperty(object, CLASSES);
+        if (classes != null) {
+            for (Object jsonValue : classes) {
+                if (jsonValue instanceof JSONObject) {
+                    getNameOfEventsRecursively((JSONObject)jsonValue, result);
+                }
+            }
+        }
+    }
+    
+    
     public String getDocForModule(final String moduleName) {
         Object jsonValue;
         JSONArray modules = getModules();
@@ -662,4 +732,5 @@ public class NodeJsDataProvider {
         }
         
     }
+    
 }

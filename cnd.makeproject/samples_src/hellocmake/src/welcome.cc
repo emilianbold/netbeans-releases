@@ -29,6 +29,7 @@
  */
 
 #include <iostream>
+#include "welcome.h"
 
 int main(int argc, char**argv) {
     // Prints hello message...
