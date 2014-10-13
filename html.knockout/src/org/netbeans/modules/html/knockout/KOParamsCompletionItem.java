@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.knockout;
 
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.html.lexer.HtmlLexerPlugin;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 
 /**
  *
- * @author marekfukala
+ * @author Roman Svitanic
  */
-@MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
-public class KOHtmlLexerPlugin extends HtmlLexerPlugin {
+public class KOParamsCompletionItem extends HtmlCompletionItem.AttributeValue {
+
+    private final String paramName;
+
+    public KOParamsCompletionItem(String paramName, int substituteOffset) {
+        super(paramName, substituteOffset, false);
+        this.paramName = paramName;
+    }
 
     @Override
-    public String createAttributeEmbedding(String elementName, String attributeName) {
-        return KOUtils.KO_DATA_BIND_ATTR_NAME.equalsIgnoreCase(attributeName)
-                || KOUtils.KO_PARAMS_ATTR_NAME.equalsIgnoreCase(attributeName)
-                        ? KOUtils.KO_DATA_BIND_MIMETYPE
-                        : null;
+    protected ImageIcon getIcon() {
+        return KOUtils.KO_ICON;
     }
-    
+
+    @Override
+    protected String getLeftHtmlText() {
+        return new StringBuilder()
+                .append("<font color=#628FB5>") //NOI18N
+                .append(getItemText())
+                .append("</font>").toString();  //NOI18N
+    }
+
+    @Override
+    protected String getSubstituteText() {
+        return new StringBuilder().append(paramName).append(": ").toString(); //NOI18N
+    }
+
+    @Override
+    protected int getMoveBackLength() {
+        return 0;
+    }
+
+    @Override
+    public boolean hasHelp() {
+        return false;
+    }
 }

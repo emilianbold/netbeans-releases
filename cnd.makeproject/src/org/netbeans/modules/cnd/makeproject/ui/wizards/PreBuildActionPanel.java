@@ -275,7 +275,6 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
         commandTextArea = new javax.swing.JTextArea();
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
-        jSeparator1 = new javax.swing.JSeparator();
 
         setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
@@ -443,10 +442,11 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
         org.openide.awt.Mnemonics.setLocalizedText(commandLabel, org.openide.util.NbBundle.getMessage(PreBuildActionPanel.class, "PreviewLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(commandLabel, gridBagConstraints);
 
         commandTextArea.setColumns(20);
@@ -456,7 +456,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
@@ -481,21 +481,14 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(jSeparator1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void configureBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureBrowseButtonActionPerformed
@@ -649,7 +642,6 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
     private javax.swing.JTextField customCommandTextField;
     private javax.swing.JPanel instructionPanel;
     private javax.swing.JTextArea instructionsTextArea;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JRadioButton predefinedCommandRadioButton;
     private javax.swing.JCheckBox runConfigureCheckBox;
     private javax.swing.JButton runInFolderBrowseButton;

@@ -102,6 +102,15 @@ public class KnockoutIndexer extends EmbeddingIndexer {
                     sb.append(customElement.getName()).append(":");    //NOI18N
                     sb.append(customElement.getFqn()).append(":");     //NOI18N
                     sb.append(customElement.getOffset());
+                    if (!customElement.getParameters().isEmpty()) {
+                        sb.append(":");                                //NOI18N
+                        for (int i = 0; i < customElement.getParameters().size(); i++) {
+                            sb.append(customElement.getParameters().get(i));
+                            if (i != (customElement.getParameters().size() - 1)) {
+                                sb.append(";");                        //NOI18N
+                            }
+                        }
+                    }
                     elementDocument.addPair(CUSTOM_ELEMENT, sb.toString(), true, true);
                 }
                 support.addDocument(elementDocument);

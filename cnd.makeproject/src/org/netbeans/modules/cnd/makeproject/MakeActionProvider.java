@@ -64,6 +64,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -141,6 +142,7 @@ import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -817,6 +819,14 @@ public final class MakeActionProvider implements ActionProvider {
         if (index > 0) {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
+        }
+        try {
+            FileSystem fs = FileSystemProvider.getFileSystem(conf.getDevelopmentHost().getExecutionEnvironment());
+            FileObject root = fs.getRoot();
+            String toRelativePath = CndPathUtilities.toRelativePath(root, workingDir);
+            FileUtil.createFolder(fs.getRoot(), toRelativePath);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         RunProfile profile = new RunProfile(workingDir, conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
