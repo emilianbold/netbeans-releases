@@ -49,6 +49,7 @@ import java.io.File;
 import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -70,6 +71,7 @@ public class PreBuildConfiguration implements Cloneable {
     private MakeConfiguration makeConfiguration;
     private StringConfiguration preBuildCommandWorkingDir;
     private StringConfiguration preBuildCommand;
+    private BooleanConfiguration preBuildFirst;
     
     private static final RequestProcessor RP = new RequestProcessor("MakeConfiguration", 1); // NOI18N
     
@@ -78,6 +80,7 @@ public class PreBuildConfiguration implements Cloneable {
         this.makeConfiguration = makeConfiguration;
         preBuildCommandWorkingDir = new StringConfiguration(null, "."); // NOI18N
         preBuildCommand = new StringConfiguration(null, ""); // NOI18N
+        preBuildFirst = new BooleanConfiguration(false);
     }
     
     // MakeConfiguration
@@ -86,6 +89,14 @@ public class PreBuildConfiguration implements Cloneable {
     }
     public MakeConfiguration getMakeConfiguration() {
         return makeConfiguration;
+    }
+    
+    public void setPreBuildFirst(BooleanConfiguration preBuildFirst){
+        this.preBuildFirst = preBuildFirst;
+    }
+    
+    public BooleanConfiguration getPreBuildFirst(){
+        return preBuildFirst;
     }
     
     // Working Dir
@@ -138,6 +149,7 @@ public class PreBuildConfiguration implements Cloneable {
     public void assign(PreBuildConfiguration conf) {
         getPreBuildCommandWorkingDir().assign(conf.getPreBuildCommandWorkingDir());
         getPreBuildCommand().assign(conf.getPreBuildCommand());
+        getPreBuildFirst().assign(conf.getPreBuildFirst());
     }
 
     @Override
@@ -145,6 +157,7 @@ public class PreBuildConfiguration implements Cloneable {
         PreBuildConfiguration clone = new PreBuildConfiguration(getMakeConfiguration());
         clone.setPreBuildCommandWorkingDir(getPreBuildCommandWorkingDir().clone());
         clone.setPreBuildCommand(getPreBuildCommand().clone());
+        clone.setPreBuildFirst(getPreBuildFirst().clone());
         return clone;
     }
 
@@ -157,8 +170,8 @@ public class PreBuildConfiguration implements Cloneable {
         set.setShortDescription(getString("PreBuildHint"));
         set.put(new DirStringNodeProp(getPreBuildCommandWorkingDir(), "PreBuildWorkingDirectory", getString("PreBuildWorkingDirectory_LBL"), getString("PreBuildWorkingDirectory_TT"))); // NOI18N
         set.put(new StringNodeProp(getPreBuildCommand(), "PreBuildCommandLine", getString("PreBuildCommandLine_LBL"), getString("PreBuildCommandLine_TT"))); // NOI18N
+        set.put(new BooleanNodeProp(getPreBuildFirst(), true, "PreBuildFirst",  getString("PreBuildFirst_LBL"), getString("PreBuildFirst_TT"))); // NOI18N
         sheet.put(set);
-        
         return sheet;
     }
     
