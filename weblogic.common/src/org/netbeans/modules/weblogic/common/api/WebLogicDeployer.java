@@ -174,7 +174,7 @@ public final class WebLogicDeployer {
     }
 
     @NonNull
-    public Future<Void> deploy(@NonNull File file, @NullAllowed DeployListener listener,
+    public Future<String> deploy(@NonNull File file, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
         List<String> params = new ArrayList<>();
@@ -186,7 +186,7 @@ public final class WebLogicDeployer {
             params.add("-nostage"); // NOI18N
             params.add("-source"); // NOI18N
         }
-        return deploy(file, listener, params.toArray(new String[params.size()]));
+        return deploy(file, listener, name, params.toArray(new String[params.size()]));
     }
 
     @NonNull
@@ -318,16 +318,18 @@ public final class WebLogicDeployer {
                         }
                         result.cancel(true);
                         throw ex;
-                    } catch (ExecutionException ex) {
-                        if (listener != null) {
-                            Throwable cause = ex.getCause();
-                            if (cause instanceof Exception) {
-                                listener.onException((Exception) cause);
-                                throw (Exception) cause;
-                            } else {
-                                listener.onException(ex);
-                                throw ex;
+                    } catch (ExecutionException ex) {                        
+                        Throwable cause = ex.getCause();
+                        if (cause instanceof Exception) {
+                            if (listener != null) {
+                            listener.onException((Exception) cause);
                             }
+                            throw (Exception) cause;
+                        } else {
+                            if (listener != null) {
+                            listener.onException(ex);
+                            }
+                            throw ex;
                         }
                     }
                 }
@@ -384,15 +386,17 @@ public final class WebLogicDeployer {
                         result.cancel(true);
                         throw ex;
                     } catch (ExecutionException ex) {
-                        if (listener != null) {
-                            Throwable cause = ex.getCause();
-                            if (cause instanceof Exception) {
+                        Throwable cause = ex.getCause();
+                        if (cause instanceof Exception) {
+                            if (listener != null) {
                                 listener.onException((Exception) cause);
-                                throw (Exception) cause;
-                            } else {
-                                listener.onException(ex);
-                                throw ex;
                             }
+                            throw (Exception) cause;
+                        } else {
+                            if (listener != null) {
+                                listener.onException(ex);
+                            }
+                            throw ex;
                         }
                     }
                 }
@@ -404,23 +408,30 @@ public final class WebLogicDeployer {
         });
     }
 
-    private Future<Void> deploy(@NonNull final File file,
-            @NullAllowed final DeployListener listener, final String... parameters) {
+    private Future<String> deploy(@NonNull final File file,
+            @NullAllowed final DeployListener listener, @NullAllowed final String name, final String... parameters) {
 
         if (listener != null) {
             listener.onStart();
         }
 
-        return DEPLOYMENT_RP.submit(new Callable<Void>() {
+        return DEPLOYMENT_RP.submit(new Callable<String>() {
 
             @Override
-            public Void call() throws Exception {
+            public String call() throws Exception {
                 int length = config.isRemote() ? parameters.length + 3 : parameters.length + 1;
+                if (name != null) {
+                    length += 2;
+                }
                 String[] execParams = new String[length];
                 execParams[execParams.length - 1] = file.getAbsolutePath();
                 if (config.isRemote()) {
                     execParams[execParams.length - 2] = "-upload"; // NOI18N
                     execParams[execParams.length - 3] = "-remote"; // NOI18N
+                }
+                if (name != null) {
+                    execParams[execParams.length - 4] = name;
+                    execParams[execParams.length - 5] = "-name"; // NOI18N
                 }
                 if (parameters.length > 0) {
                     System.arraycopy(parameters, 0, execParams, 0, parameters.length);
@@ -440,6 +451,10 @@ public final class WebLogicDeployer {
                         if (listener != null) {
                             listener.onFinish();
                         }
+                        if (name != null) {
+                            return name;
+                        }
+                        // FIXME
                         return null;
                     }
                 } catch (InterruptedException ex) {
@@ -455,18 +470,19 @@ public final class WebLogicDeployer {
                     result.cancel(true);
                     throw ex;
                 } catch (ExecutionException ex) {
-                    if (listener != null) {
-                        Throwable cause = ex.getCause();
-                        if (cause instanceof Exception) {
+                    Throwable cause = ex.getCause();
+                    if (cause instanceof Exception) {
+                        if (listener != null) {
                             listener.onException((Exception) cause);
-                            throw (Exception) cause;
-                        } else {
-                            listener.onException(ex);
-                            throw ex;
                         }
+                        throw (Exception) cause;
+                    } else {
+                        if (listener != null) {
+                            listener.onException(ex);
+                        }
+                        throw ex;
                     }
                 }
-                return null;
             }
         });
     }
@@ -520,18 +536,19 @@ public final class WebLogicDeployer {
                         }
                         result.cancel(true);
                         throw ex;
-                    } catch (ExecutionException ex) {
-                        if (listener != null) {
-                            Throwable cause = ex.getCause();
-                            if (cause instanceof Exception) {
+                    } catch (ExecutionException ex) {                        
+                        Throwable cause = ex.getCause();
+                        if (cause instanceof Exception) {
+                            if (listener != null) {
                                 listener.onException((Exception) cause);
-                                throw (Exception) cause;
-                            } else {
-                                listener.onException(ex);
-                                throw ex;
                             }
+                            throw (Exception) cause;
+                        } else {
+                            if (listener != null) {
+                                listener.onException(ex);
+                            }
+                            throw ex;
                         }
-                        break;
                     }
                 }
                 if (listener != null) {
