@@ -148,8 +148,8 @@ public class MakeActionTest {
             commandsNoBuild.put(COMMAND_DEBUG, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/DEBUG_STEP});
             commandsNoBuild.put(COMMAND_DEBUG_STEP_INTO, new String[]{/*REMOVE_INSTRUMENTATION_STEP,*/DEBUG_STEPINTO_STEP});
             commandsNoBuild.put(COMMAND_CUSTOM_ACTION, new String[]{SAVE_STEP, CUSTOM_ACTION_STEP});
-            boolean res1 = verifyMaps(commands, loadAcrionSteps("CND/BuildAction"), "CND/BuildAction"); // NOI18N
-            boolean res2 = verifyMaps(commandsNoBuild, loadAcrionSteps("CND/NoBuildAction"), "CND/NoBuildAction"); // NOI18N
+            boolean res1 = verifyMaps(commands, loadActionSteps("CND/BuildAction", new String[]{"build-first"}), "CND/BuildAction"); // NOI18N
+            boolean res2 = verifyMaps(commandsNoBuild, loadActionSteps("CND/BuildAction", new String[0]), "CND/BuildAction"); // NOI18N
             if (!res1 || !res2) {
                 if (TRACE) {
                     dumpXML(commands, "BuildAction");
@@ -159,7 +159,7 @@ public class MakeActionTest {
             }
         }
 
-        private Map<String, String[]> loadAcrionSteps(String root) {
+        private Map<String, String[]> loadActionSteps(String root, String[] flags) {
             if (TRACE) {
                 System.err.println("Root " + root); // NOI18N
             }
@@ -172,8 +172,22 @@ public class MakeActionTest {
                     }
                     if (subFolder.isFolder()) {
                         TreeMap<Integer, String> map = new TreeMap<>();
-                        for (FileObject file : subFolder.getChildren()) {
+                        loop:for (FileObject file : subFolder.getChildren()) {
                             Integer position = (Integer) file.getAttribute("position"); // NOI18N
+                            String flag = (String) file.getAttribute("flag"); // NOI18N
+                            if (flag != null) {
+                                for(String s : flag.split(",")) {
+                                    boolean found = false;
+                                    for(String f : flags) {
+                                        if (s.equals(f)) {
+                                            found = true;
+                                        }
+                                    }
+                                    if (!found) {
+                                        continue loop;
+                                    }
+                                }
+                            }
                             map.put(position, file.getNameExt());
                         }
                         if (TRACE) {
