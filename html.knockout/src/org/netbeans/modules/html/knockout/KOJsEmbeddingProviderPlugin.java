@@ -146,7 +146,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                         startKnockoutSnippet(context, boundary.getPosition() + offset);
                         offset++;
                     } else {
-                        LOGGER.log(Level.WARNING, "No usage for template {0}", boundary.getName());
+                        LOGGER.log(Level.FINE, "No usage for template {0}", boundary.getName());
                     }
                 } else {
                     endKnockoutSnippet(boundary.getPosition() + offset);
