@@ -189,6 +189,15 @@
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
 
+                        <file name="HelloCMakeWorld" url="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/hellocmake.zip">
+                            <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.remote.projectui.wizard.cnd.Bundle#Templates/Project/Samples/Native/HelloCMakeWorld"/>
+                            <attr name="position" intvalue="835"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/hellocmake.html"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
+                        </file>
+
                         <!--file name="HelloQtWorld" url="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/helloqt.zip">
                             <attr name="displayName" bundlevalue="org.netbeans.modules.cnd.remote.projectui.wizard.cnd.Bundle#Templates/Project/Samples/Native/HelloQtWorld"/>
                             <attr name="position" intvalue="840"/>
