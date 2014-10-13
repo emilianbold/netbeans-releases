@@ -110,7 +110,7 @@ public class KOModel {
                             //the data-bind attribute can contain custom directives which we do not have any metadata for
                             //so the data-bind attribute is always considered as a knockout regardless the content, 
                             //at least until we have some custom directives metadata facility.
-                            return isKODataBindingAttribute(attribute);
+                            return isKODataBindingAttribute(attribute) || isKOParamsAttribute(attribute);
 //                            return isKODataBindingAttribute(attribute) && containsKODirective(result.getSnapshot(), attribute);
                         }
                     })) {
