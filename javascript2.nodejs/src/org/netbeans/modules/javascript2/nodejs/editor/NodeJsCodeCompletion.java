@@ -42,10 +42,10 @@
 package org.netbeans.modules.javascript2.nodejs.editor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -101,7 +101,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
             if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION) {
                 String wholePrefix = ts.token().id() == JsTokenId.STRING ? ts.token().text().toString().trim() : "";
                 NodeJsContext nodeContext = NodeJsContext.findContext(ts, eOffset);
-                System.out.println("nodeContext: " + nodeContext);
+              
                 switch (nodeContext) {
                     case MODULE_PATH:
                         if (wholePrefix.isEmpty() || (wholePrefix.charAt(0) != '.' && wholePrefix.charAt(0) != '/')) {
@@ -119,9 +119,39 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                     case AFTER_ASSIGNMENT:
                         if (prefix.isEmpty() || NodeJsUtils.REQUIRE_METHOD_NAME.startsWith(prefix)) {
                             NodeJsElement handle = new NodeJsElement(fo, NodeJsUtils.REQUIRE_METHOD_NAME, NodeJsDataProvider.getDefault(fo).getDocumentationForGlobalObject(NodeJsUtils.REQUIRE_METHOD_NAME), TEMPLATE_REQUIRE, ElementKind.METHOD);
-                            result.add(new NodeJsCompletionItem(handle, eOffset - prefix.length()));
+                            result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));
                         }
-                    break;
+                        break;
+                    case ASSIGN_LISTENER:
+//                        String eventEmiterName = NodeJsContext.getEventEmiterName(ts, eOffset);
+//                        if (eventEmiterName != null && !eventEmiterName.isEmpty()) {
+//                            Model jsModel = Model.getModel(ccContext.getParserResult());
+//                            if (jsModel != null) {
+//                                JsObject variable = jsModel.findVariable(eventEmiterName, eOffset);
+//                                Collection<? extends TypeUsage> assignments = variable.getAssignments();
+//                                if (!assignments.isEmpty()) {
+//                                   List<TypeUsage> resolved = new ArrayList<>();
+//                                   for (TypeUsage type : assignments) {
+//                                       resolved.addAll(jsModel.resolveType(type));
+//                                   }
+//                                }
+//                            }
+//                        }
+                            Map<String, Collection<String>> events = NodeJsDataProvider.getDefault(fo).getAllEvents();
+                            for (Map.Entry<String, Collection<String>> event : events.entrySet()) {
+                                String name = event.getKey();
+                                if (name.startsWith(prefix)) {
+                                    Collection<String> docs = event.getValue();
+                                    StringBuilder doc = new StringBuilder();
+                                    for (String text : docs) {
+                                        doc.append(text);
+                                        doc.append("<br/><br/>");   //NOI18N
+                                    }
+                                    NodeJsElement handle = new NodeJsElement(fo, name, doc.toString(), ElementKind.OTHER);
+                                    result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));
+                                }
+                            }
+                        break;
                 }
             }
         }
