@@ -63,6 +63,7 @@ import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.FileMode;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectInserter;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
@@ -180,8 +181,8 @@ public class AddCommand extends GitCommand {
                                     in.close();
                                 }
                             }
-                            DirCacheIterator it = treeWalk.getTree(0, DirCacheIterator.class);
-                            if (it == null || !it.getDirCacheEntry().getObjectId().equals(entry.getObjectId())) {
+                            ObjectId oldId = treeWalk.getObjectId(0);
+                            if (ObjectId.equals(oldId, ObjectId.zeroId()) || !ObjectId.equals(oldId, entry.getObjectId())) {
                                 listener.notifyFile(file, path);
                             }
                             builder.add(entry);
