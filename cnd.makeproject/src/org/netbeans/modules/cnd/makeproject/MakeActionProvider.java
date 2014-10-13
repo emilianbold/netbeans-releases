@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -64,7 +65,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -196,8 +196,7 @@ public final class MakeActionProvider implements ActionProvider {
     // Project Descriptor
     //private MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to make targets */
-    private final Map<String, String[]> commands;
-    private final Map<String, String[]> commandsNoBuild;
+    private final Map<String, Commands> commands;
     private boolean lastValidation = false;
     private static final String SAVE_STEP = "save"; // NOI18N
     private static final String PRE_BUILD_STEP = "pre-build"; // NOI18N
@@ -222,21 +221,21 @@ public final class MakeActionProvider implements ActionProvider {
     public MakeActionProvider(MakeProject project) {
         this.project = project;
         commands = loadAcrionSteps("CND/BuildAction"); // NOI18N
-        commandsNoBuild = loadAcrionSteps("CND/NoBuildAction"); // NOI18N
     }
 
-    private Map<String, String[]> loadAcrionSteps(String root) {
-        Map<String, String[]> res = new HashMap<>();
+    private Map<String, Commands> loadAcrionSteps(String root) {
+        Map<String, Commands> res = new HashMap<>();
         FileObject folder = FileUtil.getConfigFile(root);
         if (folder != null && folder.isFolder()) {
             for (FileObject subFolder : folder.getChildren()) {
                 if (subFolder.isFolder()) {
-                    TreeMap<Integer, String> map = new TreeMap<>();
+                    TreeMap<Integer, Command> map = new TreeMap<>();
                     for (FileObject file : subFolder.getChildren()) {
                         Integer position = (Integer) file.getAttribute("position"); // NOI18N
-                        map.put(position, file.getNameExt());
+                        String flag = (String) file.getAttribute("flag"); // NOI18N
+                        map.put(position, new Command(file.getNameExt(),flag));
                     }
-                    res.put(subFolder.getNameExt(), map.values().toArray(new String[map.size()]));
+                    res.put(subFolder.getNameExt(), new Commands(map.values()));
                 }
             }
         }
@@ -1350,45 +1349,16 @@ public final class MakeActionProvider implements ActionProvider {
      * @return array of targets or null to stop execution; can return empty array
      */
     private String[] getTargetNames(String command) throws IllegalArgumentException {
-        String[] targetNames;
-        if (command.equals(COMMAND_COMPILE_SINGLE)) {
-            targetNames = commands.get(command);
-        } else if (command.equals(COMMAND_RUN)
-                || command.equals(COMMAND_DEBUG)
-                || command.equals(COMMAND_DEBUG_STEP_INTO)
-                || command.equals(COMMAND_DEBUG_TEST)
-                || command.equals(COMMAND_DEBUG_TEST_SINGLE)
-                || command.equals(COMMAND_DEBUG_STEP_INTO_TEST)
-                || command.equals(COMMAND_CUSTOM_ACTION)) {
-            MakeConfigurationDescriptor pd = getProjectDescriptor();
-            MakeConfiguration conf = pd.getActiveConfiguration();
-            if (conf == null) {
-                return null;
-            }
-            RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
-            if (profile == null) { // See IZ 89349
-                return null;
-            }
-            if (profile.getBuildFirst()) {
-                targetNames = commands.get(command);
-            } else {
-                targetNames = commandsNoBuild.get(command);
-            }
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
-            targetNames = commands.get(command);
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        } else {
-            targetNames = commands.get(command);
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
+        MakeConfigurationDescriptor pd = getProjectDescriptor();
+        MakeConfiguration conf = pd.getActiveConfiguration();
+        if (conf == null) {
+            return null;
         }
-        return targetNames;
+        final Commands cmds = commands.get(command);
+        if (cmds == null) {
+            throw new IllegalArgumentException(command);
+        }
+        return cmds.getCommands(conf);
     }
 
     @Override
@@ -2003,6 +1973,73 @@ public final class MakeActionProvider implements ActionProvider {
         @Override
         public void setLocalizedName(String name) {
             locName = name;
+        }
+    }
+    
+    private static final class Command {
+        private final String command;
+        private final String conditions;
+        private Command(String command, String conditions) {
+            this.command = command;
+            this.conditions = conditions;
+        }
+
+        @Override
+        public String toString() {
+            return conditions == null ? command : command+"["+conditions+"]"; // NOI18N
+        }
+    }
+    
+    private static final class Commands {
+        private final List<Command> commands;
+        private Commands(Collection<Command> commands) {
+            this.commands = new ArrayList<Command>(commands);
+        }
+        private String[] getCommands(MakeConfiguration conf) {
+            List<String> res = new ArrayList<>();
+            Loop:for(Command command : commands) {
+                String conditions = command.conditions;
+                if (conditions != null) {
+                    boolean preBuild = true;
+                    boolean buildFirst = true;
+                    for(String condition : conditions.split(",")) {
+                        if ("pre-build".equals(condition)) {
+                            if (!conf.getPreBuildConfiguration().getPreBuildFirst().getValue()) {
+                                preBuild = false;
+                            }
+                        } else if ("build-first".equals(condition)) {
+                            RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
+                            if (profile == null) { // See IZ 89349
+                                return null;
+                            }
+                            if (!profile.getBuildFirst()) {
+                                buildFirst = false;
+                            }
+                        }
+                    }
+                    // If two flags is present, both flags should be true
+                    if (!(preBuild && buildFirst)) {
+                        continue;
+                    }
+                }
+                res.add(command.command);
+            }
+            return res.toArray(new String[res.size()]);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            for(Command command : commands) {
+                if (buf.length()>0) {
+                    buf.append('\n');
+                }
+                buf.append(command.command);
+                if (command.conditions != null) {
+                    buf.append('[').append(command.conditions).append(']');
+                }
+            }
+            return buf.toString();
         }
     }
 }
