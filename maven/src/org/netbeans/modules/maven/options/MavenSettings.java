@@ -84,6 +84,9 @@ public final class MavenSettings  {
     private static final String PROP_COLLAPSE_FOLDS = "collapseSuccessFolds";
     private static final String PROP_OUTPUT_TAB_CONFIG = "showConfigInOutputTab";
     private static final String PROP_OUTPUT_TAB_NAME = "showOutputTabAs";
+    private static final String PROP_EXPERIMENTAL_USE_BEST_MAVEN = "useBestMaven";
+    private static final String PROP_EXPERIMENTAL_USE_ALTERNATE_LOCATION = "useBestMavenAltLocation";
+    private static final String PROP_EXPERIMENTAL_ALTERNATE_LOCATION = "bestMavenAltLocation";
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -292,6 +295,35 @@ public final class MavenSettings  {
     public String getProjectNodeNamePattern() {
         return getPreferences().get(PROP_PROJECTNODE_NAME_PATTERN, null); //NOI18N
     }
+
+    public boolean isUseBestMaven() {
+        return getPreferences().getBoolean(PROP_EXPERIMENTAL_USE_BEST_MAVEN, false);
+    }
+    
+    public void setUseBestMaven(boolean bestMaven) {
+        getPreferences().putBoolean(PROP_EXPERIMENTAL_USE_BEST_MAVEN, bestMaven);
+    }
+    
+    public boolean isUseBestMavenAltLocation() {
+        return getPreferences().getBoolean(PROP_EXPERIMENTAL_USE_ALTERNATE_LOCATION, false);
+    }
+    
+    public void setUseBestMavenAltLocation(boolean bestMavenAltLocation) {
+        getPreferences().putBoolean(PROP_EXPERIMENTAL_USE_ALTERNATE_LOCATION, bestMavenAltLocation);
+    }
+    
+    public void setBestMavenAltLocation(String location) {
+        if (null == location) {
+            getPreferences().remove(PROP_EXPERIMENTAL_ALTERNATE_LOCATION);
+        } else {
+            putProperty(PROP_EXPERIMENTAL_ALTERNATE_LOCATION, location);
+        }
+    }
+
+    public String getBestMavenAltLocation() {
+        return getPreferences().get(PROP_EXPERIMENTAL_ALTERNATE_LOCATION, null); //NOI18N
+    }
+    
 
     public boolean isCollapseSuccessFolds() {
         return getPreferences().getBoolean(PROP_COLLAPSE_FOLDS, false);
