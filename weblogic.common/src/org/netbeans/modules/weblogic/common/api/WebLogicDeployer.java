@@ -450,8 +450,12 @@ public final class WebLogicDeployer {
                         if (name != null) {
                             return name;
                         }
-                        // FIXME
-                        return null;
+                        String name = file.getName();
+                        int index = name.lastIndexOf('.');
+                        if (file.isFile() && index > 0) {
+                            name = name.substring(0, index);
+                        }
+                        return name;
                     }
                 } catch (InterruptedException ex) {
                     if (listener != null) {
