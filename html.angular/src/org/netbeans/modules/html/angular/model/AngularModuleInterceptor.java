@@ -44,7 +44,9 @@ package org.netbeans.modules.html.angular.model;
 import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -82,6 +84,7 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
         int functionOffset = -1;
         int nameOffset = -1;
         String fqnOfController;
+        Map<String, Integer> controllersMap = null;
         for (FunctionArgument fArgument : args) {
             switch (fArgument.getKind()) {
                 case STRING :
@@ -109,10 +112,26 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                     functionName = ((List<String>)fArgument.getValue()).get(0);
                     functionOffset = fArgument.getOffset();
                     break;
+                case ANONYMOUS_OBJECT:
+                    // controllers can be declared also like object map where
+                    // the keys are the names of controllers and the values are the constructors
+                    // e.g., app.controller({ MyCtrl: function($scope) { ... } });                    
+                    JsObject object = (JsObject) fArgument.getValue();
+                    controllersMap = new HashMap<>();
+                    functionOffset = object.getOffset();
+                    for (Map.Entry<String, ? extends JsObject> prop : object.getProperties().entrySet()) {
+                        if (prop.getValue() instanceof JsFunction) {
+                            controllersMap.put(
+                                    prop.getValue().getName(),
+                                    ((JsFunction) prop.getValue()).getOffset());
+                        }
+                    }
+                    break;
                 default:
             }
-            if (controllerName != null && functionName != null) {
+            if ((controllerName != null && functionName != null) || (controllerName == null && controllersMap != null)) {
                 // we probably found the name of the controller and also the function definition
+                // or we have found the anonymous object with the controller map
                 break;
             }
         }
@@ -125,8 +144,19 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                 if (fo != null) {
                     AngularJsIndexer.addController(fo.toURI(), new AngularJsController(controllerName, fqnOfController, fo.toURL(), nameOffset));
                 }
+            }            
+        } else if (controllerName == null && controllersMap != null) {
+            // we need to find an anonymous object, which contains the controller map
+            JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionOffset);
+            if (controllerDecl != null && controllerDecl instanceof JsObject && controllerDecl.isDeclared()) {
+                FileObject fo = globalObject.getFileObject();
+                for (Map.Entry<String, Integer> controller : controllersMap.entrySet()) {
+                    fqnOfController = controllerDecl.getFullyQualifiedName() + "." + controller.getKey(); //NOI18N
+                    if (fo != null) {
+                        AngularJsIndexer.addController(fo.toURI(), new AngularJsController(controller.getKey(), fqnOfController, fo.toURL(), controller.getValue()));
+                    }
+                }
             }
-            
         }
         return Collections.emptyList();
     }
