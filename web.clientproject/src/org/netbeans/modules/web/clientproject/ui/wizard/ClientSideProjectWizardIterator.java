@@ -65,12 +65,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
-import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
@@ -408,9 +406,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public static final class NewHtml5ProjectWizard implements Wizard {
 
         public static final String SITE_TEMPLATE = "SITE_TEMPLATE"; // NOI18N
-        public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
-        public static final String LIBRARIES_PATH = "LIBRARIES_PATH";
-        public static final String LIBRARY_NAMES = "LIBRARY_NAMES"; // NOI18N
         public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
 
         private static final String HTML_PROJECT_NAME = "HTML5Application"; // NOI18N
@@ -447,7 +442,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new NewClientSideProjectPanel(HTML_PROJECT_NAME),
                 new SiteTemplateWizardPanel(),
-                new JavaScriptLibrarySelectionPanel(),
             };
             return panels;
         }
@@ -455,14 +449,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @NbBundle.Messages({
             "NewProjectWizard.step.createProject=Name and Location",
             "NewProjectWizard.step.chooseSite=Site Template",
-            "NewProjectWizard.step.selectJsLibrary=JavaScript Files"
         })
         @Override
         public String[] createSteps() {
             return new String[] {
                 Bundle.NewProjectWizard_step_createProject(),
                 Bundle.NewProjectWizard_step_chooseSite(),
-                Bundle.NewProjectWizard_step_selectJsLibrary(),
             };
         }
 
@@ -493,13 +485,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 return Pair.of(null, null);
             }
 
-            // js libs
-            FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
-            if (jsLibs != null) {
-                // move all downloaded libraries
-                FileUtilities.moveContent(jsLibs, siteRootDir);
-            }
-
             // index file (#216293)
             File[] htmlFiles = FileUtil.toFile(siteRootDir).listFiles(new FileFilter() {
                 @Override
@@ -516,7 +501,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             // apply extenders
             if (withExtenders) {
                 for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
-                    extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
+                    // XXX - jsLibsPath??
+                    extender.apply(project.getProjectDirectory(), siteRootDir, "js/lib"); // NOI18N
                 }
             }
 
@@ -526,7 +512,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @Override
         public void logUsage(WizardDescriptor wizardDescriptor, FileObject projectDir, FileObject sources, FileObject siteRoot) {
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
-            String libraryNames = (String) wizardDescriptor.getProperty(LIBRARY_NAMES);
+            String libraryNames = null; // no js libs anymore
             ClientSideProjectUtilities.logUsage(ClientSideProjectWizardIterator.class, "USG_PROJECT_HTML5_CREATE", // NOI18N
                     new Object[] {"NEW", siteTemplate != null ? siteTemplate.getId() : "NONE", // NOI18N
                         libraryNames == null ? "" : libraryNames, ""}); // NOI18N
@@ -534,17 +520,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
-            // cleanup js libs
-            FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
-            if (jsLibs != null && jsLibs.isValid()) {
-                try {
-                    jsLibs.delete();
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                }
-            }
             wizardDescriptor.putProperty(SITE_TEMPLATE, null);
-            wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
+            wizardDescriptor.putProperty(SITE_ROOT, null);
         }
 
         private void initProject(ClientSideProject project, ProjectProperties properties, WizardDescriptor wizardDescriptor) throws IOException {
@@ -552,11 +529,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                     properties.getSourceFolder(),
                     properties.getSiteRootFolder(),
                     properties.getTestFolder());
-            // #231326
-            String librariesPath = (String) wizardDescriptor.getProperty(LIBRARIES_PATH);
-            if (librariesPath != null) {
-                JavaScriptLibraries.setJsLibFolder(project, librariesPath);
-            }
             // js testing provider
             String jsTestingProvider = properties.getJsTestingProvider();
             if (jsTestingProvider != null) {
