@@ -132,6 +132,7 @@ public final class WebLogicDeployer {
                             String name = (String) connection.getAttribute(bean, "Name"); // NOI18N
                             String type = (String) connection.getAttribute(bean, "Type"); // NOI18N
                             if ("AppDeployment".equals(type)) { // NOI18N
+                                String moduleType = (String) connection.getAttribute(bean, "ModuleType"); // NOI18N
                                 String contextRoot = null;
                                 ObjectName[] targets = (ObjectName[]) connection.getAttribute(bean, "Targets"); // NOI18N
                                 if (targets != null && targets.length > 0) {
@@ -159,10 +160,10 @@ public final class WebLogicDeployer {
                                     }
                                 }
                                 if (contextRoot != null) {
-                                    result.add(new Application(name,
-                                            new URL("http://" + config.getHost() + ":" + config.getPort() + contextRoot))); // NOI18N
+                                    result.add(new Application(name, moduleType,
+                                            new URL("http://" + config.getHost() + ":" + config.getPort() + contextRoot), contextRoot)); // NOI18N
                                 } else {
-                                    result.add(new Application(name, null));
+                                    result.add(new Application(name, moduleType, null, null));
                                 }
                             }
                         }
@@ -672,21 +673,34 @@ public final class WebLogicDeployer {
 
         private final String name;
 
+        private final String type;
+
         private final URL url;
 
-        private Application(String id, URL url) {
+        private final String webContext;
+
+        private Application(String id, String type, URL url, String webContext) {
             this.name = id;
+            this.type = type;
             this.url = url;
+            this.webContext = webContext;
         }
 
         public String getName() {
             return name;
         }
 
+        public String getType() {
+            return type;
+        }
+
         public URL getUrl() {
             return url;
         }
 
+        public String getWebContext() {
+            return webContext;
+        }
     }
 
     private static class LastLineProcessor implements LineProcessor {
