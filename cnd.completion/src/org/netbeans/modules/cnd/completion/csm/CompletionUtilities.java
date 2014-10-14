@@ -209,9 +209,11 @@ public class CompletionUtilities {
             }
             if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '<')) {
                 int eoi = findEndOfInstantiation(doc, nwPos);
+                if (eoi >= 0) {
                 nwPos = Utilities.getFirstNonWhiteFwd(doc, eoi);
-                if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '(')) {
-                    return new int[] { identifierBlock[0], nwPos + 1 };
+                    if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '(')) {
+                        return new int[] { identifierBlock[0], nwPos + 1 };
+                    }
                 }
             }
         }
