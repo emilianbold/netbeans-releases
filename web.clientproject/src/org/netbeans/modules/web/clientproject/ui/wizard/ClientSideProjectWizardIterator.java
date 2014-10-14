@@ -122,16 +122,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     }
 
     @TemplateRegistration(folder="Project/ClientSide",
-            displayName="#ClientSideProjectWizardIterator.existingProject.displayName",
-            description="../resources/ExistingClientSideProjectDescription.html",
-            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
-            position=110)
-    @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5 Application with Existing Sources")
-    public static ClientSideProjectWizardIterator existingHtml5Project() {
-        return new ClientSideProjectWizardIterator(new ExistingHtml5ProjectWizard());
-    }
-
-    @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.newLibrary.displayName",
             description="../resources/NewClientSideLibraryDescription.html",
             iconBase=ClientSideProject.HTML5_PROJECT_ICON,
@@ -143,6 +133,16 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     public static ClientSideProjectWizardIterator newProjectWithExtender() {
         return new ClientSideProjectWizardIterator(new NewHtml5ProjectWizard(true), true);
+    }
+
+    @TemplateRegistration(folder="Project/ClientSide",
+            displayName="#ClientSideProjectWizardIterator.existingProject.displayName",
+            description="../resources/ExistingClientSideProjectDescription.html",
+            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
+            position=1100)
+    @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5 Application with Existing Sources")
+    public static ClientSideProjectWizardIterator existingHtml5Project() {
+        return new ClientSideProjectWizardIterator(new ExistingHtml5ProjectWizard());
     }
 
     @NbBundle.Messages({
@@ -591,13 +591,14 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public static final class ExistingHtml5ProjectWizard implements Wizard {
 
         public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
+        public static final String SOURCE_ROOT = "SOURCES_ROOT"; // NOI18N
         public static final String TEST_ROOT = "TEST_ROOT"; // NOI18N
 
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"unchecked", "rawtypes"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
-                new ExistingClientSideProjectPanel(false),
+                new ExistingClientSideProjectPanel(),
             };
             return panels;
         }
@@ -614,7 +615,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public boolean hasSiteRoot() {
-            return true;
+            return false;
         }
 
         @NbBundle.Messages("ExistingProjectWizard.step.createProject=Name and Location")
@@ -629,6 +630,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public Pair<FileObject, FileObject> instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
             File projectDir = FileUtil.toFile(project.getProjectDirectory());
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
+            File sources = (File) wizardDescriptor.getProperty(SOURCE_ROOT);
+            assert siteRoot != null || sources != null : siteRoot + " :: " + sources;
             // #218736
             String testFolder;
             if (projectDir.equals(siteRoot)) {
@@ -639,8 +642,14 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                     testFolder = findTestFolder(project.getProjectDirectory());
                 }
             }
-            ClientSideProjectUtilities.initializeProject(project, null, siteRoot.getAbsolutePath(), testFolder);
-            return Pair.of(null, FileUtil.toFileObject(siteRoot));
+            ClientSideProjectUtilities.initializeProject(
+                    project,
+                    sources != null ? sources.getAbsolutePath() : null,
+                    siteRoot != null ? siteRoot.getAbsolutePath() : null,
+                    testFolder);
+            return Pair.of(
+                    sources != null ? FileUtil.toFileObject(sources) : null,
+                    siteRoot != null ? FileUtil.toFileObject(siteRoot) : null);
         }
 
         @Override
@@ -653,6 +662,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @Override
         public void uninitialize(WizardDescriptor wizardDescriptor) {
             wizardDescriptor.putProperty(SITE_ROOT, null);
+            wizardDescriptor.putProperty(SOURCE_ROOT, null);
             wizardDescriptor.putProperty(TEST_ROOT, null);
         }
 

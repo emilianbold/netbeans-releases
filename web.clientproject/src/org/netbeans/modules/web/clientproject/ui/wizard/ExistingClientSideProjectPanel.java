@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.io.File;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -52,22 +53,16 @@ import org.openide.util.HelpCtx;
  */
 public class ExistingClientSideProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private final boolean library;
-
     private volatile WizardDescriptor wizardDescriptor;
     // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
     private volatile ExistingClientSideProject clientSideProject;
 
 
-    public ExistingClientSideProjectPanel(boolean library) {
-        this.library = library;
-    }
-
     @Override
     public ExistingClientSideProject getComponent() {
         // assert EventQueue.isDispatchThread(); - not possible, see comment above (@GuardedBy())
         if (clientSideProject == null) {
-            clientSideProject = new ExistingClientSideProject(library);
+            clientSideProject = new ExistingClientSideProject();
         }
         return clientSideProject;
     }
@@ -86,17 +81,13 @@ public class ExistingClientSideProjectPanel implements WizardDescriptor.Panel<Wi
     public void storeSettings(WizardDescriptor settings) {
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY, getNormalizedFile(getComponent().getProjectDirectory()));
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.NAME, getComponent().getProjectName());
-        File folder = getNormalizedFile(getComponent().getFolder());
-        if (library) {
-            //wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingJsLibraryProjectWizard.SOURCE_ROOT, folder);
-        } else {
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.SITE_ROOT, folder);
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.TEST_ROOT, getNormalizedFile(getComponent().getTestDir()));
-        }
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.SITE_ROOT, getNormalizedFile(getComponent().getSiteRoot()));
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.SOURCE_ROOT, getNormalizedFile(getComponent().getSources()));
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.TEST_ROOT, getNormalizedFile(getComponent().getTestDir()));
     }
 
     private File getNormalizedFile(String path) {
-        if (path == null) {
+        if (!StringUtilities.hasText(path)) {
             return null;
         }
         return FileUtil.normalizeFile(new File(path));
