@@ -187,6 +187,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             errorOccured(Bundle.ClientSideProjectWizardIterator_error_noSiteRoot());
         }
 
+        // tools
+        files.addAll(org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().instantiate(project, wizardDescriptor));
+
         File parent = projectDirectory.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
@@ -442,6 +445,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new NewClientSideProjectPanel(HTML_PROJECT_NAME),
                 new SiteTemplateWizardPanel(),
+                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().createWizardPanel(),
             };
             return panels;
         }
@@ -455,6 +459,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             return new String[] {
                 Bundle.NewProjectWizard_step_createProject(),
                 Bundle.NewProjectWizard_step_chooseSite(),
+                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().getDisplayName(),
             };
         }
 
@@ -571,6 +576,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             @SuppressWarnings({"unchecked", "rawtypes"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new ExistingClientSideProjectPanel(),
+                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().createWizardPanel(),
             };
             return panels;
         }
@@ -595,6 +601,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public String[] createSteps() {
             return new String[] {
                 Bundle.ExistingProjectWizard_step_createProject(),
+                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().getDisplayName(),
             };
         }
 
@@ -687,6 +694,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             @SuppressWarnings({"rawtypes", "unchecked"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new NewClientSideProjectPanel(LIBRARY_PROJECT_NAME),
+                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().createWizardPanel(),
             };
             return panels;
         }
@@ -698,6 +706,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public String[] createSteps() {
             return new String[] {
                 Bundle.NewProjectWizard_step_createLibrary(),
+                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().getDisplayName(),
             };
         }
 
