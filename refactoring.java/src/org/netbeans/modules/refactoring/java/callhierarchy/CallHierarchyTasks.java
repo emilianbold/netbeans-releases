@@ -165,7 +165,12 @@ final class CallHierarchyTasks {
                         try {
                             Call tempNode = Call.createEmpty();
                             callback.run(tempNode);
-                            CallHierarchyTopComponent.findInstance().setRunningState(true);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    CallHierarchyTopComponent.findInstance().setRunningState(true);
+                                }
+                            });
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);
                         }
