@@ -116,7 +116,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             description="../resources/NewClientSideProjectDescription.html",
             iconBase=ClientSideProject.HTML5_PROJECT_ICON,
             position=100)
-    @NbBundle.Messages("ClientSideProjectWizardIterator.newProject.displayName=HTML5 Application")
+    @NbBundle.Messages("ClientSideProjectWizardIterator.newProject.displayName=HTML5/JS Application")
     public static ClientSideProjectWizardIterator newHtml5Project() {
         return new ClientSideProjectWizardIterator(new NewHtml5ProjectWizard());
     }
@@ -131,18 +131,18 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         return new ClientSideProjectWizardIterator(new NewJsLibraryProjectWizard());
     }
 
-    public static ClientSideProjectWizardIterator newProjectWithExtender() {
-        return new ClientSideProjectWizardIterator(new NewHtml5ProjectWizard(true), true);
-    }
-
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.existingProject.displayName",
             description="../resources/ExistingClientSideProjectDescription.html",
             iconBase=ClientSideProject.HTML5_PROJECT_ICON,
-            position=1100)
-    @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5 Application with Existing Sources")
+            position=300)
+    @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5/JS Application with Existing Sources")
     public static ClientSideProjectWizardIterator existingHtml5Project() {
         return new ClientSideProjectWizardIterator(new ExistingHtml5ProjectWizard());
+    }
+
+    public static ClientSideProjectWizardIterator newProjectWithExtender() {
+        return new ClientSideProjectWizardIterator(new NewHtml5ProjectWizard(true), true);
     }
 
     @NbBundle.Messages({
