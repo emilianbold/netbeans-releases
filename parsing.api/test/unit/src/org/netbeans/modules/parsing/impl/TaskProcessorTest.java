@@ -43,10 +43,6 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,13 +56,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -91,11 +83,8 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.api.TestEnvironmentFactory;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
-import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -114,6 +103,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -134,19 +124,19 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         suite.addTest(new TaskProcessorTest("testCancelCall"));                                 //NOI18N
         suite.addTest(new TaskProcessorTest("testTaskCall"));                                   //NOI18N
         suite.addTest(new TaskProcessorTest("testParserCall"));                                 //NOI18N
-        suite.addTest(new TaskProcessorTest("testRunWhenScanFinishGetCalledUnderCCLock"));      //NOI18N
-        suite.addTest(new TaskProcessorTest("testRunLoopSuspend"));                             //NOI18N
-        suite.addTest(new TaskProcessorTest("testRunLoopSuspend2"));                            //NOI18N
         suite.addTest(new TaskProcessorTest("testSlowCancelSampler"));                          //NOI18N
         suite.addTest(new TaskProcessorTest("testParserCancelInPRT"));                          //NOI18N
         suite.addTest(new TaskProcessorTest("testParserCancelInUT"));                           //NOI18N
         return suite;
     }
-
+    
+    private IndexerEmulator emu = new IndexerEmulator();
+    
     @Override
     protected void setUp() throws Exception {        
         super.setUp();
         clearWorkDir();
+        MockLookup.setInstances(new MockMimeLookup(), new TestEnvironmentFactory(), emu);
     }
     
     public void testWarningWhenRunUserTaskCalledFromAWT() throws Exception {
@@ -465,189 +455,6 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         
     }
 
-    public void testRunWhenScanFinishGetCalledUnderCCLock() throws Exception {
-        final File wd = getWorkDir();
-        final File srcDir = new File (wd,"src");
-        srcDir.mkdirs();
-        final File file = new File (srcDir,"test.foo");
-        file.createNewFile();
-        FileUtil.setMIMEType("foo", "text/foo");
-        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());
-        final FileObject fo = FileUtil.toFileObject(file);
-        final DataObject dobj = DataObject.find(fo);
-        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-        final StyledDocument doc = ec.openDocument();
-        final Source src = Source.create(doc);
-        final CountDownLatch ruRunning = new CountDownLatch(1);
-        final CountDownLatch rwsfCalled = new CountDownLatch(1);
-        final AtomicReference<Set<RepositoryUpdater.IndexingState>> indexing = new AtomicReference<Set<RepositoryUpdater.IndexingState>>();
-        final Utilities.IndexingStatus is = new Utilities.IndexingStatus() {
-            @Override
-            public Set<? extends RepositoryUpdater.IndexingState> getIndexingState() {
-                return indexing.get();
-            }
-        };
-        Utilities.setIndexingStatus(is);
-        RepositoryUpdaterTestSupport.runAsWork(
-                new Runnable(){
-                    @Override
-                    public void run() {
-                        indexing.set(EnumSet.of(RepositoryUpdater.IndexingState.WORKING));
-                        try {
-                            ruRunning.countDown();
-                            rwsfCalled.await();
-                        } catch (InterruptedException ie) {
-                        } finally {
-                            indexing.set(EnumSet.noneOf(RepositoryUpdater.IndexingState.class));
-                        }
-                    }
-                });
-        ruRunning.await();
-        doc.putProperty("completion-active", Boolean.TRUE);
-        try {
-            final Future<Void> done = ParserManager.parseWhenScanFinished(Collections.<Source>singleton(src),new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {                    
-                }
-        });
-        assertFalse(done.isDone());
-        assertFalse(done.isCancelled());
-        rwsfCalled.countDown();
-        try {
-            done.get(5, TimeUnit.SECONDS);
-        } catch (TimeoutException te) {
-            assertTrue("Deadlock",false);
-        }
-        } finally {
-            doc.putProperty("completion-active", null);
-        }
-    }
-
-    public void testRunLoopSuspend() throws Exception {
-        FileUtil.setMIMEType("foo", "text/foo");    //NOI18N
-        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());    //NOI18N
-        final File wd = getWorkDir();
-        final File srcFolder = new File (wd,"src");
-        final FileObject srcRoot = FileUtil.createFolder(srcFolder);
-        final FileObject srcFile = srcRoot.createData("test.foo");  //NOI18N        
-        final Source source = Source.create(srcFile);
-        final SourceCache cache = SourceAccessor.getINSTANCE().getCache(source);
-        final CountDownLatch taskStarted = new CountDownLatch(1);
-        final CountDownLatch cancelCalled = new CountDownLatch(1);
-        final CountDownLatch taskDone = new CountDownLatch(1);
-        final CountDownLatch secondTaskCalled = new CountDownLatch(1);
-        final AtomicBoolean result = new AtomicBoolean();        
-        final SchedulerTask task1 = new ParserResultTask() {
-
-            @Override
-            public void run(Result pr, SchedulerEvent event) {
-                taskStarted.countDown();
-                try {
-                    result.set(cancelCalled.await(5000, TimeUnit.MILLISECONDS));
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    taskDone.countDown();
-                }
-            }
-
-            @Override
-            public int getPriority() {
-                return 0;
-            }
-
-            @Override
-            public Class<? extends Scheduler> getSchedulerClass() {
-                return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
-            }
-
-            @Override
-            public void cancel() {
-                cancelCalled.countDown();
-            }
-        };
-        final SchedulerTask task2 = new ParserResultTask() {
-            @Override
-            public void run(Result result, SchedulerEvent event) {
-                secondTaskCalled.countDown();
-            }
-
-            @Override
-            public int getPriority() {
-                return 10;
-            }
-
-            @Override
-            public Class<? extends Scheduler> getSchedulerClass() {
-                return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
-            }
-
-            @Override
-            public void cancel() {
-            }
-        };
-        TaskProcessor.addPhaseCompletionTasks(
-                Arrays.asList(
-                    Pair.<SchedulerTask,Class<? extends Scheduler>>of(task1,task1.getSchedulerClass()),
-                    Pair.<SchedulerTask,Class<? extends Scheduler>>of(task2,task2.getSchedulerClass())),
-                cache,
-                false);
-        assertTrue(taskStarted.await(5000, TimeUnit.MILLISECONDS));
-        runLoop(source, true);
-        try {
-            assertTrue(taskDone.await(5000, TimeUnit.MILLISECONDS));
-            assertTrue(result.get());
-            assertFalse(secondTaskCalled.await(2000, TimeUnit.MILLISECONDS));
-        } finally {
-            runLoop(source, false);
-        }
-        assertTrue(secondTaskCalled.await(5000, TimeUnit.MILLISECONDS));
-    }
-
-    public void testRunLoopSuspend2() throws Exception {
-        FileUtil.setMIMEType("foo", "text/foo");    //NOI18N
-        MockMimeLookup.setInstances(MimePath.parse("text/foo"), new FooParserFactory(), new PlainKit());    //NOI18N
-        final File wd = getWorkDir();
-        final File srcFolder = new File (wd,"src");
-        final FileObject srcRoot = FileUtil.createFolder(srcFolder);
-        final FileObject srcFile = srcRoot.createData("test.foo");  //NOI18N
-        final Source source = Source.create(srcFile);
-        final SourceCache cache = SourceAccessor.getINSTANCE().getCache(source);
-        final CountDownLatch taskCalled = new CountDownLatch(1);
-        final SchedulerTask task = new ParserResultTask() {
-            @Override
-            public void run(Result result, SchedulerEvent event) {
-                taskCalled.countDown();
-            }
-
-            @Override
-            public int getPriority() {
-                return 10;
-            }
-
-            @Override
-            public Class<? extends Scheduler> getSchedulerClass() {
-                return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
-            }
-
-            @Override
-            public void cancel() {
-            }
-        };
-
-        runLoop(source, true);
-        try {
-            TaskProcessor.addPhaseCompletionTasks(
-                Arrays.asList(Pair.<SchedulerTask,Class<? extends Scheduler>>of(task,task.getSchedulerClass())),
-                cache,
-                false);
-            assertFalse(taskCalled.await(2000, TimeUnit.MILLISECONDS));
-        } finally {
-            runLoop(source, false);
-        }
-        assertTrue(taskCalled.await(5000, TimeUnit.MILLISECONDS));
-    }
-
     @RandomlyFails
     public void testSlowCancelSampler() throws Exception {
         //Enable sampling
@@ -876,22 +683,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         }
     }
 
-    private void runLoop(
-            final @NonNull Source source,
-            final boolean suspend) throws NoSuchFieldException, IllegalArgumentException,
-            IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        final Field editorRegistryListenerField = EventSupport.class.getDeclaredField("editorRegistryListener");    //NOI18N
-        assertNotNull(editorRegistryListenerField);
-        editorRegistryListenerField.setAccessible(true);
-        final Object erl = editorRegistryListenerField.get(null);
-        assertNotNull(erl);
-        final Method handleCompletionActive = erl.getClass().getDeclaredMethod("handleCompletionActive", Source.class, Object.class); //NOI18N
-        assertNotNull(handleCompletionActive);
-        handleCompletionActive.setAccessible(true);
-        handleCompletionActive.invoke(erl, source, suspend);
-    }
-
-    private static final class FooParserFactory extends ParserFactory {
+    public static final class FooParserFactory extends ParserFactory {
 
         enum Target {
             PARSE,
@@ -914,7 +706,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         }
     }
 
-    private static final class FooParser extends Parser {
+    protected static final class FooParser extends Parser {
         private final Map<FooParserFactory.Target,Runnable> callbacks;
         private FooParserResult result;
         private int cancelCount;
@@ -987,7 +779,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
                 }
                 filteredStackTrace.add(e);
             }
-            caller = Util.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
+            caller = Utilities.findCaller(filteredStackTrace.toArray(new StackTraceElement[filteredStackTrace.size()]));
         }
     }
 

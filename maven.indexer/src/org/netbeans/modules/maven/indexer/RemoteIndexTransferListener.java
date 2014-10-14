@@ -53,9 +53,9 @@ import org.apache.maven.index.updater.ResourceFetcher;
 import org.apache.maven.wagon.events.TransferEvent;
 import org.apache.maven.wagon.events.TransferListener;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.openide.util.Cancellable;
 import static org.netbeans.modules.maven.indexer.Bundle.*;
 import org.openide.util.NbBundle.Messages;
@@ -81,7 +81,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     public RemoteIndexTransferListener(RepositoryInfo info) {
         this.info = info;
         Cancellation.register(this);
-        handle = ProgressHandleFactory.createHandle(LBL_Transfer(info.getName()), this);
+        handle = ProgressHandle.createHandle(LBL_Transfer(info.getName()), this);
         handle.start();
     }
 

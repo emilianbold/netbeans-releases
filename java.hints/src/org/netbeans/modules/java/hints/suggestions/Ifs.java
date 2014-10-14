@@ -65,6 +65,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
@@ -72,6 +73,7 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.JavaFix.TransformationContext;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.UseOptions;
 import org.openide.util.NbBundle.Messages;
 
 @Messages({
@@ -92,11 +94,21 @@ import org.openide.util.NbBundle.Messages;
     "DN_splitIfCondition=Split if condition",
     "DESC_splitIfCondition=Splits if whose condition is || into two ifs",
     "ERR_splitIfCondition=",
-    "FIX_splitIfCondition=Split if into two ifs"
+    "FIX_splitIfCondition=Split if into two ifs",
+    "LBL_InvertIfShowWhenElseMissing=Show when else branch is missing",
+    "DESC_InvertifShowWhenElseMissing=Shows the suggestion even though else part of the statement is missing. The hint can be used to aid code rewrite in such case."
 })
 public class Ifs {
 
+    static final boolean SHOW_ELSE_MISSING_DEFAULT = true;
+
+    @BooleanOption(displayName = "#LBL_InvertIfShowWhenElseMissing", 
+            tooltip = "#DESC_InvertifShowWhenElseMissing",
+            defaultValue=SHOW_ELSE_MISSING_DEFAULT)
+    static final String SHOW_ELSE_MISSING = "show.noelse";
+
     @Hint(id="org.netbeans.modules.java.hints.suggestions.InvertIf", displayName = "#DN_InvertIf", description = "#DESC_InvertIf", category = "suggestions", hintKind= Hint.Kind.ACTION)
+    @UseOptions(SHOW_ELSE_MISSING)
     @TriggerPattern(value = "if ($cond) $then; else $else$;")
     @Messages({"ERR_InvertIf=Invert If",
                "FIX_InvertIf=Invert If"})
@@ -104,7 +116,17 @@ public class Ifs {
         TreePath cond = ctx.getVariables().get("$cond");
         long conditionEnd = ctx.getInfo().getTrees().getSourcePositions().getEndPosition(cond.getCompilationUnit(), cond.getParentPath().getLeaf());
         if (ctx.getCaretLocation() > conditionEnd) return null;
-        
+
+        // parenthesized, then if
+        TreePath ifPath = cond.getParentPath().getParentPath();
+        if (ifPath.getLeaf().getKind() != Tree.Kind.IF) {
+            return null;
+        }
+        IfTree iv = (IfTree)ifPath.getLeaf();
+        if (iv.getElseStatement() == null && 
+            !ctx.getPreferences().getBoolean(SHOW_ELSE_MISSING, SHOW_ELSE_MISSING_DEFAULT)) {
+            return null;
+        }
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_InvertIf(), new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     

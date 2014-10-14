@@ -400,7 +400,6 @@ public class RemoteStyleSheetCache {
             return null;
         }
 
-        @Override
         public SystemAction[] getActions() {
             return new SystemAction[0];
         }

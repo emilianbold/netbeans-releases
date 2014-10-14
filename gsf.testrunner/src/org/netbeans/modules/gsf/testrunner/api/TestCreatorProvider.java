@@ -53,29 +53,47 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public abstract class TestCreatorProvider {
     
+    /**
+     * Registers a {@link TestCreatorProvider}.
+     */
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.SOURCE)
     public @interface Registration {
 
         /**
          * Display name of the TestCreatorProvider.
+         * @return 
          */
         String displayName();
     }
     
-    public abstract boolean enable(Node[] activatedNodes);
+    /**
+     *
+     * @param activatedFOs list of {@link FileObject}s that triggered the test creation
+     * @return {@code true} if test creation can be enabled in this context, {@code false} otherwise
+     */
+    public abstract boolean enable(FileObject[] activatedFOs);
     
+    /**
+     * Start creating the tests based on this Context
+     * @param context contains needed information for creating the tests
+     */
     public abstract void createTests(Context context);
 
+    /**
+     * Get the {@link SourceGroup} that contains the file.
+     * @param file the file to search for
+     * @param prj the project to get the list of {@link Sources} in which to search for the file
+     * @return the {@link SourceGroup} that contains the file or {@code null}
+     */
     public static SourceGroup getSourceGroup(FileObject file, Project prj) {
         Sources src = ProjectUtils.getSources(prj);
         String type = "";
@@ -95,50 +113,93 @@ public abstract class TestCreatorProvider {
         return null;
     }
 
+    /**
+     * Holds needed information for creating the tests
+     */
     public static final class Context {
 
         private boolean singleClass;
         private String testClassName;
         private FileObject targetFolder;
-        private Node[] activatedNodes;
+        private final FileObject[] activatedFOs;
         private boolean integrationTests;
         
-        public Context(Node[] activatedNodes) {
-            this.activatedNodes = activatedNodes;
+        /**
+         *
+         * @param activatedNodes list of {@link FileObject}s that triggered the test creation
+         */
+        public Context(FileObject[] activatedNodes) {
+            this.activatedFOs = activatedNodes;
         }
 
-        public Node[] getActivatedNodes() {
-            return activatedNodes;
+        /**
+         *
+         * @return the list of {@link FileObject}s that triggered the test creation
+         */
+        public FileObject[] getActivatedFOs() {
+            return activatedFOs;
         }
 
+        /**
+         * 
+         * @return {@code true} if a test for a single class is to be created, {@code false} otherwise
+         */
         public boolean isSingleClass() {
             return singleClass;
         }
 
+        /**
+         * 
+         * @param singleClass {@code true} if a test for a single class is to be created, {@code false} otherwise
+         */
         public void setSingleClass(boolean singleClass) {
             this.singleClass = singleClass;
         }
 
+        /**
+         *
+         * @return the folder where the tests are to be created
+         */
         public FileObject getTargetFolder() {
             return targetFolder;
         }
 
+        /**
+         *
+         * @param targetFolder the folder where the tests are to be created
+         */
         public void setTargetFolder(FileObject targetFolder) {
             this.targetFolder = targetFolder;
         }
 
+        /**
+         *
+         * @return class name entered in the form, or null if the form did not contain the field for entering class name
+         */
         public String getTestClassName() {
             return testClassName;
         }
 
+        /**
+         *
+         * @param testClassName class name entered in the form, or null if the form did not contain the field for entering class name
+         */
         public void setTestClassName(String testClassName) {
             this.testClassName = testClassName;
         }
 
+        /**
+         *
+         * @return {@code true} if an integration test is to be created, {@code false} otherwise
+         */
         public boolean isIntegrationTests() {
             return integrationTests;
         }
 
+        /**
+         *
+         * @param integrationTests {@code true} if an integration test is to be created, {@code false} otherwise
+         */
         public void setIntegrationTests(boolean integrationTests) {
             this.integrationTests = integrationTests;
         }

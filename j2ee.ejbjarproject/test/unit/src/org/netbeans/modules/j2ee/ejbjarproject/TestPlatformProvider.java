@@ -53,8 +53,9 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import static org.netbeans.api.java.platform.JavaPlatformManager.PROP_INSTALLED_PLATFORMS;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 

@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -75,7 +75,7 @@ public final class MIMEResolverImpl {
     // enable some tracing
     private static final Logger ERR = Logger.getLogger(MIMEResolverImpl.class.getName());
         
-    static final boolean CASE_INSENSITIVE = Utilities.getOperatingSystem() == Utilities.OS_VMS;
+    static final boolean CASE_INSENSITIVE = BaseUtilities.getOperatingSystem() == BaseUtilities.OS_VMS;
 
     // notification limit in bytes for reading file content. It should not exceed 4192 (4kB) because it is read in one disk touch.
     private static final int READ_LIMIT = 4000;

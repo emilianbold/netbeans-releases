@@ -142,7 +142,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             final FileObject fo = FileUtil.getConfigFile(String.format("%s.instance",name));    //NOI18N
             if (fo != null) {
                 try {
-                    name = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.<FileObject>singleton(fo));
+                    name = fo.getFileSystem().getDecorator().annotateName(fo.getName(), Collections.<FileObject>singleton(fo));
                 } catch (FileStateInvalidException ex) {
                     name = fo.getName();
                 }

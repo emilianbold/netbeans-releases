@@ -150,25 +150,21 @@ public class ExposeBusinessMethod implements Fix {
     }
 
     // adapted from org.netbeans.modules.java.hints.errors.Utilities
-    private ChangeInfo commitAndComputeChangeInfo(FileObject target, ModificationResult diff) throws IOException {
+    private ChangeInfo commitAndComputeChangeInfo(final FileObject target, ModificationResult diff) throws IOException {
         List<? extends Difference> differences = diff.getDifferences(target);
         ChangeInfo result = null;
 
         // need to save the modified doc so that changes are recognized, see #112888
         CloneableEditorSupport docToSave = null;
-
         try {
             if (differences != null) {
                 for (Difference d : differences) {
                     if (d.getNewText() != null) { //to filter out possible removes
-                        final PositionRef start = d.getStartPosition();
-                        Document doc = start.getCloneableEditorSupport().getDocument();
-
-                        if (doc == null) {
-                            doc = start.getCloneableEditorSupport().openDocument();
+                        final Position start = d.getStartPosition();
+                        Document doc = d.openDocument();
+                        if (docToSave == null) {
+                            docToSave = target.getLookup().lookup(CloneableEditorSupport.class);
                         }
-
-                        docToSave = start.getCloneableEditorSupport();
                         final Position[] pos = new Position[1];
                         final Document fdoc = doc;
 

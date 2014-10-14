@@ -52,17 +52,13 @@ import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +68,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class RunUserActionTaskTest extends NbTestCase {
+public class RunUserActionTaskTest extends ParsingTestBase {
     
     public RunUserActionTaskTest (String testName) {
         super (testName);
@@ -90,7 +86,6 @@ public class RunUserActionTaskTest extends NbTestCase {
     public void testEmbedding () throws Exception {
         
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class);
         final Counter counter = new Counter ();
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"), 
@@ -189,7 +184,6 @@ public class RunUserActionTaskTest extends NbTestCase {
     public void testCachingOfTopLevelParser () throws Exception {
 
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class);
         final Counter counter = new Counter ();
         final Snapshot[] snapshots = new Snapshot [1];
         final Parser[] parser = new Parser [1];
@@ -284,7 +278,6 @@ public class RunUserActionTaskTest extends NbTestCase {
     public void testCachingOfSecondLevelParser () throws Exception {
         
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class);
         final Counter counter = new Counter ();
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"), 
@@ -400,7 +393,6 @@ public class RunUserActionTaskTest extends NbTestCase {
     public void testCachingOfSecondLevelParserAfterChange () throws Exception {
         
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class);
         final Counter counter = new Counter ();
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"), 

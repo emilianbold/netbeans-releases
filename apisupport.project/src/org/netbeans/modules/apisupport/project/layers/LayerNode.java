@@ -68,6 +68,8 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.ImageDecorator;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.ChildFactory;
@@ -183,63 +185,66 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
                     }
                 });
             }
-            @Override
-            public FileSystem.Status getStatus() {
-                return new FileSystem.HtmlStatus() {
-                    @Override public String annotateNameHtml(String name, Set<? extends FileObject> files) {
-                        String nonHtmlLabel = status.annotateName(name, files);
-                        if (files.size() == 1 && ((FileObject) files.iterator().next()).isRoot()) {
-                            nonHtmlLabel = rootLabel;
+            
+            class Dec implements StatusDecorator, ImageDecorator {
+                @Override public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+                    String nonHtmlLabel = status.annotateName(name, files);
+                    if (files.size() == 1 && ((FileObject) files.iterator().next()).isRoot()) {
+                        nonHtmlLabel = rootLabel;
+                    }
+                    String htmlLabel;
+                    try {
+                        htmlLabel = XMLUtil.toElementContent(nonHtmlLabel);
+                    } catch (CharConversionException e) {
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        htmlLabel = nonHtmlLabel;
+                    }
+                    boolean deleted = false;
+                    for( FileObject fo : files ) {
+                        if( fo.getNameExt().endsWith(LayerUtil.HIDDEN) ) {
+                            deleted = true;
+                            break;
                         }
-                        String htmlLabel;
-                        try {
-                            htmlLabel = XMLUtil.toElementContent(nonHtmlLabel);
-                        } catch (CharConversionException e) {
-                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                            htmlLabel = nonHtmlLabel;
-                        }
-                        boolean deleted = false;
-                        for( FileObject fo : files ) {
-                            if( fo.getNameExt().endsWith(LayerUtil.HIDDEN) ) {
-                                deleted = true;
+                    }
+                    if (highlighted != null) {
+                        // Boldface resources which do come from this project.
+                        boolean local = false;
+                        Iterator it = files.iterator();
+                        while (it.hasNext()) {
+                            FileObject f = (FileObject) it.next();
+                            if (!f.isRoot() && highlighted.findResource(f.getPath()) != null) {
+                                local = true;
                                 break;
                             }
                         }
-                        if (highlighted != null) {
-                            // Boldface resources which do come from this project.
-                            boolean local = false;
-                            Iterator it = files.iterator();
-                            while (it.hasNext()) {
-                                FileObject f = (FileObject) it.next();
-                                if (!f.isRoot() && highlighted.findResource(f.getPath()) != null) {
-                                    local = true;
-                                    break;
-                                }
-                            }
-                            if (local) {
-                                htmlLabel = "<b>" + htmlLabel + "</b>"; // NOI18N
-                            }
+                        if (local) {
+                            htmlLabel = "<b>" + htmlLabel + "</b>"; // NOI18N
                         }
-                        if( deleted ) {
-                            htmlLabel = "<s>" + htmlLabel + "</s>"; //NOI18N
-                        }
-                        return htmlLabel;
                     }
-                    @Override public String annotateName(String name, Set<? extends FileObject> files) {
-                        // Complex to explain why this is even called, but it is.
-                        // Weird b/c hacks in the way DataNode.getHtmlDisplayName works.
-                        return name;
+                    if( deleted ) {
+                        htmlLabel = "<s>" + htmlLabel + "</s>"; //NOI18N
                     }
-                    @Override public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-                        return status.annotateIcon(icon, iconType, files);
-                    }
-                };
+                    return htmlLabel;
+                }
+                @Override public String annotateName(String name, Set<? extends FileObject> files) {
+                    // Complex to explain why this is even called, but it is.
+                    // Weird b/c hacks in the way DataNode.getHtmlDisplayName works.
+                    return name;
+                }
+                @Override public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
+                    return status.annotateIcon(icon, iconType, files);
+                }
+            }
+            
+            @Override
+            public StatusDecorator getDecorator() {
+                return new Dec();
             }
             @Override
             public String getDisplayName() {
                 return FileUtil.getFileDisplayName(layer);
             }
-            @Override
+            
             public SystemAction[] getActions(Set<FileObject> foSet) {
                 return new SystemAction[] {
                     SystemAction.get(PickNameAction.class),

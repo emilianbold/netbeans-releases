@@ -182,7 +182,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
         EnumSet<Tree.Kind> treeKindContexts = EnumSet.noneOf(Tree.Kind.class);
         HashSet stringContexts = new HashSet();
         getTemplateContexts(template, treeKindContexts, stringContexts);
-        return treeKindContexts.isEmpty() && stringContexts.isEmpty() || treeKindContexts.contains(treeKindCtx) || stringContexts.contains(stringCtx);
+        return treeKindContexts.isEmpty() && stringContexts.isEmpty() && treeKindCtx != Tree.Kind.STRING_LITERAL || treeKindContexts.contains(treeKindCtx) || stringContexts.contains(stringCtx);
     }
     
     private void getTemplateContexts(CodeTemplate template, EnumSet<Tree.Kind> treeKindContexts, HashSet<String> stringContexts) {

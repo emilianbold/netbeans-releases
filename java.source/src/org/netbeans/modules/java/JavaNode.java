@@ -82,12 +82,7 @@ import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.spi.java.loaders.RenameHandler;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -354,7 +349,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
         }
         try {
             final FileObject fo = getDataObject().getPrimaryFile ();
-            computed = fo.getFileSystem ().getStatus ().annotateIcon (
+            computed = FileUIUtils.getImageDecorator(fo.getFileSystem ()).annotateIcon (
                 computed,
                 type,
                 Collections.singleton(fo));

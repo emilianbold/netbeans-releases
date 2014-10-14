@@ -49,13 +49,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.MockServices;
 import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -71,6 +69,7 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -91,10 +90,14 @@ public class SchedulerEventTest extends IndexingAwareTestCase {
     }
 
     @Override
+    protected Class[] getServices() {
+        return new Class[] { Scheduler1.class, Scheduler2.class };
+    }
+    
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        MockServices.setServices(Scheduler1.class, Scheduler2.class);
         MockMimeLookup.setInstances(
                 MimePath.get(MIME_FOO),
                 new FooParser.Factory(),
@@ -120,7 +123,7 @@ public class SchedulerEventTest extends IndexingAwareTestCase {
         final Modification mod = Modification.getDefault();
         mod.expect(Task1.class, 0);
         mod.expect(Task2.class, 0);
-        for (Scheduler scheduler : Schedulers.getSchedulers ()) {
+        for (Scheduler scheduler : Utilities.getEnvFactory().getSchedulers(Lookup.getDefault())) {
             if (scheduler instanceof BaseScheduler) {
                 ((BaseScheduler) scheduler).schedule (source);
             }

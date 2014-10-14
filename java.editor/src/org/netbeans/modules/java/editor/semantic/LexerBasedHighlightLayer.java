@@ -36,16 +36,14 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
+import org.netbeans.modules.java.editor.base.semantic.ColoringAttributes.Coloring;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
-import org.openide.text.NbDocument;
 
 /**
  *

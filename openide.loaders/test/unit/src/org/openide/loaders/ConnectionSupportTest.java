@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import junit.framework.TestCase;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.ConnectionCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -170,6 +171,7 @@ public class ConnectionSupportTest extends TestCase {
         private Lkp (InstanceContent ic) {
             super (ic);
             ic.add (new Pool ());
+            ic.add (new NbMutexEventProvider());
         }
     }
     

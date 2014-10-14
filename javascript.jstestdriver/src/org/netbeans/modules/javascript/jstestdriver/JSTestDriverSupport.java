@@ -69,7 +69,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.libs.jstestdriver.api.JsTestDriver;
 import org.netbeans.libs.jstestdriver.api.ServerListener;
 import org.netbeans.libs.jstestdriver.api.TestListener;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.Report;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
@@ -556,9 +556,10 @@ public class JSTestDriverSupport {
         })
         public Listener(Project project, Rerun rerun) {
             manager = Manager.getInstance();
+            manager.setNodeFactory(new JSTestDriverTestRunnerNodeFactory(new CallStackCallback(project)));
             testSession = new TestSession(
                     Bundle.JsTestDriverSupport_runner_title(ProjectUtils.getInformation(project).getDisplayName()),
-                    project, TestSession.SessionType.TEST, new JSTestDriverTestRunnerNodeFactory(new CallStackCallback(project)));
+                    project, TestSession.SessionType.TEST);
             testSession.setRerunHandler(rerun);
             manager.testStarted(testSession);
         }

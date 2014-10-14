@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.projectapi.TimedWeakReference;
+import org.netbeans.modules.projectapi.nb.TimedWeakReference;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;

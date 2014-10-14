@@ -54,6 +54,47 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
     
+    public void testMoveGenericReturn() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "import java.util.List;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    List<String> i() { return null; }\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(a.i());\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "import java.util.List;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(b.i());\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "import java.util.List;\n"
+                + "public class B {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(i());\n"
+                + "    }\n"
+                + "    /** Something about i */\n"
+                + "    public List<String> i() { return null; }\n"
+                + "}\n"));
+    }
+    
     public void testMoveKeepOld() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

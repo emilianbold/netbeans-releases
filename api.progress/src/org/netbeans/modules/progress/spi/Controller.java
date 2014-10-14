@@ -45,23 +45,19 @@
 
 package org.netbeans.modules.progress.spi;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import org.netbeans.progress.module.TrivialProgressUIWorkerProvider;
-import org.openide.util.Lookup;
+import org.netbeans.progress.module.DefaultHandleFactory;
+import org.netbeans.progress.module.TrivialProgressBaseWorkerProvider;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Milos Kleint (mkleint@netbeans.org)
  * @since org.netbeans.api.progress/1 1.18
  */
-public /* final - because of tests */ class Controller {
+public class Controller {
     
     // non-private so that it can be accessed from the tests
     public static Controller defaultInstance;
@@ -70,7 +66,6 @@ public /* final - because of tests */ class Controller {
     private TaskModel model;
     private List<ProgressEvent> eventQueue;
     private boolean dispatchRunning;
-    protected Timer timer;
     private long timerStart = 0;
     private static final int TIMER_QUANTUM = 400;
     
@@ -86,44 +81,37 @@ public /* final - because of tests */ class Controller {
         model = new TaskModel();
         eventQueue = new LinkedList<ProgressEvent>();
         dispatchRunning = false;
-        timer = new Timer(TIMER_QUANTUM, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                runNow();
-            }
-        });
-        timer.setRepeats(false);
     }
 
     public static synchronized Controller getDefault() {
         if (defaultInstance == null) {
-            defaultInstance = new Controller(null);
+            ProgressEnvironment f = DefaultHandleFactory.get();
+            defaultInstance = f.getController();
         }
         return defaultInstance;
     }
     
-    // to be called on the default instance only..
-    public Component getVisualComponent() {
-        if (component == null) {
-            getProgressUIWorker();
-        }
-        if (component instanceof Component) {
-            return (Component)component;
-        }
-        return null;
+    /**
+     * Creates a worker. The default implementation creates a trivial no-op
+     * worker. Subclasses should override to create a meaningful worker implementation.
+     * @return worker instance 
+     */
+    protected ProgressUIWorkerWithModel createWorker() {
+        Logger.getLogger(Controller.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
+        return new TrivialProgressBaseWorkerProvider().getDefaultWorker();
     }
     
-    ProgressUIWorker getProgressUIWorker()
+    /**
+     * Retrieves the ProgressUIWorker instance.
+     * The instance is lazily created by calling {@link #createWorker}.
+     * @return ProgressUIWorker instance
+     */
+    protected final ProgressUIWorker getProgressUIWorker()
     {
         if (component == null)
         {
-            ProgressUIWorkerProvider prov = Lookup.getDefault().lookup(ProgressUIWorkerProvider.class);
-            if (prov == null) {
-                Logger.getLogger(Controller.class.getName()).log(Level.CONFIG, "Using fallback trivial progress implementation");
-                prov = new TrivialProgressUIWorkerProvider();
-            }
-            ProgressUIWorkerWithModel prgUIWorker = prov.getDefaultWorker();
-            prgUIWorker.setModel(defaultInstance.getModel());
+            ProgressUIWorkerWithModel prgUIWorker = createWorker();
+            prgUIWorker.setModel(getDefault().getModel());
             component = prgUIWorker;
         }
         return component;
@@ -211,50 +199,104 @@ public /* final - because of tests */ class Controller {
             dispatchRunning = true;
         }
         // trigger ui update as fast as possible.
-        if (SwingUtilities.isEventDispatchThread()) {
-           runNow();
-        } else {
-           SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    runNow();
-                }
-            });
-        }
-        
+        runEvents();
     }
     
     void postEvent(final ProgressEvent event) {
         postEvent(event, false);
     }
     
+    /**
+     * Schedules a callback after `delay' milliseconds. If there's some initial
+     * delay, and `shorten' is true, the delay is shortened to be minimum of the current
+     * delay and the `delay'.
+     * <p/>
+     * The scheduler ticks can be disabled if the specified `delay' is 0.
+     * <p/>
+     * This method is to be implemented by environment-specific subclass, to use the target
+     * platform scheduling support to invoke the 'runNow' method after the specified period.
+     * <p/>
+     * The default implementation uses a private RequestProcessor thread.
+     * @param delay the delay after which the callback should be fired. -1 means no chage to the configured delay. 0 means to stop
+     * @param shorten if the current delay is shorter than the `delay', keep the current one. If false, always configure the delay
+     * @param activate restart ticks. If false, just configure the scheduler.
+     */
+    final void schedule(int delay, boolean shorten, boolean activate) {
+        if (delay != -1) {
+            if (shorten && taskDelay < delay) {
+                delay = taskDelay;
+            }
+        } else {
+            delay = taskDelay;
+        }
+        this.taskDelay = delay;
+        
+        resetTimer(delay, activate);
+    }
+    
+    private int taskDelay = TIMER_QUANTUM;
+    
+    private static final RequestProcessor RQ = new RequestProcessor(Controller.class.getName());
+    
+    private final RequestProcessor.Task   task = RQ.create(new Runnable() {
+        public void run() {
+            runEvents();
+        }
+    });
+    
     void postEvent(final ProgressEvent event, boolean shortenPeriod) {
         synchronized (this) {
             eventQueue.add(event);
             if (!dispatchRunning) {
                 timerStart = System.currentTimeMillis();
-                int delay = timer.getInitialDelay();
-                // period of timer is longer than required by the handle -> shorten it.
-                if (shortenPeriod && timer.getInitialDelay() > event.getSource().getInitialDelay()) {
-                    delay = event.getSource().getInitialDelay();
-                } 
                 dispatchRunning = true;
-                resetTimer(delay, true);
+                schedule(shortenPeriod ? event.getSource().getInitialDelay() : -1, shortenPeriod, true);
             } else if (shortenPeriod) {
                 // time remaining is longer than required by the handle's initial delay.
                 // restart with shorter time.
                 if (System.currentTimeMillis() - timerStart > event.getSource().getInitialDelay()) {
-                    resetTimer(event.getSource().getInitialDelay(), true);
+                    schedule(event.getSource().getInitialDelay(), false, true);
                 }
             }
         }
     }
     
-    protected void resetTimer(int initialDelay, boolean restart) {
-        timer.setInitialDelay(initialDelay);
-        if (restart) {
-            timer.restart();
+    /**
+     * The method is responsible to start or stop a timing service in the environment.
+     * If "delay" is 0 or less, the method should stop the timer, or at least not call
+     * the {@link #runEvents} if the timer ticks. 
+     * <p/>
+     * If "delay" is positive, the method should configure the timer to fire after
+     * "delay" milliseconds. Depending on "restart" parameter, the timer should
+     * be just configured (false), or activated (true) - potentially canceling the previous
+     * schedule.
+     * <p/>
+     * The default implementation uses {@link RequestProcessor} for scheduling.
+     * 
+     * @param delay delay in milliseconds before the timer should fire 
+     * @param activate if true, activate the changes immediately. 
+     */
+    protected void resetTimer(int delay, boolean activate) {
+        if (delay > 0) {
+            if (activate) {
+                task.schedule(delay);
+            }
+        } else {
+            assert activate;
+            task.cancel();
         }
+    }
+
+    /**
+     * Processes the queued events. Depending on environment, planning to a specific thread,
+     * or passing some specific information may be necessary. 
+     */
+    protected void runEvents() {
+        RQ.execute(new Runnable() {
+            public void run() {
+                runNow();
+            }
+        });
     }
      
     
@@ -339,13 +381,13 @@ public /* final - because of tests */ class Controller {
             component.processProgressEvent(event);
         }
         synchronized (this) {
-            timer.stop();
+            schedule(0, false, true);
             if (hasShortOne) {
                 timerStart = System.currentTimeMillis();
-                resetTimer((int)Math.max(100, minDiff), true);
+                schedule((int)Math.max(100, minDiff), false, true);
             } else {
                 dispatchRunning = false;
-                resetTimer(TIMER_QUANTUM, !eventQueue.isEmpty());
+                schedule(TIMER_QUANTUM, false, !eventQueue.isEmpty());
             }
         }
     }

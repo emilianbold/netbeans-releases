@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 final class LocaleVariants implements Stamps.Updater {
     private static final Logger err = Util.err;
@@ -237,7 +237,7 @@ final class LocaleVariants implements Stamps.Updater {
     static synchronized String[] getLocalizingSuffixesFast() {
         if (suffixes == null ||
                 Locale.getDefault() != lastLocale ||
-                !Utilities.compareObjects(NbBundle.getBranding(), lastBranding)) {
+                !BaseUtilities.compareObjects(NbBundle.getBranding(), lastBranding)) {
             List<String> _suffixes = new ArrayList<String>();
             Iterator<String> it = NbBundle.getLocalizingSuffixes();
             while (it.hasNext()) {

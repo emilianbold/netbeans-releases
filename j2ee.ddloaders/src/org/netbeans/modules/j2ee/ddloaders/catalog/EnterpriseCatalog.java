@@ -38,12 +38,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -54,7 +53,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Erno Mononen
  */
-public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor, EntityResolver  {
+public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver  {
 
     private static final String J2EE_NS = "http://java.sun.com/xml/ns/j2ee"; //NOI18N
     private static final String JAVAEE_NS = "http://java.sun.com/xml/ns/javaee"; //NOI18N
@@ -136,8 +135,8 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
 
     }
     
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/j2ee/ddloaders/catalog/resources/DDCatalog.gif"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/j2ee/ddloaders/catalog/resources/DDCatalog.gif"; // NOI18N
     }
 
     public String getDisplayName() {

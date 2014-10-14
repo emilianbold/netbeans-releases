@@ -69,7 +69,7 @@ import org.openide.util.Exceptions;
  *
  * @author vita
  */
-public class SourceTest extends NbTestCase {
+public class SourceTest extends ParsingTestBase {
 
     public SourceTest(String name) {
         super(name);
@@ -232,6 +232,7 @@ public class SourceTest extends NbTestCase {
     }
 
     public void testMimeTypeChange() throws IOException {
+        clearWorkDir();
         final FileObject file = createFileObject("empty.foo", "", "\n");
         final Source source = Source.create(file);
         assertNotNull("No Source for " + file, source);
@@ -327,7 +328,7 @@ public class SourceTest extends NbTestCase {
                         try {
                             startLatch1.await();
                             startLatch2.countDown();
-                            SourceAccessor.getINSTANCE().getEventSupport(source).resetState(true, false, 0, 0, false);
+                            SourceAccessor.getINSTANCE().getEnvControl(source).sourceChanged(false);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }

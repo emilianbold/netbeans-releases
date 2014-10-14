@@ -57,7 +57,7 @@ import org.xml.sax.SAXException;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 
 /** Catalog for webservice related schemas that enables completion support in
@@ -66,7 +66,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
  * @author Milan Kuchiak
  *
  */
-public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
+public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver {
 
     public static final String SUN_JAXWS_ID = "http://java.sun.com/xml/ns/jax-ws/ri/runtime"; // NOI18N
     private static final String URL_SUN_JAXWS = "nbres:/org/netbeans/modules/websvc/core/resources/sun-jaxws.xsd"; // NOI18N
@@ -141,8 +141,8 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
-    public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/websvc/core/resources/WSSchemaCatalog.png"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/websvc/core/resources/WSSchemaCatalog.png"; // NOI18N
     }
 
     /**

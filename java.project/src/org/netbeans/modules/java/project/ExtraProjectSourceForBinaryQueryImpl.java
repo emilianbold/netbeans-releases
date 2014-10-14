@@ -70,7 +70,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -168,7 +168,7 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
                                 // #138349 - ignore non existing paths or entries with undefined IDE variables
                                 if (src.exists()) {
                                     try {
-                                        URL url = Utilities.toURI(src).toURL();
+                                        URL url = BaseUtilities.toURI(src).toURL();
                                         if (FileUtil.isArchiveFile(url)) {
                                             url = FileUtil.getArchiveRoot(url);
                                         }

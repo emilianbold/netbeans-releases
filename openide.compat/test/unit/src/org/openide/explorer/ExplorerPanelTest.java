@@ -55,6 +55,7 @@ import org.netbeans.junit.NbTestCase;
 
 import javax.swing.Action;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -552,6 +553,7 @@ public class ExplorerPanelTest extends NbTestCase {
             super (ic);
             ic.add (new Clb ("Testing clipboard"));
             ic.add (new YesDialogDisplayer());
+            ic.add (new NbMutexEventProvider());
         }
     }
     

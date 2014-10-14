@@ -65,7 +65,7 @@ import org.netbeans.modules.xml.catalog.lib.*;
  * @author  Petr Kuzel
  */
 public final class XCatalog extends AbstractCatalog
-       implements CatalogReader, CatalogDescriptor, Serializable, EntityResolver {
+       implements CatalogReader, CatalogDescriptor2, Serializable, EntityResolver {
     
     /** Serial Version UID MUST NOT change. */
     private static final long serialVersionUID = 06022001L;
@@ -124,7 +124,7 @@ public final class XCatalog extends AbstractCatalog
     
     private transient String shortDescription;
     
-    private transient Image icon;
+    private transient String icon;
     
     
     // INIT ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -190,10 +190,9 @@ public final class XCatalog extends AbstractCatalog
     }
     
     /** Update and fire. */
-    private void updateIcon(Image newIcon) {
-        Image old = icon;
+    private void updateIcon(String newIcon) {
         icon = newIcon;
-        firePropertyChange(PROP_CATALOG_ICON, old, icon);
+        firePropertyChange(PROP_CATALOG_ICON, null, null);
     }
     
     // Properties (serialized) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -244,7 +243,8 @@ public final class XCatalog extends AbstractCatalog
         }
     }
         
-    public Image getIcon(int type) {
+    public String getIconResource(int type) {
+        // let the node to get the icon from the BeanInfo
         return icon;
     }
     

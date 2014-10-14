@@ -96,6 +96,23 @@ modules are added and managed.
     everyone who wishes to learn more about the NetBeans runtime container
     behaviour.
   </usecase>
+  <usecase id="patchfor" name="Runtime compatibility patches">
+      <p>
+        To maintain binary compatibility, method implementations may be injected
+        at runtime, in a form of a superclass in the class' inheritance hierarchy.
+        Modules compiled against older version of APIs which contains MethodReferences to 
+        methods removed from the oficial APIs will be then linked according to JVM Resolution
+        algorithm to a matching method present in the superclass of the referenced type.
+      </p>
+      <p>
+        Annotations are used to instruct the ClassLoader to make transformations to the API
+          classes. <a href="@TOP@/org/netbeans/modules/PatchFor.html">PatchFor</a> causes the annotated
+          class to be injected as a superclass of the API class identified by the annotation's value.
+          <a href="@TOP@/org/netbeans/modules/ConstructorDelegate.html">ConstructorDelegate</a> marks
+          a method, which is called as constructor implementation in the case that it is necessary
+          to preserve a constructor for binary compatibility.
+      </p>
+  </usecase>
 </answer>
 
 

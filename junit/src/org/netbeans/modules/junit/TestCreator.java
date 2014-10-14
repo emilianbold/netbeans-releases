@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.junit;
 
+import org.netbeans.modules.junit.api.JUnitTestUtil;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -109,7 +110,7 @@ public final class TestCreator implements TestabilityJudge {
             case JUNIT3:
                 testGenerator = new JUnit3TestGenerator(
                         setup,
-                        TestUtil.getSourceLevel(testFileObj));
+                        JUnitTestUtil.getSourceLevel(testFileObj));
                 break;
             case JUNIT4:
                 testGenerator = new JUnit4TestGenerator(setup);
@@ -135,7 +136,7 @@ public final class TestCreator implements TestabilityJudge {
                       Collections.singletonList(topClassToTest),
                       null,
                       isNewTestClass,
-                      TestUtil.getSourceLevel(testFileObj));
+                      JUnitTestUtil.getSourceLevel(testFileObj));
                 break;
             case JUNIT4:
                 testGenerator = new JUnit4TestGenerator(
@@ -163,7 +164,7 @@ public final class TestCreator implements TestabilityJudge {
                       null,
                       suiteMembers,
                       isNewTestClass,
-                      TestUtil.getSourceLevel(testFileObj));
+                      JUnitTestUtil.getSourceLevel(testFileObj));
                 break;
             case JUNIT4:
                 testGenerator = new JUnit4TestGenerator(
