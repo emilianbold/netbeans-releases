@@ -88,7 +88,7 @@ public class ExistingClientSideProjectPanel implements WizardDescriptor.Panel<Wi
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.NAME, getComponent().getProjectName());
         File folder = getNormalizedFile(getComponent().getFolder());
         if (library) {
-            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingJsLibraryProjectWizard.SOURCE_ROOT, folder);
+            //wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingJsLibraryProjectWizard.SOURCE_ROOT, folder);
         } else {
             wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.SITE_ROOT, folder);
             wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.TEST_ROOT, getNormalizedFile(getComponent().getTestDir()));
