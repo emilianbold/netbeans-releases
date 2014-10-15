@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import java.util.ArrayList;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -52,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -174,7 +177,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
     }
 
     public static class BinaryWizardStorage {
-        private FSPath binaryPath;
+        private List<FSPath> binaryPath;
         private FSPath sourceFolderPath;
         private final SelectBinaryPanel controller;
 
@@ -182,12 +185,18 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
             this.controller = controller;
         }
 
-        public FSPath getBinaryPath() {
+        public List<FSPath> getBinaryPath() {
             return binaryPath;
         }
 
-        public void setBinaryPath(FSPath path) {
-            this.binaryPath = path;
+        public void setBinaryPath(FileSystem fs, String path) {
+            binaryPath = new ArrayList<FSPath>();
+            for(String s : path.split("\"")) { //NOI18N
+                String p = s.trim();
+                if (!p.isEmpty()) {
+                    binaryPath.add(new FSPath(fs, p));
+                }
+            }
             controller.validate();
         }
 

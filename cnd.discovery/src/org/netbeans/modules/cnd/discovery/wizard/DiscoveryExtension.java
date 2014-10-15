@@ -192,7 +192,12 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("dwarf-executable"); // NOI18N
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
-            provider.getProperty("libraries").setValue(new String[0]); // NOI18N
+            String aditionalLibraries = descriptor.getAditionalLibraries();
+            if (aditionalLibraries == null || aditionalLibraries.isEmpty()) {
+                provider.getProperty("libraries").setValue(new String[0]); // NOI18N
+            } else {
+                provider.getProperty("libraries").setValue(aditionalLibraries.split(";")); // NOI18N
+            }
             provider.getProperty("filesystem").setValue(descriptor.getFileSystem()); // NOI18N
             ProviderProperty property = provider.getProperty("find_main");
             if (property != null) {
