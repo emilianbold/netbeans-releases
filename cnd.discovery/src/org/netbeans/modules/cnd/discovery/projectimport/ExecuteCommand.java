@@ -207,6 +207,7 @@ public class ExecuteCommand {
                 outConvertorFactory(processChangeListener);
 
         descr.noReset(true);
+        inputOutput.getOut().println("cd '"+buildDir+"'"); //NOI18N
         inputOutput.getOut().println(command);       
 
         return NativeExecutionService.newService(npb, descr, name);
