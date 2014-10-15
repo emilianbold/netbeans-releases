@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.debugger.jpda.js.vars.tooltip;
 
-import java.util.concurrent.CancellationException;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.Session;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.Closeable;
+import java.io.IOException;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.js.JSUtils;
-import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
-import org.openide.util.Pair;
+import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
 
 /**
  *
- * @author Martin
+ * @author Martin Entlicher
  */
-public final class ToolTipAnnotation extends AbstractJSToolTipAnnotation<JPDADebuggerTooltipSupport> {
+final class JPDADebuggerTooltipSupport implements DebuggerTooltipSupport, PropertyChangeListener {
     
-    @Override
-    protected JPDADebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
-        if (engine != session.getEngineForLanguage(JSUtils.JS_STRATUM)) {
-            return null;
-        }
-        JPDADebugger d = engine.lookupFirst(null, JPDADebugger.class);
-        if (d == null) {
-            return null;
-        }
-        CallStackFrame frame = d.getCurrentCallStackFrame();
-        if (frame == null) {
-            return null;
-        }
-        return new JPDADebuggerTooltipSupport(d, frame);
+    private final JPDADebugger debugger;
+    private final CallStackFrame frame;
+    private Closeable closeable;
+    
+    JPDADebuggerTooltipSupport(JPDADebugger debugger, CallStackFrame frame) {
+        this.debugger = debugger;
+        this.frame = frame;
+    }
+
+    public JPDADebugger getDebugger() {
+        return debugger;
+    }
+
+    public CallStackFrame getFrame() {
+        return frame;
     }
 
     @Override
-    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, JPDADebuggerTooltipSupport dbg) throws CancellationException {
-        String toolTipText;
-        CallStackFrame frame = dbg.getFrame();
+    public void addCloseable(Closeable closeable) {
+        this.closeable = closeable;
+        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
+    }
+
+    @Override
+    public void removeCloseable(Closeable closeable) {
+        debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
         try {
-            Variable result = DebuggerSupport.evaluate(dbg.getDebugger(), frame, expression);
-            if (result == null) {
-                throw new CancellationException();
-            }
-            toolTipText = expression + " = " + DebuggerSupport.getVarValue(dbg.getDebugger(), result);
-        } catch (InvalidExpressionException ex) {
-            toolTipText = expression + " = >" + ex.getMessage () + "<";
-        }
-        return Pair.of(toolTipText, null);
+            closeable.close();
+        } catch (IOException ex) {}
     }
     
 }

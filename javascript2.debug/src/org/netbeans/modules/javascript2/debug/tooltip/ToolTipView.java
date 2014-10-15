@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.javascript.debugger.annotation;
+package org.netbeans.modules.javascript2.debug.tooltip;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -51,6 +51,8 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionListener;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -65,31 +67,28 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Keymap;
 import org.netbeans.editor.ext.ToolTipSupport;
-import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel.ScopedRemoteObject;
-import org.netbeans.modules.web.webkit.debugging.api.Debugger;
-import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ui.ViewFactory;
 
 // <RAVE>
 // Implement HelpCtx.Provider interface to provide help ids for help system
 // public class CallStackView extends TopComponent {
 // ====
-public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.Provider {
+final class ToolTipView extends JComponent implements org.openide.util.HelpCtx.Provider {
 // </RAVE>
     
     public static final String TOOLTIP_VIEW_NAME = "ToolTipView";
 
     private static volatile String expression;
-    private static volatile ScopedRemoteObject variable;
+    private static volatile Object variable;
 
     private transient JComponent contentComponent;
-    private Debugger debugger;
-    private Debugger.Listener debuggerStateChangeListener;
+    private final DebuggerTooltipSupport dbgts;
+    private final DebuggerStateChangeListener debuggerStateChangeListener;
     private ToolTipSupport toolTipSupport;
     private String name; // Store just the name persistently, we'll create the component from that
     
-    private ToolTipView(Debugger debugger, String expression, ScopedRemoteObject v, String icon) {
-        this.debugger = debugger;
+    private ToolTipView(DebuggerTooltipSupport dbgts, String expression, Object v, String icon) {
+        this.dbgts = dbgts;
         ToolTipView.expression = expression;
         variable = v;
         this.name = TOOLTIP_VIEW_NAME;
@@ -101,14 +100,14 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         setLayout (new BorderLayout ());
         add (c, BorderLayout.CENTER);  //NOI18N
         debuggerStateChangeListener = new DebuggerStateChangeListener();
-        debugger.addListener(debuggerStateChangeListener);
+        dbgts.addCloseable(debuggerStateChangeListener);
     }
 
     static String getExpression() {
         return expression;
     }
 
-    static ScopedRemoteObject getVariable() {
+    static Object getVariable() {
         return variable;
     }
 
@@ -117,7 +116,16 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     }
     
     private void closeToolTip() {
-        toolTipSupport.setToolTipVisible(false);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    toolTipSupport.setToolTipVisible(false);
+                }
+            });
+        } else {
+            toolTipSupport.setToolTipVisible(false);
+        }
     }
     
     //protected void componentHidden () {
@@ -125,7 +133,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     public void removeNotify() {
         super.removeNotify();//componentHidden ();
         variable = null;
-        debugger.removeListener(debuggerStateChangeListener);
+        dbgts.removeCloseable(debuggerStateChangeListener);
     }
     
     // <RAVE>
@@ -164,11 +172,11 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     
 
     /** Creates the view. */
-    public static synchronized ToolTipView getToolTipView(Debugger d, String expression, ScopedRemoteObject v) {
+    public static synchronized ToolTipView createToolTipView(DebuggerTooltipSupport dbg, String expression, Object variable) {
         return new ToolTipView(
-                d,
+                dbg,
                 expression,
-                v,
+                variable,
                 "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"
         );
     }
@@ -332,28 +340,11 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         }
     }
     
-    private class DebuggerStateChangeListener implements Debugger.Listener {
+    private class DebuggerStateChangeListener implements Closeable {
 
         @Override
-        public void paused(List<CallFrame> callStack, String reason) {}
-
-        @Override
-        public void resumed() {
-            doCloseToolTip();
-        }
-
-        @Override
-        public void reset() {
-            doCloseToolTip();
-        }
-        
-        private void doCloseToolTip() {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    closeToolTip();
-                }
-            });
+        public void close() {
+            closeToolTip();
         }
         
     }
