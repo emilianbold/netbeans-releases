@@ -92,6 +92,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @StaticResource
     private static final String NEW_HTML5_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/new-html5-project.png"; // NOI18N
+    @StaticResource
     private static final String NEW_JS_LIBRARY_ICON = "org/netbeans/modules/web/clientproject/ui/resources/new-js-library.png"; // NOI18N
 
     private final Wizard wizard;
