@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ui.wizard.ClientSideProjectWizardIterator;
+import org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProjectPanel;
 import org.netbeans.modules.web.clientproject.ui.wizard.ToolsPanel;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -60,7 +62,33 @@ import org.openide.util.Pair;
  */
 public final class CreateProjectUtils {
 
+    /**
+     * Constant for project directory.
+     * @see #createBaseWizardPanel(String)
+     */
+    public static final String PROJECT_DIRECTORY = ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY;
+    /**
+     * Constant for project name.
+     * @see #createBaseWizardPanel(String)
+     */
+    public static final String PROJECT_NAME = ClientSideProjectWizardIterator.Wizard.NAME;
+
+
     private CreateProjectUtils() {
+    }
+
+    /**
+     * Create base wizard panel for new HTML5 projects. This panel contains the base information
+     * about project, e.g. name, location etc. These properties are stored in the given {@link WizardDescriptor}.
+     * @param projectNameTemplate default project name, e.g. "JsLibrary"
+     * @return base wizard panel for new HTML5 projects together with its default display name
+     * @see #PROJECT_DIRECTORY
+     * @see #PROJECT_NAME
+     */
+    @NbBundle.Messages("CreateProjectUtils.nameLocation.displayName=Name and Location")
+    public static Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> createBaseWizardPanel(String projectNameTemplate) {
+        return Pair.<WizardDescriptor.FinishablePanel<WizardDescriptor>, String>of(new NewClientSideProjectPanel(projectNameTemplate),
+                Bundle.CreateProjectUtils_nameLocation_displayName());
     }
 
     /**
@@ -70,9 +98,9 @@ public final class CreateProjectUtils {
      * Currently, this panel is always finishable.
      * @return panel for "Tools" (Bower, NPM, Grunt) together with its default display name
      */
-    @NbBundle.Messages("Tools.displayName=Tools")
+    @NbBundle.Messages("CreateProjectUtils.tools.displayName=Tools")
     public static Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> createToolsWizardPanel() {
-        return Pair.<WizardDescriptor.FinishablePanel<WizardDescriptor>, String>of(new ToolsPanel(), Bundle.Tools_displayName());
+        return Pair.<WizardDescriptor.FinishablePanel<WizardDescriptor>, String>of(new ToolsPanel(), Bundle.CreateProjectUtils_tools_displayName());
     }
 
     /**

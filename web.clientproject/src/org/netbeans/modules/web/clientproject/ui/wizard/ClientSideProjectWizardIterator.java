@@ -414,6 +414,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         private static final String HTML_PROJECT_NAME = "HTML5Application"; // NOI18N
 
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
         private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
 
         private boolean withExtenders;
@@ -421,6 +422,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         public NewHtml5ProjectWizard(boolean withExtenders) {
             this.withExtenders = withExtenders;
+            baseWizard = CreateProjectUtils.createBaseWizardPanel(HTML_PROJECT_NAME);
             toolsWizard = CreateProjectUtils.createToolsWizardPanel();
         }
 
@@ -447,7 +449,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"rawtypes", "unchecked"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
-                new NewClientSideProjectPanel(HTML_PROJECT_NAME),
+                baseWizard.first(),
                 new SiteTemplateWizardPanel(),
                 toolsWizard.first(),
             };
@@ -455,13 +457,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         @NbBundle.Messages({
-            "NewProjectWizard.step.createProject=Name and Location",
             "NewProjectWizard.step.chooseSite=Site Template",
         })
         @Override
         public String[] createSteps() {
             return new String[] {
-                Bundle.NewProjectWizard_step_createProject(),
+                baseWizard.second(),
                 Bundle.NewProjectWizard_step_chooseSite(),
                 toolsWizard.second(),
             };
@@ -684,11 +685,13 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         private static final String LIBRARY_PROJECT_NAME = "JsLibrary"; // NOI18N
 
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
         private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
 
 
         public NewJsLibraryProjectWizard() {
-            this.toolsWizard = CreateProjectUtils.createToolsWizardPanel();
+            baseWizard = CreateProjectUtils.createBaseWizardPanel(LIBRARY_PROJECT_NAME);
+            toolsWizard = CreateProjectUtils.createToolsWizardPanel();
         }
 
         @Override
@@ -710,7 +713,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"rawtypes", "unchecked"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
-                new NewClientSideProjectPanel(LIBRARY_PROJECT_NAME),
+                baseWizard.first(),
                 toolsWizard.first(),
             };
             return panels;
@@ -722,7 +725,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @Override
         public String[] createSteps() {
             return new String[] {
-                Bundle.NewProjectWizard_step_createLibrary(),
+                baseWizard.second(),
                 toolsWizard.second(),
             };
         }
