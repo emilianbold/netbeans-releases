@@ -52,26 +52,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
- * Support class for "Tools" (Bower, NPM, Grunt).
+ * Support class for creating new HTML5 projects.
  * @since 1.65
  */
-public final class Tools {
+public final class CreateProjectUtils {
 
-    private static final Tools INSTANCE = new Tools();
-
-
-    private Tools() {
-    }
-
-    public static Tools getInstance() {
-        return INSTANCE;
-    }
-
-    @NbBundle.Messages("Tools.displayName=Tools")
-    public String getDisplayName() {
-        return Bundle.Tools_displayName();
+    private CreateProjectUtils() {
     }
 
     /**
@@ -79,10 +68,11 @@ public final class Tools {
      * these tools are enabled by default.
      * <p>
      * Currently, this panel is always finishable.
-     * @return panel for "Tools" (Bower, NPM, Grunt).
+     * @return panel for "Tools" (Bower, NPM, Grunt) together with its default display name
      */
-    public WizardDescriptor.FinishablePanel<WizardDescriptor> createWizardPanel() {
-        return new ToolsPanel();
+    @NbBundle.Messages("Tools.displayName=Tools")
+    public static Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> createToolsWizardPanel() {
+        return Pair.<WizardDescriptor.FinishablePanel<WizardDescriptor>, String>of(new ToolsPanel(), Bundle.Tools_displayName());
     }
 
     /**
@@ -94,24 +84,24 @@ public final class Tools {
      * @return set of generated files; can be empty but never {@code null}
      * @throws IOException if any error occurs
      */
-    public Set<FileObject> instantiate(Project project, WizardDescriptor wizardDescriptor) throws IOException {
+    public static Set<FileObject> instantiateTools(Project project, WizardDescriptor wizardDescriptor) throws IOException {
         Set<FileObject> files = new HashSet<>();
-        FileObject folder = findBestFolder(project);
+        FileObject folder = findBestToolsFolder(project);
         assert folder != null;
-        if (isEnabled(wizardDescriptor, ToolsPanel.BOWER_ENABLED)) {
+        if (isToolEnabled(wizardDescriptor, ToolsPanel.BOWER_ENABLED)) {
             files.add(createFile(folder, "Templates/ClientSide/bower.json")); // NOI18N
         }
-        if (isEnabled(wizardDescriptor, ToolsPanel.NPM_ENABLED)) {
+        if (isToolEnabled(wizardDescriptor, ToolsPanel.NPM_ENABLED)) {
             files.add(createFile(folder, "Templates/ClientSide/package.json")); // NOI18N
         }
-        if (isEnabled(wizardDescriptor, ToolsPanel.GRUNT_ENABLED)) {
+        if (isToolEnabled(wizardDescriptor, ToolsPanel.GRUNT_ENABLED)) {
             files.add(createFile(folder, "Templates/ClientSide/Gruntfile.js")); // NOI18N
         }
         return files;
     }
 
-    private boolean isEnabled(WizardDescriptor wizardDescriptor, String support) {
-        Boolean enabled = (Boolean) wizardDescriptor.getProperty(support);
+    private static boolean isToolEnabled(WizardDescriptor wizardDescriptor, String tool) {
+        Boolean enabled = (Boolean) wizardDescriptor.getProperty(tool);
         if (enabled == null) {
             // not set => set as enabled
             return true;
@@ -119,7 +109,7 @@ public final class Tools {
         return enabled;
     }
 
-    private FileObject findBestFolder(Project project) {
+    private static FileObject findBestToolsFolder(Project project) {
         // XXX ???
         /*Sources sources = ProjectUtils.getSources(project);
         for (SourceGroup sourceGroup : sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)) {
@@ -128,7 +118,7 @@ public final class Tools {
         return project.getProjectDirectory();
     }
 
-    private FileObject createFile(FileObject root, String template) throws IOException {
+    private static FileObject createFile(FileObject root, String template) throws IOException {
         assert root != null;
         assert root.isFolder() : root;
         FileObject templateFile = FileUtil.getConfigFile(template);

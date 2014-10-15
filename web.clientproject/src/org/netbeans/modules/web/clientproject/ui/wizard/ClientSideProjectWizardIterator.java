@@ -65,6 +65,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectUtils;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
@@ -188,7 +189,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         // tools
-        files.addAll(org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().instantiate(project, wizardDescriptor));
+        files.addAll(CreateProjectUtils.instantiateTools(project, wizardDescriptor));
 
         File parent = projectDirectory.getParentFile();
         if (parent != null && parent.exists()) {
@@ -413,11 +414,14 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         private static final String HTML_PROJECT_NAME = "HTML5Application"; // NOI18N
 
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
+
         private boolean withExtenders;
 
 
         public NewHtml5ProjectWizard(boolean withExtenders) {
             this.withExtenders = withExtenders;
+            toolsWizard = CreateProjectUtils.createToolsWizardPanel();
         }
 
         public NewHtml5ProjectWizard() {
@@ -445,7 +449,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new NewClientSideProjectPanel(HTML_PROJECT_NAME),
                 new SiteTemplateWizardPanel(),
-                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().createWizardPanel(),
+                toolsWizard.first(),
             };
             return panels;
         }
@@ -459,7 +463,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             return new String[] {
                 Bundle.NewProjectWizard_step_createProject(),
                 Bundle.NewProjectWizard_step_chooseSite(),
-                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().getDisplayName(),
+                toolsWizard.second(),
             };
         }
 
@@ -571,12 +575,19 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public static final String SOURCE_ROOT = "SOURCES_ROOT"; // NOI18N
         public static final String TEST_ROOT = "TEST_ROOT"; // NOI18N
 
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
+
+
+        public ExistingHtml5ProjectWizard() {
+            toolsWizard = CreateProjectUtils.createToolsWizardPanel();
+        }
+
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"unchecked", "rawtypes"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new ExistingClientSideProjectPanel(),
-                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().createWizardPanel(),
+                toolsWizard.first(),
             };
             return panels;
         }
@@ -601,7 +612,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public String[] createSteps() {
             return new String[] {
                 Bundle.ExistingProjectWizard_step_createProject(),
-                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().getDisplayName(),
+                toolsWizard.second(),
             };
         }
 
@@ -673,6 +684,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         private static final String LIBRARY_PROJECT_NAME = "JsLibrary"; // NOI18N
 
+        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
+
+
+        public NewJsLibraryProjectWizard() {
+            this.toolsWizard = CreateProjectUtils.createToolsWizardPanel();
+        }
 
         @Override
         public String getTitle() {
@@ -694,7 +711,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             @SuppressWarnings({"rawtypes", "unchecked"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new NewClientSideProjectPanel(LIBRARY_PROJECT_NAME),
-                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().createWizardPanel(),
+                toolsWizard.first(),
             };
             return panels;
         }
@@ -706,7 +723,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public String[] createSteps() {
             return new String[] {
                 Bundle.NewProjectWizard_step_createLibrary(),
-                org.netbeans.modules.web.clientproject.createprojectapi.Tools.getInstance().getDisplayName(),
+                toolsWizard.second(),
             };
         }
 
