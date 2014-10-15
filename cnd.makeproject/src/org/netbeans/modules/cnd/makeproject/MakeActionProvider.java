@@ -154,6 +154,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 
 /** Action provider of the Make project. This is the place where to do
@@ -478,17 +479,17 @@ public final class MakeActionProvider implements ActionProvider {
         if (targetName.equals(SAVE_STEP)) {
             return onSaveStep();
         } else if (targetName.equals(VALIDATE_TOOLCHAIN)) {
-            return onValidateToolchainStep(pd, conf, cancelled, validated);
+            return onValidateToolchainStep(pd, conf, cancelled, validated, context);
         } else if (targetName.equals(PRE_BUILD_STEP)) {
-            return onPreBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.PRE_BUILD);
+            return onPreBuildStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.PRE_BUILD);
         } else if (targetName.equals(BUILD_STEP)) {
-            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD);
+            return onBuildStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(BUILD_TESTS_STEP)) {
-            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD_TESTS);
+            return onBuildStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD_TESTS);
         } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
-            return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PredefinedType.BUILD);
+            return onBuildPackageStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(CLEAN_STEP)) {
-            return onCleanStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.CLEAN);
+            return onCleanStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.CLEAN);
         } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
             return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.COMPILE_SINGLE);
         } else if (targetName.equals(RUN_STEP)) {
@@ -806,11 +807,11 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onPreBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
+    private boolean onPreBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
 //        if (conf.isCompileConfiguration() && !validateProject(conf)) {
 //            return true;
 //        }
-        Lookup lookup =  Lookup.EMPTY;
+//        Lookup lookup =  Lookup.EMPTY;
         String workingDir = conf.getPreBuildConfiguration().getAbsPreBuildCommandWorkingDir();
         String buildCommand = conf.getPreBuildConfiguration().getPreBuildCommand().getValue();
         String args = "";
@@ -829,34 +830,35 @@ public final class MakeActionProvider implements ActionProvider {
         }
         RunProfile profile = new RunProfile(workingDir, conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, context);
         actionEvents.add(projectActionEvent);
         return true;
     }
 
-    private boolean onBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
+    private boolean onBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
         if (conf.isCompileConfiguration() && !validateProject(conf)) {
             return true;
         }
-        Lookup lookup = null;
+        Lookup ownLookup = null;
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
             for(ProjectActionEvent event : actionEvents) {
                 SnapShot snapShot = event.getContext().lookup(SnapShot.class);
                 if (snapShot != null) {
-                    lookup = event.getContext();
+                    ownLookup = event.getContext();
                     break;
                 }
             }
-            if (lookup == null) {
+            if (ownLookup == null) {
                 ConfigurationDescriptorProvider cdp = pd.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
-                lookup = Lookups.fixed(cdp.startModifications());
+                ownLookup = Lookups.fixed(cdp.startModifications());
             }
         }
-        if (lookup == null) {
-            lookup = Lookup.EMPTY;
+        if (ownLookup == null) {
+            ownLookup = Lookup.EMPTY;
         }
+        Lookup proxyLookup = new ProxyLookup(context, ownLookup);
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand;
         String makeCommand = getMakeCommand(pd, conf);
@@ -873,12 +875,12 @@ public final class MakeActionProvider implements ActionProvider {
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, proxyLookup);
         actionEvents.add(projectActionEvent);
         return true;
     }
 
-    private boolean onBuildPackageStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, Type actionEvent) {
+    private boolean onBuildPackageStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, Lookup context, Type actionEvent) {
         if (!validatePackaging(conf)) {
             actionEvents.clear();
             return true;
@@ -913,31 +915,32 @@ public final class MakeActionProvider implements ActionProvider {
             profile.setArgs(new String[] {script});
         }
 
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, context);
         actionEvents.add(projectActionEvent);
         return true;
     }
 
-    private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
-        Lookup lookup = null;
+    private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
+        Lookup ownLookup = null;
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
             for(ProjectActionEvent event : actionEvents) {
                 SnapShot snapShot = event.getContext().lookup(SnapShot.class);
                 if (snapShot != null) {
-                    lookup = event.getContext();
+                    ownLookup = event.getContext();
                     break;
                 }
             }
-            if (lookup == null) {
+            if (ownLookup == null) {
                 ConfigurationDescriptorProvider cdp = pd.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
-                lookup = Lookups.fixed(cdp.startModifications());
+                ownLookup = Lookups.fixed(cdp.startModifications());
             }
         }
-        if (lookup == null) {
-            lookup = Lookup.EMPTY;
+        if (ownLookup == null) {
+            ownLookup = Lookup.EMPTY;
         }
+        Lookup proxyLookup = new ProxyLookup(context, ownLookup);
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
         String args = ""; // NOI18N
@@ -948,7 +951,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, proxyLookup);
         actionEvents.add(projectActionEvent);
         return true;
     }
@@ -1308,7 +1311,7 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onValidateToolchainStep(MakeConfigurationDescriptor pd, MakeConfiguration conf, CanceledState cancelled, AtomicBoolean validated) {
+    private boolean onValidateToolchainStep(MakeConfigurationDescriptor pd, MakeConfiguration conf, CanceledState cancelled, AtomicBoolean validated, Lookup context) {
         if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
             return false; // Stop here
         }
@@ -2002,12 +2005,12 @@ public final class MakeActionProvider implements ActionProvider {
                 if (conditions != null) {
                     boolean preBuild = true;
                     boolean buildFirst = true;
-                    for(String condition : conditions.split(",")) {
-                        if ("pre-build".equals(condition)) {
+                    for(String condition : conditions.split(",")) {//NOI18N
+                        if ("pre-build".equals(condition)) {//NOI18N
                             if (!conf.getPreBuildConfiguration().getPreBuildFirst().getValue()) {
                                 preBuild = false;
                             }
-                        } else if ("build-first".equals(condition)) {
+                        } else if ("build-first".equals(condition)) {//NOI18N
                             RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
                             if (profile == null) { // See IZ 89349
                                 return null;
