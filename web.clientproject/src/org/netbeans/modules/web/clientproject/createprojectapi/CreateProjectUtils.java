@@ -63,12 +63,12 @@ import org.openide.util.Pair;
 public final class CreateProjectUtils {
 
     /**
-     * Constant for project directory.
+     * Constant for project directory, stored as {@link java.io.File}.
      * @see #createBaseWizardPanel(String)
      */
     public static final String PROJECT_DIRECTORY = ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY;
     /**
-     * Constant for project name.
+     * Constant for project name, stored as {@link String}.
      * @see #createBaseWizardPanel(String)
      */
     public static final String PROJECT_NAME = ClientSideProjectWizardIterator.Wizard.NAME;
