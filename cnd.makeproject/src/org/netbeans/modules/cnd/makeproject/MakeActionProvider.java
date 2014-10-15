@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.actions.DefaultProjectOperationsImplementation;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.MakeCommandFlagsProviderFactory;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -236,7 +237,7 @@ public final class MakeActionProvider implements ActionProvider {
                         String flag = (String) file.getAttribute("flag"); // NOI18N
                         map.put(position, new Command(file.getNameExt(),flag));
                     }
-                    res.put(subFolder.getNameExt(), new Commands(map.values()));
+                    res.put(subFolder.getNameExt(), new Commands(subFolder.getNameExt(), map.values()));
                 }
             }
         }
@@ -444,7 +445,7 @@ public final class MakeActionProvider implements ActionProvider {
         AtomicBoolean validated = new AtomicBoolean(false);
         lastValidation = false;
 
-        String[] targetNames = getTargetNames(command);
+        String[] targetNames = getTargetNames(command, conf, context);
         if (targetNames == null || targetNames.length == 0) {
             return;
         }
@@ -1351,9 +1352,7 @@ public final class MakeActionProvider implements ActionProvider {
     /**
      * @return array of targets or null to stop execution; can return empty array
      */
-    private String[] getTargetNames(String command) throws IllegalArgumentException {
-        MakeConfigurationDescriptor pd = getProjectDescriptor();
-        MakeConfiguration conf = pd.getActiveConfiguration();
+    private String[] getTargetNames(String command, MakeConfiguration conf, Lookup context) throws IllegalArgumentException {
         if (conf == null) {
             return null;
         }
@@ -1361,7 +1360,7 @@ public final class MakeActionProvider implements ActionProvider {
         if (cmds == null) {
             throw new IllegalArgumentException(command);
         }
-        return cmds.getCommands(conf);
+        return cmds.getCommands(conf, context);
     }
 
     @Override
@@ -1995,34 +1994,34 @@ public final class MakeActionProvider implements ActionProvider {
     
     private static final class Commands {
         private final List<Command> commands;
-        private Commands(Collection<Command> commands) {
+        private final String id;
+        private Commands(String id, Collection<Command> commands) {
+            this.id = id;
             this.commands = new ArrayList<Command>(commands);
         }
-        private String[] getCommands(MakeConfiguration conf) {
+        
+        private String[] getCommands(MakeConfiguration conf, Lookup context) {
             List<String> res = new ArrayList<>();
             Loop:for(Command command : commands) {
                 String conditions = command.conditions;
                 if (conditions != null) {
-                    boolean preBuild = true;
-                    boolean buildFirst = true;
-                    for(String condition : conditions.split(",")) {//NOI18N
-                        if ("pre-build".equals(condition)) {//NOI18N
-                            if (!conf.getPreBuildConfiguration().getPreBuildFirst().getValue()) {
-                                preBuild = false;
-                            }
-                        } else if ("build-first".equals(condition)) {//NOI18N
-                            RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
-                            if (profile == null) { // See IZ 89349
-                                return null;
-                            }
-                            if (!profile.getBuildFirst()) {
-                                buildFirst = false;
+                    HashMap<String,Boolean> flagValues = new HashMap<>();
+                    for(String condition : conditions.split(",")) { //NOI18N
+                        boolean can = false;
+                        if (MakeCommandFlagsProviderFactory.DEFAULT.canHandle(condition, context, conf)) {
+                            can = MakeCommandFlagsProviderFactory.DEFAULT.createProvider().hasFlag(id, context, conf, condition, can);
+                        }
+                        for(MakeCommandFlagsProviderFactory factory : Lookup.getDefault().lookupAll(MakeCommandFlagsProviderFactory.class)) {
+                            if (factory.canHandle(condition, context, conf)) {
+                                can = factory.createProvider().hasFlag(id, context, conf, condition, can);
                             }
                         }
+                        flagValues.put(condition, can);
                     }
-                    // If two flags is present, both flags should be true
-                    if (!(preBuild && buildFirst)) {
-                        continue;
+                    for(boolean can : flagValues.values()) {
+                        if (!can) {
+                            continue Loop;
+                        }
                     }
                 }
                 res.add(command.command);

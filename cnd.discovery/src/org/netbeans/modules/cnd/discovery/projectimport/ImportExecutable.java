@@ -310,6 +310,12 @@ public class ImportExecutable implements PropertyChangeListener {
                     try {
                         ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                         MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
+                        for(Folder folder : configurationDescriptor.getLogicalFolders().getFolders()) {
+                            if (MakeConfigurationDescriptor.HEADER_FILES_FOLDER.equals(folder.getName()) ||
+                                MakeConfigurationDescriptor.RESOURCE_FILES_FOLDER.equals(folder.getName())) {
+                                configurationDescriptor.getLogicalFolders().removeFolderAction(folder);
+                            }
+                        }
                         applicable = extension.isApplicable(map, lastSelectedProject, true);
                         if (applicable.isApplicable()) {
                             if (sourcesPath == null) {
