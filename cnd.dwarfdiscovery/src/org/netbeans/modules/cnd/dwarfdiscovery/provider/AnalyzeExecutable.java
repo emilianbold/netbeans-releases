@@ -276,11 +276,19 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "NoExecutable")));
         }
+        String[] additionalLibs = (String[])getProperty(LIBRARIES_KEY).getValue();
         boolean findMain = (Boolean)getProperty(FIND_MAIN_KEY).getValue();
         Set<String> dlls = new HashSet<String>();
         FileSystem fs = (FileSystem) getProperty(FILE_SYSTEM).getValue();
         if (fs == null) {
-            ApplicableImpl applicable = sizeComilationUnit(project, set, dlls, findMain);
+            ArrayList<String> list = new ArrayList<String>();
+            list.add(set);
+            if (additionalLibs != null) {
+                for(String l : additionalLibs) {
+                    list.add(l);
+                }
+            }
+            ApplicableImpl applicable = sizeComilationUnit(project, list, dlls, findMain);
             if (applicable.isApplicable()) {
                 return new ApplicableImpl(true, applicable.getErrors(), applicable.getCompilerName(), 70, applicable.isSunStudio(),
                         applicable.getDependencies(), applicable.getSearchPaths(), applicable.getSourceRoot(), applicable.getMainFunction());

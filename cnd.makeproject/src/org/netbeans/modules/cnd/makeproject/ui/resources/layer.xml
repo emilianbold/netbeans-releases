@@ -426,7 +426,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build"/>
+                    <attr name="flag" stringvalue="pre-build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -442,7 +442,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build,build-first"/>
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -484,7 +484,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build,build-first"/>
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -505,7 +505,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build,build-first"/>
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -526,7 +526,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build,build-first"/>
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -550,7 +550,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build"/>
+                    <attr name="flag" stringvalue="pre-build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -579,7 +579,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build,build-first"/>
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -600,7 +600,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build,build-first"/>
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -622,7 +622,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build"/>
+                    <attr name="flag" stringvalue="pre-build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="clean">
@@ -642,7 +642,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build,build-first"/>
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -666,7 +666,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build"/>
+                    <attr name="flag" stringvalue="pre-build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
@@ -687,7 +687,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="200"/>
                 </file>
                 <file name="pre-build">
-                    <attr name="flag" stringvalue="pre-build"/>
+                    <attr name="flag" stringvalue="pre-build-first"/>
                     <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">

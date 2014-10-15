@@ -46,8 +46,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
@@ -60,7 +58,6 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -219,8 +216,6 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
                 }
                 first = false;
                 if (param.isVarArgs()) {
-                    sb.append(param.getName());
-                    sb.append(' '); //NOI18N
                     sb.append("..."); // NOI18N
                 } else {
                     CsmType type = param.getType();
