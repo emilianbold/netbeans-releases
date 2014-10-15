@@ -39,39 +39,17 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.heapwalk.details.jdk;
 
-import org.netbeans.lib.profiler.heap.Heap;
-import org.netbeans.lib.profiler.heap.Instance;
-import org.netbeans.modules.profiler.heapwalk.details.spi.DetailsProvider;
-import org.netbeans.modules.profiler.heapwalk.details.spi.DetailsUtils;
-import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- * @author Tomas Hurka
- */
-@ServiceProvider(service=DetailsProvider.class)
-public class LangDetailsProvider extends DetailsProvider.Basic {
-    private static final String ENUM_MASK = "java.lang.Enum+";                    // NOI18N
-    
-    public LangDetailsProvider() {
-        super(ENUM_MASK);
-    }
-    
-    public String getDetailsString(String className, Instance instance, Heap heap) {
-        if (ENUM_MASK.equals(className)) {                                      // Enum+
-            String name = DetailsUtils.getInstanceFieldString(instance, "name", heap); // NOI18N
-            int ordinal = DetailsUtils.getIntFieldValue(instance, "ordinal", -1); // NOI18N
-            if (name != null) {
-                if (ordinal != -1) {
-                    return name+" ("+ordinal+")";       // NOI18N
-                }
-                return name;
-            }
-        }
-        
-        return null;
-    }
-    
-}
+@TemplateRegistration(folder = "ClientSide",
+        content = "bower.json",
+        scriptEngine = "freemarker",
+        position = 700,
+        displayName = "#Templates.bower.json",
+        description = "bowerdescription.html",
+        targetName = "bower",
+        category = "html5")
+
+package org.netbeans.modules.web.clientproject.bower;
+
+import org.netbeans.api.templates.TemplateRegistration;

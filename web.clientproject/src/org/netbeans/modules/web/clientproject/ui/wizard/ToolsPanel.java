@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,92 +37,83 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.io.File;
+import java.awt.Component;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 
-/**
- * Controller for existing project.
- */
-public class ExistingClientSideProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
+public class ToolsPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private volatile WizardDescriptor wizardDescriptor;
+    /**
+     * Constant for NPM support.
+     */
+    public static final String NPM_ENABLED = "NPM_ENABLED"; // NOI18N
+    /**
+     * Constant for Bower support.
+     */
+    public static final String BOWER_ENABLED = "BOWER_ENABLED"; // NOI18N
+    /**
+     * Constant for Grunt support.
+     */
+    public static final String GRUNT_ENABLED = "GRUNT_ENABLED"; // NOI18N
+
+
     // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
-    private volatile ExistingClientSideProject clientSideProject;
+    private volatile Tools tools;
 
 
     @Override
-    public ExistingClientSideProject getComponent() {
-        // assert EventQueue.isDispatchThread(); - not possible, see comment above (@GuardedBy())
-        if (clientSideProject == null) {
-            clientSideProject = new ExistingClientSideProject();
-        }
-        return clientSideProject;
+    public Component getComponent() {
+        return getTools();
     }
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.ExistingClientSideProjectPanel"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.ToolsPanel"); // NOI18N
     }
 
     @Override
     public void readSettings(WizardDescriptor settings) {
-        wizardDescriptor = settings;
+        // noop
     }
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY, getNormalizedFile(getComponent().getProjectDirectory()));
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.Wizard.NAME, getComponent().getProjectName());
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.SITE_ROOT, getNormalizedFile(getComponent().getSiteRoot()));
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.SOURCE_ROOT, getNormalizedFile(getComponent().getSources()));
-        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.ExistingHtml5ProjectWizard.TEST_ROOT, getNormalizedFile(getComponent().getTestDir()));
-    }
-
-    private File getNormalizedFile(String path) {
-        if (!StringUtilities.hasText(path)) {
-            return null;
-        }
-        return FileUtil.normalizeFile(new File(path));
+        settings.putProperty(NPM_ENABLED, getTools().isNpmEnabled());
+        settings.putProperty(BOWER_ENABLED, getTools().isBowerEnabled());
+        settings.putProperty(GRUNT_ENABLED, getTools().isGruntEnabled());
     }
 
     @Override
     public boolean isValid() {
-        // error
-        String error = getComponent().getErrorMessage();
-        if (error != null && !error.isEmpty()) {
-            setErrorMessage(error);
-            return false;
-        }
-        // everything ok
-        setErrorMessage(""); // NOI18N
         return true;
-    }
-
-    private void setErrorMessage(String message) {
-        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        getComponent().addChangeListener(listener);
+        getTools().addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        getComponent().removeChangeListener(listener);
+        getTools().removeChangeListener(listener);
     }
 
     @Override
     public boolean isFinishPanel() {
         return true;
+    }
+
+    private Tools getTools() {
+        // assert EventQueue.isDispatchThread(); - not possible, see comment above (@GuardedBy())
+        if (tools == null) {
+            tools = new Tools();
+        }
+        return tools;
     }
 
 }
