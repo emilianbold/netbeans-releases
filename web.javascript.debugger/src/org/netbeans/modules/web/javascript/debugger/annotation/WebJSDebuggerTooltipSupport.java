@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,80 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.web.javascript.debugger.annotation;
 
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
-import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.viewmodel.ExtendedNodeModel;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeExpansionModel;
-import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.List;
+import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Martin
+ * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path="javascript-debuggerengine/ToolTipView", types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class, TreeExpansionModelFilter.class })
-public class ToolTipModel extends VariablesModel implements TreeExpansionModelFilter {
+public class WebJSDebuggerTooltipSupport implements DebuggerTooltipSupport {
     
-    public ToolTipModel(ContextProvider contextProvider) {
-        super(contextProvider);
+    private final Debugger debugger;
+    private final CallFrame frame;
+    private Debugger.Listener closeableListener;
+    
+    public WebJSDebuggerTooltipSupport(Debugger debugger, CallFrame frame) {
+        this.debugger = debugger;
+        this.frame = frame;
+    }
+
+    public Debugger getDebugger() {
+        return debugger;
+    }
+
+    public CallFrame getFrame() {
+        return frame;
     }
 
     @Override
-    public int getChildrenCount(Object parent) throws UnknownTypeException {
-        if (parent == ROOT) {
-            return 1;
-        } else {
-            return super.getChildrenCount(parent);
+    public void addCloseable(final Closeable closeable) {
+        closeableListener = new CloseableDebuggerListener(closeable);
+        debugger.addListener(closeableListener);
+    }
+
+    @Override
+    public void removeCloseable(Closeable closeable) {
+        debugger.removeListener(closeableListener);
+    }
+    
+    private static class CloseableDebuggerListener implements Debugger.Listener {
+        
+        private final Closeable closeable;
+        
+        public CloseableDebuggerListener(Closeable closeable) {
+            this.closeable = closeable;
         }
-    }
 
-    @Override
-    public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
-        if (parent == ROOT) {
-            Object ttv = AbstractJSToolTipAnnotation.getTooltipVariable();
-            if (ttv != null) {
-                return new Object[] { ttv };
-            } else {
-                return new Object[] { };
-            }
-        } else {
-            return super.getChildren(parent, from, to);
+        @Override
+        public void paused(List<CallFrame> callStack, String reason) {}
+
+        @Override
+        public void resumed() {
+            doClose();
         }
-    }
 
-    @Override
-    public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
-        if (node == AbstractJSToolTipAnnotation.getTooltipVariable()) {
-            return true;
-        } else {
-            return original.isExpanded(node);
+        @Override
+        public void reset() {
+            doClose();
         }
+
+        private void doClose() {
+            try {
+                closeable.close();
+            } catch (IOException ex) {}
+        }
+        
     }
-
-    @Override
-    public void nodeExpanded(Object node) {}
-
-    @Override
-    public void nodeCollapsed(Object node) {}
     
 }
