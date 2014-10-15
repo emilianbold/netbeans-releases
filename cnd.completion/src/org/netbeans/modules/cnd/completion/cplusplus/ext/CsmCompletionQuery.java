@@ -2574,7 +2574,8 @@ abstract public class CsmCompletionQuery {
                                             if (findType) {
                                                 lastType = autoVarType;
                                             } else if (autoVarType != null) {
-                                                CsmClassifier autoVarCls = autoVarType.getClassifier();
+                                                CsmType userFriendlyType = CsmUtilities.iterateTypeChain(autoVarType, new CsmUtilities.SmartTypeUnrollPredicate());
+                                                CsmClassifier autoVarCls = userFriendlyType.getClassifier();
                                                 if (CsmBaseUtilities.isValid(autoVarCls)) {
                                                     result = new CsmCompletionResult(
                                                             component, 

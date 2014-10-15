@@ -88,6 +88,7 @@ import static org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities.htmlize;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.SmartTypeUnrollPredicate;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities.Qualificator;
 import org.netbeans.modules.cnd.modelutil.spi.CsmDisplayUtilitiesProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -354,36 +355,14 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
     
     private static class DisplayTypeInfoCollector implements Predicate<CsmType> {
         
-        // Set of words which prevent type from further unfolding
-        private static final Set<String> stopWords = new HashSet<>();
-        
-        static {
-            stopWords.add("iterator"); // NOI18N
-        }
-
         public final TypeInfoCollector infoCollector = new TypeInfoCollector();
+        
+        private final SmartTypeUnrollPredicate smartPredicate = new SmartTypeUnrollPredicate();
         
         @Override
         public boolean check(CsmType value) {
             infoCollector.check(value);
-            CharSequence clsText = value.getClassifierText();
-            if (clsText != null) {
-                String lowerClsText = CharSequenceUtilities.toString(clsText).toLowerCase();
-                for (String stopWord : stopWords) {
-                    if (lowerClsText.contains(stopWord)) {
-                        return true; // stop word found
-                    }
-                }
-            }
-//            if (CharSequenceUtilities.indexOf(value.getCanonicalText(), APTUtils.SCOPE) >= 0) {
-                CsmClassifier classifier = value.getClassifier();
-                if (classifier != null) {
-                    if (CsmKindUtilities.isClass(classifier.getScope())) {
-                        return false;
-                    }
-                }
-//            }
-            return true;
+            return smartPredicate.check(value);
         }
     }
     

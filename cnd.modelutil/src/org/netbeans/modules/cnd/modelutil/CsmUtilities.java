@@ -74,6 +74,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
@@ -1272,8 +1273,40 @@ public class CsmUtilities {
         }
         
         return lastNestedType;
-    }    
+    } 
     
+    // Predicate which unrolls type while it is not user friendly
+    public static class SmartTypeUnrollPredicate implements Predicate <CsmType> {
+        
+        // Set of words which prevent type from further unrolling
+        private static final Set<String> stopWords = new HashSet<>();
+        
+        static {
+            stopWords.add("iterator"); // NOI18N
+        }
+        
+        @Override
+        public boolean check(CsmType value) {
+            CharSequence clsText = value.getClassifierText();
+            if (clsText != null) {
+                String lowerClsText = CharSequenceUtilities.toString(clsText).toLowerCase();
+                for (String stopWord : stopWords) {
+                    if (lowerClsText.contains(stopWord)) {
+                        return true; // stop word found
+                    }
+                }
+            }
+            CsmClassifier classifier = value.getClassifier();
+            if (classifier != null) {
+                if (CsmKindUtilities.isClass(classifier.getScope())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    
+    // Predicate which unrolls type until template classifier is found
     public static class SearchTemplatePredicate implements Predicate<CsmType> {
 
         @Override
