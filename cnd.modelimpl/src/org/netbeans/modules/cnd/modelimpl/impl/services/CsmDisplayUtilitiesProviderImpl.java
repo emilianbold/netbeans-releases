@@ -268,7 +268,7 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
             CsmExpressionResolver.resolveType(
                     var.getName(), 
                     var.getContainingFile(), 
-                    var.getEndOffset(),
+                    var.getType().getEndOffset(),
                     null,
                     handler
             );
