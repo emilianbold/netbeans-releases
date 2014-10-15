@@ -2008,6 +2008,9 @@ public final class MakeActionProvider implements ActionProvider {
                     HashMap<String,Boolean> flagValues = new HashMap<>();
                     for(String condition : conditions.split(",")) { //NOI18N
                         boolean can = false;
+                        if (MakeCommandFlagsProviderFactory.DEFAULT.canHandle(condition, context, conf)) {
+                            can = MakeCommandFlagsProviderFactory.DEFAULT.createProvider().hasFlag(id, context, conf, condition, can);
+                        }
                         for(MakeCommandFlagsProviderFactory factory : Lookup.getDefault().lookupAll(MakeCommandFlagsProviderFactory.class)) {
                             if (factory.canHandle(condition, context, conf)) {
                                 can = factory.createProvider().hasFlag(id, context, conf, condition, can);

@@ -42,9 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -54,8 +52,8 @@ public interface MakeCommandFlagsProviderFactory {
     boolean canHandle(String commandID, Lookup context, MakeConfiguration conf);
     MakeCommandFlagsProvider createProvider();
     
-    @ServiceProvider(service=MakeCommandFlagsProviderFactory.class, position=1000)
-    public static final class DefaultMakeCommandFlagsProviderFactory implements MakeCommandFlagsProviderFactory {
+    //@ServiceProvider(service=MakeCommandFlagsProviderFactory.class, position=1000)
+    public static final MakeCommandFlagsProviderFactory DEFAULT = new MakeCommandFlagsProviderFactory() {
 
         @Override
         public boolean canHandle(String commandID, Lookup context, MakeConfiguration conf) {
@@ -77,5 +75,5 @@ public interface MakeCommandFlagsProviderFactory {
                 }
             };
         }
-    }
+    };
 }
