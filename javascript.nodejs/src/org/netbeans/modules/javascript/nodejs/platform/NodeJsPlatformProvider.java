@@ -65,6 +65,8 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsPlatformProvider.class.getName());
 
+    public static final String IDENT = "node.js"; // NOI18N
+
     @StaticResource
     private static final String ICON_PATH = "org/netbeans/modules/javascript/nodejs/ui/resources/nodejs-badge.png"; // NOI18N
 
@@ -80,7 +82,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
 
     @Override
     public String getIdentifier() {
-        return "node.js"; // NOI18N
+        return IDENT;
     }
 
     @NbBundle.Messages("NodeJsPlatformProvider.name=Node.js")

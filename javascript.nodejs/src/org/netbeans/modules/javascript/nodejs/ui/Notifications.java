@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.util;
+package org.netbeans.modules.javascript.nodejs.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,6 +49,7 @@ import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
