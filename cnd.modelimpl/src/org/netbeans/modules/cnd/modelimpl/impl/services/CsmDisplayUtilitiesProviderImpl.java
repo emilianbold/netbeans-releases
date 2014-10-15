@@ -263,14 +263,16 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
     private static CharSequence getVariableText(CsmVariable var) {
         CharSequence itemText = var.getText();
         if (CsmUtilities.isAutoType(var.getType())) {
-            CsmType resolvedType = CsmExpressionResolver.resolveType(
+            DisplayResolvedTypeHandler handler = new DisplayResolvedTypeHandler();
+            CsmExpressionResolver.resolveType(
                     var.getName(), 
                     var.getContainingFile(), 
                     var.getEndOffset(),
-                    null
+                    null,
+                    handler
             );
-            if (resolvedType != null) {
-                itemText = getTypeText(resolvedType, true, false);
+            if (handler.typeText != null) {
+                return handler.typeText;
             }
         }
         return itemText;
@@ -339,6 +341,16 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
         }
         return sb;
     }    
+    
+    private static class DisplayResolvedTypeHandler implements CsmExpressionResolver.ResolvedTypeHandler {
+        
+        public CharSequence typeText;
+
+        @Override
+        public void process(CsmType resolvedType) {
+            typeText = getTypeText(resolvedType, true, false);
+        }        
+    }
     
     private static class DisplayTypeInfoCollector implements Predicate<CsmType> {
         
