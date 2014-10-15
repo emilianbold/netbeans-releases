@@ -60,6 +60,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -89,6 +90,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectWizardIterator.class.getName());
 
+    @StaticResource
+    private static final String NEW_HTML5_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/new-html5-project.png"; // NOI18N
+    private static final String NEW_JS_LIBRARY_ICON = "org/netbeans/modules/web/clientproject/ui/resources/new-js-library.png"; // NOI18N
+
     private final Wizard wizard;
 
     private int index;
@@ -113,7 +118,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.newProject.displayName",
             description="../resources/NewClientSideProjectDescription.html",
-            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
+            iconBase=NEW_HTML5_PROJECT_ICON,
             position=100)
     @NbBundle.Messages("ClientSideProjectWizardIterator.newProject.displayName=HTML5/JS Application")
     public static ClientSideProjectWizardIterator newHtml5Project() {
@@ -123,7 +128,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @TemplateRegistration(folder="Project/ClientSide",
             displayName="#ClientSideProjectWizardIterator.newLibrary.displayName",
             description="../resources/NewClientSideLibraryDescription.html",
-            iconBase=ClientSideProject.HTML5_PROJECT_ICON,
+            iconBase=NEW_JS_LIBRARY_ICON,
             position=200)
     @NbBundle.Messages("ClientSideProjectWizardIterator.newLibrary.displayName=JavaScript Library")
     public static ClientSideProjectWizardIterator newLibraryProject() {

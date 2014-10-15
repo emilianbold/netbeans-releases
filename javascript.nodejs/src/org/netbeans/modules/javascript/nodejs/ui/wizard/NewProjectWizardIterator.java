@@ -74,7 +74,7 @@ import org.openide.util.Pair;
 public final class NewProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
 
     @StaticResource
-    private static final String NODEJS_PROJECT_ICON = "org/netbeans/modules/javascript/nodejs/ui/resources/nodejs-badge.png"; // NOI18N
+    private static final String NODEJS_PROJECT_ICON = "org/netbeans/modules/javascript/nodejs/ui/resources/new-nodejs-project.png"; // NOI18N
     private static final String DEFAULT_SOURCE_FOLDER = "src"; // NOI18N
 
     private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
