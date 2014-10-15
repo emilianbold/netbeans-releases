@@ -41,7 +41,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -52,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -60,19 +68,31 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
+import static org.netbeans.modules.cnd.modelimpl.csm.Instantiation.CsmSpecializationParamTextProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
+import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl.InstantiationParametersInfo;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import static org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities.htmlize;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.TypeInfoCollector;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.Qualificator;
 import org.netbeans.modules.cnd.modelutil.spi.CsmDisplayUtilitiesProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -81,6 +101,8 @@ import org.openide.util.NbBundle;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.modelutil.spi.CsmDisplayUtilitiesProvider.class)
 public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesProvider {
+    
+    private final static char SPACE = ' '; // NOI18N 
 
     @Override
     public CharSequence getTooltipText(CsmObject item) {
@@ -136,19 +158,7 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
                 tooltipText = getHtmlizedString("DSC_ParameterTooltip", varName, ((CsmParameter) item).getText()); // NOI18N
             } else if (CsmKindUtilities.isVariable(item)) {
                 CharSequence varName = ((CsmVariable) item).getName();
-                CharSequence itemText = ((CsmVariable) item).getText();
-                if (CsmUtilities.isAutoType(((CsmVariable) item).getType())) {
-                    CsmType resolvedType = CsmExpressionResolver.resolveType(
-                            varName, 
-                            ((CsmVariable) item).getContainingFile(), 
-                            ((CsmVariable) item).getEndOffset(),
-                            null
-                    );
-                    if (resolvedType != null) {
-                        itemText = resolvedType.getText();
-                    }
-                }
-                tooltipText = getHtmlizedString("DSC_VariableTooltip", varName, itemText); // NOI18N
+                tooltipText = getHtmlizedString("DSC_VariableTooltip", varName, getVariableText((CsmVariable) item)); // NOI18N
             } else if (CsmKindUtilities.isFile(item)) {
                 CharSequence fileName = ((CsmFile) item).getName();
                 tooltipText = getHtmlizedString("DSC_FileTooltip", fileName); // NOI18N
@@ -205,6 +215,65 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
             CndUtils.assertTrueInConsole(false, "can not get text for " + item + " due to " + e); // NOI18N
             return ""; // NOI18N
         }
+    }
+
+    private static CharSequence getTypeText(CsmType type, boolean expandInstantiations, boolean evaluateExpressions) {
+        if (type != null) {
+            StringBuilder itemTextBuilder = new StringBuilder();
+            
+            DisplayTypeInfoCollector dtc = new DisplayTypeInfoCollector();
+            type = CsmUtilities.iterateTypeChain(type, dtc);
+            List<Qualificator> quals = dtc.infoCollector.qualificators;
+            ListIterator<Qualificator> qualIter = quals.listIterator(quals.size());
+            Qualificator qual = qualIter.hasPrevious() ? qualIter.previous() : null;
+            // Place the first const before classifier
+            if (Qualificator.CONST.equals(qual)) {
+                appendQual(itemTextBuilder, qual).append(SPACE);
+                qual = qualIter.hasPrevious() ? qualIter.previous() : null;
+            }
+            // Append classifier
+            CsmClassifier resolvedCls = type.getClassifier();
+            if (resolvedCls != null) {
+                itemTextBuilder.append(resolvedCls.getQualifiedName());
+                if (type.isInstantiation() && type.hasInstantiationParams()) {
+                    itemTextBuilder.append(Instantiation.getInstantiationCanonicalText(type.getInstantiationParams()));
+                } else if (CsmKindUtilities.isInstantiation(resolvedCls)) {
+                    List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> fullInstParams = InstantiationProviderImpl.getInstantiationParams(resolvedCls);
+                    InstantiationParametersInfo paramsInfo = new InstantiationProviderImpl.InstantiationParametersInfoImpl(resolvedCls, fullInstParams);
+                    itemTextBuilder.append(Instantiation.getInstantiationCanonicalText(paramsInfo, new SpecParamsTextProvider(expandInstantiations, evaluateExpressions)));
+                }
+            } else {
+                itemTextBuilder.append(type.getClassifierText()); 
+            }
+            // Append other qualifiers until reference is reached
+            while (qual != null && !Qualificator.REFERENCE.equals(qual) && !Qualificator.RVALUE_REFERENCE.equals(qual)) {
+                appendQual(itemTextBuilder.append(SPACE), qual);
+                qual = qualIter.hasPrevious() ? qualIter.previous() : null;
+            }
+            // if there was reference, then add it
+            if (qual != null) {
+                appendQual(itemTextBuilder.append(SPACE), qual);
+            }
+            
+            return itemTextBuilder.toString();
+        }
+        return "<null>"; // NOI18N;
+    }
+    
+    private static CharSequence getVariableText(CsmVariable var) {
+        CharSequence itemText = var.getText();
+        if (CsmUtilities.isAutoType(var.getType())) {
+            CsmType resolvedType = CsmExpressionResolver.resolveType(
+                    var.getName(), 
+                    var.getContainingFile(), 
+                    var.getEndOffset(),
+                    null
+            );
+            if (resolvedType != null) {
+                itemText = getTypeText(resolvedType, true, false);
+            }
+        }
+        return itemText;
     }
     
     private static CharSequence getFunctionText(CsmFunction fun) {
@@ -263,4 +332,82 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
     private static String getString(String key, CharSequence value1, CharSequence value2, CharSequence value3, CharSequence value4) {
         return NbBundle.getMessage(CsmDisplayUtilities.class, key, new Object[] {value1, value2, value3, value4});
     }     
+    
+    private static StringBuilder appendQual(StringBuilder sb, Qualificator qual) {
+        for (CppTokenId token : qual.getTokens()) {
+            sb.append(token.fixedText());
+        }
+        return sb;
+    }    
+    
+    private static class DisplayTypeInfoCollector implements Predicate<CsmType> {
+        
+        // Set of words which prevent type from further unfolding
+        private static final Set<String> stopWords = new HashSet<>();
+        
+        static {
+            stopWords.add("iterator"); // NOI18N
+        }
+
+        public final TypeInfoCollector infoCollector = new TypeInfoCollector();
+        
+        @Override
+        public boolean check(CsmType value) {
+            infoCollector.check(value);
+            CharSequence clsText = value.getClassifierText();
+            if (clsText != null) {
+                String lowerClsText = CharSequenceUtilities.toString(clsText).toLowerCase();
+                for (String stopWord : stopWords) {
+                    if (lowerClsText.contains(stopWord)) {
+                        return true; // stop word found
+                    }
+                }
+            }
+//            if (CharSequenceUtilities.indexOf(value.getCanonicalText(), APTUtils.SCOPE) >= 0) {
+                CsmClassifier classifier = value.getClassifier();
+                if (classifier != null) {
+                    if (CsmKindUtilities.isClass(classifier.getScope())) {
+                        return false;
+                    }
+                }
+//            }
+            return true;
+        }
+    }
+    
+    private static class SpecParamsTextProvider implements CsmSpecializationParamTextProvider {
+        
+        private final boolean expandInstantiations;
+        
+        private final boolean evaluateExpressions;
+
+        public SpecParamsTextProvider(boolean expandInstantiations, boolean evaluateExpressions) {
+            this.expandInstantiations = expandInstantiations;
+            this.evaluateExpressions = evaluateExpressions;
+        }
+        
+        @Override
+        public CharSequence getSpecParamText(CsmSpecializationParameter param, CsmType paramType, List<CsmInstantiation> context) {
+            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                if (expandInstantiations) {
+                    return getTypeText(paramType, expandInstantiations, evaluateExpressions);
+                } else {
+                    return paramType.getCanonicalText();
+                }
+            }
+            if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
+                if (evaluateExpressions) {
+                    // TODO: support evaluate expressions
+                    return param.getText();
+                } else {
+                    return param.getText();
+                }
+            }
+            if (CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                // TODO: expand variadics
+                return param.getText();
+            }
+            return ""; // NOI18N
+        }        
+    }
 }

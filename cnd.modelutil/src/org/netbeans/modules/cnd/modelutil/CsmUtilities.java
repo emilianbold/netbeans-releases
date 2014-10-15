@@ -70,6 +70,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
@@ -1367,35 +1368,46 @@ public class CsmUtilities {
         
     }   
     
+    public enum Qualificator {
+        POINTER(CppTokenId.STAR), 
+        REFERENCE(CppTokenId.AMP), 
+        RVALUE_REFERENCE(CppTokenId.AMPAMP), 
+        CONST(CppTokenId.CONST), 
+        ARRAY(CppTokenId.LBRACKET, CppTokenId.RBRACKET);
+        
+        private final CppTokenId tokens[];
+
+        private Qualificator(CppTokenId ... tokens) {
+            this.tokens = tokens;
+        }
+        
+        public CppTokenId[] getTokens() {
+            return tokens;
+        }
+    }
+    
     public static final class TypeInfoCollector implements Predicate<CsmType> {
         
-        public enum Qualificator {
-            POINTER,
-            REFERENCE,
-            RVALUE_REFERENCE,
-            CONST,
-            ARRAY
-        }
 
         public final List<Qualificator> qualificators = new ArrayList<>();
 
         @Override
         public boolean check(CsmType value) {
-            for (int i = 0; i < value.getPointerDepth(); i++) {
-                qualificators.add(Qualificator.POINTER);
-            }
-            for (int i = 0; i < value.getArrayDepth(); i++) {
-                qualificators.add(Qualificator.ARRAY);
-            }
-            if (value.isConst()) {
-                qualificators.add(Qualificator.CONST);
-            }
             if (value.isReference()) {
                 if (value.isRValueReference()) {
                     qualificators.add(Qualificator.RVALUE_REFERENCE);
                 } else {
                     qualificators.add(Qualificator.REFERENCE);
                 }
+            }            
+            for (int i = 0; i < value.getArrayDepth(); i++) {
+                qualificators.add(Qualificator.ARRAY);
+            }            
+            for (int i = 0; i < value.getPointerDepth(); i++) {
+                qualificators.add(Qualificator.POINTER);
+            }            
+            if (value.isConst()) {
+                qualificators.add(Qualificator.CONST);
             }
             return false;
         }
@@ -1425,8 +1437,8 @@ public class CsmUtilities {
             TypeInfoCollector typeInfo2 = new TypeInfoCollector();
             iterateTypeChain(to, typeInfo2);
 
-            Iterator<TypeInfoCollector.Qualificator> qualIter1 = typeInfo1.qualificators.iterator();
-            Iterator<TypeInfoCollector.Qualificator> qualIter2 = typeInfo2.qualificators.iterator();
+            Iterator<Qualificator> qualIter1 = typeInfo1.qualificators.iterator();
+            Iterator<Qualificator> qualIter2 = typeInfo2.qualificators.iterator();
             if (typeInfo1.qualificators.size() == typeInfo2.qualificators.size()) {
                 while (qualIter1.hasNext()) {
                     if (!qualIter1.next().equals(qualIter2.next())) {
@@ -1451,22 +1463,22 @@ public class CsmUtilities {
             TypeInfoCollector typeInfo2 = new TypeInfoCollector();
             iterateTypeChain(to, typeInfo2);
 
-            ListIterator<TypeInfoCollector.Qualificator> qualIter1 = typeInfo1.qualificators.listIterator();
-            ListIterator<TypeInfoCollector.Qualificator> qualIter2 = typeInfo2.qualificators.listIterator();
+            ListIterator<Qualificator> qualIter1 = typeInfo1.qualificators.listIterator();
+            ListIterator<Qualificator> qualIter2 = typeInfo2.qualificators.listIterator();
             while (qualIter1.hasNext()) {
                 if (!qualIter2.hasNext()) {
-                    TypeInfoCollector.Qualificator qual = qualIter1.next();
-                    if (TypeInfoCollector.Qualificator.REFERENCE.equals(qual)) {
+                    Qualificator qual = qualIter1.next();
+                    if (Qualificator.REFERENCE.equals(qual)) {
                         continue;
-                    } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(qual)) { // ?
+                    } else if (Qualificator.RVALUE_REFERENCE.equals(qual)) { // ?
                         continue;
                     }
                     return false;
                 } else {
-                    TypeInfoCollector.Qualificator qual1 = qualIter1.next();
-                    TypeInfoCollector.Qualificator qual2 = qualIter2.next();
+                    Qualificator qual1 = qualIter1.next();
+                    Qualificator qual2 = qualIter2.next();
                     if (!qual1.equals(qual2)) {
-                        if (TypeInfoCollector.Qualificator.CONST.equals(qual2)) {
+                        if (Qualificator.CONST.equals(qual2)) {
                             qualIter1.previous();
                             continue;
                         }
@@ -1475,10 +1487,10 @@ public class CsmUtilities {
                 }
             }
             while (qualIter2.hasNext()) {
-                TypeInfoCollector.Qualificator qual = qualIter2.next();
-                if (TypeInfoCollector.Qualificator.REFERENCE.equals(qual)) {
+                Qualificator qual = qualIter2.next();
+                if (Qualificator.REFERENCE.equals(qual)) {
                     continue;
-                } else if (TypeInfoCollector.Qualificator.RVALUE_REFERENCE.equals(qual)) { // ?
+                } else if (Qualificator.RVALUE_REFERENCE.equals(qual)) { // ?
                     continue;
                 }
                 return false;
