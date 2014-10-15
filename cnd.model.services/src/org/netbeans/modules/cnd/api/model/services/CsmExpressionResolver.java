@@ -60,6 +60,17 @@ import org.openide.util.Lookup;
  */
 public final class CsmExpressionResolver {
     
+    public static interface ResolvedTypeHandler {
+        
+        /**
+         * Processes result of expression resolving
+         * 
+         * @param resolvedType
+         */
+        void process(CsmType resolvedType);
+        
+    }
+    
     /**
      * Resolves expression with the given context (instantiations)
      * @param text to resolve
@@ -103,9 +114,22 @@ public final class CsmExpressionResolver {
      * @param instantiations - context
      * @return type
      */
+    @Deprecated
     public static CsmType resolveType(CharSequence text, CsmFile contextFile, int contextOffset, List<CsmInstantiation> instantiations) {
         return resolveType(text, contextFile, contextOffset, null, instantiations);
     }   
+    
+    /**
+     * Resolves type of expression with the given context (instantiations)
+     * @param text to resolve
+     * @param contextFile
+     * @param contextOffset
+     * @param instantiations - context
+     * @param task - all operations on resolved type should be done here
+     */
+    public static void resolveType(CharSequence text, CsmFile contextFile, int contextOffset, List<CsmInstantiation> instantiations, ResolvedTypeHandler task) {
+        resolveType(text, contextFile, contextOffset, null, instantiations, task);
+    }       
     
     /**
      * Resolves type of expression with the given context (instantiations)
@@ -116,8 +140,24 @@ public final class CsmExpressionResolver {
      * @param instantiations - context
      * @return type
      */
+    @Deprecated
     public static CsmType resolveType(CharSequence text, CsmFile contextFile, int contextOffset, CsmScope contextScope, List<CsmInstantiation> instantiations) {
-        return DEFAULT.resolveType(new SimpleExpression(text, contextFile, contextOffset, contextScope), instantiations);
+        SimpleResolvedTypeHandler resolvedHandler = new SimpleResolvedTypeHandler();
+        DEFAULT.resolveType(new SimpleExpression(text, contextFile, contextOffset, contextScope), instantiations, resolvedHandler);
+        return resolvedHandler.resolved;
+    }     
+    
+    /**
+     * Resolves type of expression with the given context (instantiations)
+     * @param text to resolve
+     * @param contextFile
+     * @param contextOffset
+     * @param contextScope - could be null if not known (will be deduced from offset)
+     * @param instantiations - context
+     * @param task - all operations on resolved type should be done here
+     */    
+    public static void resolveType(CharSequence text, CsmFile contextFile, int contextOffset, CsmScope contextScope, List<CsmInstantiation> instantiations, ResolvedTypeHandler task) {
+        DEFAULT.resolveType(new SimpleExpression(text, contextFile, contextOffset, contextScope), instantiations, task);
     }     
     
     /**
@@ -126,9 +166,22 @@ public final class CsmExpressionResolver {
      * @param instantiations - context
      * @return type
      */
+    @Deprecated
     public static CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
-        return DEFAULT.resolveType(expression, instantiations);
+        SimpleResolvedTypeHandler resolvedHandler = new SimpleResolvedTypeHandler();
+        DEFAULT.resolveType(expression, instantiations, resolvedHandler);
+        return resolvedHandler.resolved;
     }   
+
+    /**
+     * Resolves type of expression with the given context (instantiations)
+     * @param expression to resolve
+     * @param instantiations - context
+     * @param task - all operations on resolved type should be done here
+     */
+    public static void resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations, ResolvedTypeHandler task) {
+        DEFAULT.resolveType(expression, instantiations, task);
+    }       
     
 //<editor-fold defaultstate="collapsed" desc="impl">
     
@@ -255,7 +308,17 @@ public final class CsmExpressionResolver {
         public String toString() {
             return expression + " at [" + containingFile.getAbsolutePath() + ":" + startOffset + "]"; // NOI18N
         }
-    }        
+    }       
+    
+    private static class SimpleResolvedTypeHandler implements ResolvedTypeHandler {
+        
+        public CsmType resolved;
+
+        @Override
+        public void process(CsmType resolvedType) {
+            this.resolved = resolvedType;
+        }
+    }
     
     /**
      * Default implementation (just a proxy to a real service)
@@ -282,15 +345,15 @@ public final class CsmExpressionResolver {
             }
             return service;
         }
-        
-        @Override
-        public CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
-            return getDelegate().resolveType(expression, instantiations);
-        }
 
         @Override
         public Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
             return getDelegate().resolveObjects(expression, instantiations);
+        }
+
+        @Override
+        public void resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations, ResolvedTypeHandler task) {
+            getDelegate().resolveType(expression, instantiations, task);
         }
     }
 //</editor-fold>    
