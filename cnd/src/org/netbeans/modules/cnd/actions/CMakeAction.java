@@ -216,7 +216,9 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 postMessageDisplayer(new PostMessageDisplayer.Default("CMake")). // NOI18N
                 outConvertorFactory(processChangeListener);
 
-        // Execute the makefile
+        descr.noReset(true);
+        inputOutput.getOut().println("cd '"+buildDir+"'"); //NOI18N
+        inputOutput.getOut().println(executable+" "+argsFlat); //NOI18N
         return NativeExecutionService.newService(npb, descr, "cmake"); // NOI18N
     }
 }
