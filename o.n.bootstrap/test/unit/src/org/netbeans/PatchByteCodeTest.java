@@ -92,6 +92,17 @@ public class PatchByteCodeTest extends NbTestCase {
         }
     }
 
+    public static class CAPI2 {
+        CAPI2() {}
+    }
+
+    @PatchFor(CAPI2.class)
+    public static class CompatAPI2 {
+        @ConstructorDelegate
+        public static void createAPI(CAPI2 inst, String[] param) {
+        }
+    }
+
     public void testPatchingPublic() throws Exception {
         Class<?> c = new L().loadClass(C.class.getName());
         assertNotSame(c, C.class);
@@ -117,6 +128,15 @@ public class PatchByteCodeTest extends NbTestCase {
         Class s = c.getSuperclass();
         assertNotSame(s, Object.class);
         assertEquals(CompatAPI.class.getName(), s.getName());
+    }
+
+    public void testPatchSuperclassWithArray() throws Exception {
+        Class<?> c = new L().loadClass(CAPI2.class.getName());
+        assertNotSame(c, CAPI2.class);
+        Class s = c.getSuperclass();
+        assertEquals(CompatAPI2.class.getName(), s.getName());
+        Constructor<?> init = c.getConstructor(String[].class);
+        init.newInstance((Object)new String[] {"a","b"});
     }
     
     public void testGeneratedConstructor() throws Exception {

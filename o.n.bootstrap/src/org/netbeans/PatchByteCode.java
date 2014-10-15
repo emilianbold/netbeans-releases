@@ -372,6 +372,7 @@ public final class PatchByteCode {
         @Override
         public SignatureVisitor visitArrayType() {
             load(Opcodes.ALOAD, paramIndex++);
+            localSize++;
             return new NullSignVisitor();
         }
 
