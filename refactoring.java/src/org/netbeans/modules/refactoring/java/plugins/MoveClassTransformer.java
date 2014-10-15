@@ -56,7 +56,6 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.support.CancellableTreeScanner;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
@@ -424,11 +423,7 @@ public class MoveClassTransformer extends RefactoringVisitor {
     }
 
     private PackageElement getPackageOf(Element el) {
-        //return workingCopy.getElements().getPackageOf(el);
-        while (el.getKind() != ElementKind.PACKAGE) {
-            el = el.getEnclosingElement();
-        }
-        return (PackageElement) el;
+        return workingCopy.getElements().getPackageOf(el);
     }
 
     private boolean containsAnyOf(Element el, EnumSet<Modifier> neededMods) {
