@@ -60,6 +60,35 @@ public final class Notifications {
     }
 
     @NbBundle.Messages({
+        "Notifications.detection.title=Node.js detected",
+        "# {0} - project name",
+        "Notifications.detection.description=Enable Node.js support in project {0}?",
+        "# {0} - project name",
+        "Notifications.detection.done=Node.js support enabled in project {0}.",
+    })
+    public static void notifyNodeJsDetected(final Project project) {
+        final String projectName = ProjectUtils.getInformation(project).getDisplayName();
+        NotificationDisplayer.getDefault().notify(
+                Bundle.Notifications_detection_title(),
+                NotificationDisplayer.Priority.LOW.getIcon(),
+                Bundle.Notifications_detection_description(projectName),
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
+                        if (preferences.isEnabled()) {
+                            // already enabled
+                            return;
+                        }
+                        preferences.setEnabled(true);
+                        StatusDisplayer.getDefault().setStatusText(Bundle.Notifications_detection_done(projectName));
+                    }
+                },
+                NotificationDisplayer.Priority.LOW);
+
+    }
+
+    @NbBundle.Messages({
         "Notifications.enabled.title=Node.js support enabled",
         "# {0} - project name",
         "Notifications.enabled.description=Enable running project {0} as Node.js application?",
@@ -85,7 +114,6 @@ public final class Notifications {
                         }
                     },
                     NotificationDisplayer.Priority.LOW);
-
         }
     }
 
