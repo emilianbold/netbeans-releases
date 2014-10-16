@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.junit;
 
+import org.netbeans.modules.junit.api.JUnitSettings;
+import org.netbeans.modules.junit.api.JUnitTestUtil;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -198,7 +200,7 @@ public final class DefaultITPlugin extends JUnitPlugin {
     protected FileObject[] createTests(FileObject[] filesToTest, FileObject targetRoot, Map<CreateTestParam, Object> params) {
 	Project project = FileOwnerQuery.getOwner(filesToTest[0]);
         if (project != null) {
-            JUnitPlugin plugin = TestUtil.getPluginForProject(project);
+            JUnitPlugin plugin = JUnitTestUtil.getPluginForProject(project);
             if (plugin instanceof DefaultPlugin) {
                 params.put(CommonPlugin.CreateTestParam.INC_GENERATE_INTEGRATION_TEST, Boolean.TRUE);
 		return ((DefaultPlugin) plugin).createTests(filesToTest, targetRoot, params);

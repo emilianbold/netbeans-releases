@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 3.25.1
+#Version 3.27.0
 
 CLSS public java.lang.Object
 cons public init()
@@ -1389,6 +1389,18 @@ cons public init()
 meth public void performMenu()
 supr org.netbeans.jellytools.actions.Action
 hfds keystroke,mainMenuPath
+
+CLSS public org.netbeans.jellytools.modules.debugger.actions.StepOverExpressionAction
+cons public init()
+meth public void performMenu()
+supr org.netbeans.jellytools.actions.Action
+hfds keystroke,mainMenuPath
+
+CLSS public org.netbeans.jellytools.modules.debugger.actions.TakeGUISnapshotAction
+cons public init()
+meth public void performMenu()
+supr org.netbeans.jellytools.actions.Action
+hfds mainMenuPath
 
 CLSS public org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction
 cons public init()

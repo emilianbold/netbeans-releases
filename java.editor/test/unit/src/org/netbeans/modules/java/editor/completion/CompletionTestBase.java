@@ -60,20 +60,22 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+
 import junit.framework.Assert;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.gen.WhitespaceIgnoringDiff;
 import org.netbeans.api.lexer.Language;
@@ -82,7 +84,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.completion.CompletionItemComparator;
 import org.netbeans.modules.editor.java.JavaCompletionProvider;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
@@ -92,7 +93,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
@@ -121,7 +121,7 @@ import org.openide.util.lookup.ProxyLookup;
 public class CompletionTestBase extends NbTestCase {
     
     static {
-        JavaCompletionProviderBasicTest.class.getClassLoader().setDefaultAssertionStatus(true);
+        JavaCompletionItemElementCreatingTest.class.getClassLoader().setDefaultAssertionStatus(true);
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
 
@@ -225,8 +225,9 @@ public class CompletionTestBase extends NbTestCase {
                 }
             }
         }, true);
-        Utilities.setCaseSensitive(true);
         Main.initializeURLFactory();
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("completion-case-sensitive", true);
     }
     
     private URL[] prepareLayers(String... paths) throws IOException {
@@ -249,19 +250,11 @@ public class CompletionTestBase extends NbTestCase {
     protected void tearDown() throws Exception {
     }
     
-    protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName) throws Exception {
-        performTest(source, caretPos, textToInsert, goldenFileName, null);
+    protected void performTest(String source, int caretPos, String textToInsert, String toPerformItemRE, String goldenFileName) throws Exception {
+        performTest(source, caretPos, textToInsert, toPerformItemRE, goldenFileName, null);
     }
     
-    protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String sourceLevel) throws Exception {
-        performTest(source, caretPos, textToInsert, goldenFileName, null, null, sourceLevel);
-    }
-    
-    protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String toPerformItemRE, String goldenFileName2) throws Exception {
-        performTest(source, caretPos, textToInsert, goldenFileName, toPerformItemRE, goldenFileName2, null);
-    }
-    
-    protected void performTest(String source, int caretPos, String textToInsert, String goldenFileName, String toPerformItemRE, String goldenFileName2, String sourceLevel) throws Exception {
+    protected void performTest(String source, int caretPos, String textToInsert, String toPerformItemRE, String goldenFileName, String sourceLevel) throws Exception {
         this.sourceLevel.set(sourceLevel);
         File testSource = new File(getWorkDir(), "test/Test.java");
         testSource.getParentFile().mkdirs();
@@ -280,55 +273,37 @@ public class CompletionTestBase extends NbTestCase {
         if (textToInsertLength > 0)
             doc.insertString(caretPos, textToInsert, null);
         Source s = Source.create(doc);
-        List<? extends CompletionItem> items = JavaCompletionProvider.query(s, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength, null);
+        List<? extends CompletionItem> items = JavaCompletionProvider.query(s, CompletionProvider.COMPLETION_QUERY_TYPE, caretPos + textToInsertLength, caretPos + textToInsertLength);
         Collections.sort(items, CompletionItemComparator.BY_PRIORITY);
-        
-        File output = new File(getWorkDir(), getName() + ".out");
-        Writer out = new FileWriter(output);
-        for (Object item : items) {
-            String itemString = item.toString();
-            if (!(org.openide.util.Utilities.isMac() && itemString.equals("apple") //ignoring 'apple' package
-                    || itemString.equals("jdk"))) { //ignoring 'jdk' package introduced by jdk1.7.0_40
-                out.write(itemString);
-                out.write("\n");
-            }
-        }
-        out.close();
         
         String version = System.getProperty("java.specification.version") + "/";
         
-        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + version + goldenFileName);
-        File diffFile = new File(getWorkDir(), getName() + ".diff");        
-        assertFile(output, goldenFile, diffFile);
-        
-        if (toPerformItemRE != null) {
-            assertNotNull(goldenFileName2);            
+        assertNotNull(goldenFileName);            
 
-            Pattern p = Pattern.compile(toPerformItemRE);
-            CompletionItem item = null;            
-            for (CompletionItem i : items) {
-                if (p.matcher(i.toString()).find()) {
-                    item = i;
-                    break;
-                }
-            }            
-            assertNotNull(item);
-            
-            JEditorPane editor = new JEditorPane();
-            editor.setDocument(doc);
-            editor.setCaretPosition(caretPos + textToInsertLength);
-            item.defaultAction(editor);
-            
-            File output2 = new File(getWorkDir(), getName() + ".out2");
-            Writer out2 = new FileWriter(output2);            
-            out2.write(doc.getText(0, doc.getLength()));
-            out2.close();
-            
-            File goldenFile2 = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + version + goldenFileName2);
-            File diffFile2 = new File(getWorkDir(), getName() + ".diff2");
-            
-            assertFile(output2, goldenFile2, diffFile2, new WhitespaceIgnoringDiff());
-        }
+        Pattern p = Pattern.compile(toPerformItemRE);
+        CompletionItem item = null;            
+        for (CompletionItem i : items) {
+            if (p.matcher(i.toString()).find()) {
+                item = i;
+                break;
+            }
+        }            
+        assertNotNull(item);
+
+        JEditorPane editor = new JEditorPane();
+        editor.setDocument(doc);
+        editor.setCaretPosition(caretPos + textToInsertLength);
+        item.defaultAction(editor);
+
+        File output = new File(getWorkDir(), getName() + ".out2");
+        Writer out = new FileWriter(output);            
+        out.write(doc.getText(0, doc.getLength()));
+        out.close();
+
+        File goldenFile = new File(getDataDir(), "/goldenfiles/org/netbeans/modules/java/editor/completion/JavaCompletionProviderTest/" + version + goldenFileName);
+        File diffFile = new File(getWorkDir(), getName() + ".diff");
+
+        assertFile(output, goldenFile, diffFile, new WhitespaceIgnoringDiff());
         
         LifecycleManager.getDefault().saveAll();
     }

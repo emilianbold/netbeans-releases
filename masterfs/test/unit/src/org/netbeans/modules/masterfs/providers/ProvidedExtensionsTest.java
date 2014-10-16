@@ -96,8 +96,8 @@ public class ProvidedExtensionsTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        AnnotationProvider provider = (AnnotationProvider)Lookups.metaInfServices(
-                Thread.currentThread().getContextClassLoader()).lookup(AnnotationProvider.class);
+        BaseAnnotationProvider provider = (BaseAnnotationProvider)Lookups.metaInfServices(
+                Thread.currentThread().getContextClassLoader()).lookup(BaseAnnotationProvider.class);
         assertNotNull(provider);
         iListener = lookupImpl(true);
         assertNotNull(iListener);
@@ -107,13 +107,13 @@ public class ProvidedExtensionsTest extends NbTestCase {
     }
     
     private ProvidedExtensionsImpl lookupImpl(boolean providesCanWrite) {
-        Result<AnnotationProvider> result = Lookup.getDefault().
-                       lookup(new Lookup.Template(AnnotationProvider.class));
-        for (Item<AnnotationProvider> item : result.allItems()) {
+        Result<BaseAnnotationProvider> result = Lookup.getDefault().
+                       lookup(new Lookup.Template(BaseAnnotationProvider.class));
+        for (Item<BaseAnnotationProvider> item : result.allItems()) {
             if (!item.getId().contains(ProvidedExtensionsTest.class.getSimpleName())) {
                 continue;
             }
-            AnnotationProvider ap = item.getInstance();
+            BaseAnnotationProvider ap = item.getInstance();
             InterceptionListener iil = ap.getInterceptionListener();
             if (iil instanceof ProvidedExtensionsImpl) {
                 ProvidedExtensionsImpl extension = (ProvidedExtensionsImpl) iil;
@@ -728,7 +728,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private static int cnt;
         
         public static FileLock lock;
-        private final AnnotationProvider provider;
+        private final BaseAnnotationProvider provider;
         private IOException throwFromLock;
         private int implsCopyCalls;
 
@@ -736,7 +736,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
             this(null, false);
         }
 
-        public ProvidedExtensionsImpl(AnnotationProvider p, boolean provideCanWrite) {
+        public ProvidedExtensionsImpl(BaseAnnotationProvider p, boolean provideCanWrite) {
             super(provideCanWrite);
             this.provider = p;
             cnt++;

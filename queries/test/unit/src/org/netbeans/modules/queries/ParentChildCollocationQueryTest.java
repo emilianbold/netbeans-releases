@@ -46,7 +46,7 @@ package org.netbeans.modules.queries;
 
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * Test of ParentChildCollocationQuery impl.
@@ -70,27 +70,27 @@ public class ParentChildCollocationQueryTest extends NbTestCase {
         proj2.mkdirs();
         
         ParentChildCollocationQuery query = new ParentChildCollocationQuery();
-        assertTrue("Must be collocated", query.areCollocated(Utilities.toURI(proj1), Utilities.toURI(proj3)));
-        assertTrue("Must be collocated", query.areCollocated(Utilities.toURI(proj3), Utilities.toURI(proj1)));
-        assertFalse("Cannot be collocated", query.areCollocated(Utilities.toURI(proj1), Utilities.toURI(proj2)));
-        assertFalse("Cannot be collocated", query.areCollocated(Utilities.toURI(proj2), Utilities.toURI(proj1)));
+        assertTrue("Must be collocated", query.areCollocated(BaseUtilities.toURI(proj1), BaseUtilities.toURI(proj3)));
+        assertTrue("Must be collocated", query.areCollocated(BaseUtilities.toURI(proj3), BaseUtilities.toURI(proj1)));
+        assertFalse("Cannot be collocated", query.areCollocated(BaseUtilities.toURI(proj1), BaseUtilities.toURI(proj2)));
+        assertFalse("Cannot be collocated", query.areCollocated(BaseUtilities.toURI(proj2), BaseUtilities.toURI(proj1)));
         
         // folder does not exist:
         File proj4 = new File(base, "proj");
-        assertFalse("Cannot be collocated", query.areCollocated(Utilities.toURI(proj1), Utilities.toURI(proj4)));
-        assertFalse("Cannot be collocated", query.areCollocated(Utilities.toURI(proj4), Utilities.toURI(proj1)));
+        assertFalse("Cannot be collocated", query.areCollocated(BaseUtilities.toURI(proj1), BaseUtilities.toURI(proj4)));
+        assertFalse("Cannot be collocated", query.areCollocated(BaseUtilities.toURI(proj4), BaseUtilities.toURI(proj1)));
         proj4.mkdirs();
-        assertFalse("Cannot be collocated", query.areCollocated(Utilities.toURI(proj1), Utilities.toURI(proj4)));
-        assertFalse("Cannot be collocated", query.areCollocated(Utilities.toURI(proj4), Utilities.toURI(proj1)));
+        assertFalse("Cannot be collocated", query.areCollocated(BaseUtilities.toURI(proj1), BaseUtilities.toURI(proj4)));
+        assertFalse("Cannot be collocated", query.areCollocated(BaseUtilities.toURI(proj4), BaseUtilities.toURI(proj1)));
         
         // files do not exist:
         File file1 = new File(base, "file1.txt");
         File file2 = new File(base, "file1");
-        assertFalse("Cannot be collocated", query.areCollocated(Utilities.toURI(file1), Utilities.toURI(file2)));
-        assertFalse("Cannot be collocated", query.areCollocated(Utilities.toURI(file2), Utilities.toURI(file1)));
+        assertFalse("Cannot be collocated", query.areCollocated(BaseUtilities.toURI(file1), BaseUtilities.toURI(file2)));
+        assertFalse("Cannot be collocated", query.areCollocated(BaseUtilities.toURI(file2), BaseUtilities.toURI(file1)));
         
         // passing the same parameter
-        assertTrue("A file must be collocated with itself", query.areCollocated(Utilities.toURI(proj1), Utilities.toURI(proj1)));
+        assertTrue("A file must be collocated with itself", query.areCollocated(BaseUtilities.toURI(proj1), BaseUtilities.toURI(proj1)));
     }
 
 }

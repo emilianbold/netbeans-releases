@@ -48,6 +48,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocTestSupport;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocCompletionUtils;
 
 /**
  *

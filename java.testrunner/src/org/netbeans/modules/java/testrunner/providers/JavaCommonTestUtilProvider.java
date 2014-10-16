@@ -46,12 +46,11 @@ import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonTestUtilProvider;
 import org.netbeans.modules.java.testrunner.CommonTestUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @ServiceProvider(service=CommonTestUtilProvider.class, position=10)
 public class JavaCommonTestUtilProvider extends CommonTestUtilProvider {
@@ -64,11 +63,6 @@ public class JavaCommonTestUtilProvider extends CommonTestUtilProvider {
     @Override
     public Map<CreateTestParam, Object> getSettingsMap(boolean multipleFiles) {
         return CommonTestUtil.getSettingsMap(multipleFiles);
-    }
-
-    @Override
-    public FileObject getFileObjectFromNode(Node node) {
-        return CommonTestUtil.getFileObjectFromNode(node);
     }
     
 }

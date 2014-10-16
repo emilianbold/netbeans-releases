@@ -296,8 +296,8 @@ public final class OpenProjectList {
         synchronized (projectGroupSupport) {
             list.addAll(projectGroupSupport);
         }
-        ProjectGroup o = oldGroup != null ? org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(oldGroup.getName(), oldGroup.prefs()) : null;
-        ProjectGroup n = newGroup != null ? org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(newGroup.getName(), newGroup.prefs()) : null;
+        ProjectGroup o = oldGroup != null ? org.netbeans.modules.project.uiapi.BaseUtilities.ACCESSOR.createGroup(oldGroup.getName(), oldGroup.prefs()) : null;
+        ProjectGroup n = newGroup != null ? org.netbeans.modules.project.uiapi.BaseUtilities.ACCESSOR.createGroup(newGroup.getName(), newGroup.prefs()) : null;
         ProjectGroupChangeEvent event = new ProjectGroupChangeEvent(o, n);
         for (ProjectGroupChangeListener l : list) {
             l.projectGroupChanging(event);
@@ -310,8 +310,8 @@ public final class OpenProjectList {
         synchronized (projectGroupSupport) {
             list.addAll(projectGroupSupport);
         }
-        ProjectGroup o = oldGroup != null ? org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(oldGroup.getName(), oldGroup.prefs()) : null;
-        ProjectGroup n = newGroup != null ? org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(newGroup.getName(), newGroup.prefs()) : null;
+        ProjectGroup o = oldGroup != null ? org.netbeans.modules.project.uiapi.BaseUtilities.ACCESSOR.createGroup(oldGroup.getName(), oldGroup.prefs()) : null;
+        ProjectGroup n = newGroup != null ? org.netbeans.modules.project.uiapi.BaseUtilities.ACCESSOR.createGroup(newGroup.getName(), newGroup.prefs()) : null;
         ProjectGroupChangeEvent event = new ProjectGroupChangeEvent(o, n);
         for (ProjectGroupChangeListener l : list) {
             l.projectGroupChanged(event);

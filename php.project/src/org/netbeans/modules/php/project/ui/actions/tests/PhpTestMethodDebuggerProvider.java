@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.testrunner.api.TestMethodDebuggerProvider;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestMethodDebuggerProvider;
 import org.netbeans.modules.php.project.ui.actions.support.TestSingleMethodSupport;
 import org.netbeans.spi.project.SingleMethod;
 import org.openide.awt.ActionID;

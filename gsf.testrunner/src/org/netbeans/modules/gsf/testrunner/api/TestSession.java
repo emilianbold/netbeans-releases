@@ -49,9 +49,7 @@ import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.gsf.testrunner.DefaultTestRunnerNodeFactory;
 import org.openide.util.Parameters;
-import org.openide.windows.OutputWriter;
 
 /**
  * Represents a test session, i.e. a single run of tests (e.g. all the tests
@@ -98,57 +96,27 @@ public class TestSession {
      */
     private String startingMsg;
 
-    private final TestRunnerNodeFactory nodeFactory;
     /**
      * Handles re-running of this session's execution.
      */
     private RerunHandler rerunHandler;
-
+    
     /**
-     * The line handler to use for printing output.
-     */
-    private OutputLineHandler lineHandler;
-
-    private static final OutputLineHandler DEFAULT_LINE_HANDLER = new OutputLineHandler() {
-
-        public void handleLine(OutputWriter out, String text) {
-            out.println(text);
-        }
-    };
-    /**
-     * Constructs a new session.
+     * Constructs a new session. 
      * 
      * @param name the name for the session.
      * @param project the project where the session is invoked.
      * @param sessionType the type of the session.
      */
     public TestSession(String name, Project project, SessionType sessionType) {
-        this(name, project, sessionType, new DefaultTestRunnerNodeFactory());
-    }
-
-    /**
-     * Constructs a new session.
-     *
-     * @param name the name for the session.
-     * @param project the project where the session is invoked.
-     * @param sessionType the type of the session.
-     * @param nodeFactory the node factory for this session.
-     */
-    public TestSession(String name, Project project, SessionType sessionType, TestRunnerNodeFactory nodeFactory) {
         Parameters.notNull("name", name);
         Parameters.notNull("project", project);
-        Parameters.notNull("nodeFactory", nodeFactory);
         this.name = name;
         this.project = new WeakReference<Project>(project);
         this.projectURI = project.getProjectDirectory().toURI();
         this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.sessionType = sessionType;
         this.result = new SessionResult();
-        this.nodeFactory = nodeFactory;
-    }
-
-    public TestRunnerNodeFactory getNodeFactory() {
-        return nodeFactory;
     }
 
     /**
@@ -165,27 +133,6 @@ public class TestSession {
     public void setRerunHandler(RerunHandler rerunHandler) {
         Parameters.notNull("rerunHandler", rerunHandler);
         this.rerunHandler = rerunHandler;
-    }
-
-    /**
-     * Gets the line handler for printing output. If no line handler is set, will
-     * return the default handler that prints lines without any output listeners
-     * (so that e.g. file locations are not clickable).
-     * 
-     * @return the line handler for printing; never <code>null</code>.
-     */
-    public OutputLineHandler getOutputLineHandler() {
-        return lineHandler != null ? lineHandler : DEFAULT_LINE_HANDLER;
-    }
-
-    /**
-     * Sets the line handler to use for printing.
-     * 
-     * @param lineHandler the handler to use.
-     */
-    public void setOutputLineHandler(OutputLineHandler lineHandler) {
-        Parameters.notNull("lineHandler", lineHandler);
-        this.lineHandler = lineHandler;
     }
 
     /**
@@ -227,7 +174,11 @@ public class TestSession {
         return testcases.isEmpty() ? null : testcases.get(testcases.size() - 1);
      }
 
-    List<Testcase> getAllTestCases() {
+    /**
+     * @return the all test cases in this session or an empty list
+     * if there are none.
+     */
+    public List<Testcase> getAllTestCases() {
         List<Testcase> all = new ArrayList<Testcase>();
         for (TestSuite suite : testSuites) {
             all.addAll(suite.getTestcases());
@@ -292,7 +243,7 @@ public class TestSession {
         assert currentSuite != null : "Currently running suite was null for projectURI: " + projectURI; //NOI18N
         Report report = new Report(currentSuite.getName(), getProject());
         report.setElapsedTimeMillis(timeInMillis);
-	boolean isTestNG = Manager.getInstance().getTestingFramework().equals(Manager.TESTNG_TF);
+	boolean isTestNG = CommonUtils.getInstance().getTestingFramework().equals(CommonUtils.TESTNG_TF);
         for (Testcase testcase : currentSuite.getTestcases()) {
             report.reportTest(testcase);
             if (!isTestNGConfigMethod(testcase, isTestNG)) {
@@ -343,6 +294,10 @@ public class TestSession {
         return sessionType;
     }
 
+    /**
+     *
+     * @return number of failures/errors incremented by one
+     */
     public synchronized long incrementFailuresCount() {
         return ++failuresCount;
     }
@@ -350,7 +305,7 @@ public class TestSession {
     public FileLocator getFileLocator() {
         return fileLocator;
     }
-
+    
     /**
      * @return the name of this session.
      * @see #name

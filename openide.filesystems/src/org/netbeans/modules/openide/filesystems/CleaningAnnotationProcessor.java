@@ -80,6 +80,7 @@ public class CleaningAnnotationProcessor extends AbstractProcessor {
             impl.run();
         } catch (LinkageError t) {
             // not enough classes on classpath. Happens in core.startup tests.
+            System.err.println(t);
         }
 
         return false;

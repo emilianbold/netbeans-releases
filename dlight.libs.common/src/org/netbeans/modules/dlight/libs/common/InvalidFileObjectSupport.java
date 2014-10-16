@@ -135,11 +135,6 @@ public class InvalidFileObjectSupport {
         }
 
         @Override
-        public SystemAction[] getActions() {
-            return new SystemAction[0];
-        }
-
-        @Override
         public String getDisplayName() {
             return "Dummy"; //NOI18N
         }

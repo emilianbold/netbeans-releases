@@ -156,7 +156,7 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
     public ProjectGroup getActiveProjectGroupAPI() {
         Group gr = Group.getActiveGroup();
         if (gr != null) {
-            return org.netbeans.modules.project.uiapi.Utilities.ACCESSOR.createGroup(gr.getName(), gr.prefs());
+            return org.netbeans.modules.project.uiapi.BaseUtilities.ACCESSOR.createGroup(gr.getName(), gr.prefs());
         }
         return null;
     }

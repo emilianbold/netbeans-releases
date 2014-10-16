@@ -40,6 +40,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.ui.ElementHeaderFormater;
 
 /**
@@ -51,15 +52,15 @@ public final class ElementHeaders {
     private ElementHeaders() {
     }
     
-    public static final String ANNOTATIONS = "%annotations%"; //NOI18N
-    public static final String NAME = "%name%"; //NOI18N
-    public static final String TYPE = "%type%"; //NOI18N
-    public static final String THROWS = "%throws%"; //NOI18N
-    public static final String IMPLEMENTS = "%implements%"; //NOI18N
-    public static final String EXTENDS = "%extends%"; //NOI18N
-    public static final String TYPEPARAMETERS = "%typeparameters%"; //NOI18N
-    public static final String FLAGS = "%flags%"; //NOI18N
-    public static final String PARAMETERS = "%parameters%"; //NOI18N
+    public static final String ANNOTATIONS = VeryPretty.ANNOTATIONS;
+    public static final String NAME = VeryPretty.NAME;
+    public static final String TYPE = VeryPretty.TYPE;
+    public static final String THROWS = VeryPretty.THROWS;
+    public static final String IMPLEMENTS = VeryPretty.IMPLEMENTS;
+    public static final String EXTENDS = VeryPretty.EXTENDS;
+    public static final String TYPEPARAMETERS = VeryPretty.TYPEPARAMETERS;
+    public static final String FLAGS = VeryPretty.FLAGS;
+    public static final String PARAMETERS = VeryPretty.PARAMETERS;
     
     
     /** Formats header of a tree. The tree must represent an element e.g. type

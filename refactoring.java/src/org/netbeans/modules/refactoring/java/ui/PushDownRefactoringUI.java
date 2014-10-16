@@ -97,10 +97,16 @@ public class PushDownRefactoringUI implements RefactoringUI, JavaRefactoringUIFa
                 selected = info.getElementUtilities().enclosingTypeElement(selected);
             }
             TreePath tp = info.getTrees().getPath(selected);
-            TreePathHandle sourceType = TreePathHandle.create(tp, info);
-            description = ElementHeaders.getHeader(tp, info, ElementHeaders.NAME);
-            refactoring = new PushDownRefactoring(sourceType);
-            refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(sourceType));
+            if(tp != null) {
+                TreePathHandle sourceType = TreePathHandle.create(tp, info);
+                description = ElementHeaders.getHeader(tp, info, ElementHeaders.NAME);
+                refactoring = new PushDownRefactoring(sourceType);
+                refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(sourceType));
+            } else {
+                // put the unresolvable selection to refactoring,
+                // user notification is provided by PushDownRefactoringPlugin.preCheck
+                refactoring = new PushDownRefactoring(selectedElements);
+            }
         } else {
             // put the unresolvable selection to refactoring,
             // user notification is provided by PushDownRefactoringPlugin.preCheck

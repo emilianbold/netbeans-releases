@@ -44,6 +44,7 @@
 
 package org.netbeans.api.java.platform;
 
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +54,7 @@ import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.FallbackDefaultJavaPlatform;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -249,7 +251,7 @@ public class JavaPlatformManagerTest extends NbTestCase {
             }
         }
     }
-
+    
     private static class TestJavaPlatform extends JavaPlatform {
 
         private String id;

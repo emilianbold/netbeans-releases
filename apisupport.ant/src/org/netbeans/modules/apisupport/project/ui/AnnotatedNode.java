@@ -48,12 +48,7 @@ import java.awt.Image;
 import java.util.HashSet;
 import java.util.Set;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -120,7 +115,8 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         if (files != null && files.iterator().hasNext()) {
             try {
                 FileObject fo = files.iterator().next();
-                annotatedImg = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                annotatedImg = FileUIUtils.getImageDecorator(fo.getFileSystem()).
+                        annotateIcon(img, type, files);
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -133,7 +129,7 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         if (files != null && files.iterator().hasNext()) {
             try {
                 FileObject fo = files.iterator().next();
-                annotatedName = fo.getFileSystem().getStatus().annotateName(name, files);
+                annotatedName = fo.getFileSystem().getDecorator().annotateName(name, files);
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }

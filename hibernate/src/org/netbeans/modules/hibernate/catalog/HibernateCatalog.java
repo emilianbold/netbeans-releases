@@ -42,16 +42,14 @@
 
 package org.netbeans.modules.hibernate.catalog;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -63,7 +61,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
  */
-public class HibernateCatalog implements CatalogReader, CatalogDescriptor, 
+public class HibernateCatalog implements CatalogReader, CatalogDescriptor2, 
         EntityResolver{
 
     private String CONFIG_PUBLIC_ID = "-//Hibernate/Hibernate Configuration DTD 3.0//EN"; //NOI18N
@@ -123,8 +121,8 @@ public class HibernateCatalog implements CatalogReader, CatalogDescriptor,
         
     }
 
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png"); //NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/hibernate/resources/hibernate-configuration.png"; //NOI18N
     }
 
     public String getDisplayName() {

@@ -53,7 +53,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.parsing.impl.Installer;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -112,7 +112,7 @@ public final class Snapshot {
         int[][]             currentToOriginal,
         int[][]             originalToCurrent) {
         final int textLength = text.length();
-        if (textLength > Installer.MAX_FILE_SIZE) {
+        if (textLength > Utilities.getMaxFileSize()) {
             text = "";  //NOI18N
             LOG.log(
                 Level.WARNING,
@@ -123,7 +123,7 @@ public final class Snapshot {
                         FileUtil.getFileDisplayName(source.getFileObject()),
                     mimePath,
                     textLength,
-                    Installer.MAX_FILE_SIZE
+                    Utilities.getMaxFileSize()
                 });
         }
         return new Snapshot(

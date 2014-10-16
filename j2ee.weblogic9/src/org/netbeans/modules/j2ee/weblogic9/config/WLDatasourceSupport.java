@@ -63,6 +63,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.xml.parsers.ParserConfigurationException;
@@ -116,11 +122,92 @@ public class WLDatasourceSupport {
 
     private static final Logger LOGGER = Logger.getLogger(WLDatasourceSupport.class.getName());
 
-    private File resourceDir;
+    private final File resourceDir;
 
     public WLDatasourceSupport(File resourceDir) {
         assert resourceDir != null : "Resource directory can't be null"; // NOI18N
         this.resourceDir = FileUtil.normalizeFile(resourceDir);
+    }
+
+    public static Set<WLDatasource> getSystemDatasources(MBeanServerConnection con, ObjectName service) throws ConfigurationException {
+        try {
+            ObjectName[] adminServers = (ObjectName[]) con
+                    .getAttribute(service, "ServerRuntimes"); // NOI18N
+            Set<String> adminNames = new HashSet<String>();
+            for (ObjectName adminServer : adminServers) {
+                adminNames.add(con.getAttribute(adminServer, "Name").toString()); // NOI18N
+            }
+            
+            ObjectName config = (ObjectName) con.getAttribute(
+                    service, "DomainConfiguration"); // NOI18N
+
+            ObjectName objectNames[] = (ObjectName[]) con.getAttribute(
+                    config, "SystemResources"); // NOI18N
+
+            Set<WLDatasource> result = new HashSet<WLDatasource>();
+            for (ObjectName resource : objectNames) {
+                String type = con.getAttribute(resource, "Type").toString();// NOI18N
+                if ("JDBCSystemResource".equals(type)) { // NOI18N
+                    ObjectName dataSource = (ObjectName) con
+                            .getAttribute(resource, "JDBCResource"); // NOI18N
+                    ObjectName[] targets = (ObjectName[]) con
+                            .getAttribute(resource, "Targets"); // NOI18N
+
+                    String name = con.getAttribute(dataSource,
+                            "Name").toString(); // NOI18N
+                    boolean foundAdminServer = false;
+                    for (ObjectName target : targets) {
+                        String targetServer = con.getAttribute(
+                                target, "Name").toString(); // NOI18N
+                        if (adminNames.contains(targetServer)) {
+                            foundAdminServer = true;
+                        }
+                    }
+                    if (!foundAdminServer) {
+                        continue;
+                    }
+
+                    ObjectName dataSourceParams = (ObjectName) con
+                            .getAttribute(dataSource,
+                                    "JDBCDataSourceParams"); // NOI18N
+                    ObjectName driverParams = (ObjectName) con
+                            .getAttribute(dataSource,
+                                    "JDBCDriverParams"); // NOI18N
+                    String jndiNames[] = (String[]) con
+                            .getAttribute(dataSourceParams,
+                                    "JNDINames"); // NOI18N
+                    String url = (String) con.getAttribute(driverParams, "Url"); // NOI18N
+                    String driver = (String) con.getAttribute(driverParams, "DriverName"); // NOI18N
+                    ObjectName[] properties = (ObjectName[]) con.getAttribute((ObjectName) con
+                            .getAttribute(driverParams, "Properties"), "Properties"); // NOI18N
+                    String user = null;
+                    for (ObjectName prop : properties) {
+                        String propName = (String) con.getAttribute(prop, "Name"); // NOI18N
+                        if ("user".equals(propName)) { // NOI18N
+                            user = (String) con.getAttribute(prop, "Value"); // NOI18N
+                            break;
+                        }
+                    }
+                    if (jndiNames.length == 0) {
+                        jndiNames = new String[] {name};
+                    }
+                    for (String jndi : jndiNames) {
+                        result.add(new WLDatasource(name, url, jndi, user, null, driver, null, true));
+                    }
+                }
+            }
+            return result;
+        } catch (MBeanException ex) {
+            throw new ConfigurationException("Datasource fetch failed", ex);
+        } catch (AttributeNotFoundException ex) {
+            throw new ConfigurationException("Datasource fetch failed", ex);
+        } catch (InstanceNotFoundException ex) {
+            throw new ConfigurationException("Datasource fetch failed", ex);
+        } catch (ReflectionException ex) {
+            throw new ConfigurationException("Datasource fetch failed", ex);
+        } catch (IOException ex) {
+            throw new ConfigurationException("Datasource fetch failed", ex);
+        }
     }
 
     static Set<WLDatasource> getDatasources(File domain, FileObject inputFile,
@@ -651,9 +738,9 @@ public class WLDatasourceSupport {
 
         private final File configDir;
 
-        private JdbcResource resource;
+        private final StringBuilder value = new StringBuilder();
 
-        private String value;
+        private JdbcResource resource;
 
         public JdbcSystemResourceHandler(File configDir) {
             this.configDir = configDir;
@@ -661,7 +748,7 @@ public class WLDatasourceSupport {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
-            value = null;
+            value.setLength(0);
             if ("jdbc-system-resource".equals(qName)) { // NOI18N
                 resource = new JdbcResource(configDir, true);
             }
@@ -677,17 +764,17 @@ public class WLDatasourceSupport {
                 resources.add(resource);
                 resource = null; 
             } else if("name".equals(qName)) { // NOI18N
-                resource.setName(value);
+                resource.setName(value.toString());
             } else if ("taget".equals(qName)) { // NOI18N
-                resource.setTarget(value);
+                resource.setTarget(value.toString());
             } else if ("descriptor-file-name".equals(qName)) { // NOI18N
-                resource.setFile(value);
+                resource.setFile(value.toString());
             }
         }
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public List<JdbcResource> getResources() {
@@ -701,9 +788,9 @@ public class WLDatasourceSupport {
 
         private final File domainDir;
 
-        private JdbcResource resource;
+        private final StringBuilder value = new StringBuilder();
 
-        private String value;
+        private JdbcResource resource;
 
         private boolean isJdbc;
 
@@ -713,7 +800,7 @@ public class WLDatasourceSupport {
 
         @Override
         public void startElement(String uri, String localName, String qName, Attributes attributes) {
-            value = null;
+            value.setLength(0);
             if ("app-deployment".equals(qName)) { // NOI18N
                 resource = new JdbcResource(domainDir, false);
             }
@@ -732,13 +819,13 @@ public class WLDatasourceSupport {
                 isJdbc = false;
                 resource = null;
             } else if("name".equals(qName)) { // NOI18N
-                resource.setName(value);
+                resource.setName(value.toString());
             } else if ("taget".equals(qName)) { // NOI18N
-                resource.setTarget(value);
+                resource.setTarget(value.toString());
             } else if ("source-path".equals(qName)) { // NOI18N
-                resource.setFile(value);
+                resource.setFile(value.toString());
             } else if ("module-type".equals(qName)) { // NOI18N
-                if ("jdbc".equals(value)) {
+                if ("jdbc".equals(value.toString())) {
                     isJdbc = true;
                 }
             }
@@ -746,7 +833,7 @@ public class WLDatasourceSupport {
 
         @Override
         public void characters(char[] ch, int start, int length) {
-            value = new String(ch, start, length);
+            value.append(ch, start, length);
         }
 
         public List<JdbcResource> getResources() {

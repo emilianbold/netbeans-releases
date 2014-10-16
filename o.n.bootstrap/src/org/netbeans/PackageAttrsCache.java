@@ -60,6 +60,7 @@ import java.util.logging.Logger;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class PackageAttrsCache implements Stamps.Updater {
+    private static final String NULL_REPLACEMENT = "\000";
     private static final String CACHE = "package-attrs.dat"; // NOI18N
     private static final String[] EMPTY = new String[7];
     private static final Logger LOG = Logger.getLogger(PackageAttrsCache.class.getName());
@@ -84,7 +85,7 @@ final class PackageAttrsCache implements Stamps.Updater {
                     }
                     String[] arr = new String[7];
                     for (int i = 0; i < 7; i++) {
-                        arr[i] = dis.readUTF();
+                        arr[i] = fromSafeValue(dis.readUTF());
                     }
                     tmp.put(key, arr);
                 }
@@ -109,7 +110,7 @@ final class PackageAttrsCache implements Stamps.Updater {
     final String[] findImpl(URL src, Manifest man, String path) {
         String key = src.toExternalForm() + "!/" + path;
         String[] arr;
-        if (cache instanceof HashSet) {
+        if (cache instanceof HashMap) {
             arr = extractFromManifest(man, path);
             if (isEmpty(arr)) {
                 arr = EMPTY;
@@ -131,7 +132,7 @@ final class PackageAttrsCache implements Stamps.Updater {
         for (Map.Entry<String, String[]> entry : cache.entrySet()) {
             Stamps.writeRelativePath(entry.getKey(), os);
             for (String s : entry.getValue()) {
-                os.writeUTF(s);
+                os.writeUTF(toSafeValue(s));
             }
         }
         Stamps.writeRelativePath("", os);
@@ -172,5 +173,17 @@ final class PackageAttrsCache implements Stamps.Updater {
             }
         }
         return true;
+    }
+
+    private static String toSafeValue(String value) {
+        return value == null ?
+            NULL_REPLACEMENT :
+            value;
+    }
+
+    private static String fromSafeValue(String value) {
+        return NULL_REPLACEMENT.equals(value) ?
+            null:
+            value;
     }
 }

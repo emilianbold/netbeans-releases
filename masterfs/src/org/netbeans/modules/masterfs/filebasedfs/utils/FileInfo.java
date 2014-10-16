@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
 
 
 public final class FileInfo {
-    private static boolean IS_WINDOWS = org.openide.util.Utilities.isWindows();
+    private static boolean IS_WINDOWS = org.openide.util.BaseUtilities.isWindows();
 
     private int isFile = -1;
     private int isDirectory = -1;

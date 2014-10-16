@@ -42,7 +42,7 @@ public abstract class JavaSourceSupportAccessor {
 
     static {
         try {
-            Class.forName("org.netbeans.api.java.source.support.OpenedEditors", true, JavaSourceAccessor.class.getClassLoader());   //NOI18N
+            Class.forName("org.netbeans.api.java.source.support.OpenedEditors", true, JavaSourceSupportAccessor.class.getClassLoader());   //NOI18N
         } catch (ClassNotFoundException e) {
             Exceptions.printStackTrace(e);
         }

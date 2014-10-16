@@ -49,7 +49,7 @@ import javax.swing.text.JTextComponent;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public abstract class GuiUtilsProvider {
     

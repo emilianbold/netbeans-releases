@@ -46,7 +46,7 @@
 package org.netbeans.modules.masterfs.providers;
 
 import org.netbeans.modules.masterfs.ExLocalFileSystem;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.DefaultAttributes;
 import org.openide.filesystems.FileUtil;
@@ -95,7 +95,7 @@ public class Attributes extends DefaultAttributes {
     private String preparePrefix(File fileSystemRoot) {
         fileSystemRoot = FileUtil.normalizeFile(fileSystemRoot);
         String rootPath = fileSystemRoot.getAbsolutePath().replace('\\', '/');
-        return ((Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2))) ? rootPath.toLowerCase() : rootPath;
+        return ((BaseUtilities.isWindows () || (BaseUtilities.getOperatingSystem () == BaseUtilities.OS_OS2))) ? rootPath.toLowerCase() : rootPath;
     }
 
     public static File getRootForAttributes() {

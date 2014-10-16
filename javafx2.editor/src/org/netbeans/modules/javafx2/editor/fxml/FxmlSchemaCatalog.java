@@ -49,7 +49,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.util.ImageUtilities;
@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
  *
  * @author sdedic
  */
-public class FxmlSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
+public class FxmlSchemaCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver {
     
     /**
      * XML instance schema
@@ -112,8 +112,8 @@ public class FxmlSchemaCatalog implements CatalogReader, CatalogDescriptor, Enti
     }
 
     @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/xml/catalog/impl/sysCatalog.gif", true); //NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/xml/catalog/impl/sysCatalog.gif"; //NOI18N
     }
 
     @Override

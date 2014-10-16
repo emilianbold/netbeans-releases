@@ -103,7 +103,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.java.editor.javadoc.JavadocImports;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
@@ -119,12 +119,8 @@ public final class Utilities {
     
     private static final String ERROR = "<error>"; //NOI18N
 
-    private static boolean caseSensitive = true;
-    private static boolean showDeprecatedMembers = true;
     private static boolean guessMethodArguments = CodeCompletionPanel.GUESS_METHOD_ARGUMENTS_DEFAULT;
     private static boolean autoPopupOnJavaIdentifierPart = CodeCompletionPanel.JAVA_AUTO_POPUP_ON_IDENTIFIER_PART_DEFAULT;
-    private static boolean javaCompletionExcluderMethods = CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS_DEFAULT;
-    private static boolean javaCompletionSubwords = CodeCompletionPanel.JAVA_AUTO_COMPLETION_SUBWORDS_DEFAULT;
     private static String javaCompletionAutoPopupTriggers = CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS_DEFAULT;
     private static String javaCompletionSelectors = CodeCompletionPanel.JAVA_COMPLETION_SELECTORS_DEFAULT;
     private static String javadocCompletionAutoPopupTriggers = CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT;
@@ -136,12 +132,6 @@ public final class Utilities {
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
-            if (settingName == null || SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(settingName)) {
-                caseSensitive = preferences.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false);
-            }
-            if (settingName == null || SimpleValueNames.SHOW_DEPRECATED_MEMBERS.equals(settingName)) {
-                showDeprecatedMembers = preferences.getBoolean(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, true);
-            }
             if (settingName == null || CodeCompletionPanel.GUESS_METHOD_ARGUMENTS.equals(settingName)) {
                 guessMethodArguments = preferences.getBoolean(CodeCompletionPanel.GUESS_METHOD_ARGUMENTS, CodeCompletionPanel.GUESS_METHOD_ARGUMENTS_DEFAULT);
             }
@@ -160,140 +150,9 @@ public final class Utilities {
             if (settingName == null || CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS.equals(settingName)) {
                 javadocCompletionSelectors = preferences.get(CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS, CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS_DEFAULT);
             }
-            if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST.equals(settingName)) {
-                String blacklist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST_DEFAULT);
-                updateExcluder(excludeRef, blacklist);
-            }
-            if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_WHITELIST.equals(settingName)) {
-                String whitelist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_WHITELIST, CodeCompletionPanel.JAVA_COMPLETION_WHITELIST_DEFAULT);
-                updateExcluder(includeRef, whitelist);
-            }
-            if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS.equals(settingName)) {
-                javaCompletionExcluderMethods = preferences.getBoolean(CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS, CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS_DEFAULT);
-            }
-            if (settingName == null || CodeCompletionPanel.JAVA_AUTO_COMPLETION_SUBWORDS.equals(settingName)) {
-                javaCompletionSubwords = preferences.getBoolean(CodeCompletionPanel.JAVA_AUTO_COMPLETION_SUBWORDS, CodeCompletionPanel.JAVA_AUTO_COMPLETION_SUBWORDS_DEFAULT);
-            }
         }
     };
     
-    private static String cachedPrefix = null;
-    private static Pattern cachedCamelCasePattern = null;
-    private static Pattern cachedSubwordsPattern = null;    
-    
-    public static boolean startsWith(String theString, String prefix) {
-        if (theString == null || theString.length() == 0 || ERROR.equals(theString))
-            return false;
-        if (prefix == null || prefix.length() == 0)
-            return true;
-        
-        // sub word completion
-        if (javaCompletionSubwords) {
-            // example:
-            // 'out' produces '.*?[o|O].*?[u|U].*?[t|T].*?'
-            // org.openide.util.Utilities.acoh -> actionsForPath
-            // java.lang.System.out -> setOut
-            // argex -> IllegalArgumentException
-            // java.util.Collections.que -> asLifoQueue
-            // java.lang.System.sin -> setIn, getSecurityManager, setSecurityManager
-            
-            // check whether user input matches the regex
-            if (!prefix.equals(cachedPrefix)) {
-                cachedCamelCasePattern = cachedSubwordsPattern = null;
-            }
-            if (cachedSubwordsPattern == null) {
-                cachedPrefix = prefix;
-                String patternString = createSubwordsPattern(prefix);
-                cachedSubwordsPattern = patternString != null ? Pattern.compile(patternString) : null;
-            }
-            if (cachedSubwordsPattern != null && cachedSubwordsPattern.matcher(theString).matches()) {
-                return true;
-            };
-        }
-        
-        return isCaseSensitive() ? theString.startsWith(prefix) :
-            theString.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase(Locale.ENGLISH));
-    }
-    
-    public static String createSubwordsPattern(String prefix) {
-        StringBuilder sb = new StringBuilder(3+8*prefix.length());
-        sb.append(".*?");
-        for (int i = 0; i < prefix.length(); i++) {
-            char charAt = prefix.charAt(i);
-            if (!Character.isJavaIdentifierPart(charAt)) {
-                return null;
-            }
-            if (Character.isLowerCase(charAt)) {
-                sb.append("[");
-                sb.append(charAt);
-                sb.append(Character.toUpperCase(charAt));
-                sb.append("]");
-            } else {
-                //keep uppercase characters as beacons
-                // for example: java.lang.System.sIn -> setIn
-                sb.append(charAt);
-            }
-            sb.append(".*?");
-        }
-        return sb.toString();
-    }
-    
-    public static boolean startsWithCamelCase(String theString, String prefix) {
-        if (theString == null || theString.length() == 0 || prefix == null || prefix.length() == 0)
-            return false;
-        if (!prefix.equals(cachedPrefix)) {
-            cachedCamelCasePattern = cachedSubwordsPattern = null;
-        }
-        if (cachedCamelCasePattern == null) {
-            StringBuilder sb = new StringBuilder();
-            int lastIndex = 0;
-            int index;
-            do {
-                index = findNextUpper(prefix, lastIndex + 1);
-                String token = prefix.substring(lastIndex, index == -1 ? prefix.length(): index);
-                sb.append(token); 
-                sb.append(index != -1 ? "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
-                lastIndex = index;
-            } while (index != -1);
-            cachedPrefix = prefix;
-            cachedCamelCasePattern = Pattern.compile(sb.toString());
-        }
-        return cachedCamelCasePattern.matcher(theString).matches();
-    }
-    
-    private static int findNextUpper(String text, int offset) {        
-        for (int i = offset; i < text.length(); i++) {
-            if (Character.isUpperCase(text.charAt(i)))
-                return i;
-        }
-        return -1;
-    }
-
-    public static boolean isCaseSensitive() {
-        lazyInit();
-        return caseSensitive;
-    }
-
-    public static void setCaseSensitive(boolean b) {
-        lazyInit();
-        caseSensitive = b;
-    }
-    
-    public static boolean isSubwordSensitive() {
-        lazyInit();
-        return javaCompletionSubwords;
-    }
-
-    public static boolean isShowDeprecatedMembers() {
-        lazyInit();
-        return showDeprecatedMembers;
-    }
-
-    public static void setShowDeprecatedMembers(boolean b) {
-        lazyInit();
-        showDeprecatedMembers = b;
-    }
-
     public static boolean guessMethodArguments() {
         lazyInit();
         return guessMethodArguments;
@@ -324,78 +183,6 @@ public final class Utilities {
         return javadocCompletionSelectors;
     }
 
-    static private final AtomicReference<Collection<String>> excludeRef = new AtomicReference<Collection<String>>();
-    static private final AtomicReference<Collection<String>> includeRef = new AtomicReference<Collection<String>>();
-
-    private static void updateExcluder(AtomicReference<Collection<String>> existing, String updated) {
-        Collection<String> nue = new LinkedList<String>();
-        if (updated == null || updated.length() == 0) {
-            existing.set(nue);
-            return;
-        }
-        String[] entries = updated.split(","); //NOI18N
-        for (String entry : entries) {
-            if (entry.length() != 0) {
-                nue.add(entry);
-            }
-        }
-        existing.set(nue);
-    }
-
-    /**
-     * @return the user setting for whether the excluder should operate on methods
-     */
-    public static boolean isExcludeMethods(){
-        lazyInit();
-        return javaCompletionExcluderMethods;
-    }
-
-    /**
-     * @param fqn Fully Qualified Name (including method names). Packages names are expected to
-     * end in a trailing "." except the default package.
-     * @return
-     */
-    public static boolean isExcluded(final CharSequence fqn) {
-        if (fqn == null || fqn.length() == 0) {
-            return true;
-        }
-        lazyInit();
-        String s = fqn.toString();
-        Collection<String> include = includeRef.get();
-        Collection<String> exclude = excludeRef.get();
-
-        if (include != null && !include.isEmpty()) {
-            for (String entry : include) {
-                if (entry.length() > fqn.length()) {
-                    if (entry.startsWith(s)) {
-                        return false;
-                    }
-                } else if (s.startsWith(entry)) {
-                    return false;
-                }
-            }
-        }
-
-        if (exclude != null && !exclude.isEmpty()) {
-            for (String entry : exclude) {
-                if (entry.length() <= fqn.length() && s.startsWith(entry)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-    
-    public static void exclude(final CharSequence fqn) {
-        if (fqn != null && fqn.length() > 0) {
-            lazyInit();
-            String blacklist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST_DEFAULT);
-            blacklist += (blacklist.length() > 0 ? "," + fqn : fqn); //NOI18N
-            preferences.put(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, blacklist);
-        }
-    }
-
     private static void lazyInit() {
         if (inited.compareAndSet(false, true)) {
             preferences = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
@@ -407,7 +194,7 @@ public final class Utilities {
     public static int getImportanceLevel(CompilationInfo info, ReferencesCount referencesCount, @NonNull Element element) {
         boolean isType = element.getKind().isClass() || element.getKind().isInterface();
         
-        return Utilities.getImportanceLevel(referencesCount, isType ? ElementHandle.create((TypeElement) element) : ElementHandle.create((TypeElement) element.getEnclosingElement()));
+        return getImportanceLevel(referencesCount, isType ? ElementHandle.create((TypeElement) element) : ElementHandle.create((TypeElement) element.getEnclosingElement()));
     }
     
     public static int getImportanceLevel(ReferencesCount referencesCount, ElementHandle<TypeElement> handle) {
@@ -424,14 +211,15 @@ public final class Utilities {
     
     public static int getImportanceLevel(String fqn) {
         int weight = 50;
-        if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) // NOI18N
+        if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) { // NOI18N
             weight -= 10;
-        else if (fqn.startsWith("org.omg") || fqn.startsWith("org.apache")) // NOI18N
+        } else if (fqn.startsWith("org.omg") || fqn.startsWith("org.apache")) { // NOI18N
             weight += 10;
-        else if (fqn.startsWith("com.sun") || fqn.startsWith("com.ibm") || fqn.startsWith("com.apple")) // NOI18N
+        } else if (fqn.startsWith("com.sun") || fqn.startsWith("com.ibm") || fqn.startsWith("com.apple")) { // NOI18N
             weight += 20;
-        else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) // NOI18N
+        } else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) { // NOI18N
             weight += 30;
+        }
         return weight;
     }
     
@@ -481,25 +269,30 @@ public final class Utilities {
             InputAttributes attributes = (InputAttributes) doc.getProperty(InputAttributes.class);
             LanguagePath path = LanguagePath.get(MimeLookup.getLookup("text/x-dialog-binding").lookup(Language.class)); //NOI18N
             Document d = (Document) attributes.getValue(path, "dialogBinding.document"); //NOI18N
-            if (d != null)
+            if (d != null) {
                 return "text/x-java".equals(NbEditorUtilities.getMimeType(d)); //NOI18N
+            }
             FileObject fo = (FileObject)attributes.getValue(path, "dialogBinding.fileObject"); //NOI18N
             return "text/x-java".equals(fo.getMIMEType()); //NOI18N
         }
         TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-        if (ts == null)
-            return false;        
-        if (!ts.moveNext() && !ts.movePrevious())
+        if (ts == null) {
+            return false;
+        }        
+        if (!ts.moveNext() && !ts.movePrevious()) {
             return true;
-        if (offset == ts.offset())
+        }
+        if (offset == ts.offset()) {
             return true;
+        }
         switch(ts.token().id()) {
             case DOUBLE_LITERAL:
             case FLOAT_LITERAL:
             case FLOAT_LITERAL_INVALID:
             case LONG_LITERAL:
-                if (ts.token().text().charAt(0) == '.')
+                if (ts.token().text().charAt(0) == '.') {
                     break;
+                }
             case CHAR_LITERAL:
             case INT_LITERAL:
             case INVALID_COMMENT_END:
@@ -521,14 +314,18 @@ public final class Utilities {
     public static CharSequence getTypeName(CompilationInfo info, TypeMirror type, boolean fqn) {
         return getTypeName(info, type, fqn, false);
     }
-    
+
     public static CharSequence getTypeName(CompilationInfo info, TypeMirror type, boolean fqn, boolean varArg) {
         Set<TypeNameOptions> options = EnumSet.noneOf(TypeNameOptions.class);
-        if (fqn) options.add(TypeNameOptions.PRINT_FQN);
-        if (varArg) options.add(TypeNameOptions.PRINT_AS_VARARG);
+        if (fqn) {
+            options.add(TypeNameOptions.PRINT_FQN);
+        }
+        if (varArg) {
+            options.add(TypeNameOptions.PRINT_AS_VARARG);
+        }
         return info.getTypeUtilities().getTypeName(type, options.toArray(new TypeNameOptions[0]));
     }
-    
+        
     public static CharSequence getElementName(Element el, boolean fqn) {
         if (el == null || el.asType().getKind() == TypeKind.NONE)
             return ""; //NOI18N
@@ -631,7 +428,7 @@ public final class Utilities {
         while (p != null && p.length() > 0) {
             List<String> l = new ArrayList<String>();
             for(String name : vnct)
-                if (startsWith(name, p))
+                if (org.netbeans.modules.java.completion.Utilities.startsWith(name, p))
                     l.add(name);
             if (l.isEmpty()) {
                 p = nextName(p);
@@ -677,11 +474,13 @@ public final class Utilities {
     }
 
     public static boolean inAnonymousOrLocalClass(TreePath path) {
-        if (path == null)
+        if (path == null) {
             return false;
+        }
         TreePath parentPath = path.getParentPath();
-        if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && !TreeUtilities.CLASS_TREE_KINDS.contains(parentPath.getLeaf().getKind()))                
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && !TreeUtilities.CLASS_TREE_KINDS.contains(parentPath.getLeaf().getKind())) {
             return true;
+        }
         return inAnonymousOrLocalClass(parentPath);
     }
 
@@ -690,7 +489,7 @@ public final class Utilities {
     }
 
     public static Set<Element> getUsedElements(final CompilationInfo info) {
-        final Set<Element> ret = new HashSet<Element>();
+        final Set<Element> ret = new HashSet<>();
         final Trees trees = info.getTrees();
         new TreePathScanner<Void, Void>() {
 
@@ -702,22 +501,25 @@ public final class Utilities {
 
             @Override
             public Void visitClass(ClassTree node, Void p) {
-                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath())) {
                     addElement(element);
+                }
                 return super.visitClass(node, p);
             }
 
             @Override
             public Void visitMethod(MethodTree node, Void p) {
-                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath())) {
                     addElement(element);
+                }
                 return super.visitMethod(node, p);
             }
 
             @Override
             public Void visitVariable(VariableTree node, Void p) {
-                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath()))
+                for (Element element : JavadocImports.computeReferencedElements(info, getCurrentPath())) {
                     addElement(element);
+                }
                 return super.visitVariable(node, p);
             }
 
@@ -1116,7 +918,7 @@ public final class Utilities {
         assert path.getLeaf().getKind() == Kind.METHOD_INVOCATION || path.getLeaf().getKind() == Kind.NEW_CLASS;
         
         if (path.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
-            List<TypeMirror> actualTypes = new LinkedList<TypeMirror>();
+            List<TypeMirror> actualTypes = new LinkedList<>();
             MethodInvocationTree mit = (MethodInvocationTree) path.getLeaf();
 
             for (Tree a : mit.getArguments()) {
@@ -1138,12 +940,18 @@ public final class Utilities {
                     }
                     CompilationUnitTree cut = info.getCompilationUnit();
                     for (ImportTree imp : cut.getImports()) {
-                        if (!imp.isStatic() || imp.getQualifiedIdentifier() == null || imp.getQualifiedIdentifier().getKind() != Kind.MEMBER_SELECT) continue;
+                        if (!imp.isStatic() || imp.getQualifiedIdentifier() == null || imp.getQualifiedIdentifier().getKind() != Kind.MEMBER_SELECT) {
+                            continue;
+                        }
                         Name selected = ((MemberSelectTree) imp.getQualifiedIdentifier()).getIdentifier();
-                        if (!selected.contentEquals("*") && !selected.contentEquals(methodName)) continue;
+                        if (!selected.contentEquals("*") && !selected.contentEquals(methodName)) {
+                            continue;
+                        }
                         TreePath tp = new TreePath(new TreePath(new TreePath(new TreePath(cut), imp), imp.getQualifiedIdentifier()), ((MemberSelectTree) imp.getQualifiedIdentifier()).getExpression());
                         Element el = info.getTrees().getElement(tp);
-                        if (el != null) on.add(Pair.of(el.asType(), true));
+                        if (el != null) {
+                            on.add(Pair.of(el.asType(), true));
+                        }
                     }
                     break;
                 case MEMBER_SELECT:
@@ -1157,7 +965,9 @@ public final class Utilities {
             List<ExecutableElement> result = new ArrayList<>();
             
             for (Pair<TypeMirror, Boolean> type : on) {
-                if (type.first() == null || type.first().getKind() != TypeKind.DECLARED) continue;
+                if (type.first() == null || type.first().getKind() != TypeKind.DECLARED) {
+                    continue;
+                }
                 result.addAll(resolveMethod(info, actualTypes, (DeclaredType) type.first(), type.second(), false, methodName, proposed, index));
             }
             
@@ -1165,7 +975,7 @@ public final class Utilities {
         }
         
         if (path.getLeaf().getKind() == Kind.NEW_CLASS) {
-            List<TypeMirror> actualTypes = new LinkedList<TypeMirror>();
+            List<TypeMirror> actualTypes = new LinkedList<>();
             NewClassTree nct = (NewClassTree) path.getLeaf();
 
             for (Tree a : nct.getArguments()) {
@@ -1190,7 +1000,7 @@ public final class Utilities {
             return ElementFilter.constructorsIn(info.getElements().getAllMembers(e));
         }
         
-        List<ExecutableElement> result = new LinkedList<ExecutableElement>();
+        List<ExecutableElement> result = new LinkedList<>();
         
         for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(e))) {
             if (name.equals(ee.getSimpleName().toString())) {
@@ -1202,16 +1012,21 @@ public final class Utilities {
     }
     
     private static List<ExecutableElement> resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean onlyStatic, boolean constr, String name, List<TypeMirror> candidateTypes, int[] index) {
-        if (on.asElement() == null) return Collections.emptyList();
+        if (on.asElement() == null) {
+            return Collections.emptyList();
+        }
         
-        List<ExecutableElement> found = new LinkedList<ExecutableElement>();
+        List<ExecutableElement> found = new LinkedList<>();
         
         OUTER:
         for (ExecutableElement ee : execsIn(info, (TypeElement) on.asElement(), constr, name)) {
             TypeMirror currType = ((TypeElement) ee.getEnclosingElement()).asType();
-            if (!info.getTypes().isSubtype(on, currType) && !on.asElement().equals(((DeclaredType)currType).asElement())) //XXX: fix for #132627, a clearer fix may exist
+            if (!info.getTypes().isSubtype(on, currType) && !on.asElement().equals(((DeclaredType)currType).asElement())) { //XXX: fix for #132627, a clearer fix may exist
                 continue;
-            if (onlyStatic && !ee.getModifiers().contains(Modifier.STATIC)) continue;
+            }
+            if (onlyStatic && !ee.getModifiers().contains(Modifier.STATIC)) {
+                continue;
+            }
             if (ee.getParameters().size() == foundTypes.size() /*XXX: variable arg count*/) {
                 TypeMirror innerCandidate = null;
                 int innerIndex = -1;

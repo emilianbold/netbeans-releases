@@ -44,7 +44,6 @@ package org.netbeans.modules.j2ee.weblogic9;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -54,6 +53,7 @@ import javax.management.remote.JMXServiceURL;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
+import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 
 /**
  *
@@ -129,13 +129,12 @@ public final class WLConnectionSupport {
                 && (port == null || port.trim().length() == 0))) {
             
             if (!deploymentManager.isRemote()) {            
-                // getDomainProperties instantiate DocumentBuilderFactory
-                // if we would od it inside call such factory could be loaded
+                // getDomainConfiguration instantiate DocumentBuilderFactory
+                // if we would add it inside call such factory could be loaded
                 // from weblogic classes causing troubles, see #189483
-                Properties domainProperties = WLPluginProperties.getDomainProperties(
-                        instanceProperties.getProperty( WLPluginProperties.DOMAIN_ROOT_ATTR));
-                host = domainProperties.getProperty(WLPluginProperties.HOST_ATTR);
-                port = domainProperties.getProperty(WLPluginProperties.PORT_ATTR);
+                WebLogicConfiguration config = deploymentManager.getCommonConfiguration();
+                host = config.getHost();
+                port = Integer.toString(config.getPort());
             }
             if ((host == null || host.trim().length() == 0
                     && (port == null || port.trim().length() == 0))) {
@@ -152,7 +151,7 @@ public final class WLConnectionSupport {
 
             @Override
             public T call() throws Exception {
-                JMXServiceURL url = new JMXServiceURL("iiop", resolvedHost, // NOI18N
+                JMXServiceURL url = new JMXServiceURL("t3", resolvedHost, // NOI18N
                         Integer.parseInt(resolvedPort), action.getPath());
                 
                 String username = deploymentManager.getInstanceProperties().getProperty(

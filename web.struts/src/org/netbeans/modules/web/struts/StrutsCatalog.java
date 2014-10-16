@@ -58,7 +58,7 @@ import org.openide.util.Utilities;
  *
  * @author  Petr Pisl
  */
-public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax.EntityResolver {
+public class StrutsCatalog implements CatalogReader, CatalogDescriptor2, org.xml.sax.EntityResolver {
     
     private static final String STRUTS_ID_1_0 = "-//Apache Software Foundation//DTD Struts Configuration 1.0//EN"; // NOI18N
     private static final String STRUTS_ID_1_1 = "-//Apache Software Foundation//DTD Struts Configuration 1.1//EN"; // NOI18N
@@ -173,8 +173,8 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
-    public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/web/struts/resources/StrutsCatalog.png"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/web/struts/resources/StrutsCatalog.png"; // NOI18N
     }
     
     /**

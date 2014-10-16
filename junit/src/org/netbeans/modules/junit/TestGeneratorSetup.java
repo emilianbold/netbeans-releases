@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.junit;
 
+import org.netbeans.modules.junit.api.JUnitSettings;
+import org.netbeans.modules.junit.api.JUnitTestUtil;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -710,7 +712,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
 
         if (modifiers.contains(PRIVATE))
             result = TestabilityResult.combine(result, TestabilityResult.PRIVATE_CLASS);
-        if (isSkipTestClasses() && TestUtil.isClassImplementingTestInterface(compInfo, classElem)) 
+        if (isSkipTestClasses() && JUnitTestUtil.isClassImplementingTestInterface(compInfo, classElem)) 
             result = TestabilityResult.combine(result, TestabilityResult.TEST_CLASS);
         if (isSkipPackagePrivateClasses() && (modifiers.isEmpty() || !EnumSet.copyOf(modifiers).removeAll(ACCESS_MODIFIERS)))
             result = TestabilityResult.combine(result, TestabilityResult.PACKAGE_PRIVATE_CLASS);
@@ -721,7 +723,7 @@ public final class TestGeneratorSetup implements TestabilityJudge {
         // #175201
         // if (!hasTestableMethods(classElem))
         //    result = TestabilityResult.combine(result, TestabilityResult.NO_TESTEABLE_METHODS);
-        if (isSkipExceptionClasses() && TestUtil.isClassException(compInfo, classElem)) 
+        if (isSkipExceptionClasses() && JUnitTestUtil.isClassException(compInfo, classElem)) 
             result = TestabilityResult.combine(result, TestabilityResult.EXCEPTION_CLASS);
 
         //apply filter mask

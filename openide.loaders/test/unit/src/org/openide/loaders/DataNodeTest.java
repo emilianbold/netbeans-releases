@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Enumerations;
@@ -236,12 +237,12 @@ public class DataNodeTest extends NbTestCase {
     }
     
     private static final class FSWithStatus extends org.openide.filesystems.LocalFileSystem 
-    implements FileSystem.HtmlStatus {
+    implements StatusDecorator {
         public Set lastFiles;
         
         
         @Override
-        public FileSystem.Status getStatus () {
+        public StatusDecorator getDecorator() {
             return this;
         }
 
@@ -251,11 +252,6 @@ public class DataNodeTest extends NbTestCase {
             assertNotNull("There is first file", files.iterator ().next ());
         }
         
-        public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files) {
-            checkFirst (files);
-            return icon;
-        }
-
         public String annotateName(String name, java.util.Set files) {
             checkFirst (files);
             return name;

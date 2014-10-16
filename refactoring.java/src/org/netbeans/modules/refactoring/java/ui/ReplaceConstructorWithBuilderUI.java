@@ -56,6 +56,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -110,7 +112,13 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
             parameterTypes.add(type);
             parameterTypeVars.add(parameterElements.get(i).asType().getKind() == TypeKind.TYPEVAR);
         }
-        builderFQN = ((TypeElement) contructorElement.getEnclosingElement()).getQualifiedName().toString();
+        TypeElement typeEl = (TypeElement) contructorElement.getEnclosingElement();
+        if(typeEl.getNestingKind() != NestingKind.TOP_LEVEL) {
+            PackageElement packageOf = info.getElements().getPackageOf(typeEl);
+            builderFQN = packageOf.toString() + "." + typeEl.getSimpleName().toString();
+        } else {
+            builderFQN = typeEl.getQualifiedName().toString();
+        }
     }
 
     private ReplaceConstructorWithBuilderUI() {

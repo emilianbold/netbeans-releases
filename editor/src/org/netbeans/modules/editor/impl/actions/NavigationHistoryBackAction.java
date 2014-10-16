@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
@@ -91,7 +93,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
     
     private static final Logger LOG = Logger.getLogger(NavigationHistoryBackAction.class.getName());
     
-    private final JTextComponent component;
+    private final Reference<JTextComponent> componentRef;
     private final NavigationHistory.Waypoint waypoint;
     private final JPopupMenu popupMenu;
     private boolean updatePopupMenu = false;
@@ -103,7 +105,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
     private NavigationHistoryBackAction(JTextComponent component, NavigationHistory.Waypoint waypoint, String actionName) {
         super(BaseKit.jumpListPrevAction);
         
-        this.component = component;
+        this.componentRef = new WeakReference<>(component);
         this.waypoint = waypoint;
 
         putValue("menuText", NbBundle.getMessage(NavigationHistoryBackAction.class,
@@ -138,8 +140,9 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
                             }
 
                             if (lastFileName == null || !fileName.equals(lastFileName)) {
-                                if (lastFileName != null) {
-                                    popupMenu.add(new NavigationHistoryBackAction(NavigationHistoryBackAction.this.component, lastWpt,
+                                JTextComponent c = componentRef.get();
+                                if (lastFileName != null && c != null) {
+                                    popupMenu.add(new NavigationHistoryBackAction(c, lastWpt,
                                             count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
                                 }
                                 lastFileName = fileName;
@@ -150,8 +153,9 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
                             }
                         }
 
-                        if (lastFileName != null) {
-                            add(new NavigationHistoryBackAction(NavigationHistoryBackAction.this.component, lastWpt,
+                        JTextComponent c = componentRef.get();
+                        if (lastFileName != null && c != null) {
+                            add(new NavigationHistoryBackAction(c, lastWpt,
                                     count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
                         }
                     }
@@ -179,7 +183,8 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
         NavigationHistory history = NavigationHistory.getNavigations();
         if (null == history.getCurrentWaypoint()) {
             // Haven't navigated back yet
-            JTextComponent target = component != null ? component : getTextComponent(evt);
+            JTextComponent c = componentRef.get();
+            JTextComponent target = c != null ? c : getTextComponent(evt);
             if (target != null) {
                 try {
                     history.markWaypoint(target, target.getCaret().getDot(), true, false);

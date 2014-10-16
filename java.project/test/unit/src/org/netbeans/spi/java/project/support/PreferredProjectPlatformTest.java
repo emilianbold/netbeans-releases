@@ -55,7 +55,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.modules.java.platform.implspi.JavaPlatformProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 

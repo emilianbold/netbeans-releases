@@ -63,7 +63,8 @@ public class AggregateProgressHandleTest extends TestCase {
         Controller.defaultInstance = new Controller(new ProgressUIWorker() {
             public void processProgressEvent(ProgressEvent event) { }
             public void processSelectedProgressEvent(ProgressEvent event) { }
-        });
+        }) {
+        };
     }
 
     public void testContributorShare() throws Exception {

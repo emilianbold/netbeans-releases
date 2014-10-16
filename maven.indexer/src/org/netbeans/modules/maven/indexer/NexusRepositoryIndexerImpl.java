@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.indexer;
 
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -61,6 +62,7 @@ import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.index.*;
+import org.apache.maven.index.Scanner;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
 import org.apache.maven.index.context.DefaultIndexingContext;
 import org.apache.maven.index.context.IndexCreator;
@@ -68,7 +70,6 @@ import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.creator.OsgiArtifactIndexCreator;
 import org.apache.maven.index.expr.StringSearchExpression;
-import org.apache.maven.index.search.grouping.GGrouping;
 import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
@@ -97,11 +98,29 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.netbeans.modules.maven.indexer.api.*;
+import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
+import org.netbeans.modules.maven.indexer.api.NBGroupInfo;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
-import org.netbeans.modules.maven.indexer.spi.*;
+import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
+import org.netbeans.modules.maven.indexer.spi.BaseQueries;
+import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
+import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
+import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
+import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
+import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
+import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
+import org.netbeans.modules.maven.indexer.spi.Redo;
+import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.modules.Places;
-import org.openide.util.*;
+import org.openide.util.BaseUtilities;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -289,10 +308,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 File contextfile = context.getRepository();
                 File repofile = info.getRepositoryPath() != null ? new File(info.getRepositoryPath()) : null;
                 //try to figure if context reload is necessary
-                if (!Utilities.compareObjects(contexturl, indexUpdateUrl)) {
+                if (!BaseUtilities.compareObjects(contexturl, indexUpdateUrl)) {
                     LOGGER.log(Level.FINE, "Remote context changed: {0}, unload/load", info.getId());
                     unloadIndexingContext(info.getId());
-                } else if (!Utilities.compareObjects(contextfile, repofile)) {
+                } else if (!BaseUtilities.compareObjects(contextfile, repofile)) {
                     LOGGER.log(Level.FINE, "Local context changed: {0}, unload/load", info.getId());
                     unloadIndexingContext(info.getId());
                 } else {

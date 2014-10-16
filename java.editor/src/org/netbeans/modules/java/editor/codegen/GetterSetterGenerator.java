@@ -43,15 +43,12 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
-import org.netbeans.spi.editor.codegen.CodeGenerator;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -61,16 +58,19 @@ import javax.lang.model.util.Elements;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+
+import com.sun.source.util.TreePath;
+
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
 import org.netbeans.modules.java.editor.codegen.ui.GetterSetterPanel;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.loaders.DataObject;
@@ -89,46 +89,45 @@ public class GetterSetterGenerator implements CodeGenerator {
         
         private static final String ERROR = "<error>"; //NOI18N
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             JTextComponent component = context.lookup(JTextComponent.class);
-            CodeStyle codeStyle = CodeStyle.getDefault(component.getDocument());
             CompilationController controller = context.lookup(CompilationController.class);
-            TreePath path = context.lookup(TreePath.class);
-            path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
-            if (component == null || controller == null || path == null)
+            if (component == null || controller == null) {
                 return ret;
+            }
+            CodeStyle codeStyle = CodeStyle.getDefault(component.getDocument());
+            TreePath path = context.lookup(TreePath.class);
+            path = controller.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+            if (path == null) {
+                return ret;
+            }
             try {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             } catch (IOException ioe) {
                 return ret;
             }
             Elements elements = controller.getElements();
+            ElementUtilities eu = controller.getElementUtilities();
             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-            if (typeElement == null || !typeElement.getKind().isClass())
+            if (typeElement == null || !typeElement.getKind().isClass()) {
                 return ret;
-            Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
-            for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
-                List<ExecutableElement> l = methods.get(method.getSimpleName().toString());
-                if (l == null) {
-                    l = new ArrayList<ExecutableElement>();
-                    methods.put(method.getSimpleName().toString(), l);
-                }
-                l.add(method);
             }
-            Map<Element, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
-            Map<Element, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
-            Map<Element, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<Element, List<ElementNode.Description>>();
+            Map<Element, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<>();
+            Map<Element, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<>();
+            Map<Element, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<>();
             for (VariableElement variableElement : ElementFilter.fieldsIn(elements.getAllMembers(typeElement))) {
-                if (ERROR.contentEquals(variableElement.getSimpleName()))
+                if (ERROR.contentEquals(variableElement.getSimpleName())) {
                     continue;
+                }
                 ElementNode.Description description = ElementNode.Description.create(controller, variableElement, null, true, false);
-                boolean hasGetter = GeneratorUtils.hasGetter(controller, typeElement, variableElement, methods, codeStyle);
-                boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, typeElement, variableElement, methods, codeStyle);
+                boolean hasGetter = eu.hasGetter(typeElement, variableElement, codeStyle);
+                boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || eu.hasSetter(typeElement, variableElement, codeStyle);
                 if (!hasGetter) {
                     List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getEnclosingElement());
                     if (descriptions == null) {
-                        descriptions = new ArrayList<ElementNode.Description>();
+                        descriptions = new ArrayList<>();
                         gDescriptions.put(variableElement.getEnclosingElement(), descriptions);
                     }
                     descriptions.add(description);
@@ -136,7 +135,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                 if (!hasSetter) {
                     List<ElementNode.Description> descriptions = sDescriptions.get(variableElement.getEnclosingElement());
                     if (descriptions == null) {
-                        descriptions = new ArrayList<ElementNode.Description>();
+                        descriptions = new ArrayList<>();
                         sDescriptions.put(variableElement.getEnclosingElement(), descriptions);
                     }
                     descriptions.add(description);
@@ -144,30 +143,33 @@ public class GetterSetterGenerator implements CodeGenerator {
                 if (!hasGetter && !hasSetter) {
                     List<ElementNode.Description> descriptions = gsDescriptions.get(variableElement.getEnclosingElement());
                     if (descriptions == null) {
-                        descriptions = new ArrayList<ElementNode.Description>();
+                        descriptions = new ArrayList<>();
                         gsDescriptions.put(variableElement.getEnclosingElement(), descriptions);
                     }
                     descriptions.add(description);
                 }
             }
             if (!gDescriptions.isEmpty()) {
-                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                for (Map.Entry<Element, List<ElementNode.Description>> entry : gDescriptions.entrySet())
+                List<ElementNode.Description> descriptions = new ArrayList<>();
+                for (Map.Entry<Element, List<ElementNode.Description>> entry : gDescriptions.entrySet()) {
                     descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
+                }
                 Collections.reverse(descriptions);
                 ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY, codeStyle));
             }
             if (!sDescriptions.isEmpty()) {
-                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                for (Map.Entry<Element, List<ElementNode.Description>> entry : sDescriptions.entrySet())
+                List<ElementNode.Description> descriptions = new ArrayList<>();
+                for (Map.Entry<Element, List<ElementNode.Description>> entry : sDescriptions.entrySet()) {
                     descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
+                }
                 Collections.reverse(descriptions);
                 ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY, codeStyle));
             }
             if (!gsDescriptions.isEmpty()) {
-                List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
-                for (Map.Entry<Element, List<ElementNode.Description>> entry : gsDescriptions.entrySet())
+                List<ElementNode.Description> descriptions = new ArrayList<>();
+                for (Map.Entry<Element, List<ElementNode.Description>> entry : gsDescriptions.entrySet()) {
                     descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
+                }
                 Collections.reverse(descriptions);
                 ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), 0, codeStyle));
             }
@@ -175,10 +177,10 @@ public class GetterSetterGenerator implements CodeGenerator {
         }
     }
 
-    private JTextComponent component;
-    private ElementNode.Description description;
-    private int type;
-    private CodeStyle codestyle;
+    private final JTextComponent component;
+    private final ElementNode.Description description;
+    private final int type;
+    private final CodeStyle codestyle;
 
     /** Creates a new instance of GetterSetterGenerator */
     private GetterSetterGenerator(JTextComponent component, ElementNode.Description description, int type, CodeStyle codeStyle) {
@@ -188,24 +190,29 @@ public class GetterSetterGenerator implements CodeGenerator {
         this.codestyle = codeStyle;
     }
 
+    @Override
     public String getDisplayName() {
-        if (type == GeneratorUtils.GETTERS_ONLY)
+        if (type == GeneratorUtils.GETTERS_ONLY) {
             return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter"); //NOI18N
-        if (type == GeneratorUtils.SETTERS_ONLY)
+        }
+        if (type == GeneratorUtils.SETTERS_ONLY) {
             return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_setter"); //NOI18N
+        }
         return org.openide.util.NbBundle.getMessage(GetterSetterGenerator.class, "LBL_getter_and_setter"); //NOI18N
     }
 
+    @Override
     public void invoke() {
         final int caretOffset = component.getCaretPosition();
         final GetterSetterPanel panel = new GetterSetterPanel(description, type);
         String title;
-        if (type == GeneratorUtils.GETTERS_ONLY)
+        if (type == GeneratorUtils.GETTERS_ONLY) {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter"); //NOI18N
-        else if (type == GeneratorUtils.SETTERS_ONLY)
+        } else if (type == GeneratorUtils.SETTERS_ONLY) {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_setter"); //NOI18N
-        else
+        } else {
             title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_getter_and_setter"); //NOI18N
+        }
         DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, title);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
@@ -218,16 +225,17 @@ public class GetterSetterGenerator implements CodeGenerator {
                     try {
                         ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
 
+                            @Override
                             public void run(WorkingCopy copy) throws IOException {
                                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                                 Element e = description.getElementHandle().resolve(copy);
                                 TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
-                                path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
+                                path = copy.getTreeUtilities().getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                                 if (path == null) {
                                     String message = NbBundle.getMessage(GetterSetterGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                     org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                                 } else {
-                                    ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
+                                    ArrayList<VariableElement> variableElements = new ArrayList<>();
                                     for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
                                         VariableElement elem = (VariableElement) elementHandle.resolve(copy);
                                         if (elem == null) {
@@ -286,14 +294,16 @@ public class GetterSetterGenerator implements CodeGenerator {
             final Element el = handle.resolve(cc);
             handles.add(TreePathHandle.create(el, cc));
             boolean isStatic = el.getModifiers().contains(Modifier.STATIC);
-            if (type!=GeneratorUtils.GETTERS_ONLY)
+            if (type!=GeneratorUtils.GETTERS_ONLY) {
                 setters.add(CodeStyleUtils.computeSetterName(el.getSimpleName(), isStatic, codestyle));
-            else 
+            } else {
                 setters.add(null);
-            if (type!=GeneratorUtils.SETTERS_ONLY)
-                getters.add(CodeStyleUtils.computeGetterName(el.getSimpleName(), Utilities.isBoolean(el.asType()), isStatic, codestyle));
-            else
+            }
+            if (type!=GeneratorUtils.SETTERS_ONLY) {
+                getters.add(CodeStyleUtils.computeGetterName(el.getSimpleName(), el.asType().getKind() == TypeKind.BOOLEAN, isStatic, codestyle));
+            } else {
                 getters.add(null);
+            }
         }
     }
 
@@ -327,6 +337,5 @@ public class GetterSetterGenerator implements CodeGenerator {
             }
             
         });
-    }
-    
+    }    
 }

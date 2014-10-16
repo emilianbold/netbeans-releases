@@ -50,11 +50,11 @@ made subject to such option by the copyright holder.
             <code-name-base>org.openide.filesystems</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.openide.util.base</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.25</specification-version>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -89,6 +89,11 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.openide.util.base</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openide.util.lookup</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -98,6 +103,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.openide.filesystems</package>
                 <package>org.openide.filesystems.annotations</package>
+                <package>org.openide.filesystems.spi</package>
             </public-packages>
         </data>
     </configuration>

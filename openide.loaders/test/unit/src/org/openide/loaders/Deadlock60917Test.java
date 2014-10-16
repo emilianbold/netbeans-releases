@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import javax.swing.text.Document;
 import org.netbeans.junit.*;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.OpenCookie;
 
 /** Simulates the deadlock from issue 60917
@@ -248,7 +249,8 @@ public class Deadlock60917Test extends NbTestCase {
         private Lkp(org.openide.util.lookup.InstanceContent ic) {
             super(ic);
             ic.add(new Pool ());
-			ic.add(new DD());
+            ic.add(new DD());
+            ic.add(new NbMutexEventProvider());
         }
     }
     

@@ -133,7 +133,7 @@ public class RepositoryTest extends NbTestCase {
 
     public void testStatus() throws Exception {
         FileObject r = FileUtil.getConfigRoot();
-        FileSystem.Status s = r.getFileSystem().getStatus();
+        StatusDecorator s = r.getFileSystem().getDecorator();
         FileObject f = r.createData("f");
         f.setAttribute("displayName", "F!");
         assertEquals("F!", s.annotateName("f", Collections.singleton(f)));

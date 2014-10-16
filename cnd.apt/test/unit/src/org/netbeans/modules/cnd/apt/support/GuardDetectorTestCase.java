@@ -263,9 +263,5 @@ public class GuardDetectorTestCase extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
-        public SystemAction[] getActions() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 }

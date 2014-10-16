@@ -66,6 +66,8 @@ public class IndexBuilderTest extends NbTestCase {
     private static final String JDK14_JA_INDEX_PATH = "docs_jdk14_ja/api/index-files";
     private static final String JDK15_INDEX_PATH = "docs_jdk15/api/index-files";
     private static final String JDK15_JA_INDEX_PATH = "docs_jdk15_ja/api/index-files";
+    private static final String JDK7_INDEX_PATH = "docs_jdk7/api/index-files";
+    private static final String JDK8_INDEX_PATH = "docs_jdk8/api/index-files";
 
     /** Creates a new instance of IndexBuilderTest */
     public IndexBuilderTest(String testName) {
@@ -102,6 +104,34 @@ public class IndexBuilderTest extends NbTestCase {
             tp.parse();
             String titlestr = tp.getTitle();
             assertEquals("wrong title", "D-Index (Java 2 Platform SE 5.0)", titlestr);
+        } finally {
+            is.close();
+        }
+    }
+    
+    public void testTitleInJDK7() throws Exception {
+        FileObject html = fs.findResource(JDK7_INDEX_PATH + "/index-4.html");
+
+        InputStream is = new BufferedInputStream(html.getInputStream(), 1024);
+        SimpleTitleParser tp = new SimpleTitleParser(is);
+        try {
+            tp.parse();
+            String titlestr = tp.getTitle();
+            assertEquals("wrong title", "D-Index (Java Platform SE 7 )", titlestr);
+        } finally {
+            is.close();
+        }
+    }
+    
+    public void testTitleInJDK8() throws Exception {
+        FileObject html = fs.findResource(JDK8_INDEX_PATH + "/index-4.html");
+
+        InputStream is = new BufferedInputStream(html.getInputStream(), 1024);
+        SimpleTitleParser tp = new SimpleTitleParser(is);
+        try {
+            tp.parse();
+            String titlestr = tp.getTitle();
+            assertEquals("wrong title", "D-Index (Java Platform SE 8 )", titlestr);
         } finally {
             is.close();
         }
