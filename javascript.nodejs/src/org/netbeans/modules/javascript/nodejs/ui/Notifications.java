@@ -60,19 +60,57 @@ public final class Notifications {
     }
 
     @NbBundle.Messages({
+        "Notifications.detection.title=Node.js detected",
+        "# {0} - project name",
+        "Notifications.detection.description=Enable Node.js support in project {0}?",
+        "# {0} - project name",
+        "Notifications.detection.done=Node.js support enabled in project {0}.",
+        "# {0} - project name",
+        "Notifications.detection.noop=Node.js support already enabled in project {0}.",
+    })
+    public static void notifyNodeJsDetected(final Project project) {
+        final String projectName = ProjectUtils.getInformation(project).getDisplayName();
+        final NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
+        assert !preferences.isEnabled() : "node.js support should not be enabled in project " + projectName;
+        NotificationDisplayer.getDefault().notify(
+                Bundle.Notifications_detection_title(),
+                NotificationDisplayer.Priority.LOW.getIcon(),
+                Bundle.Notifications_detection_description(projectName),
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String text;
+                        if (preferences.isEnabled()) {
+                            // already done
+                            text = Bundle.Notifications_detection_noop(projectName);
+                        } else {
+                            preferences.setEnabled(true);
+                            text = Bundle.Notifications_detection_done(projectName);
+                        }
+                        StatusDisplayer.getDefault().setStatusText(text);
+                    }
+                },
+                NotificationDisplayer.Priority.LOW);
+
+    }
+
+    @NbBundle.Messages({
         "Notifications.enabled.title=Node.js support enabled",
         "# {0} - project name",
         "Notifications.enabled.description=Enable running project {0} as Node.js application?",
         "# {0} - project name",
         "Notifications.enabled.done=Project {0} will be run as Node.js application.",
+        "# {0} - project name",
+        "Notifications.enabled.noop=Project {0} already runs as Node.js application.",
     })
     public static void notifyRunConfiguration(Project project) {
+        final String projectName = ProjectUtils.getInformation(project).getDisplayName();
         final NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
-        NodeJsPreferences preferences = nodeJsSupport.getPreferences();
+        final NodeJsPreferences preferences = nodeJsSupport.getPreferences();
+        assert !preferences.isRunEnabled() : "node.js run should not be enabled in " + projectName;
         if (preferences.isEnabled()
                 && !NodeJsUtils.isJsLibrary(project)
                 && preferences.isAskRunEnabled()) {
-            final String projectName = ProjectUtils.getInformation(project).getDisplayName();
             NotificationDisplayer.getDefault().notify(
                     Bundle.Notifications_enabled_title(),
                     NotificationDisplayer.Priority.LOW.getIcon(),
@@ -80,12 +118,18 @@ public final class Notifications {
                     new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
-                            StatusDisplayer.getDefault().setStatusText(Bundle.Notifications_enabled_done(projectName));
+                            String text;
+                            if (preferences.isRunEnabled()) {
+                                // already done
+                                text = Bundle.Notifications_enabled_noop(projectName);
+                            } else {
+                                nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
+                                text = Bundle.Notifications_enabled_done(projectName);
+                            }
+                            StatusDisplayer.getDefault().setStatusText(text);
                         }
                     },
                     NotificationDisplayer.Priority.LOW);
-
         }
     }
 

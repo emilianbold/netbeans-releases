@@ -43,6 +43,7 @@ package org.netbeans.modules.html.ojet;
 
 import javax.swing.ImageIcon;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -56,10 +57,11 @@ import org.openide.util.ImageUtilities;
  */
 public class OJETUtils {
 
-    public static String OJ_COMPONENT = "ojComponent";  //NOI18N
+    public static final String OJ_COMPONENT = "ojComponent";  //NOI18N
 
-    public static final ImageIcon OJET_ICON
-            = ImageUtilities.loadImageIcon("org/netbeans/modules/html/ojet/ojet-icon.png", false); // NOI18N
+    @StaticResource
+    public static final String OJET_ICON_PATH = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"; // NOI18N
+    public static final ImageIcon OJET_ICON = ImageUtilities.loadImageIcon(OJET_ICON_PATH, false); // NOI18N
 
     public static String getPrefix(OJETContext ojContext, Document document, int offset) {
         TokenHierarchy th = TokenHierarchy.get(document);

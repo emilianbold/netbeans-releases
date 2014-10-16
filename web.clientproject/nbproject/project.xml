@@ -332,6 +332,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.html.ojet</friend>
                 <friend>org.netbeans.modules.javascript.nodejs</friend>
                 <friend>org.netbeans.modules.web.client.samples</friend>
                 <package>org.netbeans.modules.web.clientproject.createprojectapi</package>
