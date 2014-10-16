@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,90 +39,36 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
 
+package org.netbeans.modules.javascript.v8debug;
+
+import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
- *
+ * Holder of values referenced by a response.
+ * 
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+public final class ReferencedValues {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
+    private final Map<Long, V8Value> valuesByReferences;
+    
+    public ReferencedValues(V8Response response) {
+        this(response.getReferencedValues());
+    }
+    
+    public ReferencedValues(ReferencedValue[] referencedValues) {
+        valuesByReferences = new HashMap<>();
+        for (int i = 0; i < referencedValues.length; i++) {
+            valuesByReferences.put(referencedValues[i].getReference(), referencedValues[i].getValue());
         }
-        
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
-        
-    }
-    
-    private final Kind eventKind;
-    private final V8Body body;
-    private final ReferencedValue[] referencedValues;
-    private Map<Long, V8Value> valuesByReferences;
-    private final PropertyBoolean running;
-    private final PropertyBoolean success;
-    private final String errorMessage;
-    
-    V8Event(long sequence, Kind eventKind, V8Body body,
-            ReferencedValue[] referencedValues, Boolean running,
-            Boolean success, String errorMessage) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
-        this.referencedValues = referencedValues;
-        this.running = new PropertyBoolean(running);
-        this.success = new PropertyBoolean(success);
-        this.errorMessage = errorMessage;
-    }
-
-    public Kind getKind() {
-        return eventKind;
-    }
-
-    public V8Body getBody() {
-        return body;
-    }
-    
-    public ReferencedValue[] getReferencedValues() {
-        return referencedValues;
     }
     
     public V8Value getReferencedValue(long reference) {
-        if (referencedValues == null || referencedValues.length == 0) {
-            return null;
-        }
-        synchronized (this) {
-            if (valuesByReferences == null) {
-                valuesByReferences = V8Response.createValuesByReference(referencedValues);
-            }
-            return valuesByReferences.get(reference);
-        }
+        return valuesByReferences.get(reference);
     }
-
-    public PropertyBoolean isRunning() {
-        return running;
-    }
-
-    public PropertyBoolean getSuccess() {
-        return success;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
 }

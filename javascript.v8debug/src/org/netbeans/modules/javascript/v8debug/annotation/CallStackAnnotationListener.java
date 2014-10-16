@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -71,6 +72,8 @@ import org.openide.util.RequestProcessor;
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public final class CallStackAnnotationListener extends DebuggerManagerAdapter
                                                implements PropertyChangeListener {
+    
+    private static final Logger LOG = Logger.getLogger(CallStackAnnotationListener.class.getName());
     
     private final List<Annotation> annotations = new ArrayList<>();
     private final Map<V8Debugger, V8Debugger.Listener> dbgListeners = new HashMap<>();
@@ -127,7 +130,9 @@ public final class CallStackAnnotationListener extends DebuggerManagerAdapter
         CallStack cs;
         if (dbg.isSuspended()) {
             cs = dbg.getCurrentCallStack();
+            LOG.fine("updateAnnotations(), dbg IS suspended, call stack = "+cs);
         } else {
+            LOG.fine("updateAnnotations(), dbg is NOT suspended.");
             return ;
         }
         if (cs != null && !cs.isEmpty()) {
@@ -156,6 +161,7 @@ public final class CallStackAnnotationListener extends DebuggerManagerAdapter
                 newAnnotations.add(anno);
             }
             synchronized (annotations) {
+                LOG.fine("Created and stored "+newAnnotations.size()+" annotations.");
                 annotations.addAll(newAnnotations);
             }
         }
@@ -163,6 +169,7 @@ public final class CallStackAnnotationListener extends DebuggerManagerAdapter
     
     private void clearAnnotations() {
         synchronized (annotations) {
+            LOG.fine("Clearing "+annotations.size()+" annotations.");
             for (Annotation ann : annotations) {
                 ann.detach();
             }
