@@ -119,15 +119,22 @@ public class SelectModePanel extends javax.swing.JPanel {
         addListeners();
     }
     
-    private void refreshSourceFolder() {
+    private void refreshSourceFolder(boolean refresh) {
         String path = ((EditableComboBox)sourceFolder).getText();
-        FileObject fileObject;
-        if (path.isEmpty()) {
-            fileObject = null;
+        if (refresh) {
+            FileObject fileObject;
+            if (path.isEmpty()) {
+                fileObject = null;
+            } else {
+                fileObject = fileSystem.findResource(path);
+            }
+            controller.getWizardStorage().setSourcesFileObject(fileObject);
         } else {
-            fileObject = fileSystem.findResource(path);
+            FileObject oldFO = controller.getWizardStorage().getSourcesFileObject();
+            if (oldFO == null && !path.isEmpty()) {
+                controller.getWizardStorage().setSourcesFileObject(fileSystem.findResource(path));
+            }
         }
-        controller.getWizardStorage().setSourcesFileObject(fileObject);
     }
     
     private void addListeners(){
@@ -646,9 +653,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             }
             boolean simple = simpleMode.isSelected();
             SelectModePanel.this.controller.getWizardStorage().setMode(simple);            
-            if (refresh) {
-                refreshSourceFolder();
-            }
+            refreshSourceFolder(refresh);
             synchronized(lock) {
                 if (startCount < generation) {
                     return;
