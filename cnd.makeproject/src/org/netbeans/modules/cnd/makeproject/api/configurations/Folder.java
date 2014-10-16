@@ -181,6 +181,13 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    public void forceDiskFolderRefreshAndWait() {
+        FileObject folderFile = getThisFolder();
+        if (folderFile != null) {
+            folderFile.refresh(true);
+        }               
+    }
+    
     private void refreshDiskFolder(LinkedList<String> antiLoop, boolean useOldSchemeBehavior, Interrupter interrupter) {
         if (log.isLoggable(Level.FINEST)) {
             log.log(Level.FINEST, "----------refreshDiskFolder {0}", getPath()); // NOI18N

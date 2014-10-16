@@ -445,7 +445,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         }
                         incrementRoot(path, roots);
                         if (project.resolveSymbolicLinks()) {
-                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(path);
+                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(null, path);
                             if (resolvedLink != null) {
                                 incrementRoot(resolvedLink, roots);
                             }
@@ -722,7 +722,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         }
                         source.process(cu);
                         if (project.resolveSymbolicLinks()) {
-                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(name);
+                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(null, name);
                             if (resolvedLink != null) {
                                 old = map.get(resolvedLink);
                                 if (old != null && old.getUserInludePaths().size() > 0) {
