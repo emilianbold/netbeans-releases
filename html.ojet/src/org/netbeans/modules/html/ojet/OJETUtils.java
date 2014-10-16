@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.html.ojet;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
@@ -49,6 +54,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.knockout.api.KODataBindTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -61,6 +67,25 @@ public class OJETUtils {
     public static final ImageIcon OJET_ICON
             = ImageUtilities.loadImageIcon("org/netbeans/modules/html/ojet/ojet-icon.png", false); // NOI18N
 
+    private static final AtomicBoolean isLogged = new AtomicBoolean(false);
+    public static final String USG_LOGGER_NAME = "org.netbeans.ui"; // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME);
+    private static final String USG_MESSAGE = "GENERIC_OJET_CC";
+    
+    public static void logUsage(List<? extends Object> params) {
+        if (!isLogged.get()) {
+            LogRecord logRecord = new LogRecord(Level.WARNING, USG_MESSAGE);
+            logRecord.setLoggerName(USG_LOGGER.getName());
+            logRecord.setResourceBundle(NbBundle.getBundle(OJETUtils.class));
+            logRecord.setResourceBundleName(OJETUtils.class.getPackage().getName() + ".Bundle"); // NOI18N
+            if (params != null) {
+                logRecord.setParameters(params.toArray(new Object[params.size()]));
+            }
+            USG_LOGGER.log(logRecord);
+            isLogged.set(true);
+        }
+    }
+    
     public static String getPrefix(OJETContext ojContext, Document document, int offset) {
         TokenHierarchy th = TokenHierarchy.get(document);
         String empty = "";
@@ -105,4 +130,6 @@ public class OJETUtils {
         }
         return result;
     }
+    
+    
 }
