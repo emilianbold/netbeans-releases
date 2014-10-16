@@ -52,7 +52,7 @@ import org.netbeans.modules.html.ojet.data.DataItem;
  * @author Petr Pisl
  */
 public class OJETCompletionHtmlItem extends HtmlCompletionItem.Attribute {
-   
+    
     public OJETCompletionHtmlItem(final DataItem data, final int substituteOffset) {
         super(data.getName(), substituteOffset, true, "");
     }
@@ -79,6 +79,7 @@ public class OJETCompletionHtmlItem extends HtmlCompletionItem.Attribute {
     
     @Override
     protected String getSubstituteText() {
+        OJETUtils.logUsage(null);
         return new StringBuilder().append(OJETUtils.OJ_COMPONENT).append(": {component: }").toString(); //NOI18N
     }
     
