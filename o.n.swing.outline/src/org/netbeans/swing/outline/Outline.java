@@ -756,7 +756,7 @@ public class Outline extends ETable {
         if (isTreeColumn && e instanceof MouseEvent) {
             MouseEvent me = (MouseEvent) e;
             TreePath path = getLayoutCache().getPathForRow(convertRowIndexToModel(row));
-            if (!getOutlineModel().isLeaf(path.getLastPathComponent())) {
+            if (path != null && !getOutlineModel().isLeaf(path.getLastPathComponent())) {
                 int handleWidth = DefaultOutlineCellRenderer.getExpansionHandleWidth();
                 Insets ins = getInsets();
                 int nd = path.getPathCount() - (isRootVisible() ? 1 : 2);
@@ -829,10 +829,10 @@ public class Outline extends ETable {
         }
             
         boolean res = false;
-        if (!isTreeColumn || e instanceof MouseEvent && isEditEvent(row, column, (MouseEvent) e)) {
+        if (!isTreeColumn || e instanceof MouseEvent && row >= 0 && isEditEvent(row, column, (MouseEvent) e)) {
             res = super.editCellAt(row, column, e);
         }
-        if( res && isTreeColumn && null != getEditorComponent() ) {
+        if( res && isTreeColumn && row >= 0 && null != getEditorComponent() ) {
             configureTreeCellEditor(getEditorComponent(), row, column);
         }
         if (e == null && !res && isTreeColumn) {
@@ -891,7 +891,7 @@ public class Outline extends ETable {
             CheckRenderDataProvider crender = (CheckRenderDataProvider) render;
             DefaultOutlineCellRenderer ocr = (DefaultOutlineCellRenderer) tcr;
             Object value = getValueAt(row, column);
-            if (crender.isCheckable(value) && crender.isCheckEnabled(value)) {
+            if (value != null && crender.isCheckable(value) && crender.isCheckEnabled(value)) {
                 boolean chBoxPosition;
                 if (me == null) {
                     chBoxPosition = true;

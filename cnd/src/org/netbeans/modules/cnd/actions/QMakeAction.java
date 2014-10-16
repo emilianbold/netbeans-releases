@@ -209,6 +209,9 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 postMessageDisplayer(new PostMessageDisplayer.Default("QMake")). // NOI18N
                 outConvertorFactory(processChangeListener);
         
+        descr.noReset(true);
+        inputOutput.getOut().println("cd '"+buildDir+"'"); //NOI18N
+        inputOutput.getOut().println(executable+" "+argsFlat); //NOI18N
         return NativeExecutionService.newService(npb, descr, "qmake"); // NOI18N
     }
 }

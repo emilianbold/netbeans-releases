@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import static org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver.ResolvedTypeHandler;
 
 /**
  *
@@ -63,14 +64,14 @@ public interface CsmExpressionResolverImplementation {
      * @return type of expression
      */
     Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations);
-    
+
     /**
      * Resolves type of expression in a given context 
      * 
      * @param expression - expression to resolve
      * @param instantiations - context
-     * @return type of expression
+     * @param task - handler for resolved type
      */
-    CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations);
-    
+    void resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations, ResolvedTypeHandler task);
+
 }

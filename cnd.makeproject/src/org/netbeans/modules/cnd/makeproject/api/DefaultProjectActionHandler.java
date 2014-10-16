@@ -401,7 +401,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         }
         
         if (actionType == PredefinedType.PRE_BUILD ||
-            actionType == PredefinedType.COMPILE_SINGLE) {
+            actionType == PredefinedType.COMPILE_SINGLE ||
+            actionType == PredefinedType.BUILD ||
+            actionType == PredefinedType.CLEAN) {
+            // CR 19816163
+            io.getOut().println("cd '"+workingDirectory+"'"); //NOI18N
             io.getOut().println(buf.toString());
         }
 

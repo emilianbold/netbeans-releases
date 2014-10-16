@@ -93,6 +93,10 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCodeTemplateFilter$Factory.instance"/>
                 </folder>  
                 
+                <folder name="CodeTemplateProcessorFactories">
+                    <file name="org-netbeans-modules-cnd-completion-templates-CppCodeTemplateProcessor$Factory.instance"/>
+                </folder>                
+
                 <folder name="Popup">
                     <folder name="goto">
                         <file name="goto-declaration">
@@ -133,6 +137,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
+                    
                 </folder>
                 <folder name="HyperlinkProviders">
                     <file name="CsmHyperlinkProvider.instance">
@@ -156,6 +161,10 @@ made subject to such option by the copyright holder.
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCodeTemplateFilter$Factory.instance"/>
                 </folder>
+
+                <folder name="CodeTemplateProcessorFactories">
+                    <file name="org-netbeans-modules-cnd-completion-templates-CppCodeTemplateProcessor$Factory.instance"/>
+                </folder>                
 
                 <folder name="Popup">
                     <folder name="goto">
@@ -222,6 +231,10 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCodeTemplateFilter$Factory.instance"/>
                 </folder>  
                 
+                <folder name="CodeTemplateProcessorFactories">
+                    <file name="org-netbeans-modules-cnd-completion-templates-CppCodeTemplateProcessor$Factory.instance"/>
+                </folder>                
+
                 <folder name="Popup">
                     <folder name="goto">
                         <file name="goto-declaration">

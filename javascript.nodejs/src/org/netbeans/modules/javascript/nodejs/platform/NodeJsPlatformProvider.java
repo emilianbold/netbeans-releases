@@ -47,8 +47,12 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import org.json.simple.JSONObject;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.file.PackageJson;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
+import org.netbeans.modules.javascript.nodejs.ui.Notifications;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
@@ -65,6 +69,8 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsPlatformProvider.class.getName());
 
+    public static final String IDENT = "node.js"; // NOI18N
+
     @StaticResource
     private static final String ICON_PATH = "org/netbeans/modules/javascript/nodejs/ui/resources/nodejs-badge.png"; // NOI18N
 
@@ -80,7 +86,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
 
     @Override
     public String getIdentifier() {
-        return "node.js"; // NOI18N
+        return IDENT;
     }
 
     @NbBundle.Messages("NodeJsPlatformProvider.name=Node.js")
@@ -124,7 +130,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         nodeJsSupport.addPropertyChangeListener(this);
         nodeJsSupport.projectOpened();
-        // XXX add autodetection
+        detectNodeJs(project);
     }
 
     @Override
@@ -167,6 +173,30 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     public void propertyChange(PropertyChangeEvent evt) {
         listenerSupport.firePropertyChanged((Project) evt.getSource(), this,
                 new PropertyChangeEvent(this, evt.getPropertyName(), evt.getOldValue(), evt.getNewValue()));
+    }
+
+    private void detectNodeJs(Project project) {
+        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
+        NodeJsPreferences preferences = nodeJsSupport.getPreferences();
+        if (preferences.isEnabled()) {
+            // already enabled => noop
+            return;
+        }
+        PackageJson packageJson = nodeJsSupport.getPackageJson();
+        if (!packageJson.exists()) {
+            return;
+        }
+        JSONObject content = packageJson.getContent();
+        if (content == null) {
+            // some error
+            return;
+        }
+        Object engines = content.get("engines"); // NOI18N
+        if (engines instanceof JSONObject) {
+            if (((JSONObject) engines).containsKey("node")) { // NOI18N
+                Notifications.notifyNodeJsDetected(project);
+            }
+        }
     }
 
 }

@@ -60,6 +60,8 @@ import javax.swing.JList;
 import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.TextValueCompleter;
@@ -133,7 +135,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         "CAT_Dependencies=Dependencies",
         "CAT_Appearance=Appearance",
         "CAT_Index=Index",
-        "CAT_Execution=Execution"
+        "CAT_Execution=Execution",
+        "CAT_Experimental=Experimental"
     })
     SettingsPanel(MavenOptionController controller) {
         initComponents();
@@ -208,6 +211,15 @@ public class SettingsPanel extends javax.swing.JPanel {
         rbOutputTabId.addActionListener(listener);
         rbOutputTabName.addActionListener(listener);
         cbDisableIndex.addActionListener(listener);
+        cbUseBestMaven.addActionListener(listener);
+        cbAlternateLocation.addActionListener(listener);
+        cbAlternateLocation.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                txtDirectory.setEnabled(cbAlternateLocation.isSelected());
+            }
+        });
+        txtDirectory.getDocument().addDocumentListener(new DocumentListenerImpl());
         txtOptions.getDocument().addDocumentListener(new DocumentListenerImpl());
         txtProjectNodeNameCustomPattern.setVisible(false);
         txtProjectNodeNameCustomPattern.getDocument().addDocumentListener(new DocumentListenerImpl());
@@ -224,6 +236,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                     value = CAT_Index();
                 }else if ("execution".equals(value)) {
                     value = CAT_Execution();
+                }else if ("experimental".equals(value)) {
+                    value = CAT_Experimental();
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
@@ -382,6 +396,13 @@ public class SettingsPanel extends javax.swing.JPanel {
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
         cbDisableIndex = new javax.swing.JCheckBox();
+        plnExperimental = new javax.swing.JPanel();
+        cbUseBestMaven = new javax.swing.JCheckBox();
+        lblHint = new javax.swing.JLabel();
+        cbAlternateLocation = new javax.swing.JCheckBox();
+        lblDirectory = new javax.swing.JLabel();
+        txtDirectory = new javax.swing.JTextField();
+        btnDirectory = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstCategory = new javax.swing.JList();
         lblCategory = new javax.swing.JLabel();
@@ -668,8 +689,69 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         pnlCards.add(pnlIndex, "index");
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbUseBestMaven, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbUseBestMaven.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblHint.text")); // NOI18N
+        lblHint.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbAlternateLocation, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbAlternateLocation.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblDirectory, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblDirectory.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnDirectory, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnDirectory.text")); // NOI18N
+        btnDirectory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDirectoryActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout plnExperimentalLayout = new javax.swing.GroupLayout(plnExperimental);
+        plnExperimental.setLayout(plnExperimentalLayout);
+        plnExperimentalLayout.setHorizontalGroup(
+            plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(plnExperimentalLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(plnExperimentalLayout.createSequentialGroup()
+                        .addComponent(cbUseBestMaven)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(plnExperimentalLayout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblHint, javax.swing.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                            .addGroup(plnExperimentalLayout.createSequentialGroup()
+                                .addComponent(cbAlternateLocation)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(plnExperimentalLayout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(lblDirectory)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtDirectory)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnDirectory)))))
+                .addContainerGap())
+        );
+        plnExperimentalLayout.setVerticalGroup(
+            plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(plnExperimentalLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(cbUseBestMaven)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbAlternateLocation)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblDirectory)
+                    .addComponent(txtDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDirectory))
+                .addContainerGap(161, Short.MAX_VALUE))
+        );
+
+        pnlCards.add(plnExperimental, "experimental");
+
         lstCategory.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "execution", "appearance", "dependencies", "index" };
+            String[] strings = { "execution", "appearance", "dependencies", "index", "experimental" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
@@ -776,12 +858,36 @@ public class SettingsPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_cbDisableIndexActionPerformed
     
+    private void btnDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDirectoryActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Select alternate directory");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileHidingEnabled(false);
+        String path = txtDirectory.getText();
+        if (path == null || path.trim().length() == 0) {
+            path = new File(System.getProperty("user.home")).getAbsolutePath(); //NOI18N
+        }
+        if (path.length() > 0) {
+            File f = new File(path);
+            if (f.exists()) {
+                chooser.setSelectedFile(f);
+            }
+        }
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File projectDir = chooser.getSelectedFile();
+            txtDirectory.setText(projectDir.getAbsolutePath());
+        }
+    
+    }//GEN-LAST:event_btnDirectoryActionPerformed
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnDirectory;
     private javax.swing.JButton btnGoals;
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnOptions;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JCheckBox cbAlternateLocation;
     private javax.swing.JCheckBox cbAlwaysShow;
     private javax.swing.JCheckBox cbCollapseSuccessFolds;
     private javax.swing.JCheckBox cbDisableIndex;
@@ -789,6 +895,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox cbProjectNodeNameMode;
     private javax.swing.JCheckBox cbReuse;
     private javax.swing.JCheckBox cbSkipTests;
+    private javax.swing.JCheckBox cbUseBestMaven;
     private javax.swing.JComboBox comBinaries;
     private javax.swing.JComboBox comIndex;
     private javax.swing.JComboBox comJavadoc;
@@ -802,13 +909,16 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblBinaries;
     private javax.swing.JLabel lblCategory;
     private javax.swing.JLabel lblCommandLine;
+    private javax.swing.JLabel lblDirectory;
     private javax.swing.JLabel lblExternalVersion;
+    private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblIndex;
     private javax.swing.JLabel lblJavadoc;
     private javax.swing.JLabel lblOptions;
     private javax.swing.JLabel lblOutputTab;
     private javax.swing.JLabel lblSource;
     private javax.swing.JList lstCategory;
+    private javax.swing.JPanel plnExperimental;
     private javax.swing.JPanel pnlAppearance;
     private javax.swing.JPanel pnlCards;
     private javax.swing.JPanel pnlDependencies;
@@ -816,6 +926,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel pnlIndex;
     private javax.swing.JRadioButton rbOutputTabId;
     private javax.swing.JRadioButton rbOutputTabName;
+    private javax.swing.JTextField txtDirectory;
     private javax.swing.JTextField txtOptions;
     private javax.swing.JTextField txtProjectNodeNameCustomPattern;
     // End of variables declaration//GEN-END:variables
@@ -930,6 +1041,9 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbReuse.setSelected(MavenSettings.getDefault().isReuseOutputTabs());
         cbCollapseSuccessFolds.setSelected(MavenSettings.getDefault().isCollapseSuccessFolds());
         cbOutputTabShowConfig.setSelected(MavenSettings.getDefault().isOutputTabShowConfig());
+        cbUseBestMaven.setSelected(MavenSettings.getDefault().isUseBestMaven());
+        cbAlternateLocation.setSelected(MavenSettings.getDefault().isUseBestMavenAltLocation());
+        txtDirectory.setText(MavenSettings.getDefault().getBestMavenAltLocation());
         if (MavenSettings.OutputTabName.PROJECT_NAME.equals(MavenSettings.getDefault().getOutputTabName())) {
             rbOutputTabName.setSelected(true);
         } else {
@@ -1001,6 +1115,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         MavenSettings.getDefault().setReuseOutputTabs(cbReuse.isSelected());
         MavenSettings.getDefault().setCollapseSuccessFolds(cbCollapseSuccessFolds.isSelected());
         MavenSettings.getDefault().setOutputTabShowConfig(cbOutputTabShowConfig.isSelected());
+        MavenSettings.getDefault().setUseBestMaven(cbUseBestMaven.isSelected());
+        MavenSettings.getDefault().setUseBestMavenAltLocation(cbAlternateLocation.isSelected());
+        if (cbAlternateLocation.isSelected()) {
+            MavenSettings.getDefault().setBestMavenAltLocation(txtDirectory.getText());
+        }
         MavenSettings.OutputTabName name = rbOutputTabName.isSelected() ? MavenSettings.OutputTabName.PROJECT_NAME : MavenSettings.OutputTabName.PROJECT_ID;
         MavenSettings.getDefault().setOutputTabName(name);
         
@@ -1062,6 +1181,8 @@ public class SettingsPanel extends javax.swing.JPanel {
         isChanged |= MavenSettings.getDefault().isReuseOutputTabs() != cbReuse.isSelected();
         isChanged |= MavenSettings.getDefault().isCollapseSuccessFolds() != cbCollapseSuccessFolds.isSelected();
         isChanged |= MavenSettings.getDefault().isOutputTabShowConfig() != cbOutputTabShowConfig.isSelected();
+        isChanged |= MavenSettings.getDefault().isUseBestMaven() != cbUseBestMaven.isSelected();
+        isChanged |= MavenSettings.getDefault().isUseBestMavenAltLocation() != cbAlternateLocation.isSelected();
         MavenSettings.OutputTabName name = rbOutputTabName.isSelected() ? MavenSettings.OutputTabName.PROJECT_NAME : MavenSettings.OutputTabName.PROJECT_ID;
         isChanged |= MavenSettings.getDefault().getOutputTabName().compareTo(name) != 0;
         String projectNodeNamePattern = MavenSettings.getDefault().getProjectNodeNamePattern();

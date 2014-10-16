@@ -42,17 +42,17 @@
 
 package org.netbeans.modules.maven.execute;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -62,15 +62,27 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.swing.AbstractAction;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.model.Prerequisites;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
+import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
@@ -87,6 +99,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -487,6 +500,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
 
         File mavenHome = EmbedderFactory.getEffectiveMavenHome();
+        if (MavenSettings.getDefault().isUseBestMaven()) {
+            File n = guessBestMaven(clonedConfig, ioput);
+            if (n != null) {
+                mavenHome = n;
+            }
+        }
         Constructor constructeur = new ShellConstructor(mavenHome);
 
         List<String> cmdLine = createMavenExecutionCommand(clonedConfig, constructeur);
@@ -647,4 +666,155 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         return list.contains("-T") || list.contains("--threads");
     } 
+
+    private File guessBestMaven(RunConfig clonedConfig, InputOutput ioput) {
+        MavenProject mp = clonedConfig.getMavenProject();
+        if (mp != null) {
+            if (mp.getPrerequisites() != null) {
+                Prerequisites pp = mp.getPrerequisites();
+                String ver = pp.getMaven();
+                if (ver != null) {
+                    return checkAvailability(ver, null, ioput);
+}
+            }
+            String value = PluginPropertyUtils.getPluginPropertyBuildable(clonedConfig.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, "maven-enforcer-plugin", "enforce", new PluginPropertyUtils.ConfigurationBuilder<String>() {
+                @Override
+                public String build(Xpp3Dom configRoot, ExpressionEvaluator eval) {
+                    Xpp3Dom rules = configRoot.getChild("rules");
+                    if (rules != null) {
+                        Xpp3Dom rmv = rules.getChild("requireMavenVersion");
+                        if (rmv != null) {
+                            Xpp3Dom v = rmv.getChild("version");
+                            if (v != null) {
+                                return v.getValue();
+                            }
+                        }
+                    }
+                    return null;
+                }
+            });
+            if (value != null) {
+                if (value.contains("[") || value.contains("(")) {
+                    try {
+                        VersionRange vr = VersionRange.createFromVersionSpec(value);
+                        return checkAvailability(null, vr, ioput);
+                    } catch (InvalidVersionSpecificationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    return checkAvailability(value, null, ioput);
+                }
+            }
+        }
+        return null;
+    }
+
+    private File checkAvailability(String ver, VersionRange vr, InputOutput ioput) {
+        ArrayList<String> all = new ArrayList(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
+        //TODO this could be slow? but is it slower than downloading stuff?
+        //is there a faster way? or can we somehow log the findings after first attempt?
+        DefaultArtifactVersion candidate = null;
+        File candidateFile = null;
+        for (String one : all) {
+            File f = FileUtil.normalizeFile(new File(one));
+            String oneVersion = MavenSettings.getCommandLineMavenVersion(f);
+            if (ver != null && ver.equals(oneVersion)) {
+                return f;
+            }
+            DefaultArtifactVersion dav = new DefaultArtifactVersion(oneVersion);
+            if (vr != null && vr.containsVersion(dav)) {
+                if (candidate != null) {
+                    if (candidate.compareTo(dav) < 0) {
+                        candidate = dav;
+                        candidateFile = f;
+                    }
+                } else {
+                    candidate = new DefaultArtifactVersion(oneVersion);
+                    candidateFile = f;
+                }
+            }
+        }
+        if (candidateFile != null) {
+            return candidateFile;
+        } else if (vr != null) {
+            ver = vr.getRecommendedVersion() != null ? vr.getRecommendedVersion().toString() : null;
+            if (ver == null) {
+                //TODO can we figure out which version to get without hardwiring a list of known versions?
+                ioput.getOut().println("NetBeans: No match and no recommended version for version range " + vr.toString());
+                return null;
+            }
+        }
+        if (ver == null) {
+            return null;
+        }
+        
+        File f = getAltMavenLocation(); 
+        File child = FileUtil.normalizeFile(new File(f, "apache-maven-" + ver));
+        if (child.exists()) {
+            return child;
+        } else {
+            f.mkdirs();
+            ioput.getOut().println("NetBeans: Downloading and unzipping Maven version " + ver);
+            ZipInputStream str = null;
+            try {
+                //this url pattern works for all versions except the last one 3.2.3
+                //which is only under <mirror>/apache/maven/maven-3/3.2.3/binaries/
+                URL u = new URL("http://archive.apache.org/dist/maven/binaries/apache-maven-" + ver + "-bin.zip");
+                InputStream is = u.openStream();
+                str = new ZipInputStream(is);
+                ZipEntry entry;
+                while ((entry = str.getNextEntry()) != null) {
+                    //base it of f not child as the zip contains the maven base folder
+                    File fileOrDir = new File(f,  entry.getName());
+                    if (entry.isDirectory()) {
+                        fileOrDir.mkdirs();
+                    } else {
+                        FileOutputStream fos = null;
+                        try {
+                            fos = new FileOutputStream(fileOrDir);
+                            FileUtil.copy(str, fos);
+                        } finally {
+                            IOUtil.close(fos);
+                        }
+                        // correct way to set executable flag?
+                        if ("bin".equals(fileOrDir.getParentFile().getName()) && !fileOrDir.getName().endsWith(".conf")) {
+                            fileOrDir.setExecutable(true);
+                        }
+                    }
+                }
+                if (!all.contains(child.getAbsolutePath())) {
+                    all.add(child.getAbsolutePath());
+                    MavenSettings.getDefault().setMavenRuntimes(all);
+                }
+                return child;
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                try {
+                    FileUtils.deleteDirectory(child);
+                } catch (IOException ex1) {
+                    Exceptions.printStackTrace(ex1);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                try {
+                    FileUtils.deleteDirectory(child);
+                } catch (IOException ex1) {
+                    Exceptions.printStackTrace(ex1);
+                }
+            } finally {
+                IOUtil.close(str);
+            }
+        }
+        return null;
+    }
+
+    private File getAltMavenLocation() {
+        if (MavenSettings.getDefault().isUseBestMavenAltLocation()) {
+            String s = MavenSettings.getDefault().getBestMavenAltLocation();
+            if (s != null && s.trim().length() > 0) {
+                return FileUtil.normalizeFile(new File(s));
+            }
+        }
+        return Places.getCacheSubdirectory("downloaded-mavens");
+    }
 }

@@ -117,6 +117,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmRangeForStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import static org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver.ResolvedTypeHandler;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
@@ -290,22 +291,23 @@ abstract public class CsmCompletionQuery {
     
     class QueryTypeTask implements QueryTask {
         
-        private CsmType type;
+        private final ResolvedTypeHandler resolvedHandler;
 
+        public QueryTypeTask(ResolvedTypeHandler resolvedHandler) {
+            this.resolvedHandler = resolvedHandler;
+        }
+        
         @Override
         public void perform(Context context) {
             if (context != null) {
-                type = context.lastType;
+                CsmType type = context.lastType;
+                resolvedHandler.process(type);
             }
         }
 
         @Override
         public AntiloopClient getAntiloopKind() {
             return AntiloopClient.query_type;
-        }
-
-        public CsmType getType() {
-            return type;
         }
     }
     
@@ -314,11 +316,11 @@ abstract public class CsmCompletionQuery {
      * 
      * @param expression - expression to get type from
      * @param instantiations - context
+     * @param resolvedHandler - handler for resolved type
      */
-    public CsmType queryType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
-        QueryTypeTask task = new QueryTypeTask();
+    public void queryType(CsmOffsetable expression, List<CsmInstantiation> instantiations, ResolvedTypeHandler resolvedHandler) {
+        QueryTypeTask task = new QueryTypeTask(resolvedHandler);
         performQueryTask(expression, instantiations, task);
-        return task.getType();
     }    
     
     static interface QueryTask {
@@ -2572,7 +2574,8 @@ abstract public class CsmCompletionQuery {
                                             if (findType) {
                                                 lastType = autoVarType;
                                             } else if (autoVarType != null) {
-                                                CsmClassifier autoVarCls = autoVarType.getClassifier();
+                                                CsmType userFriendlyType = CsmUtilities.iterateTypeChain(autoVarType, new CsmUtilities.SmartTypeUnrollPredicate());
+                                                CsmClassifier autoVarCls = userFriendlyType.getClassifier();
                                                 if (CsmBaseUtilities.isValid(autoVarCls)) {
                                                     result = new CsmCompletionResult(
                                                             component, 
