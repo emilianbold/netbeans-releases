@@ -178,26 +178,20 @@ public final class WebLogicDeployer {
     public Future<String> deploy(@NonNull File file, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
-        List<String> params = new ArrayList<>();
-        if (file.isDirectory()) {
-            params.add("-nostage"); // NOI18N
-            params.add("-source"); // NOI18N
-        }
-        return deploy(file, listener, name, params.toArray(new String[params.size()]));
+        return deploy(file, listener, name, new String[]{});
     }
 
     @NonNull
     public Future<Void> redeploy(@NonNull String name, @NonNull File file,
             @NullAllowed BatchDeployListener listener) {
         List<String> params = new ArrayList<>();
-        params.add("-source"); // NOI18N
-        params.add(file.getAbsolutePath());
-
         if (config.isRemote()) {
             params.add("-upload");
             // we must use remote otherwise it will fail
             params.add("-remote");
         }
+        params.add("-source"); // NOI18N
+        params.add(file.getAbsolutePath());
         return redeploy(Collections.singletonList(name), listener, params.toArray(new String[params.size()]));
     }
 
@@ -416,26 +410,23 @@ public final class WebLogicDeployer {
 
             @Override
             public String call() throws Exception {
-                int length = config.isRemote() ? parameters.length + 3 : parameters.length + 1;
-                if (name != null) {
-                    length += 2;
-                }
-                String[] execParams = new String[length];
-                execParams[execParams.length - 1] = file.getAbsolutePath();
+                List<String> parameters = new ArrayList<>();
                 if (config.isRemote()) {
-                    execParams[execParams.length - 2] = "-upload"; // NOI18N
-                    execParams[execParams.length - 3] = "-remote"; // NOI18N
+                    parameters.add("-upload");
+                    parameters.add("-remote");
                 }
                 if (name != null) {
-                    execParams[execParams.length - 4] = name;
-                    execParams[execParams.length - 5] = "-name"; // NOI18N
+                    parameters.add("-name");
+                    parameters.add(name);
                 }
-                if (parameters.length > 0) {
-                    System.arraycopy(parameters, 0, execParams, 0, parameters.length);
+                if (file.isDirectory()) {
+                    parameters.add("-nostage"); // NOI18N
                 }
+                parameters.add("-source"); // NOI18N
+                parameters.add(file.getAbsolutePath());
 
                 LastLineProcessor lineProcessor = new LastLineProcessor();
-                BaseExecutionService service = createService("-deploy", lineProcessor, execParams); // NOI18N
+                BaseExecutionService service = createService("-deploy", lineProcessor, parameters.toArray(new String[parameters.size()])); // NOI18N
                 Future<Integer> result = service.run();
                 try {
                     Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
