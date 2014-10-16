@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
@@ -175,6 +176,10 @@ public class CsmDisplayUtilities {
     
     public static CharSequence getTooltipText(CsmObject item) {
         return CsmDisplayUtilitiesProvider.getDefault().getTooltipText(item);
+    }
+    
+    public static CharSequence getTypeText(CsmType type, boolean expandInstantiations, boolean evaluateExpressions) {
+        return CsmDisplayUtilitiesProvider.getDefault().getTypeText(type, expandInstantiations, evaluateExpressions);
     }
     
     private final static boolean SKIP_COLORING = Boolean.getBoolean("cnd.test.skip.coloring");// NOI18N
