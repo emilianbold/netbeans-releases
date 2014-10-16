@@ -61,10 +61,11 @@ public class AtomicLockEvent extends EventObject {
     }
     
     /**
-     * Returns the source Document
+     * Returns the source Document. Convenience method, equivalent to
+     * {@link #getSource} but with the proper type.
      * @return the Document instance
      */
-    public Document getSource() {
+    public Document getDocument() {
         return (Document)super.getSource();
     }
 
@@ -73,6 +74,6 @@ public class AtomicLockEvent extends EventObject {
      * @return the atomic lock
      */
     public AtomicLockDocument getAtomicLock() {
-        return LineDocumentUtils.as(getSource(), AtomicLockDocument.class);
+        return LineDocumentUtils.as(getDocument(), AtomicLockDocument.class);
     }
 }

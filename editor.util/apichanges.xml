@@ -108,7 +108,7 @@ is the proper place.
   <changes>
       <change id="EventPropertyStorage.test">
           <summary>Added test for property storage support on events</summary>
-          <version major="1" minor="59"/>
+          <version major="1" minor="60"/>
           <date day="20" month="5" year="2014"/>
           <author login="sdedic"/>
           <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible"/>

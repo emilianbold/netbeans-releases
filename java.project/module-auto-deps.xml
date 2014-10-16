@@ -62,11 +62,11 @@ made subject to such option by the copyright holder.
         <description>Separate java.project into desktop and NetBeans independent and dependent parts</description>
         <transformation>
             <trigger-dependency type="older">
-                <module-dependency codenamebase="org.netbeans.modules.java.project" major="1" spec="1.60"/>
+                <module-dependency codenamebase="org.netbeans.modules.java.project" major="1" spec="1.62"/>
             </trigger-dependency>
             <implies>
                 <result>
-                    <module-dependency codenamebase="org.netbeans.modules.java.project.ui" major="1" spec="1.61"/>
+                    <module-dependency codenamebase="org.netbeans.modules.java.project.ui" major="1" spec="1.62"/>
                 </result>
             </implies>
         </transformation>

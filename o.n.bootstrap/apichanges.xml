@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     <change id="module.fragments">
          <api name="launcher"/>
          <summary>Ability to join other module</summary>
-         <version major="2" minor="69"/>
+         <version major="2" minor="71"/>
          <date day="11" month="4" year="2014"/>
          <author login="sdedic"/>
          <compatibility addition="yes" binary="compatible" semantic="compatible" />

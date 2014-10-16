@@ -111,7 +111,7 @@ is the proper place.
         <change id="newUtilityMethods">
              <api name="general"/>
              <summary>Added couple of new utility methods to TreeUtilities, ElementUtilities, and SourceUtils.</summary>
-             <version major="0" minor="136"/>
+             <version major="0" minor="141"/>
              <date day="14" month="4" year="2014"/>
              <author login="dbalek"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>

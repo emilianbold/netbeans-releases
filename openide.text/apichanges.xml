@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     <change id="PositionRef.Position">
         <api name="text"/>
         <summary>Implement Position interface for compatibility</summary>
-        <version major="6" minor="63"/>
+        <version major="6" minor="64"/>
         <date day="25" month="5" year="2014"/>
         <author login="sdedic"/>
         <compatibility modification="yes" binary="compatible" source="compatible"/>

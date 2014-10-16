@@ -112,7 +112,7 @@ is the proper place.
         <change id="server.is.free">
             <api name="general"/>
             <summary>Desktop dependent Java Project Support UI extracted</summary>
-            <version major="1" minor="60"/>
+            <version major="1" minor="62"/>
             <date day="2" month="6" year="2014"/>
             <author login="tstupka"/>
             <compatibility modification="yes" addition="yes">

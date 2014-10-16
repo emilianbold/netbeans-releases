@@ -1358,8 +1358,8 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.project.ant.ui" spec="1.61"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.java.project" addcompiletime="true">
-                <module codenamebase="org.netbeans.modules.java.project" release="1" spec="1.60"/>
-                <module codenamebase="org.netbeans.modules.java.project.ui" release="1" spec="1.61"/>
+                <module codenamebase="org.netbeans.modules.java.project" release="1" spec="1.62"/>
+                <module codenamebase="org.netbeans.modules.java.project.ui" release="1" spec="1.62"/>
             </replace>
             <replace codenamebase="org.netbeans.api.xml" addcompiletime="true">
                 <module codenamebase="org.netbeans.api.xml" release="1" spec="1.41"/>
@@ -1379,12 +1379,12 @@ made subject to such option by the copyright holder.
             </replace>
             <replace codenamebase="org.netbeans.modules.java.source" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.java.source.base" spec="1.1"/>
-                <module codenamebase="org.netbeans.modules.java.source" spec="0.136"/>
+                <module codenamebase="org.netbeans.modules.java.source" spec="0.141"/>
                 <module codenamebase="org.netbeans.modules.java.source.compat8" spec="9.0"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.project.libraries" addcompiletime="true">
-                <module codenamebase="org.netbeans.modules.project.libraries" release="1" spec="1.48"/>
-                <module codenamebase="org.netbeans.modules.project.libraries.ui" release="1" spec="1.48"/>
+                <module codenamebase="org.netbeans.modules.project.libraries" release="1" spec="1.49"/>
+                <module codenamebase="org.netbeans.modules.project.libraries.ui" release="1" spec="1.49"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.xml.catalog" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.xml.catalog" release="2" spec="2.0"/>

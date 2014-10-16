@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
         <description>The old editor settings and completion APIs have been deprecated, see http://wiki.netbeans.org/EditorSettingsUpgrade and update your module.</description>
         <transformation>
             <trigger-dependency type="older">
-                <module-dependency codenamebase="org.netbeans.modules.java.source" spec="0.136"/>
+                <module-dependency codenamebase="org.netbeans.modules.java.source" spec="0.141"/>
             </trigger-dependency>
             <implies>
                 <result>
