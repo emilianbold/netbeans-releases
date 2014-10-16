@@ -74,14 +74,19 @@ public final class V8Event extends V8Packet {
     private final ReferencedValue[] referencedValues;
     private Map<Long, V8Value> valuesByReferences;
     private final PropertyBoolean running;
+    private final PropertyBoolean success;
+    private final String errorMessage;
     
     V8Event(long sequence, Kind eventKind, V8Body body,
-            ReferencedValue[] referencedValues, Boolean running) {
+            ReferencedValue[] referencedValues, Boolean running,
+            Boolean success, String errorMessage) {
         super(sequence, V8Type.event);
         this.eventKind = eventKind;
         this.body = body;
         this.referencedValues = referencedValues;
         this.running = new PropertyBoolean(running);
+        this.success = new PropertyBoolean(success);
+        this.errorMessage = errorMessage;
     }
 
     public Kind getKind() {
@@ -110,6 +115,14 @@ public final class V8Event extends V8Packet {
 
     public PropertyBoolean isRunning() {
         return running;
+    }
+
+    public PropertyBoolean getSuccess() {
+        return success;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
 }

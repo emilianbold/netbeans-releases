@@ -127,38 +127,46 @@ public class JSONReader {
     public static V8Event getEvent(JSONObject obj) throws IllegalArgumentException {
         long sequence = (Long) obj.get(SEQ);
         String eventName = (String) obj.get(EVENT);
-        V8Event.Kind eventKind = V8Event.Kind.fromString(eventName);
+        V8Event.Kind eventKind;
         V8Body body = null;
-        JSONObject bodyObj = (JSONObject) obj.get(BODY);
-        switch (eventKind) {
-            case AfterCompile:
-                V8Script script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
-                body = new AfterCompileEventBody(script);
-                break;
-            case Break:
-                String invocationText = (String) bodyObj.get(EVT_INVOCATION_TEXT);
-                long sourceLine = getLong(bodyObj, EVT_SOURCE_LINE);
-                long sourceColumn = getLong(bodyObj, EVT_SOURCE_COLUMN);
-                String sourceLineText = (String) bodyObj.get(EVT_SOURCE_LINE_TEXT);
-                V8ScriptLocation scriptLocation = getScriptLocation((JSONObject) bodyObj.get(EVT_SCRIPT));
-                long[] breakpoints = getLongArray((JSONArray) bodyObj.get(EVT_BREAKPOINTS));
-                body = new BreakEventBody(invocationText, sourceLine, sourceColumn, sourceLineText, scriptLocation, breakpoints);
-                break;
-            case Exception:
-                boolean uncaught = (boolean) bodyObj.get(EVT_UNCAUGHT);
-                V8Value exception = getValue((JSONObject) bodyObj.get(EVT_EXCEPTION));
-                sourceLine = getLong(bodyObj, EVT_SOURCE_LINE);
-                sourceColumn = getLong(bodyObj, EVT_SOURCE_COLUMN);
-                sourceLineText = (String) bodyObj.get(EVT_SOURCE_LINE_TEXT);
-                script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
-                body = new ExceptionEventBody(uncaught, exception, sourceLine, sourceColumn, sourceLineText, script);
-                break;
-            default:
-                new IllegalArgumentException("Unknown event "+eventName+" in "+obj.toJSONString()).printStackTrace();
+        if (eventName != null) {
+            eventKind = V8Event.Kind.fromString(eventName);
+            JSONObject bodyObj = (JSONObject) obj.get(BODY);
+            switch (eventKind) {
+                case AfterCompile:
+                    V8Script script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
+                    body = new AfterCompileEventBody(script);
+                    break;
+                case Break:
+                    String invocationText = (String) bodyObj.get(EVT_INVOCATION_TEXT);
+                    long sourceLine = getLong(bodyObj, EVT_SOURCE_LINE);
+                    long sourceColumn = getLong(bodyObj, EVT_SOURCE_COLUMN);
+                    String sourceLineText = (String) bodyObj.get(EVT_SOURCE_LINE_TEXT);
+                    V8ScriptLocation scriptLocation = getScriptLocation((JSONObject) bodyObj.get(EVT_SCRIPT));
+                    long[] breakpoints = getLongArray((JSONArray) bodyObj.get(EVT_BREAKPOINTS));
+                    body = new BreakEventBody(invocationText, sourceLine, sourceColumn, sourceLineText, scriptLocation, breakpoints);
+                    break;
+                case Exception:
+                    boolean uncaught = (boolean) bodyObj.get(EVT_UNCAUGHT);
+                    V8Value exception = getValue((JSONObject) bodyObj.get(EVT_EXCEPTION));
+                    sourceLine = getLong(bodyObj, EVT_SOURCE_LINE);
+                    sourceColumn = getLong(bodyObj, EVT_SOURCE_COLUMN);
+                    sourceLineText = (String) bodyObj.get(EVT_SOURCE_LINE_TEXT);
+                    script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
+                    body = new ExceptionEventBody(uncaught, exception, sourceLine, sourceColumn, sourceLineText, script);
+                    break;
+                default:
+                    new IllegalArgumentException("Unknown event "+eventName+" in "+obj.toJSONString()).printStackTrace();
+            }
+        } else {
+            // Handle events like: {"seq":218,"type":"event","success":false,"message":"SyntaxError: Unexpected token C","running":false}
+            eventKind = null;
         }
         ReferencedValue[] refs = getRefs((JSONArray) obj.get(REFS));
         Boolean running = (Boolean) obj.get(RUNNING);
-        return new V8Event(sequence, eventKind, body, refs, running);
+        Boolean success = (Boolean) obj.get(SUCCESS);
+        String errorMessage = (String) obj.get(MESSAGE);
+        return new V8Event(sequence, eventKind, body, refs, running, success, errorMessage);
     }
 
     private static V8Body getBody(V8Command command, JSONObject obj) {
