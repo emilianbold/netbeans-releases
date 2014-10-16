@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.html.ojet
-OpenIDE-Module-Layer: org/netbeans/modules/html/ojet/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/html/ojet/Bundle.properties
-OpenIDE-Module-Specification-Version: 0.2
+OpenIDE-Module-Specification-Version: 0.3
 
