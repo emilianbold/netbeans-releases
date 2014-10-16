@@ -85,9 +85,11 @@ import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -120,13 +122,15 @@ public final class V8Debugger {
     
     private final AtomicLong requestSequence = new AtomicLong(1l);
     private final Map<Long, Pair<V8Request, CommandResponseCallback>> commandCallbacks = new HashMap<>();
-    private volatile boolean suspended = false;
+    private boolean suspended = false;
+    private final Object suspendedUpdateLock = new Object();
     private volatile boolean finished = false;
-    private final ReadWriteLock accessLock = new ReentrantReadWriteLock(true);
+    private final ReentrantReadWriteLock accessLock = new ReentrantReadWriteLock(true);
     
-    private V8Frame currentFrame;
+    private CallFrame currentFrame;
     private CallStack currentCallStack;
     private final Object currentFrameRetrieveLock = new Object();
+    private final Object currentCallStackRetrieveLock = new Object();
     
     public static DebuggerEngine startSession(Connector.Properties properties,
                                               @NullAllowed Runnable finishCallback) throws IOException {
@@ -220,17 +224,37 @@ public final class V8Debugger {
     }
     
     public boolean isSuspended() {
-        return suspended;
+        assert !accessLock.isWriteLockedByCurrentThread();
+        synchronized (suspendedUpdateLock) {
+            return suspended;
+        }
     }
     
-    public V8Frame getCurrentFrame() {
-        V8Frame f;
+    public CallFrame getCurrentFrame() {
+        CallFrame f;
         Lock rl = accessLock.readLock();
         rl.lock();
         try {
             f = currentFrame;
-            if (f == null && suspended) {
-                final V8Frame[] fRef = new V8Frame[] { null };
+            if (f == null && currentCallStack != null) {
+                rl.unlock();
+                rl = null;
+                synchronized (currentFrameRetrieveLock) {
+                    f = currentCallStack.createTopFrame();
+                    if (f != null) {
+                        Lock wl = accessLock.writeLock();
+                        wl.lock();
+                        try {
+                            currentFrame = f;
+                        } finally {
+                            wl.unlock();
+                        }
+                        return f;
+                    }
+                }
+            }
+            if (f == null && isSuspended()) {
+                final CallFrame[] fRef = new CallFrame[] { null };
                 rl.unlock();
                 rl = null;
                 // Synchronize not to start retrieving the current frame multiple times at once
@@ -239,7 +263,7 @@ public final class V8Debugger {
                     rl.lock();
                     try {
                         // Things might have changed:
-                        if (currentFrame != null || !suspended) {
+                        if (currentFrame != null || !isSuspended()) {
                             return currentFrame;
                         }
                     } finally {
@@ -250,9 +274,9 @@ public final class V8Debugger {
                     V8Request request = sendCommandRequest(V8Command.Frame, null, new CommandResponseCallback() {
                         @Override
                         public void notifyResponse(V8Request request, V8Response response) {
-                            if (response != null) {
+                            if (response != null && response.isSuccess()) {
                                 Frame.ResponseBody frb = (Frame.ResponseBody) response.getBody();
-                                fRef[0] = frb.getFrame();
+                                fRef[0] = new CallFrame(frb.getFrame(), new ReferencedValues(response));
                             }
                             synchronized (currentFrameRetrieveLock) {
                                 currentFrameRetrieveLock.notifyAll();
@@ -288,48 +312,53 @@ public final class V8Debugger {
         rl.lock();
         try {
             cs = currentCallStack;
-            if (cs == null && suspended) {
+            //LOG.fine("getCurrentCallStack(): currentCallStack = "+cs);
+            if (cs == null && isSuspended()) {
                 final CallStack[] csRef = new CallStack[] { null };
                 rl.unlock();
                 rl = null;
                 // Synchronize not to start retrieving the current frame multiple times at once
-                synchronized (currentFrameRetrieveLock) {
+                synchronized (currentCallStackRetrieveLock) {
                     rl = accessLock.readLock();
                     rl.lock();
                     try {
                         // Things might have changed:
-                        if (currentCallStack != null || !suspended) {
+                        if (currentCallStack != null && suspended) {
+                            //LOG.fine("getCurrentCallStack(): currentCallStack computed in the mean time: "+currentCallStack);
                             return currentCallStack;
                         }
                     } finally {
                         rl.unlock();
                         rl = null;
                     }
+                    //LOG.fine("getCurrentCallStack(): retrieving the number of frames...");
                     // Find the number of frames first:
                     Backtrace.Arguments bta = new Backtrace.Arguments(0l, 1l, false, true);
                     V8Request request = sendCommandRequest(V8Command.Backtrace, bta, new CommandResponseCallback() {
                         @Override
                         public void notifyResponse(V8Request request, V8Response response) {
                             if (response == null) {
-                                synchronized (currentFrameRetrieveLock) {
-                                    currentFrameRetrieveLock.notifyAll();
+                                synchronized (currentCallStackRetrieveLock) {
+                                    currentCallStackRetrieveLock.notifyAll();
                                 }
                                 return ;
                             }
                             Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
                             long numFrames = btrb.getTotalFrames();
+                            //LOG.fine("getCurrentCallStack(): "+numFrames+" frames retrieved.");
                             if (numFrames == 0) {
-                                synchronized (currentFrameRetrieveLock) {
+                                synchronized (currentCallStackRetrieveLock) {
                                     csRef[0] = CallStack.EMPTY;
-                                    currentFrameRetrieveLock.notifyAll();
+                                    currentCallStackRetrieveLock.notifyAll();
                                 }
                             }
                             if (numFrames == 1l) {
-                                synchronized (currentFrameRetrieveLock) {
+                                synchronized (currentCallStackRetrieveLock) {
                                     csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
-                                    currentFrameRetrieveLock.notifyAll();
+                                    currentCallStackRetrieveLock.notifyAll();
                                 }
                             } else {
+                                //LOG.fine("getCurrentCallStack(): retrieving "+numFrames+" frames...");
                                 // Find numFrames frames now:
                                 Backtrace.Arguments bta = new Backtrace.Arguments(0l, numFrames, false, true);
                                 V8Request request2 = sendCommandRequest(V8Command.Backtrace, bta, new CommandResponseCallback() {
@@ -338,16 +367,17 @@ public final class V8Debugger {
                                         if (response != null) {
                                             Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
                                             csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
+                                            //LOG.fine("getCurrentCallStack(): All frames retrieved: "+csRef[0]);
                                         }
-                                        synchronized (currentFrameRetrieveLock) {
-                                            currentFrameRetrieveLock.notifyAll();
+                                        synchronized (currentCallStackRetrieveLock) {
+                                            currentCallStackRetrieveLock.notifyAll();
                                         }
                                     }
                                 });
                                 if (request2 == null) {
                                     // Failed, notify
-                                    synchronized (currentFrameRetrieveLock) {
-                                        currentFrameRetrieveLock.notifyAll();
+                                    synchronized (currentCallStackRetrieveLock) {
+                                        currentCallStackRetrieveLock.notifyAll();
                                     }
                                 }
                             }
@@ -355,7 +385,7 @@ public final class V8Debugger {
                     });
                     if (request != null) {
                         try {
-                            currentFrameRetrieveLock.wait();
+                            currentCallStackRetrieveLock.wait();
                         } catch (InterruptedException iex) {}
                     }
                     cs = csRef[0];
@@ -363,6 +393,7 @@ public final class V8Debugger {
                     wl.lock();
                     try {
                         currentCallStack = cs;
+                        //LOG.fine("getCurrentCallStack(): set currentCallStack to "+cs);
                     } finally {
                         wl.unlock();
                     }
@@ -373,6 +404,7 @@ public final class V8Debugger {
                 rl.unlock();
             }
         }
+        //LOG.fine("getCurrentCallStack(): return "+cs);
         return cs;
     }
 
@@ -461,6 +493,13 @@ public final class V8Debugger {
 
     private void handleEvent(V8Event event) {
         notifySuspended(event.isRunning().getValueOr(true));
+        PropertyBoolean success = event.getSuccess();
+        if (success.hasValue() && !success.getValue() && event.getErrorMessage() != null) {
+            // an error is reported
+            NotifyDescriptor error = new NotifyDescriptor.Message(event.getErrorMessage(), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(error);
+            return ;
+        }
         switch (event.getKind()) {
             case AfterCompile:
                 AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
@@ -485,20 +524,25 @@ public final class V8Debugger {
     }
     
     private void notifySuspended(boolean suspended) {
-        if (this.suspended == suspended) {
-            return ;
-        }
-        Lock wl = accessLock.writeLock();
-        wl.lock();
-        try {
-            if (!suspended) {
-                // Resumed
-                currentFrame = null;
-                currentCallStack = null;
+        assert !accessLock.isWriteLockedByCurrentThread();
+        LOG.fine("notifySuspended("+suspended+")");
+        synchronized (suspendedUpdateLock) {
+            if (this.suspended == suspended) {
+                return ;
             }
-            this.suspended = suspended;
-        } finally {
-            wl.unlock();
+            Lock wl = accessLock.writeLock();
+            wl.lock();
+            try {
+                if (!suspended) {
+                    // Resumed
+                    currentFrame = null;
+                    currentCallStack = null;
+                }
+                this.suspended = suspended;
+                LOG.fine("notifySuspended():  suspended property is set to "+suspended);
+            } finally {
+                wl.unlock();
+            }
         }
         for (Listener l : listeners) {
             l.notifySuspended(suspended);

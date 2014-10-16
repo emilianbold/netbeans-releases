@@ -40,49 +40,35 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.v8debug.vars.tooltip;
+package org.netbeans.modules.javascript.v8debug;
 
-import java.util.concurrent.CancellationException;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.lib.v8debug.V8Frame;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.lib.v8debug.V8Response;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Value;
-import org.netbeans.modules.javascript.v8debug.V8Debugger;
-import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript.v8debug.vars.EvaluationError;
-import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
-import org.openide.util.Pair;
 
 /**
- *
+ * Holder of values referenced by a response.
+ * 
  * @author Martin Entlicher
  */
-public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<V8DebuggerTooltipSupport> {
-
-    @Override
-    protected V8DebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
-        V8Debugger debugger = engine.lookupFirst(null, V8Debugger.class);
-        if (debugger == null || !debugger.isSuspended()) {
-            return null;
-        }
-        CallFrame currentFrame = debugger.getCurrentFrame();
-        return new V8DebuggerTooltipSupport(debugger, currentFrame);
-    }
-
-    @Override
-    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, V8DebuggerTooltipSupport dbg) throws CancellationException {
-        String toolTipText;
-        try {
-            V8Value value = V8Evaluator.evaluate(dbg.getDebugger(), expression);
-            if (value == null) {
-                throw new CancellationException();
-            }
-            toolTipText = expression + " = " + V8Evaluator.getStringValue(value);
-        } catch (EvaluationError ex) {
-            toolTipText = expression + " = >" + ex.getMessage () + "<";
-        }
-        return Pair.of(toolTipText, null);
+public final class ReferencedValues {
+    
+    private final Map<Long, V8Value> valuesByReferences;
+    
+    public ReferencedValues(V8Response response) {
+        this(response.getReferencedValues());
     }
     
+    public ReferencedValues(ReferencedValue[] referencedValues) {
+        valuesByReferences = new HashMap<>();
+        for (int i = 0; i < referencedValues.length; i++) {
+            valuesByReferences.put(referencedValues[i].getReference(), referencedValues[i].getValue());
+        }
+    }
+    
+    public V8Value getReferencedValue(long reference) {
+        return valuesByReferences.get(reference);
+    }
 }

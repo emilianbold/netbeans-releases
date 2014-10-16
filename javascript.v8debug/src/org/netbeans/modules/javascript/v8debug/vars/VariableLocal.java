@@ -40,49 +40,35 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.v8debug.vars.tooltip;
+package org.netbeans.modules.javascript.v8debug.vars;
 
-import java.util.concurrent.CancellationException;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.vars.V8Value;
-import org.netbeans.modules.javascript.v8debug.V8Debugger;
-import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript.v8debug.vars.EvaluationError;
-import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
-import org.openide.util.Pair;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<V8DebuggerTooltipSupport> {
-
-    @Override
-    protected V8DebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
-        V8Debugger debugger = engine.lookupFirst(null, V8Debugger.class);
-        if (debugger == null || !debugger.isSuspended()) {
-            return null;
-        }
-        CallFrame currentFrame = debugger.getCurrentFrame();
-        return new V8DebuggerTooltipSupport(debugger, currentFrame);
-    }
-
-    @Override
-    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, V8DebuggerTooltipSupport dbg) throws CancellationException {
-        String toolTipText;
-        try {
-            V8Value value = V8Evaluator.evaluate(dbg.getDebugger(), expression);
-            if (value == null) {
-                throw new CancellationException();
-            }
-            toolTipText = expression + " = " + V8Evaluator.getStringValue(value);
-        } catch (EvaluationError ex) {
-            toolTipText = expression + " = >" + ex.getMessage () + "<";
-        }
-        return Pair.of(toolTipText, null);
-    }
+public class VariableLocal {
     
+    private final String name;
+    private final long ref;
+    private final V8Value value;
+    
+    public VariableLocal(String name, long ref, V8Value value) {
+        this.name = name;
+        this.ref = ref;
+        this.value = value;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public long getRef() {
+        return ref;
+    }
+
+    public V8Value getValue() {
+        return value;
+    }
 }
