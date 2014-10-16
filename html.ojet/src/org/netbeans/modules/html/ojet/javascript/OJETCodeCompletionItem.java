@@ -92,6 +92,7 @@ public class OJETCodeCompletionItem implements CompletionProposal {
 
     @Override
     public String getInsertPrefix() {
+        OJETUtils.logUsage(null);
         return element.getName();
     }
 
