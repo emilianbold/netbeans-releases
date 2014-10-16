@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.vars.tooltip;
+package org.netbeans.modules.javascript.v8debug.vars.tooltip;
 
 import java.util.concurrent.CancellationException;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.js.JSUtils;
-import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
+import org.netbeans.lib.v8debug.V8Frame;
+import org.netbeans.lib.v8debug.vars.V8Value;
+import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript.v8debug.vars.EvaluationError;
+import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
 import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
 import org.openide.util.Pair;
 
 /**
  *
- * @author Martin
+ * @author Martin Entlicher
  */
-public final class ToolTipAnnotation extends AbstractJSToolTipAnnotation<JPDADebuggerTooltipSupport> {
-    
+public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<V8DebuggerTooltipSupport> {
+
     @Override
-    protected JPDADebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
-        if (engine != session.getEngineForLanguage(JSUtils.JS_STRATUM)) {
+    protected V8DebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
+        V8Debugger debugger = engine.lookupFirst(null, V8Debugger.class);
+        if (debugger == null || !debugger.isSuspended()) {
             return null;
         }
-        JPDADebugger d = engine.lookupFirst(null, JPDADebugger.class);
-        if (d == null) {
-            return null;
-        }
-        CallStackFrame frame = d.getCurrentCallStackFrame();
-        if (frame == null) {
-            return null;
-        }
-        return new JPDADebuggerTooltipSupport(d, frame);
+        V8Frame currentFrame = debugger.getCurrentFrame();
+        return new V8DebuggerTooltipSupport(debugger, currentFrame);
     }
 
     @Override
-    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, JPDADebuggerTooltipSupport dbg) throws CancellationException {
+    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, V8DebuggerTooltipSupport dbg) throws CancellationException {
         String toolTipText;
-        CallStackFrame frame = dbg.getFrame();
         try {
-            Variable result = DebuggerSupport.evaluate(dbg.getDebugger(), frame, expression);
-            if (result == null) {
+            V8Value value = V8Evaluator.evaluate(dbg.getDebugger(), expression);
+            if (value == null) {
                 throw new CancellationException();
             }
-            toolTipText = expression + " = " + DebuggerSupport.getVarValue(dbg.getDebugger(), result);
-        } catch (InvalidExpressionException ex) {
+            toolTipText = expression + " = " + V8Evaluator.getStringValue(value);
+        } catch (EvaluationError ex) {
             toolTipText = expression + " = >" + ex.getMessage () + "<";
         }
         return Pair.of(toolTipText, null);

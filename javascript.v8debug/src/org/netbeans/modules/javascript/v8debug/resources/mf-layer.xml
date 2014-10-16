@@ -46,6 +46,37 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
 
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="javascript">
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                </folder>
+                <folder name="ToolTips">
+                    <file name="org-netbeans-modules-javascript-v8debug-vars-tooltip-ToolTipAnnotation.instance"/>
+                </folder>
+                <folder name="Popup">
+                 <!-- <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                        <attr name="position" intvalue="850"/>
+                    </file>-->
+                    <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="990"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="Projects">
         <folder name="Debugger_Actions_temporary">
             <file name="org-netbeans-modules-debugger-ui-actions-DebugProjectAction.shadow">
