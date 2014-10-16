@@ -178,26 +178,18 @@ public final class WebLogicDeployer {
     public Future<String> deploy(@NonNull File file, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
-        return deploy(file, listener, name, new String[]{});
+        return performDeploy(file, listener, name);
     }
 
     @NonNull
     public Future<Void> redeploy(@NonNull String name, @NonNull File file,
             @NullAllowed BatchDeployListener listener) {
-        List<String> params = new ArrayList<>();
-        if (config.isRemote()) {
-            params.add("-upload");
-            // we must use remote otherwise it will fail
-            params.add("-remote");
-        }
-        params.add("-source"); // NOI18N
-        params.add(file.getAbsolutePath());
-        return redeploy(Collections.singletonList(name), listener, params.toArray(new String[params.size()]));
+        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file), listener);
     }
 
     @NonNull
-    public Future<Void> redeploy(@NonNull Collection<String> names, @NullAllowed BatchDeployListener listener) {
-        return redeploy(names, listener, new String[]{});
+    public Future<Void> redeploy(@NonNull List<String> names, @NullAllowed BatchDeployListener listener) {
+        return performRedeploy(names, null, listener);
     }
 
     @NonNull
@@ -226,7 +218,7 @@ public final class WebLogicDeployer {
                             if (listener != null) {
                                 listener.onFail(lineProcessor.getLastLine());
                             }
-                            throw new IOException("Command failed");
+                            throw new IOException("Command failed: " + lineProcessor.getLastLine());
                         } else {
                             if (listener != null) {
                                 listener.onStepFinish(name);
@@ -291,7 +283,7 @@ public final class WebLogicDeployer {
                             if (listener != null) {
                                 listener.onFail(lineProcessor.getLastLine());
                             }
-                            throw new IOException("Command failed");
+                            throw new IOException("Command failed: " + lineProcessor.getLastLine());
                         } else {
                             if (listener != null) {
                                 listener.onStepFinish(name);
@@ -358,7 +350,7 @@ public final class WebLogicDeployer {
                             if (listener != null) {
                                 listener.onFail(lineProcessor.getLastLine());
                             }
-                            throw new IOException("Command failed");
+                            throw new IOException("Command failed: " + lineProcessor.getLastLine());
                         } else {
                             if (listener != null) {
                                 listener.onStepFinish(name);
@@ -399,8 +391,8 @@ public final class WebLogicDeployer {
         });
     }
 
-    private Future<String> deploy(@NonNull final File file,
-            @NullAllowed final DeployListener listener, @NullAllowed final String name, final String... parameters) {
+    private Future<String> performDeploy(@NonNull final File file, @NullAllowed final DeployListener listener,
+            @NullAllowed final String name) {
 
         if (listener != null) {
             listener.onStart();
@@ -412,11 +404,11 @@ public final class WebLogicDeployer {
             public String call() throws Exception {
                 List<String> parameters = new ArrayList<>();
                 if (config.isRemote()) {
-                    parameters.add("-upload");
-                    parameters.add("-remote");
+                    parameters.add("-upload"); // NOI18N
+                    parameters.add("-remote"); // NOI18N
                 }
                 if (name != null) {
-                    parameters.add("-name");
+                    parameters.add("-name"); // NOI18N
                     parameters.add(name);
                 }
                 if (file.isDirectory()) {
@@ -426,7 +418,8 @@ public final class WebLogicDeployer {
                 parameters.add(file.getAbsolutePath());
 
                 LastLineProcessor lineProcessor = new LastLineProcessor();
-                BaseExecutionService service = createService("-deploy", lineProcessor, parameters.toArray(new String[parameters.size()])); // NOI18N
+                BaseExecutionService service = createService("-deploy", // NOI18N
+                        lineProcessor, parameters.toArray(new String[parameters.size()]));
                 Future<Integer> result = service.run();
                 try {
                     Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
@@ -434,7 +427,7 @@ public final class WebLogicDeployer {
                         if (listener != null) {
                             listener.onFail(lineProcessor.getLastLine());
                         }
-                        throw new IOException("Command failed");
+                        throw new IOException("Command failed: " + lineProcessor.getLastLine());
                     } else {
                         if (listener != null) {
                             listener.onFinish();
@@ -479,8 +472,10 @@ public final class WebLogicDeployer {
         });
     }
 
-    private Future<Void> redeploy(@NonNull final Collection<String> names,
-            @NullAllowed final BatchDeployListener listener, final String... parameters) {
+    private Future<Void> performRedeploy(@NonNull final List<String> names, @NullAllowed final List<File> files,
+            @NullAllowed final BatchDeployListener listener) {
+
+        assert files == null || files.size() == names.size();
 
         if (listener != null) {
             listener.onStart();
@@ -491,14 +486,22 @@ public final class WebLogicDeployer {
             @Override
             public Void call() throws Exception {
                 LastLineProcessor lineProcessor = new LastLineProcessor();
+                int i = 0;
                 for (String name : names) {
-                    String[] execParams = new String[parameters.length + 2];
-                    execParams[0] = "-name"; // NOI18N
-                    execParams[1] = name;
-                    if (parameters.length > 0) {
-                        System.arraycopy(parameters, 0, execParams, 2, parameters.length);
+                    List<String> parameters = new ArrayList<>();
+                    if (config.isRemote()) {
+                        parameters.add("-upload"); // NOI18N
+                        parameters.add("-remote"); // NOI18N
                     }
-                    BaseExecutionService service = createService("-redeploy", lineProcessor, execParams); // NOI18N
+                    parameters.add("-name"); // NOI18N
+                    parameters.add(name);
+                    if (files != null) {
+                        parameters.add("-source"); // NOI18N
+                        parameters.add(files.get(i++).getAbsolutePath());
+
+                    }
+                    BaseExecutionService service = createService("-redeploy", // NOI18N
+                            lineProcessor, parameters.toArray(new String[parameters.size()]));
                     if (listener != null) {
                         listener.onStepStart(name);
                     }
@@ -510,7 +513,7 @@ public final class WebLogicDeployer {
                             if (listener != null) {
                                 listener.onFail(lineProcessor.getLastLine());
                             }
-                            throw new IOException("Command failed");
+                            throw new IOException("Command failed: " + lineProcessor.getLastLine());
                         } else {
                             if (listener != null) {
                                 listener.onStepFinish(name);

@@ -682,7 +682,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         if (file != null) {
             deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
         } else {
-            deployer.redeploy(names.keySet(), listener);
+            deployer.redeploy(new ArrayList<String>(names.keySet()), listener);
         }
 
         return progress;
