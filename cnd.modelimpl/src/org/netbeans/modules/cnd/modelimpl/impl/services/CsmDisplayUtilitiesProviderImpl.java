@@ -218,7 +218,8 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
         }
     }
 
-    private static CharSequence getTypeText(CsmType type, boolean expandInstantiations, boolean evaluateExpressions) {
+    @Override
+    public CharSequence getTypeText(CsmType type, boolean expandInstantiations, boolean evaluateExpressions) {
         if (type != null) {
             StringBuilder itemTextBuilder = new StringBuilder();
             
@@ -261,7 +262,7 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
         return "<null>"; // NOI18N;
     }
     
-    private static CharSequence getVariableText(CsmVariable var) {
+    private CharSequence getVariableText(CsmVariable var) {
         CharSequence itemText = var.getText();
         if (CsmUtilities.isAutoType(var.getType())) {
             DisplayResolvedTypeHandler handler = new DisplayResolvedTypeHandler();
@@ -279,7 +280,7 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
         return itemText;
     }
     
-    private static CharSequence getFunctionText(CsmFunction fun) {
+    private CharSequence getFunctionText(CsmFunction fun) {
         StringBuilder txt = new StringBuilder();
         if (CsmKindUtilities.isMethod(fun)) {
             if (((CsmMethod) CsmBaseUtilities.getFunctionDeclaration(fun)).isVirtual()) {
@@ -343,7 +344,7 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
         return sb;
     }    
     
-    private static class DisplayResolvedTypeHandler implements CsmExpressionResolver.ResolvedTypeHandler {
+    private class DisplayResolvedTypeHandler implements CsmExpressionResolver.ResolvedTypeHandler {
         
         public CharSequence typeText;
 
@@ -353,20 +354,7 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
         }        
     }
     
-    private static class DisplayTypeInfoCollector implements Predicate<CsmType> {
-        
-        public final TypeInfoCollector infoCollector = new TypeInfoCollector();
-        
-        private final SmartTypeUnrollPredicate smartPredicate = new SmartTypeUnrollPredicate();
-        
-        @Override
-        public boolean check(CsmType value) {
-            infoCollector.check(value);
-            return smartPredicate.check(value);
-        }
-    }
-    
-    private static class SpecParamsTextProvider implements CsmSpecializationParamTextProvider {
+    private class SpecParamsTextProvider implements CsmSpecializationParamTextProvider {
         
         private final boolean expandInstantiations;
         
@@ -401,4 +389,17 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
             return ""; // NOI18N
         }        
     }
+    
+    private static class DisplayTypeInfoCollector implements Predicate<CsmType> {
+        
+        public final TypeInfoCollector infoCollector = new TypeInfoCollector();
+        
+        private final SmartTypeUnrollPredicate smartPredicate = new SmartTypeUnrollPredicate();
+        
+        @Override
+        public boolean check(CsmType value) {
+            infoCollector.check(value);
+            return smartPredicate.check(value);
+        }
+    }    
 }
