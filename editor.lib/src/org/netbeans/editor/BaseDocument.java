@@ -99,6 +99,7 @@ import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib.BeforeSaveTasks;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib.WcwdithUtil;
 import org.netbeans.modules.editor.lib.drawing.DrawEngine;
 import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
 import org.netbeans.modules.editor.lib.impl.MarkVector;
@@ -251,8 +252,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final int DEACTIVATE_LEXER_THRESHOLD = 30;
 
     private static final Object annotationsLock = new Object();
-    private static final Object getVisColFromPosLock = new Object();
-    private static final Object getOffsetFromVisColLock = new Object();
 
     /** Debug the stack of calling of the insert/remove */
     private static final boolean debugStack = Boolean.getBoolean("netbeans.debug.editor.document.stack"); // NOI18N
@@ -321,12 +320,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * ones) of the I18N word will be stored as undoable edit.
      */
      private boolean composedText = false;
-
-    /** Finder for visual x-coord to position conversion */
-    private FinderFactory.VisColPosFwdFinder visColPosFwdFinder;
-
-    /** Finder for position to x-coord conversion */
-    private FinderFactory.PosVisColFwdFinder posVisColFwdFinder;
 
     /** Atomic lock event instance shared by all the atomic lock firings done for this document */
     private AtomicLockEvent atomicLockEventInstance = new AtomicLockEvent(this);
@@ -2095,52 +2088,74 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     * only for superfixed font i.e. all characters of all font styles
     * have the same width.
     * @param visCol visual column
-    * @param startLinePos position of line start
+    * @param startLineOffset position of line start
     * @return position on line for particular x-coord
     */
-    int getOffsetFromVisCol(int visCol, int startLinePos)
+    int getOffsetFromVisCol(int visCol, int startLineOffset)
     throws BadLocationException {
-
-        synchronized (getOffsetFromVisColLock) {
-            if (startLinePos < 0 || startLinePos >= getLength()) {
-                throw new BadLocationException("Invalid start line offset", startLinePos); // NOI18N
+        int tabSize = getTabSize();
+        CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this);
+        int docTextLen = docText.length();
+        int curVisCol = 0;
+        int offset = startLineOffset;
+        for (; offset < docTextLen; offset++) {
+            if (curVisCol >= visCol) {
+                return offset;
             }
-            if (visCol <= 0) {
-                return startLinePos;
+            char ch = docText.charAt(offset);
+            switch (ch) {
+                case '\t':
+                    curVisCol = (curVisCol + tabSize) / tabSize * tabSize;
+                    break;
+                case '\n':
+                    return offset;
+                default:
+                    // #17356
+                    int codePoint;
+                    if (Character.isHighSurrogate(ch) && offset + 1 < docTextLen) {
+                        codePoint = Character.toCodePoint(ch, docText.charAt(++offset));
+                    } else {
+                        codePoint = ch;
+                    }
+                    int w = WcwdithUtil.wcwidth(codePoint);
+                    curVisCol += w > 0 ? w : 0;
+                    break;
             }
-            if (visColPosFwdFinder == null) {
-                visColPosFwdFinder = new FinderFactory.VisColPosFwdFinder();
-            }
-            visColPosFwdFinder.setVisCol(visCol);
-            visColPosFwdFinder.setTabSize(getTabSize());
-            int pos = find(visColPosFwdFinder, startLinePos, -1);
-            return (pos != -1)
-                ? pos
-                : Utilities.getRowEnd(this, startLinePos);
         }
+        return offset;
     }
 
     /** Get visual column from position. This method can be used
     * only for superfixed font i.e. all characters of all font styles
     * have the same width.
-    * @param pos position for which the visual column should be returned
+    * @param offset position for which the visual column should be returned
     *   the function itself computes the begining of the line first
     */
-    int getVisColFromPos(int pos) throws BadLocationException {
-        synchronized (getVisColFromPosLock) {
-            if (pos < 0 || pos > getLength()) {
-                throw new BadLocationException("Invalid offset", pos); // NOI18N
-            }
-
-            if (posVisColFwdFinder == null) {
-                posVisColFwdFinder = new FinderFactory.PosVisColFwdFinder();
-            }
-
-            int startLinePos = Utilities.getRowStart(this, pos);
-            posVisColFwdFinder.setTabSize(getTabSize());
-            find(posVisColFwdFinder, startLinePos, pos);
-            return posVisColFwdFinder.getVisCol();
+    int getVisColFromPos(int offset) throws BadLocationException {
+        if (offset < 0 || offset > getLength()) {
+            throw new BadLocationException("Invalid offset", offset); // NOI18N
         }
+        int startLineOffset = Utilities.getRowStart(this, offset);
+        int tabSize = getTabSize();
+        CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this);
+        int visCol = 0;
+        for (int i = startLineOffset; i < offset; i++) {
+            char ch = docText.charAt(i);
+            if (ch == '\t') {
+                visCol = (visCol + tabSize) / tabSize * tabSize;
+            } else {
+                // #17356
+                int codePoint;
+                if (Character.isHighSurrogate(ch) && i + 1 < docText.length()) {
+                    codePoint = Character.toCodePoint(ch, docText.charAt(++i));
+                } else {
+                    codePoint = ch;
+                }
+                int w = WcwdithUtil.wcwidth(codePoint);
+                visCol += w > 0 ? w : 0;
+            }
+        }
+        return visCol;
     }
 
     protected Dictionary createDocumentProperties(Dictionary origDocumentProperties) {
