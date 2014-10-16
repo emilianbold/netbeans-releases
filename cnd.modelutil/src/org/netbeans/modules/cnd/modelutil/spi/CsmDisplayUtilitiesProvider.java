@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelutil.spi;
 
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.openide.util.Lookup;
 
 
@@ -56,6 +57,8 @@ public abstract class CsmDisplayUtilitiesProvider {
     }
     
     public abstract CharSequence getTooltipText(CsmObject item);
+    
+    public abstract CharSequence getTypeText(CsmType type, boolean expandInstantiations, boolean evaluateExpressions);
     
 //<editor-fold defaultstate="collapsed" desc="Implementation">    
     private static final CsmDisplayUtilitiesProvider DEFAULT = new Default();
@@ -85,6 +88,11 @@ public abstract class CsmDisplayUtilitiesProvider {
         @Override
         public CharSequence getTooltipText(CsmObject item) {
             return getDelegate().getTooltipText(item);
+        }
+
+        @Override
+        public CharSequence getTypeText(CsmType type, boolean expandInstantiations, boolean evaluateExpressions) {
+            return getDelegate().getTypeText(type, expandInstantiations, evaluateExpressions);
         }
     }
 //</editor-fold>
