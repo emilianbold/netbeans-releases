@@ -79,7 +79,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
     private static final Logger LOGGER = Logger.getLogger(NewProjectWizardIterator.class.getName());
 
-    private static final String SKELETON_URL = "https://ukc1-twvpn-1.oraclevpn.com/+CSCO+0h756767633A2F2F66797030317576752E68662E62656E7079722E70627A3A38303830++/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/OracleJET_QuickStartBasic.zip"; // NOI18N
+    private static final String SKELETON_URL = "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/OracleJET_QuickStartBasic.zip"; // NOI18N
     private static final File SKELETON_TMP_FILE = new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip"); // NOI18N
     private static final String ZIP_MIME_TYPE = "application/zip"; // NOI18N
 

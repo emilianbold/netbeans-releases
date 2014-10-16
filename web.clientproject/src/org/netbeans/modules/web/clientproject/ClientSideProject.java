@@ -77,6 +77,7 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
+import org.netbeans.modules.web.clientproject.api.CustomizerPanel;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.CoverageProviderImpl;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
@@ -168,6 +169,8 @@ public class ClientSideProject implements Project {
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
 
+    final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListenerImpl();
+
     // css preprocessors
     final CssPreprocessorsListener cssPreprocessorsListener = new CssPreprocessorsListener() {
         @Override
@@ -190,46 +193,6 @@ public class ClientSideProject implements Project {
         }
     };
 
-    final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListener() {
-
-        @Override
-        public void platformProvidersChanged() {
-            // noop
-        }
-
-        @Override
-        public void propertyChanged(Project project, PlatformProvider platformProvider, PropertyChangeEvent event) {
-            if (ClientSideProject.this.equals(project)) {
-                LOGGER.log(Level.FINE, "Processing platform provider event {0}", event);
-                String propertyName = event.getPropertyName();
-                if (propertyName == null
-                        || PlatformProvider.PROP_ENABLED.equals(propertyName)) {
-                    Info info = getLookup().lookup(Info.class);
-                    assert info != null;
-                    info.firePropertyChange(ProjectInformation.PROP_ICON);
-                    if (pathImpl != null) {
-                        pathImpl.fireRootsChanged();
-                    }
-                } else if (PlatformProvider.PROP_SOURCE_ROOTS.equals(propertyName)) {
-                    if (pathImpl != null) {
-                        pathImpl.fireRootsChanged();
-                    }
-                } else if (PlatformProvider.PROP_RUN_CONFIGURATION.equals(propertyName)) {
-                    final String runAs = (String) event.getNewValue();
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            ClientSideProjectProperties properties = new ClientSideProjectProperties(ClientSideProject.this);
-                            properties.setRunAs(runAs);
-                            properties.setProjectServer(runAs != null
-                                    ? ClientSideProjectProperties.ProjectServer.EXTERNAL : ClientSideProjectProperties.ProjectServer.INTERNAL);
-                            properties.save();
-                        }
-                    });
-                }
-            }
-        }
-    };
 
     // #233052
     private final WindowSystemListener windowSystemListener = new WindowSystemListener() {
@@ -1013,6 +976,94 @@ public class ClientSideProject implements Project {
         @Override
         public FileObject getTestDirectory(boolean showFileChooser) {
             return ClientSideProject.this.getTestsFolder(showFileChooser);
+        }
+
+    }
+
+    private final class PlatformProvidersListenerImpl implements PlatformProvidersListener {
+
+        @Override
+        public void platformProvidersChanged() {
+            // noop
+        }
+
+        @Override
+        public void propertyChanged(Project project, PlatformProvider platformProvider, PropertyChangeEvent event) {
+            if (ClientSideProject.this.equals(project)) {
+                LOGGER.log(Level.FINE, "Processing platform provider event {0}", event);
+                String propertyName = event.getPropertyName();
+                if (propertyName == null) {
+                    assert false : "No property name given";
+                    return;
+                }
+                switch (propertyName) {
+                    case PlatformProvider.PROP_ENABLED:
+                        providerChanged(platformProvider, (Boolean) event.getNewValue());
+                        break;
+                    case PlatformProvider.PROP_SOURCE_ROOTS:
+                        sourceRootsChanged();
+                        break;
+                    case PlatformProvider.PROP_RUN_CONFIGURATION:
+                        runConfigurationChanged((String) event.getNewValue());
+                        break;
+                    default:
+                        assert false : "Unhandled property change: " + propertyName;
+                }
+            }
+        }
+
+        private void providerChanged(PlatformProvider platformProvider, boolean enabled) {
+            // icon + name
+            Info info = getLookup().lookup(Info.class);
+            assert info != null;
+            info.firePropertyChange(ProjectInformation.PROP_ICON);
+            // classpath
+            sourceRootsChanged();
+            // run as
+            if (!enabled) {
+                verifyRunAs(platformProvider);
+            }
+        }
+
+        private void sourceRootsChanged() {
+            if (pathImpl != null) {
+                pathImpl.fireRootsChanged();
+            }
+        }
+
+        private void runConfigurationChanged(String runAs) {
+            saveRunProperties(runAs, null);
+        }
+
+        private void verifyRunAs(PlatformProvider platformProvider) {
+            String currentRunAs = getRunAs();
+            if (currentRunAs == null) {
+                // just browser => noop
+                return;
+            }
+            for (CustomizerPanel customizerPanel : platformProvider.getRunCustomizerPanels(ClientSideProject.this)) {
+                if (currentRunAs.equals(customizerPanel.getIdentifier())) {
+                    // provider disabled => reset run config
+                    saveRunProperties(null, true);
+                    return;
+                }
+            }
+        }
+
+        private void saveRunProperties(final String runAs, final Boolean runBrowser) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    ClientSideProjectProperties properties = new ClientSideProjectProperties(ClientSideProject.this);
+                    properties.setRunAs(runAs);
+                    properties.setProjectServer(runAs != null
+                            ? ClientSideProjectProperties.ProjectServer.EXTERNAL : ClientSideProjectProperties.ProjectServer.INTERNAL);
+                    if (runBrowser != null) {
+                        properties.setRunBrowser(runBrowser);
+                    }
+                    properties.save();
+                }
+            });
         }
 
     }
