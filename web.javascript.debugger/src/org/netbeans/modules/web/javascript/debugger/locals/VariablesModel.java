@@ -60,7 +60,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
+import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.eval.EvaluatorService;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;

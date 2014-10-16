@@ -55,7 +55,7 @@ import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
+import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
