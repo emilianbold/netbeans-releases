@@ -53,7 +53,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.136</specification-version>
+                        <specification-version>0.141</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
