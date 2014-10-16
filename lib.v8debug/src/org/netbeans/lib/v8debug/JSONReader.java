@@ -586,7 +586,7 @@ public class JSONReader {
         if (array == null) {
             return null;
         }
-        Map<String, ReferencedValue> references = new HashMap<>();
+        Map<String, ReferencedValue> references = new LinkedHashMap<>();
         for (Object obj : array) {
             String name = getString((JSONObject) obj, NAME);
             ReferencedValue ref = getReferencedValue((JSONObject) obj, VALUE);
@@ -602,7 +602,7 @@ public class JSONReader {
         if (array.isEmpty()) {
             return Collections.EMPTY_MAP;
         }
-        Map<String, V8Object.Property> properties = new HashMap<>();
+        Map<String, V8Object.Property> properties = new LinkedHashMap<>();
         V8Object.Property.Type[] types = V8Object.Property.Type.values();
         V8Object.DefaultArray oArray = null;
         for (Object obj : array) {
