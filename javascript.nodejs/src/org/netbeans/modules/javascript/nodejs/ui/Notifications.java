@@ -107,10 +107,10 @@ public final class Notifications {
         final String projectName = ProjectUtils.getInformation(project).getDisplayName();
         final NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         final NodeJsPreferences preferences = nodeJsSupport.getPreferences();
-        assert !preferences.isRunEnabled() : "node.js run should not be enabled in " + projectName;
         if (preferences.isEnabled()
                 && !NodeJsUtils.isJsLibrary(project)
                 && preferences.isAskRunEnabled()) {
+            assert !preferences.isRunEnabled() : "node.js run should not be enabled in " + projectName;
             NotificationDisplayer.getDefault().notify(
                     Bundle.Notifications_enabled_title(),
                     NotificationDisplayer.Priority.LOW.getIcon(),
