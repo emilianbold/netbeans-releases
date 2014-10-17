@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,90 +39,36 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.lib.v8debug;
 
-import java.util.Map;
-import org.netbeans.lib.v8debug.vars.ReferencedValue;
+package org.netbeans.modules.javascript.v8debug.vars;
+
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class V8Event extends V8Packet {
+public class VariableLocal {
     
-    public static enum Kind {
-        Break,
-        Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
-        
-        static Kind fromString(String eventName) {
-            eventName = Character.toUpperCase(eventName.charAt(0)) + eventName.substring(1);
-            return Kind.valueOf(eventName);
-        }
-        
-    }
+    private final String name;
+    private final long ref;
+    private final V8Value value;
     
-    private final Kind eventKind;
-    private final V8Body body;
-    private final ReferencedValue[] referencedValues;
-    private Map<Long, V8Value> valuesByReferences;
-    private final PropertyBoolean running;
-    private final PropertyBoolean success;
-    private final String errorMessage;
-    
-    V8Event(long sequence, Kind eventKind, V8Body body,
-            ReferencedValue[] referencedValues, Boolean running,
-            Boolean success, String errorMessage) {
-        super(sequence, V8Type.event);
-        this.eventKind = eventKind;
-        this.body = body;
-        this.referencedValues = referencedValues;
-        this.running = new PropertyBoolean(running);
-        this.success = new PropertyBoolean(success);
-        this.errorMessage = errorMessage;
+    public VariableLocal(String name, long ref, V8Value value) {
+        this.name = name;
+        this.ref = ref;
+        this.value = value;
     }
 
-    public Kind getKind() {
-        return eventKind;
+    public String getName() {
+        return name;
     }
 
-    public V8Body getBody() {
-        return body;
-    }
-    
-    public ReferencedValue[] getReferencedValues() {
-        return referencedValues;
-    }
-    
-    public V8Value getReferencedValue(long reference) {
-        if (referencedValues == null || referencedValues.length == 0) {
-            return null;
-        }
-        synchronized (this) {
-            if (valuesByReferences == null) {
-                valuesByReferences = V8Response.createValuesByReference(referencedValues);
-            }
-            return valuesByReferences.get(reference);
-        }
+    public long getRef() {
+        return ref;
     }
 
-    public PropertyBoolean isRunning() {
-        return running;
+    public V8Value getValue() {
+        return value;
     }
-
-    public PropertyBoolean getSuccess() {
-        return success;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
 }

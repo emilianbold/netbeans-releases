@@ -87,7 +87,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -995,8 +994,8 @@ public class LogReader {
     }
     
     private String convertSymbolicLink(String fullName) {
-        if (project.resolveSymbolicLinks() && FileSystemProvider.getExecutionEnvironment(fileSystem).isLocal()) {
-            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(fullName);
+        if (project.resolveSymbolicLinks()) {
+            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(fileSystem, fullName);
             if (resolvedLink != null) {
                 fullName = resolvedLink;
             }

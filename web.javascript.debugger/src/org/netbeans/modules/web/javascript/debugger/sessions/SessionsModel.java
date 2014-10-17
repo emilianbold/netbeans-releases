@@ -47,7 +47,7 @@ package org.netbeans.modules.web.javascript.debugger.sessions;
 import java.util.List;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
+import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;

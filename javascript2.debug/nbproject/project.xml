@@ -182,6 +182,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.javascript2.debug</package>
                 <package>org.netbeans.modules.javascript2.debug.breakpoints</package>
                 <package>org.netbeans.modules.javascript2.debug.breakpoints.io</package>
+                <package>org.netbeans.modules.javascript2.debug.models</package>
                 <package>org.netbeans.modules.javascript2.debug.sources</package>
                 <package>org.netbeans.modules.javascript2.debug.tooltip</package>
             </friend-packages>

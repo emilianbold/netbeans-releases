@@ -993,18 +993,20 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void refreshAfterBuild(final Interrupter interrupter) {
-        RPR.post(new Runnable() {
+        RequestProcessor.Task refresh = RPR.post(new Runnable() {
             @Override
             public void run() {
                 ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                 Folder rootFolder = provider.getConfigurationDescriptor().getLogicalFolders();
                 for(Folder sub : rootFolder.getFolders()) {
                     if (sub.isDiskFolder()) {
+                        sub.forceDiskFolderRefreshAndWait();
                         sub.refreshDiskFolder(interrupter);
                     }
                 }
             }
         });
+        refresh.waitFinished();
     }
 
     private void discovery(int rc, DoubleFile makeLog, DoubleFile execLog, DoubleFile expectedCmakeLog) {

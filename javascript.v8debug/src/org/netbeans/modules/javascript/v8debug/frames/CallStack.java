@@ -44,11 +44,13 @@ package org.netbeans.modules.javascript.v8debug.frames;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8ScriptValue;
 import org.netbeans.lib.v8debug.vars.V8Value;
+import org.netbeans.modules.javascript.v8debug.ReferencedValues;
 
 /**
  *
@@ -59,14 +61,11 @@ public final class CallStack {
     public static final CallStack EMPTY = new CallStack(new V8Frame[] {}, new ReferencedValue[] {});
     
     private final V8Frame[] frames;
-    private final Map<Long, V8Value> valuesByReferences;
+    private final ReferencedValues rvals;
     
     public CallStack(V8Frame[] frames, ReferencedValue[] referencedValues) {
         this.frames = frames;
-        this.valuesByReferences = new HashMap<>();
-        for (int i = 0; i < referencedValues.length; i++) {
-            valuesByReferences.put(referencedValues[i].getReference(), referencedValues[i].getValue());
-        }
+        this.rvals = new ReferencedValues(referencedValues);
     }
     
     public boolean isEmpty() {
@@ -77,9 +76,17 @@ public final class CallStack {
         return frames;
     }
     
+    public @CheckForNull CallFrame createTopFrame() {
+        if (frames.length > 0) {
+            return new CallFrame(frames[0], rvals);
+        } else {
+            return null;
+        }
+    }
+    
     public V8Script getScript(V8Frame frame) {
         long ref = frame.getScriptRef();
-        V8Value val = valuesByReferences.get(ref);
+        V8Value val = rvals.getReferencedValue(ref);
         if (val instanceof V8ScriptValue) {
             return ((V8ScriptValue) val).getScript();
         } else {
