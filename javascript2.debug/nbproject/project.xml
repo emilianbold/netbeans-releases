@@ -165,6 +165,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.javascript2.debug</package>
                 <package>org.netbeans.modules.javascript2.debug.breakpoints</package>
                 <package>org.netbeans.modules.javascript2.debug.breakpoints.io</package>
+                <package>org.netbeans.modules.javascript2.debug.resources</package>
                 <package>org.netbeans.modules.javascript2.debug.sources</package>
             </friend-packages>
             <!--public-packages>

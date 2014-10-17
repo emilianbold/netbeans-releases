@@ -60,6 +60,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.eval.EvaluatorService;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -89,9 +90,12 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         TableModel, Debugger.Listener, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(VariablesModel.class.getName());
+    @StaticResource(searchClasspath = true)
     public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
-    public static final String GLOBAL = "org/netbeans/modules/web/javascript/debugger/resources/global_variable_16.png"; // NOI18N
-    public static final String PROTO = "org/netbeans/modules/web/javascript/debugger/resources/proto_variable_16.png"; // NOI18N
+    @StaticResource(searchClasspath = true)
+    public static final String GLOBAL = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N
+    @StaticResource(searchClasspath = true)
+    public static final String PROTO = "org/netbeans/modules/javascript2/debug/resources/proto_variable_16.png"; // NOI18N
     
     protected final Debugger debugger;
     protected final EvaluatorService evaluator;
