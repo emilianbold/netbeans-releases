@@ -22,6 +22,11 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>com.tasktop.c2c.server.deployment.api</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>com.tasktop.c2c.server.profile.api</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
