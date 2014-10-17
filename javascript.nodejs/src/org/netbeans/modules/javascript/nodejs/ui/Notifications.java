@@ -49,7 +49,6 @@ import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
-import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -91,7 +90,6 @@ public final class Notifications {
                     }
                 },
                 NotificationDisplayer.Priority.LOW);
-
     }
 
     @NbBundle.Messages({
@@ -102,35 +100,36 @@ public final class Notifications {
         "Notifications.enabled.done=Project {0} will be run as Node.js application.",
         "# {0} - project name",
         "Notifications.enabled.noop=Project {0} already runs as Node.js application.",
+        "# {0} - project name",
+        "Notifications.enabled.invalid=Node.js support not enabled in project {0}.",
     })
     public static void notifyRunConfiguration(Project project) {
         final String projectName = ProjectUtils.getInformation(project).getDisplayName();
         final NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         final NodeJsPreferences preferences = nodeJsSupport.getPreferences();
-        if (preferences.isEnabled()
-                && !NodeJsUtils.isJsLibrary(project)
-                && preferences.isAskRunEnabled()) {
-            assert !preferences.isRunEnabled() : "node.js run should not be enabled in " + projectName;
-            NotificationDisplayer.getDefault().notify(
-                    Bundle.Notifications_enabled_title(),
-                    NotificationDisplayer.Priority.LOW.getIcon(),
-                    Bundle.Notifications_enabled_description(projectName),
-                    new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            String text;
-                            if (preferences.isRunEnabled()) {
-                                // already done
-                                text = Bundle.Notifications_enabled_noop(projectName);
-                            } else {
-                                nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
-                                text = Bundle.Notifications_enabled_done(projectName);
-                            }
-                            StatusDisplayer.getDefault().setStatusText(text);
+        assert !preferences.isRunEnabled() : "node.js run should not be enabled in " + projectName;
+        NotificationDisplayer.getDefault().notify(
+                Bundle.Notifications_enabled_title(),
+                NotificationDisplayer.Priority.LOW.getIcon(),
+                Bundle.Notifications_enabled_description(projectName),
+                new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String text;
+                        if (!preferences.isEnabled()) {
+                            // not enabled at all (happens if one clicks in notifications window later)
+                            text = Bundle.Notifications_enabled_invalid(projectName);
+                        } else if (preferences.isRunEnabled()) {
+                            // already done
+                            text = Bundle.Notifications_enabled_noop(projectName);
+                        } else {
+                            nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
+                            text = Bundle.Notifications_enabled_done(projectName);
                         }
-                    },
-                    NotificationDisplayer.Priority.LOW);
-        }
+                        StatusDisplayer.getDefault().setStatusText(text);
+                    }
+                },
+                NotificationDisplayer.Priority.LOW);
     }
 
 }
