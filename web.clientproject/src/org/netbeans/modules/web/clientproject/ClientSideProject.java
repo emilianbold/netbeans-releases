@@ -90,6 +90,7 @@ import org.netbeans.modules.web.clientproject.indirect.AntProjectEvent;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectListener;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
+import org.netbeans.modules.web.clientproject.indirect.ProjectXmlSavedHook;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
