@@ -185,7 +185,7 @@ public final class FetchUtils {
         if (upd != null) {
             client.deleteBranch(upd.getLocalName(), true, GitUtils.NULL_PROGRESS_MONITOR);
             new File(GitUtils.getGitFolderForRoot(client.getRepositoryRoot()), "refs/" + TMP_REFS_PREFIX).delete();
-            return new Revision(upd.getNewObjectId(), upd.getLocalName());
+            return new Revision(upd.getNewObjectId(), upd.getLocalName().split("/", 0)[1]);
         }
         return null;
     }
