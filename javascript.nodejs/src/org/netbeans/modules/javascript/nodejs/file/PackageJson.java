@@ -63,8 +63,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
-import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -168,37 +166,20 @@ public final class PackageJson {
             sources.addChangeListener(WeakListeners.change(changeListener, sources));
         }
         if (packageJson == null) {
-            // first sources
-            packageJson = findPackageJson(WebClientProjectConstants.SOURCES_TYPE_HTML5);
-            if (packageJson == null) {
-                // now site root
-                packageJson = findPackageJson(WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
-            }
-            if (packageJson == null) {
-                // now project dir
-                FileObject projectDirectory = project.getProjectDirectory();
-                File projDir = FileUtil.toFile(projectDirectory);
-                assert projDir != null : projectDirectory;
-                packageJson = new File(projDir, FILENAME);
-            }
-            packageJson = FileUtil.normalizeFile(packageJson);
+            // currently, we use only project dir
+            FileObject projectDirectory = project.getProjectDirectory();
+            File projDir = FileUtil.toFile(projectDirectory);
+            assert projDir != null : projectDirectory;
+            packageJson = FileUtil.normalizeFile(new File(projDir, FILENAME));
             try {
                 FileUtil.addFileChangeListener(fileChangeListener, packageJson);
-                LOGGER.log(Level.FINE, "Started listenening to {0}", packageJson);
+                LOGGER.log(Level.FINE, "Started listening to {0}", packageJson);
             } catch (IllegalArgumentException ex) {
                 // ignore, already listening
-                LOGGER.log(Level.FINE, "Already listenening to {0}", packageJson);
+                LOGGER.log(Level.FINE, "Already listening to {0}", packageJson);
             }
         }
         return packageJson;
-    }
-
-    @CheckForNull
-    private File findPackageJson(String sourceType) {
-        for (File root : NodeJsUtils.getRoots(project, sourceType)) {
-            return new File(root, FILENAME);
-        }
-        return null;
     }
 
     void clear(boolean newFile) {
