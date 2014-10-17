@@ -112,6 +112,10 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
             public void propertyChange (PropertyChangeEvent evt) {
                 if (evt.getPropertyName() == RevisionDialogController.PROP_VALID) {
                     setRevisionValid(Boolean.TRUE.equals(evt.getNewValue()));
+                } else if (evt.getPropertyName() == RevisionDialogController.PROP_REVISION_ACCEPTED) {
+                    if (dd.isValid()) {
+                        okButton.doClick();
+                    }
                 }
             }
         });

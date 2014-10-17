@@ -110,6 +110,10 @@ public final class SelectTrackedBranch {
                         panel.errorLabel.setText(Bundle.SelectTrackedBranchPanel_info(branchName, revisionPicker.getRevision().getRevision()));
                     }
                     setRevisionValid(valid);
+                } else if (evt.getPropertyName() == RevisionDialogController.PROP_REVISION_ACCEPTED) {
+                    if (dd.isValid()) {
+                        okButton.doClick();
+                    }
                 }
             }
         });

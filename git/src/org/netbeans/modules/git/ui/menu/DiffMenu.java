@@ -49,6 +49,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.diff.DiffCurrentToRepositoryAction;
 import org.netbeans.modules.git.ui.diff.DiffCurrentToTrackedAction;
 import org.netbeans.modules.git.ui.diff.DiffToRevisionAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
@@ -96,6 +97,12 @@ public final class DiffMenu extends DynamicMenu {
             menu.add(item);
             
             item = new JMenuItem();
+            action = (Action) SystemAction.get(DiffCurrentToRepositoryAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
+            item = new JMenuItem();
             action = (Action) SystemAction.get(DiffToRevisionAction.class);
             Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
             Actions.connect(item, action, false);
@@ -105,6 +112,9 @@ public final class DiffMenu extends DynamicMenu {
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(DiffCurrentToTrackedAction.class),
                     NbBundle.getMessage(DiffCurrentToTrackedAction.class, "LBL_DiffCurrentToTrackedAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(DiffCurrentToRepositoryAction.class),
+                    NbBundle.getMessage(DiffCurrentToTrackedAction.class, "LBL_DiffCurrentToRepositoryAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(DiffToRevisionAction.class),
                     NbBundle.getMessage(DiffCurrentToTrackedAction.class, "LBL_DiffToRevisionAction_PopupName"), lkp)); //NOI18N
