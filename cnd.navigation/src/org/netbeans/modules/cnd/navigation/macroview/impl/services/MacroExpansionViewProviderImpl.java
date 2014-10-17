@@ -135,7 +135,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                             view.open();
                         }
                         view.setDocuments(expandedContextDoc);
-                        view.requestActive();
+                        view.requestVisible();
                         view.setDisplayName(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionViewTitle", MacroExpansionViewUtils.getDocumentName(mainDoc))); // NOI18N
                         view.setStatusBarText(NbBundle.getMessage(MacroExpansionTopComponent.class, "CTL_MacroExpansionStatusBarLine", expansionsNumber)); // NOI18N
                         int offset2 = MacroExpansionViewUtils.getDocumentOffset(expandedContextDoc, MacroExpansionViewUtils.getFileOffset(mainDoc, offset));
