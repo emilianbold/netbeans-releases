@@ -46,34 +46,16 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 
 /**
  */
-public class SourcesHelper {
+public abstract class SourcesHelper {
+    public abstract SourcesHelper sourceRoot(String string);
 
-    public SourcesHelper(ClientSideProject project, AntProjectHelper helper, PropertyEvaluator evaluator) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract SourcesHelper displayName(String message);
 
-    public SourcesHelper sourceRoot(String string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract SourcesHelper add();
 
-    public SourcesHelper displayName(String message) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract SourcesHelper type(String SOURCES_TYPE_HTML5);
 
-    public SourcesHelper add() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract void registerExternalRoots(int EXTERNAL_ALGORITHM_TRANSIENT);
 
-    public SourcesHelper type(String SOURCES_TYPE_HTML5) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void registerExternalRoots(int EXTERNAL_ALGORITHM_TRANSIENT) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public Sources createSources() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
+    public abstract Sources createSources();
 }

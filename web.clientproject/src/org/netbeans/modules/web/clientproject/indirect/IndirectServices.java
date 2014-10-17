@@ -43,7 +43,9 @@ package org.netbeans.modules.web.clientproject.indirect;
 
 import java.io.File;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -63,4 +65,8 @@ public abstract class IndirectServices {
     public abstract JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, LicensePanelSupport licenseSupport);
 
     public abstract String relativizeFile(File base, File relative);
+    
+    public abstract SourcesHelper newSourcesHelper(Project project, AntProjectHelper helper, PropertyEvaluator evaluator);
+
+    public abstract ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval);
 }

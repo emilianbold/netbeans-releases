@@ -225,7 +225,7 @@ public class ClientSideProject implements Project {
         this.projectHelper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = IndirectServices.getDefault().createEvaluator(helper, getProjectDirectory());
-        referenceHelper = new ReferenceHelper(helper, configuration, eval);
+        referenceHelper = IndirectServices.getDefault().newReferenceHelper(helper, configuration, eval);
         projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
         eval.addPropertyChangeListener(new PropertyChangeListener() {

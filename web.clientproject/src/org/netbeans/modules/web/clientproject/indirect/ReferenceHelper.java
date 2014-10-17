@@ -42,22 +42,11 @@
 package org.netbeans.modules.web.clientproject.indirect;
 
 import java.io.File;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 
 /**
  */
-public class ReferenceHelper {
+public abstract class ReferenceHelper {
+    public abstract void fixReferences(File originalPath);
 
-    public ReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public void fixReferences(File originalPath) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public String createForeignFileReference(File file, Object object) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
+    public abstract String createForeignFileReference(File file, Object object);
 }

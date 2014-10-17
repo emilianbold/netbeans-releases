@@ -43,10 +43,14 @@ package org.netbeans.modules.web.clientproject.ant;
 
 import java.io.File;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
+import org.netbeans.modules.web.clientproject.indirect.SourcesHelper;
 import org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,5 +93,15 @@ public final class AntServices extends IndirectServices {
     @Override
     public String relativizeFile(File base, File relative) {
         return PropertyUtils.relativizeFile(base, relative);
+    }
+
+    @Override
+    public SourcesHelper newSourcesHelper(Project project, AntProjectHelper helper, PropertyEvaluator evaluator) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

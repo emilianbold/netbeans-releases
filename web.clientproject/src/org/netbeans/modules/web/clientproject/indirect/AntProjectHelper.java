@@ -50,64 +50,37 @@ import org.w3c.dom.Element;
 
 /**
  */
-public class AntProjectHelper {
+public abstract class AntProjectHelper {
     public static Object PRIVATE_PROPERTIES_PATH = new Object();
     public static Object PROJECT_PROPERTIES_PATH = new Object();
 
-    public EditableProperties getProperties(Object PRIVATE_PROPERTIES_PATH) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract EditableProperties getProperties(Object PRIVATE_PROPERTIES_PATH);
 
-    public void putProperties(Object PRIVATE_PROPERTIES_PATH, EditableProperties privateProps) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract void putProperties(Object PRIVATE_PROPERTIES_PATH, EditableProperties privateProps);
 
-    public SharabilityQueryImplementation2 createSharabilityQuery2(PropertyEvaluator evaluator, String[] toArray, String[] string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract SharabilityQueryImplementation2 createSharabilityQuery2(PropertyEvaluator evaluator, String[] toArray, String[] string);
 
-    public PropertyEvaluator getStandardPropertyEvaluator() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract PropertyEvaluator getStandardPropertyEvaluator();
 
-    public File resolveFile(String licensePath) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract File resolveFile(String licensePath);
 
-    public FileObject getProjectDirectory() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract FileObject getProjectDirectory();
 
-    public FileObject resolveFileObject(String sourceFolder) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract FileObject resolveFileObject(String sourceFolder);
 
-    public void notifyDeleted() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract void notifyDeleted();
 
-    public AuxiliaryConfiguration createAuxiliaryConfiguration() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract AuxiliaryConfiguration createAuxiliaryConfiguration();
     
-    public void addAntProjectListener(AntProjectListener l) {
-    }
-    public void removeAntProjectListener(AntProjectListener l) {
-    }
+    public abstract void addAntProjectListener(AntProjectListener l);
+    
+    public abstract void removeAntProjectListener(AntProjectListener l);
 
-    public Element getPrimaryConfigurationData(boolean b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract Element getPrimaryConfigurationData(boolean b);
 
-    public Object createCacheDirectoryProvider() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract Object createCacheDirectoryProvider();
 
-    public Object createAuxiliaryProperties() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract Object createAuxiliaryProperties();
 
-    public void putPrimaryConfigurationData(Element data, boolean b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract void putPrimaryConfigurationData(Element data, boolean b);
 }

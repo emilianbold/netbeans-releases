@@ -49,6 +49,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.modules.web.clientproject.indirect.SourcesHelper;
 import org.openide.util.ChangeSupport;
@@ -94,7 +95,7 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
     }
 
     private Sources initSources() {
-        SourcesHelper sourcesHelper = new SourcesHelper(project, helper, evaluator);
+        SourcesHelper sourcesHelper = IndirectServices.getDefault().newSourcesHelper(project, helper, evaluator);
         sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SOURCE_FOLDER + "}") //NOI18N
                 .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "SOURCES"))
                 .add() // adding as principal root, continuing configuration
