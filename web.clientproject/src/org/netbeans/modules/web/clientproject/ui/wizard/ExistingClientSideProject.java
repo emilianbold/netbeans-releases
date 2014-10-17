@@ -150,7 +150,7 @@ public class ExistingClientSideProject extends JPanel {
     @NbBundle.Messages({
         "ExistingClientSideProject.siteRoot.label=Site Root",
         "ExistingClientSideProject.sources.label=Source folder",
-        "ExistingClientSideProject.error.noFolder=Site Root or Source folder must be selected.",
+        "ExistingClientSideProject.error.noFolder=Site Root or/and Source folder must be selected.",
     })
     public String getErrorMessage() {
         String siteRoot = getSiteRoot();
