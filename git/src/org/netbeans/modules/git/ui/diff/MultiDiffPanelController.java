@@ -1247,7 +1247,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             final List<DiffNode> nodes = new LinkedList<DiffNode>();
             final Map<File, Setup> localSetups;
             if (isLocal()) {
-                if (revisionLeft == Revision.HEAD) {
+                if (revisionLeft == Revision.HEAD || mode == Mode.INDEX_VS_WORKING_TREE) {
                     localSetups = getLocalToBaseSetups(nodes);
                 } else {
                     localSetups = getLocalToRevisionSetups(nodes);
