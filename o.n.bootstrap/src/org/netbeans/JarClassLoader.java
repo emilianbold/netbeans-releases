@@ -269,7 +269,13 @@ public class JarClassLoader extends ProxyClassLoader {
                     
                     private Manifest delegate() {
                         if (delegate == null) {
-                            delegate = module == null || src != sources[0] ? src.getManifest() : module.getManifest();
+                            Manifest m;
+                            m = module == null || src != sources[0] ? src.getManifest() : module.getManifest();
+                            if (m == null) {
+                                m = new Manifest();
+                            }
+                            delegate = m;
+                            return m;
                         }
                         return delegate;
                     }
