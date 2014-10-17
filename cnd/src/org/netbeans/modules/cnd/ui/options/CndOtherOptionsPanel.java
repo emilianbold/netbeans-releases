@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.ui.options;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,10 +56,13 @@ import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
@@ -119,7 +124,7 @@ import org.openide.util.lookup.Lookups;
         for (ExtensionsElements ee : eeList) {
             List<String> current = ee.getValues();
             Collection<String> saved = ee.es.getValues();
-            changed |= !ee.es.getDefaultExtension().equals(ee.defaultValue) || current.size() != saved.size() || !current.containsAll(saved);
+            changed |= !ee.es.getDefaultExtension().equals(ee.defaultValue) || !equalsStandards(ee.es.getDefaultStandard(), ee.defaultStandard) || current.size() != saved.size() || !current.containsAll(saved);
             if (changed) {
                 return true;
             }
@@ -127,9 +132,24 @@ import org.openide.util.lookup.Lookups;
         return false;
     }
 
+    private boolean equalsStandards(CndLanguageStandard st1, CndLanguageStandard st2) {
+        if (st1 == null) {
+            return st2 == null; 
+        } else {
+            return st1.equals(st2);
+        }
+    }
+    
     @Override
     public void actionPerformed(ActionEvent e) {
         isChanged = areExtensionsChanged();
+    }
+    
+    private void selectDefaultStandard(ItemEvent event, ExtensionsElements ee) {
+	if (event.getStateChange() == ItemEvent.SELECTED) {
+            ee.defaultStandard = (CndLanguageStandard) event.getItem();
+            isChanged = areExtensionsChanged();
+        }
     }
     
     private void editExtensionsButtonActionPerformed(ExtensionsElements ee) {
@@ -181,11 +201,17 @@ import org.openide.util.lookup.Lookups;
         for (MIMEExtensions ext : orderedExtensions) {
             final ExtensionsElements ee = new ExtensionsElements(ext);
 
-            ee.label.setText(NbBundle.getMessage(CndOtherOptionsPanel.class, "EE_ExtensionListTitle", ext.getLocalizedDescription()));// NOI18N
+            ee.label.setText(ext.getLocalizedDescription());
             ee.button.addActionListener(new java.awt.event.ActionListener() {
                 @Override
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     editExtensionsButtonActionPerformed(ee);
+                }
+            });
+            ee.standard.addItemListener(new ItemListener(){
+                @Override
+                public void itemStateChanged(ItemEvent event) {
+                    selectDefaultStandard(event, ee);
                 }
             });
 
@@ -203,6 +229,8 @@ import org.openide.util.lookup.Lookups;
         horizontalGroup.addGap(6, 6, 6);
 
         GroupLayout.ParallelGroup labelsGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
+        JLabel columnHeader1 = new JLabel(NbBundle.getMessage(CndOtherOptionsPanel.class, "EE_Type_Header")); //NOI18N
+        labelsGroup.addComponent(columnHeader1);
         for (int i = 0; i < eeList.size(); i++) {
             labelsGroup.addComponent(eeList.get(i).label);
         }
@@ -210,18 +238,31 @@ import org.openide.util.lookup.Lookups;
         horizontalGroup.addGroup(labelsGroup);
         horizontalGroup.addGap(4, 4, 4);
 
-        GroupLayout.ParallelGroup textfieldsGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING, false);
+        GroupLayout.ParallelGroup textfieldsGroup = layout.createParallelGroup(GroupLayout.Alignment.CENTER, false);
+        JLabel columnHeader2 = new JLabel(NbBundle.getMessage(CndOtherOptionsPanel.class, "EE_Extensions_Header")); //NOI18N
+        textfieldsGroup.addComponent(columnHeader2);
         for (int i = 0; i <  eeList.size(); i++) {
-            textfieldsGroup.addComponent(eeList.get(i).textfield, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE);
+            textfieldsGroup.addComponent(eeList.get(i).textfield, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE);
         }
         horizontalGroup.addGroup(textfieldsGroup);
         horizontalGroup.addGap(6, 6, 6);
         
-        GroupLayout.ParallelGroup buttonsGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
+        GroupLayout.ParallelGroup buttonsGroup = layout.createParallelGroup(GroupLayout.Alignment.CENTER);
+        JLabel columnHeader3 = new JLabel();
+        buttonsGroup.addComponent(columnHeader3);
         for (int i = 0; i < eeList.size(); i++) {
             buttonsGroup.addComponent(eeList.get(i).button);
         }
         horizontalGroup.addGroup(buttonsGroup);
+        horizontalGroup.addGap(6, 6, 6);
+
+        GroupLayout.ParallelGroup standardGroup = layout.createParallelGroup(GroupLayout.Alignment.CENTER);      
+        JLabel columnHeader4 = new JLabel(NbBundle.getMessage(CndOtherOptionsPanel.class, "EE_Standard_Header")); //NOI18N
+        standardGroup.addComponent(columnHeader4);
+        for (int i = 0; i < eeList.size(); i++) {
+            standardGroup.addComponent(eeList.get(i).standard);
+        }
+        horizontalGroup.addGroup(standardGroup);
 
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -234,12 +275,19 @@ import org.openide.util.lookup.Lookups;
         GroupLayout.SequentialGroup verticalGroup = layout.createSequentialGroup()
                 .addContainerGap();
         
+        verticalGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(columnHeader1)
+                    .addComponent(columnHeader2, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(columnHeader3, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(columnHeader4, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE));
+        verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
         for (int i = 0; i < eeList.size(); i++) {
             ExtensionsElements ee = eeList.get(i);
             verticalGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                         .addComponent(ee.label)
                         .addComponent(ee.textfield, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
-                        .addComponent(ee.button, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE));
+                        .addComponent(ee.button, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(ee.standard, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE));
             if (i !=  eeList.size() - 1) {
                 verticalGroup.addPreferredGap(LayoutStyle.ComponentPlacement.RELATED);
             } else {
@@ -369,6 +417,9 @@ import org.openide.util.lookup.Lookups;
             // bug 233412, fix for dark theme
             textfield.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
             
+            for(CndLanguageStandard st : CndLanguageStandards.getSupported(es.getMIMEType())) {
+                standard.addItem(st);
+            }
             updateTextField();
             button.setText(getMessage("CndOtherOptionsPanel.Extensions.EditButton"));
         }
@@ -402,20 +453,27 @@ import org.openide.util.lookup.Lookups;
 
         public void apply() {
             es.setExtensions(getValues(), defaultValue);
+            es.setDefaultStandard(defaultStandard);
         }
 
         public void update() {
             list = new ArrayList<String>(es.getValues());
-            this.defaultValue = es.getDefaultExtension();
+            defaultValue = es.getDefaultExtension();
+            defaultStandard = es.getDefaultStandard();
             updateTextField();
+            if (defaultStandard != null) {
+                standard.setSelectedItem(defaultStandard);
+            }
         }
         
         private final MIMEExtensions es;
         public final JLabel label = new JLabel();
         public final JEditorPane textfield = new JEditorPane();
         public final JButton button = new JButton();
+        public final JComboBox standard = new JComboBox();
         private List<String> list;
         private String defaultValue;
+        private CndLanguageStandard defaultStandard;
         
     }
 }
