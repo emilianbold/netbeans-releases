@@ -39,48 +39,43 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.modules.web.clientproject.ant;
 
-import java.io.File;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.queries.SharabilityQueryImplementation2;
-import org.openide.filesystems.FileObject;
-import org.openide.util.EditableProperties;
-import org.w3c.dom.Element;
+import java.beans.PropertyChangeListener;
+import java.util.Map;
+import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 
 /**
  */
-public abstract class AntProjectHelper {
-    public static Object PRIVATE_PROPERTIES_PATH = new Object();
-    public static Object PROJECT_PROPERTIES_PATH = new Object();
+final class PropertyEvaluatorImpl implements PropertyEvaluator {
+    private final org.netbeans.spi.project.support.ant.PropertyEvaluator delegate;
 
-    public abstract EditableProperties getProperties(Object path);
+    public PropertyEvaluatorImpl(org.netbeans.spi.project.support.ant.PropertyEvaluator d) {
+        this.delegate = d;
+    }
 
-    public abstract void putProperties(Object path, EditableProperties privateProps);
+    @Override
+    public String getProperty(String prop) {
+        return delegate.getProperty(prop);
+    }
 
-    public abstract SharabilityQueryImplementation2 createSharabilityQuery2(PropertyEvaluator evaluator, String[] toArray, String[] string);
+    @Override
+    public String evaluate(String text) {
+        return delegate.evaluate(text);
+    }
 
-    public abstract PropertyEvaluator getStandardPropertyEvaluator();
+    @Override
+    public Map<String, String> getProperties() {
+        return delegate.getProperties();
+    }
 
-    public abstract File resolveFile(String licensePath);
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        delegate.addPropertyChangeListener(listener);
+    }
 
-    public abstract FileObject getProjectDirectory();
-
-    public abstract FileObject resolveFileObject(String sourceFolder);
-
-    public abstract void notifyDeleted();
-
-    public abstract AuxiliaryConfiguration createAuxiliaryConfiguration();
-    
-    public abstract void addAntProjectListener(AntProjectListener l);
-    
-    public abstract void removeAntProjectListener(AntProjectListener l);
-
-    public abstract Element getPrimaryConfigurationData(boolean b);
-
-    public abstract Object createCacheDirectoryProvider();
-
-    public abstract Object createAuxiliaryProperties();
-
-    public abstract void putPrimaryConfigurationData(Element data, boolean b);
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        delegate.removePropertyChangeListener(listener);
+    }
 }

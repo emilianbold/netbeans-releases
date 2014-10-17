@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.indirect;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport;
@@ -57,7 +58,7 @@ public abstract class IndirectServices {
         return Lookup.getDefault().lookup(IndirectServices.class);
     }
             
-    public abstract AntProjectHelper createProject(FileObject dirFO, String type);
+    public abstract AntProjectHelper createProject(FileObject dirFO, String type) throws IOException;
     public abstract String getUsablePropertyName(String displayName);
     public abstract File resolveFile(File dir, String relative);
     public abstract PropertyEvaluator createEvaluator(AntProjectHelper h, FileObject dir);

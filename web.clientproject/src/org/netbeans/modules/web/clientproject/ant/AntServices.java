@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.ant;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
@@ -54,15 +55,21 @@ import org.netbeans.modules.web.clientproject.indirect.SourcesHelper;
 import org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Bridges calls into Ant.
  */
+@ServiceProvider(service = IndirectServices.class)
 public final class AntServices extends IndirectServices {
-    public AntProjectHelper createProject(FileObject dirFO, String type) {
-        return ProjectGenerator.createProject(dirFO, type);
+    @Override
+    public AntProjectHelper createProject(FileObject dirFO, String type) throws IOException {
+        return new AntProjectHelperImpl(ProjectGenerator.createProject(dirFO, type));
     }
 
     @Override
@@ -76,16 +83,21 @@ public final class AntServices extends IndirectServices {
     }
 
     @Override
-    public PropertyEvaluator createEvaluator(AntProjectHelper h, FileObject dir) {
-        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
-                projectHelper.getStockPropertyPreprovider(),
-                projectHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        return PropertyUtils.sequentialPropertyEvaluator(
-                projectHelper.getStockPropertyPreprovider(),
-                projectHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+    public PropertyEvaluator createEvaluator(AntProjectHelper aph, FileObject dir) {
+        AntProjectHelperImpl impl = (AntProjectHelperImpl) aph;
+        org.netbeans.spi.project.support.ant.AntProjectHelper h = impl.delegate;
+        
+        org.netbeans.spi.project.support.ant.PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
+                h.getStockPropertyPreprovider(),
+                h.getPropertyProvider(org.netbeans.spi.project.support.ant.AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+        org.netbeans.spi.project.support.ant.PropertyEvaluator pe = PropertyUtils.sequentialPropertyEvaluator(
+                h.getStockPropertyPreprovider(),
+                h.getPropertyProvider(org.netbeans.spi.project.support.ant.AntProjectHelper.PRIVATE_PROPERTIES_PATH),
                 PropertyUtils.userPropertiesProvider(baseEval2,
                         "user.properties.file", FileUtil.toFile(dir)), // NOI18N
-                projectHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+                h.getPropertyProvider(org.netbeans.spi.project.support.ant.AntProjectHelper.PROJECT_PROPERTIES_PATH));
+        
+        return new PropertyEvaluatorImpl(pe);
     }
 
     @Override
