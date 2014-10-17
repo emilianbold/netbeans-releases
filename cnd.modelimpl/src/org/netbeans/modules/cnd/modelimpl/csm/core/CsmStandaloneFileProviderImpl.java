@@ -72,9 +72,12 @@ import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -367,17 +370,53 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             } else {
                 lang = NativeProjectProvider.getLanguage(file, dao);
                 flavor = LanguageFlavor.UNKNOWN;
-                String key = "cnd.standalone.default.flavor." + lang.name(); //NOI18N
-                String defFlavorTxt = System.getProperty(key);
-                if (defFlavorTxt != null) {
-                    try {
-                        flavor = LanguageFlavor.valueOf(defFlavorTxt);
-                    } catch (IllegalArgumentException e) {
-                        StringBuilder all = new StringBuilder();
-                        for (LanguageFlavor lf : LanguageFlavor.values()) {
-                            all.append(all.length() > 0 ? ',' : ' ').append(lf.name());
+                CndLanguageStandards.CndLanguageStandard defaultStandard = null;
+                switch(lang) {
+                    case C:
+                        defaultStandard = MIMEExtensions.get(MIMENames.C_MIME_TYPE).getDefaultStandard();
+                        break;
+                    case CPP:
+                        defaultStandard = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE).getDefaultStandard();
+                        break;
+                    case C_HEADER:
+                        defaultStandard = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE).getDefaultStandard();
+                        break;
+                }
+                if (defaultStandard != null) {
+                    switch (defaultStandard) {
+                    case C89:
+                        flavor =LanguageFlavor.C89;
+                        break;
+                    case C99:
+                        flavor =LanguageFlavor.C99;
+                        break;
+                    case C11:
+                        flavor =LanguageFlavor.C11;
+                        break;
+                    case CPP98:
+                        flavor =LanguageFlavor.CPP;
+                        break;
+                    case CPP11:
+                        flavor =LanguageFlavor.CPP11;
+                        break;
+                    case CPP14:
+                        flavor =LanguageFlavor.CPP14;
+                        break;
+                    }
+                }
+                if (LanguageFlavor.UNKNOWN.equals(flavor)) {
+                    String key = "cnd.standalone.default.flavor." + lang.name(); //NOI18N
+                    String defFlavorTxt = System.getProperty(key);
+                    if (defFlavorTxt != null) {
+                        try {
+                            flavor = LanguageFlavor.valueOf(defFlavorTxt);
+                        } catch (IllegalArgumentException e) {
+                            StringBuilder all = new StringBuilder();
+                            for (LanguageFlavor lf : LanguageFlavor.values()) {
+                                all.append(all.length() > 0 ? ',' : ' ').append(lf.name());
+                            }
+                            System.err.printf("Wrong parameter -J-D%s=%s. Should be one of %s\n", key, defFlavorTxt, all);
                         }
-                        System.err.printf("Wrong parameter -J-D%s=%s. Should be one of %s\n", key, defFlavorTxt, all);
                     }
                 }
             }

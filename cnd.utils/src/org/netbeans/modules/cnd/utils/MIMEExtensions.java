@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -71,6 +72,7 @@ import org.openide.util.NbPreferences;
  * @author Vladimir Voskresensky
  */
 public final class MIMEExtensions {
+    private static final String STANDARD_SUFFIX = "/standard"; //NOI18N
     private final static Preferences preferences = NbPreferences.forModule(MIMEExtensions.class);
     private final static Manager manager = new Manager();
     private final ChangeSupport cs = new ChangeSupport(this);
@@ -181,6 +183,10 @@ public final class MIMEExtensions {
         }
     }
 
+    public CndLanguageStandard getDefaultStandard() {
+        return CndLanguageStandards.StringToLanguageStandard(preferences.get(getMIMEType()+STANDARD_SUFFIX, ""));
+    }
+
     public String getLocalizedDescription() {
         return description;
     }
@@ -226,6 +232,14 @@ public final class MIMEExtensions {
     public void setDefaultExtension(String defaultExt) {
         addExtension(defaultExt);
         preferences.put(getMIMEType(), defaultExt);
+    }
+
+    public void setDefaultStandard(CndLanguageStandard standard) {
+        if (standard != null) {
+            preferences.put(getMIMEType()+STANDARD_SUFFIX, standard.getID());
+        } else {
+            preferences.put(getMIMEType()+STANDARD_SUFFIX, "");
+        }
     }
 
     private static class Manager {
@@ -302,10 +316,17 @@ public final class MIMEExtensions {
                 throw new MissingResourceException(configFile.getPath(), configFile.getClass().getName(), "no stringvalue attribute \"default\""); // NOI18N
             }
             String defaultExt = (String) (attr == null ? "" : attr); // NOI18N
+            attr = configFile.getAttribute("standard"); // NOI18N
+            if (attr != null && !(attr instanceof String)) {
+                throw new MissingResourceException(configFile.getPath(), configFile.getClass().getName(), "no stringvalue attribute \"standard\""); // NOI18N
+            }
+            String standard = (String) (attr == null ? "" : attr); // NOI18N
             MIMEExtensions out = new MIMEExtensions(mimeType, localizedName);
             // default extension could be in preferences
             defaultExt = preferences.get(mimeType, defaultExt);
             out.setDefaultExtension(defaultExt);
+            standard = preferences.get(mimeType+STANDARD_SUFFIX, standard);
+            out.setDefaultStandard(CndLanguageStandards.StringToLanguageStandard(standard));
             return out;
         }
         // file change listener
