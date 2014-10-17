@@ -142,12 +142,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-@AntBasedProjectRegistration(
-    type=ClientSideProjectType.TYPE,
-    iconResource=ClientSideProject.HTML5_PROJECT_ICON,
-    sharedNamespace=ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-    privateNamespace=ClientSideProjectType.PRIVATE_CONFIGURATION_NAMESPACE
-)
 public class ClientSideProject implements Project {
 
     static final Logger LOGGER = Logger.getLogger(ClientSideProject.class.getName());

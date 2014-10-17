@@ -44,6 +44,8 @@ package org.netbeans.modules.web.clientproject.ant;
 import java.io.File;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
@@ -51,6 +53,7 @@ import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
 import org.netbeans.modules.web.clientproject.indirect.SourcesHelper;
 import org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,5 +106,17 @@ public final class AntServices extends IndirectServices {
     @Override
     public ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
+    
+    @AntBasedProjectRegistration(
+        type=ClientSideProjectType.TYPE,
+        iconResource=ClientSideProject.HTML5_PROJECT_ICON,
+        sharedNamespace=ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+        privateNamespace=ClientSideProjectType.PRIVATE_CONFIGURATION_NAMESPACE
+    )
+    public static ClientSideProject factory(org.netbeans.spi.project.support.ant.AntProjectHelper helper) {
+        return new ClientSideProject(null);
     }
 }
