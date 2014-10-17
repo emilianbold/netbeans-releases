@@ -48,6 +48,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.vars.EvaluationError;
 import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
 import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
@@ -65,7 +66,7 @@ public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<V8DebuggerToo
         if (debugger == null || !debugger.isSuspended()) {
             return null;
         }
-        V8Frame currentFrame = debugger.getCurrentFrame();
+        CallFrame currentFrame = debugger.getCurrentFrame();
         return new V8DebuggerTooltipSupport(debugger, currentFrame);
     }
 

@@ -40,48 +40,17 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.ojet;
+package org.netbeans.modules.javascript.v8debug.vars;
 
-import javax.swing.ImageIcon;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.ojet.data.DataItem;
-
+import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
- * @author Petr Pisl
+ * @author Martin Entlicher
  */
-public class OJETCompletionHtmlItem extends HtmlCompletionItem.Attribute {
+public final class VariableArgument extends VariableLocal {
     
-    public OJETCompletionHtmlItem(final DataItem data, final int substituteOffset) {
-        super(data.getName(), substituteOffset, true, "");
+    public VariableArgument(String name, long ref, V8Value value) {
+        super(name, ref, value);
     }
-    
-    @Override
-    protected ImageIcon getIcon() {
-        return OJETUtils.OJET_ICON;
-    }
-    
-    @Override
-    protected String getLeftHtmlText() {
-        return new StringBuilder()
-                .append("<font color=#628FB5>") //NOI18N
-                .append(getItemText())
-                .append("</font>").toString();  //NOI18N
-    }
-
-    @Override
-    public int getAnchorOffset() {
-        return substitutionOffset - 3;
-    }
-
-    
-    
-    @Override
-    protected String getSubstituteText() {
-        OJETUtils.logUsage(null);
-        return new StringBuilder().append(OJETUtils.OJ_COMPONENT).append(": {component: }").toString(); //NOI18N
-    }
-    
-    
 }

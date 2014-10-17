@@ -193,8 +193,8 @@ public final class DiscoveryProjectGenerator {
                             if (impl.isHeaderFile()) {
                                 String path = impl.getAbsolutePath().toString();
                                 boolean added = false;
-                                if (resolveLinks && env.isLocal()) {
-                                    String resolvedSymbolicLink = DiscoveryUtils.resolveSymbolicLink(path);
+                                if (resolveLinks) {
+                                    String resolvedSymbolicLink = DiscoveryUtils.resolveSymbolicLink(FileSystemProvider.getFileSystem(env), path);
                                     if (resolvedSymbolicLink != null) {
                                         needAdd.add(resolvedSymbolicLink);
                                         added = true;

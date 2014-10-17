@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.javascript.debugger;
+package org.netbeans.modules.javascript2.debug.models;
 
 import java.awt.Color;
 import java.util.Collection;

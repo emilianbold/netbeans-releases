@@ -67,6 +67,9 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -99,33 +102,49 @@ public class DiscoveryUtils {
         return null;
     }
     
-    public static String resolveSymbolicLink(final String aPath) {
-        try {
-            return AccessController.doPrivileged(new PrivilegedExceptionAction<String>() {
-                @Override
-                public String run() throws IOException {
-                    String path = aPath;
-                    for (int i = 0; i < 5; i++) {
-                        final Path file = Paths.get(Utilities.toURI(new File(path)));
-                        if (Files.isSymbolicLink(file)) {
-                            Path to = Files.readSymbolicLink(file);
-                            if (!to.isAbsolute()) {
-                                to = file.getParent().resolve(Files.readSymbolicLink(file)).normalize();
+    public static String resolveSymbolicLink(FileSystem fileSystem, final String aPath) {
+        if (fileSystem == null || FileSystemProvider.getExecutionEnvironment(fileSystem).isLocal()) {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<String>() {
+                    @Override
+                    public String run() throws IOException {
+                        String path = aPath;
+                        for (int i = 0; i < 5; i++) {
+                            final Path file = Paths.get(Utilities.toURI(new File(path)));
+                            if (Files.isSymbolicLink(file)) {
+                                Path to = Files.readSymbolicLink(file);
+                                if (!to.isAbsolute()) {
+                                    to = file.getParent().resolve(Files.readSymbolicLink(file)).normalize();
+                                }
+                                if (Files.isRegularFile(to)) {
+                                    return to.toString();
+                                }
+                                path = to.toString();
+                            } else {
+                                return null;
                             }
-                            if (Files.isRegularFile(to)) {
-                                return to.toString();
-                            }
-                            path = to.toString();
-                        } else {
-                            return null;
                         }
+                        return null;
                     }
+                });
+            } catch (Exception ex) {
+                CndUtils.printStackTraceOnce(ex);
+                return null;
+            }
+        } else {
+            try {
+                FileObject fo = fileSystem.findResource(aPath);
+                if (fo == null) {
                     return null;
                 }
-            });
-        } catch (Exception ex) {
-            CndUtils.printStackTraceOnce(ex);
-            return null;
+                if (FileSystemProvider.isLink(fo)) {
+                    return FileSystemProvider.resolveLink(fo);
+                }
+                return null;
+            } catch (Exception ex) {
+                CndUtils.printStackTraceOnce(ex);
+                return null;
+            }
         }
     }
     

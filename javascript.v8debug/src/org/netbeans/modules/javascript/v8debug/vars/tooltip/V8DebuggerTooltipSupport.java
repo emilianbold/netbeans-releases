@@ -44,8 +44,8 @@ package org.netbeans.modules.javascript.v8debug.vars.tooltip;
 
 import java.io.Closeable;
 import java.io.IOException;
-import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
 
 /**
@@ -55,10 +55,10 @@ import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
 public class V8DebuggerTooltipSupport implements DebuggerTooltipSupport {
     
     private final V8Debugger debugger;
-    private final V8Frame currentFrame;
+    private final CallFrame currentFrame;
     private V8Debugger.Listener closeableListener;
 
-    V8DebuggerTooltipSupport(V8Debugger debugger, V8Frame currentFrame) {
+    V8DebuggerTooltipSupport(V8Debugger debugger, CallFrame currentFrame) {
         this.debugger = debugger;
         this.currentFrame = currentFrame;
     }
@@ -67,7 +67,7 @@ public class V8DebuggerTooltipSupport implements DebuggerTooltipSupport {
         return debugger;
     }
 
-    public V8Frame getCurrentFrame() {
+    public CallFrame getCurrentFrame() {
         return currentFrame;
     }
 
