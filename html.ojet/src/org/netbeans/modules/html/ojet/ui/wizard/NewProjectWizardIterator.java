@@ -81,10 +81,10 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
     private static final String SKELETON_URL = "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/OracleJET_QuickStartBasic.zip"; // NOI18N
     private static final File SKELETON_TMP_FILE = new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip"); // NOI18N
-    private static final String ZIP_MIME_TYPE = "application/zip"; // NOI18N
+    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+    private static final String XHTML_MIME_TYPE = "text/xhtml"; // NOI18N
 
     private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
-    private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
@@ -93,7 +93,6 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
     private NewProjectWizardIterator() {
         baseWizard = CreateProjectUtils.createBaseWizardPanel("OracleJETApplication"); // NOI18N
-        toolsWizard = CreateProjectUtils.createToolsWizardPanel();
     }
 
     @TemplateRegistration(
@@ -137,9 +136,6 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         // quickstart
         setupQuickStart(handle, files, projectDirectory);
 
-        // tools
-        CreateProjectUtils.instantiateTools(project, wizardDescriptor);
-
         handle.finish();
         return files;
     }
@@ -166,12 +162,10 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         index = 0;
         panels = new WizardDescriptor.Panel[] {
             baseWizard.first(),
-            toolsWizard.first(),
         };
         // Make sure list of steps is accurate.
         List<String> steps = Arrays.asList(
-                baseWizard.second(),
-                toolsWizard.second()
+            baseWizard.second()
         );
 
         // XXX should be lazy
@@ -254,10 +248,10 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         try {
             // download
             handle.progress(Bundle.NewProjectWizardIterator_progress_downloading());
-            NetworkSupport.downloadWithProgress(SKELETON_URL, SKELETON_TMP_FILE, Bundle.NewProjectWizardIterator_progress_downloading());
+            NetworkSupport.download(SKELETON_URL, SKELETON_TMP_FILE);
 
             // check
-            if (!isZipFile(SKELETON_TMP_FILE)) {
+            if (isHtmlFile(SKELETON_TMP_FILE)) {
                 // likely not in oracle network
                 if (NetworkSupport.showNetworkErrorDialog(Bundle.NewProjectWizardIterator_error_download())) {
                     setupQuickStart(handle, files, projectDirectory);
@@ -281,12 +275,14 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         }
     }
 
-    private static boolean isZipFile(File file) {
+    private static boolean isHtmlFile(File file) {
         assert file != null;
         if (!file.exists()) {
             return false;
         }
-        return ZIP_MIME_TYPE.equals(FileUtil.getMIMEType(FileUtil.toFileObject(file), ZIP_MIME_TYPE));
+        String mimeType = FileUtil.getMIMEType(FileUtil.toFileObject(file), HTML_MIME_TYPE, XHTML_MIME_TYPE);
+        return HTML_MIME_TYPE.equals(mimeType)
+                || XHTML_MIME_TYPE.equals(mimeType);
     }
 
     private static void unzip(String zipPath, File targetDirectory) throws IOException {
