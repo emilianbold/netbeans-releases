@@ -763,7 +763,11 @@ public final class ModuleManager extends Modules {
                 ClassLoader l = netigso.findFallbackLoader();
                 if (l == null || l == this) {
                     if (prev != null) {
-                        ex.initCause(prev);
+                        try {
+                            ex.initCause(prev);
+                        } catch (IllegalStateException cantChangeCause) {
+                            // ignore
+                        }
                     }
                     throw ex;
                 }
