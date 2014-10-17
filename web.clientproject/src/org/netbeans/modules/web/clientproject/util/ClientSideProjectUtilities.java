@@ -70,6 +70,7 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
@@ -127,7 +128,7 @@ public final class ClientSideProjectUtilities {
      */
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
         // create project
-        AntProjectHelper projectHelper = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
+        AntProjectHelper projectHelper = IndirectServices.getDefault().createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name);
         // #231319
         ProjectManager.getDefault().clearNonProjectCache();
@@ -151,14 +152,15 @@ public final class ClientSideProjectUtilities {
         assert projectDirectory != null;
         assert projectDirectory.isDirectory();
         // ensure directories exists
+        IndirectServices is = IndirectServices.getDefault();
         if (sources != null) {
-            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, sources));
+            ensureDirectoryExists(is.resolveFile(projectDirectory, sources));
         }
         if (siteRoot != null) {
-            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, siteRoot));
+            ensureDirectoryExists(is.resolveFile(projectDirectory, siteRoot));
         }
         if (test != null) {
-            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, test));
+            ensureDirectoryExists(is.resolveFile(projectDirectory, test));
         }
         // save project
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);

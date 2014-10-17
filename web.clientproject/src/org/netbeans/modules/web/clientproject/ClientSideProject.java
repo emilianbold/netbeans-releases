@@ -89,6 +89,7 @@ import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectEvent;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectListener;
+import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
@@ -222,7 +223,7 @@ public class ClientSideProject implements Project {
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
-        eval = createEvaluator();
+        eval = IndirectServices.getDefault().createEvaluator(helper, getProjectDirectory());
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
         projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
@@ -487,18 +488,6 @@ public class ClientSideProject implements Project {
     }
 
 
-    private PropertyEvaluator createEvaluator() {
-        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
-                projectHelper.getStockPropertyPreprovider(),
-                projectHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        return PropertyUtils.sequentialPropertyEvaluator(
-                projectHelper.getStockPropertyPreprovider(),
-                projectHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-                PropertyUtils.userPropertiesProvider(baseEval2,
-                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
-                projectHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-    }
-
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
         FileEncodingQueryImplementation fileEncodingQuery =
                 new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING);
@@ -565,7 +554,7 @@ public class ClientSideProject implements Project {
 
         @Override
         public String getName() {
-            return PropertyUtils.getUsablePropertyName(getDisplayName());
+            return IndirectServices.getDefault().getUsablePropertyName(getDisplayName());
         }
 
         @Override
