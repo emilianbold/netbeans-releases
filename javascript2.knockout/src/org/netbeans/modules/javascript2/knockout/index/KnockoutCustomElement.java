@@ -42,6 +42,10 @@
 package org.netbeans.modules.javascript2.knockout.index;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -51,14 +55,19 @@ public class KnockoutCustomElement {
 
     private final String name;
     private final String fqn;
+    private final List<String> parameters;
     private final URL url;
     private final int offset;
 
-    public KnockoutCustomElement(String name, String fqn, URL url, int offset) {
+    public KnockoutCustomElement(String name, String fqn, Collection<String> parameters, URL url, int offset) {
         this.name = name;
         this.fqn = fqn;
         this.url = url;
         this.offset = offset;
+        this.parameters = new ArrayList<>();
+        if (parameters != null && !parameters.isEmpty()) {
+            this.parameters.addAll(parameters);
+        }
     }
 
     public String getName() {
@@ -75,5 +84,9 @@ public class KnockoutCustomElement {
 
     public int getOffset() {
         return offset;
+    }
+
+    public List<String> getParameters() {
+        return Collections.unmodifiableList(parameters);
     }
 }

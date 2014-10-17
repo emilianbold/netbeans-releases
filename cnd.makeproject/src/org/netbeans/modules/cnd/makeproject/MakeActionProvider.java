@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -82,6 +83,7 @@ import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.actions.DefaultProjectOperationsImplementation;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.MakeCommandFlagsProviderFactory;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -141,6 +143,7 @@ import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -152,6 +155,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 
 /** Action provider of the Make project. This is the place where to do
@@ -194,8 +198,7 @@ public final class MakeActionProvider implements ActionProvider {
     // Project Descriptor
     //private MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to make targets */
-    private final Map<String, String[]> commands;
-    private final Map<String, String[]> commandsNoBuild;
+    private final Map<String, Commands> commands;
     private boolean lastValidation = false;
     private static final String SAVE_STEP = "save"; // NOI18N
     private static final String PRE_BUILD_STEP = "pre-build"; // NOI18N
@@ -220,21 +223,21 @@ public final class MakeActionProvider implements ActionProvider {
     public MakeActionProvider(MakeProject project) {
         this.project = project;
         commands = loadAcrionSteps("CND/BuildAction"); // NOI18N
-        commandsNoBuild = loadAcrionSteps("CND/NoBuildAction"); // NOI18N
     }
 
-    private Map<String, String[]> loadAcrionSteps(String root) {
-        Map<String, String[]> res = new HashMap<>();
+    private Map<String, Commands> loadAcrionSteps(String root) {
+        Map<String, Commands> res = new HashMap<>();
         FileObject folder = FileUtil.getConfigFile(root);
         if (folder != null && folder.isFolder()) {
             for (FileObject subFolder : folder.getChildren()) {
                 if (subFolder.isFolder()) {
-                    TreeMap<Integer, String> map = new TreeMap<>();
+                    TreeMap<Integer, Command> map = new TreeMap<>();
                     for (FileObject file : subFolder.getChildren()) {
                         Integer position = (Integer) file.getAttribute("position"); // NOI18N
-                        map.put(position, file.getNameExt());
+                        String flag = (String) file.getAttribute("flag"); // NOI18N
+                        map.put(position, new Command(file.getNameExt(),flag));
                     }
-                    res.put(subFolder.getNameExt(), map.values().toArray(new String[map.size()]));
+                    res.put(subFolder.getNameExt(), new Commands(subFolder.getNameExt(), map.values()));
                 }
             }
         }
@@ -442,7 +445,7 @@ public final class MakeActionProvider implements ActionProvider {
         AtomicBoolean validated = new AtomicBoolean(false);
         lastValidation = false;
 
-        String[] targetNames = getTargetNames(command);
+        String[] targetNames = getTargetNames(command, conf, context);
         if (targetNames == null || targetNames.length == 0) {
             return;
         }
@@ -477,17 +480,17 @@ public final class MakeActionProvider implements ActionProvider {
         if (targetName.equals(SAVE_STEP)) {
             return onSaveStep();
         } else if (targetName.equals(VALIDATE_TOOLCHAIN)) {
-            return onValidateToolchainStep(pd, conf, cancelled, validated);
+            return onValidateToolchainStep(pd, conf, cancelled, validated, context);
         } else if (targetName.equals(PRE_BUILD_STEP)) {
-            return onPreBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.PRE_BUILD);
+            return onPreBuildStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.PRE_BUILD);
         } else if (targetName.equals(BUILD_STEP)) {
-            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD);
+            return onBuildStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(BUILD_TESTS_STEP)) {
-            return onBuildStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.BUILD_TESTS);
+            return onBuildStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.BUILD_TESTS);
         } else if (targetName.equals(BUILD_PACKAGE_STEP)) {
-            return onBuildPackageStep(actionEvents, conf, ProjectActionEvent.PredefinedType.BUILD);
+            return onBuildPackageStep(actionEvents, conf, context, ProjectActionEvent.PredefinedType.BUILD);
         } else if (targetName.equals(CLEAN_STEP)) {
-            return onCleanStep(actionEvents, pd, conf, ProjectActionEvent.PredefinedType.CLEAN);
+            return onCleanStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.CLEAN);
         } else if (targetName.equals(COMPILE_SINGLE_STEP)) {
             return onCompileSingleStep(actionEvents, pd, conf, context, ProjectActionEvent.PredefinedType.COMPILE_SINGLE);
         } else if (targetName.equals(RUN_STEP)) {
@@ -805,11 +808,11 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onPreBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
+    private boolean onPreBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
 //        if (conf.isCompileConfiguration() && !validateProject(conf)) {
 //            return true;
 //        }
-        Lookup lookup =  Lookup.EMPTY;
+//        Lookup lookup =  Lookup.EMPTY;
         String workingDir = conf.getPreBuildConfiguration().getAbsPreBuildCommandWorkingDir();
         String buildCommand = conf.getPreBuildConfiguration().getPreBuildCommand().getValue();
         String args = "";
@@ -818,36 +821,45 @@ public final class MakeActionProvider implements ActionProvider {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
+        try {
+            FileSystem fs = FileSystemProvider.getFileSystem(conf.getDevelopmentHost().getExecutionEnvironment());
+            FileObject root = fs.getRoot();
+            String toRelativePath = CndPathUtilities.toRelativePath(root, workingDir);
+            FileUtil.createFolder(fs.getRoot(), toRelativePath);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         RunProfile profile = new RunProfile(workingDir, conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, context);
         actionEvents.add(projectActionEvent);
         return true;
     }
 
-    private boolean onBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
+    private boolean onBuildStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
         if (conf.isCompileConfiguration() && !validateProject(conf)) {
             return true;
         }
-        Lookup lookup = null;
+        Lookup ownLookup = null;
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
             for(ProjectActionEvent event : actionEvents) {
                 SnapShot snapShot = event.getContext().lookup(SnapShot.class);
                 if (snapShot != null) {
-                    lookup = event.getContext();
+                    ownLookup = event.getContext();
                     break;
                 }
             }
-            if (lookup == null) {
+            if (ownLookup == null) {
                 ConfigurationDescriptorProvider cdp = pd.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
-                lookup = Lookups.fixed(cdp.startModifications());
+                ownLookup = Lookups.fixed(cdp.startModifications());
             }
         }
-        if (lookup == null) {
-            lookup = Lookup.EMPTY;
+        if (ownLookup == null) {
+            ownLookup = Lookup.EMPTY;
         }
+        Lookup proxyLookup = new ProxyLookup(context, ownLookup);
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand;
         String makeCommand = getMakeCommand(pd, conf);
@@ -864,12 +876,12 @@ public final class MakeActionProvider implements ActionProvider {
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, proxyLookup);
         actionEvents.add(projectActionEvent);
         return true;
     }
 
-    private boolean onBuildPackageStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, Type actionEvent) {
+    private boolean onBuildPackageStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, Lookup context, Type actionEvent) {
         if (!validatePackaging(conf)) {
             actionEvents.clear();
             return true;
@@ -904,31 +916,32 @@ public final class MakeActionProvider implements ActionProvider {
             profile.setArgs(new String[] {script});
         }
 
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, context);
         actionEvents.add(projectActionEvent);
         return true;
     }
 
-    private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
-        Lookup lookup = null;
+    private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
+        Lookup ownLookup = null;
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
             for(ProjectActionEvent event : actionEvents) {
                 SnapShot snapShot = event.getContext().lookup(SnapShot.class);
                 if (snapShot != null) {
-                    lookup = event.getContext();
+                    ownLookup = event.getContext();
                     break;
                 }
             }
-            if (lookup == null) {
+            if (ownLookup == null) {
                 ConfigurationDescriptorProvider cdp = pd.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
-                lookup = Lookups.fixed(cdp.startModifications());
+                ownLookup = Lookups.fixed(cdp.startModifications());
             }
         }
-        if (lookup == null) {
-            lookup = Lookup.EMPTY;
+        if (ownLookup == null) {
+            ownLookup = Lookup.EMPTY;
         }
+        Lookup proxyLookup = new ProxyLookup(context, ownLookup);
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
         String args = ""; // NOI18N
@@ -939,7 +952,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, proxyLookup);
         actionEvents.add(projectActionEvent);
         return true;
     }
@@ -1299,7 +1312,7 @@ public final class MakeActionProvider implements ActionProvider {
         return true;
     }
 
-    private boolean onValidateToolchainStep(MakeConfigurationDescriptor pd, MakeConfiguration conf, CanceledState cancelled, AtomicBoolean validated) {
+    private boolean onValidateToolchainStep(MakeConfigurationDescriptor pd, MakeConfiguration conf, CanceledState cancelled, AtomicBoolean validated, Lookup context) {
         if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
             return false; // Stop here
         }
@@ -1339,46 +1352,15 @@ public final class MakeActionProvider implements ActionProvider {
     /**
      * @return array of targets or null to stop execution; can return empty array
      */
-    private String[] getTargetNames(String command) throws IllegalArgumentException {
-        String[] targetNames;
-        if (command.equals(COMMAND_COMPILE_SINGLE)) {
-            targetNames = commands.get(command);
-        } else if (command.equals(COMMAND_RUN)
-                || command.equals(COMMAND_DEBUG)
-                || command.equals(COMMAND_DEBUG_STEP_INTO)
-                || command.equals(COMMAND_DEBUG_TEST)
-                || command.equals(COMMAND_DEBUG_TEST_SINGLE)
-                || command.equals(COMMAND_DEBUG_STEP_INTO_TEST)
-                || command.equals(COMMAND_CUSTOM_ACTION)) {
-            MakeConfigurationDescriptor pd = getProjectDescriptor();
-            MakeConfiguration conf = pd.getActiveConfiguration();
-            if (conf == null) {
-                return null;
-            }
-            RunProfile profile = (RunProfile) conf.getAuxObject(RunProfile.PROFILE_ID);
-            if (profile == null) { // See IZ 89349
-                return null;
-            }
-            if (profile.getBuildFirst()) {
-                targetNames = commands.get(command);
-            } else {
-                targetNames = commandsNoBuild.get(command);
-            }
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
-            targetNames = commands.get(command);
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
-        } else {
-            targetNames = commands.get(command);
-            if (targetNames == null) {
-                throw new IllegalArgumentException(command);
-            }
+    private String[] getTargetNames(String command, MakeConfiguration conf, Lookup context) throws IllegalArgumentException {
+        if (conf == null) {
+            return null;
         }
-        return targetNames;
+        final Commands cmds = commands.get(command);
+        if (cmds == null) {
+            throw new IllegalArgumentException(command);
+        }
+        return cmds.getCommands(conf, context);
     }
 
     @Override
@@ -1993,6 +1975,73 @@ public final class MakeActionProvider implements ActionProvider {
         @Override
         public void setLocalizedName(String name) {
             locName = name;
+        }
+    }
+    
+    private static final class Command {
+        private final String command;
+        private final String conditions;
+        private Command(String command, String conditions) {
+            this.command = command;
+            this.conditions = conditions;
+        }
+
+        @Override
+        public String toString() {
+            return conditions == null ? command : command+"["+conditions+"]"; // NOI18N
+        }
+    }
+    
+    private static final class Commands {
+        private final List<Command> commands;
+        private final String id;
+        private Commands(String id, Collection<Command> commands) {
+            this.id = id;
+            this.commands = new ArrayList<Command>(commands);
+        }
+        
+        private String[] getCommands(MakeConfiguration conf, Lookup context) {
+            List<String> res = new ArrayList<>();
+            Loop:for(Command command : commands) {
+                String conditions = command.conditions;
+                if (conditions != null) {
+                    HashMap<String,Boolean> flagValues = new HashMap<>();
+                    for(String condition : conditions.split(",")) { //NOI18N
+                        boolean can = false;
+                        if (MakeCommandFlagsProviderFactory.DEFAULT.canHandle(condition, context, conf)) {
+                            can = MakeCommandFlagsProviderFactory.DEFAULT.createProvider().hasFlag(id, context, conf, condition, can);
+                        }
+                        for(MakeCommandFlagsProviderFactory factory : Lookup.getDefault().lookupAll(MakeCommandFlagsProviderFactory.class)) {
+                            if (factory.canHandle(condition, context, conf)) {
+                                can = factory.createProvider().hasFlag(id, context, conf, condition, can);
+                            }
+                        }
+                        flagValues.put(condition, can);
+                    }
+                    for(boolean can : flagValues.values()) {
+                        if (!can) {
+                            continue Loop;
+                        }
+                    }
+                }
+                res.add(command.command);
+            }
+            return res.toArray(new String[res.size()]);
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            for(Command command : commands) {
+                if (buf.length()>0) {
+                    buf.append('\n');
+                }
+                buf.append(command.command);
+                if (command.conditions != null) {
+                    buf.append('[').append(command.conditions).append(']');
+                }
+            }
+            return buf.toString();
         }
     }
 }

@@ -46,7 +46,7 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
+import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.NodeId;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.NodeModel;

@@ -43,9 +43,11 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
@@ -104,10 +106,29 @@ public class KnockoutRegisterInterceptor implements FunctionInterceptor {
             if (componentDecl != null && componentDecl.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT && componentDecl.isDeclared()) {
                 fqnOfCustomElement = componentDecl.getFullyQualifiedName();
                 FileObject fo = globalObject.getFileObject();
+                Collection<String> componentParams = getComponentParameters(componentDecl);
                 if (fo != null) {
-                    KnockoutIndexer.addCustomElement(fo.toURI(), new KnockoutCustomElement(customElementName, fqnOfCustomElement, fo.toURL(), nameOffset));
+                    KnockoutIndexer.addCustomElement(fo.toURI(),
+                            new KnockoutCustomElement(customElementName, fqnOfCustomElement, componentParams, fo.toURL(), nameOffset));
                 }
             }
+        }
+        return Collections.emptyList();
+    }
+
+    private Collection<String> getComponentParameters(JsObject component) {
+        JsObject viewModel = component.getProperty("viewModel"); //NOI18N
+        List<JsObject> functionParams = null;
+        if (viewModel instanceof JsFunction) {
+            functionParams = (List<JsObject>) (((JsFunction) viewModel).getParameters());
+        } else if (viewModel instanceof JsObject) {
+            JsObject createViewModel = viewModel.getProperty("createViewModel"); //NOI18N
+            if (createViewModel != null) {
+                functionParams = (List<JsObject>) (((JsFunction) createViewModel).getParameters());
+            }
+        }
+        if (functionParams != null && !functionParams.isEmpty()) {
+            return functionParams.get(0).getProperties().keySet();
         }
         return Collections.emptyList();
     }

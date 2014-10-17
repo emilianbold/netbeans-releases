@@ -87,6 +87,14 @@ made subject to such option by the copyright holder.
 ]]>
         </code>
     </codetemplate>   
+    <codetemplate abbreviation="fore" contexts="BLOCK,CASE" descriptionId="CT_fore">
+        <code>
+<![CDATA[for (${TYPE iterableElementType default="auto" editable=false} ${ELEM newVarName default="elem"} : ${ITER iterable default="col"}) {
+${selection}${cursor}
+}
+]]>
+        </code>
+    </codetemplate>   
     <codetemplate abbreviation="iff" contexts="BLOCK,CASE" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP default="exp"}) {

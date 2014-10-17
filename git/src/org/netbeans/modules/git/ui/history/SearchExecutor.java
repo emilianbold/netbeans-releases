@@ -116,7 +116,7 @@ class SearchExecutor extends GitProgressSupport {
 
         sc = new SearchCriteria();
         File[] files = master.getRoots();
-        if (files != null && files.length > 0 && !files[0].equals(getRepositoryRoot())) {
+        if (mode == Mode.LOCAL && files != null && files.length > 0 && !files[0].equals(getRepositoryRoot())) {
             sc.setFiles(files);
             if (files.length == 1 && files[0].isFile()) {
                 sc.setFollowRenames(true);

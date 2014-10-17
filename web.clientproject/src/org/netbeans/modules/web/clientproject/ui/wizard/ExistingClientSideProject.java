@@ -57,6 +57,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.api.util.ValidationUtilities;
 import org.openide.awt.Mnemonics;
@@ -70,46 +71,40 @@ import org.openide.util.NbBundle;
  */
 public class ExistingClientSideProject extends JPanel {
 
-    private static final long serialVersionUID = -4683211573157747L;
-
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final boolean library;
 
     // @GuardedBy("EDT")
     boolean fireChanges = true;
     // @GuardedBy("EDT")
-    String lastFolder = ""; // NOI18N
+    String lastSiteRoot = ""; // NOI18N
     // @GuardedBy("EDT")
     String lastProjectName = ""; // NOI18N
     volatile String testDir = null;
 
 
-    public ExistingClientSideProject(boolean library) {
-        this.library = library;
-
+    public ExistingClientSideProject() {
         initComponents();
-        initFolder();
-        initProjectName();
-        initProjectDirectory();
+        init();
     }
 
-    private void initFolder() {
-        Mnemonics.setLocalizedText(folderLabel, getFolderLabel());
-        folderTextField.getDocument().addDocumentListener(new DefaultDocumentListener(new Runnable() {
+    private void init() {
+        DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        // site root
+        siteRootTextField.getDocument().addDocumentListener(new DefaultDocumentListener(new Runnable() {
             @Override
             public void run() {
                 assert EventQueue.isDispatchThread();
                 fireChanges = false;
                 updateProjectName();
                 updateProjectDirectory();
-                lastFolder = getFolder();
-                detectClientSideProject(lastFolder);
+                lastSiteRoot = getSiteRoot();
+                detectClientSideProject(lastSiteRoot);
                 fireChanges = true;
             }
         }));
-    }
-
-    private void initProjectName() {
+        // sources
+        sourcesTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        // project name
         projectNameTextField.getDocument().addDocumentListener(new DefaultDocumentListener(new Runnable() {
             @Override
             public void run() {
@@ -120,14 +115,16 @@ public class ExistingClientSideProject extends JPanel {
                 fireChanges = true;
             }
         }));
+        // project dir
+        projectDirectoryTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
-    private void initProjectDirectory() {
-        projectDirectoryTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
+    public String getSiteRoot() {
+        return siteRootTextField.getText().trim();
     }
 
-    public String getFolder() {
-        return folderTextField.getText().trim();
+    public String getSources() {
+        return sourcesTextField.getText().trim();
     }
 
     public String getProjectName() {
@@ -150,8 +147,23 @@ public class ExistingClientSideProject extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
+    @NbBundle.Messages({
+        "ExistingClientSideProject.siteRoot.label=Site Root",
+        "ExistingClientSideProject.sources.label=Source folder",
+        "ExistingClientSideProject.error.noFolder=Site Root or Source folder must be selected.",
+    })
     public String getErrorMessage() {
-        String error = validateFolder();
+        String siteRoot = getSiteRoot();
+        String sources = getSources();
+        if (!StringUtilities.hasText(siteRoot)
+                && !StringUtilities.hasText(sources)) {
+            return Bundle.ExistingClientSideProject_error_noFolder();
+        }
+        String error = validateFolder(siteRoot, Bundle.ExistingClientSideProject_siteRoot_label());
+        if (error != null) {
+            return error;
+        }
+        error = validateFolder(sources, Bundle.ExistingClientSideProject_sources_label());
         if (error != null) {
             return error;
         }
@@ -167,47 +179,20 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# label with mnemonic",
-        "ExistingClientSideProject.folder.label.project=&Site Root:",
-        "# label with mnemonic",
-        "ExistingClientSideProject.folder.label.library=&Source Folder:",
-    })
-    private String getFolderLabel() {
-        if (library) {
-            return Bundle.ExistingClientSideProject_folder_label_library();
-        }
-        return Bundle.ExistingClientSideProject_folder_label_project();
-    }
-
-    @NbBundle.Messages({
-        "ExistingClientSideProject.folder.name.project=Site Root",
-        "ExistingClientSideProject.folder.name.library=Source folder",
-    })
-    private String getFolderName() {
-        if (library) {
-            return Bundle.ExistingClientSideProject_folder_name_library();
-        }
-        return Bundle.ExistingClientSideProject_folder_name_project();
-    }
-
-    @NbBundle.Messages({
-        "# {0} - folder name",
-        "ExistingClientSideProject.error.folder.empty={0} must be selected.",
         "# {0} - folder name",
         "ExistingClientSideProject.error.folder.invalid={0} is not a valid path.",
         "# {0} - folder name",
         "ExistingClientSideProject.error.folder.nbproject={0} is already NetBeans project (maybe only in memory).",
     })
-    private String validateFolder() {
-        String folder = getFolder();
-        if (folder.isEmpty()) {
-            return Bundle.ExistingClientSideProject_error_folder_empty(getFolderName());
+    private String validateFolder(String folder, String folderName) {
+        if (!StringUtilities.hasText(folder)) {
+            return null;
         }
         File folderDir = FileUtil.normalizeFile(new File(folder).getAbsoluteFile());
         if (!folderDir.isDirectory()) {
-            return Bundle.ExistingClientSideProject_error_folder_invalid(getFolderName());
+            return Bundle.ExistingClientSideProject_error_folder_invalid(folderName);
         } else if (ClientSideProjectUtilities.isProject(folderDir)) {
-            return Bundle.ExistingClientSideProject_error_folder_nbproject(getFolderName());
+            return Bundle.ExistingClientSideProject_error_folder_nbproject(folderName);
         }
         return null;
     }
@@ -236,14 +221,7 @@ public class ExistingClientSideProject extends JPanel {
         if (ClientSideProjectUtilities.isProject(projDir)) {
             return Bundle.ExistingClientSideProject_error_projectDirectory_alreadyProject();
         }
-        File folder = FileUtil.normalizeFile(new File(getFolder()).getAbsoluteFile());
-        if (projDir.isDirectory()) {
-            if (projDir.equals(folder)) {
-                // same as folder, do nothing
-                return null;
-            }
-            // XXX ideally warn about possibly non-empty directory
-        } else {
+        if (!projDir.isDirectory()) {
             // not existing directory
             if (!ValidationUtilities.isValidFilename(projDir)) {
                 return Bundle.ExistingClientSideProject_error_projectDirectory_invalid();
@@ -264,23 +242,23 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     void updateProjectName() {
-        projectNameTextField.setText(new File(getFolder()).getName());
+        projectNameTextField.setText(new File(getSiteRoot()).getName());
     }
 
     void updateProjectDirectory() {
         assert EventQueue.isDispatchThread();
         String projectDirectory = getProjectDirectory();
-        if (!lastFolder.isEmpty() && projectDirectory.equals(lastFolder)) {
-            // project directory is folder => do nothing
+        if (!lastSiteRoot.isEmpty() && projectDirectory.equals(lastSiteRoot)) {
+            // project directory is site root => do nothing
             return;
         }
-        projectDirectoryTextField.setText(getFolder());
+        projectDirectoryTextField.setText(getSiteRoot());
     }
 
     void updateProjectDirectoryName() {
         String projectDirectory = getProjectDirectory();
-        if (projectDirectory.equals(getFolder())) {
-            // project directory is folder => do nothing
+        if (projectDirectory.equals(getSiteRoot())) {
+            // project directory is site root => do nothing
             return;
         }
         if (!lastProjectName.isEmpty()
@@ -293,10 +271,6 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     void detectClientSideProject(String folder) {
-        if (library) {
-            // noop
-            return;
-        }
         ClientSideProjectDetector detector = new ClientSideProjectDetector(new File(folder));
         if (detector.detected()) {
             projectNameTextField.setText(detector.getName());
@@ -319,22 +293,34 @@ public class ExistingClientSideProject extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        folderLabel = new JLabel();
-        folderTextField = new JTextField();
-        folderBrowseButton = new JButton();
+        siteRootLabel = new JLabel();
+        siteRootTextField = new JTextField();
+        siteRootBrowseButton = new JButton();
+        sourcesLabel = new JLabel();
+        sourcesTextField = new JTextField();
+        sourcesBrowseButton = new JButton();
         projectNameLabel = new JLabel();
         projectNameTextField = new JTextField();
         projectDirectoryLabel = new JLabel();
         projectDirectoryTextField = new JTextField();
         projectDirectoryBrowseButton = new JButton();
 
-        folderLabel.setLabelFor(folderTextField);
-        Mnemonics.setLocalizedText(folderLabel, "FOLDER:"); // NOI18N
+        siteRootLabel.setLabelFor(siteRootTextField);
+        Mnemonics.setLocalizedText(siteRootLabel, NbBundle.getMessage(ExistingClientSideProject.class, "ExistingClientSideProject.siteRootLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(folderBrowseButton, NbBundle.getMessage(ExistingClientSideProject.class, "ExistingClientSideProject.folderBrowseButton.text")); // NOI18N
-        folderBrowseButton.addActionListener(new ActionListener() {
+        Mnemonics.setLocalizedText(siteRootBrowseButton, NbBundle.getMessage(ExistingClientSideProject.class, "ExistingClientSideProject.siteRootBrowseButton.text")); // NOI18N
+        siteRootBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                folderBrowseButtonActionPerformed(evt);
+                siteRootBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ExistingClientSideProject.class, "ExistingClientSideProject.sourcesLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(sourcesBrowseButton, NbBundle.getMessage(ExistingClientSideProject.class, "ExistingClientSideProject.sourcesBrowseButton.text")); // NOI18N
+        sourcesBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                sourcesBrowseButtonActionPerformed(evt);
             }
         });
 
@@ -353,40 +339,46 @@ public class ExistingClientSideProject extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(projectDirectoryLabel)
-                    .addComponent(folderLabel)
-                    .addComponent(projectNameLabel))
+                    .addComponent(projectNameLabel)
+                    .addComponent(siteRootLabel)
+                    .addComponent(sourcesLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(projectNameTextField)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(folderTextField)
-                            .addComponent(projectDirectoryTextField))
+                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                            .addComponent(sourcesTextField)
+                            .addComponent(siteRootTextField, Alignment.LEADING)
+                            .addComponent(projectDirectoryTextField, Alignment.LEADING))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(folderBrowseButton, Alignment.TRAILING)
-                            .addComponent(projectDirectoryBrowseButton, Alignment.TRAILING)))
-                    .addComponent(projectNameTextField)))
+                            .addComponent(siteRootBrowseButton, Alignment.TRAILING)
+                            .addComponent(projectDirectoryBrowseButton, Alignment.TRAILING)
+                            .addComponent(sourcesBrowseButton, Alignment.TRAILING)))))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {folderBrowseButton, projectDirectoryBrowseButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {projectDirectoryBrowseButton, siteRootBrowseButton, sourcesBrowseButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(folderLabel)
-                    .addComponent(folderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(folderBrowseButton))
+                    .addComponent(siteRootTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(siteRootBrowseButton)
+                    .addComponent(siteRootLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(sourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sourcesLabel)
+                    .addComponent(sourcesBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(projectNameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(projectNameLabel))
-                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(projectDirectoryLabel)
                     .addComponent(projectDirectoryTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -395,16 +387,15 @@ public class ExistingClientSideProject extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     @NbBundle.Messages({
-        "# {0} - folder name",
-        "ExistingClientSideProject.folder.dialog.title=Select {0}",
+        "ExistingClientSideProject.siteRoot.dialog.title=Select Site Root",
     })
-    private void folderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_folderBrowseButtonActionPerformed
-        File folder = browseFile(".folder", Bundle.ExistingClientSideProject_folder_dialog_title(getFolderName()), //NOI18N
-                getFolder());
+    private void siteRootBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_siteRootBrowseButtonActionPerformed
+        File folder = browseFile(".siteRoot", Bundle.ExistingClientSideProject_siteRoot_dialog_title(), //NOI18N
+                getSiteRoot());
         if (folder != null) {
-            folderTextField.setText(FileUtil.normalizeFile(folder).getAbsolutePath());
+            siteRootTextField.setText(FileUtil.normalizeFile(folder).getAbsolutePath());
         }
-    }//GEN-LAST:event_folderBrowseButtonActionPerformed
+    }//GEN-LAST:event_siteRootBrowseButtonActionPerformed
 
     @NbBundle.Messages("ExistingClientSideProject.projectDirectory.dialog.title=Select Project Directory")
     private void projectDirectoryBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_projectDirectoryBrowseButtonActionPerformed
@@ -420,6 +411,17 @@ public class ExistingClientSideProject extends JPanel {
             projectDirectoryTextField.setText(result.getAbsolutePath());
         }
     }//GEN-LAST:event_projectDirectoryBrowseButtonActionPerformed
+
+    @NbBundle.Messages({
+        "ExistingClientSideProject.sources.dialog.title=Select Source Folder",
+    })
+    private void sourcesBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sourcesBrowseButtonActionPerformed
+        File folder = browseFile(".sources", Bundle.ExistingClientSideProject_sources_dialog_title(), //NOI18N
+                getSources());
+        if (folder != null) {
+            sourcesTextField.setText(FileUtil.normalizeFile(folder).getAbsolutePath());
+        }
+    }//GEN-LAST:event_sourcesBrowseButtonActionPerformed
 
     private File browseFile(String dirKey, String title, String currentDirectory) {
         File workDir = null;
@@ -440,14 +442,17 @@ public class ExistingClientSideProject extends JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton folderBrowseButton;
-    private JLabel folderLabel;
-    private JTextField folderTextField;
     private JButton projectDirectoryBrowseButton;
     private JLabel projectDirectoryLabel;
     private JTextField projectDirectoryTextField;
     private JLabel projectNameLabel;
     private JTextField projectNameTextField;
+    private JButton siteRootBrowseButton;
+    private JLabel siteRootLabel;
+    private JTextField siteRootTextField;
+    private JButton sourcesBrowseButton;
+    private JLabel sourcesLabel;
+    private JTextField sourcesTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

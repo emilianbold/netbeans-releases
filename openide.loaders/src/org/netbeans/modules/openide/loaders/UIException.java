@@ -95,15 +95,17 @@ public final class UIException {
     private static final class AnnException extends Exception implements Callable<LogRecord[]> {
         private List<LogRecord> records;
 
-        static AnnException findOrCreate(Throwable t, boolean create) {
+        static AnnException findOrCreate(final Throwable t, boolean create) {
             if (t instanceof AnnException) {
                 return (AnnException)t;
             }
-            if (t.getCause() == null) {
-                if (create) {
-                    t.initCause(new AnnException());
+            synchronized (t) {
+                if (t.getCause() == null) {
+                    if (create) {
+                        t.initCause(new AnnException());
+                    }
+                    return (AnnException) t.getCause();
                 }
-                return (AnnException)t.getCause();
             }
             return findOrCreate(t.getCause(), create);
         }

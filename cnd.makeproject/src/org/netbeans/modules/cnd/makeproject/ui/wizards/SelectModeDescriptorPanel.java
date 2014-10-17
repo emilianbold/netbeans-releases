@@ -250,6 +250,10 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         }
 
         void finishWizard(WizardDescriptor settings) {
+            if (getSourcesFileObject() == null) {
+                // called from WizardDescriptor.resetWizard()
+                return;
+            }
             WizardConstants.PROPERTY_HOST_UID.put(settings, ExecutionEnvironmentFactory.toUniqueID(getExecutionEnvironment()));
             WizardConstants.PROPERTY_SOURCE_HOST_ENV.put(settings, getSourceExecutionEnvironment());
             WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.put(settings, isDefaultCompilerSet());

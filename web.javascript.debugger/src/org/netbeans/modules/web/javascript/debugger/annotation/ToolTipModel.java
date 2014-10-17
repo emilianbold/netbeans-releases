@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.javascript.debugger.annotation;
 
+import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -74,7 +75,7 @@ public class ToolTipModel extends VariablesModel implements TreeExpansionModelFi
     @Override
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent == ROOT) {
-            ScopedRemoteObject ttv = ToolTipView.getVariable();
+            Object ttv = AbstractJSToolTipAnnotation.getTooltipVariable();
             if (ttv != null) {
                 return new Object[] { ttv };
             } else {
@@ -87,7 +88,7 @@ public class ToolTipModel extends VariablesModel implements TreeExpansionModelFi
 
     @Override
     public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
-        if (node == ToolTipView.getVariable()) {
+        if (node == AbstractJSToolTipAnnotation.getTooltipVariable()) {
             return true;
         } else {
             return original.isExpanded(node);

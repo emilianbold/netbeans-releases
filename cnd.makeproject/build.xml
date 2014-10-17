@@ -115,6 +115,11 @@ made subject to such option by the copyright holder.
                 <patternset refid="sample-src-pattern-set"/>
             </fileset>
         </zip>
+        <zip zipfile="${sample-dist}/hellocmake.zip" >
+            <fileset dir="${sample-src}/hellocmake">
+                <patternset refid="sample-src-pattern-set"/>
+            </fileset>
+        </zip>
         <zip zipfile="${sample-dist}/helloqt.zip" >
             <fileset dir="${sample-src}/helloqt">
                 <patternset refid="sample-src-pattern-set"/>

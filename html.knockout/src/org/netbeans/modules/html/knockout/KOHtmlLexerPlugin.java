@@ -53,12 +53,10 @@ public class KOHtmlLexerPlugin extends HtmlLexerPlugin {
 
     @Override
     public String createAttributeEmbedding(String elementName, String attributeName) {
-        if (KOUtils.KO_PARAMS_ATTR_NAME.equalsIgnoreCase(attributeName)) {
-            return KOUtils.JAVASCRIPT_MIMETYPE;
-        }
         return KOUtils.KO_DATA_BIND_ATTR_NAME.equalsIgnoreCase(attributeName)
-                ? KOUtils.KO_DATA_BIND_MIMETYPE
-                : null;
+                || KOUtils.KO_PARAMS_ATTR_NAME.equalsIgnoreCase(attributeName)
+                        ? KOUtils.KO_DATA_BIND_MIMETYPE
+                        : null;
     }
     
 }

@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
+import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl.InstantiationParametersInfo;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -2415,30 +2416,64 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return type.getText();
         }
     }
-
+    
+    public static interface CsmSpecializationParamTextProvider {
+        
+        CharSequence getSpecParamText(CsmSpecializationParameter param, 
+                                      CsmType paramType,
+                                      List<CsmInstantiation> context);
+    }
+    
+    public static class DefaultSpecParamTextProvider implements CsmSpecializationParamTextProvider {
+        
+        @Override
+        public CharSequence getSpecParamText(CsmSpecializationParameter param, CsmType paramType, List<CsmInstantiation> context) {
+            if(CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                return TypeImpl.getCanonicalText(paramType);
+            }
+            if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
+                return param.getText();
+            }
+            if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                return param.getText();
+            }
+            return ""; // NOI18N
+        }
+    }
+    
     public static CharSequence getInstantiationCanonicalText(List<CsmSpecializationParameter> params) {
+        return getInstantiationCanonicalText(new SimpleInstantiationParamsInfo(params), new DefaultSpecParamTextProvider());
+    }
+
+    public static CharSequence getInstantiationCanonicalText(InstantiationParametersInfo paramsInfo, CsmSpecializationParamTextProvider specParamTextProvider) {
+        List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params = paramsInfo.getExpandedParams();
+        List<CsmType> types = paramsInfo.getParamsTypes();
+        
         if (params == null || params.isEmpty()) {
             return "";
         }
         
+        assert params.size() == types.size() : "Arrays of params and their types must have equal sizes!"; //NOI18N
+        
+        Iterator<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> paramsIter = params.iterator();
+        Iterator<CsmType> typesIter = types.iterator();
+        
         StringBuilder sb = new StringBuilder();
         sb.append('<');
         boolean first = true;
-        for (CsmSpecializationParameter param : params) {
+        while (paramsIter.hasNext() && typesIter.hasNext()) {
+            Pair<CsmSpecializationParameter, List<CsmInstantiation>> pair = paramsIter.next();
+            CsmSpecializationParameter param = pair.first();
+            List<CsmInstantiation> context = pair.second();
+            CsmType paramType = typesIter.next();
+            
             if (first) {
                 first = false;
             } else {
                 sb.append(',');
             }
-            if(CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                sb.append(TypeImpl.getCanonicalText(((CsmTypeBasedSpecializationParameter) param).getType()));
-            }
-            if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
-                sb.append(param.getText());
-            }
-            if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
-                sb.append(param.getText());
-            }
+            
+            sb.append(specParamTextProvider.getSpecParamText(param, paramType, context));
         }
         TemplateUtils.addGREATERTHAN(sb);
         return sb;
@@ -2548,4 +2583,54 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return new TemplateParameterResolver(lastResolvedParameters);
         }
     }        
+    
+    private static class SimpleInstantiationParamsInfo implements InstantiationParametersInfo {
+        
+        private final List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> parameters;
+        
+        private final List<CsmType> types;
+
+        public SimpleInstantiationParamsInfo(List<CsmSpecializationParameter> parameters) {
+            this.parameters = new ArrayList<>(parameters.size());
+            this.types = new ArrayList<>(parameters.size());
+            for (CsmSpecializationParameter param : parameters) {
+                this.parameters.add(Pair.of(param, Collections.<CsmInstantiation>emptyList()));
+                if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                    this.types.add(((CsmTypeBasedSpecializationParameter) param).getType());
+                } else {
+                    this.types.add(null);
+                }               
+            }
+        }
+
+        @Override
+        public List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> getOriginalParams() {
+            return parameters;
+        }
+
+        @Override
+        public List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> getExpandedParams() {
+            return parameters;
+        }
+        
+        @Override
+        public List<CsmType> getParamsTypes() {
+            return types;
+        }        
+
+        @Override
+        public boolean isVariadic() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public List<CsmSpecializationParameter> getInstParams() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public List<String> getParamsTexts() {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+    }
 }

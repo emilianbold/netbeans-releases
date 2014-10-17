@@ -110,8 +110,6 @@ import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -160,7 +158,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String path = ((EditableComboBox)binaryField).getText().trim();
-                controller.getWizardStorage().setBinaryPath(new FSPath(fileSystem, path));
+                controller.getWizardStorage().setBinaryPath(fileSystem, path);
                 updateRoot();
             }
         });
@@ -227,7 +225,20 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             validateController();
             final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             final Map<String, Object> map = new HashMap<>();
-            map.put("DW:buildResult", controller.getWizardStorage().getBinaryPath().getPath()); // NOI18N
+            List<FSPath> binaries = controller.getWizardStorage().getBinaryPath();
+            if (binaries.size() == 1) {
+                map.put("DW:buildResult", binaries.get(0).getPath()); // NOI18N
+            } else {
+                map.put("DW:buildResult", binaries.get(0).getPath()); // NOI18N
+                StringBuilder buf = new StringBuilder();
+                for(int i = 1; i < binaries.size(); i++) {
+                    if (buf.length() > 0) {
+                        buf.append(';');
+                    }
+                    buf.append(binaries.get(i).getPath());
+                }
+                map.put("DW:libraries", buf.toString()); // NOI18N
+            }
             map.put("DW:resolveLinks", CommonUtilities.resolveSymbolicLinks()); // NOI18N
             if (env.isRemote()) {
                 map.put("DW:fileSystem", fileSystem); // NOI18N
@@ -288,13 +299,13 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     int i = checking.decrementAndGet();
                     if (i == 0) {
                         boolean validBinary = validBinary();
-                        String validBinaryPath = getValidBinaryPath();
+                        List<FSPath> validBinaryPath = getValidBinaryPath();
                         sourcesField.setEnabled(validBinary);
                         sourcesButton.setEnabled(validBinary);
                         dependeciesComboBox.setEnabled(validBinary);
                         viewComboBox.setEnabled(validBinary);
                         if (validBinary && validBinaryPath != null) {
-                            String binaryRoot = CndPathUtilities.getDirName(validBinaryPath);
+                            String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());
                             if (binaryRoot != null) {
                                 if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
                                     binaryRoot = null;
@@ -317,13 +328,13 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     int i = checking.decrementAndGet();
                     if (i == 0) {
                         boolean validBinary = validBinary();
-                        String validBinaryPath = getValidBinaryPath();
+                        List<FSPath> validBinaryPath = getValidBinaryPath();
                         sourcesField.setEnabled(validBinary);
                         sourcesButton.setEnabled(validBinary);
                         dependeciesComboBox.setEnabled(false);
                         viewComboBox.setEnabled(validBinary);
                         if (validBinary && validBinaryPath != null) {
-                            String binaryRoot = CndPathUtilities.getDirName(validBinaryPath);
+                            String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());
                             if (binaryRoot != null) {
                                 if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
                                     binaryRoot = null;
@@ -349,9 +360,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 int i = checking.get();
                 if (i == 0) {
                     boolean validBinary = validBinary();
-                    String validBinaryPath = getValidBinaryPath();
+                    List<FSPath> validBinaryPath = getValidBinaryPath();
                     if (validBinary && validBinaryPath != null) {
-                        String binaryRoot = CndPathUtilities.getDirName(validBinaryPath);
+                        String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());
                         if (binaryRoot != null) {
                             if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
                                 binaryRoot = null;
@@ -400,7 +411,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         return dllPaths; 
     }
 
-    private void checkDll(Map<String, String> dllPaths, String root, List<String> searchPaths, FSPath binary) {
+    private void checkDll(Map<String, String> dllPaths, String root, List<String> searchPaths, List<FSPath> binary) {
         cancelSearch();
         if (validBinary()) {
             searching.set(true);
@@ -435,86 +446,88 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         }
     }
     
-    private void processDlls(List<String> searchPaths, FSPath binary, Map<String, String> dllPaths, final AtomicBoolean cancel, String root) {
+    private void processDlls(List<String> searchPaths, List<FSPath> binaries, Map<String, String> dllPaths, final AtomicBoolean cancel, String root) {
         Set<String> checkedDll = new HashSet<>();
-        checkedDll.add(binary.getPath());
-        String ldLibPath = CommonUtilities.getLdLibraryPath(env);
-        ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary.getPath());
-        for(String dll : dllPaths.keySet()) {
-            if (cancel.get()) {
-                break;
-            }
-            String p = findLocation(dll, ldLibPath);
-            if (p != null) {
-                dllPaths.put(dll, p);
-            } else {
-                dllPaths.put(dll, null);
-            }
-        }
-        while(true) {
-            List<String> secondary = new ArrayList<>();
-            for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+        for(FSPath binary : binaries) {
+            checkedDll.add(binary.getPath());
+            String ldLibPath = CommonUtilities.getLdLibraryPath(env);
+            ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary.getPath());
+            for(String dll : dllPaths.keySet()) {
                 if (cancel.get()) {
                     break;
                 }
-                if (entry.getValue() != null) {
-                    if (!checkedDll.contains(entry.getValue())) {
-                        checkedDll.add(entry.getValue());
-                        final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
-                        final Map<String, Object> map = new HashMap<>();
-                        map.put("DW:buildResult", entry.getValue()); // NOI18N
-                        map.put("DW:resolveLinks", Boolean.TRUE); // NOI18N
-                        if (env.isRemote()) {
-                            map.put("DW:fileSystem", fileSystem); // NOI18N
-                        }
-                        if (extension != null) {
-                            extension.discoverArtifacts(map);
-                            @SuppressWarnings("unchecked")
-                            List<String> dlls = (List<String>) map.get("DW:dependencies"); // NOI18N
-                            if (dlls != null) {
-                                for(String so : dlls) {
-                                    if (!dllPaths.containsKey(so)) {
-                                        secondary.add(so);
+                String p = findLocation(dll, ldLibPath);
+                if (p != null) {
+                    dllPaths.put(dll, p);
+                } else {
+                    dllPaths.put(dll, null);
+                }
+            }
+            while(true) {
+                List<String> secondary = new ArrayList<>();
+                for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                    if (cancel.get()) {
+                        break;
+                    }
+                    if (entry.getValue() != null) {
+                        if (!checkedDll.contains(entry.getValue())) {
+                            checkedDll.add(entry.getValue());
+                            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                            final Map<String, Object> map = new HashMap<>();
+                            map.put("DW:buildResult", entry.getValue()); // NOI18N
+                            map.put("DW:resolveLinks", Boolean.TRUE); // NOI18N
+                            if (env.isRemote()) {
+                                map.put("DW:fileSystem", fileSystem); // NOI18N
+                            }
+                            if (extension != null) {
+                                extension.discoverArtifacts(map);
+                                @SuppressWarnings("unchecked")
+                                List<String> dlls = (List<String>) map.get("DW:dependencies"); // NOI18N
+                                if (dlls != null) {
+                                    for(String so : dlls) {
+                                        if (!dllPaths.containsKey(so)) {
+                                            secondary.add(so);
+                                        }
                                     }
+                                    //@SuppressWarnings("unchecked")
+                                    //List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
                                 }
-                                //@SuppressWarnings("unchecked")
-                                //List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
                             }
                         }
                     }
                 }
-            }
-            for(String so : secondary) {
-                if (cancel.get()) {
+                for(String so : secondary) {
+                    if (cancel.get()) {
+                        break;
+                    }
+                    dllPaths.put(so, findLocation(so, ldLibPath));
+                }
+                int search = 0;
+                for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                    if (entry.getValue() == null) {
+                        search++;
+                    }
+                }
+                updateDllArtifacts(root, dllPaths, search > 0);
+                if (!cancel.get() && search > 0 && root.length() > 1) {
+                    ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
+                    progress.start();
+                    try {
+                        gatherSubFolders(fileSystem.findResource(root), new HashSet<String>(), dllPaths, cancel);
+                    } finally {
+                        progress.finish();
+                    }
+                    updateDllArtifacts(root, dllPaths, false);
+                }
+                int newSearch = 0;
+                for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
+                    if (entry.getValue() == null) {
+                        newSearch++;
+                    }
+                }
+                if (newSearch == search && secondary.isEmpty()) {
                     break;
                 }
-                dllPaths.put(so, findLocation(so, ldLibPath));
-            }
-            int search = 0;
-            for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
-                if (entry.getValue() == null) {
-                    search++;
-                }
-            }
-            updateDllArtifacts(root, dllPaths, search > 0);
-            if (!cancel.get() && search > 0 && root.length() > 1) {
-                ProgressHandle progress = ProgressHandleFactory.createHandle(getString("SearchForUnresolvedDLL")); //NOI18N
-                progress.start();
-                try {
-                    gatherSubFolders(fileSystem.findResource(root), new HashSet<String>(), dllPaths, cancel);
-                } finally {
-                    progress.finish();
-                }
-                updateDllArtifacts(root, dllPaths, false);
-            }
-            int newSearch = 0;
-            for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
-                if (entry.getValue() == null) {
-                    newSearch++;
-                }
-            }
-            if (newSearch == search && secondary.isEmpty()) {
-                break;
             }
         }
     }
@@ -581,7 +594,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             if (ldPath.indexOf(';')>0) {
                 pathSepararor = ";"; // NOI18N
             }
-            Set<String> visited = new HashSet<String>();
+            Set<String> visited = new HashSet<>();
             for(String search :  ldPath.split(pathSepararor)) {
                 if (visited.contains(search)) {
                     continue;
@@ -841,8 +854,18 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     void store(WizardDescriptor wizardDescriptor) {
         cancelSearch();
-        WizardConstants.PROPERTY_BUILD_RESULT.put(wizardDescriptor, ((EditableComboBox)binaryField).getText().trim());
-        WizardConstants.PROPERTY_PREFERED_PROJECT_NAME.put(wizardDescriptor, new File(((EditableComboBox)binaryField).getText().trim()).getName());
+        String binary = ((EditableComboBox)binaryField).getText().trim();
+        WizardConstants.PROPERTY_BUILD_RESULT.put(wizardDescriptor, binary);
+        String aBinary = binary;
+        if (binary.startsWith("\"")) { //NOI18N
+            for(String s : binary.split("\"")) { //NOI18N
+                if (!s.trim().isEmpty()) {
+                    aBinary = s;
+                    break;
+                }
+            }
+        }
+        WizardConstants.PROPERTY_PREFERED_PROJECT_NAME.put(wizardDescriptor, CndPathUtilities.getBaseName(aBinary));
         WizardConstants.PROPERTY_SOURCE_FOLDER_PATH.put(wizardDescriptor,  sourcesField.getText().trim());
         WizardConstants.PROPERTY_DEPENDENCY_KIND.put(wizardDescriptor, ((ProjectKindItem)dependeciesComboBox.getSelectedItem()).kind);
         WizardConstants.PROPERTY_DEPENDENCIES.put(wizardDescriptor,  getDlls());
@@ -875,27 +898,35 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         return !searching.get() && checking.get()==0 && validBinary() && validSourceRoot() && validDlls();
     }
 
-    private String getValidBinaryPath() {
-        String path = ((EditableComboBox) binaryField).getText().trim();
-        if (path.isEmpty()) {
+    private List<FSPath> getValidBinaryPath() {
+        List<FSPath> binaries = controller.getWizardStorage().getBinaryPath();
+        if (binaries == null || binaries.isEmpty()) {
             return null;
         }
-        if (CndPathUtilities.isPathAbsolute(path)) {
-            return CndFileUtils.normalizeAbsolutePath(fileSystem, path);
-        } else {
-            return null;
-        }   
+        List<FSPath> res = new ArrayList<>();
+        for(FSPath path : binaries) {
+            if (!CndPathUtilities.isAbsolute(path.getFileSystem(), path.getPath())) {
+                return null;
+            }
+            res.add(new FSPath(fileSystem, CndFileUtils.normalizeAbsolutePath(path.getFileSystem(), path.getPath())));
+        }
+        return res;
     }
     
     private boolean validBinary() {
-        String validBinaryPath = getValidBinaryPath();
+        List<FSPath> validBinaryPath = getValidBinaryPath();
         if (validBinaryPath != null) {
-            FileObject fo = fileSystem.findResource(validBinaryPath); // can be null
-            if (fo != null && fo.isValid()) {
-                return MIMENames.isBinary(fo.getMIMEType());
+            for(FSPath fsPath : validBinaryPath) {
+                FileObject fo = fsPath.getFileObject();
+                if (fo != null && fo.isValid() && MIMENames.isBinary(fo.getMIMEType())){
+                    continue;
+                } else {
+                    return false;
+                }
             }
+            return true;
         }
-            return false;
+        return false;
     }
 
     private boolean validSourceRoot() {
@@ -945,7 +976,16 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         FileFilter[] filters = FileFilterFactory.getBinaryFilters(fileSystem);
         if (path.isEmpty()) { 
             path = SelectModePanel.getDefaultDirectory(env);
+        } else {
+            if (path.startsWith("\"")) { //NOI18N
+                int i = path.indexOf('"', 0);
+                int j = path.indexOf('"', 1);
+                if (i >= 0 && j > i) {
+                    path = path.substring(i+1, j);
+                }
+            }
         }
+        
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),
                 getString("SelectBinaryPanelVisual.Browse.Title"), // NOI18N
@@ -955,11 +995,29 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 path,
                 false
                 );
+        fileChooser.setMultiSelectionEnabled(true);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
         }
-        return fileChooser.getSelectedFile().getPath();
+        File[] selected = fileChooser.getSelectedFiles();
+        if (selected == null || selected.length == 0) {
+            return null;
+        }
+        if (selected.length == 1) {
+            return selected[0].getPath();
+        } else {
+            StringBuilder buf = new StringBuilder();
+            for(File f : selected) {
+                if (buf.length() > 0) {
+                    buf.append(' ');
+                }
+                buf.append('"');
+                buf.append(f.getPath());
+                buf.append('"');
+            }
+            return buf.toString();
+        }
     }
 
     private void tableButtonActionPerformed(int row) {

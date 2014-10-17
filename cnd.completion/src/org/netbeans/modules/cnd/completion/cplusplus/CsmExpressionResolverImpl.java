@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionResolverImplementation;
+import static org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver.ResolvedTypeHandler;
 
 /**
  *
@@ -66,10 +67,9 @@ public final class CsmExpressionResolverImpl implements CsmExpressionResolverImp
     }
 
     @Override
-    public CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
+    public void resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations, ResolvedTypeHandler task) {
         CsmCompletionQuery query = getCompletionQuery(expression);
-        CsmType type = query.queryType(expression, instantiations);
-        return type;
+        query.queryType(expression, instantiations, task);
     }    
     
     private static CsmCompletionQuery getCompletionQuery(CsmOffsetable expression) {

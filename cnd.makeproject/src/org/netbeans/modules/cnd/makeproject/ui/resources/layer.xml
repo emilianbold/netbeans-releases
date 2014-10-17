@@ -240,6 +240,15 @@ made subject to such option by the copyright holder.
                             <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
                         </file>
 
+                        <file name="HelloCMakeWorld" url="samples/hellocmake.zip">
+                            <attr name="position" intvalue="835"/>
+                            <attr name="template" boolvalue="true"/>
+                            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/samples/hellocmake.html"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
+                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/projects-unmanaged.png"/>
+                            <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator"/>
+                        </file>
+
                         <file name="HelloQtWorld" url="samples/helloqt.zip">
                             <attr name="position" intvalue="840"/>
                             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
@@ -416,6 +425,10 @@ made subject to such option by the copyright holder.
                 <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
                     <attr name="position" intvalue="300"/>
                 </file>
@@ -425,9 +438,15 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="validate-toolchain">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="300"/>
                 </file>
                 <file name="build-package">
@@ -461,9 +480,15 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="validate-toolchain">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="300"/>
                 </file>
                 <file name="custom-action">
@@ -472,12 +497,19 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="debug">
                 <file name="save">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="validate-toolchain">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="debug">
@@ -486,12 +518,19 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="debug.test">
                 <file name="save">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="validate-toolchain">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="build-tests">
@@ -503,12 +542,19 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="debug.test.single">
                 <file name="save">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="validate-toolchain">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="build-tests">
@@ -525,12 +571,19 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="debug.stepinto">
                 <file name="save">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="validate-toolchain">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="debug-stepinto">
@@ -539,12 +592,19 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="debug.stepinto.test">
                 <file name="save">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="validate-toolchain">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="build-tests">
@@ -561,6 +621,10 @@ made subject to such option by the copyright holder.
                 <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="clean">
                     <attr name="position" intvalue="300"/>
                 </file>
@@ -570,12 +634,19 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="run">
                 <file name="save">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="100"/>
                 </file>
                 <file name="validate-toolchain">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first,build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
+                    <attr name="flag" stringvalue="build-first"/>
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="run">
@@ -594,6 +665,10 @@ made subject to such option by the copyright holder.
                 <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first"/>
+                    <attr name="position" intvalue="290"/>
+                </file>
                 <file name="build">
                     <attr name="position" intvalue="400"/>
                 </file>
@@ -610,6 +685,10 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="validate-toolchain">
                     <attr name="position" intvalue="200"/>
+                </file>
+                <file name="pre-build">
+                    <attr name="flag" stringvalue="pre-build-first"/>
+                    <attr name="position" intvalue="290"/>
                 </file>
                 <file name="build">
                     <attr name="position" intvalue="400"/>
@@ -622,149 +701,15 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
         </folder>        <!-- BuildAction -->
-        <folder name="NoBuildAction">
-            <folder name="pre_build">
-                <file name="save">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="validate-toolchain">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="pre-build">
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
-            <folder name="build">
-                <file name="save">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="validate-toolchain">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="build">
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
-            <folder name="build_packages">
-                <file name="save">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="build-package">
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
-            <folder name="clean">
-                <file name="save">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="validate-toolchain">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="clean">
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
-            <folder name="custom.action">
-                <file name="save">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="custom-action">
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
-            <folder name="debug">
-                <file name="debug">
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
-            <folder name="debug.test">
-                <file name="build-tests">
-                    <attr name="position" intvalue="450"/>
-                </file>
-                <file name="debug-test">
-                    <attr name="position" intvalue="500"/>
-                </file>
-            </folder>
-            <folder name="debug.test.single">
-                <file name="build-tests">
-                    <attr name="position" intvalue="450"/>
-                </file>
-                <file name="debug-test">
-                    <attr name="position" intvalue="500"/>
-                </file>
-            </folder>            
-            <folder name="debug.stepinto">
-                <file name="debug-stepinto">
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
-            <folder name="debug.stepinto.test">
-                <file name="build-tests">
-                    <attr name="position" intvalue="450"/>
-                </file>
-                <file name="debug-stepinto-test">
-                    <attr name="position" intvalue="500"/>
-                </file>
-            </folder>            
-            <folder name="rebuild">
-                <file name="save">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="validate-toolchain">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="clean">
-                    <attr name="position" intvalue="300"/>
-                </file>
-                <file name="build">
-                    <attr name="position" intvalue="400"/>
-                </file>
-            </folder>
-            <folder name="run">
-                <file name="run">
-                    <attr name="position" intvalue="200"/>
-                </file>
-            </folder>
-            <folder name="test">
-                <file name="save">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="validate-toolchain">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="build">
-                    <attr name="position" intvalue="400"/>
-                </file>
-                <file name="build-tests">
-                    <attr name="position" intvalue="500"/>
-                </file>
-                <file name="test">
-                    <attr name="position" intvalue="600"/>
-                </file>
-            </folder>
-            <folder name="test.single">
-                <file name="save">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="validate-toolchain">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="build">
-                    <attr name="position" intvalue="400"/>
-                </file>
-                <file name="build-tests">
-                    <attr name="position" intvalue="500"/>
-                </file>
-                <file name="test-single">
-                    <attr name="position" intvalue="600"/>
-                </file>
-            </folder>
-        </folder>        <!-- NoBuildAction -->
     </folder>       <!-- CND -->
     <folder name="Projects">
         <!-- MakeProject Extension Points-->
         <folder name="org-netbeans-modules-cnd-makeproject">
             <folder name="MoreBuildActions">
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.instance"/>
+                    <attr name="position" intvalue="50"/>
+                </file>                                
                 <file name="org-netbeans-modules-project-ui-CleanProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
                     <attr name="position" intvalue="100"/>
@@ -776,10 +721,6 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.instance"/>
                     <attr name="position" intvalue="300"/>
-                </file>                                
-                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-PreBuildAction.instance"/>
-                    <attr name="position" intvalue="400"/>
                 </file>                                
             </folder>
             

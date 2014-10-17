@@ -46,6 +46,8 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -80,7 +82,8 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private final RevisionInfoPanelController infoPanelController;
     private final PropertyChangeSupport support;
     public static final String PROP_VALID = "RevisionDialogController.valid"; //NOI18N
-    private boolean valid = true;
+    public static final String PROP_REVISION_ACCEPTED = "RevisionDialogController.revisionAccepted"; //NOI18N
+    private boolean valid;
     private final Timer t;
     private boolean internally;
     private final File[] roots;
@@ -152,6 +155,17 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         panel.btnSelectRevision.addActionListener(this);
         panel.revisionField.getDocument().addDocumentListener(this);
         panel.lstBranches.addListSelectionListener(this);
+        panel.lstBranches.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked (MouseEvent e) {
+                if (e.getSource() == panel.lstBranches) {
+                    if (e.getClickCount() == 2 && revisionInfo != null) {
+                        e.consume();
+                        support.firePropertyChange(PROP_REVISION_ACCEPTED, null, revisionInfo);
+                    }
+                }
+            }
+        });
         infoPanelController.addPropertyChangeListener(this);
     }
 
@@ -205,14 +219,10 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     public void changedUpdate (DocumentEvent e) {
     }
 
-    private void setValid (boolean flag) {
+    private void setValid (boolean flag, Revision revision) {
         boolean oldValue = valid;
         valid = flag;
-        if (valid) {
-            revisionInfo = infoPanelController.getInfo();
-        } else {
-            revisionInfo = null;
-        }
+        revisionInfo = revision;
         if (valid != oldValue) {
             support.firePropertyChange(PROP_VALID, oldValue, valid);
         }
@@ -226,14 +236,14 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     }
     
     private void updateRevision () {
-        setValid(false);
+        setValid(false, null);
         t.restart();
     }
 
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getPropertyName() == RevisionInfoPanelController.PROP_VALID) {
-            setValid(Boolean.TRUE.equals(evt.getNewValue()));
+            setValid(Boolean.TRUE.equals(evt.getNewValue()), infoPanelController.getInfo());
         }
     }
 
@@ -316,8 +326,14 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
     private void selectedBranchChanged () {
         Object activeBranch = panel.lstBranches.getSelectedValue();
-        revisionString = activeBranch instanceof Revision ? ((Revision) activeBranch).getRevision() : Bundle.MSG_RevisionDialog_noBranches();
-        updateRevision();
+        if (activeBranch instanceof Revision) {
+            revisionString = ((Revision) activeBranch).getRevision();
+            setValid(valid, (Revision) activeBranch);
+            t.restart();
+        } else {
+            revisionString = activeBranch instanceof Revision ? ((Revision) activeBranch).getRevision() : Bundle.MSG_RevisionDialog_noBranches();
+            updateRevision();
+        }
     }
 
     @NbBundle.Messages({

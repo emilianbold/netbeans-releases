@@ -221,6 +221,11 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 Exceptions.printStackTrace(ex);
             }
         }
+        StringBuilder argsFlat = new StringBuilder();
+        for (int i = 0; i < args.length; i++) {
+            argsFlat.append(" "); // NOI18N
+            argsFlat.append(args[i]);
+        }
         traceExecutable(executable, buildDir, args, execEnv.toString(), mm.toMap());
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
@@ -247,6 +252,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 errConvertorFactory(processChangeListener).
                 outConvertorFactory(processChangeListener);
         
+        descr.noReset(true);
+        inputOutput.getOut().println("cd '"+buildDir+"'"); //NOI18N
+        inputOutput.getOut().println(executable+" "+argsFlat); //NOI18N
         return NativeExecutionService.newService(npb, descr, "make"); // NOI18N
     }
 

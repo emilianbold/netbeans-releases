@@ -43,11 +43,15 @@ package org.netbeans.modules.html.knockout.javascript;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
@@ -55,10 +59,14 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
+import static org.netbeans.modules.html.knockout.javascript.KnockoutContext.COMPONENT_CONF_EMPTY;
+import static org.netbeans.modules.html.knockout.javascript.KnockoutContext.COMPONENT_CONF_PARAMS;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.javascript2.knockout.index.KnockoutCustomElement;
 import org.netbeans.modules.javascript2.knockout.index.KnockoutIndex;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -104,6 +112,12 @@ public class KnockoutJsCodeCompletion implements CompletionProvider {
                     if (prefix.isEmpty() || PROP_PARAMS.startsWith(prefix)) {
                         result.add(new KnockoutCodeCompletionItem.KOComponentOptionConfigItem(
                                 new KnockoutJsElement(PROP_PARAMS, ElementKind.PROPERTY), ccContext));
+                    }
+                    break;
+                case COMPONENT_CONF_PARAMS_VALUE:
+                    String componentName = findComponentName(document, dOffset);
+                    if (componentName != null) {
+                        result.addAll(findComponentParameters(ccContext, componentName));
                     }
                     break;
             }
@@ -153,4 +167,70 @@ public class KnockoutJsCodeCompletion implements CompletionProvider {
         return result;
     }
 
+    private Collection<? extends CompletionProposal> findComponentParameters(CodeCompletionContext ccContext, String componentName) {
+        FileObject fo = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return Collections.emptyList();
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return Collections.emptyList();
+        }
+        Collection<CompletionProposal> result = new ArrayList<>();
+        KnockoutIndex knockoutIndex = null;
+        try {
+            knockoutIndex = KnockoutIndex.get(project);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (knockoutIndex != null) {
+            Collection<String> parameters = knockoutIndex.getCustomElementParameters(componentName);
+            for (String param : parameters) {
+                if (param.startsWith(ccContext.getPrefix())) {
+                    ElementHandle element = new KnockoutJsElement(param, ElementKind.PROPERTY);
+                    result.add(new KnockoutCodeCompletionItem.KOComponentOptionItem(element, ccContext));
+                }
+            }
+        }
+        return result;
+    }
+
+    private String findComponentName(Document document, int offset) {
+        TokenHierarchy th = TokenHierarchy.get(document);
+        TokenSequence<JsTokenId> jsTs = LexerUtils.getTokenSequence(th, offset, JsTokenId.javascriptLanguage(), false);
+        if (jsTs != null) {
+            int diff = jsTs.move(offset);
+            if (diff == 0 && jsTs.movePrevious() || jsTs.moveNext()) {
+                // move backwards and find the begining (char '{') of params configuration object
+                Token<JsTokenId> jsToken = LexerUtils.followsToken(jsTs,
+                        Arrays.asList(JsTokenId.BRACKET_LEFT_CURLY),
+                        true, false, true,
+                        JsTokenId.WHITESPACE,
+                        JsTokenId.STRING, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END,
+                        JsTokenId.NUMBER, JsTokenId.IDENTIFIER,
+                        JsTokenId.OPERATOR_COLON, JsTokenId.OPERATOR_COMMA);
+                if (jsToken != null && jsToken.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                    // we have found the begining, now let's find the 'params' identifier
+                    jsToken = LexerUtils.followsToken(jsTs, JsTokenId.IDENTIFIER, true, false,
+                            JsTokenId.WHITESPACE, JsTokenId.STRING, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END, JsTokenId.OPERATOR_COLON);
+                    if (jsToken != null && jsToken.id() == JsTokenId.IDENTIFIER && jsToken.text().toString().equals(PROP_PARAMS)) {
+                        // now find 'name' identifier
+                        jsToken = LexerUtils.followsToken(jsTs, JsTokenId.IDENTIFIER, true, false,
+                                JsTokenId.WHITESPACE,
+                                JsTokenId.STRING, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END,
+                                JsTokenId.OPERATOR_COLON, JsTokenId.OPERATOR_COMMA);
+                        if (jsToken != null && jsToken.id() == JsTokenId.IDENTIFIER && jsToken.text().toString().equals(PROP_NAME)) {
+                            // and now finally move forward to find the string value representing component name
+                            jsToken = LexerUtils.followsToken(jsTs,
+                                    JsTokenId.STRING,
+                                    false, false,
+                                    JsTokenId.WHITESPACE, JsTokenId.STRING_BEGIN, JsTokenId.OPERATOR_COLON);
+                            return jsToken.text().toString();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }

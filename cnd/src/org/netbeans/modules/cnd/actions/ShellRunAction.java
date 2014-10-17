@@ -256,7 +256,9 @@ public class ShellRunAction extends AbstractExecutorRunAction {
                 errConvertorFactory(processChangeListener).
                 outConvertorFactory(processChangeListener);
 
-        // Execute the shellfile
+        descr.noReset(true);
+        inputOutput.getOut().println("cd '"+buildDir+"'"); //NOI18N
+        inputOutput.getOut().println(shellCommand+" "+argsFlat); //NOI18N
         return NativeExecutionService.newService(npb, descr, "Run"); // NOI18N
     }
 
