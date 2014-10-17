@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  * @author  Petr Kuzel
  */
 public final class Catalog 
-    implements org.netbeans.modules.xml.catalog.spi.CatalogReader, CatalogDescriptor, Serializable, EntityResolver{
+    implements org.netbeans.modules.xml.catalog.spi.CatalogReader, CatalogDescriptorBase, Serializable, EntityResolver{
 
     private static final long serialVersionUID = 123659121L;
         
@@ -89,7 +89,7 @@ public final class Catalog
     
     private static final String PROP_PREF_PUBLIC = "cat-pref";
 
-    private static final String PROP_DESC = CatalogDescriptor.PROP_CATALOG_DESC;
+    private static final String PROP_DESC = CatalogDescriptorBase.PROP_CATALOG_DESC;
     
     /** Creates a new instance of Catalog */
     public Catalog() {
@@ -173,7 +173,7 @@ public final class Catalog
      */
     public void updateDisplayName() {
         String name = getDisplayName();
-        getPCHS().firePropertyChange(CatalogDescriptor.PROP_CATALOG_NAME, null, name);
+        getPCHS().firePropertyChange(CatalogDescriptorBase.PROP_CATALOG_NAME, null, name);
     }
     
     /**
@@ -181,7 +181,7 @@ public final class Catalog
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
-    public Image getIcon(int type) {
+    public String getIconResource(int type) {
         return null;
     }
     

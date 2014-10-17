@@ -53,6 +53,23 @@ made subject to such option by the copyright holder.
   </apidefs>
 
   <changes>
+    <change id="module.fragments">
+         <api name="launcher"/>
+         <summary>Ability to join other module</summary>
+         <version major="2" minor="71"/>
+         <date day="11" month="4" year="2014"/>
+         <author login="sdedic"/>
+         <compatibility addition="yes" binary="compatible" semantic="compatible" />
+         <description>
+         <p>
+             Module can be declared as <a href="@TOP@architecture-summary.html#modfrag">
+                 Module Fragment
+             </a> to join other module loader. Fragment classes may ask to be bytecode-patched
+             as superclasses of API classes to preserve compatibility.
+         </p>
+         </description>
+         <issue number="243561"/>
+     </change>
      <change id="disable.fallback.cache">
         <api name="launcher"/>
         <summary>Disable fallback cache</summary>

@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import org.netbeans.modules.java.editor.base.imports.UnusedImports;
+
 import com.sun.source.util.TreePath;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -55,6 +58,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;

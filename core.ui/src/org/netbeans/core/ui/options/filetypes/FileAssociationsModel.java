@@ -256,7 +256,7 @@ final class FileAssociationsModel extends MIMEResolver.UIHelpers {
             FileObject[] children = factoriesFO.getChildren();
             for (FileObject child : children) {
                 String childName = child.getNameExt();
-                String displayName = filesystem.getStatus().annotateName(childName, Collections.singleton(child));
+                String displayName = filesystem.getDecorator().annotateName(childName, Collections.singleton(child));
                 if(!childName.equals(displayName)) {
                     return displayName;
                 }

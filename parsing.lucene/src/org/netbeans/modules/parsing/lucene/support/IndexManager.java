@@ -66,11 +66,11 @@ import org.netbeans.modules.parsing.lucene.SimpleDocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.SupportAccessor;
 import org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation;
 import org.netbeans.modules.parsing.lucene.support.Index.WithTermFrequencies.TermFreq;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -505,7 +505,7 @@ public final class IndexManager {
         private final File folder;
 
         Ref(@NonNull final File folder, @NonNull final Index index) {
-            super(index, Utilities.activeReferenceQueue());
+            super(index, BaseUtilities.activeReferenceQueue());
             this.folder = folder;
         }
 

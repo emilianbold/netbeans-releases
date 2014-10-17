@@ -44,12 +44,9 @@
 
 package org.netbeans.api.project;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,16 +55,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.CacheDirectoryProvider;
-import org.netbeans.spi.project.ProjectIconAnnotator;
+import org.netbeans.spi.project.ProjectInformationProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
-import org.openide.util.test.MockPropertyChangeListener;
 
 /**
  * Test {@link ProjectUtils}.
@@ -76,7 +70,9 @@ import org.openide.util.test.MockPropertyChangeListener;
 public class ProjectUtilsTest extends NbTestCase {
 
     static {
-        MockLookup.setInstances(TestUtil.testProjectFactory());
+        MockLookup.setInstances(
+            TestUtil.testProjectFactory(),
+            new ProjectInformationProviderImpl());
     }
     
     public ProjectUtilsTest(String name) {
@@ -281,50 +277,44 @@ public class ProjectUtilsTest extends NbTestCase {
         d = ProjectUtils.getCacheDirectory(p, Object.class);
         assertEquals("java-lang", d.getNameExt());
         assertEquals(cache, d.getParent());
-    }
-    
-    public void testAnnotateIcon() throws IOException {
-        class ProjectIconAnnotatorImpl implements ProjectIconAnnotator {
-            final Image icon1 = ImageUtilities.loadImage("org/netbeans/api/project/resources/icon-1.png");
-            final ChangeSupport pcs = new ChangeSupport(this);
-            boolean enabled = true;
-            public @Override Image annotateIcon(Project p, Image original, boolean openedNode) {
-                return enabled ? icon1 : original;
-            }
-            public @Override void addChangeListener(ChangeListener listener) {
-                pcs.addChangeListener(listener);
-            }
-            public @Override void removeChangeListener(ChangeListener listener) {
-                pcs.removeChangeListener(listener);
-            }
-            void disable() {
-                enabled = false;
-                pcs.fireChange();
-            }
-        }
-        FileObject goodproject = TestUtil.makeScratchDir(this).createFolder("good");
-        goodproject.createFolder("testproject");
-        ProjectIconAnnotatorImpl pia = new ProjectIconAnnotatorImpl();
-        MockLookup.setInstances(TestUtil.testProjectFactory(), pia);
-        ProjectManager.getDefault().reset();
-        Project p = ProjectManager.getDefault().findProject(goodproject);
-        ProjectInformation pi = ProjectUtils.getInformation(p);
-        Icon icon = pi.getIcon();
-        assertEquals("Annotated image height should be 8", icon.getIconHeight(), 8);
-        assertEquals("Annotated image width should be 8", icon.getIconWidth(), 8);
-        MockPropertyChangeListener listener = new MockPropertyChangeListener();
-        pi.addPropertyChangeListener(listener);
-        pia.disable();
-        listener.assertEvents(ProjectInformation.PROP_ICON);
-        MockLookup.setInstances(TestUtil.testProjectFactory(), new ProjectIconAnnotatorImpl());
-        listener.assertEvents(ProjectInformation.PROP_ICON);
-        MockLookup.setInstances();
-        listener.assertEvents(ProjectInformation.PROP_ICON);
-        Reference<?> piRef = new WeakReference<Object>(pi);
-        lookupResult = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
-        pi = null;
-        assertGC("can collect proxy ProjectInformation's", piRef);
-    }
-    private static Object lookupResult;
+    }        
 
+    private static class ProjectInformationProviderImpl implements ProjectInformationProvider {
+        @Override
+        public ProjectInformation getProjectInformation(final Project project) {
+            ProjectInformation info =  project.getLookup().lookup(ProjectInformation.class);
+            if (info == null) {
+                info = new ProjectInformation() {
+                    @Override
+                    public String getName() {
+                        return project.getProjectDirectory().getName();
+                    }
+
+                    @Override
+                    public String getDisplayName() {
+                        return getName();
+                    }
+
+                    @Override
+                    public Icon getIcon() {
+                        return null;
+                    }
+
+                    @Override
+                    public Project getProject() {
+                        return project;
+                    }
+
+                    @Override
+                    public void addPropertyChangeListener(PropertyChangeListener listener) {
+                    }
+
+                    @Override
+                    public void removePropertyChangeListener(PropertyChangeListener listener) {
+                    }
+                };
+            }
+            return info;
+        }
+    }
 }

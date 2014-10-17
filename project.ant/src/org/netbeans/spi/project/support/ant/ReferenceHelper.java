@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,20 +71,18 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -240,7 +239,7 @@ public final class ReferenceHelper {
                     try {
                         scriptLocation = new URI(null, null, rel, null);
                     } catch (URISyntaxException ex) {
-                        scriptLocation = Utilities.toURI(forProjDir).relativize(Utilities.toURI(scriptFile));
+                        scriptLocation = BaseUtilities.toURI(forProjDir).relativize(BaseUtilities.toURI(scriptFile));
                     }
                     ref = new RawReference(forProjName, artifact.getType(), scriptLocation, artifact.getTargetName(), artifact.getCleanTargetName(), artifact.getID());
                 } else {
@@ -271,7 +270,7 @@ public final class ReferenceHelper {
                 URI artFile = location;
                 String refPath;
                 if (artFile.isAbsolute()) {
-                    refPath = Utilities.toFile(artFile).getAbsolutePath();
+                    refPath = BaseUtilities.toFile(artFile).getAbsolutePath();
                     propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
                 } else {
                     refPath = "${" + forProjPathProp + "}/" + artFile.getPath(); // NOI18N
@@ -532,7 +531,7 @@ public final class ReferenceHelper {
                 try {
                     return addRawReference0(ref);
                 } catch (IllegalArgumentException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                     return false;
                 }
             }
@@ -676,7 +675,7 @@ public final class ReferenceHelper {
                         success = removeRawReference0(foreignProjectName, id, escaped);
                     }
                 } catch (IllegalArgumentException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                     return false;
                 }
                 // Note: try to delete obsoleted properties from both project.properties
@@ -800,7 +799,7 @@ public final class ReferenceHelper {
                 try {
                     return removeRawReference0(foreignProjectName, id, false);
                 } catch (IllegalArgumentException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                     return false;
                 }
             }
@@ -865,7 +864,7 @@ public final class ReferenceHelper {
                     try {
                         return getRawReferences(references);
                     } catch (IllegalArgumentException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                     }
                 }
                 return new RawReference[0];
@@ -907,7 +906,7 @@ public final class ReferenceHelper {
                     try {
                         return getRawReference(foreignProjectName, id, references, escaped);
                     } catch (IllegalArgumentException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                     }
                 }
                 return null;
@@ -1261,9 +1260,11 @@ public final class ReferenceHelper {
                     try {
                         index = Integer.parseInt(m.group(3));
                     } catch (NumberFormatException ex) {
-                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, 
-                            "Could not parse reference ("+reference+") for the jar index. " + // NOI18N
-                            "Expected number: "+m.group(3)); // NOI18N
+                        Logger.getLogger(this.getClass().getName()).log(
+                            Level.INFO,
+                            "Could not parse reference ({0}) for the jar index. " // NOI18N
+                            + "Expected number: {1}", // NOI18N
+                            new Object[]{reference, m.group(3)}); 
                         matches = false;
                     }
                 }
@@ -1508,7 +1509,7 @@ public final class ReferenceHelper {
     public LibraryManager getProjectLibraryManager() {
         return ProjectLibraryProvider.getProjectLibraryManager(h);
     }
-
+    
     /**
      * Gets a library manager of the given project.
      * There is no guarantee that the manager is the same object from call to call
@@ -1526,7 +1527,7 @@ public final class ReferenceHelper {
                 FileUtil.toFile(p.getProjectDirectory()));
         if (libFile != null) {
             try {
-                return LibraryManager.forLocation(Utilities.toURI(libFile).toURL());
+                return LibraryManager.forLocation(BaseUtilities.toURI(libFile).toURL());
             } catch (MalformedURLException e) {
                 // ok, no project manager
                 Logger.getLogger(ReferenceHelper.class.getName()).info(
@@ -1559,37 +1560,27 @@ public final class ReferenceHelper {
             return lib;
         }
         File mainPropertiesFile = h.resolveFile(h.getLibrariesLocation());
-        return copyLibrary(lib, Utilities.toURI(mainPropertiesFile).toURL());
-    }
-        
-    /**
-     * Returns library import handler which imports global library to sharable
-     * one. See {@link LibraryChooser#showDialog} for usage of this handler.
-     * @return copy handler
-     * @since org.netbeans.modules.project.ant/1 1.19
-     */
-    public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler() {
-        return new LibraryChooser.LibraryImportHandler() {
-            public Library importLibrary(Library library) throws IOException {
-                return copyLibrary(library);
-            }
-        };        
+        return copyLibrary(lib, mainPropertiesFile);
     }
 
     /**
-     * Returns library import handler which imports global library to sharable
-     * one. See {@link LibraryChooser#showDialog} for usage of this handler.
-     * @param the URL of the libraries definition file to import the library into
-     * @return copy handler
-     * @since org.netbeans.modules.project.ant/1 1.41
+     * Copy global IDE library to given folder.
+     * When a library with same name already exists in sharable location, the new one
+     * is copied with generated unique name.
+     *
+     * <p>Library creation is done under write access of ProjectManager.mutex().
+     *
+     * @param lib global library; cannot be null
+     * @param librariesLocation the location of the libraries definition file to import the library into
+     * @return newly created sharable version of library in case of sharable
+     *  project or given global library in case of non-sharable project
+     * @throws java.io.IOException if there was problem copying files
+     * @since 1.62
      */
-    public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler(final @NonNull URL librariesLocation) {
-        return new LibraryChooser.LibraryImportHandler() {
-            @Override
-            public Library importLibrary(final @NonNull Library library) throws IOException {
-                return copyLibrary(library, librariesLocation);
-            }
-        };
+    public static Library copyLibrary(final @NonNull Library lib, final @NonNull File librariesLocation) throws IOException {
+        Parameters.notNull("lib", lib); //NOI18N
+        Parameters.notNull("librariesLocation", librariesLocation); //NOI18N
+        return ProjectLibraryProvider.copyLibrary(lib, BaseUtilities.toURI(librariesLocation).toURL(), true);
     }
 
     /**
@@ -1937,7 +1928,7 @@ public final class ReferenceHelper {
                         p = ProjectManager.getDefault().findProject(foreignProjectDir);
                     } catch (IOException e) {
                         // Could not load it.
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                         return null;
                     }
                     if (p == null) {
@@ -1961,11 +1952,5 @@ public final class ReferenceHelper {
                 "," + targetName + "," + cleanTargetName + "," + artifactID + ">"; // NOI18N
         }
         
-    }
-
-    private static Library copyLibrary(final @NonNull Library lib, final @NonNull URL librariesLocation) throws IOException {
-        Parameters.notNull("lib", lib); //NOI18N
-        Parameters.notNull("librariesLocation", librariesLocation); //NOI18N
-        return ProjectLibraryProvider.copyLibrary(lib, librariesLocation, true);
     }
 }

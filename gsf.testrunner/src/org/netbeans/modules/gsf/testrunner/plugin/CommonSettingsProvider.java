@@ -43,7 +43,7 @@ package org.netbeans.modules.gsf.testrunner.plugin;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 public abstract class CommonSettingsProvider {
     

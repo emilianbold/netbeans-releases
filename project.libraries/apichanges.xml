@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
 
+    <change id="Libraries-UI-split">
+        <api name="general"/>
+        <summary>Moved the UI part of the <code>project.libraries</code> into a new <code>project.libraries.ui</code>module</summary>
+        <version major="1" minor="49"/>
+        <date day="1" month="7" year="2014"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes"/>
+        <description>
+            Moved the UI part of the <code>project.libraries</code> into a new <code>project.libraries.ui</code>module.
+            Added a new integration SPI and SPI support methods.
+        </description>
+        <class package="org.netbeans.spi.project.libraries" name="WritableLibraryProvider"/>
+        <class package="org.netbeans.spi.project.libraries.support" name="ForwardingLibraryImplementation"/>
+        <class package="org.netbeans.spi.project.libraries.support" name="LibrariesSupport"/>
+    </change>
     <change id="LibrariesSupport.createLibraryImplementation3">
         <api name="general"/>
         <summary>Added a new factory method to create default implementation of <code>LibraryImplementation3</code></summary>

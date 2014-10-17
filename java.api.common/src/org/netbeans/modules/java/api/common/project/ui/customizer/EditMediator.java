@@ -90,6 +90,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -375,14 +376,14 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                         }
                         else if ( source == addLibrary ) {
                             //TODO this piece needs to go somewhere else?
-                            URL librariesFolder = null;
+                            File librariesFile = null;
                             LibraryManager manager = null;
                             boolean empty = false;
                             try {
                                 String path = libraryPath.getText(0, libraryPath.getLength());
                                 if (path != null && path.length() > 0) {
-                                    File fil = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), path);
-                                    librariesFolder = Utilities.toURI(FileUtil.normalizeFile(fil)).toURL();
+                                    librariesFile = FileUtil.normalizeFile(PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), path));
+                                    final URL librariesFolder = Utilities.toURI(librariesFile).toURL();
                                     manager = LibraryManager.forLocation(librariesFolder);
                                 } else {
                                     empty = true;
@@ -402,7 +403,10 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                             }
 
                             Set<Library> added = LibraryChooser.showDialog(manager,
-                                    createLibraryFilter(), empty ? refHelper.getLibraryChooserImportHandler() : refHelper.getLibraryChooserImportHandler(librariesFolder));
+                                    createLibraryFilter(),
+                                    empty ?
+                                        CustomizerUtilities.getLibraryChooserImportHandler(refHelper) :
+                                        CustomizerUtilities.getLibraryChooserImportHandler(librariesFile));
                             if (added != null) {
                                 final Set<Library> includedLibraries = getIncludedLibraries(listModel);
                                int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 

@@ -44,7 +44,6 @@
 package org.openide.filesystems;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -62,7 +61,7 @@ public class MIMESupport68318Test extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        ErrorManager.getDefault().log("Just initialize the ErrorManager");
+//        ErrorManager.getDefault().log("Just initialize the ErrorManager");
     }
 
     public void testQueryMIMEFromInsideTheLookup() throws IOException {

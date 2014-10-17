@@ -52,6 +52,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -150,16 +151,11 @@ public final class NodeFactoryUtils {
         if (files != null && files.iterator().hasNext()) {
             try {
                 FileObject fo = (FileObject) files.iterator().next();
-                FileSystem.Status stat = fo.getFileSystem().getStatus();
-                if (stat instanceof FileSystem.HtmlStatus) {
-                    FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-
-                    String annotated = hstat.annotateNameHtml(htmlDisplayName, files);
-
-                    // Make sure the super string was really modified (XXX why?)
-                    if (!htmlDisplayName.equals(annotated)) {
-                        result = annotated;
-                    }
+                StatusDecorator stat = fo.getFileSystem().getDecorator();
+                String annotated = stat.annotateNameHtml(htmlDisplayName, files);
+                // Make sure the super string was really modified (XXX why?)
+                if (annotated != null && !htmlDisplayName.equals(annotated)) {
+                    result = annotated;
                 }
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);

@@ -107,6 +107,40 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="server.is.free">
+            <api name="general"/>
+            <summary>Split the api into a desktop (swing, awt) and NetBeans dependent and independent part.</summary>
+            <version major="1" minor="78"/>
+            <date day="26" month="5" year="2014"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes">
+                <p>
+                    Runtime compatibility remains, compile time compatibility is
+                    mostly preserved too. It is however recommended to upgrade
+                    dependencies of client modules. Try running
+                    <code>ant fix-dependencies</code> in your Ant module.
+                </p>     
+            </compatibility>               
+            <description>
+                <p>
+                    The following classes were moved into the
+                    <a href="@org-netbeans-modules-projectuiapi-base@/overview-summary.html">org.netbeans.modules.projectuiapi.base</a> module:
+                </p>
+                <ul>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/api/project/ui/OpenProjects.html">OpenProjects</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/api/project/ui/ProjectGroup.html">ProjectGroup</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/api/project/ui/ProjectGroupChangeEvent.html">ProjectGroupChangeEvent</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/api/project/ui/ProjectGroupChangeListener.html">ProjectGroupChangeListener</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/spi/project/ui/PrivilegedTemplates.html">PrivilegedTemplates</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/spi/project/ui/ProjectOpenedHook.html">ProjectOpenedHook</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/spi/project/ui/ProjectProblemResolver.html">ProjectProblemResolver</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/spi/project/ui/ProjectProblemsProvider.html">ProjectProblemsProvider</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/spi/project/ui/RecommendedTemplates.html">RecommendedTemplates</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/spi/project/ui/support/ProjectProblemsProviderSupport.html">ProjectProblemsProviderSupport</a></li>
+                    <li><a href="@org-netbeans-modules-projectuiapi-base@/org/netbeans/spi/project/ui/support/UILookupMergerSupport.html">UILookupMergerSupport</a></li>
+                </ul>
+            </description>
+        </change>
 
         <change id="BuildExecutionSupport.lastItem">
             <api name="general"/>

@@ -66,7 +66,7 @@ import javax.swing.text.StyledDocument;
 *
 * @author Petr Hamernik
 */
-public final class PositionRef extends Object implements Serializable {
+public final class PositionRef extends Object implements Serializable, Position {
     static final long serialVersionUID = -4931337398907426948L;
 
     /** Which type of position is currently holded - int X Position */

@@ -52,6 +52,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.layers.SystemFileSystem;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
@@ -174,11 +176,11 @@ implements java.net.URLStreamHandlerFactory {
         }
         
         final LocalFileSystem lfs = new LocalFileSystem() {
-            public Status getStatus() {
+            public StatusDecorator getDecorator() {
                 return new TestStatus(this);
             }
             
-            class TestStatus implements FileSystem.Status {
+            class TestStatus implements StatusDecorator {
                 FileSystem lfs;
                 TestStatus(FileSystem lfs) {
                     this.lfs = lfs;
@@ -192,6 +194,11 @@ implements java.net.URLStreamHandlerFactory {
                         
                     }
                     return name;
+                }
+
+                @Override
+                public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+                    return null;
                 }
                 
                 public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files) {

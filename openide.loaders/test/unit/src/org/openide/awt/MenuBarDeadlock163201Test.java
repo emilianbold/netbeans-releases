@@ -58,10 +58,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileSystem.Status;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.nodes.Node;
@@ -294,7 +293,7 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
         }
     }
 
-    private static final class MFS extends MultiFileSystem implements FileSystem.Status {
+    private static final class MFS extends MultiFileSystem implements StatusDecorator {
         private boolean morph;
 
         public MFS() {
@@ -309,8 +308,9 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
             return name;
         }
 
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-            return icon;
+        @Override
+        public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+            return null;
         }
 
         public void startMorph() {
@@ -319,7 +319,7 @@ public class MenuBarDeadlock163201Test extends NbTestCase {
         }
 
         @Override
-        public Status getStatus() {
+        public StatusDecorator getDecorator() {
             return this;
         }
     }

@@ -46,20 +46,22 @@ package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.InstanceDataObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -71,12 +73,42 @@ public final class FolderPathLookup extends AbstractLookup {
     
     private static final Logger LOG = Logger.getLogger(FolderPathLookup.class.getName());
     
-    private InstanceContent content;
+    private final InstanceContent content;
     
-    private CompoundFolderChildren children;
-    private PCL listener = new PCL();
+    private final CompoundFolderChildren children;
 
-//    private final InstanceConvertor CONVERTOR = new InstanceConvertor();
+    private final PCL listener = new PCL();
+    
+    /**
+     * Map holding fileobject to created instance pairs. Once the clients stop
+     * referencing the created instance the whole item gets removed from the cache.
+     * This ensures that the particular file object always gives the same instance
+     * (e.g. when registered for empty mime-type the same instance gets returned
+     * when asked for both empty and non-empty mime-types).
+     * This is crucial for some of the MimeLookup clients.
+     */
+    private static final Map<FileObject,InstanceItem> fo2item = new HashMap(128);
+    
+    static InstanceItem getInstanceItem(FileObject fo, InstanceItem ignoreItem) {
+        synchronized (fo2item) {
+            InstanceItem item = fo2item.get(fo);
+            if (item == null || item == ignoreItem) {
+                item = new InstanceItem(fo);
+                fo2item.put(fo, item);
+            }
+            return item;
+        }
+    }
+
+    static void releaseInstanceItem(InstanceItem item) {
+        synchronized (fo2item) {
+            // Optimistically suppose the value in the map is the removed one.
+            InstanceItem removed = fo2item.remove(item.getFileObject());
+            if (removed != item) {
+                fo2item.put(item.getFileObject(), removed);
+            }
+        }
+    }
     
     /** Creates a new instance of InstanceProviderLookup */
     public FolderPathLookup(String [] paths) {
@@ -95,331 +127,312 @@ public final class FolderPathLookup extends AbstractLookup {
     }
 
     private void rebuild() {
-        List<ICItem> instanceFiles = new ArrayList<ICItem>();
-        
-        for (FileObject file : children.getChildren()) {
-            if (!file.isValid()) {
+        List<PairItem> pairItems = new ArrayList<PairItem>();
+        for (FileObject fo : children.getChildren()) {
+            if (!fo.isValid()) {
                 // Can happen after modules are disabled. Ignore it.
                 continue;
             }
-            
-            try {
-                DataObject d = DataObject.find(file);
-                InstanceCookie instanceCookie = d.getCookie(InstanceCookie.class);
-                if (instanceCookie != null) {
-                    instanceFiles.add(new ICItem(d, instanceCookie));
-                }
-            } catch (Exception e) {
-                LOG.log(Level.WARNING, "Can't create DataObject", e); //NOI18N
-            }
+            pairItems.add(new PairItem(fo));
         }
-
-//        System.out.println("Setting instanceFiles for FolderPathLookup@" + System.identityHashCode(this) + " {");
-//        for (Iterator i = instanceFiles.iterator(); i.hasNext(); ) {
-//            String filePath = (String) i.next();
-//            System.out.println("    '" + filePath);
-//        }
-//        System.out.println("} End of Setting instanceFiles for FolderPathLookup@" + System.identityHashCode(this) + " -----------------------------");
-        
-        content.setPairs(instanceFiles);
+        content.setPairs(pairItems);
     }
     
     private class PCL implements PropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             rebuild();
         }
     } // End of PCL class
     
+    private static final class PairItem extends AbstractLookup.Pair<Object> {
+        
+        private final InstanceItem instanceItem;
+        
+        PairItem(FileObject fo) {
+            instanceItem = getInstanceItem(fo, null);
+            assert (instanceItem != null) : "InstanceItem must not be null";
+        }
+
+        @Override
+        protected boolean instanceOf(Class<?> c) {
+            return instanceItem.instanceOf(c);
+        }
+
+        @Override
+        protected boolean creatorOf(Object obj) {
+            return instanceItem.creatorOf(obj);
+        }
+
+        @Override
+        public Object getInstance() {
+            return instanceItem.getInstance();
+        }
+
+        @Override
+        public Class<? extends Object> getType() {
+            return instanceItem.getType();
+        }
+
+        @Override
+        public String getId() {
+            return instanceItem.getId();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return instanceItem.getDisplayName();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            // Transferred from RecognizeInstanceFiles.FOItem
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            final PairItem other = (PairItem) obj;
+            return instanceItem.equals(other.instanceItem);
+        }
+
+        @Override
+        public int hashCode() {
+            // Transferred from RecognizeInstanceFiles.FOItem
+            int hash = 3;
+            hash = 11 * hash + instanceItem.hashCode();
+            return hash;
+        }
+
+    }
     
-    // XXX: this is basically a copy of FolderLookup.ICItem, see #104705
-    
-    /** Item that delegates to <code>InstanceCookie</code>. Item which 
-     * the internal lookup data structure is made from. */
-    private static final class ICItem extends AbstractLookup.Pair {
+
+    /**
+     * Item referencing a file object and object instance that was created from it.
+     * <br/>
+     * Once the instance gets released the item will be removed from cache.
+     */
+    private static final class InstanceItem {
+
         static final long serialVersionUID = 10L;
         
-        static final ThreadLocal<ICItem> DANGEROUS = new ThreadLocal<ICItem> ();
-
-        /** error manager for ICItem */
-        private static final Logger ERR = Logger.getLogger(ICItem.class.getName());
-
-        /** when deserialized only primary file is stored */
-        private FileObject fo;
+        private final FileObject fo;
         
-        private transient InstanceCookie ic;
-        /** source data object */
-        private transient DataObject dataObject;
         /** reference to created object */
         private transient Reference<Object> ref;
 
         /** Constructs new item. */
-        public ICItem (DataObject obj, InstanceCookie ic) {
-            this.ic = ic;
-            this.dataObject = obj;
-            this.fo = obj.getPrimaryFile();
-            
-            if (ERR.isLoggable(Level.FINE)) ERR.fine("New ICItem: " + obj); // NOI18N
+        InstanceItem (FileObject fo) {
+            assert (fo != null) : "FileObject must not be null";
+            this.fo = fo;
         }
         
-        /** Initializes the item
-         */
-        public void init () {
-            if (ic != null) return;
+        FileObject getFileObject() {
+            return fo;
+        }
+        
+        private synchronized Reference<Object> getRef() {
+            return ref;
+        }
+        
+        private synchronized void setRef(Reference<Object> ref) {
+            this.ref = ref;
+        }
 
-            ICItem prev = DANGEROUS.get ();
+        protected boolean instanceOf(Class<?> c) {
+            Reference<Object> refL = getRef();
+            Object inst = (refL != null) ? refL.get() : null;
+            if (inst != null) {
+                return c.isInstance(inst);
+            } else {
+                String instanceOf = (String) fo.getAttribute("instanceOf");
+                if (instanceOf != null) {
+                    for (String xface : instanceOf.split(",")) {
+                        try {
+                            if (c.isAssignableFrom(Class.forName(xface, false, loader()))) {
+                                return true;
+                            }
+                        } catch (ClassNotFoundException x) {
+                            // Not necessarily a problem, e.g. from org-netbeans-lib-commons_net-antlibrary.instance
+                            LOG.log(Level.FINE, "could not load " + xface + " for " + fo.getPath(), x);
+                        }
+                    }
+                    return false;
+                } else {
+                    return c.isAssignableFrom(getType());
+                }
+            }
+        }
+
+        protected boolean creatorOf(Object obj) {
+            Reference<Object> refL = getRef();
+            return (refL != null) ? refL.get() == obj : false;
+        }
+
+        public synchronized Object getInstance() {
+            Reference<Object> refL = getRef();
+            Object inst = null;
+            if (refL != null) {
+                inst = refL.get();
+                if (inst == null) { // Instance already released -> get a fresh item
+                    return getInstanceItem(fo, this).getInstance();
+                }
+            }
+            if (inst == null) {
+                inst = createInstanceFor(fo, Object.class);
+                if (inst != null) {
+                    setRef(new Ref(inst));
+                }
+            }
+            return inst;
+        }
+
+        public Class<? extends Object> getType() {
+            Class<? extends Object> type = findTypeFor(fo);
+            return type != null ? type : Void.class;
+        }
+
+        public String getId() {
+            String s = fo.getPath();
+            if (s.endsWith(".instance")) { // NOI18N
+                s = s.substring(0, s.length() - ".instance".length());
+            }
+            return s;
+        }
+
+        public String getDisplayName() {
+            String n = fo.getName();
             try {
-                DANGEROUS.set (this);
-                if (dataObject == null) {
-                    try {
-                        dataObject = DataObject.find(fo);
-                    } catch (DataObjectNotFoundException donfe) {
-                        ic = new BrokenInstance("No DataObject for " + fo.getPath(), donfe); // NOI18N
-                        return;
+                n = fo.getFileSystem().getDecorator().annotateName(n, Collections.singleton(fo));
+            } catch (FileStateInvalidException ex) {
+                LOG.log(Level.WARNING, ex.getMessage(), ex);
+            }
+            return n;
+        }
+        
+        public @Override boolean equals(Object obj) {
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            final InstanceItem other = (InstanceItem) obj;
+
+            if (this.fo != other.fo &&
+                (this.fo == null || !this.fo.equals(other.fo)))
+                return false;
+            return true;
+        }
+
+        public @Override int hashCode() {
+           return fo.hashCode();
+        }
+        
+        private static ClassLoader loader() {
+            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+            if (l == null) {
+                l = InstanceItem.class.getClassLoader();
+            }
+            return l;
+        }
+
+        static <T> T createInstanceFor(FileObject f, Class<T> resultType) {
+            Object inst = f.getAttribute("instanceCreate");
+            if (inst == null) {
+                try {
+                    Class<?> type = findTypeFor(f);
+                    if (type == null) {
+                        return null;
+                    }
+                    if (SharedClassObject.class.isAssignableFrom(type)) {
+                        inst = SharedClassObject.findObject(type.asSubclass(SharedClassObject.class), true);
+                    } else {
+                        inst = type.newInstance();
+                    }
+                } catch (InstantiationException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return resultType.isInstance(inst) ? resultType.cast(inst) : null;
+        }
+
+        private static Class<? extends Object> findTypeFor(FileObject f) {
+            String clazz = getClassName(f);
+            if (clazz == null) {
+                return null;
+            }
+            try {
+                return Class.forName(clazz, false, loader());
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.FINE, ex.getMessage(), ex);
+                return null;
+            }
+        }
+        /** get class name from specified file object*/
+        private static String getClassName(FileObject fo) {
+            // first of all try "instanceClass" property of the primary file
+            Object attr = fo.getAttribute ("instanceClass");
+            if (attr instanceof String) {
+                return Utilities.translate((String) attr);
+            } else if (attr != null) {
+                LOG.warning(
+                    "instanceClass was a " + attr.getClass().getName()); // NOI18N
+            }
+
+            attr = fo.getAttribute("instanceCreate");
+            if (attr != null) {
+                return attr.getClass().getName();
+            } else {
+                Enumeration<String> attributes = fo.getAttributes();
+                while (attributes.hasMoreElements()) {
+                    if (attributes.nextElement().equals("instanceCreate")) {
+                        // It was specified, just unloadable (usually a methodvalue).
+                        return null;
                     }
                 }
-
-                ic = dataObject.getCookie (InstanceCookie.class);
-                if (ic == null) {
-                    ic = new BrokenInstance("No cookie for " + fo.getPath(), null); // NOI18N
-                }
-            } finally {
-                DANGEROUS.set (prev);
             }
+
+            // otherwise extract the name from the filename
+            String name = fo.getName ();
+
+            int first = name.indexOf('[') + 1;
+            if (first != 0) {
+                LOG.log(Level.WARNING, "Cannot understand {0}", fo);
+            }
+
+            int last = name.indexOf (']');
+            if (last < 0) {
+                last = name.length ();
+            }
+
+            // take only a part of the string
+            if (first < last) {
+                name = name.substring (first, last);
+            }
+
+            name = name.replace ('-', '.');
+            name = Utilities.translate(name);
+
+            return name;
         }
+        
+        void release() {
+            releaseInstanceItem(this);
+        }
+        
+        private final class Ref extends WeakReference<Object> implements Runnable {
             
-        /**
-         * Fake instance cookie.
-         * Used in case a file had an instance in a previous session but now does not
-         * (or the data object could not even be created correctly).
-         */
-        private static final class BrokenInstance implements InstanceCookie.Of {
-            private final String message;
-            private final Exception ex;
-            public BrokenInstance(String message, Exception ex) {
-                this.message = message;
-                this.ex = ex;
-            }
-            public String instanceName() {
-                return "java.lang.Object"; // NOI18N
-            }
-            private ClassNotFoundException die() {
-                if (ex != null) {
-                    return new ClassNotFoundException(message, ex);
-                } else {
-                    return new ClassNotFoundException(message);
-                }
-            }
-            public Class instanceClass() throws IOException, ClassNotFoundException {
-                throw die();
-            }
-            public Object instanceCreate() throws IOException, ClassNotFoundException {
-                throw die();
-            }
-            public boolean instanceOf(Class type) {
-                return false;
-            }
-        }
-
-
-        /** The class of the result item.
-         * @return the class of the item
-         */
-        protected boolean instanceOf (Class clazz) {
-            init ();
-            
-            if (ERR.isLoggable(Level.FINE)) ERR.fine("instanceOf: " + clazz.getName() + " obj: " + dataObject); // NOI18N
-            
-            if (ic instanceof InstanceCookie.Of) {
-                // special handling for special cookies
-                InstanceCookie.Of of = (InstanceCookie.Of)ic;
-                boolean res = of.instanceOf (clazz);
-                if (ERR.isLoggable(Level.FINE)) ERR.fine("  of: " + res); // NOI18N
-                return res;
+            Ref(Object inst) {
+                super(inst, Utilities.activeReferenceQueue());
             }
 
-            // handling of normal instance cookies
-            try {
-                @SuppressWarnings("unchecked")
-                boolean res = clazz.isAssignableFrom (ic.instanceClass ());
-                if (ERR.isLoggable(Level.FINE)) ERR.fine("  plain: " + res); // NOI18N
-                return res;
-            } catch (ClassNotFoundException ex) {
-                exception(ex, fo);
-            } catch (IOException ex) {
-                exception(ex, fo);
-            }
-            return false;
-        }
-
-        /** The class of the result item.
-         * @return the instance of the object or null if it cannot be created
-         */
-        public Object getInstance() {
-            init ();
-            
-            try {
-                Object obj = ic.instanceCreate();
-                if (ERR.isLoggable(Level.FINE)) ERR.fine("  getInstance: " + obj + " for " + this.dataObject); // NOI18N
-                ref = new WeakReference<Object> (obj);
-                return obj;
-            } catch (ClassNotFoundException ex) {
-                exception(ex, fo);
-            } catch (IOException ex) {
-                exception(ex, fo);
-            }
-            return null;
-        }
-
-        /** Hash code is the <code>InstanceCookie</code>'s code. */
-        public @Override int hashCode () {
-            init ();
-            
-            return System.identityHashCode (ic);
-        }
-
-        /** Two items are equal if they point to the same cookie. */
-        public @Override boolean equals (Object obj) {
-            if (obj instanceof ICItem) {
-                ICItem i = (ICItem)obj;
-                i.init ();
-                init ();
-                return ic == i.ic;
-            }
-            return false;
-        }
-
-        /** An identity of the item.
-         * @return string representing the item, that can be used for
-         *   persistance purposes to locate the same item next time */
-        public String getId() {
-            init ();
-
-            if (dataObject == null) {
-                // Deser problems.
-                return "<broken: " + fo.getPath() + ">"; // NOI18N
+            @Override
+            public void run() {
+                release();
             }
             
-            return dataObject.getName();
         }
 
-        /** Display name is extracted from name of the objects node. */
-        public String getDisplayName () {
-            init ();
-            
-            if (dataObject == null) {
-                // Deser problems.
-                return "<broken: " + fo.getPath() + ">"; // NOI18N
-            }
-            
-            return dataObject.getNodeDelegate ().getDisplayName ();
-        }
-
-        /** Method that can test whether an instance of a class has been created
-         * by this item.
-         *
-         * @param obj the instance
-         * @return if the item has already create an instance and it is the same
-         *  as obj.
-         */
-        protected boolean creatorOf(Object obj) {
-            Reference w = ref;
-            if (w != null && w.get () == obj) {
-                return true;
-            }
-            if (this.dataObject instanceof InstanceDataObject) {
-                try {
-                    Method m = InstanceDataObject.class.getDeclaredMethod("creatorOf", Object.class); //NOI18N
-                    return (Boolean) m.invoke(this.dataObject, obj);
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-            return false;
-        }
-
-        /** The class of this item.
-         * @return the correct class
-         */
-        public Class getType() {
-            init ();
-            
-            try {
-                return ic.instanceClass ();
-            } catch (IOException ex) {
-                // ok, no class available
-            } catch (ClassNotFoundException ex) {
-                // ok, no class available
-            }
-            return Object.class;
-        }
-
-        private static void exception(Exception e, FileObject fo) {
-            LOG.log(Level.INFO, "Bad file: " + fo, e); // NOI18N
-        }
-    } // End of ICItem class.
-    
-//    private static final class InstanceConvertor implements InstanceContent.Convertor<String,Object> {
-//        private Map<String,Reference<Class<?>>> types = new HashMap<String,Reference<Class<?>>>();
-//        
-//        public Class<?> type(String filePath) {
-//            synchronized (types) {
-//                Reference<Class<?>> ref = types.get(filePath);
-//                Class<?> type = ref == null ? null : (Class) ref.get();
-//                if (type == null) {
-//                    try {
-//                        type = getInstanceCookie(filePath).instanceClass();
-//                        types.put(filePath, new WeakReference<Class<?>>(type));
-//                    } catch (Exception e) {
-//                        LOG.log(Level.WARNING, "Can't determine instance class from '" + filePath + "'", e); //NOI18N
-//                        return DeadMarker.class; // Something nobody will ever find
-//                    }
-//                }
-//                
-//                return type;
-//            }
-//        }
-//
-//        public String id(String filePath) {
-//            return filePath;
-//        }
-//
-//        public String displayName(String filePath) {
-//            try {
-//                return getInstanceCookie(filePath).instanceName();
-//            } catch (Exception e) {
-//                LOG.log(Level.WARNING, "Can't determine instance name from '" + filePath + "'", e); //NOI18N
-//                return DeadMarker.class.getName();
-//            }
-//        }
-//
-//        public Object convert(String filePath) {
-//            try {
-//                return getInstanceCookie(filePath).instanceCreate();
-//            } catch (Exception e) {
-//                LOG.log(Level.WARNING, "Can't create instance from '" + filePath + "'", e); //NOI18N
-//                return DeadMarker.THIS;
-//            }
-//        }
-//        
-//        private InstanceCookie getInstanceCookie(String filePath) throws IOException {
-//            FileObject file = FileUtil.getConfigFile(filePath);
-//            if (file == null) {
-//                // Should not occure
-//                throw new IOException("The file does not exist '" + filePath + "'"); //NOI18N
-//            }
-//            
-//            DataObject d = DataObject.find(file);
-//            InstanceCookie cookie = d.getCookie(InstanceCookie.class);
-//            if (cookie != null) {
-//                return cookie;
-//            } else {
-//                // Should not occure
-//                throw new IOException("Can't find InstanceCookie for '" + filePath + "'"); //NOI18N
-//            }
-//        }
-//    } // End of InstanceConvertor class
-//    
-//    private static final class DeadMarker {
-//        public static final DeadMarker THIS = new DeadMarker();
-//    } // End of DeadMarker class
+    }
+        
 }

@@ -44,19 +44,21 @@
 
 package org.netbeans.editor;
 
-import java.util.EventObject;
+import javax.swing.text.Document;
 
 /**
  * Event for atomic lock listener notifications.
+ * @deprecated use {@link org.netbeans.api.editor.document.AtomicLockEvent}
  */
-public class AtomicLockEvent extends EventObject {
+@Deprecated
+public class AtomicLockEvent extends org.netbeans.api.editor.document.AtomicLockEvent {
 
     /*
      * Construct new AtomicLockEvent.
      * @param source  the Object that is the source of the event
      */
     AtomicLockEvent(Object source) {
-        super(source);
+        super((Document)source);
     }
 
 }

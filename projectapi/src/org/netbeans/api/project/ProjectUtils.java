@@ -44,14 +44,7 @@
 
 package org.netbeans.api.project;
 
-import java.beans.PropertyChangeEvent;
-import javax.swing.event.ChangeEvent;
-import org.netbeans.spi.project.ProjectIconAnnotator;
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,8 +52,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.Icon;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.projectapi.AuxiliaryConfigBasedPreferencesProvider;
@@ -70,19 +61,14 @@ import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.DependencyProjectProvider;
 import org.netbeans.spi.project.ProjectContainerProvider;
+import org.netbeans.spi.project.ProjectInformationProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
-import org.openide.util.WeakListeners;
-import org.openide.util.WeakSet;
 
 /**
  * Utility methods to get information about {@link Project}s.
@@ -103,9 +89,11 @@ public class ProjectUtils {
      * @see Project#getLookup
      */
     public static ProjectInformation getInformation(@NonNull Project p) {
-        Lookup l = p.getLookup();
-        ProjectInformation pi = l.lookup(ProjectInformation.class);
-        return new AnnotateIconProxyProjectInformation(pi != null ? pi : new BasicInformation(p));
+        final ProjectInformationProvider pip = Lookup.getDefault().lookup(ProjectInformationProvider.class);
+        if (pip == null) {
+            throw new IllegalStateException("No ProjectInformationProvider found in global Lookup.");  //NOI18N
+        }
+        return pip.getProjectInformation(p);
     }
     
     /**
@@ -294,173 +282,7 @@ public class ProjectUtils {
         encountered.put(curr, true);
         return false;
     }
-    
-    private static final class BasicInformation implements ProjectInformation {
-        
-        private final Project p;
-        
-        public BasicInformation(Project p) {
-            this.p = p;
-        }
-        
-        @Override
-        public String getName() {
-            return getProjectDirectory().toURL().toExternalForm();
-        }
-        
-        @Override
-        public String getDisplayName() {
-            return getProjectDirectory().getNameExt();
-        }
-        
-        @Override
-        public Icon getIcon() {
-            return ImageUtilities.loadImageIcon("org/netbeans/modules/projectapi/resources/empty.gif", false); // NOI18N
-        }
-        
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            // never changes
-        }
-        
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            // never changes
-        }
-        
-        @Override
-        public Project getProject() {
-            return p;
-        }
 
-        @NonNull
-        private FileObject getProjectDirectory() {
-            final FileObject pd = p.getProjectDirectory();
-            if (pd == null) {
-                throw new IllegalStateException(String.format("Project: %s returned null project directory.", p));  //NOI18N
-            }
-            return pd;
-        }
-        
-    }
-
-    private static final class AnnotateIconProxyProjectInformation implements ProjectInformation, PropertyChangeListener, ChangeListener, LookupListener {
-
-        private final ProjectInformation pinfo;
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private final Set<ProjectIconAnnotator> annotators = new WeakSet<ProjectIconAnnotator>();
-        private boolean annotatorsInitialized = false;
-        private boolean addedPropertyListener = false;
-        private final Object LOCK = new Object(); //protects access to annotatorsInitialized, addedPropertyListener and icon
-        private Result<ProjectIconAnnotator> annotatorResult;
-        private Icon icon;
-
-        @SuppressWarnings("LeakingThisInConstructor")
-        public AnnotateIconProxyProjectInformation(ProjectInformation pi) {
-            pinfo = pi;
-        }
-
-        private void annotatorsChanged() {
-            synchronized (LOCK) {
-                if (!annotatorsInitialized) {
-                    annotatorResult = Lookup.getDefault().lookupResult(ProjectIconAnnotator.class);
-                    annotatorResult.addLookupListener(WeakListeners.create(LookupListener.class, this, annotatorResult));
-                    annotatorsInitialized = true;
-                }
-                for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
-                    if (annotators.add(pa)) {
-                        pa.addChangeListener(WeakListeners.change(this, pa));
-                    }
-                }
-            }
-        }
-
-        public @Override void resultChanged(LookupEvent ev) {
-            annotatorsChanged();
-            updateIcon(true);
-        }
-        
-        public @Override void propertyChange(PropertyChangeEvent evt) {
-            if (ProjectInformation.PROP_ICON.equals(evt.getPropertyName())) {
-                synchronized (LOCK) {
-                    if (!annotatorsInitialized) {
-                        annotatorsChanged();
-                    }
-                }
-                updateIcon(true);
-            } else {
-                pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-            }
-        }
-        
-        public @Override void stateChanged(ChangeEvent e) {
-            updateIcon(true);
-        }
-        
-        private void updateIcon(boolean fireChange) {
-            Icon original = pinfo.getIcon();
-            if (original == null) {
-                // Forbidden generally but common in tests.
-                return;
-            }
-            Image _icon = ImageUtilities.icon2Image(original);
-            final Project prj = getProject();
-            assert prj != null : "ProjectIformation.getProject() == null for " + pinfo;    //NOI18N
-            if (prj != null) {
-                for (ProjectIconAnnotator pa : annotatorResult.allInstances()) {
-                    _icon = pa.annotateIcon(prj, _icon, false);
-                }
-            }
-            Icon old = icon;
-            Icon newOne;
-            synchronized (LOCK) {
-                icon = ImageUtilities.image2Icon(_icon);
-                newOne = icon;
-            }
-            if (fireChange) {
-                pcs.firePropertyChange(ProjectInformation.PROP_ICON, old, newOne);
-            }
-        }
-
-        public @Override Icon getIcon() {
-            synchronized (LOCK) {
-                if (icon == null) {
-                    if (!annotatorsInitialized) {
-                        annotatorsChanged();
-                    }
-                    updateIcon(false);
-                }
-                return icon;
-            }
-        }
-       
-        public @Override void addPropertyChangeListener(PropertyChangeListener listener) {
-            synchronized (LOCK) {
-                if (!addedPropertyListener) {
-                    pinfo.addPropertyChangeListener(WeakListeners.propertyChange(this, pinfo));
-                    addedPropertyListener = true;
-                }
-            }
-            pcs.addPropertyChangeListener(listener);
-        }
-
-        public @Override void removePropertyChangeListener(PropertyChangeListener listener) {
-            pcs.removePropertyChangeListener(listener);
-        }
-
-        public @Override Project getProject() {
-            return pinfo.getProject();
-        }
-        public @Override String getName() {
-            return pinfo.getName();
-        }
-        public @Override String getDisplayName() {
-            return pinfo.getDisplayName();
-        }
-
-    }
-
-    
     /**
      * Find a way of storing extra configuration in a project.
      * If the project's {@linkplain Project#getLookup lookup} does not provide an instance,

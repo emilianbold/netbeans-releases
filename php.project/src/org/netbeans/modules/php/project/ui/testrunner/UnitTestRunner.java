@@ -45,7 +45,7 @@ package org.netbeans.modules.php.project.ui.testrunner;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
@@ -94,7 +94,8 @@ public final class UnitTestRunner {
         assert coverageProvider != null;
         this.testingProviders = testingProviders;
 
-        testSession = new TestSession(getOutputTitle(project, info), project, map(info.getSessionType()), new PhpTestRunnerNodeFactory(new CallStackCallback(project)));
+        MANAGER.setNodeFactory(new PhpTestRunnerNodeFactory(new CallStackCallback(project)));
+        testSession = new TestSession(getOutputTitle(project, info), project, map(info.getSessionType()));
         testSession.setRerunHandler(rerunHandler);
     }
 

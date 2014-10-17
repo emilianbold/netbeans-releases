@@ -111,13 +111,10 @@ import java.awt.peer.ScrollbarPeer;
 import java.awt.peer.TextAreaPeer;
 import java.awt.peer.TextFieldPeer;
 import java.awt.peer.WindowPeer;
-import java.io.File;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
@@ -148,72 +145,6 @@ public class UtilitiesTest extends NbTestCase {
         super (testName);
     }
     
-    private String originalOsName;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Utilities.resetOperatingSystem ();
-        originalOsName = System.getProperty("os.name");
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        System.setProperty("os.name", originalOsName);
-        super.tearDown();
-    }
-
-    public void testGetOperatingSystemWinNT () {
-        System.setProperty ("os.name", "Windows NT");
-        //assertEquals ("System.getProperty (os.name) returns Windows NT", "Windows NT", System.getProperty ("os.name"));
-        assertEquals ("Windows NT recognized as OS_WINNT", Utilities.OS_WINNT, Utilities.getOperatingSystem ());
-    }
-
-    public void testGetOperatingSystemFreebsd () {
-        System.setProperty ("os.name", "FreeBSD");
-        assertEquals ("System.getProperty (os.name) returns FreeBSD", "FreeBSD", System.getProperty ("os.name"));
-        assertEquals ("System.getProperty (os.name) returns freebsd", "freebsd", System.getProperty ("os.name").toLowerCase (Locale.US));
-        assertEquals ("FreeBSD recognized as OS_FREEBSD", Utilities.OS_FREEBSD, Utilities.getOperatingSystem ());
-    }
-
-    public void testGetOperatingSystemFreeBSDLowerCase () {
-        System.setProperty ("os.name", "freebsd");
-        assertEquals ("FreeBSD recognized as OS_FREEBSD", Utilities.OS_FREEBSD, Utilities.getOperatingSystem ());
-    }
-
-    public void testGetUnknownOperatingSystem () {
-        System.setProperty ("os.name", "Unknown");
-        if (File.pathSeparatorChar == ':') {
-            assertTrue("Unknown os.name should be recognized as Unix.", Utilities.isUnix());
-        } else {
-            assertEquals("Unknown os.name not OS_OTHER.", Utilities.OS_OTHER, Utilities.getOperatingSystem());
-        }
-    }
-
-    public void testWhatIsWinXP () {
-        System.setProperty ("os.name", "Windows XP");
-        assertTrue ("Windows XP isWindows", Utilities.isWindows ());
-        assertFalse ("Windows XP not isUnix", Utilities.isUnix ());
-    }
-
-    public void testWhatIsLinux () {
-        System.setProperty ("os.name", "Linux");
-        assertFalse ("Linux not isWindows", Utilities.isWindows ());
-        assertTrue ("Linux isUnix", Utilities.isUnix ());
-    }
-
-    public void testWhatIsMac () {
-        System.setProperty ("os.name", "Mac OS X");
-        assertFalse ("Mac not isWindows", Utilities.isWindows ());
-        assertTrue ("Mac isMac", Utilities.isMac ());
-    }
-
-    public void testWhatIsFreeBSD () {
-        System.setProperty ("os.name", "freebsd");
-        assertFalse ("freebsd is not isWindows", Utilities.isWindows ());
-        assertTrue ("freebsd isUnix", Utilities.isUnix ());
-    }
-
     public void testCustomCursorNotSupported() {
         NoCustomCursorToolkit toolkit = new NoCustomCursorToolkit();
         CustomToolkitComponent c = new CustomToolkitComponent( toolkit );
@@ -254,18 +185,6 @@ public class UtilitiesTest extends NbTestCase {
         assertNotNull ("key stroke created", ks);
         String s = Utilities.keyToString(ks);
         assertEquals ("Correctly converted", "CONTEXT_MENU", s);
-    }
-
-    public void testIsJavaIdentifier() throws Exception {
-        assertTrue(Utilities.isJavaIdentifier("whatever"));
-        assertTrue(Utilities.isJavaIdentifier("Ю"));
-        assertTrue(Utilities.isJavaIdentifier("_someThing$99"));
-        assertFalse(Utilities.isJavaIdentifier("99z"));
-        assertFalse(Utilities.isJavaIdentifier("assert"));
-        assertFalse(Utilities.isJavaIdentifier("null"));
-        assertFalse(Utilities.isJavaIdentifier(""));
-        assertFalse(Utilities.isJavaIdentifier(null));
-        assertFalse(Utilities.isJavaIdentifier("some.thing"));
     }
 
     public void testActionsToPopupWithLookup() throws Exception {
@@ -379,38 +298,6 @@ public class UtilitiesTest extends NbTestCase {
         } finally {
             done.release();
         }
-    }
-
-    public void testFileURI() throws Exception {
-        if (Utilities.isWindows()) {
-            assertFileURI("C:\\some\\path #1", "file:/C:/some/path%20%231");
-            assertEquals(new File("C:\\some\\path"), Utilities.toFile(new URI("file:/C:/some/path")));
-            assertEquals(new File("C:\\some\\path"), Utilities.toFile(new URI("file:///C:/some/path")));
-            assertEquals(new File("C:\\some\\path"), Utilities.toFile(new URI("file:/C:/some/path/")));
-            assertFileURI("\\\\server\\share\\path", "file://server/share/path");
-            assertEquals(new File("\\\\server\\share\\path"), Utilities.toFile(new URI("file:////server/share/path")));
-            assertEquals(new File("\\\\server\\share\\path #1"), Utilities.toFile(new URI("file:////server/share/path%20%231")));
-        } else {
-            assertFileURI("/some/path #1", "file:/some/path%20%231");
-            assertEquals(new File("/some/path"), Utilities.toFile(new URI("file:/some/path")));
-            assertEquals(new File("/some/path"), Utilities.toFile(new URI("file:///some/path")));
-            assertEquals(new File("/some/path"), Utilities.toFile(new URI("file:/some/path/")));
-        }
-        String s = Utilities.toURI(getWorkDir()).toString();
-        assertTrue(s, s.endsWith("/"));
-        URI jar = Utilities.toURI(new File(getWorkDir(), "some.jar"));
-        URI jarN = jar.resolve("some.jar");
-        assertEquals(jar, jarN);
-        URI jarR = new URI("jar:" + jar + "!/");
-        URI jarNR = new URI("jar:" + jarN + "!/");
-        assertEquals("#214131: equal even when wrapped", jarR, jarNR);
-        // XXX test that IllegalArgumentException is thrown where appropriate
-    }
-    private static void assertFileURI(String file, String uri) throws Exception {
-        URI u = new URI(uri);
-        File f = new File(file);
-        assertEquals(u, Utilities.toURI(f));
-        assertEquals(f, Utilities.toFile(u));
     }
 
     private static class CustomToolkitComponent extends Component {

@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 public class FileUtilTestHidden extends TestBaseHid {
 
@@ -144,7 +144,7 @@ public class FileUtilTestHidden extends TestBaseHid {
         file2 = FileUtil.normalizeFile(file);
         assertEquals(file2, file);
 
-        if (Utilities.isUnix()) {
+        if (BaseUtilities.isUnix()) {
             assertEquals(new File("/"), FileUtil.normalizeFile(new File("/..")));
             assertEquals(new File("/"), FileUtil.normalizeFile(new File("/../.")));
             assertEquals(new File("/tmp"), FileUtil.normalizeFile(new File("/../../tmp")));
@@ -152,7 +152,7 @@ public class FileUtilTestHidden extends TestBaseHid {
     }
 
     public void testNormalizeFile2() throws Exception {
-        if (!Utilities.isWindows()) {
+        if (!BaseUtilities.isWindows()) {
             return;
         }
         File rootFile = FileUtil.toFile(root);
@@ -182,7 +182,7 @@ public class FileUtilTestHidden extends TestBaseHid {
     }
 
     public void testIsArchiveFile() throws Exception {
-        final String base = Utilities.toURI(getWorkDir()).toURL().toExternalForm();
+        final String base = BaseUtilities.toURI(getWorkDir()).toURL().toExternalForm();
         URL url = new URL(base + "test.jar");    //NOI18N
         assertTrue("test.jar has to be an archive", FileUtil.isArchiveFile(url));  //NOI18N
         url = new URL(base + ".hidden.jar");   //NOI18N

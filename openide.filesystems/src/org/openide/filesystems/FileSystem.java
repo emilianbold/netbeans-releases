@@ -45,8 +45,6 @@
 package org.openide.filesystems;
 
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -57,6 +55,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -64,7 +63,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -159,21 +157,19 @@ public abstract class FileSystem implements Serializable {
     /** Property name giving read-only state. */
     public static final String PROP_READ_ONLY = "readOnly"; // NOI18N
 
-    /** Property name giving capabilities state. @deprecated No more capabilities. */
-    static final String PROP_CAPABILITIES = "capabilities"; // NOI18N    
-
     /** Used for synchronization purpose*/
     private static final Object internLock = new Object();
     private transient static ThreadLocal<EventControl> thrLocal = new ThreadLocal<EventControl>();
 
     /** Empty status */
-    private static final Status STATUS_NONE = new Status() {
+    private static final StatusDecorator STATUS_NONE = new StatusDecorator() {
             public String annotateName(String name, Set<? extends FileObject> files) {
                 return name;
             }
 
-            public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-                return icon;
+            @Override
+            public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+                return null;
             }
         };
 
@@ -191,18 +187,6 @@ public abstract class FileSystem implements Serializable {
     /**Repository that contains this FileSystem or null*/
     private transient Repository repository = null;
     private transient FCLSupport fclSupport;
-
-    /** Describes capabilities of the filesystem.
-    */
-    @Deprecated // have to store it for compat
-    private /* XXX JDK #6460147: javac still reports it even though @Deprecated,
-               and @SuppressWarnings("deprecation") does not help either: FileSystemCapability*/Object capability;
-
-    /** property listener on FileSystemCapability. */
-    private transient PropertyChangeListener capabilityListener;
-
-    /** hidden flag */
-    private boolean hidden = false;
 
     /** system name */
     private String systemName = ""; // NOI18N
@@ -248,47 +232,6 @@ public abstract class FileSystem implements Serializable {
                 PROP_VALID, (!v) ? Boolean.TRUE : Boolean.FALSE, v ? Boolean.TRUE : Boolean.FALSE, Boolean.FALSE
             );
         }
-    }
-
-    /** Set hidden state of the object.
-     * A hidden filesystem is not presented to the user in the Repository list (though it may be present in the Repository Settings list).
-    *
-    * @param hide <code>true</code> if the filesystem should be hidden
-     * @deprecated This property is now useless.
-    */
-    @Deprecated
-    public final void setHidden(boolean hide) {
-        if (hide != hidden) {
-            hidden = hide;
-            firePropertyChange(PROP_HIDDEN, (!hide) ? Boolean.TRUE : Boolean.FALSE, hide ? Boolean.TRUE : Boolean.FALSE);
-        }
-    }
-
-    /** Getter for the hidden property.
-     * @return the hidden property.
-     * @deprecated This property is now useless.
-    */
-    @Deprecated
-    public final boolean isHidden() {
-        return hidden;
-    }
-
-    /** Tests whether filesystem will survive reloading of system pool.
-    * If true then when
-    * {@link Repository} is reloading its content, it preserves this
-    * filesystem in the pool.
-    * <P>
-    * This can be used when the pool contains system level and user level
-    * filesystems. The system ones should be preserved when the user changes
-    * the content (for example when he is loading a new project).
-    * <p>The default implementation returns <code>false</code>.
-    *
-    * @return true if the filesystem should be persistent
-     * @deprecated This property is long since useless.
-    */
-    @Deprecated
-    protected boolean isPersistent() {
-        return false;
     }
 
     /** Provides a name for the system that can be presented to the user.
@@ -467,46 +410,7 @@ public abstract class FileSystem implements Serializable {
     public FileObject createTempFile(FileObject parent, String prefix, String suffix, boolean deleteOnExit) throws IOException {
         throw new IOException("Unsupported operation"); // NOI18N
     }
-    
-    /** 
-     * FileSystems and their implementation 
-     * should stay UI independent. Should there be a UI related extensions
-     * they can be communicated via {@link #findExtrasFor(java.util.Set)} method.
-     * <p>
-     * Returns an array of actions that should somehow be applicable to 
-     * this file system. These actions should preferably
-     * support the {@link org.openide.util.actions.Presenter.Menu Menu},
-     * {@link org.openide.util.actions.Presenter.Popup Popup},
-     * and {@link org.openide.util.actions.Presenter.Toolbar Toolbar} presenters.
-     *
-     * @return array of available actions
-     * @deprecated Actions should be provided by higher level parts of the
-     *   system, not directly by file system layer.
-     */
-    @Deprecated
-    public SystemAction[] getActions() {
-        return new SystemAction[0];
-    }
-
-    /** 
-     * FileSystems and their implementation 
-     * should stay UI independent. Should there be UI related extensions
-     * they can be communicated via {@link #findExtrasFor(java.util.Set)} method.
-     * In case of actions it should be enough to call:<pre>
-     * actions = fs.{@link #findExtrasFor(java.util.Set) findUI}(foSet).{@link Lookup#lookupAll(java.lang.Class) lookupAll}({@link javax.swing.Action});
-     * </pre>
-     * Used to get actions appropriate to a certain file selection.
-     * By default, returns the same list as {@link #getActions()}.
-     * @param foSet one or more files which may be selected
-     * @return zero or more actions appropriate to those files
-     * @deprecated Actions should be provided by higher level parts of the
-     *   system, not directly by file system layer.
-     */
-    @Deprecated
-    public SystemAction[] getActions(Set<FileObject> foSet) {
-        return this.getActions();
-    }
-
+        
     /** Finds various extensions for set of file objects coming from
      * this file system.
      * For example actions should be obtainable as:<pre>
@@ -530,34 +434,21 @@ public abstract class FileSystem implements Serializable {
     private void readObject(java.io.ObjectInputStream in)
     throws java.io.IOException, java.lang.ClassNotFoundException {
         in.defaultReadObject();
-
-        if (capability != null) {
-            ((FileSystemCapability) capability).addPropertyChangeListener(getCapabilityChangeListener());
-        }
     }
 
     @Override
     public String toString() {
         return getSystemName() + "[" + super.toString() + "]"; // NOI18N
     }
-
-    /** Allows filesystems to set up the environment for external execution
-    * and compilation.
-    * Each filesystem can add its own values that
-    * influence the environment. The set of operations that can modify
-    * environment is described by the {@link Environment} interface.
-    * <P>
-    * The default implementation throws an exception to signal that it does not
-    * support external compilation or execution.
-    *
-    * @param env the environment to setup
-    * @exception EnvironmentNotSupportedException if external execution
-    *    and compilation cannot be supported
-    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
-    */
-    @Deprecated
-    public void prepareEnvironment(Environment env) throws EnvironmentNotSupportedException {
-        throw new EnvironmentNotSupportedException(this);
+    
+    private static volatile Lookup.Result<StatusDecorator> statusResult;
+    
+    private static StatusDecorator defaultStatus() {
+        if (statusResult == null) {
+            statusResult = Lookup.getDefault().lookupResult(StatusDecorator.class);
+        }
+        Iterator<? extends StatusDecorator> it = statusResult.allInstances().iterator();
+        return it.hasNext() ? it.next() : SFS_STATUS;
     }
 
     /**
@@ -583,43 +474,10 @@ public abstract class FileSystem implements Serializable {
      * </dl>
      * @return the status object for this filesystem
      */
-    public Status getStatus() {
-        return isDefault() ? SFS_STATUS : STATUS_NONE;
+    public StatusDecorator getDecorator() {
+        return isDefault() ? defaultStatus() : STATUS_NONE;
     }
-
-    /** The object describing capabilities of this filesystem.
-     * Subclasses cannot override it.
-     * @return object describing capabilities of this filesystem.
-     * @deprecated Capabilities are no longer used.
-     */
-    @Deprecated
-    public final FileSystemCapability getCapability() {
-        if (capability == null) {
-            capability = new FileSystemCapability.Bean();
-            ((FileSystemCapability) capability).addPropertyChangeListener(getCapabilityChangeListener());
-        }
-
-        return (FileSystemCapability) capability;
-    }
-
-    /** Allows subclasses to change a set of capabilities of the
-    * filesystem.
-    * @param capability the capability to use
-     * @deprecated Capabilities are no longer used.
-    */
-    @Deprecated
-    protected final void setCapability(FileSystemCapability capability) {
-        if (this.capability != null) {
-            ((FileSystemCapability) this.capability).removePropertyChangeListener(getCapabilityChangeListener());
-        }
-
-        this.capability = capability;
-
-        if (this.capability != null) {
-            ((FileSystemCapability) this.capability).addPropertyChangeListener(getCapabilityChangeListener());
-        }
-    }
-
+    
     /** Executes atomic action. The atomic action represents a set of
     * operations constituting one logical unit. It is guaranteed that during
     * execution of such an action no events about changes in the filesystem
@@ -676,21 +534,6 @@ public abstract class FileSystem implements Serializable {
         getEventControl().dispatchEvent(run);
     }
 
-    /** returns property listener on FileSystemCapability. */
-    private synchronized PropertyChangeListener getCapabilityChangeListener() {
-        if (capabilityListener == null) {
-            capabilityListener = new PropertyChangeListener() {
-                        public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
-                            firePropertyChange(
-                                PROP_CAPABILITIES, propertyChangeEvent.getOldValue(), propertyChangeEvent.getNewValue()
-                            );
-                        }
-                    };
-        }
-
-        return capabilityListener;
-    }
-
     private final EventControl getEventControl() {
         EventControl evnCtrl = thrLocal.get();
 
@@ -710,7 +553,7 @@ public abstract class FileSystem implements Serializable {
     public final void addFileStatusListener(FileStatusListener listener) {
         synchronized (internLock) {
             // JST: Ok? Do not register listeners when the fs cannot change status?
-            if (getStatus() == STATUS_NONE) {
+            if (getDecorator() == STATUS_NONE) {
                 return;
             }
 
@@ -925,105 +768,6 @@ public abstract class FileSystem implements Serializable {
         boolean isAsynchronous();
     }
 
-    /** Allows a filesystem to annotate a group of files (typically comprising a data object) with additional markers.
-     * <p>This could be useful, for
-    * example, for a filesystem supporting version control.
-    * It could annotate names and icons of data nodes according to whether the files were current, locked, etc.
-    */
-    public static interface Status {
-        /** Annotate the name of a file cluster.
-        * @param name the name suggested by default
-        * @param files an immutable set of {@link FileObject}s belonging to this filesystem
-        * @return the annotated name (may be the same as the passed-in name)
-        * @exception ClassCastException if the files in the set are not of valid types
-        */
-        public String annotateName(String name, Set<? extends FileObject> files);
-
-        /** Annotate the icon of a file cluster.
-         * <p>Please do <em>not</em> modify the original; create a derivative icon image,
-         * using a weak-reference cache if necessary.
-        * @param icon the icon suggested by default
-        * @param iconType an icon type from {@link java.beans.BeanInfo}
-        * @param files an immutable set of {@link FileObject}s belonging to this filesystem
-        * @return the annotated icon (may be the same as the passed-in icon)
-        * @exception ClassCastException if the files in the set are not of valid types
-        */
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files);
-    }
-
-    /** Extension interface for Status provides HTML-formatted annotations.
-     * Principally this is used to deemphasize status text by presenting
-     * it in a lighter color, by placing it inside
-     * &lt;font color=!controlShadow&gt; tags.  Note that it is preferable to
-     * use logical colors (such as controlShadow) which are resolved by calling
-     * UIManager.getColor(key) - this way they will always fit with the
-     * look and feel.  To use a logical color, prefix the color name with a
-     * ! character.
-     * <p>
-     * Please use only the limited markup subset of HTML supported by the
-     * lightweight HTML renderer.
-     * @see <a href="@org-openide-awt@/org/openide/awt/HtmlRenderer.html"><code>HtmlRenderer</code></a>
-     * @since 4.30
-     */
-    public static interface HtmlStatus extends Status {
-        /** Annotate a name such that the returned value contains HTML markup.
-         * The return value less the HTML content should typically be the same
-         * as the return value from <code>annotateName()</code>.  This is used,
-         * for example, by VCS filesystems to deemphasize the status information
-         * included in the file name by using a light grey font color.
-         * <p>
-         * For consistency with <code>Node.getHtmlDisplayName()</code>,
-         * filesystems that proxy other filesystems (and so must implement
-         * this interface to supply HTML annotations) should return null if
-         * the filesystem they proxy does not provide an implementation of
-         * {@link FileSystem.HtmlStatus}.
-         * <p>Note that since the {@code name} argument must be free of HTML,
-         * it is tricky to use this decorator on a {@code Node} arising from
-         * foreign code, to chain decorators, or otherwise when you wish to add
-         * decorations to an HTML label whose creation you do not control.
-         * As a workaround, pass in an arbitrary but HTML-free string as an argument
-         * (something unlikely to occur elsewhere) and replace that string in the
-         * result with the original HTML label - under the assumption that the
-         * decorator does not inspect its argument but merely adds some prefix
-         * and/or suffix.
-         *
-         * @param name the name suggested by default. It cannot contain HTML
-         * markup tags but must escape HTML metacharacters. For example
-         * "&lt;default package&gt;" is illegal but "&amp;lt;default package&amp;gt;"
-         * is fine.
-         * @param files an immutable set of {@link FileObject}s belonging to this filesystem
-         * @return the annotated name. It may be the same as the passed-in name.
-         * It may be null if getStatus returned status that doesn't implement
-         * HtmlStatus but plain Status.
-         *
-         * @since 4.30
-         * @see <a href="@org-openide-loaders@/org/openide/loaders/DataNode.html#getHtmlDisplayName()"><code>DataNode.getHtmlDisplayName()</code></a>
-         * @see <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getHtmlDisplayName"><code>Node.getHtmlDisplayName()</code></a>
-         **/
-        public String annotateNameHtml(String name, Set<? extends FileObject> files);
-    }
-
-    /** Interface that allows filesystems to set up the Java environment
-    * for external execution and compilation.
-    * Currently just used to append entries to the external class path.
-    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
-    */
-    @Deprecated
-    public static abstract class Environment extends Object {
-        /** Deprecated. */
-        public Environment() {
-            assert false : "Deprecated.";
-        }
-
-        /** Adds one element to the class path environment variable.
-        * @param classPathElement string representing the one element
-        * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/ClassPath.html">ClassPath API</a> instead.
-        */
-        @Deprecated
-        public void addClassPath(String classPathElement) {
-        }
-    }
-
     /** Class used to notify events for the filesystem.
     */
     static abstract class EventDispatcher extends Object implements Runnable {
@@ -1064,8 +808,16 @@ public abstract class FileSystem implements Serializable {
         }
     }
 
-    private static final Status SFS_STATUS = new Status() {
+    @SuppressWarnings("FieldMayBeFinal")
+    private static StatusDecorator SFS_STATUS = new StatusDecorator() {
 
+        @Override
+        public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+            // no HTML annotation
+            return null;
+        }
+
+        @Override
         public String annotateName(String s, Set<? extends FileObject> files) {
             // Look for a localized file name.
             // Note: all files in the set are checked. But please only place the attribute
@@ -1084,7 +836,7 @@ public abstract class FileSystem implements Serializable {
             String bundleName = (String) fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
             if (bundleName != null) {
                 try {
-                    bundleName = Utilities.translate(bundleName);
+                    bundleName = BaseUtilities.translate(bundleName);
                     ResourceBundle b = NbBundle.getBundle(bundleName);
                     try {
                         return b.getString(fo.getPath());
@@ -1108,6 +860,7 @@ public abstract class FileSystem implements Serializable {
             return "Cannot load " + name + " for " + fo + " defined by " + by; // NOI18N
         }
 
+        /*
         public Image annotateIcon(Image im, int type, Set<? extends FileObject> files) {
             for (FileObject fo : files) {
                 Image img = annotateIcon(fo, type);
@@ -1148,17 +901,7 @@ public abstract class FileSystem implements Serializable {
             }
             return null;
         }
-
-        private String insertBeforeSuffix(String path, String toInsert) {
-            String withoutSuffix = path;
-            String suffix = ""; // NOI18N
-            if (path.lastIndexOf('.') >= 0) {
-                withoutSuffix = path.substring(0, path.lastIndexOf('.'));
-                suffix = path.substring(path.lastIndexOf('.'), path.length());
-            }
-            return withoutSuffix + toInsert + suffix;
-        }
+            */
 
     };
-
 }

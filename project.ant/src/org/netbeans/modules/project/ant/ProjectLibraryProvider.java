@@ -87,6 +87,7 @@ import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider.ProjectLibraryArea;
 import org.netbeans.modules.project.ant.ProjectLibraryProvider.ProjectLibraryImplementation;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -108,8 +109,10 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
@@ -117,7 +120,6 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
@@ -227,7 +229,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     public ProjectLibraryArea loadArea(URL location) {
         if (location.getProtocol().equals("file") && location.getPath().endsWith(".properties")) { // NOI18N
             try {
-                return new ProjectLibraryArea(Utilities.toFile(location.toURI()));
+                return new ProjectLibraryArea(BaseUtilities.toFile(location.toURI()));
             } catch (URISyntaxException x) {
                 Exceptions.printStackTrace(x);
             }
@@ -371,7 +373,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 }
             }
         }
-        ProjectLibraryArea pla = loadArea(Utilities.toURI(pli.mainPropertiesFile).toURL());
+        ProjectLibraryArea pla = loadArea(BaseUtilities.toURI(pli.mainPropertiesFile).toURL());
         if (pla != null) {
         LP lp = getLibraries(pla);
         if (lp.libraries.remove(pli.name) != null) {
@@ -425,7 +427,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             return properties;
         }
     }
-
+    
     private static Definitions findDefinitions(AntProjectHelper helper) {
         String text = getLibrariesLocationText(helper.createAuxiliaryConfiguration());
         if (text != null) {
@@ -535,7 +537,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         File normalizedFile = FileUtil.normalizeFile(new File(component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}", area.mainPropertiesFile.getParent())));
                         try {
                             URI u = LibrariesSupport.convertFilePathToURI(f);
-                            if (FileUtil.isArchiveFile(Utilities.toURI(normalizedFile).toURL())) {
+                            if (FileUtil.isArchiveFile(BaseUtilities.toURI(normalizedFile).toURL())) {
                                 u = appendJarFolder(u, jarFolder);
                             } else {
                                 if (normalizedFile.exists() && !normalizedFile.isDirectory()) {
@@ -602,7 +604,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 continue;
             }
             assert old.name.equals(nue.name);
-            if (!Utilities.compareObjects(old.description, nue.description)) {
+            if (!BaseUtilities.compareObjects(old.description, nue.description)) {
                 old.description = nue.description;
                 List<String> props = toFire.get(old);
                 if (props == null) {
@@ -782,7 +784,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             List<URL> resolvedUrls = new ArrayList<URL>(uris.size());
             for (URI u : uris) {
                 try {
-                    resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURI(Utilities.toURI(mainPropertiesFile).toURL(), u).toURL());
+                    resolvedUrls.add(LibrariesSupport.resolveLibraryEntryURI(BaseUtilities.toURI(mainPropertiesFile).toURL(), u).toURL());
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.INFO, "#184304: " + u, ex);
                 }
@@ -888,7 +890,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
         @Override
         public void setDisplayName(final @NullAllowed String displayName) {
-            if (Utilities.compareObjects(this.displayName, displayName)) {
+            if (BaseUtilities.compareObjects(this.displayName, displayName)) {
                 return;
             }
             final String oldDisplayName = this.displayName;
@@ -926,7 +928,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
         @Override
         public void setProperties(Map<String, String> properties) {
-            if (Utilities.compareObjects(this.properties, properties)) {
+            if (BaseUtilities.compareObjects(this.properties, properties)) {
                 return;
             }
             final Map<String,String> oldProperties = this.properties;
@@ -962,7 +964,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 is.close();
             }
         }
-        if (Utilities.compareObjects(value, ep.getProperty(key))) {
+        if (BaseUtilities.compareObjects(value, ep.getProperty(key))) {
             return;
         }
         if (value.length > 0) {
@@ -999,7 +1001,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
 
         public URL getLocation() {
             try {
-                return Utilities.toURI(mainPropertiesFile).toURL();
+                return BaseUtilities.toURI(mainPropertiesFile).toURL();
             } catch (MalformedURLException x) {
                 throw new AssertionError(x);
             }
@@ -1062,7 +1064,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             public void removeChangeListener(ChangeListener l) {
                 cs.removeChangeListener(l);
             }
-
+    
             public void fileFolderCreated(FileEvent fe) {
                 fireChangeNowOrLater();
             }
@@ -1119,7 +1121,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
     }
     private static final RequestProcessor RP = new RequestProcessor("ProjectLibraryProvider.RP"); // NOI18N
     public static boolean FIRE_CHANGES_SYNCH = false; // used by tests
-
+    
     /**
      * Is this library reachable from this project? Returns true if given library
      * is defined in libraries location associated with this project.
@@ -1165,7 +1167,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         Definitions defs = findDefinitions(helper);
         if (defs != null) {
             try {
-                return LibraryManager.forLocation(Utilities.toURI(defs.mainPropertiesFile).toURL());
+                return LibraryManager.forLocation(BaseUtilities.toURI(defs.mainPropertiesFile).toURL());
             } catch (MalformedURLException x) {
                 Exceptions.printStackTrace(x);
             }
@@ -1229,7 +1231,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      */
     public static Library copyLibrary(final Library lib, final URL location, 
             final boolean generateLibraryUniqueName) throws IOException {
-        final File libBaseFolder = Utilities.toFile(URI.create(location.toExternalForm())).getParentFile();
+        final File libBaseFolder = BaseUtilities.toFile(URI.create(location.toExternalForm())).getParentFile();
         FileObject sharedLibFolder = null;
         final Map<String, List<URI>> content = new HashMap<String, List<URI>>();
         String[] volumes = LibrariesSupport.getLibraryTypeProvider(lib.getType()).getSupportedVolumeTypes();
@@ -1263,7 +1265,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 URI u;
                 FileObject newFO;
                 String name;
-                if (CollocationQuery.areCollocated(Utilities.toURI(libBaseFolder), libEntryFO.toURI())) {
+                if (CollocationQuery.areCollocated(BaseUtilities.toURI(libBaseFolder), libEntryFO.toURI())) {
                     // if the jar/folder is in relation to the library folder (parent+child/same vcs)
                     // don't replicate it but reference the original file.
                     newFO = libEntryFO;
@@ -1273,7 +1275,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         sharedLibFolder = getSharedLibFolder(libBaseFolder, lib);
                     }
                     if (libEntryFO.isFolder()) {
-                        newFO = FileChooserAccessory.copyFolderRecursively(libEntryFO, sharedLibFolder);
+                        newFO = copyFolderRecursively(libEntryFO, sharedLibFolder);
                         name = sharedLibFolder.getNameExt()+File.separatorChar+newFO.getName()+File.separatorChar;
                     } else {
                         String libEntryName = getUniqueName(sharedLibFolder, libEntryFO.getName(), libEntryFO.getExt());
@@ -1349,5 +1351,30 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
         return name;
     }
-    
+
+    private static FileObject copyFolderRecursively(final FileObject sourceFolder, final FileObject destination) throws IOException {
+        FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override public void run() throws IOException {
+                assert sourceFolder.isFolder() : sourceFolder;
+                assert destination.isFolder() : destination;
+                FileObject destinationSubFolder = destination.getFileObject(sourceFolder.getName());
+                if (destinationSubFolder == null) {
+                    destinationSubFolder = destination.createFolder(sourceFolder.getName());
+                }
+                for (FileObject fo : sourceFolder.getChildren()) {
+                    if (fo.isFolder()) {
+                        copyFolderRecursively(fo, destinationSubFolder);
+                    } else {
+                        FileObject foExists = destinationSubFolder.getFileObject(fo.getName(), fo.getExt());
+                        if (foExists != null) {
+                            foExists.delete();
+                        }
+                        FileUtil.copyFile(fo, destinationSubFolder, fo.getName(), fo.getExt());
+                    }
+                }
+
+            }
+        });
+        return destination.getFileObject(sourceFolder.getName());
+    }
 }

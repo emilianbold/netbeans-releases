@@ -56,6 +56,7 @@ import junit.framework.TestSuite;
 
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
@@ -65,6 +66,8 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 
@@ -98,7 +101,7 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
     private PropertyChangeListener listenerEM, listenerTC;
     
     protected void setUp () {        
-        System.setProperty("org.openide.util.Lookup", "-"); // no lookup
+        System.setProperty("org.openide.util.Lookup", Lkp.class.getName()); // no lookup
         
         
         p = new ExplorerPanel ();
@@ -358,5 +361,10 @@ public class TopComponentActivatedNodesTest extends NbTestCase {
             }
         }
     }
-    
+
+    public static final class Lkp extends ProxyLookup {
+        public Lkp() {
+            setLookups(Lookups.singleton(new NbMutexEventProvider()));
+        }
+    }
 }

@@ -44,6 +44,7 @@ package org.netbeans.api.extexecution;
 
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.extexecution.base.Processes;
 import org.netbeans.modules.extexecution.WrapperProcess;
 import org.netbeans.spi.extexecution.destroy.ProcessDestroyPerformer;
 import org.openide.util.Lookup;
@@ -55,6 +56,7 @@ import org.openide.util.Parameters;
  *
  * @author mkleint
  * @since 1.16
+ * @deprecated use {@link Processes}
  */
 public final class ExternalProcessSupport {
 
@@ -87,7 +89,7 @@ public final class ExternalProcessSupport {
         if (pdp != null) {
             pdp.destroy(process, env);
         } else {
-            process.destroy();
+            Processes.killTree(process, env);
         }
     }
 }

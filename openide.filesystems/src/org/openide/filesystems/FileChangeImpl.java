@@ -50,7 +50,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /** Holds FileChangeListener and File pair and handle movement of auxiliary
  * FileChangeListener to the first existing upper folder and firing appropriate events.
@@ -66,7 +66,7 @@ final class FileChangeImpl extends WeakReference<FileChangeListener> implements 
     private boolean isOnTarget = false;
 
     public FileChangeImpl(FileChangeListener listener, File path) {
-        super(listener, Utilities.activeReferenceQueue());
+        super(listener, BaseUtilities.activeReferenceQueue());
         assert path != null;
         this.path = path;
     }
@@ -243,7 +243,7 @@ final class FileChangeImpl extends WeakReference<FileChangeListener> implements 
     }
 
     static FileChangeListener removeFileChangeListenerImpl(Logger logger, FileChangeListener listener, File path) {
-        assert FileUtil.assertNormalized(path, Utilities.isMac());
+        assert FileUtil.assertNormalized(path, BaseUtilities.isMac());
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "removeFileChangeListener {0} @ {1}", new Object[]{listener, path});
         }

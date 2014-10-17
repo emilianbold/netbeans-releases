@@ -45,11 +45,10 @@
 package org.netbeans.modules.gsf.testrunner.plugin;
 
 import java.util.Map;
-//import org.netbeans.modules.junit.JUnitPluginTrampoline;
 import org.openide.filesystems.FileObject;
 
 /**
- * SPI for custom implementations of support for JUnit.
+ * SPI for custom implementations of support for Unit Testing.
  * It declares methods for:
  * <ul>
  *     <li>navigation between source classes and corresponding test classes
@@ -176,29 +175,10 @@ public abstract class CommonPlugin {
      * a Java file.
      */
     public static final class Location {
-        //** */
-        //public static final Set<ElementKind> CLASS_LIKE_ELEM_TYPES;
-        //** */
-        //public static final Set<ElementKind> SUPPORTED_ELEM_TYPES;
         /**
          * holds specification of a Java file
          */
         private final FileObject fileObject;
-//        /**
-//         */
-//        private final ElementHandle<Element> elementHandle;
-//        
-//        static {
-//            CLASS_LIKE_ELEM_TYPES = EnumSet.of(ElementKind.CLASS,
-//                                               ElementKind.INTERFACE,
-//                                               ElementKind.ENUM);
-//            EnumSet<ElementKind> elemTypes;
-//            elemTypes = EnumSet.copyOf(CLASS_LIKE_ELEM_TYPES);
-//            elemTypes.addAll(EnumSet.of(ElementKind.METHOD,
-//                                        ElementKind.CONSTRUCTOR,
-//                                        ElementKind.STATIC_INIT));
-//            SUPPORTED_ELEM_TYPES = Collections.unmodifiableSet(elemTypes);
-//        }
         
         /**
          * Creates a new instance.
@@ -208,21 +188,12 @@ public abstract class CommonPlugin {
          * 
          * 
          */
-        public Location(FileObject fileObject/*,
-                        Element element*/) {
+        public Location(FileObject fileObject) {
             if (fileObject == null) {
                throw new IllegalArgumentException("fileObject is null");//NOI18N
             }
             
-//            while ((element != null)
-//                    && !SUPPORTED_ELEM_TYPES.contains(element.getKind())) {
-//                element = element.getEnclosingElement();
-//            }
-            
             this.fileObject = fileObject;
-            //this.elementHandle = (element != null)
-            //                     ? ElementHandle.create(element)
-            //                     : null;
         }
         
         /**
@@ -233,12 +204,6 @@ public abstract class CommonPlugin {
         public FileObject getFileObject() {
             return fileObject;
         }
-        
-//        /**
-//         */
-//        public ElementHandle<Element> getElementHandle() {
-//            return elementHandle;
-//        }
         
     }
     
@@ -297,23 +262,6 @@ public abstract class CommonPlugin {
             FileObject targetRoot,
             Map<CreateTestParam, Object> params);
 
-//    /**
-//     * Determines whether the &quot;create JUnit tests&quot; functionality
-//     * should be enabled.
-//     * Before this method is called, other common pre-requisites are checked
-//     * (only Java classes or folders selected, all of them from the same source
-//     * of a Java project, all of them being valid {@code DataObject}s).
-//     * If some of the pre-requisites are not met, the functionality is disabled
-//     * and this method is not called.
-//     *
-//     * @return  {@code true} if this action should be enabled,
-//     *          {@code false} otherwise;
-//     *          the default implementation returns always {@code true}
-//     */
-//    protected boolean canCreateTests() {
-//        return true;
-//    }
-
     /**
      * Called immediately after the <em>Create Test</em> action was called.
      * It can be used as a trigger for additional checks and/or for displaying
@@ -326,8 +274,6 @@ public abstract class CommonPlugin {
      *          the default implementation returns always {@code true}
      */
     protected boolean createTestActionCalled(FileObject[] selectedFiles) {
-        // assert EventQueue.isDispatchThread(); #170707
-
         return true;
     }
 

@@ -49,6 +49,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +73,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -301,6 +304,32 @@ public final class LayerHandle {
         public @Override void fileAttributeChanged(FileAttributeEvent fe) {}
     }
     
+    private static final SystemAction[] NO_ACTIONS = new SystemAction[0];
+    
+    /**
+     * Extracts actions from a FileSystem that implements the old contract.
+     * 
+     * @param fs the filesystem
+     * @return FD actions, or an empty array.
+     */
+    private static SystemAction[] getFSActions(FileSystem fs) {
+        try {
+            Method m = fs.getClass().getMethod("getActions");
+            return (SystemAction[])m.invoke(fs);
+        } catch (NoSuchMethodException ex) {
+            // OK, no such method exists
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return NO_ACTIONS;
+    }
+    
     private final class SingleLayer extends FileSystem implements FileChangeListener {
         private final FileSystem explicit;
         SingleLayer(FileSystem explicit) {
@@ -348,9 +377,9 @@ public final class LayerHandle {
             return this.explicit!=null?this.explicit.findResource(name):null;
         }
 
-        @Override
+//        @Override
         public SystemAction[] getActions() {
-            return this.explicit!=null?this.explicit.getActions():null;
+            return this.explicit!=null?getFSActions(this.explicit):null;
         }
     }
 

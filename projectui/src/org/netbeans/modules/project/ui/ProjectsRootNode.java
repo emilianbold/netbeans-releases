@@ -84,6 +84,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUIUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -738,7 +739,7 @@ public class ProjectsRootNode extends AbstractNode {
             String original = super.getDisplayName();
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    original = files.iterator().next().getFileSystem().getStatus().annotateName(original, files);
+                    original = files.iterator().next().getFileSystem().getDecorator().annotateName(original, files);
                 } catch (FileStateInvalidException e) {
                     LOG.log(Level.INFO, null, e);
                 }
@@ -751,7 +752,7 @@ public class ProjectsRootNode extends AbstractNode {
             String original = super.getDisplayName();
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    original = files.iterator().next().getFileSystem().getStatus().annotateName(original, files);
+                    original = files.iterator().next().getFileSystem().getDecorator().annotateName(original, files);
                 } catch (FileStateInvalidException e) {
                     LOG.log(Level.INFO, null, e);
                 }
@@ -780,13 +781,10 @@ public class ProjectsRootNode extends AbstractNode {
             }
             if (files != null && files.iterator().hasNext()) {
                 try {
-                    FileSystem.Status stat = files.iterator().next().getFileSystem().getStatus();
-                    if (stat instanceof FileSystem.HtmlStatus) {
-                        FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-                        String annotatedMagic = hstat.annotateNameHtml(MAGIC, files);
-                        if (annotatedMagic != null) {
-                            htmlName = annotatedMagic.replace(MAGIC, htmlName);
-                        }
+                    String annotatedMagic = files.iterator().next().getFileSystem().
+                            getDecorator().annotateNameHtml(MAGIC, files);
+                    if (annotatedMagic != null) {
+                        htmlName = annotatedMagic.replace(MAGIC, htmlName);
                     }
                 } catch (FileStateInvalidException e) {
                     LOG.log(Level.INFO, null, e);
@@ -808,7 +806,7 @@ public class ProjectsRootNode extends AbstractNode {
                 if (files != null && files.iterator().hasNext()) {
                     try {
                         FileObject fo = files.iterator().next();
-                        img = fo.getFileSystem().getStatus().annotateIcon(img, type, files);
+                        img = FileUIUtils.getImageDecorator(fo.getFileSystem()).annotateIcon(img, type, files);
                     } catch (FileStateInvalidException e) {
                         LOG.log(Level.INFO, null, e);
                     }

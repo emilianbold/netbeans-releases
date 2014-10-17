@@ -112,6 +112,7 @@ public abstract class JavaSourceTestCase extends NbTestCase {
         roots.add(srcFO);
         cpProvider = new ClassPathProviderImpl();
         MockLookup.setInstances(cpProvider);
+        FileUtil.setMIMEType("java", "text/x-java");
     }
 
     protected void tearDown() {
