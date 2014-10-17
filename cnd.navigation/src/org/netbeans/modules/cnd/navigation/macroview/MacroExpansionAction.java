@@ -87,7 +87,7 @@ public class MacroExpansionAction extends CallableSystemAction {
         }
         MacroExpansionTopComponent win = MacroExpansionTopComponent.findInstance();
         win.open();
-        win.requestActive();
+        win.requestVisible();
     }
 
     @Override
