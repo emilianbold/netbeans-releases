@@ -78,7 +78,7 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
             ParsingUtils.invokeScanSensitiveTask(cpInfo, new ScanSensitiveTask<CompilationController>(true) {
                 @Override
                 public void run(CompilationController cc) {
-                    for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, toSearchScope(Collections.singleton(scope)))) { // NOI18N
+                    for (String pkgName : cpInfo.getClassIndex().getPackageNames("", false, toSearchScope(Collections.singleton(scope)))) { // NOI18N
                         pkgs.add(new JavacPackageInfo(cpInfo, indexInfo, pkgName, pkgName, scope));
                     }
                 }
