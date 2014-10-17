@@ -7,11 +7,7 @@
         "**/*.txt"
     ],
     "dependencies": {
-        "<name>": "<version>",
-        "<name>": "<folder>",
-        "<name>": "<package>"
     },
     "devDependencies": {
-        "<test-framework-name>": "<version>"
     }
 }
