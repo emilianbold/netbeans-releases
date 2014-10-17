@@ -44,18 +44,14 @@
 
 package org.netbeans.modules.identity.profile.api.configurator.impl.file;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -65,7 +61,7 @@ import org.xml.sax.SAXException;
  *
  * @author ads
  */
-public class AMCatalog implements CatalogReader, CatalogDescriptor,
+public class AMCatalog implements CatalogReader, CatalogDescriptor2,
     EntityResolver  
 {
     private static final String RESOURCES_DIR = 
@@ -147,8 +143,8 @@ public class AMCatalog implements CatalogReader, CatalogDescriptor,
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage(IMAGE_PATH);
+    public String getIconResource(int type) {
+        return IMAGE_PATH;
     }
     
     /**

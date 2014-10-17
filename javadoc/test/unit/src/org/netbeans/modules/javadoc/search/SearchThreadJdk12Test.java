@@ -60,6 +60,8 @@ public final class SearchThreadJdk12Test extends NbTestCase {
     private LocalFileSystem fs;
     private static final String JDK14_INDEX_PATH = "docs_jdk14/api/index-files";
     private static final String JDK15_INDEX_PATH = "docs_jdk15/api/index-files";
+    private static final String JDK7_INDEX_PATH = "docs_jdk7/api/index-files";
+    private static final String JDK8_INDEX_PATH = "docs_jdk8/api/index-files";
 
     public SearchThreadJdk12Test(String testName) {
         super(testName);
@@ -371,6 +373,58 @@ public final class SearchThreadJdk12Test extends NbTestCase {
         assertEquals("remark", " - Annotation Type in java.lang", dii.getRemark());
         assertEquals("package", "java.lang.", dii.getPackage());
         assertTrue("url", dii.getURL().toString().endsWith("api/java/lang/Deprecated.html"));
+    }
+    
+    public void testSearchInJDK7_Class() throws Exception {
+        URL idxFolder = fs.findResource(JDK7_INDEX_PATH).getURL();
+        
+        String toFind = "DataFlavor";
+        MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
+        SearchThreadJdk12 search = new SearchThreadJdk12(toFind, idxFolder, diiConsumer, true);
+        search.run(); // not go() since we do not want to post the task to another thread
+        assertTrue("not finished", diiConsumer.isFinished);
+        assertEquals("search result", 6, diiConsumer.l.size());
+        
+        // class DataFlavor
+        DocIndexItem dii = diiConsumer.l.get(0);
+        assertEquals("field", "DataFlavor", dii.getField());
+        assertEquals("declaring class", "java.awt.datatransfer", dii.getDeclaringClass());
+        assertEquals("remark", " - Class in java.awt.datatransfer", dii.getRemark());
+        assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
+        assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html"));
+        // constructor
+        dii = diiConsumer.l.get(1);
+        assertEquals("field", "DataFlavor()", dii.getField());
+        assertEquals("declaring class", "DataFlavor", dii.getDeclaringClass());
+        assertEquals("remark", " - Constructor for class java.awt.datatransfer.DataFlavor", dii.getRemark());
+        assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
+        assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html#DataFlavor()"));
+    }
+    
+    public void testSearchInJDK8_Class() throws Exception {
+        URL idxFolder = fs.findResource(JDK8_INDEX_PATH).getURL();
+        
+        String toFind = "DataFlavor";
+        MyDocIndexItemConsumer diiConsumer = new MyDocIndexItemConsumer();
+        SearchThreadJdk12 search = new SearchThreadJdk12(toFind, idxFolder, diiConsumer, true);
+        search.run(); // not go() since we do not want to post the task to another thread
+        assertTrue("not finished", diiConsumer.isFinished);
+        assertEquals("search result", 6, diiConsumer.l.size());
+        
+        // class DataFlavor
+        DocIndexItem dii = diiConsumer.l.get(0);
+        assertEquals("field", "DataFlavor", dii.getField());
+        assertEquals("declaring class", "java.awt.datatransfer", dii.getDeclaringClass());
+        assertEquals("remark", " - Class in java.awt.datatransfer", dii.getRemark());
+        assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
+        assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html"));
+        // constructor
+        dii = diiConsumer.l.get(1);
+        assertEquals("field", "DataFlavor()", dii.getField());
+        assertEquals("declaring class", "DataFlavor", dii.getDeclaringClass());
+        assertEquals("remark", " - Constructor for class java.awt.datatransfer.DataFlavor", dii.getRemark());
+        assertEquals("package", "java.awt.datatransfer.", dii.getPackage());
+        assertTrue("url", dii.getURL().toString().endsWith("api/java/awt/datatransfer/DataFlavor.html#DataFlavor--"));
     }
     
     private static final class MyDocIndexItemConsumer implements IndexSearchThread.DocIndexItemConsumer {

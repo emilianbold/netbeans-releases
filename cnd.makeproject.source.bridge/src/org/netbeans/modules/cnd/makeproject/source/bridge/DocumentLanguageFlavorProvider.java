@@ -66,6 +66,9 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.filesystems.FileObject;
@@ -116,6 +119,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
         NativeProject np = owner.getLookup().lookup(NativeProject.class);
         if (np == null) {
+            setDefaltLanguageFlavor(doc);
             return;
         }
         NativeFileItem nfi = np.findFileItem(primaryFile);
@@ -124,11 +128,72 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
             if (cs != null) {
                 doc.putProperty(CndDocumentCodeStyleProvider.class, cs);
             }            
+            setDefaltLanguageFlavor(doc);
             return;
         }
         doc.putProperty(ListenerImpl.class, new ListenerImpl(doc, dob, nfi));
         setLanguage(nfi, doc);
         rebuildTH(doc);
+    }
+
+    private void setDefaltLanguageFlavor(StyledDocument doc) {
+        // stand-alone file without context
+        String mime = (String) doc.getProperty("mimeType"); //NOI18N
+        MIMEExtensions ee = MIMEExtensions.get(mime);
+        if (ee == null) {
+            return;
+        }
+        CndLanguageStandards.CndLanguageStandard defaultStandard = ee.getDefaultStandard();
+        if (defaultStandard != null) {
+            switch (defaultStandard) {
+                case C89:
+                    if (MIMENames.isHeader(mime)) {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.C89, null, doc);
+                    } else {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C, LanguageFlavor.C89, null, doc);
+                    }
+                    break;
+                case C99:
+                    if (MIMENames.isHeader(mime)) {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.C99, null, doc);
+                    } else {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C, LanguageFlavor.C99, null, doc);
+                    }
+                    break;
+                case C11:
+                    if (MIMENames.isHeader(mime)) {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.C11, null, doc);
+                    } else {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C, LanguageFlavor.C11, null, doc);
+                    }
+                    break;
+                case CPP98:
+                    if (MIMENames.isHeader(mime)) {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.CPP, null, doc);
+                    } else {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.CPP, LanguageFlavor.CPP, null, doc);
+                    }
+                    break;
+                case CPP11:
+                    if (MIMENames.isHeader(mime)) {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.CPP11, null, doc);
+                    } else {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.CPP, LanguageFlavor.CPP11, null, doc);
+                    }
+                    break;
+                case CPP14:
+                    if (MIMENames.isHeader(mime)) {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.C_HEADER, LanguageFlavor.CPP14, null, doc);
+                    } else {
+                        tryToSetDocumentLanguage(NativeFileItem.Language.CPP, LanguageFlavor.CPP14, null, doc);
+                    }
+                    break;
+                default:
+                    return;
+            }
+            rebuildTH(doc);
+        }
+        return;
     }
     
     private static boolean setLanguage(FileObject fo, StyledDocument doc) {

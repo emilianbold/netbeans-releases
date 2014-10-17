@@ -47,7 +47,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author theofanis
+ * @author Theofanis Oikonomou
  */
 @ServiceProvider(service=CommonSettingsProvider.class, position=10)
 public class JavaCommonSettingsProvider extends CommonSettingsProvider {

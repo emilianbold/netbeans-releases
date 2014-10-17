@@ -58,7 +58,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.gsf.testrunner.api.TestCreatorPanelDisplayer;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestCreatorPanelDisplayer;
+import org.netbeans.modules.gsf.testrunner.ui.api.UICommonUtils;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.FileType;
 import org.netbeans.spi.gototest.TestLocator.LocationListener;
@@ -68,8 +70,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
@@ -157,7 +157,7 @@ public class GotoOppositeAction extends CallableSystemAction {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                TestCreatorPanelDisplayer.getDefault().displayPanel(TopComponent.getRegistry().getActivatedNodes(), null, null);
+                                TestCreatorPanelDisplayer.getDefault().displayPanel(UICommonUtils.getFileObjectsFromNodes(TopComponent.getRegistry().getActivatedNodes()), null, null);
                             }
                         });
                     }
@@ -259,10 +259,8 @@ public class GotoOppositeAction extends CallableSystemAction {
         JTextComponent pane;
         Point l = new Point(-1, -1);
 
-        DataObject dobj = null;
         try {
-            dobj = DataObject.find(fo);
-            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+            EditorCookie ec = fo.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
                 pane = NbDocument.findRecentEditorPane(ec);
                 Rectangle pos = pane.modelToView(pane.getCaretPosition());
@@ -272,8 +270,6 @@ public class GotoOppositeAction extends CallableSystemAction {
                 String label = Bundle.LBL_PickExpression();
                 PopupUtil.showPopup(new OppositeCandidateChooser(this, label, locationResults), label, l.x, l.y, true, -1);
             }
-        } catch (DataObjectNotFoundException ex) {
-            Logger.getLogger(GotoOppositeAction.class.getName()).log(Level.WARNING, null, ex);
         } catch (BadLocationException ex) {
             Logger.getLogger(GotoOppositeAction.class.getName()).log(Level.WARNING, null, ex);
         }
@@ -282,13 +278,7 @@ public class GotoOppositeAction extends CallableSystemAction {
     public void handleResult(LocationResult opposite) {
         FileObject fileObject = opposite.getFileObject();
         if (fileObject != null) {
-            DataObject dobj = null;
-            try {
-                dobj = DataObject.find(fileObject);
-            } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger(GotoOppositeAction.class.getName()).log(Level.WARNING, null, ex);
-            }
-            NbDocument.openDocument(dobj, opposite.getOffset(), Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            NbDocument.openDocument(fileObject, opposite.getOffset(), Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } else if (opposite.getErrorMessage() != null) {
             String msg = opposite.getErrorMessage();
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, 
@@ -327,8 +317,8 @@ public class GotoOppositeAction extends CallableSystemAction {
         if (!EventQueue.isDispatchThread()) {
             // Unsafe to ask for an editor pane from a random thread.
             // E.g. org.netbeans.lib.uihandler.LogRecords.write asking for getName().
-            Collection<? extends DataObject> dobs = Utilities.actionsGlobalContext().lookupAll(DataObject.class);
-            return dobs.size() == 1 ? dobs.iterator().next().getPrimaryFile() : null;
+            Collection<? extends FileObject> dobs = Utilities.actionsGlobalContext().lookupAll(FileObject.class);
+            return dobs.size() == 1 ? dobs.iterator().next() : null;
         }
 
         // TODO: Use the new editor library to compute this:
@@ -349,19 +339,11 @@ public class GotoOppositeAction extends CallableSystemAction {
                                 caretPosHolder[0] = editorPane.getCaret().getDot();
                         }
                         Document document = editorPane.getDocument();
-                        Object sdp = document.getProperty(Document.StreamDescriptionProperty);
-                        if (sdp instanceof FileObject) {
-                                return (FileObject)sdp;
-                        } else if (sdp instanceof DataObject) {
-                                return ((DataObject) sdp).getPrimaryFile();
-                        }
+                        return Source.create(document).getFileObject();
                     }
                 }
-            }else {
-                DataObject dataObj = nodes[0].getLookup().lookup(DataObject.class);
-                if (dataObj != null) {
-                    return dataObj.getPrimaryFile();
-                }
+            } else {
+                return UICommonUtils.getFileObjectFromNode(nodes[0]);
             }
         }
         

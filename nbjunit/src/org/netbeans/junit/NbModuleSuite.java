@@ -861,6 +861,7 @@ public class NbModuleSuite {
             }
             modules.add("org.openide.filesystems");
             modules.add("org.openide.modules");
+            modules.add("org.openide.util.base");
             modules.add("org.openide.util");
             modules.remove("org.netbeans.insane");
             modules.add("org.netbeans.core.startup");
@@ -1064,11 +1065,14 @@ public class NbModuleSuite {
         }
         private static final Set<String> pseudoModules = new HashSet<String>(Arrays.asList(
                 "org.openide.util",
+                "org.openide.util.base",
                 "org.openide.util.lookup",
                 "org.openide.modules",
                 "org.netbeans.bootstrap",
                 "org.openide.filesystems",
-                "org.netbeans.core.startup"));
+                "org.openide.filesystems.compat8",
+                "org.netbeans.core.startup",
+                "org.netbeans.libs.asm"));
         static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
             while (en.hasMoreElements()) {

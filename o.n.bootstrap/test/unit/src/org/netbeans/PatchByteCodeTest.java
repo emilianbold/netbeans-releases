@@ -45,9 +45,15 @@ package org.netbeans;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
+import org.openide.modules.ConstructorDelegate;
+import org.openide.modules.PatchFor;
 import org.openide.modules.PatchedPublic;
 
 public class PatchByteCodeTest extends NbTestCase {
@@ -64,6 +70,37 @@ public class PatchByteCodeTest extends NbTestCase {
         private void m1() {}
         @PatchedPublic
         private void m2() {}
+    }
+    
+    public static class Superclazz {
+        public int val;
+    }
+    
+    public static class CAPI extends Superclazz {
+        public int otherVal;
+        
+        public CAPI() {
+            otherVal = 1;
+        }
+    }
+    
+    @PatchFor(CAPI.class)
+    public static class CompatAPI extends Superclazz {
+        @ConstructorDelegate
+        protected static void createAPI(CompatAPI inst, int val2) {
+            inst.val = val2;
+        }
+    }
+
+    public static class CAPI2 {
+        CAPI2() {}
+    }
+
+    @PatchFor(CAPI2.class)
+    public static class CompatAPI2 {
+        @ConstructorDelegate
+        public static void createAPI(CAPI2 inst, String[] param) {
+        }
     }
 
     public void testPatchingPublic() throws Exception {
@@ -83,6 +120,50 @@ public class PatchByteCodeTest extends NbTestCase {
         assertEquals(Modifier.PUBLIC, m.getModifiers() & Modifier.PUBLIC);
         assertEquals(0, m.getModifiers() & Modifier.PRIVATE);
     }
+    
+    public void testPatchSuperclass() throws Exception {
+        Class<?> c = new L().loadClass(CAPI.class.getName());
+        assertNotSame(c, CAPI.class);
+        
+        Class s = c.getSuperclass();
+        assertNotSame(s, Object.class);
+        assertEquals(CompatAPI.class.getName(), s.getName());
+    }
+
+    public void testPatchSuperclassWithArray() throws Exception {
+        Class<?> c = new L().loadClass(CAPI2.class.getName());
+        assertNotSame(c, CAPI2.class);
+        Class s = c.getSuperclass();
+        assertEquals(CompatAPI2.class.getName(), s.getName());
+        Constructor<?> init = c.getConstructor(String[].class);
+        init.newInstance((Object)new String[] {"a","b"});
+    }
+    
+    public void testGeneratedConstructor() throws Exception {
+        Class<?> c = new L().loadClass(CAPI.class.getName());
+        Member m = c.getDeclaredConstructor(int.class);
+        assertEquals(Modifier.PROTECTED, m.getModifiers() & (Modifier.PRIVATE | Modifier.PROTECTED | Modifier.PRIVATE));
+    }
+    
+    public void testExecutingConstructor() throws Exception {
+        ClassLoader l = new L();
+        Class<?> c = l.loadClass(CAPI.class.getName());        
+        Member m = c.getDeclaredConstructor(int.class);
+        Constructor ctor = (Constructor)m;
+        ctor.setAccessible(true);
+        
+        Object o = ctor.newInstance(5);
+        assertSame(c, o.getClass());
+        assertTrue("Invalid API superclass", Superclazz.class.isInstance(o));
+        
+        assertEquals("@ConstructorDelegate method did not execute", 5, ((Superclazz)o).val);
+        
+        Field f = o.getClass().getField("otherVal");
+        Object v = f.get(o);
+        assertEquals("Patched API constructor did not execute", v, 1);
+    }
+    
+    
 
     private static class L extends ClassLoader {
 
@@ -92,7 +173,7 @@ public class PatchByteCodeTest extends NbTestCase {
 
         @Override
         protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            if (name.startsWith(PatchByteCodeTest.class.getName() + "$")) {
+            if (name.startsWith(PatchByteCodeTest.class.getName() + "$C")) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 InputStream in = getResourceAsStream(name.replace('.', '/') + ".class");
                 int r;
@@ -103,7 +184,13 @@ public class PatchByteCodeTest extends NbTestCase {
                 } catch (IOException x) {
                     throw new ClassNotFoundException(name, x);
                 }
-                byte[] data = PatchByteCode.patch(baos.toByteArray());
+                byte[] data;
+                try {
+                    Enumeration<URL> res = getResources("META-INF/.bytecodePatched"); // NOI18N
+                    data = PatchByteCode.fromStream(res, this).apply(name, baos.toByteArray());
+                } catch (IOException x) {
+                    throw new ClassNotFoundException(name, x);
+                }
                 Class c = defineClass(name, data, 0, data.length);
                 if (resolve) {
                     resolveClass(c);

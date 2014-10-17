@@ -325,7 +325,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
             for (FileObject fileObject : children) {
                 String name = null;
                 try {
-                    name = fileObject.getFileSystem ().getStatus ().annotateName (fileObject.getName (), Collections.singleton (fileObject));
+                    name = fileObject.getFileSystem ().getDecorator ().annotateName (fileObject.getName (), Collections.singleton (fileObject));
                 } catch (FileStateInvalidException ex) {
                     name = fileObject.getName ();
                 }
@@ -575,7 +575,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
             for (FileObject fileObject : children) {
                 String name = null;
                 try {
-                    name = fileObject.getFileSystem ().getStatus ().annotateName (fileObject.getName (), Collections.singleton (fileObject));
+                    name = fileObject.getFileSystem ().getDecorator ().annotateName (fileObject.getName (), Collections.singleton (fileObject));
                 } catch (FileStateInvalidException ex) {
                     name = fileObject.getName ();
                 }

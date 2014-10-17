@@ -49,9 +49,9 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.editor.base.options.MarkOccurencesSettingsNames;
 import org.openide.util.Exceptions;
 
 /**
@@ -311,18 +311,18 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         boxes.add( breakContinueCheckBox );
         boxes.add( keepMarks );
         
-        onOffCheckBox.setActionCommand(MarkOccurencesSettings.ON_OFF);
-        typesCheckBox.setActionCommand(MarkOccurencesSettings.TYPES);
-        methodsCheckBox.setActionCommand(MarkOccurencesSettings.METHODS);
-        constantsCheckBox.setActionCommand(MarkOccurencesSettings.CONSTANTS);
-        fieldsCheckBox.setActionCommand(MarkOccurencesSettings.FIELDS);
-        localVariablesCheckBox.setActionCommand(MarkOccurencesSettings.LOCAL_VARIABLES);
-        exceptionsCheckBox.setActionCommand(MarkOccurencesSettings.EXCEPTIONS);
-        exitCheckBox.setActionCommand(MarkOccurencesSettings.EXIT);
-        implementsCheckBox.setActionCommand(MarkOccurencesSettings.IMPLEMENTS);
-        overridesCheckBox.setActionCommand(MarkOccurencesSettings.OVERRIDES);
-        breakContinueCheckBox.setActionCommand(MarkOccurencesSettings.BREAK_CONTINUE);
-        keepMarks.setActionCommand(MarkOccurencesSettings.KEEP_MARKS);
+        onOffCheckBox.setActionCommand(MarkOccurencesSettingsNames.ON_OFF);
+        typesCheckBox.setActionCommand(MarkOccurencesSettingsNames.TYPES);
+        methodsCheckBox.setActionCommand(MarkOccurencesSettingsNames.METHODS);
+        constantsCheckBox.setActionCommand(MarkOccurencesSettingsNames.CONSTANTS);
+        fieldsCheckBox.setActionCommand(MarkOccurencesSettingsNames.FIELDS);
+        localVariablesCheckBox.setActionCommand(MarkOccurencesSettingsNames.LOCAL_VARIABLES);
+        exceptionsCheckBox.setActionCommand(MarkOccurencesSettingsNames.EXCEPTIONS);
+        exitCheckBox.setActionCommand(MarkOccurencesSettingsNames.EXIT);
+        implementsCheckBox.setActionCommand(MarkOccurencesSettingsNames.IMPLEMENTS);
+        overridesCheckBox.setActionCommand(MarkOccurencesSettingsNames.OVERRIDES);
+        breakContinueCheckBox.setActionCommand(MarkOccurencesSettingsNames.BREAK_CONTINUE);
+        keepMarks.setActionCommand(MarkOccurencesSettingsNames.KEEP_MARKS);
     }
     
     

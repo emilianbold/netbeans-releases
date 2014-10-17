@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.gsf.testrunner.api.Manager;
+import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
@@ -146,8 +146,8 @@ public final class TestRunner {
 
     private void sessionStarted(String line) {
         assert testSession == null;
-        testSession = new TestSession(getOutputTitle(), karmaRunInfo.getProject(), TestSession.SessionType.TEST,
-                new KarmaTestRunnerNodeFactory(new CallStackCallback(karmaRunInfo.getProject())));
+        Manager.getInstance().setNodeFactory(new KarmaTestRunnerNodeFactory(new CallStackCallback(karmaRunInfo.getProject())));
+        testSession = new TestSession(getOutputTitle(), karmaRunInfo.getProject(), TestSession.SessionType.TEST);
         testSession.setRerunHandler(karmaRunInfo.getRerunHandler());
         getManager().testStarted(testSession);
     }

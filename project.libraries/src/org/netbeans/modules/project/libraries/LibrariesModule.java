@@ -43,8 +43,14 @@
  */
 package org.netbeans.modules.project.libraries;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.libraries.LibraryProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.modules.OnStart;
 
 /**
@@ -56,10 +62,24 @@ import org.openide.modules.OnStart;
  */
 @OnStart
 public class LibrariesModule implements Runnable {
-    @Override public void run() {
+
+    private static final Map<LibraryImplementation,FileObject> sources = Collections.synchronizedMap(
+            new WeakHashMap<LibraryImplementation,FileObject>());
+
+    @Override
+    public void run() {
         for (LibraryProvider lp : Lookup.getDefault().lookupAll(LibraryProvider.class)) {            
             lp.getLibraries();
         }
     }
-    
+
+    public static void registerSource(
+        final @NonNull LibraryImplementation impl,
+        final @NonNull FileObject descriptorFile) {
+        sources.put(impl, descriptorFile);
+    }
+
+    public static FileObject getFile(@NonNull final LibraryImplementation impl) {
+        return sources.get(impl);
+    }
 }

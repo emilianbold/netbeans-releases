@@ -50,6 +50,7 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -59,14 +60,13 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -94,6 +94,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -120,9 +121,8 @@ import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.java.ComputeOffAWT;
 import org.netbeans.modules.editor.java.ComputeOffAWT.Worker;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
-import org.netbeans.modules.java.editor.javadoc.JavadocImports;
-import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocImports;
+import org.netbeans.modules.java.editor.base.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
@@ -350,7 +350,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         
         if (el == null && path != null) {
             if (path != null && EnumSet.of(Kind.LABELED_STATEMENT, Kind.BREAK, Kind.CONTINUE).contains(path.getLeaf().getKind())) {
-                Token<JavaTokenId> span = org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, doc, path);
+                Token<JavaTokenId> span = org.netbeans.modules.java.editor.base.semantic.Utilities.findIdentifierSpan(info, doc, path);
                 if (span != null && span.offset(null) <= adjustedCaret[0] && adjustedCaret[0] <= span.offset(null) + span.length()) {
                     if (path.getLeaf().getKind() != Kind.LABELED_STATEMENT) {
                         StatementTree tgt = info.getTreeUtilities().getBreakContinueTarget(path);
@@ -369,7 +369,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         //#89736: if the caret is not in the resolved element's name, no rename:
         final Token name = insideJavadoc[0]
                 ? JavadocImports.findNameTokenOfReferencedElement(info, adjustedCaret[0])
-                : org.netbeans.modules.java.editor.semantic.Utilities.getToken(info, doc, path);
+                : org.netbeans.modules.java.editor.base.semantic.Utilities.getToken(info, doc, path);
         
         if (name == null)
             return null;
@@ -402,7 +402,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     TreePath t = info.getTrees().getPath(c);
                     
                     if (t != null) {
-                        Token token = org.netbeans.modules.java.editor.semantic.Utilities.getToken(info, doc, t);
+                        Token token = org.netbeans.modules.java.editor.base.semantic.Utilities.getToken(info, doc, t);
                         
                         if (token != null) {
                             points.add(token);
@@ -436,20 +436,20 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     private static Set<Token> collectLabels(final CompilationInfo info, final Document document, final TreePath labeledStatement) {
         final Set<Token> result = new LinkedHashSet<Token>();
         if (labeledStatement.getLeaf().getKind() == Kind.LABELED_STATEMENT) {
-            result.add(org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, document, labeledStatement));
+            result.add(org.netbeans.modules.java.editor.base.semantic.Utilities.findIdentifierSpan(info, document, labeledStatement));
             final Name label = ((LabeledStatementTree)labeledStatement.getLeaf()).getLabel();
             new TreePathScanner <Void, Void>() {
                 @Override
                 public Void visitBreak(BreakTree node, Void p) {
                     if (node.getLabel() != null && label.contentEquals(node.getLabel())) {
-                        result.add(org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, document, getCurrentPath()));
+                        result.add(org.netbeans.modules.java.editor.base.semantic.Utilities.findIdentifierSpan(info, document, getCurrentPath()));
                     }
                     return super.visitBreak(node, p);
                 }
                 @Override
                 public Void visitContinue(ContinueTree node, Void p) {
                     if (node.getLabel() != null && label.contentEquals(node.getLabel())) {
-                        result.add(org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(info, document, getCurrentPath()));
+                        result.add(org.netbeans.modules.java.editor.base.semantic.Utilities.findIdentifierSpan(info, document, getCurrentPath()));
                     }
                     return super.visitContinue(node, p);
                 }
@@ -462,29 +462,20 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         if(e.getKind() == ElementKind.FIELD) {
             VariableElement variableElement = (VariableElement) e;
             TypeElement typeElement = eu.enclosingTypeElement(e);
-            Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
-            for (ExecutableElement method : ElementFilter.methodsIn(info.getElements().getAllMembers(typeElement))) {
-                List<ExecutableElement> l = methods.get(method.getSimpleName().toString());
-                if (l == null) {
-                    l = new ArrayList<ExecutableElement>();
-                    methods.put(method.getSimpleName().toString(), l);
-                }
-                l.add(method);
-            }
             
             boolean isProperty = false;
             try {
                 CodeStyle codeStyle = CodeStyle.getDefault(info.getDocument());
-                isProperty = GeneratorUtils.hasGetter(info, typeElement, variableElement, methods, codeStyle);
+                isProperty = eu.hasGetter(typeElement, variableElement, codeStyle);
                 isProperty = isProperty || (!variableElement.getModifiers().contains(Modifier.FINAL) &&
-                                    GeneratorUtils.hasSetter(info, typeElement, variableElement, methods, codeStyle));
+                                    eu.hasSetter(typeElement, variableElement, codeStyle));
             } catch (IOException ex) {
             }
             if(isProperty) {
                 return false;
             }
         }
-        if (org.netbeans.modules.java.editor.semantic.Utilities.isPrivateElement(e)) {
+        if (org.netbeans.modules.java.editor.base.semantic.Utilities.isPrivateElement(e)) {
             return true;
         }
         

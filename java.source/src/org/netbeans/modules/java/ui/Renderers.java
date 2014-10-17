@@ -47,17 +47,14 @@ package org.netbeans.modules.java.ui;
 import java.awt.Component;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
-import org.netbeans.api.java.source.SourceUtils;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.HtmlRenderer.Renderer;
-import org.openide.filesystems.FileSystem.HtmlStatus;
 import org.netbeans.api.java.source.UiUtils;
 
 /** Contains implementation of various CellRenderers.

@@ -10,7 +10,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.26</specification-version>
+                        <specification-version>9.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -26,6 +34,7 @@
                 <friend>org.apache.tools.ant.module</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
+                <friend>org.netbeans.modules.parsing.indexing</friend>
                 <friend>org.netbeans.modules.projectui</friend>
                 <package>org.netbeans.modules.project.indexingbridge</package>
             </friend-packages>

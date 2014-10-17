@@ -85,7 +85,7 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.java.editor.javadoc.JavadocImports;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;

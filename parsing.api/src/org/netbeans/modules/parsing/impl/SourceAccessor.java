@@ -48,20 +48,22 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.event.EventSupport;
+import org.netbeans.modules.parsing.implspi.SchedulerControl;
+import org.netbeans.modules.parsing.implspi.SourceControl;
+import org.netbeans.modules.parsing.implspi.SourceEnvironment;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Zezula
  */
 public abstract class SourceAccessor {
-    
     public static synchronized SourceAccessor getINSTANCE () {
         if (INSTANCE == null) {
             try {
@@ -128,6 +130,8 @@ public abstract class SourceAccessor {
      * @return true if the snapshot is up to date and was refreshed
      */
     public abstract boolean invalidate (Source source, long id, Snapshot snapshot);
+    
+    public abstract void revalidate(Source source, int delay);
 
     public abstract SourceModificationEvent getSourceModificationEvent (Source source);
 
@@ -168,14 +172,9 @@ public abstract class SourceAccessor {
      */
     public abstract void assignListeners(Source source);
     
-    /**
-     * SPI method - don't call it directly.
-     * Returns event support, used only by Utilities bridge, will be removed
-     * @param source
-     * @return EventSupport
-     */
-    public abstract EventSupport getEventSupport (Source source);
-
+    public abstract SourceControl getEnvControl(Source s);
+    public abstract SourceEnvironment getEnv(Source s);
+    
     public abstract long getLastEventId (Source source);
     
     public abstract SourceCache getCache (Source source);
@@ -224,4 +223,13 @@ public abstract class SourceAccessor {
         int[][]             currentToOriginal,
         int[][]             originalToCurrent
     );
+    
+    public abstract void attachScheduler(Source src, SchedulerControl sched, boolean attach);
+
+    @NonNull
+    public abstract ParserEventForward getParserEventForward(@NonNull Source source);
+    
+    public final void init() {
+        Utilities.getEnvFactory().getSchedulers(Lookup.getDefault());
+    }
 }

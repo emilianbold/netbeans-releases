@@ -57,8 +57,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 
 /**
  * @author  rm111737
@@ -178,7 +179,7 @@ public class TestUtilHid {
 
         XMLFileSystem xfs = new XMLFileSystem  ();
         try {
-            xfs.setXmlUrl(Utilities.toURI(xmlFile).toURL());
+            xfs.setXmlUrl(BaseUtilities.toURI(xmlFile).toURL());
         } catch (Exception ex) {}
         
         return xfs;
@@ -189,7 +190,7 @@ public class TestUtilHid {
         
         XMLFileSystem xfs = new XMLFileSystem  ();
         try {
-            xfs.setXmlUrl(Utilities.toURI(xmlFile).toURL());
+            xfs.setXmlUrl(BaseUtilities.toURI(xmlFile).toURL());
         } catch (Exception ex) {}
         
         return xfs;
@@ -292,17 +293,19 @@ public class TestUtilHid {
     }    
 
     static class StatusFileSystem extends LocalFileSystem {
-        Status status = new Status () {
+        StatusDecorator status = new StatusDecorator () {
             public String annotateName (String name, java.util.Set files) {
                 return name;
             }
 
-            public java.awt.Image annotateIcon (java.awt.Image icon, int iconType, java.util.Set files) {
-                return icon;
+            @Override
+            public String annotateNameHtml(String name, Set<? extends FileObject> files) {
+                return name;
             }
+
         };        
         
-        public org.openide.filesystems.FileSystem.Status getStatus() {
+        public StatusDecorator getDecorator() {
             return status;
         }
         

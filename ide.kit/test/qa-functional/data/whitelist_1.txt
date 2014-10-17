@@ -3507,7 +3507,7 @@ org.netbeans.modules.java.navigation.actions.InspectMembersAtCaretAction
 org.netbeans.modules.java.navigation.actions.JavadocAction
 org.netbeans.modules.java.platform.DefaultJavaPlatformProvider
 org.netbeans.modules.java.platform.FallbackDefaultJavaPlatform
-org.netbeans.modules.java.platform.JavaPlatformProvider
+org.netbeans.modules.java.platform.implspi.JavaPlatformProvider
 org.netbeans.modules.java.platform.ui.PlatformsCustomizerAction
 org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation
 org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor

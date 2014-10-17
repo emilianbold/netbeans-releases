@@ -58,4 +58,18 @@ made subject to such option by the copyright holder.
             </implies>
         </transformation>
     </transformationgroup>
+    <transformationgroup>
+        <description>Separate project.ant into desktop and NetBeans independent and dependent parts</description>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="org.netbeans.modules.project.ant" major="1" spec="1.62"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.netbeans.modules.project.ant.ui" major="1" spec="1.62"/>
+                    <module-dependency codenamebase="org.netbeans.modules.project.ant.compat8" major="1" spec="1.62"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>
 </transformations>

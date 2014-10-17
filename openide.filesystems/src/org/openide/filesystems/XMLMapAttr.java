@@ -65,9 +65,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import org.netbeans.modules.openide.filesystems.RecognizeInstanceFiles;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
-import org.openide.util.Utilities;
+import org.openide.util.BaseUtilities;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.NbObjectInputStream;
 
@@ -824,7 +824,7 @@ final class XMLMapAttr implements Map {
                     case 11:
                         return URL.class;
                     case 12:
-                        return ExternalUtil.findClass(Utilities.translate(value));
+                        return ExternalUtil.findClass(BaseUtilities.translate(value));
                     case 13:
                         return String.class;
                 }
@@ -967,15 +967,8 @@ final class XMLMapAttr implements Map {
                         return new URL(value);
                     case 12:
                         // special support for singletons
-                        Class cls = ExternalUtil.findClass(Utilities.translate(value));
-
-                        if (SharedClassObject.class.isAssignableFrom(cls)) {
-                            return SharedClassObject.findObject(cls, true);
-                        } else {
-                            Constructor<?> init = cls.getDeclaredConstructor();
-                            init.setAccessible(true);
-                            return init.newInstance((Object[]) null);
-                        }
+                        Class cls = ExternalUtil.findClass(BaseUtilities.translate(value));
+                        return RecognizeInstanceFiles.createInstance(cls);
                     case 13:
                         String[] arr = value.split("#", 2); // NOI18N
                         return NbBundle.getBundle(arr[0]).getObject(arr[1]);

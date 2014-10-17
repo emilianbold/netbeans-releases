@@ -107,6 +107,35 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="server.is.free">
+            <api name="general"/>
+            <summary>Desktop dependent Ant Based Project Support UI extracted</summary>
+            <version major="1" minor="61"/>
+            <date day="27" month="5" year="2014"/>
+            <author login="tstupka"/>
+            <compatibility modification="yes" addition="yes">
+                <p>
+                    Runtime compatibility remains, compile time compatibility is
+                    mostly preserved too. It is however recommended to upgrade
+                    dependencies of client modules. Try running
+                    <code>ant fix-dependencies</code> in your Ant module.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    The following classes were moved from 
+                    <a href="@org-netbeans-modules-project-ant@/overview-summary.html">org.netbeans.modules.project.ant</a> 
+                    into the
+                    <a href="@org-netbeans-modules-project-ant-ui@/overview-summary.html">org.netbeans.modules.project.ant.ui</a> module:
+                </p>
+                <ul>
+                    <li><a href="@org-netbeans-modules-project-ant-ui@/org/netbeans/api/project/ant/FileChooser.html">FileChooser</a></li>
+                    <li><a href="@org-netbeans-modules-project-ant-ui@/org/netbeans/spi/project/support/ant/ui/CustomizerUtilities.html">CustomizerUtilities</a></li>
+                    <li><a href="@org-netbeans-modules-project-ant-ui@/org/netbeans/spi/project/support/ant/ui/StoreGroup.html">StoreGroup</a></li>
+                    <li><a href="@org-netbeans-modules-project-ant-ui@/org/netbeans/spi/project/support/ant/ui/VariablesSupport.html">VariablesSupport</a></li>
+                </ul>
+            </description>
+        </change>
         <change id="GeneratedFilesInterceptor">
             <api name="general"/>
             <summary>Added <code>GeneratedFilesInterceptor</code> called by <code>GeneratedFilesHelper</code> when it generates a file</summary>

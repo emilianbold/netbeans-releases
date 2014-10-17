@@ -74,7 +74,7 @@ import org.openide.util.Mutex;
  *
  * @author hanz
  */
-public class SnapshotTest extends NbTestCase {
+public class SnapshotTest extends ParsingTestBase {
 
     public SnapshotTest (String testName) {
         super (testName);

@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.util.DefaultMutexImplementation;
 
 public class MutexTest extends NbTestCase {
     Mutex.Privileged p;
@@ -69,7 +70,7 @@ public class MutexTest extends NbTestCase {
     protected void setUp () {
         p = new Mutex.Privileged ();
         m = new Mutex (p);
-        Mutex.beStrict = true;
+        DefaultMutexImplementation.beStrict = true;
     }
     @Override 
     protected Level logLevel() {

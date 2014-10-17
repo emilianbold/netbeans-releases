@@ -60,7 +60,6 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.editor.java.Utilities.getElementName;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
@@ -135,7 +134,7 @@ public class StaticImport {
             return null;
         }
         String fqn = null;
-        String fqn1 = getFqn(e);
+        String fqn1 = getFqn(info, e);
         if (!isSubTypeOrInnerOfSubType(info, klass, enclosingEl) && !isStaticallyImported(info, fqn1)) {
             if (hasMethodNameClash(info, klass, sn) || hasStaticImportSimpleNameClash(info, sn)) {
                 return null;
@@ -300,11 +299,10 @@ public class StaticImport {
 
     /**
      * @param e
-     * @return the FQN for a METHOD Element
+     * @return the FQN for an Element
      */
-    private static String getFqn(Element e) {
-        // XXX or alternatively, upgrade getElementName to handle METHOD
-        return getElementName(e.getEnclosingElement(), true) + "." + e.getSimpleName();
+    private static String getFqn(CompilationInfo info, Element e) {
+        return info.getElementUtilities().getElementName(e.getEnclosingElement(), true) + "." + e.getSimpleName();
     }
 
     /**

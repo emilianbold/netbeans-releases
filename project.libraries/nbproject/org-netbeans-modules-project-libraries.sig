@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.46.1
+#Version 1.47
 
 CLSS public java.lang.Object
 cons public init()
@@ -14,13 +14,6 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
-
-CLSS public final org.netbeans.api.project.libraries.LibrariesCustomizer
-meth public static boolean showCustomizer(org.netbeans.api.project.libraries.Library)
-meth public static boolean showCustomizer(org.netbeans.api.project.libraries.Library,org.netbeans.api.project.libraries.LibraryManager)
-meth public static boolean showSingleLibraryCustomizer(org.netbeans.api.project.libraries.Library)
-meth public static org.netbeans.api.project.libraries.Library showCreateNewLibraryCustomizer(org.netbeans.api.project.libraries.LibraryManager)
-supr java.lang.Object
 
 CLSS public final org.netbeans.api.project.libraries.Library
 fld public final static java.lang.String PROP_CONTENT = "content"
@@ -44,30 +37,6 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
 hfds LOG,impl,listener,listeners,manager
-
-CLSS public final org.netbeans.api.project.libraries.LibraryChooser
-innr public abstract interface static Filter
-innr public abstract interface static LibraryImportHandler
-innr public abstract interface static Panel
-meth public static java.util.Set<org.netbeans.api.project.libraries.Library> showDialog(org.netbeans.api.project.libraries.LibraryManager,org.netbeans.api.project.libraries.LibraryChooser$Filter,org.netbeans.api.project.libraries.LibraryChooser$LibraryImportHandler)
-meth public static org.netbeans.api.project.libraries.LibraryChooser$Panel createPanel(org.netbeans.api.project.libraries.LibraryManager,org.netbeans.api.project.libraries.LibraryChooser$Filter)
-supr java.lang.Object
-
-CLSS public abstract interface static org.netbeans.api.project.libraries.LibraryChooser$Filter
- outer org.netbeans.api.project.libraries.LibraryChooser
-meth public abstract boolean accept(org.netbeans.api.project.libraries.Library)
-
-CLSS public abstract interface static org.netbeans.api.project.libraries.LibraryChooser$LibraryImportHandler
- outer org.netbeans.api.project.libraries.LibraryChooser
-meth public abstract org.netbeans.api.project.libraries.Library importLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
-
-CLSS public abstract interface static org.netbeans.api.project.libraries.LibraryChooser$Panel
- outer org.netbeans.api.project.libraries.LibraryChooser
-fld public final static java.lang.String PROP_SELECTED_LIBRARIES = "selectedLibraries"
-meth public abstract java.awt.Component getVisualComponent()
-meth public abstract java.util.Set<org.netbeans.api.project.libraries.Library> getSelectedLibraries()
-meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 
 CLSS public final org.netbeans.api.project.libraries.LibraryManager
 fld public final static java.lang.String PROP_LIBRARIES = "libraries"
@@ -130,14 +99,6 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract {org.netbeans.spi.project.libraries.ArealLibraryProvider%0} createArea()
 meth public abstract {org.netbeans.spi.project.libraries.ArealLibraryProvider%0} loadArea(java.net.URL)
 meth public abstract {org.netbeans.spi.project.libraries.ArealLibraryProvider%1} createLibrary(java.lang.String,java.lang.String,{org.netbeans.spi.project.libraries.ArealLibraryProvider%0},java.util.Map<java.lang.String,java.util.List<java.net.URI>>) throws java.io.IOException
-
-CLSS public org.netbeans.spi.project.libraries.LibraryCustomizerContext
-cons public init(org.netbeans.spi.project.libraries.LibraryImplementation,org.netbeans.spi.project.libraries.LibraryStorageArea)
-meth public org.netbeans.spi.project.libraries.LibraryImplementation getLibraryImplementation()
-meth public org.netbeans.spi.project.libraries.LibraryImplementation2 getLibraryImplementation2()
-meth public org.netbeans.spi.project.libraries.LibraryStorageArea getLibraryStorageArea()
-supr java.lang.Object
-hfds libraryImplementation,libraryStorageArea
 
 CLSS public org.netbeans.spi.project.libraries.LibraryFactory
 meth public static org.netbeans.api.project.libraries.Library createLibrary(org.netbeans.spi.project.libraries.LibraryImplementation)

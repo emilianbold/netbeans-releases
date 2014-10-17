@@ -179,7 +179,7 @@ final class InstanceNode extends DataNode implements Runnable {
         Image img = null;
         try {
             DataObject dobj = getDataObject();
-            img = dobj.getPrimaryFile().getFileSystem().getStatus().
+            img = FileUIUtils.getImageDecorator(dobj.getPrimaryFile().getFileSystem()).
                 annotateIcon (img, type, dobj.files ());
         } catch (FileStateInvalidException e) {
             // no fs, do nothing
@@ -444,8 +444,8 @@ final class InstanceNode extends DataNode implements Runnable {
         if (name == null) {
             try {
                 String def = "\b"; // NOI18N
-                FileSystem.Status fsStatus = getDataObject().getPrimaryFile().
-                    getFileSystem().getStatus();
+                StatusDecorator fsStatus = getDataObject().getPrimaryFile().
+                    getFileSystem().getDecorator();
                 name = fsStatus.annotateName(def, getDataObject().files());
                 if (name.indexOf(def) < 0) {
                     return name;

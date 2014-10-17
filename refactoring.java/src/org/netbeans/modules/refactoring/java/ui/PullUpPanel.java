@@ -98,10 +98,10 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
      *      (determined by which nodes the action was invoked on - e.g. if it was
      *      invoked on a method, the method will be pre-selected to be pulled up)
      */
-    public PullUpPanel(PullUpRefactoring refactoring, Set<MemberInfo<ElementHandle>> selectedMembers, final ChangeListener parent) {
+    public PullUpPanel(PullUpRefactoring refactoring, Set<MemberInfo<ElementHandle>> selectedMembers, ElementKind sourceKind, final ChangeListener parent) {
         this.parent = parent;
         this.refactoring = refactoring;
-        this.tableModel = new TableModel();
+        this.tableModel = new TableModel(sourceKind);
         this.selectedMembers = selectedMembers;
         initComponents();
         
@@ -327,7 +327,12 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
         // data for the members table (first dimension - rows, second dimension - columns)
         // the columns are: 0 = Selected (true/false), 1 = Member (Java element), 2 = Make Abstract (true/false)
         private Object[][] members = new Object[0][0];
-        private ElementKind sourceKind;
+        private final ElementKind sourceKind;
+
+        public TableModel(ElementKind sourceKind) {
+            this.sourceKind = sourceKind;
+        }
+        
         @Override
         public int getColumnCount() {
             return COLUMN_NAMES.length;
@@ -370,7 +375,10 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 }
                 Object element = members[rowIndex][1];
                 MemberInfo member = (MemberInfo) element;                
-                return member.getModifiers().contains(Modifier.DEFAULT) || (!sourceKind.isInterface() && !(member.getModifiers().contains(Modifier.STATIC)) && !(member.getModifiers().contains(Modifier.ABSTRACT)));
+                return member.getModifiers().contains(Modifier.DEFAULT) || 
+                        (!sourceKind.isInterface() &&
+                        !(member.getModifiers().contains(Modifier.STATIC)) &&
+                        !(member.getModifiers().contains(Modifier.ABSTRACT)));
             } else {
                 // column 0 is always editable, column 1 is never editable
                 return columnIndex == 0;

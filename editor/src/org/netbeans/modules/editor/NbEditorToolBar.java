@@ -433,6 +433,7 @@ import org.openide.util.lookup.ProxyLookup;
     private void addPresenters() {
         JTextComponent c = getComponent();
         String mimeType = c == null ? null : NbEditorUtilities.getMimeType(c);
+        Reference<JTextComponent> cRef = new WeakReference<>(c);
         
         if (mimeType == null) {
             return; // Probably no component or it's not loaded properly
@@ -504,7 +505,8 @@ import org.openide.util.lookup.ProxyLookup;
                         LOG.log(Level.FINE, "Item {0} converted to a Presenter.Toolbar {1}", new Object [] { s2s(item), s2s(presenter) }); //NOI18N
                     }
                     if (presenter instanceof JComponent) {
-                        ((JComponent)presenter).putClientProperty(JTextComponent.class, c);
+                        // Since toolbars do not appear to always GC in current setup put a weak reference to component into a client property (not a strong ref)
+                        ((JComponent)presenter).putClientProperty(JTextComponent.class, cRef);
                     }
                     item = presenter;
                 }

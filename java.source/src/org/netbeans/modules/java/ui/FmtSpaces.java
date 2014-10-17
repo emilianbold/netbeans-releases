@@ -360,7 +360,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         
     }
     
-    private static final class SpacesCategorySupport extends FmtOptions.CategorySupport {
+    private static final class SpacesCategorySupport extends CategorySupport {
 
         public SpacesCategorySupport(Preferences preferences, FmtSpaces panel) {
             super(preferences, "spaces", panel, //NOI18N

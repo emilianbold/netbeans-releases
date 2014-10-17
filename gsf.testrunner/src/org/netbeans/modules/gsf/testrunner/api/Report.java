@@ -85,9 +85,11 @@ public final class Report {
     private boolean aborted;
     private boolean skipped;
 
-    protected boolean completed;
+    private boolean completed;
 
     /**
+     * @param suiteClassName name of the suite class this report is build for
+     * @param project project this report is build for
      */
     public Report(String suiteClassName, Project project) {
         this.suiteClassName = suiteClassName;
@@ -98,6 +100,14 @@ public final class Report {
         this.completed = true;
         this.aborted = false;
         this.skipped = false;
+    }
+
+    public boolean isCompleted() {
+      return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+      this.completed = completed;
     }
 
     public FileLocator getFileLocator() {
@@ -115,6 +125,7 @@ public final class Report {
     }
 
     /**
+     * @param test the {@link Testcase} that will be added to this report
      */
     public void reportTest(Testcase test) {
         
@@ -127,6 +138,7 @@ public final class Report {
     }
     
     /**
+     * @param report update this {@link Report}
      */
     public void update(Report report) {
         synchronized(this){
@@ -165,6 +177,7 @@ public final class Report {
     }
     
     /**
+     * @return all {@link Testcase}s already added to this report
      */
     public Collection<Testcase> getTests() {
         
@@ -186,6 +199,7 @@ public final class Report {
     }
     
     /**
+     * @return {@code true} if this report contains any failures or errors, {@code false} otherwise
      */
     public boolean containsFailed() {
         assert EventQueue.isDispatchThread();
@@ -386,7 +400,7 @@ public final class Report {
         this.skipped = skipped;
     }
 
-    int getStatusMask(){
+    public int getStatusMask(){
         int statusMask = 0;
         statusMask |= getPassed() > 0 ? Status.PASSED.getBitMask() : 0;
         statusMask |= getPassedWithErrors() > 0 ? Status.PASSEDWITHERRORS.getBitMask() : 0;

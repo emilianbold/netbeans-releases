@@ -51,7 +51,6 @@ import com.sun.source.tree.Scope;
 import com.sun.source.util.DocSourcePositions;
 import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreePathScanner;
-import com.sun.source.util.DocTreeScanner;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -103,7 +102,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
 import org.netbeans.modules.editor.java.LazyJavaCompletionItem;
-import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.completion.Utilities;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocCompletionUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -801,6 +801,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         final Elements elements = controller.getElements();
         final Types types = controller.getTypes();
         final TreeUtilities tu = controller.getTreeUtilities();
+        final ElementUtilities eu = controller.getElementUtilities();
         TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
 //        final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
 //        final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
@@ -831,7 +832,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                         String sn = e.getSimpleName().toString();
                         return Utilities.startsWith(sn, prefix) &&
                                 (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
-                                (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
+                                (!Utilities.isExcludeMethods() || !Utilities.isExcluded(eu.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
 //                                &&
 //                                isOfKindAndType(((ExecutableType)asMemberOf(e, t, types)).getReturnType(), e, kinds, baseType, scope, trees, types) &&
 //                                (isSuperCall && e.getModifiers().contains(PROTECTED) || tu.isAccessible(scope, e, isSuperCall && enclType != null ? enclType : t)) &&
@@ -1191,6 +1192,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         Types types = controller.getTypes();
         Trees trees = controller.getTrees();
         TreeUtilities tu = controller.getTreeUtilities();
+        ElementUtilities eu = controller.getElementUtilities();
         TreePath docpath = srcEl != null ? trees.getPath(srcEl) : null;
         Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
         for(Element e : pe.getEnclosedElements()) {
@@ -1199,7 +1201,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                     if (Utilities.startsWith(name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))
                         && trees.isAccessible(scope, (TypeElement)e)
                         && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types)
-                        && !Utilities.isExcluded(Utilities.getElementName(e, true))) {
+                        && !Utilities.isExcluded(eu.getElementName(e, true))) {
                         items.add(JavadocCompletionItem.createTypeItem(jdctx.javac, (TypeElement) e, substitutionOffset, null, elements.isDeprecated(e)/*, isOfSmartType(env, e.asType(), smartTypes)*/));
                 }
             }

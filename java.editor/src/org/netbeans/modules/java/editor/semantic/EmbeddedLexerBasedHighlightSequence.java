@@ -36,7 +36,7 @@ import javax.swing.text.AttributeSet;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
+import org.netbeans.modules.java.editor.base.semantic.ColoringAttributes.Coloring;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 /**

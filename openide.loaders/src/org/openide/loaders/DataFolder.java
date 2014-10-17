@@ -1231,8 +1231,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 // copied from DataNode to keep the contract
                 try {
                     DataObject obj = getDataObject();
-                    img = obj.getPrimaryFile().getFileSystem().
-                          getStatus().annotateIcon(img, type, obj.files());
+                    img = FileUIUtils.getImageDecorator(obj.getPrimaryFile().getFileSystem()).
+                          annotateIcon(img, type, obj.files());
                 } catch (FileStateInvalidException e) {
                     // no fs, do nothing
                 }
@@ -1259,8 +1259,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 // copied from DataNode to keep the contract
                 try {
                     DataObject obj = getDataObject();
-                    img = obj.getPrimaryFile().getFileSystem().
-                    getStatus().annotateIcon(img, type, obj.files());
+                    img = FileUIUtils.getImageDecorator(obj.getPrimaryFile().getFileSystem()).
+                        annotateIcon(img, type, obj.files());
                 } catch (FileStateInvalidException e) {
                     // no fs, do nothing
                 }

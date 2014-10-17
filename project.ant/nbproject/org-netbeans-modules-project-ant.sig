@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.59.1
+#Version 1.60
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -587,8 +587,6 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
-meth public void hide()
- anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -794,16 +792,6 @@ meth public void addDependency(java.lang.String,java.lang.String)
 meth public void removeDependency(java.lang.String,java.lang.String)
 supr java.lang.Object
 hfds dependencies,file,id,path
-
-CLSS public final org.netbeans.api.project.ant.FileChooser
-cons public init(java.io.File,java.io.File)
-cons public init(org.netbeans.spi.project.support.ant.AntProjectHelper,boolean)
-meth public java.lang.String[] getSelectedPathVariables()
-meth public java.lang.String[] getSelectedPaths() throws java.io.IOException
-meth public void approveSelection()
-meth public void enableVariableBasedSelection(boolean)
-supr javax.swing.JFileChooser
-hfds accessory
 
 CLSS public abstract interface org.netbeans.spi.project.ant.AntArtifactProvider
 meth public abstract org.netbeans.api.project.ant.AntArtifact[] getBuildArtifacts()
@@ -1027,9 +1015,6 @@ meth public org.netbeans.api.project.ant.AntArtifact getForeignFileReferenceAsAr
  anno 0 java.lang.Deprecated()
 meth public org.netbeans.api.project.libraries.Library copyLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException
 meth public org.netbeans.api.project.libraries.Library findLibrary(java.lang.String)
-meth public org.netbeans.api.project.libraries.LibraryChooser$LibraryImportHandler getLibraryChooserImportHandler()
-meth public org.netbeans.api.project.libraries.LibraryChooser$LibraryImportHandler getLibraryChooserImportHandler(java.net.URL)
- anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.libraries.LibraryManager getProjectLibraryManager()
 meth public org.netbeans.spi.project.SubprojectProvider createSubprojectProvider()
 meth public org.netbeans.spi.project.support.ant.ReferenceHelper$RawReference getRawReference(java.lang.String,java.lang.String)
@@ -1098,36 +1083,4 @@ meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig 
 supr java.lang.Object
 hfds displayName,excludes,hint,icon,includes,location,openedIcon,type
 
-CLSS public final org.netbeans.spi.project.support.ant.ui.CustomizerUtilities
-cons public init()
-innr public abstract interface static LicensePanelContentHandler
-meth public static javax.swing.JComponent createLicenseHeaderCustomizerPanel(org.netbeans.spi.project.ui.support.ProjectCustomizer$Category,org.netbeans.spi.project.support.ant.ui.CustomizerUtilities$LicensePanelContentHandler)
-supr java.lang.Object
-
-CLSS public abstract interface static org.netbeans.spi.project.support.ant.ui.CustomizerUtilities$LicensePanelContentHandler
- outer org.netbeans.spi.project.support.ant.ui.CustomizerUtilities
-meth public abstract java.lang.String getDefaultProjectLicenseLocation()
-meth public abstract java.lang.String getGlobalLicenseName()
-meth public abstract java.lang.String getProjectLicenseLocation()
-meth public abstract org.openide.filesystems.FileObject resolveProjectLocation(java.lang.String)
- anno 1 org.netbeans.api.annotations.common.NonNull()
-meth public abstract void setGlobalLicenseName(java.lang.String)
- anno 1 org.netbeans.api.annotations.common.NullAllowed()
-meth public abstract void setProjectLicenseContent(java.lang.String)
- anno 1 org.netbeans.api.annotations.common.NullAllowed()
-meth public abstract void setProjectLicenseLocation(java.lang.String)
- anno 1 org.netbeans.api.annotations.common.NullAllowed()
-
-CLSS public org.netbeans.spi.project.support.ant.ui.StoreGroup
-cons public init()
-meth public final javax.swing.JToggleButton$ToggleButtonModel createInverseToggleButtonModel(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String)
-meth public final javax.swing.JToggleButton$ToggleButtonModel createToggleButtonModel(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String)
-meth public final javax.swing.text.Document createStringDocument(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String)
-meth public void store(org.netbeans.spi.project.support.ant.EditableProperties)
-supr java.lang.Object
-hfds BOOLEAN_KIND_ED,BOOLEAN_KIND_TF,BOOLEAN_KIND_YN,documentListener,models,modifiedDocuments
-
-CLSS public org.netbeans.spi.project.support.ant.ui.VariablesSupport
-meth public static void showVariablesCustomizer()
-supr java.lang.Object
 

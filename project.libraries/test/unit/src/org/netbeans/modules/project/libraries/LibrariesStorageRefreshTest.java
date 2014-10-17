@@ -52,7 +52,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.test.MockLookup;
 
 
-
 /** Checks that libraries are updated as sson as correct library type
  * provider is registered.
  *
@@ -70,9 +69,12 @@ public class LibrariesStorageRefreshTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(new LibrariesStorageTest.TestEntityCatalog());
+        MockLookup.setInstances(
+            new TestEntityCatalog(),
+            new LibrariesTestUtil.MockLibraryTypeRegistry(),
+            new LibrariesTestUtil.MockProjectManager());
         this.storageFolder = TestUtil.makeScratchDir(this);
-        LibrariesStorageTest.createLibraryDefinition(this.storageFolder,"Library1", null);
+        org.netbeans.modules.project.libraries.LibrariesTestUtil.createLibraryDefinition(this.storageFolder,"Library1", null);
         this.storage = new LibrariesStorage (this.storageFolder);
     }
 
@@ -83,7 +85,7 @@ public class LibrariesStorageRefreshTest extends NbTestCase {
         LibrariesStorageTest.TestListener l = new LibrariesStorageTest.TestListener ();
         this.storage.addPropertyChangeListener(l);
         assertEquals("No libraries found", 0, libs.length);
-        LibrariesStorageTest.registerLibraryTypeProvider();
+        LibrariesTestUtil.registerLibraryTypeProvider(LibrariesTestUtil.TestLibraryTypeProvider.class);
         Thread.sleep(1000); //The lookup for path fires with delay, wait for the event
         libs = this.storage.getLibraries();        
         assertEquals("Libraries count",1,libs.length);        

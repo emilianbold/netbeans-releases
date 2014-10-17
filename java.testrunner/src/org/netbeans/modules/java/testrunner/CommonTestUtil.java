@@ -55,9 +55,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -75,22 +72,6 @@ public class CommonTestUtil {
                || "text/x-java".equals(FileUtil.getMIMEType(fileObj));  //NOI18N
     }
     
-    static public FileObject getFileObjectFromNode(Node node) {
-        DataObject dO;
-        DataFolder df;
-
-        dO = node.getLookup().lookup(DataObject.class);
-        if (null != dO) {
-            return dO.getPrimaryFile();
-        }
-
-        df = node.getLookup().lookup(DataFolder.class);
-        if (null != df) {
-            return df.getPrimaryFile();
-        }
-        return null;
-    }
-    
     /**
      * Finds all <code>SourceGroup</code>s of the given project
      * containing a class of the given name.
@@ -106,7 +87,7 @@ public class CommonTestUtil {
             final Project project,
             final String className) {
         final SourceGroup[] sourceGroups
-                = new Utils(project).getJavaSourceGroups();
+                = new JavaUtils(project).getJavaSourceGroups();
         if (sourceGroups.length == 0) {
             return Collections.<SourceGroup>emptyList();
         }
@@ -240,7 +221,7 @@ public class CommonTestUtil {
 
     public static SourceGroup findSourceGroupOwner(Project project, FileObject file) {        
         final SourceGroup[] sourceGroups
-                = new Utils(project).getJavaSourceGroups();
+                = new JavaUtils(project).getJavaSourceGroups();
         for (int i = 0; i < sourceGroups.length; i++) {
             SourceGroup srcGroup = sourceGroups[i];
             FileObject root = srcGroup.getRootFolder();
@@ -295,7 +276,7 @@ public class CommonTestUtil {
     public static Map<FileObject,SourceGroup> getFileObject2SourceGroupMap(
                                                               Project project) {
         final SourceGroup[] sourceGroups
-                = new Utils(project).getJavaSourceGroups();
+                = new JavaUtils(project).getJavaSourceGroups();
         
         if (sourceGroups.length == 0) {
             return Collections.<FileObject,SourceGroup>emptyMap();

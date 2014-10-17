@@ -70,6 +70,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUIUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
@@ -425,7 +426,7 @@ public class PhysicalView {
                             try {
                                 //#217008
                                 DataFolder df = getOriginal().getLookup().lookup(DataFolder.class);
-                                img = folder.getFileSystem().getStatus().annotateIcon(img, type, df.files());
+                                img = FileUIUtils.getImageDecorator(folder.getFileSystem()).annotateIcon(img, type, df.files());
                             } catch (FileStateInvalidException e) {
                                 // no fs, do nothing
                             }

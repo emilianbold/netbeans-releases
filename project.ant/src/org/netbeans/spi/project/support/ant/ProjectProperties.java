@@ -55,15 +55,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.project.ant.UserQuestionHandler;
-import org.openide.ErrorManager;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
+import org.netbeans.modules.project.spi.intern.ProjectIDEServicesImplementation.UserQuestionExceptionCallback;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -73,12 +71,11 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
-import org.openide.util.UserQuestionException;
-import org.openide.util.Utilities;
 import org.openide.util.WeakSet;
 
 /**
@@ -223,7 +220,7 @@ final class ProjectProperties {
                         properties = p;
                         cachedPropertiesFromFile = p;
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
                     }
                 }
                 loaded = true;
@@ -243,7 +240,7 @@ final class ProjectProperties {
             reloadedStackTrace = null;
             filePropertiesChanged = filePropertiesChanged ||
                 !Objects.equals(nue, cachedPropertiesFromFile);
-            boolean modifying = !Utilities.compareObjects(nue, properties);
+            boolean modifying = !BaseUtilities.compareObjects(nue, properties);
             if (modifying) {
                 if (nue != null) {
                     properties = nue.cloneProperties();
@@ -307,9 +304,13 @@ final class ProjectProperties {
                                 } finally {
                                     os.close();
                                 }
-                            } catch (UserQuestionException uqe) { // #46089
+                            } catch (IOException ioe) { // #46089
                                 helper.needPendingHook();
-                                UserQuestionHandler.handle(uqe, new UserQuestionHandler.Callback() {
+                                
+                                if(!ProjectIDEServices.isUserQuestionException(ioe)) {
+                                    throw ioe;
+                                }
+                                ProjectIDEServices.handleUserQuestionException(ioe, new UserQuestionExceptionCallback() {
                                     public void accepted() {
                                         // Try again.
                                         try {
@@ -327,7 +328,7 @@ final class ProjectProperties {
                                             });
                                         } catch (IOException e) {
                                             // Oh well.
-                                            ErrorManager.getDefault().notify(e);
+                                            Logger.getLogger(PP.this.getClass().getName()).log(Level.SEVERE, null, e);
                                             reload();
                                         }
                                     }
@@ -335,7 +336,7 @@ final class ProjectProperties {
                                         reload();
                                     }
                                     public void error(IOException e) {
-                                        ErrorManager.getDefault().notify(e);
+                                        Logger.getLogger(PP.this.getClass().getName()).log(Level.SEVERE, null, e);
                                         reload();
                                     }
                                     private void reload() {

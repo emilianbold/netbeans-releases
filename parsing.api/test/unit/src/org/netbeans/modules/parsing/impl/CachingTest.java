@@ -58,7 +58,6 @@ import javax.swing.text.EditorKit;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
@@ -95,11 +94,17 @@ public class CachingTest extends IndexingAwareTestCase {
         super (testName);
     }
 
+    @Override
+    protected Class[] getServices() {
+        return new Class[] { MyScheduler.class };
+    }
+    
+    
+
     @RandomlyFails // usually fails for jglick
     public void testCaching () throws Exception {
 
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final CountDownLatch        latch1 = new CountDownLatch (1);
         final CountDownLatch        latch2 = new CountDownLatch (3);
 

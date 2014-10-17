@@ -191,13 +191,15 @@ public final class NodeJsSupport {
             LOGGER.log(Level.FINE, "Processing change event {0} in node.js preferences in project {1}", new Object[] {key, projectName});
             if (NodeJsPreferences.ENABLED.equals(key)) {
                 firePropertyChanged(NodeJsPlatformProvider.PROP_ENABLED, !enabled, enabled);
-                if (enabled
-                        && NodeJsUtils.isJsLibrary(project)) {
-                    // enable node.js run config
-                    preferences.setRunEnabled(true);
-                    firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
+                if (enabled) {
+                    if (NodeJsUtils.isJsLibrary(project)) {
+                        // enable node.js run config
+                        preferences.setRunEnabled(true);
+                        firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
+                    } else if (preferences.isAskRunEnabled()) {
+                        Notifications.notifyRunConfiguration(project);
+                    }
                 }
-                Notifications.notifyRunConfiguration(project);
             } else if (!enabled) {
                 LOGGER.log(Level.FINE, "Change event in node.js preferences ignored, node.js not enabled in project {0}", projectName);
             } else if (NodeJsPreferences.NODE_DEFAULT.equals(key)) {

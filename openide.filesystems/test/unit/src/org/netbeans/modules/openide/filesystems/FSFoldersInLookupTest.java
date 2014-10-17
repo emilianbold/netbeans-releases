@@ -51,7 +51,6 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 
 /** 
  * @author Jaroslav Tulach
@@ -104,6 +103,6 @@ public class FSFoldersInLookupTest extends NbTestCase {
         assertNull("not found again", Lookup.getDefault().lookup(Shared.class));
     }
 
-    public static final class Shared extends SharedClassObject {}
+    public static final class Shared {}
 
 }

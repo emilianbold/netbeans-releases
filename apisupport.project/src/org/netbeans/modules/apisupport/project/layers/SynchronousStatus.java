@@ -44,14 +44,13 @@ package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.Image;
 import java.util.Set;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem.Status;
+import org.openide.filesystems.*;
 
 /**
  * Status object that can return an accurate result immediately
  * for clients which cannot listen for changes later.
  */
-public interface SynchronousStatus extends Status {
+public interface SynchronousStatus extends StatusDecorator, ImageDecorator {
     
     String annotateNameSynch(String name, Set<? extends FileObject> files);
 

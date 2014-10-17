@@ -62,6 +62,8 @@ import org.openide.util.UserQuestionException;
  * @see org.netbeans.api.extexecution.ProcessBuilder
  * @author Petr Hejl
  * @since 1.28
+ * @deprecated use {@link org.netbeans.spi.extexecution.base.ProcessBuilderImplementation}
+ *             and {@link org.netbeans.spi.extexecution.base.ProcessBuilderFactory}
  */
 public interface ProcessBuilderImplementation {
 

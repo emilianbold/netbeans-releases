@@ -30,7 +30,6 @@
  */
 package org.netbeans.modules.html.catalog;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
@@ -42,12 +41,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.lib.api.dtd.ReaderProvider;
 import org.netbeans.modules.html.editor.lib.api.dtd.ReaderProviderFactory;
-import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
+import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor2;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.xml.sax.EntityResolver;
@@ -59,7 +57,7 @@ import org.xml.sax.SAXException;
  *
  * @author Marek Fukala
  */
-public final class HtmlCatalog implements CatalogReader, CatalogDescriptor, EntityResolver  {
+public final class HtmlCatalog implements CatalogReader, CatalogDescriptor2, EntityResolver  {
 
     private Logger LOGGER = Logger.getLogger(HtmlCatalog.class.getSimpleName());
     private Collection<ReaderProvider> providers = new ArrayList<ReaderProvider>();
@@ -132,8 +130,8 @@ public final class HtmlCatalog implements CatalogReader, CatalogDescriptor, Enti
     }
 
     @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/html/catalog/resources/DDCatalog.gif"); // NOI18N
+    public String getIconResource(int type) {
+        return "org/netbeans/modules/html/catalog/resources/DDCatalog.gif"; // NOI18N
     }
 
     @Override

@@ -115,7 +115,7 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.lib.editor.util.StringEscapeUtils;
-import org.netbeans.modules.java.editor.javadoc.JavadocImports;
+import org.netbeans.modules.java.editor.base.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -149,8 +149,9 @@ public class GoToSupport {
         try {
             final FileObject fo = getFileObject(doc);
 
-            if (fo == null)
+            if (fo == null) {
                 return null;
+            }
 
             final String[] result = new String[1];
 
@@ -159,8 +160,9 @@ public class GoToSupport {
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult (offset);
                     CompilationController controller = res != null ? CompilationController.get(res) : null;
-                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
+                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         return;
+                    }
 
                     Context resolved = resolveContext(controller, doc, offset, goToSource);
 
@@ -183,6 +185,7 @@ public class GoToSupport {
     private static void performGoTo(final Document doc, final int offset, final boolean goToSource, final boolean javadoc) {
         final AtomicBoolean cancel = new AtomicBoolean();
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
             public void run() {
                 performGoToImpl(doc, offset, goToSource, javadoc, cancel);
             }
@@ -193,8 +196,9 @@ public class GoToSupport {
         try {
             final FileObject fo = getFileObject(doc);
             
-            if (fo == null)
+            if (fo == null) {
                 return ;
+            }
             
             final int[] offsetToOpen = new int[] {-1};
             final ElementHandle[] elementToOpen = new ElementHandle[1];
@@ -206,11 +210,13 @@ public class GoToSupport {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     Result res = resultIterator.getParserResult (offset);
-                    if (cancel != null && cancel.get())
+                    if (cancel != null && cancel.get()) {
                         return ;
+                    }
                     CompilationController controller = res != null ? CompilationController.get(res) : null;
-                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
+                    if (controller == null || controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         return;
+                    }
                     cpInfo[0] = controller.getClasspathInfo();
 
                     Context resolved = resolveContext(controller, doc, offset, goToSource);
@@ -241,7 +247,7 @@ public class GoToSupport {
                                 } else {
                                     //#71272: it is necessary to translate the offset:
                                     offsetToOpen[0] = controller.getSnapshot().getOriginalOffset((int) startPos);
-                                    displayNameForError[0] = Utilities.getElementName(resolved.resolved, false).toString();
+                                    displayNameForError[0] = controller.getElementUtilities().getElementName(resolved.resolved, false).toString();
                                     tryToOpen[0] = true;
                                 }
                             } else {
@@ -249,7 +255,7 @@ public class GoToSupport {
                             }
                         } else {
                             elementToOpen[0] = ElementHandle.create(resolved.resolved);
-                            displayNameForError[0] = Utilities.getElementName(resolved.resolved, false).toString();
+                            displayNameForError[0] = controller.getElementUtilities().getElementName(resolved.resolved, false).toString();
                             tryToOpen[0] = true;
                         }
                     }
@@ -259,7 +265,9 @@ public class GoToSupport {
             if (tryToOpen[0]) {
                 boolean openSucceeded = false;
 
-                if (cancel.get()) return ;
+                if (cancel.get()) {
+                    return ;
+                }
 
                 if (offsetToOpen[0] >= 0) {
                     openSucceeded = CALLER.open(fo, offsetToOpen[0]);
@@ -376,8 +384,9 @@ public class GoToSupport {
         if (goToSource && !insideImportStmt) {
             TypeMirror type = null;
 
-            if (el instanceof VariableElement)
+            if (el instanceof VariableElement) {
                 type = el.asType();
+            }
 
             if (type != null && type.getKind() == TypeKind.DECLARED) {
                 el = ((DeclaredType)type).asElement();
@@ -507,12 +516,14 @@ public class GoToSupport {
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
 
-                if (ts == null)
+                if (ts == null) {
                     return;
+                }
 
                 ts.move(offset);
-                if (!ts.moveNext())
+                if (!ts.moveNext()) {
                     return;
+                }
 
                 Token<JavaTokenId> t = ts.token();
 
@@ -532,15 +543,18 @@ public class GoToSupport {
                     return;
                 } else if (!USABLE_TOKEN_IDS.contains(t.id())) {
                     ts.move(offset - 1);
-                    if (!ts.moveNext())
+                    if (!ts.moveNext()) {
                         return;
+                    }
                     t = ts.token();
-                    if (!USABLE_TOKEN_IDS.contains(t.id()))
+                    if (!USABLE_TOKEN_IDS.contains(t.id())) {
                         return;
+                    }
                 }
 
-                if (token != null)
+                if (token != null) {
                     token[0] = t;
+                }
 
                 ret[0] = new int [] {ts.offset(), ts.offset() + t.length()};
             }
@@ -581,10 +595,11 @@ public class GoToSupport {
             
             return null;//prevent jumps to incorrect positions
         } else {
-            if (encl != null)
+            if (encl != null) {
                 return encl;
-            else
+            } else {
                 return el;
+            }
         }
     }
     
@@ -650,7 +665,7 @@ public class GoToSupport {
                 case INTERFACE:
                 case METHOD:
                 case VARIABLE:
-                    int[] span = org.netbeans.modules.java.editor.semantic.Utilities.findIdentifierSpan(path, info, info.getDocument());
+                    int[] span = org.netbeans.modules.java.editor.base.semantic.Utilities.findIdentifierSpan(path, info, info.getDocument());
 
                     if (span == null || span[0] == (-1) || span[1] == (-1)) {
                         return false;
@@ -693,7 +708,9 @@ public class GoToSupport {
             private TreePath found;
             @Override
             public Void scan(Tree tree, Void p) {
-                if (found != null) return null;
+                if (found != null) {
+                    return null;
+                }
                 return super.scan(tree, p);
             }
             private boolean process() {
@@ -706,22 +723,30 @@ public class GoToSupport {
             }
             @Override
             public Void visitClass(ClassTree node, Void p) {
-                if (!process()) super.visitClass(node, p);
+                if (!process()) {
+                    super.visitClass(node, p);
+                }
                 return null;
             }
             @Override
             public Void visitMethod(MethodTree node, Void p) {
-                if (!process()) return super.visitMethod(node, p);
+                if (!process()) {
+                    return super.visitMethod(node, p);
+                }
                 return null;
             }
             @Override
             public Void visitVariable(VariableTree node, Void p) {
-                if (!process()) return super.visitVariable(node, p);
+                if (!process()) {
+                    return super.visitVariable(node, p);
+                }
                 return null;
             }
             @Override
             public Void visitTypeParameter(TypeParameterTree node, Void p) {
-                if (!process()) return super.visitTypeParameter(node, p);
+                if (!process()) {
+                    return super.visitTypeParameter(node, p);
+                }
                 return null;
             }
         }
@@ -777,6 +802,7 @@ public class GoToSupport {
             }
         }
         
+        @Override
         public Void visitPackage(PackageElement e, Boolean highlightName) {
             boldStartCheck(highlightName);
             
@@ -787,6 +813,7 @@ public class GoToSupport {
             return null;
         }
 
+        @Override
         public Void visitType(TypeElement e, Boolean highlightName) {
             return printType(e, null, highlightName);
         }
@@ -819,12 +846,14 @@ public class GoToSupport {
                 result.append(e.getQualifiedName());
             }
             
-            if (dt != null)
+            if (dt != null) {
                 dumpRealTypeArguments(dt.getTypeArguments());
+            }
 
             return null;
         }
 
+        @Override
         public Void visitVariable(VariableElement e, Boolean highlightName) {
             modifier(e.getModifiers());
             
@@ -858,6 +887,7 @@ public class GoToSupport {
             return null;
         }
 
+        @Override
         public Void visitExecutable(ExecutableElement e, Boolean highlightName) {
             return printExecutable(e, null, highlightName);
         }
@@ -897,6 +927,7 @@ public class GoToSupport {
             return null;
         }
 
+        @Override
         public Void visitTypeParameter(TypeParameterElement e, Boolean highlightName) {
             return null;
         }
@@ -920,8 +951,9 @@ public class GoToSupport {
 //        private void throwsDump()
 
         private void dumpTypeArguments(List<? extends TypeParameterElement> list) {
-            if (list.isEmpty())
+            if (list.isEmpty()) {
                 return ;
+            }
             
             boolean addSpace = false;
             
@@ -941,8 +973,9 @@ public class GoToSupport {
         }
 
         private void dumpRealTypeArguments(List<? extends TypeMirror> list) {
-            if (list.isEmpty())
+            if (list.isEmpty()) {
                 return ;
+            }
 
             boolean addSpace = false;
 
@@ -988,8 +1021,9 @@ public class GoToSupport {
         }
 
         private void dumpThrows(List<? extends TypeMirror> list) {
-            if (list.isEmpty())
+            if (list.isEmpty()) {
                 return ;
+            }
             
             boolean addSpace = false;
             
@@ -1024,17 +1058,21 @@ public class GoToSupport {
     }
     
     static UiUtilsCaller CALLER = new UiUtilsCaller() {
+        @Override
         public boolean open(FileObject fo, int pos) {
             return UiUtils.open(fo, pos);
         }
+        @Override
         public void beep(boolean goToSource, boolean goToJavadoc) {
             Toolkit.getDefaultToolkit().beep();
             int value = goToSource ? 1 : goToJavadoc ? 2 : 0;
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoToGeneric", value));
         }
+        @Override
         public boolean open(ClasspathInfo info, ElementHandle<?> el) {
             return ElementOpen.open(info, el);
         }
+        @Override
         public void warnCannotOpen(String displayName) {
             Toolkit.getDefaultToolkit().beep();
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToSupport.class, "WARN_CannotGoTo", displayName));

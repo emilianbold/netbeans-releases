@@ -98,17 +98,16 @@ public class CoverageManagerImpl implements CoverageManager {
             enabledMimeTypes.addAll(mimeTypes);
         } else {
             enabledMimeTypes.removeAll(mimeTypes);
-        }
-
         SwingUtilities.invokeLater(new Runnable() {
-            @Override
+
+                @Override
             public void run() {
                 for (JTextComponent target : EditorRegistry.componentList()) {
                     Document document = target.getDocument();
                     FileObject fileForDocument = GsfUtilities.findFileObject(document);
                     // show/hide code coverage toolbar in all open file editors belonging only to this project
-                    if (fileForDocument != null && FileOwnerQuery.getOwner(fileForDocument) == project) {
-                        CoverageSideBar sb = CoverageSideBar.getSideBar(document);
+                    if (fileForDocument != null && project.equals(FileOwnerQuery.getOwner(fileForDocument))) {
+                        CoverageSideBar sb = CoverageSideBar.getSideBar(target);
                         if (sb != null) {
                             sb.showCoveragePanel(enabled);
                         }
@@ -121,8 +120,11 @@ public class CoverageManagerImpl implements CoverageManager {
                         report.close();
                     }
                 }
+
+
             }
         });
+    }
         provider.setEnabled(enabled);
     }
 
@@ -159,7 +161,7 @@ public class CoverageManagerImpl implements CoverageManager {
                         }
 
                         doc.putProperty(COVERAGE_DOC_PROPERTY, null);
-                        CoverageHighlightsContainer container = CoverageHighlightsLayerFactory.getContainer(doc);
+                        CoverageHighlightsContainer container = CoverageHighlightsLayerFactory.getContainer(target);
                         if (container != null) {
                             container.refresh();
                         }
@@ -209,17 +211,18 @@ public class CoverageManagerImpl implements CoverageManager {
         return enabledMimeTypes.contains(mimeType);
     }
 
-    FileCoverageDetails getDetails(Project project, FileObject fileObject, Document doc) {
+    FileCoverageDetails getDetails(Project project, FileObject fileObject, JTextComponent component) {
         if (project != null) {
             CoverageProvider provider = getProvider(project);
             if (provider != null && provider.isEnabled()) {
+                Document doc = component.getDocument();
                 FileCoverageDetails hitCounts = (FileCoverageDetails) doc.getProperty(COVERAGE_DOC_PROPERTY);
                 if (hitCounts == null) {
                     hitCounts = provider.getDetails(fileObject, doc);
                     doc.putProperty(COVERAGE_DOC_PROPERTY, hitCounts);
 
                     if (getShowEditorBar()) {
-                        CoverageSideBar sb = CoverageSideBar.getSideBar(doc);
+                        CoverageSideBar sb = CoverageSideBar.getSideBar(component);
                         if (sb != null) {
                             sb.showCoveragePanel(true);
                             sb.setCoverage(hitCounts);
@@ -252,7 +255,7 @@ public class CoverageManagerImpl implements CoverageManager {
                     if (isEnabled(project)) {
                         focused(fo, target);
                     } else {
-                        CoverageHighlightsContainer container = CoverageHighlightsLayerFactory.getContainer(document);
+                        CoverageHighlightsContainer container = CoverageHighlightsLayerFactory.getContainer(target);
                         if (container != null) {
                             container.refresh();
                         }
@@ -318,7 +321,7 @@ public class CoverageManagerImpl implements CoverageManager {
         // Update existing editors
         for (JTextComponent target : EditorRegistry.componentList()) {
             Document document = target.getDocument();
-            CoverageSideBar sb = CoverageSideBar.getSideBar(document);
+            CoverageSideBar sb = CoverageSideBar.getSideBar(target);
             if (sb != null) {
                 sb.showCoveragePanel(on);
             }

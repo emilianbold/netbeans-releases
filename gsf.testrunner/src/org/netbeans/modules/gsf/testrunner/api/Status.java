@@ -77,25 +77,29 @@ public enum Status {
     /**
      * @return true if the given status represents a failure or an error.
      */
-    static boolean isFailureOrError(Status status) {
+    public static boolean isFailureOrError(Status status) {
         return FAILED.equals(status) || ERROR.equals(status);
     }
 
     /**
      * @return true if the given status represents a skipped test.
      */
-    static boolean isSkipped(Status status) {
+    public static boolean isSkipped(Status status) {
         return SKIPPED.equals(status);
     }
 
     /**
      * @return true if the given status represents an aborted test.
      */
-    static boolean isAborted(Status status) {
+    public static boolean isAborted(Status status) {
         return ABORTED.equals(status);
     }
 
-    boolean isMaskApplied(int mask){
+    /**
+     *
+     * @return true if the given mask is applied in this status.
+     */
+    public boolean isMaskApplied(int mask){
         return (mask & getBitMask()) != 0;
     }
 

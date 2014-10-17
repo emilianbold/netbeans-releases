@@ -55,7 +55,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.NamedServicesLookupTest;
 
@@ -228,22 +227,13 @@ public class RecognizeInstanceFilesTest extends NamedServicesLookupTest {
     public static final class Inst extends Object {
     }
 
-    public void testSharedClassObject() throws Exception {
-        Shared instance = SharedClassObject.findObject(Shared.class, true);
-        FileObject data = FileUtil.createData(root, "dir/" + Shared.class.getName().replace('.', '-') + ".instance");
-        Lookup l = Lookups.forPath("dir");
-        assertSame(instance, l.lookup(Shared.class));
-        
-        Shared created = FileUtil.getConfigObject(data.getPath(), Shared.class);
-        assertSame("Config file found", instance, created);
-    }
     public void testNullForFolders() throws Exception {
         FileObject data = FileUtil.createFolder(root, "dir/" + Shared.class.getName().replace('.', '-') + ".instance");
         Shared nul = FileUtil.getConfigObject(data.getPath(), Shared.class);
         assertNull("No object for folders", nul);
     }
 
-    public static final class Shared extends SharedClassObject {}
+    public static final class Shared {}
 
     public void testDoNotCreateFoldersJustBecauseILookedThemUp() throws Exception {
         assertEquals(0, Lookups.forPath("nonexistent").lookupAll(Object.class).size());

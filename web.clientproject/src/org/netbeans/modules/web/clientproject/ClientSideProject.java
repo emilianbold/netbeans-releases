@@ -1007,6 +1007,7 @@ public class ClientSideProject implements Project {
                         runConfigurationChanged((String) event.getNewValue());
                         break;
                     default:
+                        // XXX
                         assert false : "Unhandled property change: " + propertyName;
                 }
             }

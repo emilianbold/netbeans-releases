@@ -199,6 +199,12 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     @Override
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        Problem problem = isElementAvail(treePathHandle, javac);
+        return problem;
+    }
+
+    @Override
     protected Problem preCheck(CompilationController javac) throws IOException {
         Problem preCheckProblem = null;
         javac.toPhase(JavaSource.Phase.RESOLVED);

@@ -109,6 +109,35 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="server.is.free">
+            <api name="general"/>
+            <summary>Desktop dependent Java Project Support UI extracted</summary>
+            <version major="1" minor="62"/>
+            <date day="2" month="6" year="2014"/>
+            <author login="tstupka"/>
+            <compatibility modification="yes" addition="yes">
+                <p>
+                    Runtime compatibility remains, compile time compatibility is
+                    mostly preserved too. It is however recommended to upgrade
+                    dependencies of client modules. Try running
+                    <code>ant fix-dependencies</code> in your Ant module.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    The following packages were moved from 
+                    <a href="@org-netbeans-modules-java-project@/overview-summary.html">org.netbeans.modules.java.project</a> 
+                    into the
+                    <a href="@org-netbeans-modules-java-project-project-ui@/overview-summary.html">org.netbeans.modules.java.project.ui</a> module:
+                </p>
+                <ul>
+                    <li><a href="@org-netbeans-modules-java-project-ui@/org/netbeans/api/java/project/runner/package-summary.html">o.n.api.java.project.runner</a></li>
+                    <li><a href="@org-netbeans-modules-java-project-ui@/org/netbeans/spi/java/project/runner/package-summary.html">o.n.spi.java.project.runner</a></li>
+                    <li><a href="@org-netbeans-modules-java-project-ui@/org/netbeans/spi/java/project/support/ui/package-summary.html">o.n.spi.java.project.support.ui</a></li>
+                    <li><a href="@org-netbeans-modules-java-project-ui@/org/netbeans/spi/java/project/support/ui/templates/package-summary.html">o.n.spi.java.project.support.ui.templates</a></li>
+                </ul>
+            </description>
+        </change>  
         <change id="JavaTemplates-icons">
             <api name="general"/>
             <summary>Added more specific icons into <code>JavaTemplates</code></summary>

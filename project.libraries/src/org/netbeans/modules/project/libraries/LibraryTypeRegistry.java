@@ -43,47 +43,23 @@
  */
 package org.netbeans.modules.project.libraries;
 
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
 
-public final class LibraryTypeRegistry {
-
-    private static final String REGISTRY = "org-netbeans-api-project-libraries/LibraryTypeProviders";              //NOI18N
-    private static final Logger LOG = Logger.getLogger(LibraryTypeRegistry.class.getName());
+public abstract class LibraryTypeRegistry {
 
     private static LibraryTypeRegistry instance;
-
-    private final Lookup.Result<LibraryTypeProvider> result;
     private final ChangeSupport changeSupport;
 
-    private LibraryTypeRegistry () {
+    protected LibraryTypeRegistry () {
         this.changeSupport = new ChangeSupport(this);
-        final Lookup lookup = Lookups.forPath(REGISTRY);
-        assert lookup != null;
-        result = lookup.lookupResult(LibraryTypeProvider.class);
-        result.addLookupListener(new LookupListener() {
-            public void resultChanged(LookupEvent ev) {
-                changeSupport.fireChange();
-            }
-        });
     }
 
-    public LibraryTypeProvider[] getLibraryTypeProviders () {
-        assert result != null;
-        final Collection<? extends LibraryTypeProvider> instances = result.allInstances();
-        LOG.log(Level.FINE, "found providers: {0}", instances);
-        return instances.toArray(new LibraryTypeProvider[instances.size()]);
-    }
+    public abstract LibraryTypeProvider[] getLibraryTypeProviders ();
 
-    public LibraryTypeProvider getLibraryTypeProvider (String libraryType) {
+    public final LibraryTypeProvider getLibraryTypeProvider (String libraryType) {
         assert libraryType != null;
         final LibraryTypeProvider[] providers = getLibraryTypeProviders();
         for (LibraryTypeProvider provider : providers) {
@@ -95,19 +71,26 @@ public final class LibraryTypeRegistry {
     }
 
 
-    public void addChangeListener (final ChangeListener listener) {
+    public final void addChangeListener (final ChangeListener listener) {
         assert listener != null;
         this.changeSupport.addChangeListener(listener);
     }
 
-    public void removeChangeListener (final ChangeListener listener) {
+    public final void removeChangeListener (final ChangeListener listener) {
         assert listener != null;
         this.changeSupport.removeChangeListener(listener);
     }
 
+    protected final void fireChange() {
+        this.changeSupport.fireChange();
+    }
+
     public static synchronized LibraryTypeRegistry getDefault () {
         if (instance == null) {
-            instance = new LibraryTypeRegistry();
+            instance = Lookup.getDefault().lookup(LibraryTypeRegistry.class);
+            if (instance == null) {
+                throw new IllegalStateException("No LibraryTypeRegistry in default Lookup");   //NOI18N
+            }
         }
         return instance;
     }

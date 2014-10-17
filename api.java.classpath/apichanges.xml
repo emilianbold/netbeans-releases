@@ -76,6 +76,20 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="ClassLoaderFactory">
+            <api name="classpath"/>
+            <summary>Added a SPI interfact to provide <code>ClassPath</code>s <code>ClassLoader</code></summary>
+            <version major="1" minor="43"/>
+            <date day="31" month="3" year="2014"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added a SPI interface to provide <code>ClassLoader</code> used by <code>ClassPath.getClassLoader</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.classpath" name="ClassLoaderFactory"/>
+        </change>
         <change id="ClassPath.getFlags">
             <api name="classpath"/>
             <summary>Added ClassPath flags</summary>

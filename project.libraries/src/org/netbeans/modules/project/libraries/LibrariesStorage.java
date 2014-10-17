@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.project.libraries;
 
+import org.netbeans.spi.project.libraries.WritableLibraryProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.CharConversionException;
@@ -185,7 +186,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                             }
                             librariesByFileNames.put(descriptorFile.getPath(),impl);
                             libraries.put (impl.getName(),impl);
-                            Util.registerSource(impl, descriptorFile);
+                            LibrariesModule.registerSource(impl, descriptorFile);
                         }
                     }
                 } catch (SAXException e) {
@@ -266,7 +267,7 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         final LibraryDeclarationParser parser = new LibraryDeclarationParser(handler,convertor);
         handler.setLibrary (impl);
         readLibrary (descriptorFile, parser);
-        Util.registerSource(impl, descriptorFile);
+        LibrariesModule.registerSource(impl, descriptorFile);
         return handler.getLibrary();
     }
 
@@ -333,14 +334,15 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
 
     @Override
-    public void addLibrary (LibraryImplementation library) throws IOException {
+    public boolean addLibrary (LibraryImplementation library) throws IOException {
         this.initStorage(false);
         assert this.storage != null : "Storage is not initialized";
         writeLibrary(this.storage,library);
+        return true;
     }
 
     @Override
-    public void removeLibrary (LibraryImplementation library) throws IOException {
+    public boolean removeLibrary (LibraryImplementation library) throws IOException {
         final Libs data = this.initStorage(false);
         assert this.storage != null : "Storage is not initialized";
         final String path = data.findPath(library);
@@ -349,11 +351,13 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
             if (fo != null) {
                 fo.delete();
             }
+            return true;
         }
+        return false;
     }
 
     @Override
-    public void updateLibrary(final LibraryImplementation oldLibrary, final LibraryImplementation newLibrary) throws IOException {
+    public boolean updateLibrary(final LibraryImplementation oldLibrary, final LibraryImplementation newLibrary) throws IOException {
         final Libs data = this.initStorage(false);
         assert this.storage != null : "Storage is not initialized";
         final String path = data.findPath(oldLibrary);
@@ -364,17 +368,19 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 final LibraryTypeProvider libraryTypeProvider = ltRegistry.getLibraryTypeProvider (libraryType);
                 if (libraryTypeProvider == null) {
                     LOG.warning("LibrariesStorageL Cannot store library, the library type is not recognized by any of installed LibraryTypeProviders.");	//NOI18N
-                    return;
-                }
-                this.storage.getFileSystem().runAtomicAction(
-                        new FileSystem.AtomicAction() {
-                            public void run() throws IOException {
-                                LibraryDeclarationParser.writeLibraryDefinition (fo, newLibrary, libraryTypeProvider);
+                } else {
+                    this.storage.getFileSystem().runAtomicAction(
+                            new FileSystem.AtomicAction() {
+                                public void run() throws IOException {
+                                    LibraryDeclarationParser.writeLibraryDefinition (fo, newLibrary, libraryTypeProvider);
+                                }
                             }
-                        }
-                );
+                    );
+                }
+                return true;
             }
         }
+        return false;
     }
 
 

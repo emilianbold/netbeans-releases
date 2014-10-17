@@ -47,7 +47,7 @@ package org.netbeans.modules.masterfs.filebasedfs;
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -102,7 +102,7 @@ public class Deadlock73332Test extends NbTestCase {
         }
         
         protected @Override void beforeLookup(Lookup.Template<?> template) {
-            if (folder != null && template.getType().isAssignableFrom(AnnotationProvider.class)) {
+            if (folder != null && template.getType().isAssignableFrom(BaseAnnotationProvider.class)) {
                 RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
                     public @Override void run() {
                         folder.getChildren(true);

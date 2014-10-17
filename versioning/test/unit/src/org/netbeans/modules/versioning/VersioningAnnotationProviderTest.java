@@ -55,7 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
 import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -97,8 +97,8 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
     }
 
     public void testProviderPresent () {
-        Collection<? extends AnnotationProvider> providers = Lookup.getDefault().lookupAll(AnnotationProvider.class);
-        for (AnnotationProvider provider : providers) {
+        Collection<? extends BaseAnnotationProvider> providers = Lookup.getDefault().lookupAll(BaseAnnotationProvider.class);
+        for (BaseAnnotationProvider provider : providers) {
             if (provider.getClass().getName().equals(VersioningAnnotationProvider.class.getName())) {
                 return;
             }

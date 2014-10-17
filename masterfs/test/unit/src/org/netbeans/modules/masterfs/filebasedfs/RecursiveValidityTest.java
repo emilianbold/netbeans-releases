@@ -52,7 +52,7 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
@@ -204,7 +204,7 @@ public class RecursiveValidityTest extends NbTestCase {
         
     }
     
-    public static final class AP extends AnnotationProvider {
+    public static final class AP extends BaseAnnotationProvider {
         static InterceptionListener il;
         
         @Override
@@ -212,19 +212,10 @@ public class RecursiveValidityTest extends NbTestCase {
             return name;
         }
 
-        @Override
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-            return icon;
-        }
 
         @Override
         public String annotateNameHtml(String name, Set<? extends FileObject> files) {
             return name;
-        }
-
-        @Override
-        public Action[] actions(Set<? extends FileObject> files) {
-            return null;
         }
 
         @Override

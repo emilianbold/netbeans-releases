@@ -83,6 +83,11 @@ public class EmbeddingTest extends IndexingAwareTestCase {
         super (testName);
     }
 
+    @Override
+    protected Class[] getServices() {
+        return new Class[] { MyScheduler.class };
+    }
+    
     /**
      * Complex tests checking embedding, custom schedulers, sharing of events,
      * snapshots and parser results.
@@ -92,7 +97,6 @@ public class EmbeddingTest extends IndexingAwareTestCase {
     public void testEmbedding () throws Exception {
 
         // 1) register tasks and parsers
-        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final CountDownLatch        latch1 = new CountDownLatch (2);
         final CountDownLatch        latch2 = new CountDownLatch (4);
 
