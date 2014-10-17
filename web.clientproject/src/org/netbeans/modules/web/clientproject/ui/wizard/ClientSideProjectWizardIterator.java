@@ -194,9 +194,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             errorOccured(Bundle.ClientSideProjectWizardIterator_error_noSiteRoot());
         }
 
-        // tools
-        files.addAll(CreateProjectUtils.instantiateTools(project, wizardDescriptor));
-
         File parent = projectDirectory.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
@@ -522,6 +519,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 }
             }
 
+            // tools
+            files.addAll(CreateProjectUtils.instantiateTools(project, wizardDescriptor));
+
             return Pair.of(null, siteRootDir);
         }
 
@@ -582,19 +582,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public static final String SOURCE_ROOT = "SOURCES_ROOT"; // NOI18N
         public static final String TEST_ROOT = "TEST_ROOT"; // NOI18N
 
-        private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
-
-
-        public ExistingHtml5ProjectWizard() {
-            toolsWizard = CreateProjectUtils.createToolsWizardPanel();
-        }
 
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"unchecked", "rawtypes"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new ExistingClientSideProjectPanel(),
-                toolsWizard.first(),
             };
             return panels;
         }
@@ -619,7 +612,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public String[] createSteps() {
             return new String[] {
                 Bundle.ExistingProjectWizard_step_createProject(),
-                toolsWizard.second(),
             };
         }
 
@@ -742,6 +734,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             FileObject sources = project.getProjectDirectory().getFileObject(ClientSideProjectConstants.DEFAULT_SOURCE_FOLDER);
             FileObject mainFile = createMainFile(sources);
             files.add(mainFile);
+
+            // tools
+            files.addAll(CreateProjectUtils.instantiateTools(project, wizardDescriptor));
+
             return Pair.of(sources, null);
         }
 
