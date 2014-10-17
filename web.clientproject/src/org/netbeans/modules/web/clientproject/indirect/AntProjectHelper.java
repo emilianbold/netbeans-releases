@@ -106,4 +106,8 @@ public class AntProjectHelper {
     public Object createAuxiliaryProperties() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    public void putPrimaryConfigurationData(Element data, boolean b) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
