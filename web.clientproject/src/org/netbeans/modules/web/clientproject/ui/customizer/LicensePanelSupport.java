@@ -47,12 +47,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 
 // copied from web.common
 public final class LicensePanelSupport implements CustomizerUtilities.LicensePanelContentHandler {
