@@ -117,13 +117,13 @@ public final class CreateProjectUtils {
         FileObject folder = findBestToolsFolder(project);
         assert folder != null;
         if (isToolEnabled(wizardDescriptor, ToolsPanel.BOWER_ENABLED)) {
-            files.add(createFile(folder, "Templates/ClientSide/bower.json")); // NOI18N
+            files.add(createFile(folder, "bower.json", "Templates/ClientSide/bower.json")); // NOI18N
         }
         if (isToolEnabled(wizardDescriptor, ToolsPanel.NPM_ENABLED)) {
-            files.add(createFile(folder, "Templates/ClientSide/package.json")); // NOI18N
+            files.add(createFile(folder, "package.json", "Templates/ClientSide/package.json")); // NOI18N
         }
         if (isToolEnabled(wizardDescriptor, ToolsPanel.GRUNT_ENABLED)) {
-            files.add(createFile(folder, "Templates/ClientSide/Gruntfile.js")); // NOI18N
+            files.add(createFile(folder, "Gruntfile.js", "Templates/ClientSide/Gruntfile.js")); // NOI18N
         }
         return files;
     }
@@ -146,9 +146,14 @@ public final class CreateProjectUtils {
         return project.getProjectDirectory();
     }
 
-    private static FileObject createFile(FileObject root, String template) throws IOException {
+    private static FileObject createFile(FileObject root, String file, String template) throws IOException {
         assert root != null;
         assert root.isFolder() : root;
+        FileObject target = root.getFileObject(file);
+        if (target != null
+                && target.isValid()) {
+            return target;
+        }
         FileObject templateFile = FileUtil.getConfigFile(template);
         DataFolder dataFolder = DataFolder.findFolder(root);
         DataObject dataIndex = DataObject.find(templateFile);
