@@ -282,6 +282,7 @@
                 <friend>org.netbeans.modules.cordova.platforms.android</friend>
                 <friend>org.netbeans.modules.cordova.platforms.ios</friend>
                 <friend>org.netbeans.modules.html.ojet</friend>
+                <friend>org.netbeans.modules.javascript.cdnjs</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.javascript.karma</friend>
                 <friend>org.netbeans.modules.javascript.nodejs</friend>
