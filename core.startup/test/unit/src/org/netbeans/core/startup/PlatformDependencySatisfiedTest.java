@@ -45,8 +45,6 @@
 package org.netbeans.core.startup;
 
 import java.awt.GraphicsEnvironment;
-import org.netbeans.SetupHid;
-import org.netbeans.MockEvents;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
@@ -56,8 +54,11 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.MockEvents;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.SetupHid;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Utilities;
 
 /** Checks whether a module with generated
@@ -89,7 +90,7 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         moduleJarFile = new File(getWorkDir(), "PlatformDependencySatisfiedModule.jar");
 
         // clean the operatingSystem field
-        Field f = Utilities.class.getDeclaredField("operatingSystem");
+        Field f = BaseUtilities.class.getDeclaredField("operatingSystem");
         f.setAccessible(true);
         f.set(null, -1);
     }
