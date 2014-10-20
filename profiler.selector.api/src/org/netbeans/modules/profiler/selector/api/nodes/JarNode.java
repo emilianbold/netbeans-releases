@@ -63,7 +63,7 @@ public class JarNode extends ContainerNode {
         protected List<? extends SelectorNode> prepareChildren(JarNode parent) {
             List<PackageNode> rslt = new ArrayList<PackageNode>();
             
-            for(SourcePackageInfo spi : ExternalPackages.forPath(parent.jar)) {
+            for(SourcePackageInfo spi : ExternalPackages.forPath(parent.jar, false)) {
                 rslt.add(new PackageNode(spi, parent));
             }
 
