@@ -61,12 +61,13 @@ import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.lookup.ServiceProvider;
 
 /** Bridges calls into Ant.
  */
-@ServiceProvider(service = IndirectServices.class)
 public final class AntServices extends IndirectServices {
+    private AntServices() {
+    }
+    
     @Override
     public AntProjectHelper createProject(FileObject dirFO, String type) throws IOException {
         return new AntProjectHelperImpl(ProjectGenerator.createProject(dirFO, type));
@@ -119,8 +120,10 @@ public final class AntServices extends IndirectServices {
     public ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    
+
+    public static IndirectServices newServices() {
+        return new AntServices();
+    }
     
     @AntBasedProjectRegistration(
         type=ClientSideProjectType.TYPE,
@@ -129,6 +132,9 @@ public final class AntServices extends IndirectServices {
         privateNamespace=ClientSideProjectType.PRIVATE_CONFIGURATION_NAMESPACE
     )
     public static ClientSideProject factory(org.netbeans.spi.project.support.ant.AntProjectHelper helper) {
-        return new ClientSideProject(null);
+        return new ClientSideProject(
+            new AntProjectHelperImpl(helper), 
+            newServices()
+        );
     }
 }

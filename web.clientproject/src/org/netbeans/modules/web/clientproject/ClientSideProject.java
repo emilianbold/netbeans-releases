@@ -162,6 +162,7 @@ public class ClientSideProject implements Project {
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
+    public final IndirectServices is;
 
     final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListenerImpl();
 
@@ -215,11 +216,12 @@ public class ClientSideProject implements Project {
     };
 
 
-    public ClientSideProject(AntProjectHelper helper) {
+    public ClientSideProject(AntProjectHelper helper, IndirectServices is) {
         this.projectHelper = helper;
+        this.is = is;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
-        eval = IndirectServices.getDefault().createEvaluator(helper, getProjectDirectory());
-        referenceHelper = IndirectServices.getDefault().newReferenceHelper(helper, configuration, eval);
+        eval = is.createEvaluator(helper, getProjectDirectory());
+        referenceHelper = is.newReferenceHelper(helper, configuration, eval);
         projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
         eval.addPropertyChangeListener(new PropertyChangeListener() {
@@ -549,7 +551,7 @@ public class ClientSideProject implements Project {
 
         @Override
         public String getName() {
-            return IndirectServices.getDefault().getUsablePropertyName(getDisplayName());
+            return is.getUsablePropertyName(getDisplayName());
         }
 
         @Override

@@ -257,7 +257,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         if (folder == null) {
             return null;
         }
-        String filePath = IndirectServices.getDefault().relativizeFile(FileUtil.toFile(project.getProjectDirectory()), folder);
+        String filePath = project.is.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), folder);
         if (filePath == null) {
             // path cannot be relativized
             filePath = folder.getAbsolutePath();

@@ -64,6 +64,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.ant.AntServices;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
@@ -127,8 +128,10 @@ public final class ClientSideProjectUtilities {
      * @throws IOException if any error occurs
      */
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
+        // clearly creation of new project must depend on Ant
+        IndirectServices is = AntServices.newServices();
         // create project
-        AntProjectHelper projectHelper = IndirectServices.getDefault().createProject(dirFO, ClientSideProjectType.TYPE);
+        AntProjectHelper projectHelper = is.createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name);
         // #231319
         ProjectManager.getDefault().clearNonProjectCache();
@@ -152,7 +155,7 @@ public final class ClientSideProjectUtilities {
         assert projectDirectory != null;
         assert projectDirectory.isDirectory();
         // ensure directories exists
-        IndirectServices is = IndirectServices.getDefault();
+        IndirectServices is = project.is;
         if (sources != null) {
             ensureDirectoryExists(is.resolveFile(projectDirectory, sources));
         }

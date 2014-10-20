@@ -54,10 +54,6 @@ import org.openide.util.Lookup;
 /** Class providing indirect access to Ant project support services.
  */
 public abstract class IndirectServices {
-    public static IndirectServices getDefault() {
-        return Lookup.getDefault().lookup(IndirectServices.class);
-    }
-            
     public abstract AntProjectHelper createProject(FileObject dirFO, String type) throws IOException;
     public abstract String getUsablePropertyName(String displayName);
     public abstract File resolveFile(File dir, String relative);

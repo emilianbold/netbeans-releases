@@ -78,7 +78,7 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
     public synchronized SourceGroup[] getSourceGroups(String type) {
         assert Thread.holdsLock(this);
         if (delegate == null) {
-            delegate = initSources();
+            delegate = initSources(project.is);
             delegate.addChangeListener(this);
         }
         return delegate.getSourceGroups(type);
@@ -94,8 +94,8 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
         changeSupport.removeChangeListener(listener);
     }
 
-    private Sources initSources() {
-        SourcesHelper sourcesHelper = IndirectServices.getDefault().newSourcesHelper(project, helper, evaluator);
+    private Sources initSources(IndirectServices is) {
+        SourcesHelper sourcesHelper = is.newSourcesHelper(project, helper, evaluator);
         sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SOURCE_FOLDER + "}") //NOI18N
                 .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "SOURCES"))
                 .add() // adding as principal root, continuing configuration

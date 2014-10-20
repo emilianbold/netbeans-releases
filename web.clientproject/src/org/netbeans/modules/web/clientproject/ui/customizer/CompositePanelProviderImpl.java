@@ -137,7 +137,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (RUN.equals(categoryName)) {
             return new RunPanel(category, uiProperties);
         } else if (LICENSE.equals(categoryName)) {
-            return IndirectServices.getDefault().createLicenseHeaderCustomizerPanel(category, uiProperties.getLicenseSupport());
+            return project.is.createLicenseHeaderCustomizerPanel(category, uiProperties.getLicenseSupport());
         }
         assert false : "No component found for " + category.getDisplayName(); //NOI18N
         return new JPanel();
