@@ -53,7 +53,9 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 import org.openide.filesystems.FileAttributeEvent;
@@ -62,9 +64,10 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.WeakSet;
 
 /**
  * we use own manager to unify work with extensions and support default extension
@@ -75,7 +78,8 @@ public final class MIMEExtensions {
     private static final String STANDARD_SUFFIX = "/standard"; //NOI18N
     private final static Preferences preferences = NbPreferences.forModule(MIMEExtensions.class);
     private final static Manager manager = new Manager();
-    private final ChangeSupport cs = new ChangeSupport(this);
+    private final ReentrantReadWriteLock listenersLock = new ReentrantReadWriteLock();
+    private final WeakSet<ChangeListener> listeners = new WeakSet<ChangeListener>();
 
     // access methods
     public static MIMEExtensions get(String mimeType) {
@@ -107,7 +111,12 @@ public final class MIMEExtensions {
      * @param l a listener to add
      */
     public void addChangeListener(ChangeListener l) {
-        cs.addChangeListener(l);
+        listenersLock.writeLock().lock();
+        try {
+            listeners.add(l);
+        } finally {
+            listenersLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -115,7 +124,30 @@ public final class MIMEExtensions {
      * @param l a listener to remove
      */
     public void removeChangeListener(ChangeListener l) {
-        cs.removeChangeListener(l);
+        listenersLock.writeLock().lock();
+        try {
+            listeners.remove(l);
+        } finally {
+            listenersLock.writeLock().unlock();
+        }
+    }
+    
+    private void fireChange() {
+        ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
+        listenersLock.readLock().lock();
+        try {
+            list.addAll(listeners);
+        } finally {
+            listenersLock.readLock().unlock();
+        }
+        ChangeEvent changeEvent = new ChangeEvent(this);
+        for(ChangeListener listener : list) {
+            try {
+                listener.stateChanged(changeEvent);
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
+            }
+        }
     }
 
     private final String mimeType;
@@ -164,7 +196,7 @@ public final class MIMEExtensions {
         if (!toRemove.isEmpty() || !toAdd.isEmpty()) {
             exts.clear();
             exts.addAll(newExts);
-            cs.fireChange();
+            fireChange();
         }
         preferences.put(getMIMEType(), defaultExt);
     }
@@ -235,10 +267,16 @@ public final class MIMEExtensions {
     }
 
     public void setDefaultStandard(CndLanguageStandard standard) {
+        String oldValue = preferences.get(getMIMEType()+STANDARD_SUFFIX, ""); //NOI18N
+        String newValue;
         if (standard != null) {
-            preferences.put(getMIMEType()+STANDARD_SUFFIX, standard.getID());
+            newValue = standard.getID();
         } else {
-            preferences.put(getMIMEType()+STANDARD_SUFFIX, "");
+            newValue = "";  //NOI18N
+        }
+        preferences.put(getMIMEType()+STANDARD_SUFFIX, newValue);
+        if (!oldValue.equals(newValue)) {
+            fireChange();
         }
     }
 

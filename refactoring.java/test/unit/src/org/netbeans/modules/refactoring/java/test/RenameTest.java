@@ -70,6 +70,57 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test238268() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src, new File("t/A.java", source = "pacakge t;\n"
+                + "public class Calculator {\n"
+                + "\n"
+                + "    interface IntegerMath {\n"
+                + "\n"
+                + "        int operation(int a, int b);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int operateBinary(int a, int b, IntegerMath op) {\n"
+                + "        return op.operation(a, b);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(String... args) {\n"
+                + "\n"
+                + "        Calculator myApp = new Calculator();\n"
+                + "        IntegerMath addition = (a, b) -> a + b;\n"
+                + "        IntegerMath subtraction = (x, y) -> x - y; // Try to rename 'x' to 'a'\n"
+                + "        System.out.println(\"40 + 2 = \"\n"
+                + "                + myApp.operateBinary(40, 2, addition));\n"
+                + "        System.out.println(\"20 - 10 = \"\n"
+                + "                + myApp.operateBinary(20, 10, subtraction));\n"
+                + "    }\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), source.indexOf('x') + 1, "a", null, true);
+        verifyContent(src, new File("t/A.java", "pacakge t;\n"
+                + "public class Calculator {\n"
+                + "\n"
+                + "    interface IntegerMath {\n"
+                + "\n"
+                + "        int operation(int a, int b);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int operateBinary(int a, int b, IntegerMath op) {\n"
+                + "        return op.operation(a, b);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(String... args) {\n"
+                + "\n"
+                + "        Calculator myApp = new Calculator();\n"
+                + "        IntegerMath addition = (a, b) -> a + b;\n"
+                + "        IntegerMath subtraction = (a, y) -> a - y; // Try to rename 'x' to 'a'\n"
+                + "        System.out.println(\"40 + 2 = \"\n"
+                + "                + myApp.operateBinary(40, 2, addition));\n"
+                + "        System.out.println(\"20 - 10 = \"\n"
+                + "                + myApp.operateBinary(20, 10, subtraction));\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test235564a() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -1020,6 +1071,40 @@ public class RenameTest extends RefactoringTestBase {
         
         RefactoringSession rs = RefactoringSession.create("Rename");
         List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r[0].preCheck());
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r[0].prepare(rs));
+        }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, rs.doRefactoring(true));
+        }
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
+    }
+    
+    private void performRename(FileObject source, final int absPos, final String newname, final JavaRenameProperties props, final boolean searchInComments, Problem... expectedProblems) throws Exception {
+        final RenameRefactoring[] r = new RenameRefactoring[1];
+        JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController javac) throws Exception {
+                javac.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = javac.getCompilationUnit();
+
+                TreePath tp = javac.getTreeUtilities().pathFor(absPos);
+
+                r[0] = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(tp, javac)));
+                r[0].setNewName(newname);
+                r[0].setSearchInComments(searchInComments);
+                if(props != null) {
+                    r[0].getContext().add(props);
+                }
+            }
+        }, true);
+        
+        RefactoringSession rs = RefactoringSession.create("Rename");
+        List<Problem> problems = new LinkedList<>();
 
         addAllProblems(problems, r[0].preCheck());
         if (!problemIsFatal(problems)) {

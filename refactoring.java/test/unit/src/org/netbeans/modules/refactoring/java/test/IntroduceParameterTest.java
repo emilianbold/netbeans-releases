@@ -67,6 +67,35 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test238301() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void testMethod(int i) {\n"
+                + "        if (i > 5) {\n"
+                + "            System.out.println(\"abcd\");\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(1);\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf('5') - 4, Javadoc.NONE, false, false);
+        verifyContent(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void testMethod(int i, boolean introduced) {\n"
+                + "        if (introduced) {\n"
+                + "            System.out.println(\"abcd\");\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(1, 1 > 5);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test235299a() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
