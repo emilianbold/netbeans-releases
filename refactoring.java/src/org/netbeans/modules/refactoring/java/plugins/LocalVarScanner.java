@@ -44,8 +44,19 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePathScanner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -63,6 +74,56 @@ public class LocalVarScanner extends TreePathScanner<Boolean, Element> {
     public LocalVarScanner(CompilationInfo workingCopy, String newName) {
         this.info = workingCopy;
         this.newName = newName;
+    }
+
+    @Override
+    public Boolean visitLambdaExpression(LambdaExpressionTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitClass(ClassTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitBlock(BlockTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitForLoop(ForLoopTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitIf(IfTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitWhileLoop(WhileLoopTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitSwitch(SwitchTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitDoWhileLoop(DoWhileLoopTree node, Element p) {
+        return null;
+    }
+
+    @Override
+    public Boolean visitTry(TryTree node, Element p) {
+        return null;
     }
 
     @Override
