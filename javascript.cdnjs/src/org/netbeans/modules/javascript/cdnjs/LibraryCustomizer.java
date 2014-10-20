@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
@@ -66,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -107,7 +109,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         getProjectPreferences(project).put(PREFERENCES_LIBRARY_FOLDER, libraryFolder);
     }
 
-    static class StoreListener implements ActionListener {
+    static class StoreListener implements ActionListener, Runnable {
         private final Project project;
         private final File webRoot;
         private final SelectionPanel customizer;
@@ -118,16 +120,27 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             this.customizer = customizer;
         }
 
-        // PENDING store in RequestProcessor thread
-        // PENDING use ProgressHandle
         @Override
         public void actionPerformed(ActionEvent e) {
-            String libraryFolder = customizer.getLibraryFolder();
-            storeLibraryFolder(project, libraryFolder);
+            RequestProcessor.getDefault().post(this);
+        }
 
-            Library.Version[] selectedVersions = customizer.getSelectedLibraries();
-            Library.Version[] versionsToStore = updateLibraries(selectedVersions);
-            LibraryPersistence.getDefault().storeLibraries(project, versionsToStore);
+        @Override
+        @NbBundle.Messages("LibraryCustomizer.addingLibraries=Adding the selected JavaScript libraries...")
+        public void run() {
+            ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.LibraryCustomizer_addingLibraries());
+            progressHandle.start();
+
+            try {
+                String libraryFolder = customizer.getLibraryFolder();
+                storeLibraryFolder(project, libraryFolder);
+
+                Library.Version[] selectedVersions = customizer.getSelectedLibraries();
+                Library.Version[] versionsToStore = updateLibraries(selectedVersions);
+                LibraryPersistence.getDefault().storeLibraries(project, versionsToStore);            
+            } finally {
+                progressHandle.finish();
+            }
         }
 
         @NbBundle.Messages({
