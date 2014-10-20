@@ -51,13 +51,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.EditableProperties;
 import org.openide.util.Utilities;
 
 /**

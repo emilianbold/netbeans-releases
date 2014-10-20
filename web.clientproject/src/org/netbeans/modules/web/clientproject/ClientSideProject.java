@@ -86,6 +86,13 @@ import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectEvent;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectListener;
+import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
+import org.netbeans.modules.web.clientproject.indirect.ProjectXmlSavedHook;
+import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -104,14 +111,6 @@ import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.LookupProviderSupport;
-import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -127,6 +126,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -142,12 +142,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-@AntBasedProjectRegistration(
-    type=ClientSideProjectType.TYPE,
-    iconResource=ClientSideProject.HTML5_PROJECT_ICON,
-    sharedNamespace=ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-    privateNamespace=ClientSideProjectType.PRIVATE_CONFIGURATION_NAMESPACE
-)
 public class ClientSideProject implements Project {
 
     static final Logger LOGGER = Logger.getLogger(ClientSideProject.class.getName());
@@ -168,6 +162,7 @@ public class ClientSideProject implements Project {
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
+    public final IndirectServices is;
 
     final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListenerImpl();
 
@@ -221,11 +216,12 @@ public class ClientSideProject implements Project {
     };
 
 
-    public ClientSideProject(AntProjectHelper helper) {
+    public ClientSideProject(AntProjectHelper helper, IndirectServices is) {
         this.projectHelper = helper;
+        this.is = is;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
-        eval = createEvaluator();
-        referenceHelper = new ReferenceHelper(helper, configuration, eval);
+        eval = is.createEvaluator(helper, getProjectDirectory());
+        referenceHelper = is.newReferenceHelper(helper, configuration, eval);
         projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
         eval.addPropertyChangeListener(new PropertyChangeListener() {
@@ -489,18 +485,6 @@ public class ClientSideProject implements Project {
     }
 
 
-    private PropertyEvaluator createEvaluator() {
-        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
-                projectHelper.getStockPropertyPreprovider(),
-                projectHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        return PropertyUtils.sequentialPropertyEvaluator(
-                projectHelper.getStockPropertyPreprovider(),
-                projectHelper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-                PropertyUtils.userPropertiesProvider(baseEval2,
-                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
-                projectHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-    }
-
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
         FileEncodingQueryImplementation fileEncodingQuery =
                 new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING);
@@ -567,7 +551,7 @@ public class ClientSideProject implements Project {
 
         @Override
         public String getName() {
-            return PropertyUtils.getUsablePropertyName(getDisplayName());
+            return is.getUsablePropertyName(getDisplayName());
         }
 
         @Override

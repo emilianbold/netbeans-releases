@@ -64,15 +64,15 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.ant.AntServices;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -128,8 +128,10 @@ public final class ClientSideProjectUtilities {
      * @throws IOException if any error occurs
      */
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
+        // clearly creation of new project must depend on Ant
+        IndirectServices is = AntServices.newServices();
         // create project
-        AntProjectHelper projectHelper = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
+        AntProjectHelper projectHelper = is.createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name);
         // #231319
         ProjectManager.getDefault().clearNonProjectCache();
@@ -153,14 +155,15 @@ public final class ClientSideProjectUtilities {
         assert projectDirectory != null;
         assert projectDirectory.isDirectory();
         // ensure directories exists
+        IndirectServices is = project.is;
         if (sources != null) {
-            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, sources));
+            ensureDirectoryExists(is.resolveFile(projectDirectory, sources));
         }
         if (siteRoot != null) {
-            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, siteRoot));
+            ensureDirectoryExists(is.resolveFile(projectDirectory, siteRoot));
         }
         if (test != null) {
-            ensureDirectoryExists(PropertyUtils.resolveFile(projectDirectory, test));
+            ensureDirectoryExists(is.resolveFile(projectDirectory, test));
         }
         // save project
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);

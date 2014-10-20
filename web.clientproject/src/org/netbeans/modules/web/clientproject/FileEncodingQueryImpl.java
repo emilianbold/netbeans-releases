@@ -49,8 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 

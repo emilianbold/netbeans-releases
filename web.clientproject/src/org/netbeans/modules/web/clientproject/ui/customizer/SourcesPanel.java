@@ -59,8 +59,8 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
+import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -257,7 +257,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         if (folder == null) {
             return null;
         }
-        String filePath = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), folder);
+        String filePath = project.is.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), folder);
         if (filePath == null) {
             // path cannot be relativized
             filePath = folder.getAbsolutePath();
