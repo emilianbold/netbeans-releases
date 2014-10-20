@@ -201,13 +201,14 @@ public class BatchUtilities {
             try {
                 Charset encoding = FileEncodingQuery.getEncoding(e.getKey());
                 final Document originalDocument = getDocument(e.getKey());
-                final Source s = Source.create(originalDocument);
                 final String[] origContent = new String[1];
+                final Source[] s = new Source[1];
                 if (originalDocument != null) {
                     originalDocument.render(new Runnable() {
                         @Override public void run() {
                             try {
                                 origContent[0] = originalDocument.getText(0, originalDocument.getLength());
+                                s[0] = Source.create(originalDocument);
                             } catch (BadLocationException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -218,10 +219,11 @@ public class BatchUtilities {
                 if (origContent[0] == null) {
                     byte[] origBytes = e.getKey().asBytes();
                     origContent[0] = encoding.newDecoder().decode(ByteBuffer.wrap(origBytes)).toString();
+                    s[0] = Source.create(e.getKey());
                 }
                 String newContent  = encoding.newDecoder().decode(ByteBuffer.wrap(e.getValue())).toString();
 
-                result.put(e.getKey(), DiffUtilities.diff2ModificationResultDifference(e.getKey(), null, Collections.<Integer, String>emptyMap(), origContent[0], newContent, s));
+                result.put(e.getKey(), DiffUtilities.diff2ModificationResultDifference(e.getKey(), null, Collections.<Integer, String>emptyMap(), origContent[0], newContent, s[0]));
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
