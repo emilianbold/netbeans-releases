@@ -63,7 +63,7 @@ public class FolderNode extends ContainerNode {
         protected List<? extends SelectorNode> prepareChildren(FolderNode parent) {
             List<PackageNode> rslt = new ArrayList<PackageNode>();
             
-            for(SourcePackageInfo spi : ExternalPackages.forPath(parent.root)) {
+            for(SourcePackageInfo spi : ExternalPackages.forPath(parent.root, false)) {
                 rslt.add(new PackageNode(spi, parent));
             }
 
