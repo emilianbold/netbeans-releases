@@ -54,9 +54,9 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
+import org.netbeans.modules.web.clientproject.indirect.LicensePanelSupport;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
-import org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -107,11 +107,6 @@ public final class AntServices extends IndirectServices {
     }
 
     @Override
-    public JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, LicensePanelSupport licenseSupport) {
-        return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, licenseSupport);
-    }
-
-    @Override
     public String relativizeFile(File base, File relative) {
         return PropertyUtils.relativizeFile(base, relative);
     }
@@ -150,6 +145,19 @@ public final class AntServices extends IndirectServices {
         return new ReferenceHelperImpl(orig);
     }
 
+    @Override
+    public JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, LicensePanelSupport licenseSupport) {
+        LicensePanelSupportImpl li = (LicensePanelSupportImpl) licenseSupport;
+        return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, li);
+    }
+
+    @Override
+    public LicensePanelSupport newLicensePanelSupport(
+        PropertyEvaluator evaluator, AntProjectHelper projectHelper, String p1, String p2
+    ) {
+        return new LicensePanelSupportImpl(evaluator, projectHelper, p1, p2);
+    }
+    
     public static IndirectServices newServices() {
         return new AntServices();
     }

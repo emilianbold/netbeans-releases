@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.customizer;
+package org.netbeans.modules.web.clientproject.ant;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -48,6 +48,7 @@ import java.io.OutputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.LicensePanelSupport;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.openide.filesystems.FileObject;
@@ -55,11 +56,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 
 // copied from web.common
-public final class LicensePanelSupport implements CustomizerUtilities.LicensePanelContentHandler {
-
-    public static final String LICENSE_NAME = "project.license";
-    public static final String LICENSE_PATH = "project.licensePath";
-
+final class LicensePanelSupportImpl 
+extends LicensePanelSupport implements CustomizerUtilities.LicensePanelContentHandler {
     private String licenseName;
     private String licensePath;
     private String licenseContent;
@@ -67,7 +65,7 @@ public final class LicensePanelSupport implements CustomizerUtilities.LicensePan
     private PropertyEvaluator evaluator;
     private AntProjectHelper antHelper;
 
-    public LicensePanelSupport(PropertyEvaluator evaluator, AntProjectHelper antHelper,
+    public LicensePanelSupportImpl(PropertyEvaluator evaluator, AntProjectHelper antHelper,
             String licensePath, String licenseName) {
         this.evaluator = evaluator;
         this.antHelper = antHelper;
@@ -116,6 +114,7 @@ public final class LicensePanelSupport implements CustomizerUtilities.LicensePan
         licenseContent = text;
     }
 
+    @Override
     public void saveLicenseFile() throws IOException {
         if (licenseContent != null) {
             assert licensePath != null; //path needs to exist once we have content?
@@ -137,6 +136,7 @@ public final class LicensePanelSupport implements CustomizerUtilities.LicensePan
         }
     }
 
+    @Override
     public void updateProperties(EditableProperties projectProperties) {
         if (licensePath != null) {
             projectProperties.setProperty(LICENSE_PATH, licensePath);

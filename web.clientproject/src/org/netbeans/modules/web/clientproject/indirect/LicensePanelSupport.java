@@ -41,33 +41,13 @@
  */
 package org.netbeans.modules.web.clientproject.indirect;
 
-import java.io.File;
 import java.io.IOException;
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Sources;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.filesystems.FileObject;
+import org.openide.util.EditableProperties;
 
-/** Class providing indirect access to Ant project support services.
- */
-public abstract class IndirectServices {
-    public abstract AntProjectHelper createProject(FileObject dirFO, String type) throws IOException;
-    public abstract String getUsablePropertyName(String displayName);
-    public abstract File resolveFile(File dir, String relative);
-    public abstract PropertyEvaluator createEvaluator(AntProjectHelper h, FileObject dir);
+public abstract class LicensePanelSupport {
+    public static final String LICENSE_NAME = "project.license";
+    public static final String LICENSE_PATH = "project.licensePath";
 
-    public abstract JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, LicensePanelSupport licenseSupport);
-
-    public abstract String relativizeFile(File base, File relative);
-    
-    public abstract ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval);
-
-    public abstract Sources initSources(Project project, AntProjectHelper h, PropertyEvaluator e);
-
-    public abstract LicensePanelSupport newLicensePanelSupport(
-        PropertyEvaluator evaluator, AntProjectHelper projectHelper, 
-        String p1, String p2
-    );
+    public abstract void updateProperties(EditableProperties projectProperties);
+    public abstract void saveLicenseFile() throws IOException;
 }
