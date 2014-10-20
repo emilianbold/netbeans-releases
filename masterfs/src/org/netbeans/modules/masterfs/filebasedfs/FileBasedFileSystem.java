@@ -149,18 +149,22 @@ public class FileBasedFileSystem extends FileSystem {
     
     
     public static FileBasedFileSystem getInstance() {
-        if (INSTANCE == null) {
-            FileBasedFileSystem fbfs = Lookup.getDefault().lookup(FileBasedFileSystem.class);
-            if (fbfs == null) {
-                fbfs = new FileBasedFileSystem();
-            }
+        FileBasedFileSystem fbfs = INSTANCE;
+        if (fbfs == null) {
+            final MasterFileSystemFactory fbfsFactory = Lookup.getDefault().lookup(MasterFileSystemFactory.class);
+            fbfs = fbfsFactory != null ?
+                fbfsFactory.createFileSystem() :
+                new FileBasedFileSystem();
             synchronized (FileBasedFileSystem.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = fbfs;    
+                FileBasedFileSystem old = INSTANCE;
+                if (old == null) {
+                    INSTANCE = fbfs;
+                } else {
+                    fbfs = old;
                 }
             }
         }
-        return INSTANCE;
+        return fbfs;
     }
 
     @Override
