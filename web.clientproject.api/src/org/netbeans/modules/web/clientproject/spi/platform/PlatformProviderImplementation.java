@@ -72,11 +72,6 @@ public interface PlatformProviderImplementation {
      */
     String PROP_PROJECT_NAME = "PROJECT_NAME"; // NOI18N
     /**
-     * Property name for changes in start file.
-     * @since 1.70
-     */
-    String PROP_START_FILE = "START_FILE"; // NOI18N
-    /**
      * Property name for changes in run configuration.
      * @since 1.72
      */

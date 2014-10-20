@@ -78,11 +78,6 @@ public final class PlatformProvider {
      */
     public static final String PROP_PROJECT_NAME = PlatformProviderImplementation.PROP_PROJECT_NAME;
     /**
-     * Property name for changes in start file.
-     * @since 1.70
-     */
-    public static final String PROP_START_FILE = PlatformProviderImplementation.PROP_START_FILE;
-    /**
      * Property name for changes in run configuration.
      * @since 1.72
      */
