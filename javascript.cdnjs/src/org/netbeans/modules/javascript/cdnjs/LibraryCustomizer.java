@@ -60,6 +60,8 @@ import org.netbeans.modules.javascript.cdnjs.ui.SelectionPanel;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -226,7 +228,16 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
 
             if (!errors.isEmpty()) {
-                // PENDING
+                StringBuilder message = new StringBuilder();
+                for (String error : errors) {
+                    if (message.length() != 0) {
+                        message.append('\n');
+                    }
+                    message.append(error);
+                }
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        message.toString(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(descriptor);
             }
  
             return newMap.values().toArray(new Library.Version[newMap.size()]);
