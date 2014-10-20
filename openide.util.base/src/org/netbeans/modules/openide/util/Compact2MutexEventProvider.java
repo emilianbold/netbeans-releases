@@ -65,12 +65,12 @@ public class Compact2MutexEventProvider implements MutexEventProvider{
 
         @Override
         public boolean isReadAccess() {
-            return handle();
+            return false;
         }
 
         @Override
         public boolean isWriteAccess() {
-            return handle();
+            return false;
         }
 
         @Override
