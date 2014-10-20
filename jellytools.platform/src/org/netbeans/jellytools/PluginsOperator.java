@@ -162,14 +162,12 @@ public class PluginsOperator extends NbDialogOperator {
                 "UnitTab_bTabAction_Name_AVAILABLE"));
     }
 
-    /** Tries to find "Reload Catalog" JButton in this dialog.
+    /** Tries to find "Check for Updates" or "Check for Newest" JButton in this dialog.
      * @return JButtonOperator
      */
     public JButtonOperator btReloadCatalog() {
         // do not cache it because it is on more tabs
-        return new JButtonOperator(this, Bundle.getStringTrimmed(
-                "org.netbeans.modules.autoupdate.ui.Bundle",
-                "UnitTab_ReloadAction"));
+        return new JButtonOperator(this, "Check for");
     }
 
     /** Tries to find "Add Plugins..." JButton in this dialog.
