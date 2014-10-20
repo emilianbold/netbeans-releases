@@ -216,19 +216,22 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             }
         }
         boolean result = true;
+        boolean hasJava = false;
         for (Node n:nodes) {
             DataObject dob = n.getLookup().lookup(DataObject.class);
             if (dob == null || dob.getPrimaryFile().isFolder()) {
                 result = false;
                 break;
             }
-            if (!RefactoringUtils.isJavaFile(dob.getPrimaryFile())
-                    || ClassPath.getClassPath(dob.getPrimaryFile(), ClassPath.SOURCE) == null) {
-                result = false;
-                break;
+            if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())) {
+                hasJava = true;
+                if(ClassPath.getClassPath(dob.getPrimaryFile(), ClassPath.SOURCE) == null) {
+                    result = false;
+                    break;
+                }
             }
         }
-        return result;
+        return result && hasJava;
     }    
 
     @Override
