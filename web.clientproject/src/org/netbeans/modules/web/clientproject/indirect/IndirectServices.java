@@ -45,11 +45,11 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /** Class providing indirect access to Ant project support services.
  */
@@ -63,7 +63,7 @@ public abstract class IndirectServices {
 
     public abstract String relativizeFile(File base, File relative);
     
-    public abstract SourcesHelper newSourcesHelper(Project project, AntProjectHelper helper, PropertyEvaluator evaluator);
-
     public abstract ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval);
+
+    public abstract Sources initSources(Project project, AntProjectHelper h, PropertyEvaluator e);
 }

@@ -45,10 +45,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 
-/**
- */
 final class PropertyEvaluatorImpl implements PropertyEvaluator {
-    private final org.netbeans.spi.project.support.ant.PropertyEvaluator delegate;
+    final org.netbeans.spi.project.support.ant.PropertyEvaluator delegate;
 
     public PropertyEvaluatorImpl(org.netbeans.spi.project.support.ant.PropertyEvaluator d) {
         this.delegate = d;

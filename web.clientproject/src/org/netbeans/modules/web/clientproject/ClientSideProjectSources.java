@@ -44,14 +44,10 @@ package org.netbeans.modules.web.clientproject;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
-import org.netbeans.modules.web.clientproject.indirect.SourcesHelper;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -78,7 +74,7 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
     public synchronized SourceGroup[] getSourceGroups(String type) {
         assert Thread.holdsLock(this);
         if (delegate == null) {
-            delegate = initSources(project.is);
+            delegate = project.is.initSources(project, helper, evaluator);
             delegate.addChangeListener(this);
         }
         return delegate.getSourceGroups(type);
@@ -92,24 +88,6 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
     @Override
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
-    }
-
-    private Sources initSources(IndirectServices is) {
-        SourcesHelper sourcesHelper = is.newSourcesHelper(project, helper, evaluator);
-        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SOURCE_FOLDER + "}") //NOI18N
-                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "SOURCES"))
-                .add() // adding as principal root, continuing configuration
-                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5).add(); // adding as typed root
-        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER + "}") //NOI18N
-                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "SITE_ROOT"))
-                .add() // adding as principal root, continuing configuration
-                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT).add(); // adding as typed root
-        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_TEST_FOLDER + "}") //NOI18N
-                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "UNIT_TESTS"))
-                .add() // adding as principal root, continuing configuration
-                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST).add(); // adding as typed root
-        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-        return sourcesHelper.createSources();
     }
 
     @Override

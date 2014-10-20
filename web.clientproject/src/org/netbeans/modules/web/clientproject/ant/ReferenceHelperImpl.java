@@ -39,23 +39,26 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.modules.web.clientproject.ant;
 
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
+import java.io.File;
+import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
 
-/**
- */
-public abstract class SourcesHelper {
-    public abstract SourcesHelper sourceRoot(String string);
+final class ReferenceHelperImpl extends ReferenceHelper {
+    private final org.netbeans.spi.project.support.ant.ReferenceHelper h;
 
-    public abstract SourcesHelper displayName(String message);
+    ReferenceHelperImpl(org.netbeans.spi.project.support.ant.ReferenceHelper h) {
+        this.h = h;
+    }
 
-    public abstract SourcesHelper add();
+    @Override
+    public void fixReferences(File originalPath) {
+        h.fixReferences(originalPath);
+    }
 
-    public abstract SourcesHelper type(String SOURCES_TYPE_HTML5);
-
-    public abstract void registerExternalRoots(int EXTERNAL_ALGORITHM_TRANSIENT);
-
-    public abstract Sources createSources();
+    @Override
+    public String createForeignFileReference(File file, String object) {
+        return h.createForeignFileReference(file, object);
+    }
+    
 }

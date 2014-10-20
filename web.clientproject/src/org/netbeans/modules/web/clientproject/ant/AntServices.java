@@ -44,19 +44,24 @@ package org.netbeans.modules.web.clientproject.ant;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
-import org.netbeans.modules.web.clientproject.indirect.SourcesHelper;
 import org.netbeans.modules.web.clientproject.ui.customizer.LicensePanelSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
@@ -112,13 +117,37 @@ public final class AntServices extends IndirectServices {
     }
 
     @Override
-    public SourcesHelper newSourcesHelper(Project project, AntProjectHelper helper, PropertyEvaluator evaluator) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Sources initSources(Project project, AntProjectHelper h, PropertyEvaluator e) {
+        AntProjectHelperImpl ih = (AntProjectHelperImpl) h;
+        PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) e;
+        SourcesHelper sourcesHelper = new SourcesHelper(project, ih.delegate, ip.delegate);
+        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SOURCE_FOLDER + "}") //NOI18N
+                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "SOURCES"))
+                .add() // adding as principal root, continuing configuration
+                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5).add(); // adding as typed root
+        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER + "}") //NOI18N
+                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "SITE_ROOT"))
+                .add() // adding as principal root, continuing configuration
+                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT).add(); // adding as typed root
+        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_TEST_FOLDER + "}") //NOI18N
+                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "UNIT_TESTS"))
+                .add() // adding as principal root, continuing configuration
+                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST).add(); // adding as typed root
+        sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        return sourcesHelper.createSources();
     }
+
+    
 
     @Override
     public ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        AntProjectHelperImpl ih = (AntProjectHelperImpl) helper;
+        PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) eval;
+        org.netbeans.spi.project.support.ant.ReferenceHelper orig;
+        orig = new org.netbeans.spi.project.support.ant.ReferenceHelper(
+                ih.delegate, configuration, ip.delegate
+        );
+        return new ReferenceHelperImpl(orig);
     }
 
     public static IndirectServices newServices() {

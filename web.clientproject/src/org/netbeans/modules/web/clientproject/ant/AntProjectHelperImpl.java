@@ -43,20 +43,17 @@ package org.netbeans.modules.web.clientproject.ant;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import org.netbeans.api.project.ant.AntArtifact;
+import java.util.Objects;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyProvider;
-import org.netbeans.spi.queries.FileBuiltQueryImplementation;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.w3c.dom.Element;
 
 /**
@@ -139,18 +136,62 @@ final class AntProjectHelperImpl extends AntProjectHelper {
 
 
     @Override
-    public SharabilityQueryImplementation2 createSharabilityQuery2(org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator evaluator, String[] toArray, String[] string) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public SharabilityQueryImplementation2 createSharabilityQuery2(
+        org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator e,
+        String[] roots, String[] dirs
+    ) {
+        PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) e;
+        return delegate.createSharabilityQuery2(ip.delegate, roots, dirs);
     }
 
     @Override
     public void addAntProjectListener(org.netbeans.modules.web.clientproject.indirect.AntProjectListener l) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        delegate.addAntProjectListener(new L(l));
     }
 
     @Override
     public void removeAntProjectListener(org.netbeans.modules.web.clientproject.indirect.AntProjectListener l) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        delegate.removeAntProjectListener(new L(l));
+    }
+    
+    private static final class L implements AntProjectListener {
+        private final org.netbeans.modules.web.clientproject.indirect.AntProjectListener l;
+
+        L(org.netbeans.modules.web.clientproject.indirect.AntProjectListener l) {
+            this.l = l;
+        }
+
+        @Override
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            l.configurationXmlChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+        }
+
+        @Override
+        public void propertiesChanged(AntProjectEvent ev) {
+            l.propertiesChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 53 * hash + Objects.hashCode(this.l);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final L other = (L) obj;
+            if (!Objects.equals(this.l, other.l)) {
+                return false;
+            }
+            return true;
+        }
     }
 
     private static final Field DELEGATE;

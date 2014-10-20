@@ -47,6 +47,5 @@ import java.io.File;
  */
 public abstract class ReferenceHelper {
     public abstract void fixReferences(File originalPath);
-
-    public abstract String createForeignFileReference(File file, Object object);
+    public abstract String createForeignFileReference(File file, String object);
 }
