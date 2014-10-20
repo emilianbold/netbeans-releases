@@ -50,10 +50,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -244,8 +246,15 @@ public final class LibraryProvider {
          * @return URL of the query to perform.
          */
         private String getSearchURL() {
-            // PENDING encode searchTerm
-            return SEARCH_URL_PREFIX + searchTerm;
+            String encodedSearchTerm;
+            try {
+                encodedSearchTerm = URLEncoder.encode(searchTerm, "UTF-8"); // NOI18N
+            } catch (UnsupportedEncodingException ueex) {
+                // Should not happen, UTF-8 should be supported everywhere
+                Logger.getLogger(LibraryProvider.class.getName()).log(Level.SEVERE, null, ueex);
+                encodedSearchTerm = searchTerm;
+            }
+            return SEARCH_URL_PREFIX + encodedSearchTerm;
         }
 
         @Override
