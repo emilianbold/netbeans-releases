@@ -1,5 +1,5 @@
 {
-    "name": "my-project",
+    "name": "${project.name}",
     "version": "1.0.0",
     "main": "path/to/main.css",
     "ignore": [
