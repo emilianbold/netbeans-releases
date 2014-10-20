@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -92,6 +93,7 @@ public final class NetworkSupport {
      * @return {@code true} if the request should be downloaded once more, {@code false} otherwise
      * @see #showNetworkErrorDialog(List)
      */
+    @CheckReturnValue
     public static boolean showNetworkErrorDialog(String failedRequest) {
         Parameters.notNull("failedRequest", failedRequest); // NOI18N
         return showNetworkErrorDialog(Collections.singletonList(failedRequest));
@@ -118,6 +120,7 @@ public final class NetworkSupport {
         "NetworkSupport.errorDialog.text=<html>Network error occured while processing these requests:<br><br>{0}<br><br>Try it again?",
         "NetworkSupport.errorDialog.configureProxy=Configure Proxy..."
     })
+    @CheckReturnValue
     public static boolean showNetworkErrorDialog(List<String> failedRequests) {
         Parameters.notNull("failedRequests", failedRequests); // NOI18N
         if (failedRequests.isEmpty()) {
