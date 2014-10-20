@@ -43,32 +43,29 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 public class ToolsPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    /**
-     * Constant for NPM support.
-     */
-    public static final String NPM_ENABLED = "NPM_ENABLED"; // NOI18N
-    /**
-     * Constant for Bower support.
-     */
-    public static final String BOWER_ENABLED = "BOWER_ENABLED"; // NOI18N
-    /**
-     * Constant for Grunt support.
-     */
-    public static final String GRUNT_ENABLED = "GRUNT_ENABLED"; // NOI18N
-
-
+    private final CreateProjectUtils.Tools tools;
     // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
-    private volatile Tools tools;
+    private volatile Tools panel;
 
+
+    public ToolsPanel(CreateProjectUtils.Tools tools) {
+        assert tools != null;
+        this.tools = tools;
+    }
+
+    public CreateProjectUtils.Tools getTools() {
+        return tools;
+    }
 
     @Override
     public Component getComponent() {
-        return getTools();
+        return getPanel();
     }
 
     @Override
@@ -78,14 +75,16 @@ public class ToolsPanel implements WizardDescriptor.FinishablePanel<WizardDescri
 
     @Override
     public void readSettings(WizardDescriptor settings) {
-        // noop
+        getPanel().setNpmEnabled(tools.isNpm());
+        getPanel().setBowerEnabled(tools.isBower());
+        getPanel().setGruntEnabled(tools.isGrunt());
     }
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        settings.putProperty(NPM_ENABLED, getTools().isNpmEnabled());
-        settings.putProperty(BOWER_ENABLED, getTools().isBowerEnabled());
-        settings.putProperty(GRUNT_ENABLED, getTools().isGruntEnabled());
+        tools.setNpm(getPanel().isNpmEnabled());
+        tools.setBower(getPanel().isBowerEnabled());
+        tools.setGrunt(getPanel().isGruntEnabled());
     }
 
     @Override
@@ -95,12 +94,12 @@ public class ToolsPanel implements WizardDescriptor.FinishablePanel<WizardDescri
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        getTools().addChangeListener(listener);
+        getPanel().addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        getTools().removeChangeListener(listener);
+        getPanel().removeChangeListener(listener);
     }
 
     @Override
@@ -108,12 +107,12 @@ public class ToolsPanel implements WizardDescriptor.FinishablePanel<WizardDescri
         return true;
     }
 
-    private Tools getTools() {
+    private Tools getPanel() {
         // assert EventQueue.isDispatchThread(); - not possible, see comment above (@GuardedBy())
-        if (tools == null) {
-            tools = new Tools();
+        if (panel == null) {
+            panel = new Tools();
         }
-        return tools;
+        return panel;
     }
 
 }

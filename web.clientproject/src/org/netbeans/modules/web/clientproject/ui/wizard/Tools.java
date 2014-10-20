@@ -83,12 +83,24 @@ public class Tools extends JPanel {
         return packageJsonCheckBox.isSelected();
     }
 
+    public void setNpmEnabled(boolean enabled) {
+        packageJsonCheckBox.setSelected(enabled);
+    }
+
     public boolean isBowerEnabled() {
         return bowerJsonCheckBox.isSelected();
     }
 
+    public void setBowerEnabled(boolean enabled) {
+        bowerJsonCheckBox.setSelected(enabled);
+    }
+
     public boolean isGruntEnabled() {
         return gruntfileCheckBox.isSelected();
+    }
+
+    public void setGruntEnabled(boolean enabled) {
+        gruntfileCheckBox.setSelected(enabled);
     }
 
     void fireChange() {
