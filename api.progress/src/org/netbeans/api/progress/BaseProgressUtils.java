@@ -47,12 +47,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress;
 import org.netbeans.modules.progress.spi.RunOffEDTProvider.Progress2;
 import org.openide.modules.PatchedPublic;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor;
 
 /**
  * Contains useful utilities that can function in a non-Swing environment. For
@@ -299,6 +303,8 @@ public final class BaseProgressUtils {
             return null;
         }
     }
+    
+    private static final RequestProcessor TRIVIAL = new RequestProcessor(Trivial.class);
 
     private static final class CancellableRunnableWrapper extends RunnableWrapper implements Cancellable {
         private final Cancellable cancelable;
@@ -316,7 +322,12 @@ public final class BaseProgressUtils {
     private static class Trivial implements RunOffEDTProvider {
         @Override
         public void runOffEventDispatchThread(Runnable operation, String operationDescr, AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorAfter, int dialogAfter) {
-            operation.run();
+            if (Mutex.EVENT.isReadAccess()) {
+                // PENDING: the EDT should continue to service events.
+                TRIVIAL.post(operation).waitFinished();
+            } else {
+                operation.run();
+            }
         }
     }
 }
