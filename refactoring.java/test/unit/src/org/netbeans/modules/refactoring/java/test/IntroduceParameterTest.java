@@ -67,6 +67,48 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test238154() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    public int m(int a, int b){\n"
+                        + "        System.out.println(\"abc\");\n"
+                        + "          System.out.println(\"abc\");\n"
+                        + "            System.out.println(\"abc\");\n"
+                        + "              System.out.println(\"abc\");\n"
+                        + "              \n"
+                        + "        int[][] m = new int[][]{{-1,   2, 5},\n"
+                        + "                                { 1, -13, 5}};\n"
+                        + "        return b;\n"
+                        + "    }\n"
+                        + "    \n"
+                        + "    public void m2(){\n"
+                        + "        m(5, 6);\n"
+                        + "    }\n"
+                        + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("abc") + 1, Javadoc.NONE, true, true);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public int m(int a, int b){\n"
+                        + "        return m(a, b, \"abc\");\n"
+                        + "    }\n"
+                        + "    public int m(int a, int b, String introduced) {\n"
+                        + "        System.out.println(introduced);\n"
+                        + "          System.out.println(introduced);\n"
+                        + "            System.out.println(introduced);\n"
+                        + "              System.out.println(introduced);\n"
+                        + "              \n"
+                        + "        int[][] m = new int[][]{{-1,   2, 5},\n"
+                        + "                                { 1, -13, 5}};\n"
+                        + "        return b;\n"
+                        + "    }\n"
+                        + "    \n"
+                        + "    public void m2(){\n"
+                        + "        m(5, 6);\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void test238301() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
