@@ -108,7 +108,14 @@ final class PackageAttrsCache implements Stamps.Updater {
     }
     
     final String[] findImpl(URL src, Manifest man, String path) {
-        String key = src.toExternalForm() + "!/" + path;
+        String key = src.toExternalForm();
+        if (key.startsWith("jar:file:")) { // NOI18N
+            key = key.substring(9);
+        }
+        if (!key.endsWith("!/")) { // NOI18N
+            key += "!/"; // NOI18N
+        }
+        key += path;
         String[] arr;
         if (cache instanceof HashMap) {
             arr = extractFromManifest(man, path);
