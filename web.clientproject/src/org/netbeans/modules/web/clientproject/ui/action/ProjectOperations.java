@@ -51,13 +51,13 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.openide.filesystems.FileObject;
 
 /**
  * Default project operations.
  */
-public class ProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+public class ProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOrRenameOperationImplementation {
 
     private final ClientSideProject project;
 
@@ -104,6 +104,16 @@ public class ProjectOperations implements DeleteOperationImplementation, CopyOpe
         }
         project.setName(nueName);
         project.getReferenceHelper().fixReferences(originalPath);
+    }
+
+    @Override
+    public void notifyRenaming() throws IOException {
+        // noop
+    }
+
+    @Override
+    public void notifyRenamed(String nueName) throws IOException {
+        project.setName(nueName);
     }
 
     @Override
