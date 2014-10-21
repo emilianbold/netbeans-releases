@@ -87,6 +87,8 @@ public final class PackageJson {
     public static final String NAME = "name"; // NOI18N
     public static final String SCRIPTS = "scripts"; // NOI18N
     public static final String START = "start"; // NOI18N
+    public static final String ENGINES = "engines"; // NOI18N
+    public static final String NODE = "node"; // NOI18N
 
     private static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory() {
 

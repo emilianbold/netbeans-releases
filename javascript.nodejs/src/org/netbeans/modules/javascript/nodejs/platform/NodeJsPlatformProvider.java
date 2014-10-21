@@ -189,9 +189,9 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             // some error
             return;
         }
-        Object engines = content.get("engines"); // NOI18N
+        Object engines = content.get(PackageJson.ENGINES);
         if (engines instanceof Map) {
-            if (((Map<String, Object>) engines).containsKey("node")) { // NOI18N
+            if (((Map<String, Object>) engines).containsKey(PackageJson.NODE)) {
                 Notifications.notifyNodeJsDetected(project);
             }
         }
