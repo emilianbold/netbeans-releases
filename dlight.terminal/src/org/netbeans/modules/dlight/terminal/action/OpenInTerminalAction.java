@@ -41,17 +41,22 @@
  */
 package org.netbeans.modules.dlight.terminal.action;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -67,7 +72,7 @@ import org.openide.util.actions.NodeAction;
 )
 @ActionReferences({
     @ActionReference(path = "UI/ToolActions/Files", position = 2050),
-    @ActionReference(path="Shortcuts", name="SO-K")
+    @ActionReference(path = "Shortcuts", name = "SO-K")
 })
 public class OpenInTerminalAction extends NodeAction {
 
@@ -86,14 +91,36 @@ public class OpenInTerminalAction extends NodeAction {
             FileObject fo = lookup.lookup(FileObject.class);
 
             final String path = (fo.isFolder()) ? fo.getPath() : fo.getParent().getPath();
-            final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fo);
+            ExecutionEnvironment env = null;
+            try {
+                FileSystem fileSystem = fo.getFileSystem();
+                Method declaredMethod = fileSystem.getClass().getDeclaredMethod("getExecutionEnvironment"); // NOI18N
+                if (declaredMethod != null) {
+                    declaredMethod.setAccessible(true);
+                    Object invoke = declaredMethod.invoke(fileSystem);
+                    if (invoke instanceof ExecutionEnvironment) {
+                        env = (ExecutionEnvironment) invoke;
+                    }
+                }
+            } catch (FileStateInvalidException ex) {
+            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException ex) {
+            } catch (InvocationTargetException ex) {
+            } catch (NoSuchMethodException ex) {
+            } catch (SecurityException ex) {
+            }
+            if (env == null) {
+                env = ExecutionEnvironmentFactory.getLocal();
+            }
+
+            final ExecutionEnvironment envFinal = env;
 
             SwingUtilities.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
                     /* Terminal title is meaningless but it will be changed later anyway*/
-                    TerminalSupport.openTerminal(env.getDisplayName(), env, path);
+                    TerminalSupport.openTerminal(envFinal.getDisplayName(), envFinal, path);
                 }
             });
         }
