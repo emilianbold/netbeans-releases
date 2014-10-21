@@ -71,12 +71,8 @@ import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -87,7 +83,6 @@ import org.openide.text.Line;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
-import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 
 // XXX copied from PHP
@@ -343,23 +338,27 @@ public final class FileUtils {
     public static void reformatFile(final DataObject dataObject) throws IOException {
         assert dataObject != null;
 
-        EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
-        assert ec != null : "No editorcookie for " + dataObject;
+        EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
+        assert editorCookie != null : "No editorcookie for " + dataObject;
+        if (editorCookie.isModified()) {
+            editorCookie.saveDocument();
+        }
+        // XXX opened file is not properly formatted
+        editorCookie.close();
 
-        Document doc = ec.openDocument();
-        assert doc instanceof BaseDocument;
+        Document document = editorCookie.openDocument();
+        assert document instanceof BaseDocument;
 
         // reformat
-        final BaseDocument baseDoc = (BaseDocument) doc;
-        final Reformat reformat = Reformat.get(baseDoc);
+        final BaseDocument baseDocument = (BaseDocument) document;
+        final Reformat reformat = Reformat.get(baseDocument);
         reformat.lock();
         try {
-            // seems to be synchronous but no info in javadoc
-            baseDoc.runAtomic(new Runnable() {
+            baseDocument.runAtomic(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        reformat.reformat(0, baseDoc.getLength());
+                        reformat.reformat(0, baseDocument.getLength());
                     } catch (BadLocationException ex) {
                         LOGGER.log(Level.INFO, "Cannot reformat file " + dataObject.getName(), ex);
                     }
@@ -369,46 +368,8 @@ public final class FileUtils {
             reformat.unlock();
         }
 
-        ec.saveDocument();
-
-        /*// possibly close
-        CloseCookie closeCookie = dataObject.getLookup().lookup(CloseCookie.class);
-        boolean closed = false;
-        if (closeCookie != null) {
-            closed = closeCookie.close();
-        }
         // save
-        saveFile(dataObject);
-        // open?
-        if (closed) {
-            ec.open();
-        }*/
-    }
-
-    /**
-     * Save a file.
-     * @param dataObject file to save
-     */
-    public static void saveFile(DataObject dataObject) {
-        assert dataObject != null;
-
-        SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
-        if (saveCookie != null) {
-            try {
-                try {
-                    saveCookie.save();
-                } catch (UserQuestionException uqe) {
-                    // #216194
-                    NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
-                    if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
-                        uqe.confirmed();
-                        saveCookie.save();
-                    }
-                }
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, ioe.getLocalizedMessage(), ioe);
-            }
-        }
+        editorCookie.saveDocument();
     }
 
     public static File getNodeSources() {

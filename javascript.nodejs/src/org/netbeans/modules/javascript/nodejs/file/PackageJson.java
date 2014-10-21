@@ -66,11 +66,13 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  * Class representing project's <tt>package.json</tt> file.
@@ -188,7 +190,7 @@ public final class PackageJson {
         setContentInternal(data);
         final File file = getPackageJson();
         // XXX
-        /*RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -197,7 +199,7 @@ public final class PackageJson {
                     LOGGER.log(Level.INFO, file.getAbsolutePath(), ex);
                 }
             }
-        });*/
+        });
     }
 
     synchronized void setContentInternal(Map<String, Object> data) {
