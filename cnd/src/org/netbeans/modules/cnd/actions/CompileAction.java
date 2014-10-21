@@ -239,7 +239,6 @@ public class CompileAction extends AbstractExecutorRunAction {
         String[] cppStandardFlags = compilerSet.getCompilerFlavor().getToolchainDescriptor().getCpp().getCppStandardFlags();
         final String compilerPath = convertPath(tool.getPath(), execEnv);
         final StringBuilder argsFlat = new StringBuilder();
-        argsFlat.append(ces.getCompileFlags()).append(' ');// NOI18N
         CndLanguageStandards.CndLanguageStandard standard = ces.getStandard();
         if (standard != null) {
             switch (standard) {
@@ -275,6 +274,7 @@ public class CompileAction extends AbstractExecutorRunAction {
                     break;
             }
         }
+        argsFlat.append(ces.getCompileFlags()).append(' ');// NOI18N
         argsFlat.append("-c").append(' ');// NOI18N
         argsFlat.append(fileObject.getNameExt()).append(' ');// NOI18N
         argsFlat.append("-o ").append(getDevNull(execEnv, compilerSet));// NOI18N
