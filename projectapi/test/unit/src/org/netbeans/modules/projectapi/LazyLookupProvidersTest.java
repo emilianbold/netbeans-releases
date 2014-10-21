@@ -146,6 +146,26 @@ public class LazyLookupProvidersTest extends NbTestCase {
         assertEquals(instances, all.lookupAll(l.loadClass(Service4.class.getName())));
         l.assertLoadedClasses("Service3", "Service34Impl", "Service4");
     }
+    
+    public void testLazyLookupToString() throws Exception {
+        Lookup all = LookupProviderSupport.createCompositeLookup(Lookup.EMPTY, "Projects/y/Lookup");
+        final String str = all.toString();
+        if (str.contains("ProxyLookup(class=class org.netbeans.modules.projectapi.LazyLookupProviders")) {
+            fail("ProxyLookup from LazyLookupProviders should have better name\n" + str);
+        }
+        if (!str.contains("service=org.netbeans.modules.projectapi.LazyLookupProvidersTest$Service3")) {
+            fail("Name of service lookup delivers should be visible:\n" + str);
+        }
+        if (!str.contains("class=" + Service34Impl.class.getName())) {
+            fail("Name of impl class should be visible:\n" + str);
+        }
+        if (!str.contains("service=org.netbeans.modules.projectapi.LazyLookupProvidersTest$Service3")) {
+            fail("Name of service lookup delivers should be visible:\n" + str);
+        }
+        if (!str.contains("Projects/y/Lookup/org-netbeans-modules-projectapi-LazyLookupProvidersTest$Service34Impl.instance")) {
+            fail("We should see the file object lookup is coming from:\n" + str);
+        }
+    }
 
     public interface Service3 {}
 

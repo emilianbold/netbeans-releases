@@ -58,6 +58,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Utilities;
 
 /** Checks whether a module with generated
@@ -89,7 +90,7 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         moduleJarFile = new File(getWorkDir(), "PlatformDependencySatisfiedModule.jar");
 
         // clean the operatingSystem field
-        Field f = Utilities.class.getDeclaredField("operatingSystem");
+        Field f = BaseUtilities.class.getDeclaredField("operatingSystem");
         f.setAccessible(true);
         f.set(null, -1);
     }
