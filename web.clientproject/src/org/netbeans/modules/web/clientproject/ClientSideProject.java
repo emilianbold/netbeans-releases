@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -963,7 +964,13 @@ public class ClientSideProject implements Project {
 
         @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
+            String oldName = getName();
             name = null;
+            String newName = getName();
+            if (!Objects.equals(oldName, newName)) {
+                PlatformProviders.getDefault().notifyPropertyChanged(ClientSideProject.this,
+                        new PropertyChangeEvent(ClientSideProject.this, PlatformProvider.PROP_PROJECT_NAME, oldName, newName));
+            }
         }
 
         @Override
