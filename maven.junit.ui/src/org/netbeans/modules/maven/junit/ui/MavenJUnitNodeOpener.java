@@ -67,6 +67,7 @@ import org.netbeans.modules.gsf.testrunner.ui.api.TestsuiteNode;
 import org.netbeans.modules.junit.ui.api.JUnitTestMethodNode;
 import org.netbeans.modules.java.testrunner.ui.api.NodeOpener;
 import org.netbeans.modules.java.testrunner.ui.api.UIJavaUtils;
+import org.netbeans.modules.junit.ui.api.JUnitCallstackFrameNode;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
@@ -169,8 +170,14 @@ public final class MavenJUnitNodeOpener extends NodeOpener {
     }
 
     public void openCallstackFrame(Node node, @NonNull String frameInfo) {
-        if (!(node instanceof JUnitTestMethodNode)) {
-            return;
+        if(frameInfo.isEmpty()) { // user probably clicked on a failed test method node, find failing line within the testMethod using the stacktrace
+            if (!(node instanceof JUnitTestMethodNode)) {
+                return;
+            }
+        } else { // user probably clicked on a stacktrace node
+            if (!(node instanceof JUnitCallstackFrameNode)) {
+                return;
+            }
         }
         JUnitTestMethodNode methodNode = (JUnitTestMethodNode) UIJavaUtils.getTestMethodNode(node);
         if (!(methodNode instanceof MavenJUnitTestMethodNode)) {

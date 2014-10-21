@@ -111,8 +111,7 @@ public class SaveAsTemplateOperatorTest extends JellyTestCase {
     /** Test of selectTemplate method. */
     public void testSelectTemplate() {
         SaveAsTemplateOperator sato = new SaveAsTemplateOperator();
-        String mainClass = Bundle.getString("org.netbeans.modules.java.project.Bundle",
-                "Main.java");
+        String mainClass = "Java Main Class";
         // "Java Classes|Java Main Class"
         String templatePath = Bundle.getString("org.netbeans.modules.java.project.Bundle",
                 "Templates/Classes")

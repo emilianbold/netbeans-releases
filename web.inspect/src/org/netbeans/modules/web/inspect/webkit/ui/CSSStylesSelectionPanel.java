@@ -119,6 +119,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
+import org.openide.explorer.view.NodeRenderer;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
@@ -838,19 +839,7 @@ public class CSSStylesSelectionPanel extends JPanel {
             setRootVisible(false);
             setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             final TreeCellRenderer renderer = tree.getCellRenderer();
-            tree.setCellRenderer(new TreeCellRenderer() {
-                @Override
-                public Component getTreeCellRendererComponent(JTree tree,
-                        Object value, boolean selected, boolean expanded,
-                        boolean leaf, int row, boolean hasFocus) {
-                    Component component = renderer.getTreeCellRendererComponent(
-                            tree, value, selected, expanded, leaf, row, hasFocus);
-                    if (component instanceof JLabel) {
-                        ((JLabel)component).setIcon(null);
-                    }
-                    return component;
-                }
-            });
+            ((NodeRenderer) renderer).setShowIcons(false);
             hideTreeLines();
             if (Boolean.getBoolean("netbeans.plaf.dark.theme") // NOI18N
                     || "Nimbus".equals(UIManager.getLookAndFeel().getID())) { // NOI18N

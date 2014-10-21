@@ -43,8 +43,11 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.Component;
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Collections;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.TreeNode;
@@ -60,6 +63,8 @@ import org.openide.nodes.Node;
 class NodeRenderDataProvider implements CheckRenderDataProvider {
 
     private Outline table;
+    private boolean showIcons = true;
+    private Icon emptyIcon;
 
     /** Creates a new instance of NodeRenderDataProvider */
     public NodeRenderDataProvider(Outline table) {
@@ -84,8 +89,22 @@ class NodeRenderDataProvider implements CheckRenderDataProvider {
     public java.awt.Color getForeground(Object o) {
         return null;
     }
+    
+    public void setShowIcons(boolean showIcons) {
+        this.showIcons = showIcons;
+        if (!showIcons && emptyIcon == null) {
+            emptyIcon = new EmptyIcon();
+        }
+    }
+    
+    public boolean isShowIcons() {
+        return showIcons;
+    }
 
     public javax.swing.Icon getIcon(Object o) {
+        if (!showIcons) {
+            return emptyIcon;
+        }
         Node n = Visualizer.findNode(o);
         if (n == null) {
             throw new IllegalStateException("TreeNode must be VisualizerNode but was: " + o + " of class " + o.getClass().getName());
@@ -160,6 +179,24 @@ class NodeRenderDataProvider implements CheckRenderDataProvider {
         if (c != null) {
             c.setSelected(selected);
         }
+    }
+    
+    private static final class EmptyIcon implements Icon {
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+        }
+
+        @Override
+        public int getIconWidth() {
+            return 0;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return 0;
+        }
+        
     }
 
 }

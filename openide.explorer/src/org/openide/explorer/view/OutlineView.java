@@ -229,6 +229,8 @@ public class OutlineView extends JScrollPane {
     private Component searchPanel;
     private final Object searchConstraints = new Object();
     private KeyListener qsKeyListener;
+    
+    private NodeRenderDataProvider nodeRenderer;
 
     /** Creates a new instance of TableView */
     public OutlineView() {
@@ -260,7 +262,8 @@ public class OutlineView extends JScrollPane {
         };
         outline.addKeyListener(qsKeyListener);
         rowModel.setOutline(outline);
-        outline.setRenderDataProvider(new NodeRenderDataProvider(outline));
+        nodeRenderer = new NodeRenderDataProvider(outline);
+        outline.setRenderDataProvider(nodeRenderer);
         SheetCell tableCell = new SheetCell.OutlineSheetCell(outline);
         outline.setDefaultRenderer(Node.Property.class, tableCell);
         outline.setDefaultEditor(Node.Property.class, tableCell);
@@ -1366,6 +1369,24 @@ public class OutlineView extends JScrollPane {
             res = new Insets(0,0,0,0);
         }
         return res;
+    }
+    
+    /**
+     * Turn node icon rendering on/off. Node icons are shown by default.
+     * @param showNodeIcons whether to show node icons or not.
+     * @since 6.59
+     */
+    public final void setShowNodeIcons(boolean showNodeIcons) {
+        nodeRenderer.setShowIcons(showNodeIcons);
+    }
+    
+    /**
+     * Test whether the node icons are shown.
+     * @return <code>true</code> when node icons are shown, <code>false</code> otherwise.
+     * @since 6.59
+     */
+    public final boolean isShowNodeIcons() {
+        return nodeRenderer.isShowIcons();
     }
 
     /**

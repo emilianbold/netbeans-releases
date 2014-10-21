@@ -50,6 +50,7 @@ import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
 import org.netbeans.modules.debugger.jpda.js.vars.JSVariable;
+import org.netbeans.modules.debugger.jpda.js.vars.ScopeVariable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
@@ -91,6 +92,8 @@ public class VariablesJSTableModel implements TableModelFilter {
                 case LOCALS_TO_STRING_COLUMN_ID:
                     return jsVar.getValue();
             }
+        } else if (node instanceof ScopeVariable) {
+            return "";
         } else if (node instanceof ObjectVariable) {
             switch (columnID) {
                 case LOCALS_TYPE_COLUMN_ID:
@@ -120,7 +123,7 @@ public class VariablesJSTableModel implements TableModelFilter {
 
     @Override
     public boolean isReadOnly(TableModel original, Object node, String columnID) throws UnknownTypeException {
-        if (node instanceof JSVariable) {
+        if (node instanceof JSVariable || node instanceof ScopeVariable) {
             return true;
         }
         return original.isReadOnly(node, columnID);

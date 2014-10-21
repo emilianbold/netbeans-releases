@@ -169,6 +169,8 @@ class ObjectLocalVariable extends AbstractObjectVariable
         }
     }
     
+    @NbBundle.Messages({"# {0} - variable name",
+                        "MSG_VarNotVisibleInCurrentFrame=Variable {0} is not visible in the current stack frame."})
     protected final void setValue (Value value) throws InvalidExpressionException {
         try {
             CallStackFrame[] frames = thread.getCallStack(depth, depth + 1);
@@ -181,6 +183,9 @@ class ObjectLocalVariable extends AbstractObjectVariable
                 throw new InvalidExpressionException(NbBundle.getMessage(ObjectLocalVariable.class, "MSG_NoTopFrame"));
             }
             StackFrame sf = ((CallStackFrameImpl) frames[0]).getStackFrame();
+            if (!LocalVariableWrapper.isVisible(local, sf)) {
+                throw new InvalidExpressionException(Bundle.MSG_VarNotVisibleInCurrentFrame(getName()));
+            }
             StackFrameWrapper.setValue (sf, local, value);
             setInnerValue(value);
         } catch (AbsentInformationException aiex) {

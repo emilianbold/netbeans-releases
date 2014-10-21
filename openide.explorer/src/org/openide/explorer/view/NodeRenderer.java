@@ -76,6 +76,9 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
 
     /** Flag indicating if to use big icons. */
     private boolean bigIcons = false;
+    /** Flag indicating whether to show icons. */
+    private boolean showIcons = true;
+    private int labelGap;
     private HtmlRenderer.Renderer renderer = HtmlRenderer.createRenderer();
 
     /** Creates default renderer. */
@@ -111,6 +114,17 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
         Logger.getLogger(NodeRenderer.class.getName()).log(Level.WARNING, null, ise);
 
         return instance;
+    }
+    
+    public final void setShowIcons(boolean showIcons) {
+        this.showIcons = showIcons;
+        if (!showIcons) {
+            labelGap = new JLabel().getIconTextGap();
+        }
+    }
+    
+    public final boolean isShowIcons() {
+        return showIcons;
     }
 
     /** Finds the component that is capable of drawing the cell in a tree.
@@ -212,6 +226,12 @@ public class NodeRenderer extends Object implements TreeCellRenderer, ListCellRe
     private int configureFrom(
         HtmlRenderer.Renderer ren, Container target, boolean useOpenedIcon, boolean sel, VisualizerNode vis
     ) {
+        if (!isShowIcons()) {
+            ren.setIcon(null);
+            ren.setIndent(labelGap);
+            return 24;
+        }
+        
         Icon icon = vis.getIcon(useOpenedIcon, bigIcons);
 
         if (icon.getIconWidth() > 0) {

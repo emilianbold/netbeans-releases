@@ -60,6 +60,7 @@ import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.team.commons.LogUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -169,7 +170,16 @@ public class JiraExecutor {
                     }
                 }
                 
+                Jira.LOG.log(Level.INFO, "exception occured for [{0},{1},{2},{3},{4},{5}]", 
+                        new Object[] {
+                            repository.getDisplayName(), 
+                            repository.getUrl(), 
+                            repository.getUsername(), 
+                            LogUtils.getPasswordLog(repository.getPassword()), 
+                            repository.getHttpUsername(), 
+                            LogUtils.getPasswordLog(repository.getHttpPassword())});
                 Jira.LOG.log(Level.INFO, null, we.getCause());
+                
                 if(handler.handle()) {
                     // execute again
                     execute(cmd, handleExceptions, ensureConfiguration, checkVersion);
