@@ -53,6 +53,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -88,6 +90,7 @@ import org.openide.util.Mutex;
  */
 public final class UIJavaUtils {
 
+    private static final Logger LOGGER = Logger.getLogger(UIJavaUtils.class.getName());
     static final Action[] NO_ACTIONS = new Action[0];
 
     public UIJavaUtils() {
@@ -136,6 +139,11 @@ public final class UIJavaUtils {
 			String elementFQP = element.toString().replaceAll("\\.", Matcher.quoteReplacement(File.separator)); //NOI18N
 			String newPath = originalPath.substring(0, originalPath.indexOf(elementFQP)) + enclosingTypeElement.getQualifiedName().toString().replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + ".java"; //NOI18N
 			fo2open[0] = FileUtil.toFileObject(new File(newPath));
+                        
+                        if(fo2open[0] == null) {
+                            LOGGER.log(Level.INFO, "Could not locate FO for path: {0}", newPath);
+                            return;
+                        }
 
 			JavaSource javaSource = JavaSource.forFileObject(fo2open[0]);
 			if (javaSource != null) {
