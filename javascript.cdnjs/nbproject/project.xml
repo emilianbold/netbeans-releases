@@ -158,6 +158,7 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
             </module-dependencies>
             <test-dependencies/>
             <friend-packages>
+                <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
                 <package>org.netbeans.modules.javascript.cdnjs.api</package>
