@@ -39,58 +39,72 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.utils;
+package org.netbeans.modules.cnd.actions;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import org.netbeans.modules.cnd.execution.CompileExecSupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public final class CndLanguageStandards {
-    public enum CndLanguageStandard {
-        C89("C89"), //NOI18N
-        C99("C99"), //NOI18N
-        C11("C11"), //NOI18N
-        CPP98("C++98"), //NOI18N
-        CPP11("C++11"), //NOI18N
-        CPP14("C++14"); //NOI18N
-        
-        private final String id;
-        CndLanguageStandard(String id) {
-            this.id=id;
-        }
+@ServiceProvider(service=ActionProvider.class)
+public class StandAloneFileActionProvider implements ActionProvider {
 
-        public String getID() {
-            return id;
-        }
-
-        @Override
-        public String toString() {
-            return id;
-        }
+    @Override
+    public String[] getSupportedActions() {
+        return new String[] { ActionProvider.COMMAND_COMPILE_SINGLE };
     }
-    
-    public static CndLanguageStandard StringToLanguageStandard(String st) {
-        for(CndLanguageStandard standard : CndLanguageStandard.values()) {
-            if (standard.id.equals(st)) {
-                return standard;
+
+    @Override
+    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+        if (files.isEmpty()) {
+            return;
+        }
+        for (DataObject d : files) {
+            final FileObject fo = d.getPrimaryFile();
+            if (fo == null) {
+                continue;
+            }
+            String mimeType = fo.getMIMEType();
+            if (mimeType == null) {
+                continue;
+            }
+            if (MIMENames.isCppOrCOrFortran(mimeType)) {
+                CompileAction.performAction(d.getNodeDelegate());
+                return;
             }
         }
-        return null;
     }
 
-    public static Collection<CndLanguageStandard> getSupported(String mime) {
-        if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-            return Arrays.asList(CndLanguageStandard.CPP98, CndLanguageStandard.CPP11, CndLanguageStandard.CPP14);
-        } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
-            return Arrays.asList(CndLanguageStandard.C89, CndLanguageStandard.C99, CndLanguageStandard.C11);
-        } if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
-            return Arrays.asList(CndLanguageStandard.C89, CndLanguageStandard.C99, CndLanguageStandard.C11,
-                    CndLanguageStandard.CPP98, CndLanguageStandard.CPP11, CndLanguageStandard.CPP14);
-        } 
-        return Collections.<CndLanguageStandard>emptyList();
+    @Override
+    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+        if (files.isEmpty()) {
+            return false;
+        }
+        for (DataObject d : files) {
+            final FileObject fo = d.getPrimaryFile();
+            if (fo == null) {
+                continue;
+            }
+            String mimeType = fo.getMIMEType();
+            if (mimeType == null) {
+                continue;
+            }
+            if (MIMENames.isCppOrCOrFortran(mimeType)) {
+                return d.getLookup().lookup(CompileExecSupport.class) != null;
+            }
+        }
+        return false;
     }
+    
 }
