@@ -94,6 +94,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         Project project = context.lookup(Project.class);
         Library.Version[] libraries = LibraryPersistence.getDefault().loadLibraries(project);
         File webRoot = customizerContext.getWebRoot(context);
+        if (webRoot == null) {
+            webRoot = FileUtil.toFile(project.getProjectDirectory());
+        }
         String libraryFolder = getProjectPreferences(project).get(PREFERENCES_LIBRARY_FOLDER, null);
         SelectionPanel customizer = new SelectionPanel(libraries, webRoot, libraryFolder);
         category.setStoreListener(new StoreListener(project, webRoot, customizer));
