@@ -85,6 +85,7 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
@@ -1006,8 +1007,10 @@ public class ClientSideProject implements Project {
                     case PlatformProvider.PROP_RUN_CONFIGURATION:
                         runConfigurationChanged((String) event.getNewValue());
                         break;
+                    case PlatformProvider.PROP_PROJECT_NAME:
+                        projectNameChanged((String) event.getNewValue());
+                        break;
                     default:
-                        // XXX
                         assert false : "Unhandled property change: " + propertyName;
                 }
             }
@@ -1048,6 +1051,13 @@ public class ClientSideProject implements Project {
                     saveRunProperties(null, true);
                     return;
                 }
+            }
+        }
+
+        private void projectNameChanged(String newName) {
+            if (StringUtilities.hasText(newName)
+                    && !getName().equals(newName)) {
+                setName(newName);
             }
         }
 
