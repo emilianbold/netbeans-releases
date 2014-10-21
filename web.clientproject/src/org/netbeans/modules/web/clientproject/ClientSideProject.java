@@ -486,7 +486,7 @@ public class ClientSideProject implements Project {
     }
 
     public void setName(String name) {
-        ClientSideProjectUtilities.setProjectName(projectHelper, name);
+        ClientSideProjectUtilities.setProjectName(projectHelper, name, true);
     }
 
 

@@ -130,7 +130,7 @@ public final class ClientSideProjectUtilities {
     public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
         // create project
         AntProjectHelper projectHelper = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
-        setProjectName(projectHelper, name);
+        setProjectName(projectHelper, name, false);
         // #231319
         ProjectManager.getDefault().clearNonProjectCache();
         Project project = FileOwnerQuery.getOwner(dirFO);
@@ -201,7 +201,7 @@ public final class ClientSideProjectUtilities {
         }
     }
 
-    public static void setProjectName(final AntProjectHelper projectHelper, final String name) {
+    public static void setProjectName(final AntProjectHelper projectHelper, final String name, final boolean saveProject) {
         ProjectManager.mutex().writeAccess(new Runnable() {
             @Override
             public void run() {
@@ -222,6 +222,15 @@ public final class ClientSideProjectUtilities {
                 }
                 nameElement.appendChild(document.createTextNode(name));
                 projectHelper.putPrimaryConfigurationData(data, true);
+                if (saveProject) {
+                    Project project = FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
+                    assert project != null;
+                    try {
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, "Cannot save project", ex);
+                    }
+                }
             }
         });
     }
