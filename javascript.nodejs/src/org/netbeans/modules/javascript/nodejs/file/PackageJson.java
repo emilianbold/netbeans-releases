@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.nodejs.file;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
@@ -52,10 +53,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -82,6 +88,20 @@ public final class PackageJson {
     public static final String SCRIPTS = "scripts"; // NOI18N
     public static final String START = "start"; // NOI18N
 
+    private static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory() {
+
+        @Override
+        public Map createObjectContainer() {
+            return new LinkedHashMap();
+        }
+
+        @Override
+        public List creatArrayContainer() {
+            return new ArrayList();
+        }
+
+    };
+
     private final File directory;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private final FileChangeListener fileChangeListener = new FileChangeListenerImpl();
@@ -89,7 +109,7 @@ public final class PackageJson {
     // @GuardedBy("this")
     private File packageJson;
     // @GuardedBy("this")
-    private JSONObject content;
+    private Map<String, Object> content;
     private volatile boolean contentInited = false;
 
 
@@ -125,11 +145,18 @@ public final class PackageJson {
         return getPackageJson().getAbsolutePath();
     }
 
+    /**
+     * Returns <b>shallow</b> copy of the content.
+     * <p>
+     * <b>WARNING:</b> If content is modified, it has to be {@link #setContent(Map) saved}!
+     * @return <b>shallow</b> copy of the data
+     * @see #setContent(Map)
+     */
     @CheckForNull
-    public synchronized JSONObject getContent() {
+    public synchronized Map<String, Object> getContent() {
         initContent();
         if (content != null) {
-            return new JSONObject(content);
+            return new LinkedHashMap<>(content);
         }
         File file = getPackageJson();
         if (!file.isFile()) {
@@ -137,7 +164,7 @@ public final class PackageJson {
         }
         JSONParser parser = new JSONParser();
         try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(packageJson), StandardCharsets.UTF_8))) {
-            content = (JSONObject) parser.parse(reader);
+            content = (Map<String, Object>) parser.parse(reader, CONTAINER_FACTORY);
         } catch (ParseException ex) {
             LOGGER.log(Level.INFO, file.getAbsolutePath(), ex);
         } catch (IOException ex) {
@@ -146,15 +173,38 @@ public final class PackageJson {
         if (content == null) {
             return null;
         }
-        return new JSONObject(content);
+        return new LinkedHashMap<>(content);
     }
 
-    public synchronized void setContent(JSONObject data) {
+    /**
+     * Save modified content. The file is formatted.
+     * @param data content to be saved
+     */
+    public synchronized void setContent(Map<String, Object> data) {
         assert data != null;
+        assert !EventQueue.isDispatchThread();
+        setContentInternal(data);
+        final File file = getPackageJson();
+        // XXX
+        /*RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    FileUtils.reformatFile(file);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, file.getAbsolutePath(), ex);
+                }
+            }
+        });*/
+    }
+
+    synchronized void setContentInternal(Map<String, Object> data) {
+        assert data != null;
+        assert !EventQueue.isDispatchThread();
         initContent();
         File file = getPackageJson();
         try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-            data.writeJSONString(writer);
+            JSONObject.writeJSONString(data, writer);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, file.getAbsolutePath(), ex);
         }
@@ -188,8 +238,8 @@ public final class PackageJson {
     }
 
     void clear(boolean newFile, boolean fireChanges) {
-        JSONObject oldContent;
-        JSONObject newContent = null;
+        Map<String, Object> oldContent;
+        Map<String, Object> newContent = null;
         synchronized (this) {
             oldContent = content;
             if (content != null) {
@@ -218,7 +268,7 @@ public final class PackageJson {
         }
     }
 
-    private void fireChanges(@NullAllowed JSONObject oldContent, @NullAllowed JSONObject newContent) {
+    private void fireChanges(@NullAllowed Map<String, Object> oldContent, @NullAllowed Map<String, Object> newContent) {
         String oldName = getName(oldContent);
         String newName = getName(newContent);
         if (!Objects.equals(oldName, newName)) {
@@ -232,7 +282,7 @@ public final class PackageJson {
     }
 
     @CheckForNull
-    private String getName(@NullAllowed JSONObject data) {
+    private String getName(@NullAllowed Map<String, Object> data) {
         if (data == null) {
             return null;
         }
@@ -240,15 +290,15 @@ public final class PackageJson {
     }
 
     @CheckForNull
-    private String getStartScript(@NullAllowed JSONObject data) {
+    private String getStartScript(@NullAllowed Map<String, Object> data) {
         if (data == null) {
             return null;
         }
-        JSONObject scripts = (JSONObject) data.get(SCRIPTS);
-        if (scripts == null) {
+        Object scripts = data.get(SCRIPTS);
+        if (!(scripts instanceof Map)) {
             return null;
         }
-        return (String) scripts.get(START);
+        return (String) ((Map<String, Object>) scripts).get(START);
     }
 
     //~ Inner classes

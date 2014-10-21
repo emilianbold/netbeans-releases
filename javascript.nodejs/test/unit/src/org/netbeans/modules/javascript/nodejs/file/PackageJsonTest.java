@@ -231,7 +231,7 @@ public class PackageJsonTest extends NbTestCase {
 
     public void testWriteContent() throws Exception {
         writeFile(getData(true, true));
-        JSONObject content = packageJson.getContent();
+        Map<String, Object> content = packageJson.getContent();
         assertNotNull(content);
         final String oldName = (String) content.get(PackageJson.NAME);
         assertNotNull(oldName);
