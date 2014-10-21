@@ -91,7 +91,7 @@ public final class NodeJsSupport {
         actionProvider = new NodeJsActionProvider(project);
         sourceRoots = new NodeJsSourceRoots(project);
         preferences = new NodeJsPreferences(project);
-        packageJson = new PackageJson(project);
+        packageJson = new PackageJson(FileUtil.toFile(project.getProjectDirectory()));
     }
 
     @ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N

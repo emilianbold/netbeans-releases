@@ -58,17 +58,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.json.simple.JSONObject;
 import org.junit.Assert;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 
 public class PackageJsonTest extends NbTestCase {
 
     private static final ExecutorService EXECUTORS = Executors.newCachedThreadPool();
 
-    private FileObject projectDir;
+    private File directory;
     private PackageJson packageJson;
 
 
@@ -80,11 +77,9 @@ public class PackageJsonTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        File dummy = new File(getWorkDir(), "dummy");
-        assertTrue(dummy.mkdir());
-        projectDir = FileUtil.toFileObject(dummy);
-        assertNotNull(projectDir);
-        packageJson = new PackageJson(new DummyProject(projectDir));
+        directory = new File(getWorkDir(), "dummy");
+        assertTrue(directory.mkdir());
+        packageJson = new PackageJson(directory);
     }
 
     @Override
@@ -235,7 +230,7 @@ public class PackageJsonTest extends NbTestCase {
     }
 
     private File getFile() {
-        return new File(FileUtil.toFile(projectDir), PackageJson.FILENAME);
+        return new File(directory, PackageJson.FILENAME);
     }
 
     private Map<String, Object> getData(boolean name, boolean startFile) {
@@ -275,28 +270,6 @@ public class PackageJsonTest extends NbTestCase {
     }
 
     //~ Inner classes
-
-    private static final class DummyProject implements Project {
-
-        private final FileObject projectDir;
-
-
-        public DummyProject(FileObject projectDir) {
-            Assert.assertNotNull(projectDir);
-            this.projectDir = projectDir;
-        }
-
-        @Override
-        public FileObject getProjectDirectory() {
-            return projectDir;
-        }
-
-        @Override
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-    }
 
     private static final class PropertyChangeListenerImpl implements PropertyChangeListener {
 

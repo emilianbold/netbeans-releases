@@ -53,23 +53,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.WeakListeners;
 
 /**
  * Class representing project's <tt>package.json</tt> file.
@@ -87,13 +80,10 @@ public final class PackageJson {
     static final String SCRIPTS = "scripts"; // NOI18N
     static final String START = "start"; // NOI18N
 
-    private final Project project;
+    private final File directory;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private final ChangeListener changeListener = new ChangeListenerImpl();
     private final FileChangeListener fileChangeListener = new FileChangeListenerImpl();
 
-    // @GuardedBy("this")
-    private boolean listening = false;
     // @GuardedBy("this")
     private File packageJson;
     // @GuardedBy("this")
@@ -101,9 +91,10 @@ public final class PackageJson {
     private volatile boolean contentInited = false;
 
 
-    public PackageJson(Project project) {
-        assert project != null;
-        this.project = project;
+    public PackageJson(File directory) {
+        assert directory != null;
+        assert directory.isDirectory() || !directory.exists() : "Must be directory or cannot exist: " + directory;
+        this.directory = FileUtil.normalizeFile(directory);
     }
 
     public void cleanup() {
@@ -160,17 +151,8 @@ public final class PackageJson {
     }
 
     private synchronized File getPackageJson() {
-        if (!listening) {
-            listening = true;
-            Sources sources = ProjectUtils.getSources(project);
-            sources.addChangeListener(WeakListeners.change(changeListener, sources));
-        }
         if (packageJson == null) {
-            // currently, we use only project dir
-            FileObject projectDirectory = project.getProjectDirectory();
-            File projDir = FileUtil.toFile(projectDirectory);
-            assert projDir != null : projectDirectory;
-            packageJson = FileUtil.normalizeFile(new File(projDir, FILENAME));
+            packageJson = new File(directory, FILENAME);
             try {
                 FileUtil.addFileChangeListener(fileChangeListener, packageJson);
                 LOGGER.log(Level.FINE, "Started listening to {0}", packageJson);
@@ -243,15 +225,6 @@ public final class PackageJson {
     }
 
     //~ Inner classes
-
-    private final class ChangeListenerImpl implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            clear(true);
-        }
-
-    }
 
     private final class FileChangeListenerImpl extends FileChangeAdapter {
 
