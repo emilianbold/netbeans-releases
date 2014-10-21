@@ -59,16 +59,24 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -79,6 +87,7 @@ import org.openide.text.Line;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 
 // XXX copied from PHP
@@ -315,6 +324,90 @@ public final class FileUtils {
             });
         } catch (IndexOutOfBoundsException exc) {
             LOGGER.log(Level.FINE, null, exc);
+        }
+    }
+
+    /**
+     * Reformat the file.
+     * @param file file to reformat.
+     */
+    public static void reformatFile(final File file) throws IOException {
+        FileObject fileObject = FileUtil.toFileObject(file);
+        assert fileObject != null : "No fileobject for " + file + " (file exists: " + file.exists() + ")";
+
+        reformatFile(DataObject.find(fileObject));
+    }
+
+    // XXX see AssertionError at HtmlIndenter.java:68
+    // NbReaderProvider.setupReaders(); cannot be called because of deps
+    public static void reformatFile(final DataObject dataObject) throws IOException {
+        assert dataObject != null;
+
+        EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+        assert ec != null : "No editorcookie for " + dataObject;
+
+        Document doc = ec.openDocument();
+        assert doc instanceof BaseDocument;
+
+        // reformat
+        final BaseDocument baseDoc = (BaseDocument) doc;
+        final Reformat reformat = Reformat.get(baseDoc);
+        reformat.lock();
+        try {
+            // seems to be synchronous but no info in javadoc
+            baseDoc.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        reformat.reformat(0, baseDoc.getLength());
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, "Cannot reformat file " + dataObject.getName(), ex);
+                    }
+                }
+            });
+        } finally {
+            reformat.unlock();
+        }
+
+        ec.saveDocument();
+
+        /*// possibly close
+        CloseCookie closeCookie = dataObject.getLookup().lookup(CloseCookie.class);
+        boolean closed = false;
+        if (closeCookie != null) {
+            closed = closeCookie.close();
+        }
+        // save
+        saveFile(dataObject);
+        // open?
+        if (closed) {
+            ec.open();
+        }*/
+    }
+
+    /**
+     * Save a file.
+     * @param dataObject file to save
+     */
+    public static void saveFile(DataObject dataObject) {
+        assert dataObject != null;
+
+        SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
+        if (saveCookie != null) {
+            try {
+                try {
+                    saveCookie.save();
+                } catch (UserQuestionException uqe) {
+                    // #216194
+                    NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
+                    if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
+                        uqe.confirmed();
+                        saveCookie.save();
+                    }
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, ioe.getLocalizedMessage(), ioe);
+            }
         }
     }
 
