@@ -229,6 +229,42 @@ public class PackageJsonTest extends NbTestCase {
         assertEquals("node app.js", event.getNewValue());
     }
 
+    public void testWriteContent() throws Exception {
+        writeFile(getData(true, true));
+        JSONObject content = packageJson.getContent();
+        assertNotNull(content);
+        final String oldName = (String) content.get(PackageJson.NAME);
+        assertNotNull(oldName);
+        // needed for FS to notice the change
+        Thread.sleep(1000);
+        // listener
+        CountDownLatch countDownLatch1 = new CountDownLatch(1);
+        PropertyChangeListenerImpl listener = new PropertyChangeListenerImpl();
+        listener.setCountDownLatch(countDownLatch1);
+        packageJson.addPropertyChangeListener(listener);
+        // change name
+        String newName = "some-new-cool-name";
+        content.put(PackageJson.NAME, newName);
+        packageJson.setContent(content);
+        // needed for FS to notice the change
+        Thread.sleep(1000);
+        // manual refresh
+        refreshForFile(packageJson.getFile());
+        // wait
+        countDownLatch1.await(1, TimeUnit.MINUTES);
+        // check events
+        Map<String, List<PropertyChangeEvent>> allEvents = listener.getAllEvents();
+        assertEquals(1, allEvents.size());
+        // name
+        List<PropertyChangeEvent> events = allEvents.get(PackageJson.PROP_NAME);
+        assertNotNull(events);
+        assertEquals(1, events.size());
+        PropertyChangeEvent event = events.get(0);
+        assertEquals(PackageJson.PROP_NAME, event.getPropertyName());
+        assertEquals(oldName, event.getOldValue());
+        assertEquals(newName, event.getNewValue());
+    }
+
     private File getFile() {
         return new File(directory, PackageJson.FILENAME);
     }
@@ -252,7 +288,7 @@ public class PackageJsonTest extends NbTestCase {
             JSONObject.writeJSONString(data, out);
         }
         assertTrue(file.isFile());
-        FileUtil.refreshFor(file.getParentFile());
+        refreshForFile(file);
     }
 
     private void asyncWriteFile(Map<String, Object> data) {
@@ -267,6 +303,10 @@ public class PackageJsonTest extends NbTestCase {
                 }
             }
         });
+    }
+
+    private void refreshForFile(File file) {
+        FileUtil.refreshFor(file.getParentFile());
     }
 
     //~ Inner classes

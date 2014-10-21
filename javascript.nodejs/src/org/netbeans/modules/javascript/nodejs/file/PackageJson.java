@@ -46,8 +46,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -76,9 +78,9 @@ public final class PackageJson {
 
     static final String FILENAME = "package.json"; // NOI18N
     // file content
-    static final String NAME = "name"; // NOI18N
-    static final String SCRIPTS = "scripts"; // NOI18N
-    static final String START = "start"; // NOI18N
+    public static final String NAME = "name"; // NOI18N
+    public static final String SCRIPTS = "scripts"; // NOI18N
+    public static final String START = "start"; // NOI18N
 
     private final File directory;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -99,7 +101,7 @@ public final class PackageJson {
 
     public void cleanup() {
         contentInited = false;
-        clear(true);
+        clear(true, false);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -113,6 +115,10 @@ public final class PackageJson {
 
     public boolean exists() {
         return getPackageJson().isFile();
+    }
+
+    public File getFile() {
+        return getPackageJson();
     }
 
     public String getPath() {
@@ -132,13 +138,26 @@ public final class PackageJson {
         JSONParser parser = new JSONParser();
         try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(packageJson), StandardCharsets.UTF_8))) {
             content = (JSONObject) parser.parse(reader);
-        } catch (IOException | ParseException ex) {
+        } catch (ParseException ex) {
             LOGGER.log(Level.INFO, file.getAbsolutePath(), ex);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, file.getAbsolutePath(), ex);
         }
         if (content == null) {
             return null;
         }
         return new JSONObject(content);
+    }
+
+    public synchronized void setContent(JSONObject data) {
+        assert data != null;
+        initContent();
+        File file = getPackageJson();
+        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+            data.writeJSONString(writer);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, file.getAbsolutePath(), ex);
+        }
     }
 
     private void initContent() {
@@ -165,8 +184,12 @@ public final class PackageJson {
     }
 
     void clear(boolean newFile) {
+        clear(newFile, true);
+    }
+
+    void clear(boolean newFile, boolean fireChanges) {
         JSONObject oldContent;
-        JSONObject newContent;
+        JSONObject newContent = null;
         synchronized (this) {
             oldContent = content;
             if (content != null) {
@@ -186,9 +209,13 @@ public final class PackageJson {
                 }
                 packageJson = null;
             }
-            newContent = getContent();
+            if (fireChanges) {
+                newContent = getContent();
+            }
         }
-        fireChanges(oldContent, newContent);
+        if (fireChanges) {
+            fireChanges(oldContent, newContent);
+        }
     }
 
     private void fireChanges(@NullAllowed JSONObject oldContent, @NullAllowed JSONObject newContent) {
