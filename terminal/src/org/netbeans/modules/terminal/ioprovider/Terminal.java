@@ -50,7 +50,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -64,6 +67,7 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Map;
@@ -82,6 +86,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.AttributeSet;
@@ -116,7 +121,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Extent;
-import org.netbeans.lib.terminalemulator.TermListener;
+import org.netbeans.lib.terminalemulator.MiscListener;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -126,6 +131,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -166,7 +173,8 @@ public final class Terminal extends JComponent {
 
     // Not final so we can dispose of them
     private final ActiveTerm term;
-    private final TermListener termListener;
+    private final MiscListener.ComponentListener componentListener;
+    private final MiscListener.TermListener termListener;
     private FindState findState;
 
     private static final Preferences prefs =
@@ -259,25 +267,45 @@ public final class Terminal extends JComponent {
     /**
      * Adapter to forward Term size change events as property changes.
      */
-    private class MyTermListener implements TermListener {
+    private class MyComponentListener implements MiscListener.ComponentListener {
+
 	@Override
 	public void sizeChanged(Dimension cells, Dimension pixels) {
 	    IOResizable.Size size = new IOResizable.Size(cells, pixels);
 	    tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
 	}
+    }
 
-	private final static int MAX_TITLE_LENGTH = 40;
+    private class MyTermListener implements MiscListener.TermListener {
+
+	private final static int MAX_TITLE_LENGTH = 35;
+	private final static String PREFIX = "..."; // NOI18N
+	private final static String INFIX = " - "; // NOI18N
+
+	@Override
+	public void cwdChanged(String cwd) {
+	    if (!customTitle) {
+		int newLength = PREFIX.length() + INFIX.length() + cwd.length();
+		String newTitle = name.concat(INFIX).concat(cwd);
+		updateTooltopText(newTitle);
+		if (newLength > MAX_TITLE_LENGTH) {
+		    newTitle = name
+			    .concat(INFIX)
+			    .concat(PREFIX)
+			    .concat(cwd.substring(newLength - MAX_TITLE_LENGTH));
+		}
+		updateName(newTitle);
+	    }
+	}
 
 	@Override
 	public void titleChanged(String title) {
-	    if (!customTitle) {
-		final String prefix = "...";			// NOI18N
-		final int currentLength = prefix.length() + title.length();
-		if (currentLength > MAX_TITLE_LENGTH) {
-		    title = prefix + title.substring(currentLength - MAX_TITLE_LENGTH);
-		}
-		updateName(title);
+	    String newTitle = title;
+	    updateTooltopText(newTitle);
+	    if (title.length() > MAX_TITLE_LENGTH) {
+		newTitle = PREFIX.concat(title.substring(title.length() - MAX_TITLE_LENGTH));
 	    }
+	    updateName(newTitle);
 	}
     }
 
@@ -372,9 +400,11 @@ public final class Terminal extends JComponent {
 	    }
 	});
 
+	componentListener = new MyComponentListener();
 	termListener = new MyTermListener();
+	term.addListener(componentListener);
 	term.addListener(termListener);
-
+	
         // Set up to convert clicks on active regions, created by OutputWriter.
         // println(), to outputLineAction notifications.
         term.setActionListener(new ActiveTermListener() {
@@ -413,6 +443,7 @@ public final class Terminal extends JComponent {
 	disposed = true;
 
         term.getScreen().removeMouseListener(mouseAdapter);
+	term.removeListener(componentListener);
 	term.removeListener(termListener);
 	term.setActionListener(null);
 	findState = null;
@@ -530,7 +561,7 @@ public final class Terminal extends JComponent {
     }
 
     public String getTitle() {
-        return title == null ? name : title;
+        return title;
     }
 
     FindState getFindState() {
@@ -879,6 +910,12 @@ public final class Terminal extends JComponent {
 	Task task = new Task.UpdateName(ioContainer, this);
 	task.post();
     }
+    
+    private void updateTooltopText(String text) {
+	Task task = new Task.SetToolTipText(ioContainer, this, text);
+	task.post();
+    }
+
 
     private boolean isBooleanStateAction(Action a) {
         Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);	//
