@@ -704,7 +704,10 @@ public final class Utilities {
                     && ((EnhancedForLoopTree)path.getParentPath().getLeaf()).getVariable() == tree) {
                 String name = varNameForTree(((EnhancedForLoopTree)path.getParentPath().getLeaf()).getExpression());
                 if (name != null) {
-                    return getSingular(name);
+                    String singular = getSingular(name);
+                    if (singular != null) {
+                        return singular;
+                    }
                 }
             }
             return null;
@@ -738,7 +741,10 @@ public final class Utilities {
             case ARRAY_ACCESS:
                 name = varNameForTree(((ArrayAccessTree)et).getExpression());
                 if (name != null) {
-                    return getSingular(name);
+                    String singular = getSingular(name);
+                    if (singular != null) {
+                        return singular;
+                    }
                 }
                 return null;
             case ASSIGNMENT:
@@ -758,7 +764,7 @@ public final class Utilities {
         if (name.endsWith("s") && name.length() > 1) { //NOI18N
             return name.substring(0, name.length() - 1);
         }
-        return name;
+        return null;
     }
     
     static String adjustName(String name) {

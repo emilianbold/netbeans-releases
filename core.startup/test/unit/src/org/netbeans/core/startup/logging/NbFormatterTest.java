@@ -39,58 +39,37 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.masterfs.ui;
+package org.netbeans.core.startup.logging;
 
-import java.awt.Image;
-import java.util.Iterator;
-import java.util.Set;
-import org.netbeans.modules.masterfs.filebasedfs.MasterFileSystemFactory;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.netbeans.modules.masterfs.providers.AnnotationProvider;
-import org.netbeans.modules.masterfs.providers.BaseAnnotationProvider;
-import org.openide.filesystems.*;
-import org.openide.util.lookup.ServiceProvider;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-/**
- * Simple extension of master filesystem which provides 
- * icons for files.
- * 
- * @author sdedic
- */
-public class FileBasedFSWithUI extends FileBasedFileSystem {
-    private final StatusDecorator uiDecorator = new UiDecorator();
+public class NbFormatterTest {
     
-    @Override
-    public StatusDecorator getDecorator() {
-        return uiDecorator;
+    public NbFormatterTest() {
     }
-    
-    private class UiDecorator extends StatusImpl implements ImageDecorator {
-        @Override
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-            Image retVal = null;
 
-            Iterator<? extends BaseAnnotationProvider> it = annotationProviders.allInstances().iterator();
-            while (retVal == null && it.hasNext()) {
-                BaseAnnotationProvider ap = it.next();
-                if (ap instanceof AnnotationProvider) {
-                    retVal = ((AnnotationProvider)ap).annotateIcon(icon, iconType, files);
-                }
-            }
-            if (retVal != null) {
-                return retVal;
-            }
-
-            return icon;
+    @Test public void nestedExceptionsArePrintedToSomeLevel() {
+        Exception ex = new IOException("Root cause");
+        for (int i = 0; i < 1000; i++) {
+            ex = new IllegalStateException("Derived exception #" + i, ex);
         }
+        
+        StringWriter w = new StringWriter();
+        NbFormatter.printStackTrace(ex, new PrintWriter(w));
+        
+        int notFound = w.toString().indexOf("Root cause");
+        assertEquals("Not all exceptions were printed: " + w, -1, notFound);
+        
+        
+        notFound = w.toString().indexOf("Derived exception #980");
+        assertEquals("Not even #980 was printed", -1, notFound);
+        
+        int found = w.toString().indexOf("Derived exception #990");
+        assertTrue("First 10 exceptions is printed only", found >= 0);
     }
     
-    @ServiceProvider(service = MasterFileSystemFactory.class, 
-            supersedes = "org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem$Factory")
-    public static class Factory implements MasterFileSystemFactory {
-        @Override
-        public FileBasedFileSystem createFileSystem() {
-            return new FileBasedFSWithUI();
-        }
-    }
 }

@@ -60,6 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -82,7 +83,7 @@ public class LazyLookupProviders {
      * @see ProjectServiceProvider
      */
     public static LookupProvider forProjectServiceProvider(final Map<String,Object> attrs) throws ClassNotFoundException {
-        return new LookupProvider() {
+        class Prov implements LookupProvider {
             @Override
             public Lookup createAdditionalLookup(final Lookup lkp) {
                 final Lookup result =  new ProxyLookup() {
@@ -148,6 +149,11 @@ public class LazyLookupProviders {
                             LOG.log(Level.WARNING, null, new IllegalStateException("may not call Project.getLookup().lookup(...) inside " + member.getName() + " registered under @ProjectServiceProvider"));
                         }
                     }
+
+                    @Override
+                    public String toString() {
+                        return Prov.this.toString();
+                    }
                 };
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(
@@ -163,10 +169,16 @@ public class LazyLookupProviders {
             }
             
             @Override
+            @SuppressWarnings("element-type-mismatch")
             public String toString() {
-                return "LazyLookupProviders.LookupProvider[" + (String) attrs.get("service") + "]";
+                return "LazyLookupProviders.LookupProvider[service=" + 
+                    attrs.get("service") + 
+                    ", class=" + attrs.get("class") + 
+                    ", orig=" + attrs.get(FileObject.class) + 
+                    "]";
             }
         };
+        return new Prov();
     }
     private static Object loadPSPInstance(String implName, String methodName, Lookup lkp) throws Exception {
         ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);

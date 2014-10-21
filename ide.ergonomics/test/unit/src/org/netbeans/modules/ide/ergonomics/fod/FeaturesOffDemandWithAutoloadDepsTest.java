@@ -205,7 +205,7 @@ public class FeaturesOffDemandWithAutoloadDepsTest extends NbTestCase implements
 
         String mf = "" +
                 "OpenIDE-Module: org.depends.on.java.kit\n" +
-                "OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.platform\n" +
+                "OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.platform > 1.37\n" +
                 "\n" +
                 "\n" +
                 "";

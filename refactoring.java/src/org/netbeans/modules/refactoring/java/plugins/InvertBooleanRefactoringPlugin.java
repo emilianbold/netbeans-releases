@@ -311,15 +311,17 @@ public class InvertBooleanRefactoringPlugin implements RefactoringPlugin { //ext
                         StringBuilder script = new StringBuilder();
 
                         if (mt.getModifiers().getFlags().contains(Modifier.STATIC)) {
-                            script.append("   ${enclosing}$.<$T$>${originalName}$(").append(parameters).append(") :: !parentMatches(\"!$enclosing.${originalName}$($args$)\") ").append(andConstraints);
-                            script.append("=> !${enclosing}$.<$T$>${newName}$(").append(parameters).append(")\n");
+                            script.append("   ${enclosing}$.<$T$>${originalName}$(").append(parameters).append(") :: !parentMatches(\"!$enclosing.${originalName}$($args$)\")").append(andConstraints);
+                            script.append("=> !${enclosing}$.<$T$>${newName}$(").append(parameters).append(") :: !parentMatches(\"$enclosing.${originalName}$($args$);\")");
+                            script.append("=> ${enclosing}$.<$T$>${newName}$(").append(parameters).append(")\n");
                             script.append(";;\n");
                             script.append("   !${enclosing}$.<$T$>${originalName}$(").append(parameters).append(") :: ").append(constraints);
                             script.append("=> ${enclosing}$.<$T$>${newName}$(").append(parameters).append(")\n");
                             script.append(";;\n");
                         } else {
-                            script.append("   $enclosing.<$T$>${originalName}$(").append(parameters).append(") :: $enclosing instanceof ${enclosing}$ && !parentMatches(\"!$enclosing.${originalName}$($args$)\") ").append(andConstraints);
-                            script.append("=> !$enclosing.<$T$>${newName}$(").append(parameters).append(")\n");
+                            script.append("   $enclosing.<$T$>${originalName}$(").append(parameters).append(") :: $enclosing instanceof ${enclosing}$ && !parentMatches(\"!$enclosing.${originalName}$($args$)\")").append(andConstraints);
+                            script.append("=> !$enclosing.<$T$>${newName}$(").append(parameters).append(") :: !parentMatches(\"$enclosing.${originalName}$($args$);\")");
+                            script.append("=> $enclosing.<$T$>${newName}$(").append(parameters).append(")\n");
                             script.append(";;\n");
                             script.append("   !$enclosing.<$T$>${originalName}$(").append(parameters).append(") :: $enclosing instanceof ${enclosing}$ ").append(andConstraints);
                             script.append("=> $enclosing.<$T$>${newName}$(").append(parameters).append(")\n");
