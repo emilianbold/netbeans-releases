@@ -479,6 +479,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
             containsPath(file, "modules/ext/org.eclipse.osgi_3.9.1.v20140110-1610.jar") ||
             containsPath(file, "modules/org-netbeans-modules-netbinox.jar") ||
             containsPath(file, "platform/lib/org-openide-util.jar") ||
+            containsPath(file, "platform/lib/org-openide-util-base.jar") ||
             containsPath(file, "var/cache/netigso") ||
             containsPath(file, "sun/net/www/content/content/unknown.class")
         ) {
