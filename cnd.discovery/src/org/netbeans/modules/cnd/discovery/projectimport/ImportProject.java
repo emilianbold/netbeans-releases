@@ -402,7 +402,7 @@ public class ImportProject implements PropertyChangeListener {
             importantItems.add(configurePath);
         }
         {
-            String launcher = projectFolder.getPath()+"/nbproject/private/launcher.properties";
+            String launcher = projectFolder.getPath()+"/nbproject/private/launcher.properties"; //NOI18N
             launcher = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(launcher), pathMode);
             launcher = CndPathUtilities.normalizeSlashes(launcher);
             importantItems.add(launcher);

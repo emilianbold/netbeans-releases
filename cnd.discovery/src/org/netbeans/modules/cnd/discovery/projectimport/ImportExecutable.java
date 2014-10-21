@@ -218,7 +218,7 @@ public class ImportExecutable implements PropertyChangeListener {
         importantBinaries.add(binaryPath);
         importantBinaries.addAll(libs);
         {
-            String launcher = projectFolder.getPath()+"/nbproject/private/launcher.properties";
+            String launcher = projectFolder.getPath()+"/nbproject/private/launcher.properties"; //NOI18N
             launcher = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(launcher), MakeProjectOptions.getPathMode());
             launcher = CndPathUtilities.normalizeSlashes(launcher);
             importantBinaries.add(launcher);
