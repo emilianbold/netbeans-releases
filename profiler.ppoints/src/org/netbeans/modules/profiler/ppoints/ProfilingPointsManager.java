@@ -105,7 +105,6 @@ import org.netbeans.lib.profiler.TargetAppRunner;
 import org.netbeans.lib.profiler.common.event.ProfilingStateAdapter;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileChangeListener;
@@ -1109,17 +1108,10 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
     }
 
     private void loadProfilingPoints(Lookup.Provider project) {
-        FileObject projectSettingsFolder = null;
-        try {
-            projectSettingsFolder = ProjectStorage.getSettingsFolder(project, false);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, ex.getMessage());
-            return;
-        }
         for (ProfilingPointFactory factory : profilingPointFactories) {
             try {
                 ignoreStoreProfilingPoints = true;
-                addProfilingPoints(factory.loadProfilingPoints(project, projectSettingsFolder), true);
+                addProfilingPoints(factory.loadProfilingPoints(project), true);
             } catch (Exception e) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, e.getMessage());
             } finally {
