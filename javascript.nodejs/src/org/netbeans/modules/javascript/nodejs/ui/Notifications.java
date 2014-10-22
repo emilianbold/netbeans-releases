@@ -43,12 +43,15 @@ package org.netbeans.modules.javascript.nodejs.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -68,7 +71,7 @@ public final class Notifications {
         "Notifications.detection.noop=Node.js support already enabled in project {0}.",
     })
     public static void notifyNodeJsDetected(final Project project) {
-        final String projectName = ProjectUtils.getInformation(project).getDisplayName();
+        final String projectName = NodeJsUtils.getProjectDisplayName(project);
         final NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
         assert !preferences.isEnabled() : "node.js support should not be enabled in project " + projectName;
         NotificationDisplayer.getDefault().notify(
@@ -104,7 +107,7 @@ public final class Notifications {
         "Notifications.enabled.invalid=Node.js support not enabled in project {0}.",
     })
     public static void notifyRunConfiguration(Project project) {
-        final String projectName = ProjectUtils.getInformation(project).getDisplayName();
+        final String projectName = NodeJsUtils.getProjectDisplayName(project);
         final NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         final NodeJsPreferences preferences = nodeJsSupport.getPreferences();
         assert !preferences.isRunEnabled() : "node.js run should not be enabled in " + projectName;
@@ -130,6 +133,21 @@ public final class Notifications {
                     }
                 },
                 NotificationDisplayer.Priority.LOW);
+    }
+
+    public static void notifyUser(String title, String details) {
+        NotificationDisplayer.getDefault().notify(
+                title,
+                NotificationDisplayer.Priority.LOW.getIcon(),
+                details,
+                null,
+                NotificationDisplayer.Priority.LOW);
+    }
+
+    @CheckReturnValue
+    public static boolean askUser(String title, String question) {
+        NotifyDescriptor confirmation = new NotifyDescriptor.Confirmation(question, title, NotifyDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
     }
 
 }
