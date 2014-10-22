@@ -2035,11 +2035,7 @@ outer:  do {
                             em.log(Level.FINE, "  Executing {0}", todo); // NOI18N
                         }
                         registerParallel(todo, current);
-                        if (lkp[0] == null || lkp[0] == Lookup.getDefault()) {
-                            todo.run();
-                        } else {
-                            Lookups.executeWith(lkp[0], todo);
-                        }
+                        Lookups.executeWith(lkp[0], todo);
                         lkp[0] = null;
 
                         if (loggable) {
