@@ -262,21 +262,22 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         private void uninstallLibraries(List<Library.Version> libraries) {
             File projectDir = FileUtil.toFile(project.getProjectDirectory());
             for (Library.Version version : libraries) {
-                File directory = null;
                 for (String fileName : version.getFiles()) {
                     File file = PropertyUtils.resolveFile(projectDir, fileName);
                     if (file.exists()) {
-                        directory = file.getParentFile();
-                        file.delete();
+                        while (file != null) {
+                            File parent = file.getParentFile();
+                            if (!file.delete()) {
+                                // We have reached a parent directory that is not empty
+                                break;
+                            }
+                            file = parent;
+                        }
                     } else {
                         Logger.getLogger(LibraryCustomizer.class.getName()).log(
                                 Level.INFO, "Cannot delete file {0} of library {1}. It no longer exists.",
                                 new Object[]{file.getAbsolutePath(), version.getLibrary().getName()});
                     }
-                }
-                // Delete the folder for this library
-                if (directory != null) {
-                    directory.delete();
                 }
             }
         }
