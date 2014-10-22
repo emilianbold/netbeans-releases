@@ -45,15 +45,39 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
  */
 public class DeleteTransformer extends RefactoringVisitor {
+    
+    private final HashSet<ElementHandle<ExecutableElement>> allMethods;
+    private final Collection<? extends FileObject> files;
+
+    DeleteTransformer(HashSet<ElementHandle<ExecutableElement>> allMethods, Collection<? extends FileObject> files) {
+        this.allMethods = allMethods;
+        this.files = files;
+    }
+
+    @Override
+    public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
+        if(files.contains(workingCopy.getFileObject())) {
+            return null;
+        }
+        return super.visitCompilationUnit(node, p);
+    }
 
     @Override
     public Tree visitMethod(MethodTree tree, Element p) {
@@ -79,7 +103,7 @@ public class DeleteTransformer extends RefactoringVisitor {
         }
         
         Element el = workingCopy.getTrees().getElement(getCurrentPath());
-        if (elementToFind.equals(el)) {
+        if (isMatch(el, elementToFind)) {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             Tree newOne = null;
             if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind())) {
@@ -97,5 +121,26 @@ public class DeleteTransformer extends RefactoringVisitor {
                 rewrite(parent,newOne);
             }
         }
+    }
+    
+    private boolean isMatch(Element element, Element elementToFind) {
+        if(element == null) {
+            return false;
+        }
+        if(allMethods == null || element.getKind() != ElementKind.METHOD) {
+            return element.equals(elementToFind);
+        } else {
+            for (ElementHandle<ExecutableElement> mh: allMethods) {
+                ExecutableElement baseMethod =  mh.resolve(workingCopy);
+                if (baseMethod==null) {
+                    Logger.getLogger("org.netbeans.modules.refactoring.java").log(Level.INFO, "DeleteTransformer cannot resolve {0}", mh);
+                    continue;
+                }
+                if (baseMethod.equals(element) || workingCopy.getElements().overrides((ExecutableElement)element, baseMethod, workingCopy.getElementUtilities().enclosingTypeElement(baseMethod))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

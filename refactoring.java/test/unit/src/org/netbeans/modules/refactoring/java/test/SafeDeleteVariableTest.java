@@ -136,6 +136,104 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
+    public void testMain() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        A a = new A();\n"
+                + "    }\n"
+                + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("main") + 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "}\n"));
+    }
+    
+    public void testRecursive() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        A a = new A();\n"
+                + "        main(args);\n"
+                + "    }\n"
+                + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("main") + 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "}\n"));
+    }
+    
+    public void testPolymorphic() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public void foo() {\n"
+                        + "        A a = new A();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", source = "package t; public class B extends A {\n"
+                        + "public void foo() { }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/B.java"), source.indexOf("foo") + 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                        + "}\n"));
+    }
+    
+    public void testPolymorphicUsed() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public void foo() {\n"
+                        + "        A a = new A();\n"
+                        + "    }\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        new A().foo();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", source = "package t; public class B extends A {\n"
+                        + "public void foo() { }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/B.java"), source.indexOf("foo") + 1, false, new Problem(false, "ERR_ReferencesFound"));
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        new A().foo();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                        + "}\n"));
+    }
+    
+    public void testPolymorphicMultiple() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public void foo() {\n"
+                        + "        A a = new A();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/I.java", "package t; public interface I {\n"
+                        + "public void foo();\n"
+                        + "}\n"),
+                new File("t/B.java", source = "package t; public class B extends A implements I {\n"
+                        + "public void foo() { }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/B.java"), source.indexOf("foo") + 1, false, new Problem(false, "WRN_Implements"));
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "}\n"),
+                new File("t/I.java", "package t; public interface I {\n"
+                        + "public void foo();\n"
+                        + "}\n"),
+                new File("t/B.java", "package t; public class B extends A implements I {\n"
+                        + "}\n"));
+    }
+    
     public void testMainArgs() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
@@ -163,7 +261,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("args") + 1, false, new Problem(false, "WRN_ImplementsFound"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("args") + 1, false, new Problem(false, "ERR_ReferencesFound"));
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    public static void main() {\n"

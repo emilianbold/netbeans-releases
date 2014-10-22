@@ -32,13 +32,15 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import java.util.Collection;
+import java.util.HashSet;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
-import org.netbeans.modules.refactoring.java.ui.tree.ElementGrip;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -46,30 +48,36 @@ import org.netbeans.modules.refactoring.java.ui.tree.ElementGrip;
  */
 final class OverriddenAbsMethodFinder implements CancellableTask<CompilationController>{
 
-    private final TreePathHandle methodHandle;
-    Collection<ElementGrip> refactoringElements;
-    OverriddenAbsMethodFinder(TreePathHandle methodPathHandle, Collection<ElementGrip> refacElemsColl) {
-        refactoringElements = refacElemsColl;
-        methodHandle = methodPathHandle;
+    private final HashSet<ElementHandle<ExecutableElement>> allMethods;
+    private Problem problem;
+    
+    OverriddenAbsMethodFinder(HashSet<ElementHandle<ExecutableElement>> allMethods) {
+        this.allMethods = allMethods;
     }
 
     @Override
     public void cancel() {
-        
     }
 
     @Override
-    public void run(CompilationController compilationController) throws Exception {
-        ExecutableElement implementingMethod = (ExecutableElement) 
-                methodHandle.resolveElement(compilationController);
-        Collection<ExecutableElement> overriddenMethods = JavaRefactoringUtils.getOverriddenMethods(implementingMethod, 
-                compilationController);
-        for (ExecutableElement overriddenMethod : overriddenMethods) {
-            if(overriddenMethod.getModifiers().contains(Modifier.ABSTRACT)){
-                refactoringElements.add(new ElementGrip(overriddenMethod, compilationController));
+    public void run(CompilationController javac) throws Exception {
+        for (ElementHandle<ExecutableElement> method : allMethods) {
+            ExecutableElement el = method.resolve(javac);
+            Collection<ExecutableElement> overriddenMethods = JavaRefactoringUtils.getOverriddenMethods(el, javac);
+            for (ExecutableElement overriddenMethod : overriddenMethods) {
+                ElementHandle<ExecutableElement> handle = ElementHandle.create(overriddenMethod);
+                if(!allMethods.contains(handle)) {
+                    TypeElement type1 = javac.getElementUtilities().enclosingTypeElement(el);
+                    TypeElement type2 = javac.getElementUtilities().enclosingTypeElement(overriddenMethod);
+                    Problem prob = new Problem(false, NbBundle.getMessage(OverriddenAbsMethodFinder.class, "WRN_Implements", overriddenMethod.getSimpleName(), type1.getQualifiedName(), type2.getQualifiedName()));
+                    problem = JavaPluginUtils.chainProblems(problem, prob);
+                }
             }
         }
+    }
 
+    public Problem getProblem() {
+        return problem;
     }
 
 }
