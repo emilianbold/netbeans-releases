@@ -66,7 +66,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.editor.BaseDocument;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -74,6 +73,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 
 /**
  * Class representing project's <tt>package.json</tt> file.
@@ -203,19 +203,13 @@ public final class PackageJson {
             document = editorCookie.openDocument();
         }
         assert document != null;
-        // sorry, I really tried hard to use the same code in tests as well but no success :/
-        if (document instanceof BaseDocument) {
-            final BaseDocument baseDocument = (BaseDocument) document;
-            baseDocument.runAtomic(new Runnable() {
-                @Override
-                public void run() {
-                    setContent(baseDocument, field, value, fieldHierarchy);
-                }
-            });
-        } else {
-            // in unit tests
-            setContent(document, field, value, fieldHierarchy);
-        }
+        final StyledDocument documentRef = document;
+        NbDocument.runAtomic(document, new Runnable() {
+            @Override
+            public void run() {
+                setContent(documentRef, field, value, fieldHierarchy);
+            }
+        });
         if (!modified) {
             editorCookie.saveDocument();
         }
