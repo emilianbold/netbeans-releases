@@ -122,6 +122,7 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileChooserBuilder;
@@ -156,6 +157,8 @@ public class ClientSideProject implements Project {
 
     @StaticResource
     public static final String HTML5_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-project.png"; // NOI18N
+
+    static final RequestProcessor RP = new RequestProcessor(ClientSideProject.class);
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
@@ -964,12 +967,18 @@ public class ClientSideProject implements Project {
 
         @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
-            String oldName = getName();
+            final String oldName = getName();
             name = null;
-            String newName = getName();
+            final String newName = getName();
             if (!Objects.equals(oldName, newName)) {
-                PlatformProviders.getDefault().notifyPropertyChanged(ClientSideProject.this,
-                        new PropertyChangeEvent(ClientSideProject.this, PlatformProvider.PROP_PROJECT_NAME, oldName, newName));
+                // #10778
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        PlatformProviders.getDefault().notifyPropertyChanged(ClientSideProject.this,
+                                new PropertyChangeEvent(ClientSideProject.this, PlatformProvider.PROP_PROJECT_NAME, oldName, newName));
+                    }
+                });
             }
         }
 
@@ -1015,7 +1024,7 @@ public class ClientSideProject implements Project {
                         runConfigurationChanged((String) event.getNewValue());
                         break;
                     case PlatformProvider.PROP_PROJECT_NAME:
-                        projectNameChanged((String) event.getNewValue());
+                        projectNameChanged(platformProvider, (String) event.getNewValue());
                         break;
                     default:
                         assert false : "Unhandled property change: " + propertyName;
@@ -1061,10 +1070,20 @@ public class ClientSideProject implements Project {
             }
         }
 
-        private void projectNameChanged(String newName) {
+        @NbBundle.Messages({
+            "# {0} - project name",
+            "PlatformProvidersListenerImpl.sync.name=Project name synced to {0}.",
+        })
+        private void projectNameChanged(PlatformProvider platformProvider, String newName) {
             if (StringUtilities.hasText(newName)
                     && !getName().equals(newName)) {
                 setName(newName);
+                NotificationDisplayer.getDefault().notify(
+                        platformProvider.getDisplayName(),
+                        NotificationDisplayer.Priority.LOW.getIcon(),
+                        Bundle.PlatformProvidersListenerImpl_sync_name(newName),
+                        null,
+                        NotificationDisplayer.Priority.LOW);
             }
         }
 
