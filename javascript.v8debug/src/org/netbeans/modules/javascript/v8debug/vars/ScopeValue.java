@@ -42,33 +42,38 @@
 
 package org.netbeans.modules.javascript.v8debug.vars;
 
+import org.netbeans.lib.v8debug.V8Scope;
+import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
- * @author Martin Entlicher
+ * @author Martin
  */
-public class VariableLocal {
+public class ScopeValue {
     
-    private final String name;
-    private final long ref;
-    private final V8Value value;
+    private final V8Scope scope;
+    private V8Object value;
     
-    public VariableLocal(String name, long ref, V8Value value) {
-        this.name = name;
-        this.ref = ref;
+    public ScopeValue(V8Scope scope) {
+        this.scope = scope;
+    }
+    
+    public ScopeValue(V8Scope scope, V8Object value) {
+        this.scope = scope;
         this.value = value;
     }
 
-    public String getName() {
-        return name;
+    public V8Scope getScope() {
+        return scope;
     }
 
-    public long getRef() {
-        return ref;
-    }
-
-    public V8Value getValue() {
+    public V8Object getValue() {
         return value;
     }
+
+    public void setValue(V8Object value) {
+        this.value = value;
+    }
+
 }

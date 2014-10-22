@@ -87,6 +87,7 @@ import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
+import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -135,7 +136,8 @@ public final class V8Debugger {
     public static DebuggerEngine startSession(Connector.Properties properties,
                                               @NullAllowed Runnable finishCallback) throws IOException {
         V8Debugger dbg = new V8Debugger(properties, finishCallback);
-        DebuggerInfo dInfo = DebuggerInfo.create(V8DebuggerSessionProvider.DEBUG_INFO, new Object[]{ dbg });
+        VarValuesLoader vvl = new VarValuesLoader(dbg);
+        DebuggerInfo dInfo = DebuggerInfo.create(V8DebuggerSessionProvider.DEBUG_INFO, new Object[]{ dbg, vvl });
         DebuggerEngine[] engines = DebuggerManager.getDebuggerManager().startDebugging(dInfo);
         if (engines.length > 0) {
             dbg.setEngine(engines[0]);
@@ -255,8 +257,10 @@ public final class V8Debugger {
             }
             if (f == null && isSuspended()) {
                 final CallFrame[] fRef = new CallFrame[] { null };
-                rl.unlock();
-                rl = null;
+                if (rl != null) {
+                    rl.unlock();
+                    rl = null;
+                }
                 // Synchronize not to start retrieving the current frame multiple times at once
                 synchronized (currentFrameRetrieveLock) {
                     rl = accessLock.readLock();

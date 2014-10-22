@@ -136,6 +136,11 @@ public class V8Evaluator {
                     sb.append(' ');
                     sb.append(o.getText());
                 }
+                V8Object.Array arr = o.getArray();
+                if (arr != null) {
+                    sb.append(" length=");
+                    sb.append(arr.getLength());
+                }
                 /*if (o.getProperties() != null) {
                     Map<String, V8Object.Property> properties = o.getProperties();
                     String newLine = System.getProperty("line.separator");
