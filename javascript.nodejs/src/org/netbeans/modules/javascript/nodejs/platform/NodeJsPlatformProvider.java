@@ -56,6 +56,7 @@ import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.Notifications;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
@@ -197,11 +198,20 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         }
     }
 
+    @NbBundle.Messages({
+        "NodeJsPlatformProvider.sync.ask=Sync project name change to package.json?",
+        "NodeJsPlatformProvider.sync.done=Project name change synced to package.json.",
+    })
     private void projectNameChanged(Project project, String newName) {
         String projectName = project.getProjectDirectory().getNameExt();
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
-        if (!nodeJsSupport.getPreferences().isEnabled()) {
+        NodeJsPreferences preferences = nodeJsSupport.getPreferences();
+        if (!preferences.isEnabled()) {
             LOGGER.log(Level.FINE, "Project name change ignored, node.js not enabled in project {0}", projectName);
+            return;
+        }
+        if (!preferences.isSyncEnabled()) {
+            LOGGER.log(Level.FINE, "Project name change ignored, sync not enabled in project {0}", projectName);
             return;
         }
         PackageJson packageJson = nodeJsSupport.getPackageJson();
@@ -224,8 +234,16 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             LOGGER.log(Level.FINE, "Project name change ignored, new name same as current name in package.json in project {0}", projectName);
             return;
         }
+        if (preferences.isAskSyncEnabled()) {
+            if (!Notifications.askUser(NodeJsUtils.getProjectDisplayName(project), Bundle.NodeJsPlatformProvider_sync_ask())) {
+                preferences.setSyncEnabled(false);
+                LOGGER.log(Level.FINE, "Project name change ignored, cancelled by user in project {0}", projectName);
+                return;
+            }
+        }
         content.put(PackageJson.NAME, newName);
         packageJson.setContent(content);
+        Notifications.notifyUser(NodeJsUtils.getProjectDisplayName(project), Bundle.NodeJsPlatformProvider_sync_done());
     }
 
     private void runConfigurationChanged(Project project, Object activeRunConfig) {
