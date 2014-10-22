@@ -298,7 +298,12 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 if (index != -1) {
                     fileName = fileName.substring(0, index);
                 }
-                FileObject fob = FileUtil.moveFile(tmpFob, libraryFob, fileName);
+                String[] path = fileName.split("/"); // NOI18N
+                FileObject fileFolder = libraryFob;
+                for (int j=0; j<path.length-1; j++) {
+                    fileFolder = FileUtil.createFolder(fileFolder, path[j]);
+                }
+                FileObject fob = FileUtil.moveFile(tmpFob, fileFolder, path[path.length-1]);
                 File file = FileUtil.toFile(fob);
                 pathToStore[i] = PropertyUtils.relativizeFile(projectDir, file);
             }
