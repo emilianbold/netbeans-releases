@@ -1288,7 +1288,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                         RemoteLogger.getInstance().log(Level.FINE, "Skipping change event for pending file {0}", fo);
                     } else {
                         RemoteFileObject ownerFileObject = fo.getOwnerFileObject();
-                        fireFileChangedEvent(getListeners(), new FileEvent(ownerFileObject, ownerFileObject, expected, ownerFileObject.lastModified().getTime()));
+                        fireFileChangedEvent(fo.getListenersWithParent(), new FileEvent(ownerFileObject, ownerFileObject, expected, ownerFileObject.lastModified().getTime()));
                     }
                 }
             }
