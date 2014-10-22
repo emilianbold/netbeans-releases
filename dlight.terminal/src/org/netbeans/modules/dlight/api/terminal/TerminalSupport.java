@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.api.terminal;
 
 import java.awt.Component;
@@ -54,33 +53,48 @@ import org.openide.windows.IOContainer;
  * @author Vladimir Voskresensky
  */
 public final class TerminalSupport {
-    
+
     private TerminalSupport() {
     }
-    
+
     /**
-     * opens terminal tab in tab container for specified host in default location
+     * opens terminal tab in tab container for specified host in default
+     * location
+     *
      * @param ioContainer
-     * @param env 
+     * @param env
      */
     public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env) {
         TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false, false);
     }
-    
+
     /**
-     * opens terminal tab in tab container and change dir into specified directory
+     * opens terminal tab in tab container and change dir into specified
+     * directory
+     *
      * @param ioContainer
-     * @param env 
+     * @param env
      */
     public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env, String dir) {
         TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, false);
     }
 
     /**
-     * opens terminal tab in default terminals container and change dir into specified directory
-     * @param env 
+     * opens terminal tab in default terminals container and change dir into
+     * specified directory
+     *
+     * @param env
      */
     public static void openTerminal(String termTitle, ExecutionEnvironment env, String dir) {
+        openTerminal(termTitle, env, dir, false);
+    }
+
+    /**
+     * opens terminal tab in default terminals container sets and change dir
+     * into specified directory. If pwdFlag terminal tries to set title to
+     * user@host - `pwd`
+     */
+    public static void openTerminal(String termTitle, ExecutionEnvironment env, String dir, boolean pwdFlag) {
         final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
         Object prev = instance.getClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY);
         instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, Boolean.FALSE);
@@ -88,12 +102,12 @@ public final class TerminalSupport {
             instance.open();
             instance.requestActive();
             IOContainer ioContainer = instance.getIOContainer();
-            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, false);
+            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, pwdFlag);
         } finally {
             instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, prev);
         }
     }
-    
+
     public static Component getToolbarPresenter(Action action) {
         return TerminalSupportImpl.getToolbarPresenter(action);
     }

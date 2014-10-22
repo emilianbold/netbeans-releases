@@ -70,5 +70,7 @@ public interface CsmProgressListener extends EventListener {
     
     void fileParsingFinished(CsmFile file);
 
+    void fileRemoved(CsmFile file);
+
     void parserIdle();
 }
