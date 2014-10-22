@@ -174,12 +174,25 @@ public class WeakListenersTest extends NbTestCase {
         doTestReleaseOfListener (true);
     }
     
+    public void testReleaseOfPropNameListenerWithNullSource () throws Exception {
+        doTestReleaseOfListener (false, javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY);
+    }
+    
+    public void testReleaseOfPropNameListenerWithSource () throws Exception {
+        doTestReleaseOfListener (true, javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY);
+    }
+    
     private void doTestReleaseOfListener (final boolean source) throws Exception {   
+        doTestReleaseOfListener(source, null);
+    }
+    
+    private void doTestReleaseOfListener (final boolean source, final String propName) throws Exception {
         Listener l = new Listener ();
         
         class MyButton extends javax.swing.JButton {
             private Thread removedBy;
             private int cnt;
+            private int cntNamed;
             
             @Override
             public synchronized void removePropertyChangeListener (PropertyChangeListener l) {
@@ -203,6 +216,30 @@ public class WeakListenersTest extends NbTestCase {
                 cnt++;
                 notifyAll ();
             }
+
+            @Override
+            public synchronized void removePropertyChangeListener(String propertyName, PropertyChangeListener l) {
+                // notify prior
+                LOG.fine("removePropertyChangeListener("+propertyName+"): " + source + " cnt: " + cntNamed);
+                if (source && cntNamed == 0) {
+                    notifyAll ();
+                    try {
+                        // wait for 1
+                        LOG.fine("wait for 1");
+                        wait ();
+                        LOG.fine("wait for 1 over");
+                    } catch (InterruptedException ex) {
+                        fail ("Not happen");
+                    }
+                }
+                assertEquals(propName, propertyName);
+                LOG.fine("Super removePropertyChangeListener");
+                super.removePropertyChangeListener (propertyName, l);
+                LOG.fine("Super over removePropertyChangeListener");
+                removedBy = Thread.currentThread();
+                cntNamed++;
+                notifyAll ();
+            }
             
             public synchronized void waitListener () throws Exception {
                 int count = 0;
@@ -224,11 +261,24 @@ public class WeakListenersTest extends NbTestCase {
         
         MyButton button = new MyButton ();
         LOG.fine("Button is here");
-        java.beans.PropertyChangeListener weakL = WeakListeners.propertyChange (l, source ? button : null);
+        java.beans.PropertyChangeListener weakL;
+        if (propName == null) {
+            weakL = WeakListeners.propertyChange (l, source ? button : null);
+        } else {
+            weakL = WeakListeners.propertyChange (l, propName, source ? button : null);
+        }
         LOG.fine("WeakListeners created: " + weakL);
-        button.addPropertyChangeListener(weakL);
+        if (propName == null) {
+            button.addPropertyChangeListener(weakL);
+        } else {
+            button.addPropertyChangeListener(propName, weakL);
+        }
         LOG.fine("WeakListeners attached");
-        assertTrue ("Weak listener is there", Arrays.asList (button.getPropertyChangeListeners()).indexOf (weakL) >= 0);
+        if (propName == null) {
+            assertTrue ("Weak listener is there", Arrays.asList (button.getPropertyChangeListeners()).indexOf (weakL) >= 0);
+        } else {
+            assertTrue ("Weak listener is there", Arrays.asList (button.getPropertyChangeListeners(propName)).indexOf (weakL) >= 0);
+        }
         
         button.setText("Ahoj");
         LOG.fine("setText changed to ahoj");
@@ -272,9 +322,19 @@ public class WeakListenersTest extends NbTestCase {
             LOG.fine("Thread.sleep over");
         }
 
-        assertEquals ("Weak listener has been removed", -1, Arrays.asList (button.getPropertyChangeListeners()).indexOf (weakL));
+        if (propName == null) {
+            assertEquals ("Weak listener has been removed", -1, Arrays.asList (button.getPropertyChangeListeners()).indexOf (weakL));
+        } else {
+            assertEquals ("Weak listener has been removed", -1, Arrays.asList (button.getPropertyChangeListeners(propName)).indexOf (weakL));
+        }
         assertEquals ("Button released from a thread", "Active Reference Queue Daemon", button.removedBy.getName());
-        assertEquals ("Unregister called just once", 1, button.cnt);
+        if (propName == null) {
+            assertEquals ("Unregister called just once", 1, button.cnt);
+            assertEquals ("Unregister named not called", 0, button.cntNamed);
+        } else {
+            assertEquals ("Unregister called just once", 1, button.cntNamed);
+            assertEquals ("Unregister unnamed not called", 0, button.cnt);
+        }
         
         // and because it is not here, it can be GCed
         Reference<?> weakRef = new WeakReference<Object>(weakL);
