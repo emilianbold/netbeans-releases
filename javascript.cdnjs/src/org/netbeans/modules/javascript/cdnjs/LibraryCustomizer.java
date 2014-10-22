@@ -265,7 +265,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 for (String fileName : version.getFiles()) {
                     File file = PropertyUtils.resolveFile(projectDir, fileName);
                     if (file.exists()) {
-                        while (file != null) {
+                        while (!webRoot.equals(file)) {
                             File parent = file.getParentFile();
                             if (!file.delete()) {
                                 // We have reached a parent directory that is not empty
