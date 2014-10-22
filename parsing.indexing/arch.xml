@@ -47,12 +47,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-overall">
   <p>
+      <api name="IndexingAPI" type="export" category="stable" group="java" url="@TOP@index.html"/>
       Indexing API allows all clients to request (re)indexing of a certain
       index, or certain root of project sources. Indexing SPIs allow module
       owners to implement indexer for a particular feature or language.
   </p>
   <p>
-      This API was historically part of <a href="@parsing.api@/index.html">Parsing API</a>,
+      This API was historically part of <a href="@org-netbeans-modules-parsing-api@/index.html">Parsing API</a>,
       but was separated into its own module.
   </p>
  </answer>

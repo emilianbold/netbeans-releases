@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
             <implies>
                 <result>
                     <module-dependency codenamebase="org.netbeans.modules.editor.indent" major="1" spec="1.39"/>
-                    <module-dependency codenamebase="org.netbeans.modules.editor.indent.spi.support" major="1" spec="1.39"/>
+                    <module-dependency codenamebase="org.netbeans.modules.editor.indent.spi.support" major="1" spec="1.40"/>
                 </result>
             </implies>
         </transformation>

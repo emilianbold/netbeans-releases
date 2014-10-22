@@ -117,9 +117,42 @@ is the proper place.
           <author login="sdedic"/>
           <compatibility binary="compatible" source="incompatible" deprecation="yes" deletion="yes" addition="yes"/>
           <description>
-              Progress API was split so that parts that are directly connected to Swing types were migrated
-              to a separate module. 
+              <p>
+                Progress API was split so that parts that are directly connected to Swing types were migrated
+                to a separate module. Please see <a href="@org-netbeans-api-progress-nb@/apichanges.html">it's API changes 
+                document</a> for additional info. Affected classes:
+              </p>
+              <ul>
+                  <li>
+                      <a href="@org-netbeans-api-progress-nb@/org/netbeans/api/progress/ProgressHandleFactory.html">ProgressHandleFactory</a>
+                  </li>
+                  <li>
+                      <a href="@org-netbeans-api-progress-nb@/org/netbeans/api/progress/ProgressUtils.html">ProgressUtils</a>
+                  </li>
+                  <li>
+                      <a href="@org-netbeans-api-progress-nb@/org/netbeans/api/progress/aggregate/AggregateProgressFactory.html">AggregateProgressFactory</a>
+                  </li>
+                  <li>
+                      <a href="@org-netbeans-api-progress-nb@/org/netbeans/modules/progress/spi/ExtractedProgressUIWorker.html">ExtractedProgressUIWorker</a>
+                  </li>
+                  <li>
+                      <a href="@org-netbeans-api-progress-nb@/org/netbeans/modules/progress/spi/ExtractedProgressUIWorker.html">ProressUIWorkerProvider</a>
+                  </li>
+                  <li>
+                      <a href="@org-netbeans-api-progress-nb@/org/netbeans/modules/progress/spi/SwingController.html">SwingController</a>
+                  </li>
+                  <li>
+                      <a href="@org-netbeans-api-progress-nb@/org/netbeans/modules/progress/spi/UIInternalHandle.html">UIInternalHandle</a>
+                  </li>
+              </ul>
           </description>
+          <class package="org.netbeans.api.progress" name="ProgressHandleFactory" link="no"/>
+          <class package="org.netbeans.api.progress" name="ProgressUtils" link="no"/>
+          <class package="org.netbeans.api.progress.aggregate" name="AggregateProgressFactory" link="no"/>
+          <class package="org.netbeans.modules.progress.spi" name="ExtractedProgressUIWorker" link="no"/>
+          <class package="org.netbeans.modules.progress.spi" name="ProgressUIWorkerProvider" link="no"/>
+          <class package="org.netbeans.modules.progress.spi" name="Controller"/>
+          <class package="org.netbeans.modules.progress.spi" name="InternalHandle"/>
           <issue number="247111"/>
       </change>
     <change id="customDialogs">
@@ -131,7 +164,7 @@ is the proper place.
         <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
         <description><code>ProgressUtils</code> class with <code>runOffEventThreadWithCustomDialogContent</code> and <code>runOffEventThreadWithProgressDialog</code> methods were added. These methods allow movement of operations out of AWT thread, showing the waint cursor after one second and a dialog when task is not finished in a three seconds.
         </description>
-        <class package="org.netbeans.api.progress" name="ProgressUtils"/>
+        <class package="org.netbeans.api.progress" name="ProgressUtils" link="no"/>
         <issue number="204553"/>
     </change>
 
@@ -187,7 +220,7 @@ is the proper place.
         <description><code>ProgressUtils</code> class with <code>runOffEventDispatchThread</code> methods
         was added. These methods allow movement of operations out of AWT thread while blocking UI.
         </description>
-        <class package="org.netbeans.api.progress" name="ProgressUtils"/>
+        <class package="org.netbeans.api.progress" name="ProgressUtils" link="no"/>
         <issue number="170882"/>
     </change>
     <change id="suspend">
@@ -224,8 +257,8 @@ is the proper place.
               externalize the display of task's display name and detail messages when embedded in custom UI components.
             </p>
         </description>
-        <class package="org.netbeans.api.progress" name="ProgressHandleFactory"/>
-        <class package="org.netbeans.api.progress.aggregate" name="AggregateProgressFactory"/>
+        <class package="org.netbeans.api.progress" name="ProgressHandleFactory" link="no"/>
+        <class package="org.netbeans.api.progress.aggregate" name="AggregateProgressFactory" link="no"/>
         <issue number="58889"/>
     </change>      
     <change>
@@ -272,7 +305,7 @@ is the proper place.
               Added in this version.
             </p>
         </description>
-        <class package="org.netbeans.api.progress.aggregate" name="AggregateProgressFactory"/>
+        <class package="org.netbeans.api.progress.aggregate" name="AggregateProgressFactory" link="no"/>
         <class package="org.netbeans.api.progress.aggregate" name="AggregateProgressHandle"/>
         <issue number="66554"/>
     </change>      

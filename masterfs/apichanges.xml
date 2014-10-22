@@ -76,8 +76,11 @@ made subject to such option by the copyright holder.
             <description>
                 Adding <code>findExtrasFor</code> method to replace
                 direct reference to <code>javax.swing.Actions</code>.
+                See <a href="@org-netbeans-modules-masterfs-ui@/org/netbeans/modules/masterfs/providers/AnnotationProvider.html">
+                        AnnotationProvider
+                </a> in <code>masterfs.ui</code> module.
             </description>
-            <class package="org.netbeans.modules.masterfs.providers" name="AnnotationProvider"/>
+            <class package="org.netbeans.modules.masterfs.providers" name="AnnotationProvider" link="no"/>
             <issue number="243265"/>
         </change>
         <change id="org.netbeans.io.suspend">

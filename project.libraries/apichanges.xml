@@ -218,8 +218,6 @@ is the proper place.
         </description>
         <class package="org.netbeans.api.project.libraries" name="LibraryManager"/>
         <class package="org.netbeans.api.project.libraries" name="Library"/>
-        <class package="org.netbeans.api.project.libraries" name="LibrariesCustomizer"/>
-        <class package="org.netbeans.spi.project.libraries" name="LibraryCustomizerContext"/>
         <class package="org.netbeans.spi.project.libraries" name="LibraryImplementation2"/>
         <class package="org.netbeans.spi.project.libraries.support" name="LibrariesSupport"/>
         <issue number="129628"/>
@@ -270,8 +268,6 @@ is the proper place.
         </description>
         <class package="org.netbeans.api.project.libraries" name="LibraryManager"/>
         <class package="org.netbeans.api.project.libraries" name="Library"/>
-        <class package="org.netbeans.api.project.libraries" name="LibraryChooser"/>
-        <class package="org.netbeans.api.project.libraries" name="LibrariesCustomizer"/>
         <class package="org.netbeans.spi.project.libraries" name="LibraryProvider"/>
         <class package="org.netbeans.spi.project.libraries" name="ArealLibraryProvider"/>
         <class package="org.netbeans.spi.project.libraries" name="LibraryStorageArea"/>

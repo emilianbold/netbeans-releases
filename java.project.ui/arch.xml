@@ -73,27 +73,15 @@ made subject to such option by the copyright holder.
  <answer id="arch-overall">
   <ul>
    <li>
-  <api group="java" name="JavaProjectAPI" type="export" category="official">
+  <api group="java" name="JavaProjectUI" type="export" category="official">
    <p>
    The Java Project API is actually entirely SPI and supplies useful
-   implementations of Java-related functionality specific to the project system.
+   implementations of Java-related functionality specific to the project system. This module
+   focuses on Swing UI components.
     </p>
   </api>
    </li>
    <li>
-  <api group="java" name="ProjectClassPathExtender" type="export" category="devel">
-   <p>
-    Implemented by <code>java/j2seproject</code> and asked for by
-    <code>form</code>. Permits the Form Editor to add JavaBeans archives to the
-    classpath of a J2SE project automatically.
-   </p>
-  </api>
-  <api group="java" name="ProjectClassPathSupport" type="export" category="devel">
-   <p>
-      Support class containg helper method for creating <code>ClassPathImplementation</code> based on Ant
-      properties.
-   </p>
-  </api>
    </li>
   </ul>
  </answer>

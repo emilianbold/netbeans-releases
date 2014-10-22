@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Search for CHANGEME in this document when copying and using it: -->
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -43,7 +44,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<?xml-stylesheet type="text/xml" href="../nbbuild/javadoctools/apichanges.xsl"?>
+<?xml-stylesheet type="text/xml" href="CHANGEME/nbbuild/javadoctools/apichanges.xsl"?>
 <!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../nbbuild/javadoctools/apichanges.dtd">
 
 <!--
@@ -100,45 +101,28 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <apidef name="java_platform_ui">Java Platform UI API</apidef>
+        <apidef name="ProgressSwing">Progress API - Swing extensions</apidef>
         <!-- etc. -->
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
-
-    <changes>
-        <change id="server.is.free">
-            <api name="java_platform_ui"/>
-            <summary>Desktop dependent java platform UI extracted</summary>
-            <version major="1" minor="37"/>
-            <date day="14" month="5" year="2014"/>
-            <author login="tstupka"/>
-            <compatibility modification="yes" addition="yes">
-                <p>
-                    Runtime compatibility remains, compile time compatibility is
-                    mostly preserved too. It is however recommended to upgrade
-                    dependencies of client modules. Try running
-                    <code>ant fix-dependencies</code> in your Ant module.
-                </p>
-            </compatibility>
-            <description>
-                <p>
-                    The following classes were moved into the
-                    <a href="@org-netbeans-modules-java-platform-ui@/overview-summary.html">org.netbeans.java.platform.ui</a> module:
-                </p>
-                <ul>
-                    <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/api/java/platform/PlatformsCustomizer.html">PlatformCustomizer</a></li>
-                    <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/spi/java/platform/CustomPlatformInstall.html">CustomPlatformInstall</a></li>
-                    <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/spi/java/platform/GeneralPlatformInstall.html">GeneralPlatformInstall</a></li>
-                    <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/spi/java/platform/PlatformInstall.html">PlatformInstall</a></li>
-                </ul>
-                <p>
-                    Please also see <a href="@org-netbeans-modules-java-platform@/apichanges.html">API changes</a> of the original <code>java.platform</code> module.
-                </p>
-            </description>
-        </change>
-
-    </changes>
+  <changes>
+      <change id="swingSplit">
+          <api name="ProgressSwing"/>
+          <summary>
+              Swing dependencies separated into a new module.
+          </summary>
+          <version major="1" minor="40"/>
+          <date day="18" month="9" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility binary="compatible" source="incompatible" deprecation="yes" deletion="yes" addition="yes"/>
+          <description>
+              Progress API was split so that parts that are directly connected to Swing types were migrated
+              to a separate module. 
+          </description>
+          <issue number="247111"/>
+      </change>
+  </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
 
@@ -151,11 +135,11 @@ is the proper place.
 
           AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
 
-                SEE java/platform/apichanges.xml
+                SEE CHANGEME/apichanges.xml
 
 -->
     <head>
-      <title>Change History for the Java Platform API</title>
+      <title>Change History for the Progress API - Swing</title>
       <link rel="stylesheet" href="prose.css" type="text/css"/>
     </head>
     <body>
@@ -164,11 +148,11 @@ is the proper place.
 
 <h1>Introduction</h1>
 
-<p>This document lists changes made to the <a href="@TOP@">Java Platform API</a>.</p>
+<p>This document lists changes made to the Progress API/SPI.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
-      <hr/>
-      <standard-changelists module-code-name="org.netbeans.modules.java.platform/1"/>
+
+      <hr/><standard-changelists module-code-name="org.netbeans.api.progress.nb"/>
 
       <hr/><p>@FOOTER@</p>
 

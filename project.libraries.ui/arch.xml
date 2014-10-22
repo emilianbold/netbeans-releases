@@ -1,56 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
-
-Oracle and Java are registered trademarks of Oracle and/or its affiliates.
-Other names may be trademarks of their respective owners.
-
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
-particular file as subject to the "Classpath" exception as provided
-by Oracle in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-Contributor(s):
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
-Microsystems, Inc. All Rights Reserved.
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
--->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
-  question-version="1.28"
-  module="Java Source"
-  author="jlahoda@netbeans.org"
+  question-version="1.29"
+  author="yourname@netbeans.org"
 >
 
   &api-questions;
@@ -61,12 +16,12 @@ made subject to such option by the copyright holder.
             Describe the overall architecture. 
             <hint>
             What will be API for 
-            <a href="http://openide.netbeans.org/tutorial/api-design.html#design.apiandspi">
+            <a href="http://wiki.netbeans.org/API_Design#Separate_API_for_clients_from_support_API">
                 clients and what support API</a>? 
             What parts will be pluggable?
             How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
             to describe your general APIs and specify their
-            <a href="http://openide.netbeans.org/tutorial/api-design.html#category-private">
+            <a href="http://wiki.netbeans.org/API_Stability#Private">
             stability categories</a>.
             If possible please provide simple diagrams.
             </hint>
@@ -74,12 +29,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-   Provides Java Model API access.
-   <api type="export" category="devel" group="systemproperty" name="ensure.built.source.roots">
-       When the <code>ensure.built.source.roots</code> property is set during ant script execution,
-       the <code>javac</code> task will not actually build the classfiles from scratch, but rather copy classfiles
-       produced by the Java infrastructure into the output folder. The content of the property will
-       be interpreted as list of source roots, for which the artifacts should be copied.
+   <api group="java" name="project_libs_ui" type="export" category="official">
+   API allows to display standard Swing UI for project library manipulation.
    </api>
   </p>
  </answer>
@@ -100,6 +51,9 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-quality">
+  <p>
+   stable
+  </p>
  </answer>
 
 
@@ -117,7 +71,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-time">
   <p>
-   XXX no answer for arch-time
+   N/A
   </p>
  </answer>
 
@@ -133,7 +87,7 @@ made subject to such option by the copyright holder.
                 at the root of your javadoc
             </hint>
         
-            Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase">
+            Describe the main <a href="http://wiki.netbeans.org/API_Design#The_Importance_of_Being_Use_Case_Oriented">
             use cases</a> of the new API. Who will use it under
             what circumstances? What kind of code would typically need to be written
             to use the module?
@@ -169,8 +123,8 @@ made subject to such option by the copyright holder.
         <question id="arch-where" when="impl">
             Where one can find sources for your module?
             <hint>
-                Please provide link to the CVS web client at
-                http://www.netbeans.org/download/source_browse.html
+                Please provide link to the Hg web client at
+                http://hg.netbeans.org/
                 or just use tag defaultanswer generate='here'
             </hint>
         </question>
@@ -194,7 +148,8 @@ made subject to such option by the copyright holder.
 -->
  <answer id="compat-deprecation">
   <p>
-   XXX no answer for compat-deprecation
+   This module was extracted from <code>project.libraries</code> module. Existing classes
+   moved physically, but were not deprecated.
   </p>
  </answer>
 
@@ -212,7 +167,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="compat-i18n">
   <p>
-   XXX no answer for compat-i18n
+   Yes.
   </p>
  </answer>
 
@@ -226,7 +181,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="compat-standards">
   <p>
-   XXX no answer for compat-standards
+   No.
   </p>
  </answer>
 
@@ -248,7 +203,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="compat-version">
   <p>
-   XXX no answer for compat-version
+   Yes.
   </p>
  </answer>
 
@@ -266,7 +221,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-jre">
   <p>
-   XXX no answer for dep-jre
+   No dependency
   </p>
  </answer>
 
@@ -279,7 +234,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-jrejdk">
   <p>
-   XXX no answer for dep-jrejdk
+   JDK
   </p>
  </answer>
 
@@ -307,224 +262,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="dep-nb">
-  <defaultanswer generate='none' />
-<ul>
-<li><api type='import' group='java' category='official' name='org.netbeans.api.java' url='@org-netbeans-api-java@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            </api>
-</li>            
-<li><api type='import' group='java' category='official' name='org.netbeans.api.progress' url='@org-netbeans-api-progress@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            </api>
-</li>            
-<!--XXX: should link to javac api-->
-<li><api type='import' group='java' category='private' name='org.netbeans.libs.javacapi' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.libs.javacimpl' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            </api>
-</li>            
-<!--XXX: should link to classfile-->
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.classfile'>
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.editor.lib' url='@org-netbeans-modules-editor-lib@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                1.10
-                is required.
-            </api>
-</li>
-<!--XXX: should link to java lexer-->
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.java.lexer' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                1.0
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='official' name='org.netbeans.modules.java.platform' url='@org-netbeans-modules-java-platform@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                1.8
-                is required.
-            </api>
-</li><!--XXX should link to java/source/preprocessorbridge:-->
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.java.preprocessorbridge' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                1.0
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='official' name='org.netbeans.modules.lexer' url='@org-netbeans-modules-lexer@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                1.4
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='official' name='org.netbeans.modules.projectapi' url='@org-netbeans-modules-projectapi@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                1.10
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='official' name='org.netbeans.modules.queries' url='@org-netbeans-modules-queries@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                1.8
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.netbeans.modules.timers' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            </api>
-</li>            
-<li><api type='import' group='java' category='official' name='org.netbeans.spi.navigator' url='@org-netbeans-spi-navigator@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                1.0
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.actions' url='@org-openide-actions@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                6.2
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.awt' url='@org-openide-awt@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                6.2
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.dialogs' url='@org-openide-dialogs@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                7.1
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.filesystems' url='@org-openide-filesystems@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                6.2
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.loaders' url='@org-openide-loaders@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.modules' url='@org-openide-modules@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                6.2
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.nodes' url='@org-openide-nodes@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                6.2
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.text' url='@org-openide-text@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                6.2
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.util' url='@org-openide-util@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                6.2
-                is required.
-            </api>
-</li>            
-<li><api type='import' group='java' category='private' name='org.openide.windows' url='@org-openide-windows@/overview-summary.html' >
-            The module is needed for compilation. 
-        
-            The module is used during runtime. 
-            
-                Specification version 
-                6.2
-                is required.
-            </api>
-</li>            
-</ul>
+  <defaultanswer generate='here' />
  </answer>
 
 
@@ -549,7 +287,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-non-nb">
   <p>
-   XXX no answer for dep-non-nb
+   No.
   </p>
  </answer>
 
@@ -577,7 +315,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="dep-platform">
   <p>
-   XXX no answer for dep-platform
+   Any.
   </p>
  </answer>
 
@@ -601,7 +339,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-dependencies">
   <p>
-   XXX no answer for deploy-dependencies
+   None.
   </p>
  </answer>
 
@@ -629,7 +367,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-jar">
   <p>
-   XXX no answer for deploy-jar
+   No.
   </p>
  </answer>
 
@@ -645,7 +383,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-nbm">
   <p>
-   XXX no answer for deploy-nbm
+   Yes.
   </p>
  </answer>
 
@@ -666,7 +404,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-packages">
   <p>
-   XXX no answer for deploy-packages
+   Yes.
   </p>
  </answer>
 
@@ -684,7 +422,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="deploy-shared">
   <p>
-   XXX no answer for deploy-shared
+   Anywhere
   </p>
  </answer>
 
@@ -809,11 +547,13 @@ made subject to such option by the copyright holder.
         <question id="exec-property" when="impl">
             Is execution of your code influenced by any environment or
             Java system (<code>System.getProperty</code>) property?
-            
+            On a similar note, is there something interesting that you
+            pass to <code>java.util.logging.Logger</code>? Or do you observe
+            what others log?
             <hint>
             If there is a property that can change the behavior of your 
             code, somebody will likely use it. You should describe what it does 
-            and the <a href="http://openide.netbeans.org/tutorial/api-design.html#life">stability category</a>
+            and the <a href="http://wiki.netbeans.org/API_Stability">stability category</a>
             of this API. You may use
             <pre>
                 &lt;api type="export" group="property" name="id" category="private" url="http://..."&gt;
@@ -985,33 +725,15 @@ made subject to such option by the copyright holder.
         <question id="lookup-register" when="final">
             Do you register anything into lookup for other code to find?
             <hint>
-            Do you register using layer file or using <code>META-INF/services</code>?
+            Do you register using layer file or using a declarative annotation such as <code>@ServiceProvider</code>?
             Who is supposed to find your component?
             </hint>
         </question>
 -->
  <answer id="lookup-register">
-   <p>
-     <api group="lookup" name="org.openide.loaders.CreateFromTemplateAttributesProvider" type="export" category="official">
-       Attributes provider is registered in <code>META-INF/services</code>. It provides
-       <code>package</code>, <code>javaSourceLevel</code> and <code>java15style</code> attributes for java templates using scripting support.
-     </api>
-   </p>
-   <p>
-     <api group="property" name="package" type="export" category="official">
-       <code>package</code> attribute contains java package as <code>String</code> for newly created
-       templates using scripting.
-     </api>
-     <api group="property" name="javaSourceLevel" type="export" category="official">
-       <code>javaSourceLevel</code> attribute contains java source level as <code>String</code> (e.g. "1.5") for newly created
-       templates using scripting.
-     </api>
-     <api group="property" name="java15style" type="export" category="official">
-       <code>java15style</code> attribute is defined for newly created
-       templates using scripting only if java source level is 1.5 or later.
-       Useful to conditionally generate code with java 1.5 features (generics, annotations, etc.).
-     </api>
-   </p>
+  <p>
+   XXX no answer for lookup-register
+  </p>
  </answer>
 
 
@@ -1277,13 +999,38 @@ made subject to such option by the copyright holder.
 
 
 <!--
+        <question id="resources-preferences" when="final">
+            Does your module uses preferences via Preferences API? Does your module use NbPreferences or
+            or regular JDK Preferences ? Does it read, write or both ? 
+            Does it share preferences with other modules ? If so, then why ?
+            <hint>
+                You may use
+                    &lt;api type="export" group="preferences"
+                    name="preference node name" category="private"&gt;
+                    description of individual keys, where it is used, what it
+                    influences, whether the module reads/write it, etc.
+                    &lt;/api&gt;
+                Due to XML ID restrictions, rather than /org/netbeans/modules/foo give the "name" as org.netbeans.modules.foo.
+                Note that if you use NbPreferences this name will then be the same as the code name base of the module.
+            </hint>
+        </question>
+-->
+ <answer id="resources-preferences">
+  <p>
+   XXX no answer for resources-preferences
+  </p>
+ </answer>
+
+
+
+<!--
         <question id="resources-read" when="final">
             Does your module read any resources from layers? For what purpose?
             
             <hint>
             As this is some kind of intermodule dependency, it is a kind of API.
             Please describe it and classify according to 
-            <a href="http://openide.netbeans.org/tutorial/api-design.html#categories">
+            <a href="http://wiki.netbeans.org/API_Design#What_is_an_API.3F">
             common stability categories</a>.
             </hint>
         </question>

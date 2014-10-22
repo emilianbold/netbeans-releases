@@ -46,11 +46,11 @@ made subject to such option by the copyright holder.
 <!DOCTYPE apichanges PUBLIC "-//NetBeans//DTD API changes list 1.0//EN" "../nbbuild/javadoctools/apichanges.dtd">
 <apichanges>
 <apidefs>
-    <apidef name="util">Base Java Source API</apidef>
+    <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
     <change id="remove.openide.text">
-        <api name="util"/>
+        <api name="javasource_base"/>
         <summary>Remove dependency on Openide Text API</summary>
         <version major="1" minor="1"/>
         <date day="25" month="5" year="2014"/>
@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
         <issue number="244744"/>
     </change>
     <change id="server.is.free">
-        <api name="util"/>
+        <api name="javasource_base"/>
         <summary>Desktop independent parts of the Java Source module extracted</summary>
         <version major="1" minor="0"/>
         <date day="30" month="4" year="2014"/>
