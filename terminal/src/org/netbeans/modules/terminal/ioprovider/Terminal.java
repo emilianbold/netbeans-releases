@@ -69,7 +69,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -122,6 +125,7 @@ import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Extent;
 import org.netbeans.lib.terminalemulator.MiscListener;
+import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -405,6 +409,10 @@ public final class Terminal extends JComponent {
 	term.addListener(componentListener);
 	term.addListener(termListener);
 	
+	final SupportStream supportStream = new SupportStream();
+	term.pushStream(supportStream);
+	term.setTransferHandler(new TransferHandlerImpl(supportStream));
+
         // Set up to convert clicks on active regions, created by OutputWriter.
         // println(), to outputLineAction notifications.
         term.setActionListener(new ActiveTermListener() {
@@ -1169,6 +1177,162 @@ public final class Terminal extends JComponent {
 		StringSelection ss = new StringSelection(text);
 		systemClipboard.setContents(ss, ss);
 	    }
+	}
+    }
+    
+    private static class SupportStream extends TermStream {
+
+	@Override
+	public void flush() {
+	    if (toDCE == toDTE) {
+		toDCE.flush();
+	    } else {
+		toDTE.flush();
+		toDCE.flush();
+	    }
+	}
+
+	@Override
+	public void putChar(char c) {
+	    toDTE.putChar(c);
+	}
+
+	@Override
+	public void putChars(char[] buf, int offset, int count) {
+	    toDTE.putChars(buf, offset, count);
+	}
+
+	@Override
+	public void sendChar(char c) {
+	    toDCE.sendChar(c);
+	}
+
+	@Override
+	public void sendChars(char[] c, int offset, int count) {
+	    toDCE.sendChars(c, offset, count);
+	}
+
+    }
+
+    private static class TransferHandlerImpl extends TransferHandler {
+
+	private DataFlavor dataObjectDnd = null;
+	private DataFlavor multiTransferObject = null;
+	private final SupportStream stream;
+
+	public TransferHandlerImpl(SupportStream stream) {
+	    /*
+	     * Trying to load data flavor for drag'n'drop operations . 
+	     * So in this case just don't enable drag'n'drop feature for FileObjects.
+	     */
+	    try {
+		this.dataObjectDnd = new DataFlavor("application/x-java-openide-dataobjectdnd;class=org.openide.loaders.DataObject;mask={0}");
+	    } catch (ClassNotFoundException ex) {
+	    }
+	    try {
+		this.multiTransferObject = new DataFlavor("application/x-java-openide-multinode;class=org.openide.util.datatransfer.MultiTransferObject;mask={0}");
+	    } catch (ClassNotFoundException ex) {
+	    }
+	    
+	    this.stream = stream;
+	}
+
+	private void display(List<String> strings) {
+	    StringBuilder sb = new StringBuilder();
+	    for (String string : strings) {
+		sb.append('\'');
+		sb.append(string);
+		sb.append('\'');
+		sb.append(' ');
+	    }
+
+	    final String str = sb.toString();
+	    SwingUtilities.invokeLater(new Runnable() {
+
+		@Override
+		public void run() {
+		    stream.sendChars(str.toCharArray(), 0, str.length());
+		}
+	    });
+	}
+
+	@Override
+	public boolean canImport(TransferHandler.TransferSupport support) {
+	    boolean canHandleDO = (dataObjectDnd != null && support.isDataFlavorSupported(dataObjectDnd));
+	    boolean canHandleMTO = (multiTransferObject != null && support.isDataFlavorSupported(multiTransferObject));
+	    boolean canHandleList = support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+	    
+	    if (canHandleDO || canHandleList) {
+		return true;
+	    } else if (canHandleMTO) {
+		try {
+		    MultiTransferObject mto = (MultiTransferObject) support.getTransferable().getTransferData(multiTransferObject);
+		    for (int i = 0; i < mto.getCount(); i++) {
+			if (mto.isDataFlavorSupported(i, dataObjectDnd)) {
+			    return true;
+			}
+		    }
+		} catch (UnsupportedFlavorException ex) {
+		} catch (IOException ex) {
+		}
+	    }
+
+	    return false;
+	}
+
+	/**
+	 * Drops a list of objects to the Terminal, single quoted, space as
+	 * a delimiter. Terminal TC won't gain focus.
+	 * Order: 
+	 * 1. List of FileObject 
+	 * 2. Single FileObject 
+	 * 3. List of File. 
+	 * FO stands before File because list of RemoteFO is recognized as list 
+	 * of File but can't be correctly handled.
+	 *
+	 */
+	@Override
+	public boolean importData(TransferHandler.TransferSupport support) {
+	    Transferable transferable = support.getTransferable();
+
+	    try {
+		if (multiTransferObject != null && support.isDataFlavorSupported(multiTransferObject)) {
+		    MultiTransferObject mto = (MultiTransferObject) transferable.getTransferData(multiTransferObject);
+		    List<String> strings = new ArrayList<String>();
+		    for (int i = 0; i < mto.getCount(); i++) {
+			if (mto.isDataFlavorSupported(i, dataObjectDnd)) {
+			    DataObject dObj = (DataObject) mto.getTransferData(i, dataObjectDnd);
+			    FileObject fObj = dObj.getLookup().lookup(FileObject.class);
+			    if (fObj != null) {
+				strings.add(fObj.getPath());
+			    }
+			}
+		    }
+		    display(strings);
+		    return true;
+		} else if (dataObjectDnd != null && support.isDataFlavorSupported(dataObjectDnd)) {
+		    DataObject dObj = (DataObject) transferable.getTransferData(dataObjectDnd);
+		    FileObject fObj = dObj.getLookup().lookup(FileObject.class);
+		    if (fObj != null) {
+			String str = fObj.getPath();
+			display(Arrays.asList(str));
+			return true;
+		    }
+		} else if (support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+		    List<File> list = (List<File>) transferable.getTransferData(DataFlavor.javaFileListFlavor);
+		    List<String> strings = new ArrayList<String>();
+		    for (File file : list) {
+			strings.add(file.getAbsolutePath());
+		    }
+
+		    display(strings);
+		    return true;
+		}
+	    } catch (UnsupportedFlavorException ex) {
+	    } catch (IOException ex) {
+	    }
+
+	    return false;
 	}
     }
 }
