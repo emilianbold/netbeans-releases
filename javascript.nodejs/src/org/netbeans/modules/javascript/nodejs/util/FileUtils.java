@@ -59,14 +59,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.modules.web.common.api.Version;
@@ -320,56 +316,6 @@ public final class FileUtils {
         } catch (IndexOutOfBoundsException exc) {
             LOGGER.log(Level.FINE, null, exc);
         }
-    }
-
-    /**
-     * Reformat the file.
-     * @param file file to reformat.
-     */
-    public static void reformatFile(final File file) throws IOException {
-        FileObject fileObject = FileUtil.toFileObject(file);
-        assert fileObject != null : "No fileobject for " + file + " (file exists: " + file.exists() + ")";
-
-        reformatFile(DataObject.find(fileObject));
-    }
-
-    // XXX see AssertionError at HtmlIndenter.java:68
-    // NbReaderProvider.setupReaders(); cannot be called because of deps
-    public static void reformatFile(final DataObject dataObject) throws IOException {
-        assert dataObject != null;
-
-        EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
-        assert editorCookie != null : "No editorcookie for " + dataObject;
-        if (editorCookie.isModified()) {
-            editorCookie.saveDocument();
-        }
-        // XXX opened file is not properly formatted
-        editorCookie.close();
-
-        Document document = editorCookie.openDocument();
-        assert document instanceof BaseDocument;
-
-        // reformat
-        final BaseDocument baseDocument = (BaseDocument) document;
-        final Reformat reformat = Reformat.get(baseDocument);
-        reformat.lock();
-        try {
-            baseDocument.runAtomic(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        reformat.reformat(0, baseDocument.getLength());
-                    } catch (BadLocationException ex) {
-                        LOGGER.log(Level.INFO, "Cannot reformat file " + dataObject.getName(), ex);
-                    }
-                }
-            });
-        } finally {
-            reformat.unlock();
-        }
-
-        // save
-        editorCookie.saveDocument();
     }
 
     public static File getNodeSources() {

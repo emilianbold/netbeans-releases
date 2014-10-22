@@ -144,6 +144,10 @@ public final class Notifications {
                 NotificationDisplayer.Priority.LOW);
     }
 
+    public static void informUser(String message) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message));
+    }
+
     @CheckReturnValue
     public static boolean askUser(String title, String question) {
         NotifyDescriptor confirmation = new NotifyDescriptor.Confirmation(question, title, NotifyDescriptor.YES_NO_OPTION);

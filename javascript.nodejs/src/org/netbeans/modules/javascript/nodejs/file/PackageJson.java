@@ -47,10 +47,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -60,19 +58,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.simple.JSONObject;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
+import org.openide.loaders.DataObject;
 
 /**
  * Class representing project's <tt>package.json</tt> file.
@@ -84,11 +83,11 @@ public final class PackageJson {
     public static final String PROP_NAME = "NAME"; // NOI18N
     public static final String PROP_SCRIPTS_START = "SCRIPTS_START"; // NOI18N
     // file content
-    public static final String NAME = "name"; // NOI18N
-    public static final String SCRIPTS = "scripts"; // NOI18N
-    public static final String START = "start"; // NOI18N
-    public static final String ENGINES = "engines"; // NOI18N
-    public static final String NODE = "node"; // NOI18N
+    public static final String FIELD_NAME = "name"; // NOI18N
+    public static final String FIELD_SCRIPTS = "scripts"; // NOI18N
+    public static final String FIELD_START = "start"; // NOI18N
+    public static final String FIELD_ENGINES = "engines"; // NOI18N
+    public static final String FIELD_NODE = "node"; // NOI18N
 
     static final String FILENAME = "package.json"; // NOI18N
 
@@ -152,9 +151,9 @@ public final class PackageJson {
     /**
      * Returns <b>shallow</b> copy of the content.
      * <p>
-     * <b>WARNING:</b> If content is modified, it has to be {@link #setContent(Map) saved}!
+     * <b>WARNING:</b> Do not modify the content directly, use {@link #setContent(String, String, String...)} instead!
      * @return <b>shallow</b> copy of the data
-     * @see #setContent(Map)
+     * @see #setContent(String, String, String...)
      */
     @CheckForNull
     public synchronized Map<String, Object> getContent() {
@@ -181,36 +180,58 @@ public final class PackageJson {
     }
 
     /**
-     * Save modified content. The file is formatted.
-     * @param data content to be saved
+     * Set new value of the given field.
+     * @param field field to be changed, e.g. {@link #FIELD_NAME}
+     * @param value new value, e.g. new project name
+     * @param fieldHierarchy optional field hierarchy, e.g. {@link #FIELD_ENGINES} for {@link #FIELD_NODE} field
+     * @throws IOException if any error occurs
      */
-    public synchronized void setContent(Map<String, Object> data) {
-        assert data != null;
+    public synchronized void setContent(String field, String value, String... fieldHierarchy) throws IOException {
+        // XXX fieldHierarchy
+        assert field != null;
+        assert value != null;
         assert !EventQueue.isDispatchThread();
-        setContentInternal(data);
-        final File file = getPackageJson();
-        // XXX
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    FileUtils.reformatFile(file);
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, file.getAbsolutePath(), ex);
-                }
-            }
-        });
-    }
-
-    synchronized void setContentInternal(Map<String, Object> data) {
-        assert data != null;
-        assert !EventQueue.isDispatchThread();
+        assert exists();
         initContent();
-        File file = getPackageJson();
-        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-            JSONObject.writeJSONString(data, writer);
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, file.getAbsolutePath(), ex);
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(getPackageJson()));
+        EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
+        assert editorCookie != null : "No EditorCookie for " + dataObject;
+        boolean modified = editorCookie.isModified();
+        StyledDocument document = editorCookie.getDocument();
+        if (document == null) {
+            document = editorCookie.openDocument();
+        }
+        assert document != null;
+        String text;
+        try {
+            text = document.getText(0, document.getLength() - 1);
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            assert false;
+            return;
+        }
+        String fullField = "\"" + field + "\""; // NOI18N
+        int fieldIndex = text.indexOf(fullField);
+        if (fieldIndex == -1) {
+            return;
+        }
+        int colonIndex = text.indexOf(':', fieldIndex + fullField.length());
+        assert colonIndex != -1;
+        int startValueIndex = text.indexOf('"', colonIndex + 1);
+        assert startValueIndex != -1;
+        startValueIndex += 1;
+        int endValueIndex = text.indexOf('"', startValueIndex);
+        assert endValueIndex != -1;
+        try {
+            document.remove(startValueIndex, endValueIndex - startValueIndex);
+            document.insertString(startValueIndex, value, null);
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            assert false;
+            return;
+        }
+        if (!modified) {
+            editorCookie.saveDocument();
         }
     }
 
@@ -290,7 +311,7 @@ public final class PackageJson {
         if (data == null) {
             return null;
         }
-        return (String) data.get(NAME);
+        return (String) data.get(FIELD_NAME);
     }
 
     @CheckForNull
@@ -298,11 +319,11 @@ public final class PackageJson {
         if (data == null) {
             return null;
         }
-        Object scripts = data.get(SCRIPTS);
+        Object scripts = data.get(FIELD_SCRIPTS);
         if (!(scripts instanceof Map)) {
             return null;
         }
-        return (String) ((Map<String, Object>) scripts).get(START);
+        return (String) ((Map<String, Object>) scripts).get(FIELD_START);
     }
 
     //~ Inner classes

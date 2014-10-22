@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.nodejs.platform;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -190,9 +191,9 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             // some error
             return;
         }
-        Object engines = content.get(PackageJson.ENGINES);
+        Object engines = content.get(PackageJson.FIELD_ENGINES);
         if (engines instanceof Map) {
-            if (((Map<String, Object>) engines).containsKey(PackageJson.NODE)) {
+            if (((Map<String, Object>) engines).containsKey(PackageJson.FIELD_NODE)) {
                 Notifications.notifyNodeJsDetected(project);
             }
         }
@@ -200,6 +201,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
 
     @NbBundle.Messages({
         "NodeJsPlatformProvider.sync.ask=Sync project name change to package.json?",
+        "NodeJsPlatformProvider.sync.error=Cannot write changed project name to package.json.",
         "NodeJsPlatformProvider.sync.done=Project name change synced to package.json.",
     })
     private void projectNameChanged(Project project, String newName) {
@@ -229,7 +231,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             LOGGER.log(Level.FINE, "Project name change ignored, new name is empty in project {0}", projectName);
             return;
         }
-        String name = (String) content.get(PackageJson.NAME);
+        String name = (String) content.get(PackageJson.FIELD_NAME);
         if (Objects.equals(name, newName)) {
             LOGGER.log(Level.FINE, "Project name change ignored, new name same as current name in package.json in project {0}", projectName);
             return;
@@ -241,8 +243,13 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
                 return;
             }
         }
-        content.put(PackageJson.NAME, newName);
-        packageJson.setContent(content);
+        try {
+            packageJson.setContent(PackageJson.FIELD_NAME, newName);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            Notifications.informUser(Bundle.NodeJsPlatformProvider_sync_error());
+            return;
+        }
         Notifications.notifyUser(NodeJsUtils.getProjectDisplayName(project), Bundle.NodeJsPlatformProvider_sync_done());
     }
 

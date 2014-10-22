@@ -113,7 +113,7 @@ public class PackageJsonTest extends NbTestCase {
         CountDownLatch countDownLatch2 = new CountDownLatch(1);
         listener.setCountDownLatch(countDownLatch2);
         Map<String, Object> newData = getData(true, false);
-        newData.put(PackageJson.NAME, "YourProject");
+        newData.put(PackageJson.FIELD_NAME, "YourProject");
         asyncWriteFile(newData);
         // wait
         countDownLatch2.await(1, TimeUnit.MINUTES);
@@ -147,7 +147,7 @@ public class PackageJsonTest extends NbTestCase {
         CountDownLatch countDownLatch2 = new CountDownLatch(1);
         listener.setCountDownLatch(countDownLatch2);
         Map<String, Object> newData = getData(false, true);
-        ((Map<String, Object>) newData.get(PackageJson.SCRIPTS)).put(PackageJson.START, "node app.js --port 2080");
+        ((Map<String, Object>) newData.get(PackageJson.FIELD_SCRIPTS)).put(PackageJson.FIELD_START, "node app.js --port 2080");
         asyncWriteFile(newData);
         // wait
         countDownLatch2.await(1, TimeUnit.MINUTES);
@@ -181,8 +181,8 @@ public class PackageJsonTest extends NbTestCase {
         CountDownLatch countDownLatch2 = new CountDownLatch(1);
         listener.setCountDownLatch(countDownLatch2);
         Map<String, Object> newData = getData(true, true);
-        newData.put(PackageJson.NAME, "YourProject");
-        ((Map<String, Object>) newData.get(PackageJson.SCRIPTS)).put(PackageJson.START, "node app.js --port 2080");
+        newData.put(PackageJson.FIELD_NAME, "YourProject");
+        ((Map<String, Object>) newData.get(PackageJson.FIELD_SCRIPTS)).put(PackageJson.FIELD_START, "node app.js --port 2080");
         asyncWriteFile(newData);
         // wait
         countDownLatch2.await(1, TimeUnit.MINUTES);
@@ -192,7 +192,7 @@ public class PackageJsonTest extends NbTestCase {
         CountDownLatch countDownLatch3 = new CountDownLatch(1);
         listener.setCountDownLatch(countDownLatch3);
         Map<String, Object> newerData = new HashMap<>(newData);
-        ((Map<String, Object>) newerData.get(PackageJson.SCRIPTS)).put(PackageJson.START, "node app.js");
+        ((Map<String, Object>) newerData.get(PackageJson.FIELD_SCRIPTS)).put(PackageJson.FIELD_START, "node app.js");
         asyncWriteFile(newerData);
         // wait
         countDownLatch3.await(1, TimeUnit.MINUTES);
@@ -233,7 +233,7 @@ public class PackageJsonTest extends NbTestCase {
         writeFile(getData(true, true));
         Map<String, Object> content = packageJson.getContent();
         assertNotNull(content);
-        final String oldName = (String) content.get(PackageJson.NAME);
+        final String oldName = (String) content.get(PackageJson.FIELD_NAME);
         assertNotNull(oldName);
         // needed for FS to notice the change
         Thread.sleep(1000);
@@ -244,8 +244,7 @@ public class PackageJsonTest extends NbTestCase {
         packageJson.addPropertyChangeListener(listener);
         // change name
         String newName = "some-new-cool-name";
-        content.put(PackageJson.NAME, newName);
-        packageJson.setContent(content);
+        packageJson.setContent(PackageJson.FIELD_NAME, newName);
         // needed for FS to notice the change
         Thread.sleep(1000);
         // manual refresh
@@ -272,12 +271,12 @@ public class PackageJsonTest extends NbTestCase {
     private Map<String, Object> getData(boolean name, boolean startFile) {
         Map<String, Object> data = new HashMap<>();
         if (name) {
-            data.put(PackageJson.NAME, "MyProject");
+            data.put(PackageJson.FIELD_NAME, "MyProject");
         }
         if (startFile) {
             Map<String, Object> scripts = new HashMap<>();
-            scripts.put(PackageJson.START, "node server.js");
-            data.put(PackageJson.SCRIPTS, scripts);
+            scripts.put(PackageJson.FIELD_START, "node server.js");
+            data.put(PackageJson.FIELD_SCRIPTS, scripts);
         }
         return data;
     }
