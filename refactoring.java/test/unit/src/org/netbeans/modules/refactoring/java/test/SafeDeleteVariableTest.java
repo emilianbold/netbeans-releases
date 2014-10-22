@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.refactoring.java.test;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,7 +85,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performSafeDelete(src.getFileObject("t/A.java"), -1, false);
+        performSafeDelete(src.getFileObject("t/A.java"), 0, false);
         verifyContent(src);
     }
     
@@ -95,7 +98,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performSafeDelete(src.getFileObject("t"), -1, false);
+        performSafeDelete(src.getFileObject("t"), 0, false);
         verifyContent(src);
     }
     
@@ -130,6 +133,20 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                         + "    public A() {\n"
                         + "        System.out.println(i)\n"
                         + "    }\n"
+                        + "}\n"));
+    }
+    
+    public void testVariableAndMethod() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    int i;\n"
+                        + "    public void foo() {\n"
+                        + "        System.out.println(i);\n"
+                        + "    }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), -1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
                         + "}\n"));
     }
     
@@ -293,7 +310,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
     private void performSafeDelete(FileObject source, final int position, final boolean checkInComments, Problem... expectedProblems) throws Exception {
         final SafeDeleteRefactoring[] r = new SafeDeleteRefactoring[1];
         
-        if(source.isFolder() || position < 0) {
+        if(source.isFolder() || position == 0) {
             r[0] = new SafeDeleteRefactoring(Lookups.fixed(source));
             r[0].setCheckInComments(checkInComments);
         } else {
@@ -305,9 +322,18 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                     javac.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cut = javac.getCompilationUnit();
 
-                    TreePath tp = javac.getTreeUtilities().pathFor(position);
-
-                    r[0] = new SafeDeleteRefactoring(Lookups.fixed(TreePathHandle.create(tp, javac)));
+                    if(position > 0) {
+                        TreePath tp = javac.getTreeUtilities().pathFor(position);
+                        r[0] = new SafeDeleteRefactoring(Lookups.fixed(TreePathHandle.create(tp, javac)));
+                    } else {
+                        List<TreePathHandle> handles = new ArrayList<>();
+                        for (Tree typeDecl : cut.getTypeDecls()) {
+                            for (Tree member : ((ClassTree)typeDecl).getMembers()) {
+                                handles.add(TreePathHandle.create(javac.getTrees().getPath(cut, member), javac));
+                            }
+                        }
+                        r[0] = new SafeDeleteRefactoring((Lookups.fixed(handles.toArray(new TreePathHandle[handles.size()]))));
+                    }
                     r[0].setCheckInComments(checkInComments);
                 }
             }, true);

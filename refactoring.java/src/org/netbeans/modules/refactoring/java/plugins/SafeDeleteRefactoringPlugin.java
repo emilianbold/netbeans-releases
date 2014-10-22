@@ -277,7 +277,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         RefactoringSession usages = RefactoringSession.create("delete"); // NOI18N
-        Set<Object> refactoredObjects = new HashSet<>();
+        Set<TreePathHandle> refactoredObjects = new HashSet<>();
         Collection<? extends FileObject> files = lookupJavaFileObjects();
         Problem problem = findUsagesAndDelete(refactoredObjects, usages, files, refactoringElements);
         if(problem != null && problem.isFatal()) {
@@ -312,12 +312,12 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return false;
     }
     
-    private Problem findUsagesAndDelete(Set<Object> refactoredObjects, RefactoringSession usages, Collection<? extends FileObject> files, RefactoringElementsBag refactoringElements) throws IllegalArgumentException {
+    private Problem findUsagesAndDelete(Set<TreePathHandle> refactoredObjects, RefactoringSession usages, Collection<? extends FileObject> files, RefactoringElementsBag refactoringElements) throws IllegalArgumentException {
         fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
         Problem problem = null;
         try {
             for (int i = 0; i < whereUsedQueries.length; ++i) {
-                Object refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(Object.class);
+                TreePathHandle refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(TreePathHandle.class);
                 refactoredObjects.add(refactoredObject);
                 whereUsedQueries[i].prepare(usages);
                 TreePathHandle treePathHandle = grips.get(i);
@@ -491,7 +491,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return methodNameString[0];
     }
     
-    private static boolean isPendingDelete(ElementGrip elementGrip, Set<Object> refactoredObjects) {
+    private static boolean isPendingDelete(ElementGrip elementGrip, Set<TreePathHandle> refactoredObjects) {
         ElementGrip parent = elementGrip;
         if (parent!=null) {
             do {
