@@ -110,7 +110,7 @@ public final class FQN2Files implements DuplicateClassChecker {
     }
 
     private void load() throws IOException {
-        final InputStream in = new BufferedInputStream(new FileInputStream(propFile));
+        final InputStream in = new BufferedInputStream(new FileInputStream(propFile), 65536);
         try {
             props.load(in);
         } catch (IllegalArgumentException iae) {
