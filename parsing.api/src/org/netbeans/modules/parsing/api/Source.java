@@ -363,17 +363,15 @@ public final class Source implements Lookup.Provider {
                             final InputStream is = fileObject.getInputStream ();
                             assert is != null : "FileObject.getInputStream() returned null for FileObject: " + FileUtil.getFileDisplayName(fileObject); //NOI18N
                             try {
-                                BufferedReader reader = new BufferedReader (
-                                    new InputStreamReader (
+                                InputStreamReader reader = new InputStreamReader (
                                         is,
                                         FileEncodingQuery.getEncoding (fileObject)
-                                    )
                                 );
                                 try {
                                     StringBuilder output = new StringBuilder(Math.max(16, (int) fileObject.getSize()));
                                     List<Integer> lso = new LinkedList<Integer>();
                                     boolean lastCharCR = false;
-                                    char [] buffer = new char [1024];
+                                    char [] buffer = new char [65536];
                                     int size = -1;
 
                                     final char LF = '\n'; //NOI18N, Unicode line feed (0x000A)
