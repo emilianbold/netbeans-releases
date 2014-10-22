@@ -870,10 +870,16 @@ public final class ParseProjectXml extends Task {
         String result;
         AntClassLoader loader = new AntClassLoader();
         try {
-        for (String coreModule : new String[] {"org.openide.util.base", "org.openide.modules", "org.netbeans.bootstrap", "org.netbeans.core.startup"}) {
-            ModuleListParser.Entry entry = modules.findByCodeNameBase(coreModule);
+        for (String[] coreModuleVariants : new String[][] {{"org.openide.util.base", "org.openide.util"}, {"org.openide.modules"}, {"org.netbeans.bootstrap"}, {"org.netbeans.core.startup"}}) {
+            ModuleListParser.Entry entry = null;
+            for (String coreModule : coreModuleVariants) {
+                entry = modules.findByCodeNameBase(coreModule);
+                if (entry != null) {
+                    break;
+                }
+            }
             if (entry == null) {
-                log("Cannot translate according to " + moduleAutoDeps + " because could not find " + coreModule, Project.MSG_WARN);
+                log("Cannot translate according to " + moduleAutoDeps + " because could not find none of" + Arrays.toString(coreModuleVariants), Project.MSG_WARN);
                 return;
             }
             File jar = entry.getJar();
