@@ -291,7 +291,9 @@ public class Lookups {
      * @since 8.30
      */
     public static void executeWith(Lookup defaultLookup, Runnable code) {
-        GlobalLookup.execute(defaultLookup, code);
+        if (!GlobalLookup.execute(defaultLookup, code)) {
+            code.run();
+        }
     }
 
     private static class LookupItem<T> extends Lookup.Item<T> {

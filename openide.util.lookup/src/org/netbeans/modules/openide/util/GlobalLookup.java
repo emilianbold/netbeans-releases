@@ -44,19 +44,23 @@ package org.netbeans.modules.openide.util;
 import org.openide.util.Lookup;
 
 public class GlobalLookup {
-    private static ThreadLocal<Lookup> CURRENT = new ThreadLocal<Lookup>();
+    private static final ThreadLocal<Lookup> CURRENT = new ThreadLocal<Lookup>();
     
     private GlobalLookup() {
     }
 
-    public static void execute(Lookup defaultLookup, Runnable r) {
+    public static boolean execute(Lookup defaultLookup, Runnable r) {
         Lookup prev = CURRENT.get();
+        if (prev == defaultLookup) {
+            return false;
+        }
         try {
             CURRENT.set(defaultLookup);
             r.run();
         } finally {
             CURRENT.set(prev);
         }
+        return true;
     }
     
     public static Lookup current() {
