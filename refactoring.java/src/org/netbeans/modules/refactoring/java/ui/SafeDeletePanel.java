@@ -42,6 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.refactoring.java.ui;
+import com.sun.source.tree.Tree;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -131,7 +132,33 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                 labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Classes",handles.size());
             }
         } else if (handles.size()>1) {
-            labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Classes",handles.size());
+            Tree.Kind kind = null;
+            for (TreePathHandle handle : handles) {
+                if(kind == null || handle.getKind() == kind) {
+                    kind = handle.getKind();
+                } else {
+                    kind = null;
+                    break;
+                }
+            }
+            if(kind == null) {
+                labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Elements",handles.size());
+            } else {
+                switch(kind) {
+                    case CLASS:
+                        labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Classes",handles.size());
+                        break;
+                    case METHOD:
+                        labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Methods",handles.size());
+                        break;
+                    case VARIABLE:
+                        labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Variables",handles.size());
+                        break;
+                    default:
+                        labelText = NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDel_Elements",handles.size());
+                        break;
+                }
+            }
         } else if (handles.size()==1) {
           JavaSource s = JavaSource.forFileObject(handles.iterator().next().getFileObject());
           final String[] name = new String[1];
