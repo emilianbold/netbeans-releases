@@ -77,12 +77,10 @@ public class NewJavaFileNameLocationStepOperatorTest extends JellyTestCase {
     public void testInvoke() {
         NewFileWizardOperator wop = NewFileWizardOperator.invoke();
         wop.selectProject("SampleProject"); //NOI18N
-        // Java Classes
+        // Java
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
-        // Java Class
-        String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Class.java");
         wop.selectCategory(javaClassesLabel);
-        wop.selectFileType(javaClassLabel);
+        wop.selectFileType("Java Class");
         wop.next();
         op = new NewJavaFileNameLocationStepOperator();
     }

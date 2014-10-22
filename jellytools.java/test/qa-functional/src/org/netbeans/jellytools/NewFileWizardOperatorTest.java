@@ -101,10 +101,9 @@ public class NewFileWizardOperatorTest extends JellyTestCase {
     public void testSelectProjectAndCategoryAndFileType() {
         org.netbeans.jemmy.operators.JComboBoxOperator cbo = op.cboProject();
         cbo.selectItem(0);
-        // Java Classes
+        // Java
         op.selectCategory(Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes"));
-        // Java Class
-        op.selectFileType(Bundle.getString("org.netbeans.modules.java.project.Bundle", "Class.java"));
+        op.selectFileType("Java Class");
     }
 
     /** Test description component on New File Wizard panel
@@ -116,11 +115,9 @@ public class NewFileWizardOperatorTest extends JellyTestCase {
     }
 
     public void testCreate() {
-        // Java Classes
+        // Java
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
-        // Java Class
-        String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Class.java");
-        NewJavaFileWizardOperator.create("SampleProject", javaClassesLabel, javaClassLabel, "sample1", "TempClass");  // NOI18N
+        NewJavaFileWizardOperator.create("SampleProject", javaClassesLabel, "Java Class", "sample1", "TempClass");  // NOI18N
         Node classNode = new Node(new SourcePackagesNode("SampleProject"), "sample1|TempClass");  // NOI18N
         DeleteAction deleteAction = new DeleteAction();
         deleteAction.perform(classNode);

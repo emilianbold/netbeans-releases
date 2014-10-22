@@ -45,6 +45,7 @@ package org.netbeans.modules.debugger.jpda.js.vars.models;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.util.List;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
@@ -54,6 +55,7 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.js.vars.JSThis;
 import org.netbeans.modules.debugger.jpda.js.vars.JSVariable;
+import org.netbeans.modules.debugger.jpda.js.vars.ScopeVariable;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
@@ -74,6 +76,9 @@ import org.openide.util.datatransfer.PasteType;
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types=ExtendedNodeModelFilter.class),
 })
 public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
+    
+    @StaticResource(searchClasspath = true)
+    private static final String GLOBAL = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N
 
     @Override
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
@@ -118,6 +123,9 @@ public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
         if (node instanceof JSVariable) {
             return original.getIconBaseWithExtension(new EmptyVar());
         }
+        if (node instanceof ScopeVariable) {
+            return GLOBAL;
+        }
         return original.getIconBaseWithExtension(node);
     }
 
@@ -125,6 +133,9 @@ public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
         if (node instanceof JSVariable) {
             return ((JSVariable) node).getKey();
+        }
+        if (node instanceof ScopeVariable) {
+            return ((ScopeVariable) node).getName();
         }
         return original.getDisplayName(node);
     }
@@ -139,6 +150,9 @@ public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
         if (node instanceof JSVariable) {
             JSVariable var = (JSVariable) node;
             return var.getKey() + " = " + var.getValue();
+        }
+        if (node instanceof ScopeVariable) {
+            return ((ScopeVariable) node).getName();
         }
         return original.getShortDescription(node);
     }

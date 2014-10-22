@@ -442,7 +442,7 @@ public final class Manager {
                         if (window.isOpened() && !isInSlidingMode) {
                             window.promote();
                         } else if (!window.isOpened() || (window.isOpened() && !window.isShowing() && isInSlidingMode)) {
-                            Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/resources/testResults.png"));   //NOI18N
+                            Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/ui/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
                             String title = session.getSessionResult().getTotal() == 0 ? Bundle.LBL_NotificationDisplayer_NoTestsExecuted_title(projectname) : Bundle.LBL_NotificationDisplayer_title(projectname);
                             

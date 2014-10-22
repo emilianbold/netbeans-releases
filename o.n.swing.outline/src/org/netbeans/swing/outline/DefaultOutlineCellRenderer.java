@@ -80,6 +80,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private boolean leaf = true;
     private boolean showHandle = true;
     private int nestingDepth = 0;
+    private int labelTextGap = 0;
     private final JCheckBox theCheckBox;
     private final CellRendererPane fakeCellRendererPane;
     private JCheckBox checkBox;
@@ -207,6 +208,14 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
         return showHandle;
     }
     
+    private void setLabelTextGap(int labelTextGap) {
+        this.labelTextGap = labelTextGap;
+    }
+    
+    private int getLabelTextGap() {
+        return labelTextGap;
+    }
+    
     /** Set the nesting depth - the number of path elements below the root.
      * This is set in getTableCellEditorComponent(), and retrieved by the
      * expansion border to determine how far to the right to indent the current
@@ -239,6 +248,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
 
         setForeground(null);
         setBackground(null);
+        setLabelTextGap(0);
         super.getTableCellRendererComponent(
                   table, value, isSelected, hasFocus, row, column);
         JLabel label = null;
@@ -343,7 +353,9 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             } else {
                 label.setIcon(icon);
             }
-        
+            if (icon == null || icon.getIconWidth() == 0) {
+                setLabelTextGap(getIconTextGap());
+            }
         } else { // ! tbl.isTreeColumnIndex(column)
             setCheckBox(null);
             if (swingRendering) {
@@ -410,7 +422,7 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
             }
             if (ren.isShowHandle()) {
                 insets.left = getExpansionHandleWidth() + (ren.getNestingDepth() *
-                    getNestingWidth());
+                    getNestingWidth()) + ren.getLabelTextGap();
                 //Defensively adjust all the insets fields
                 insets.top = 1;
                 insets.right = 1;
