@@ -49,6 +49,27 @@ made subject to such option by the copyright holder.
     <apidef name="util">Base Utilities API</apidef>
 </apidefs>
 <changes>
+    <change id="weak-listen-on-specific-property">
+        <api name="util"/>
+        <summary>Weak property and vetoable listeners for a specific property name.</summary>
+        <version major="9" minor="2"/>
+        <date year="2014" month="10" day="22"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                <code>WeakListeners</code> class got variants of <code>propertyChange()</code>
+                and <code>vetoableChange()</code> methods, which take the property name.
+                They are to be used as an argument to
+                <code>addPropertyChangeListener(String propertyName, PropertyChangeListener listener)</code>
+                and <code>addVetoableChangeListener(String propertyName, PropertyChangeListener listener)</code>
+                methods respectively, and will call the appropriate remove methods with the provided
+                property name.
+            </p>
+        </description>
+        <class package="org.openide.util" name="WeakListeners"/>
+        <issue number="188604"/>
+    </change>
     <change id="server.is.free">
         <api name="util"/>
         <summary>Desktop independent utilities extracted</summary>
