@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -58,6 +57,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.TestUtilHid;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  * Simulates deadlock in issue 133616.
@@ -65,16 +65,15 @@ import org.openide.util.Lookup;
  * @author Jiri Skrivanek
  */
 public class LocalFileSystemEx133616Test extends NbTestCase {
+    static {
+        System.setProperty("org.openide.util.Lookup", LocalFileSystemEx133616Test.class.getName() + "$Lkp");
+    }
 
     /** Tested FileSystem to be registered in Lookup. */
     private static FileSystem testedFS = null;
 
     public LocalFileSystemEx133616Test(String name) {
         super(name);
-    }
-
-    public static void main(String[] args) throws Exception {
-        junit.textui.TestRunner.run(new NbTestSuite(LocalFileSystemEx133616Test.class));
     }
 
     /** Simulates deadlock issue 133616
@@ -98,11 +97,11 @@ public class LocalFileSystemEx133616Test extends NbTestCase {
         FileSystem xfs = TestUtilHid.createXMLFileSystem(getName(), new String[]{});
         FileSystem mfs = new MultiFileSystem(exfs, xfs);
         testedFS = mfs;
-        System.setProperty("org.openide.util.Lookup", LocalFileSystemEx133616Test.class.getName() + "$Lkp");
         Lookup l = Lookup.getDefault();
         if (!(l instanceof Lkp)) {
             fail("Wrong lookup: " + l);
         }
+        ((Lkp)l).init();
 
         final FileObject file1FO = mfs.findResource("/fold/file1");
         File file1File = FileUtil.toFile(file1FO);
@@ -156,6 +155,7 @@ public class LocalFileSystemEx133616Test extends NbTestCase {
     }
 
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
+        private final InstanceContent ic;
 
         public Lkp() {
             this(new org.openide.util.lookup.InstanceContent());
@@ -163,6 +163,10 @@ public class LocalFileSystemEx133616Test extends NbTestCase {
 
         private Lkp(org.openide.util.lookup.InstanceContent ic) {
             super(ic);
+            this.ic = ic;
+        }
+        
+        public void init() {
             ic.add(new Repository(testedFS));
         }
     }
