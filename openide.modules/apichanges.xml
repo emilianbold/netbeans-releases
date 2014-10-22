@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
                 static method parameters. See javadoc for <a href="@TOP@/org/openide/modules/ConstructorDelegate.html">@ConstructorDelegate</a>
             </p>
         </description>
-        <class package="org.netbeans.modules" name="ConstructorDelegate"/>
+        <class package="org.openide.modules" name="ConstructorDelegate"/>
         <issue number="243561"/>
     </change>
     <change id="PatchSuper">
@@ -87,8 +87,8 @@ made subject to such option by the copyright holder.
                 for more details.
             </p>
         </description>
-        <class package="org.netbeans.modules" name="PatchFor"/>
-        <class package="org.netbeans.modules" name="ConstructorDelegate"/>
+        <class package="org.openide.modules" name="PatchFor"/>
+        <class package="org.openide.modules" name="ConstructorDelegate"/>
         <issue number="243561"/>
     </change>
     <change id="javafx.lib">

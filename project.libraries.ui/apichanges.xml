@@ -100,44 +100,24 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <apidef name="java_platform_ui">Java Platform UI API</apidef>
+        <apidef name="project_libs_ui">Project Libraries UI</apidef>
         <!-- etc. -->
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
-
     <changes>
-        <change id="server.is.free">
-            <api name="java_platform_ui"/>
-            <summary>Desktop dependent java platform UI extracted</summary>
-            <version major="1" minor="37"/>
-            <date day="14" month="5" year="2014"/>
-            <author login="tstupka"/>
-            <compatibility modification="yes" addition="yes">
-                <p>
-                    Runtime compatibility remains, compile time compatibility is
-                    mostly preserved too. It is however recommended to upgrade
-                    dependencies of client modules. Try running
-                    <code>ant fix-dependencies</code> in your Ant module.
-                </p>
-            </compatibility>
+        <change id="Libraries-UI-split">
+            <api name="project_libs_ui"/>
+            <summary>Moved the UI part of the <code>project.libraries</code> into a new <code>project.libraries.ui</code> module</summary>
+            <version major="1" minor="49"/>
+            <date day="1" month="7" year="2014"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
             <description>
-                <p>
-                    The following classes were moved into the
-                    <a href="@org-netbeans-modules-java-platform-ui@/overview-summary.html">org.netbeans.java.platform.ui</a> module:
-                </p>
-                <ul>
-                    <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/api/java/platform/PlatformsCustomizer.html">PlatformCustomizer</a></li>
-                    <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/spi/java/platform/CustomPlatformInstall.html">CustomPlatformInstall</a></li>
-                    <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/spi/java/platform/GeneralPlatformInstall.html">GeneralPlatformInstall</a></li>
-                    <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/spi/java/platform/PlatformInstall.html">PlatformInstall</a></li>
-                </ul>
-                <p>
-                    Please also see <a href="@org-netbeans-modules-java-platform@/apichanges.html">API changes</a> of the original <code>java.platform</code> module.
-                </p>
+                Moved the UI part of the <code>project.libraries</code> into a new <code>project.libraries.ui</code> module.
+                Added a new integration SPI and SPI support methods.
             </description>
         </change>
-
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
@@ -151,11 +131,11 @@ is the proper place.
 
           AUTOMATICALLY GENERATED FROM APICHANGES.XML, DO NOT EDIT
 
-                SEE java/platform/apichanges.xml
+                SEE projects/libraries/apichanges.xml
 
 -->
     <head>
-      <title>Change History for the Java Platform API</title>
+      <title>Change History for the Project Libraries API</title>
       <link rel="stylesheet" href="prose.css" type="text/css"/>
     </head>
     <body>
@@ -164,11 +144,11 @@ is the proper place.
 
 <h1>Introduction</h1>
 
-<p>This document lists changes made to the <a href="@TOP@">Java Platform API</a>.</p>
+<p>This document lists changes made to the <a href="@org-netbeans-modules-project-libraries@/index.html">Project Libraries API</a>.</p>
 
 <!-- The actual lists of changes, as summaries and details: -->
       <hr/>
-      <standard-changelists module-code-name="org.netbeans.modules.java.platform/1"/>
+      <standard-changelists module-code-name="org.netbeans.modules.project.libraries/1"/>
 
       <hr/><p>@FOOTER@</p>
 

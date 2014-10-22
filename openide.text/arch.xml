@@ -650,7 +650,7 @@ No.
         </question>
 -->
 <answer id="perf-progress">
-Opening of document. It is done in <a href="@org-openide-util@/org/openide/util/RequestProcessor.html">RequestProcessor</a>.
+Opening of document. It is done in <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor</a>.
 </answer>
 
 

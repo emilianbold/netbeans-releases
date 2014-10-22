@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
                 <li><a href="@org-openide-util-base@/org/openide/util/Enumerations.html">Enumerations</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/Exceptions.html">Exceptions</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/MapFormat.html">MapFormat</a></li>
-                <li><a href="@org-openide-util-base@/org/openide/util/ReadWriteAccess.html">ReadWriteAccess</a> created from former Mutex</li>
+                <li><a href="@org-openide-util-base@/org/openide/util/Mutex.html">Mutex</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/MutexException.html">MutexException</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/NbBundle.html">NbBundle</a></li>
                 <li><a href="@org-openide-util-base@/org/openide/util/NbCollections.html">NbCollections</a></li>
@@ -130,11 +130,11 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 Two new methods, <code>tryReadAccess</code> and <code>tryWriteAccess</code>,
-                added to <a href="@TOP@/org/openide/util/Mutex.Privileged.html">Mutex.Privileged</a>
+                added to <a href="@org-openide-util-base@/org/openide/util/Mutex.Privileged.html">Mutex.Privileged</a>
                 to allow better control when waiting for a lock.
             </p>
         </description>
-        <class package="org.openide.util" name="Mutex"/>
+        <class package="org.openide.util" name="Mutex" link="no"/>
         <issue number="240442"/>
     </change>
     <change id="darklaf">
@@ -168,7 +168,7 @@ made subject to such option by the copyright holder.
                 Added a type safe Pair of 2 elements.
             </p>
         </description>
-        <class package="org.openide.util" name="Pair"/>
+        <class package="org.openide.util" name="Pair" link="no"/>
         <issue number="228994"/>
     </change>
     <change id="automatic-uqe">
@@ -185,7 +185,7 @@ made subject to such option by the copyright holder.
                 reported.
             </p>
         </description>
-        <class package="org.openide.util" name="Exceptions"/>
+        <class package="org.openide.util" name="Exceptions" link="no"/>
         <class package="org.openide.util" name="UserQuestionException"/>
         <issue number="57748"/>
     </change>
@@ -248,7 +248,7 @@ made subject to such option by the copyright holder.
                 in a String constant is poor practice; inline the field instead.)
             </p>
         </description>
-        <class package="org.openide.util" name="NbBundle"/>
+        <class package="org.openide.util" name="NbBundle" link="no"/>
         <issue number="206543"/>
     </change>
     <change id="HelpCtx.display">
@@ -293,7 +293,7 @@ made subject to such option by the copyright holder.
             inside <code>RequestProcessor</code> implementation.
             </p>
         </description>
-        <class package="org.openide.util" name="RequestProcessor"/>
+        <class package="org.openide.util" name="RequestProcessor" link="no"/>
         <issue number="202354"/>
     </change>
     <change id="ProxyCredentialsProvider">
@@ -382,7 +382,7 @@ made subject to such option by the copyright holder.
             New method putIfAbsent gives access to key already stored in Set. Method resize allows to change capacity of internal hash map.
             </p>
         </description>
-        <class package="org.openide.util" name="WeakSet"/>
+        <class package="org.openide.util" name="WeakSet" link="no"/>
         <issue number="192759"/>
     </change>
     <change id="NbBundle.Messages">
@@ -397,7 +397,7 @@ made subject to such option by the copyright holder.
                 A new annotation makes it easier to produce localizable strings.
             </p>
         </description>
-        <class package="org.openide.util" name="NbBundle"/>
+        <class package="org.openide.util" name="NbBundle" link="no"/>
         <issue number="192750"/>
     </change>
     <change id="Exceptions.attachSeverity">
@@ -414,7 +414,7 @@ made subject to such option by the copyright holder.
                 logged.
             </p>
         </description>
-        <class package="org.openide.util" name="Exceptions"/>
+        <class package="org.openide.util" name="Exceptions" link="no"/>
         <issue number="190079"/>
     </change>
     <change id="RequestProcessorForClass">
@@ -429,7 +429,7 @@ made subject to such option by the copyright holder.
                 Simpler constructor for RequestProcessor.
             </p>
         </description>
-        <class package="org.openide.util" name="RequestProcessor"/>
+        <class package="org.openide.util" name="RequestProcessor" link="no"/>
         <issue number="180458"/>
     </change>
     <change id="CharSequences">
@@ -445,7 +445,7 @@ made subject to such option by the copyright holder.
                 to create memory-efficient implementations of <code>CharSequence</code> for ASCII strings.
             </p>
         </description>
-        <class package="org.openide.util" name="CharSequences"/>
+        <class package="org.openide.util" name="CharSequences" link="no"/>
         <issue number="183162"/>
     </change>
     <change id="ActionInvoker-ActionPresenterProvider">
@@ -476,7 +476,7 @@ made subject to such option by the copyright holder.
                 Added an internal SPI interface.
             </p>
         </description>
-        <class package="org.openide.util" name="NbPreferences"/>
+        <class package="org.openide.util" name="NbPreferences" link="no"/>
         <issue number="179289"/>
     </change>
     <change id="lookup.is.free">
@@ -520,7 +520,7 @@ made subject to such option by the copyright holder.
                 Introduced an annotation to register URL protocols.
             </p>
         </description>
-        <class package="org.openide.util" name="URLStreamHandlerRegistration"/>
+        <class package="org.openide.util" name="URLStreamHandlerRegistration" link="no"/>
         <issue number="20838"/>
     </change>
     <change id="ImageUtilities.createDisabled">
@@ -554,7 +554,7 @@ made subject to such option by the copyright holder.
                 explicitly constructing an array.
             </p>
         </description>
-        <class package="org.openide.util" name="NbBundle"/>
+        <class package="org.openide.util" name="NbBundle" link="no"/>
     </change>
     <change id="EditableProperties">
         <api name="util"/>
@@ -569,7 +569,7 @@ made subject to such option by the copyright holder.
                  so it can be used more broadly.
             </p>
         </description>
-        <class package="org.openide.util" name="EditableProperties"/>
+        <class package="org.openide.util" name="EditableProperties" link="no"/>
         <issue number="66577"/>
     </change>
     <change id="LifecycleManager.markForRestart">
@@ -601,7 +601,7 @@ made subject to such option by the copyright holder.
                 Newly added constructor allows to disable (slow) filling stack traces before posting each task. 
             </p>
         </description>
-        <class package="org.openide.util" name="RequestProcessor"/>
+        <class package="org.openide.util" name="RequestProcessor" link="no"/>
         <issue number="165862"/>
     </change>
     <change id="ImageUtilities.loadImageIcon">
@@ -680,7 +680,7 @@ made subject to such option by the copyright holder.
                 Added a new method to validate XML documents against schemas.
             </p>
         </description>
-        <class package="org.openide.xml" name="XMLUtil"/>
+        <class package="org.openide.xml" name="XMLUtil" link="no"/>
         <issue number="42686"/>
     </change>
     <change id="RequestProcessor.Executor">
@@ -698,7 +698,7 @@ made subject to such option by the copyright holder.
                 interfaces and its <code>execute(Runnable)</code> method.
             </p>
         </description> 
-        <class package="org.openide.util" name="RequestProcessor"/>
+        <class package="org.openide.util" name="RequestProcessor" link="no"/>
         <issue number="134297"/>
     </change>
     <change id="Utilities.toolTips">
@@ -747,12 +747,12 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 Added new constructor
-                <a href="@TOP@//org/openide/util/Mutex.html">Mutex(Privileged, Executor)</a>
+                <a href="@org-openide-util-base@/org/openide/util/Mutex.html">Mutex(Privileged, Executor)</a>
                 that allows creators of the mutex to intercept and wrap all actions running
                 inside the mutex with custom code.
             </p>
         </description> 
-        <class package="org.openide.util" name="Mutex"/>
+        <class package="org.openide.util" name="Mutex" link="no"/>
         <issue number="123832"/>
     </change>
     <change id="Utilities.isLargeFrameIcons">
@@ -791,7 +791,7 @@ made subject to such option by the copyright holder.
                 firing of <code>ChangeEvent</code>s.
             </p>
         </description>
-        <class package="org.openide.util" name="ChangeSupport"/>
+        <class package="org.openide.util" name="ChangeSupport" link="no"/>
         <issue number="95885"/>
     </change>
 
@@ -825,7 +825,7 @@ made subject to such option by the copyright holder.
                 values of method parameters.
             </p>
         </description>
-        <class package="org.openide.util" name="Parameters"/>
+        <class package="org.openide.util" name="Parameters" link="no"/>
         <issue number="89768"/>
     </change>
 
@@ -842,7 +842,7 @@ made subject to such option by the copyright holder.
                 with legacy APIs returning <code>Iterator</code> or <code>Enumeration</code>.
             </p>
         </description>
-        <class package="org.openide.util" name="NbCollections"/>
+        <class package="org.openide.util" name="NbCollections" link="no"/>
         <issue number="88606"/>
     </change>
 
@@ -868,11 +868,11 @@ made subject to such option by the copyright holder.
               was loaded as a part of any module or not. If so, then absolute path corresponds to slashified 
               code name base of module. If not, then absolute path corresponds to class's package.
               See document
-              <a href="@TOP@/org/openide/util/doc-files/preferences.html">Preferences in NetBeans</a>
+              <a href="@org-openide-util-base@/org/openide/util/doc-files/preferences.html">Preferences in NetBeans</a>
               to learn more about preferences in NetBeans.              
             </p>
         </description>
-        <class package="org.openide.util" name="NbPreferences"/>
+        <class package="org.openide.util" name="NbPreferences" link="no"/>
         <issue number="73474"/>
     </change>
 
@@ -908,7 +908,7 @@ made subject to such option by the copyright holder.
                 or <code>Exceptions</code>.
             </p>
         </description>
-        <class package="org.openide.util" name="Exceptions"/>
+        <class package="org.openide.util" name="Exceptions" link="no"/>
         <issue number="35067"/>
     </change>
     
@@ -924,8 +924,8 @@ made subject to such option by the copyright holder.
                 Added two new classes useful for transitioning to JDK 5 generics.
             </p>
         </description>
-        <class package="org.openide.util" name="NbCollections"/>
-        <class package="org.openide.util" name="Union2"/>
+        <class package="org.openide.util" name="NbCollections" link="no"/>
+        <class package="org.openide.util" name="Union2" link="no"/>
         <issue number="73637"/>
     </change>
     
@@ -991,7 +991,7 @@ made subject to such option by the copyright holder.
         <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.Task.html">Task</a>
         that has not executed its runnable yet, but looks like it is finished.
       </description>
-      <class package="org.openide.util" name="RequestProcessor"/>
+      <class package="org.openide.util" name="RequestProcessor" link="no"/>
       <issue number="68031"/>
     </change>
     
@@ -1047,7 +1047,7 @@ public void run () {
 }
 </pre>
       </description>
-      <class package="org.openide.util" name="RequestProcessor"/>
+      <class package="org.openide.util" name="RequestProcessor" link="no"/>
       <issue number="33467"/>
     </change>
     <change id="textual-icons-for-actions" >
@@ -1140,8 +1140,8 @@ public void run () {
             not know about the method at all.
         </p>
       </description>
-      <class package="org.openide.util" name="Task"/>
-      <class package="org.openide.util" name="RequestProcessor"/>
+      <class package="org.openide.util" name="Task" link="no"/>
+      <class package="org.openide.util" name="RequestProcessor" link="no"/>
       <issue number="16849"/>
     </change>
 <change id="add-detection-of-FreeBSD-OS">
@@ -1174,7 +1174,7 @@ public void run () {
             granted to it and use it to decide whether it is safe to perform
             certain operations or delay them.
         </description>
-        <class package="org.openide.util" name="Mutex"/>
+        <class package="org.openide.util" name="Mutex" link="no"/>
         <issue number="49459"/>
     </change>
 <change id="SharedClassObject.reset">
@@ -1211,7 +1211,7 @@ public void run () {
         replacements of the original classes in form of factory methods
         <code>org.openide.util.Enumerations</code>.
      </description>
-     <class package="org.openide.util" name="Enumerations"/>
+     <class package="org.openide.util" name="Enumerations" link="no"/>
      <issue number="41166"/>
     </change>
 <change>
@@ -1225,7 +1225,7 @@ public void run () {
      Improved support for hierarchic listeners (aka NamingListener vs. ObjectChangeListener from
      javax.naming.event package).
      </description>
-     <class package="org.openide.util" name="WeakListeners"/>
+     <class package="org.openide.util" name="WeakListeners" link="no"/>
      <issue number="35726"/>
     </change>
 <change id="Utilities.actionsGlobalContext">
@@ -1269,7 +1269,7 @@ public void run () {
        <code>NodeOp.weakNodeListener</code>.
         </p>
      </description>
-     <class package="org.openide.util" name="WeakListeners"/>
+     <class package="org.openide.util" name="WeakListeners" link="no"/>
      <issue number="34758"/>
     </change>
     <change id="HelpCtx.findHelp">
@@ -1300,7 +1300,7 @@ public void run () {
         No change of implementation at all, RP.Task already had method from
         interface implemented, this is just a logical retrofit.
      </description>
-     <class package="org.openide.util" name="RequestProcessor"/>
+     <class package="org.openide.util" name="RequestProcessor" link="no"/>
     </change>
 <change>
         <api name="util"/>
@@ -1319,7 +1319,7 @@ public void run () {
             </p>
         </description>
         <class package="org.openide.util" name="AsyncGUIJob"/>
-        <class package="org.openide.util" name="Cancellable"/>
+        <class package="org.openide.util" name="Cancellable" link="no"/>
         <class package="org.openide.util" name="Utilities"/>
         <issue number="30604"/>
     </change>
@@ -1446,7 +1446,7 @@ public void run () {
 	    or the shared multithreaded instance available through the new
 	    static method <code>RequestProcessor.getDefault()</code>.
         </description>
-        <class package="org.openide.util" name="RequestProcessor"/>
+        <class package="org.openide.util" name="RequestProcessor" link="no"/>
     </change>
 <change>
       <api name="util"/>
@@ -1532,7 +1532,7 @@ public void run () {
         catalog avoiding bunch of calls to the register method in module
         <code>restore</code> code.
       </description>
-      <class package="org.openide.xml" name="EntityCatalog"/>
+      <class package="org.openide.xml" name="EntityCatalog" link="no"/>
     </change>
 <change>
       <api name="xml"/>
@@ -1570,7 +1570,7 @@ public void run () {
           </li>
         </ul>
       </description>
-      <class package="org.openide.xml" name="XMLUtil"/>
+      <class package="org.openide.xml" name="XMLUtil" link="no"/>
     </change>
 <change id="Utilities.topologicalSort">
       <api name="util"/>
@@ -1592,7 +1592,7 @@ public void run () {
         information can be used for error reporting and recovery.
       </description>
       <class package="org.openide.util" name="Utilities"/>
-      <class package="org.openide.util" name="TopologicalSortException"/>
+      <class package="org.openide.util" name="TopologicalSortException" link="no"/>
       <issue number="27286"/>
     </change>
 <change>
@@ -1620,7 +1620,7 @@ public void run () {
           </li>
         </ul>
       </description>
-      <class package="org.openide.xml" name="XMLUtil"/>
+      <class package="org.openide.xml" name="XMLUtil" link="no"/>
     </change>
     <change id="Mutex.Privileged">
       <api name="util"/>
@@ -1634,7 +1634,7 @@ public void run () {
         Through its public methods one can enter internal states of the
         <code>Mutex</code> to which it was passed.
       </description>
-      <class package="org.openide.util" name="Mutex"/>
+      <class package="org.openide.util" name="Mutex" link="no"/>
     </change>
 <change id="Task.notifyRunning">
       <api name="util"/>
@@ -1647,7 +1647,7 @@ public void run () {
         methods <code>notifyRunning ()</code> and also non-final version of
         <code>waitFinished ()</code>.
       </description>
-      <class package="org.openide.util" name="Task"/>
+      <class package="org.openide.util" name="Task" link="no"/>
     </change>
     <change>
       <api name="util"/>
@@ -1740,7 +1740,7 @@ public void run () {
       <description>
         <code>getLocalizingSuffixes</code> added.
       </description>
-      <class package="org.openide.util" name="NbBundle"/>
+      <class package="org.openide.util" name="NbBundle" link="no"/>
     </change>
 <change>
       <api name="util"/>
@@ -1752,7 +1752,7 @@ public void run () {
         <code>getLocalizedFile</code> now accepts <code>null</code> extensions
         to suppress the addition of a dot to the resource name.
       </description>
-      <class package="org.openide.util" name="NbBundle"/>
+      <class package="org.openide.util" name="NbBundle" link="no"/>
     </change>
 <change>
       <api name="util"/>
@@ -1766,7 +1766,7 @@ public void run () {
         startup, not module authors. All methods to look up localized objects
         may now also search for branded variants, if applicable.
       </description>
-      <class package="org.openide.util" name="NbBundle"/>
+      <class package="org.openide.util" name="NbBundle" link="no"/>
     </change>
 <change>
       <api name="util"/>
@@ -1782,7 +1782,7 @@ public void run () {
         <code>NbBundle.setClassLoaderFinder</code> have been deprecated; they
         were quite obsolete.
       </description>
-      <class package="org.openide.util" name="NbBundle"/>
+      <class package="org.openide.util" name="NbBundle" link="no"/>
     </change>
 <change>
       <api name="util"/>
@@ -1806,7 +1806,7 @@ public void run () {
         Now extends <code>FoldingIOException</code>, meaning that it should
         delegate the detail message, etc. to the original.
       </description>
-      <class package="org.openide.util.io" name="SafeException"/>
+      <class package="org.openide.util.io" name="SafeException" link="no"/>
     </change>
     <change id="created-XMLUtil">
       <api name="xml"/>
@@ -1820,9 +1820,9 @@ public void run () {
         class introduced. It provides access to entity mapping registrations
         provided by installed modules.
       </description>
-      <class package="org.openide.xml" name="XMLUtil"/>
-      <class package="org.openide.xml" name="EntityCatalog"/>
-      <package name="org.openide.xml"/>
+      <class package="org.openide.xml" name="XMLUtil" link="no"/>
+      <class package="org.openide.xml" name="EntityCatalog" link="no"/>
+      <package name="org.openide.xml" link="no"/>
     </change>
     <change id="XMLUtil-1.29">
       <api name="xml"/>
@@ -1835,7 +1835,7 @@ public void run () {
         boolean)</code>, <code>toHex(byte[], int, int)</code> and
         <code>fromHex(char[], int, int)</code> methods added.
       </description>
-      <class package="org.openide.xml" name="XMLUtil"/>
+      <class package="org.openide.xml" name="XMLUtil" link="no"/>
     </change>
     <change>
       <api name="xml"/>
@@ -1854,7 +1854,7 @@ public void run () {
         signatures and particular semantics should cover 99% usage of
         previous ones. See the original <a href="#XMLUtil-1.29" shape="rect">additions</a>.
       </description>
-      <class package="org.openide.xml" name="XMLUtil"/>
+      <class package="org.openide.xml" name="XMLUtil" link="no"/>
       <issue number="16629"/>
     </change>
     <change id="refactored-methods-into-XMLUtil">
@@ -1870,7 +1870,7 @@ public void run () {
                 Refactored XML related methods into XMLUtil.
             </p>
         </description>
-        <class package="org.openide.xml" name="XMLUtil"/>
+        <class package="org.openide.xml" name="XMLUtil" link="no"/>
         <issue number="136595"/>
     </change>
 </changes>

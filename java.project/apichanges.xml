@@ -100,9 +100,9 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <apidef name="general">Java Project API</apidef>
+        <apidef name="java_project">Java Project API</apidef>
         <apidef name="classpath">Classpath Support SPI</apidef>
-        <apidef name="ui">UI Support SPI</apidef>
+        <apidef name="java_project_ui_old">UI Support SPI (obsoleted)</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -110,7 +110,7 @@ is the proper place.
 
     <changes>
         <change id="server.is.free">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Desktop dependent Java Project Support UI extracted</summary>
             <version major="1" minor="62"/>
             <date day="2" month="6" year="2014"/>
@@ -128,7 +128,7 @@ is the proper place.
                     The following packages were moved from 
                     <a href="@org-netbeans-modules-java-project@/overview-summary.html">org.netbeans.modules.java.project</a> 
                     into the
-                    <a href="@org-netbeans-modules-java-project-project-ui@/overview-summary.html">org.netbeans.modules.java.project.ui</a> module:
+                    <a href="@org-netbeans-modules-java-project-ui@/overview-summary.html">org.netbeans.modules.java.project.ui</a> module:
                 </p>
                 <ul>
                     <li><a href="@org-netbeans-modules-java-project-ui@/org/netbeans/api/java/project/runner/package-summary.html">o.n.api.java.project.runner</a></li>
@@ -139,7 +139,7 @@ is the proper place.
             </description>
         </change>  
         <change id="JavaTemplates-icons">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added more specific icons into <code>JavaTemplates</code></summary>
             <version major="1" minor="60"/>
             <date day="30" month="7" year="2013"/>
@@ -150,10 +150,10 @@ is the proper place.
                     Added more specific icons into <code>JavaTemplates</code>
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates"/>
+            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates" link="no"/>
         </change>
         <change id="JavadocAndSourceRootDetection-findJavadocRoots">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added <code>JavadocAndSourceRootDetection.findJavadocRoots</code> method to find out all javadoc roots under given folder</summary>
             <version major="1" minor="56"/>
             <date day="4" month="7" year="2013"/>
@@ -168,7 +168,7 @@ is the proper place.
             <issue number="232084"/>
         </change>
         <change id="ProjectModificationActions">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added <code>ProjectProblemsProvider</code> to resolve JDK 8 Profile problems</summary>
             <version major="1" minor="53"/>
             <date day="12" month="4" year="2013"/>
@@ -179,11 +179,11 @@ is the proper place.
                     In method <code>getActions</code> added package actions from <code>Projects/package/Actions</code>.
                 </p>
             </description>
-            <!--<class package="org.netbeans.spi.java.project.support.ui" name="PackageViewChildren"/>-->
+            <!--<class package="org.netbeans.spi.java.project.support.ui" name="PackageViewChildren" link="no"/>-->
             <issue number="200833"/>
         </change>
         <change id="BrokenReferencesSupport-Profiles">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added <code>ProjectProblemsProvider</code> to resolve JDK 8 Profile problems</summary>
             <version major="1" minor="53"/>
             <date day="28" month="3" year="2013"/>
@@ -195,11 +195,11 @@ is the proper place.
                     creating a <code>ProjectProblemsProvider</code> resolving dependencies on libraries with higher or invalid profile.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport"/>
+            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport" link="no"/>
             <issue number="227831"/>
         </change>
         <change id="ProjectProblems">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Changed <code>BrokenReferencesSupport</code> to delegate to <code>ProjectProblems</code></summary>
             <version major="1" minor="46"/>
             <date day="24" month="7" year="2012"/>
@@ -211,11 +211,11 @@ is the proper place.
                     <code>JavaPlatform</code> which should be used for a new project.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport"/>
+            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport" link="no"/>
             <issue number="215628"/>
         </change>
         <change id="PreferredProjectPlatform">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added <code>PreferredProjectPlatform</code></summary>
             <version major="1" minor="46"/>
             <date day="20" month="5" year="2012"/>
@@ -231,7 +231,7 @@ is the proper place.
             <issue number="208528"/>
         </change>
         <change id="ProfilerActions">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added 
                 <code>JavaRunner.QUICK_PROFILE</code>, 
                 <code>JavaRunner.QUICK_TEST_PROFILE</code> and
@@ -246,7 +246,7 @@ is the proper place.
                     Integrating profiler into the generic project infrastructure.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.project.runner" name="JavaRunner"/>
+            <class package="org.netbeans.api.java.project.runner" name="JavaRunner" link="no"/>
             <issue number="203519"/>
         </change>
         <change id="ProjectClassPathModifier.extenderForModifier">
@@ -271,7 +271,7 @@ is the proper place.
             <issue number="196455"/>
         </change>
         <change id="JAVA_ICON">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added <code>JavaTemplates.JAVA_ICON</code></summary>
             <version major="1" minor="40"/>
             <date day="25" month="7" year="2011"/>
@@ -282,11 +282,11 @@ is the proper place.
                     Added a constant for a Java template icon.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates"/>
+            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates" link="no"/>
             <issue number="200175"/>
         </change>
         <change id="BrokenReferencesSupport-showAlert">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added <code>showAlert</code> method into the<code>BrokenReferencesSupport</code></summary>
             <version major="1" minor="37"/>
             <date day="7" month="3" year="2011"/>
@@ -298,11 +298,11 @@ is the proper place.
                     the broken references resolution.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport"/>
+            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport" link="no"/>
             <issue number="195249"/>
         </change>
         <change id="LibraryDefiner">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added <code>LibraryDefiner</code></summary>
             <version major="1" minor="35"/>
             <date day="2" month="2" year="2011"/>
@@ -313,11 +313,11 @@ is the proper place.
                     Added a new SPI to permit alternate ways of resolving missing library references.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport"/>
+            <class package="org.netbeans.spi.java.project.support.ui" name="BrokenReferencesSupport" link="no"/>
             <issue number="194744"/>
         </change>
         <change id="JavadocAndSourceRootDetection.findSourceRoots">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added JavadocAndSourceRootDetection.findSourceRoots method to find all source roots under the given folder</summary>
             <version major="1" minor="31"/>
             <date day="15" month="1" year="2010"/>
@@ -333,7 +333,7 @@ is the proper place.
             <issue number="179427"/>
         </change>
         <change id="JavaRunner-runtime-encoding">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added JavaRunner.PROP_RUNTIME_ENCODING property for COS Runner</summary>
             <version major="1" minor="28"/>
             <date day="19" month="10" year="2009"/>
@@ -345,12 +345,12 @@ is the proper place.
                     to pass the runtime encoding to jvm.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.project.runner" name="JavaRunner"/>
+            <class package="org.netbeans.api.java.project.runner" name="JavaRunner" link="no"/>
             <issue number="173406"/>
         </change>
 
         <change id="source-group-modifier-constants">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Constants for SourceGroupModifier</summary>
             <version major="1" minor="25"/>
             <date day="18" month="2" year="2009"/>
@@ -367,7 +367,7 @@ is the proper place.
         </change>
 
         <change id="CPModifier-addProject">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Addition of ProjectClassPathModifier.addProject() method</summary>
             <version major="1" minor="24"/>
             <date day="11" month="2" year="2008"/>
@@ -388,7 +388,7 @@ is the proper place.
 
         
         <change id="javadoc-root-and-source-root-detection">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Detection of Javadoc root and source root</summary>
             <version major="1" minor="20"/>
             <date day="22" month="7" year="2008"/>
@@ -405,7 +405,7 @@ is the proper place.
         </change>
 
         <change id="JavaRunner">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added JavaRunner</summary>
             <version major="1" minor="22"/>
             <date day="29" month="9" year="2008"/>
@@ -416,8 +416,8 @@ is the proper place.
                     Classes <code>JavaRunner</code> and <code>JavaRunnerImplementation</code> added.
                 </p>
             </description>
-            <class package="org.netbeans.api.java.project.runner" name="JavaRunner"/>
-            <class package="org.netbeans.spi.java.project.runner" name="JavaRunnerImplementation"/>
+            <class package="org.netbeans.api.java.project.runner" name="JavaRunner" link="no"/>
+            <class package="org.netbeans.spi.java.project.runner" name="JavaRunnerImplementation" link="no"/>
             <issue number="138504"/>
         </change>
         
@@ -439,7 +439,7 @@ is the proper place.
         </change>
         
         <change id="use-uri-for-relative-paths">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Support for adding/removing relative classpath entries</summary>
             <version major="1" minor="16"/>
             <date day="27" month="3" year="2008"/>
@@ -454,7 +454,7 @@ is the proper place.
             <issue number="129628"/>
         </change>        
         <change id="ant-project-libraries">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Support for project-specific libraries</summary>
             <version major="1" minor="15"/>
             <date day="7" month="2" year="2008"/>
@@ -469,12 +469,12 @@ is the proper place.
                 </p>
                 
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui" name="SharableLibrariesUtils"/>
+            <class package="org.netbeans.spi.java.project.support.ui" name="SharableLibrariesUtils" link="no"/>
             <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathModifierImplementation"/>
             <issue number="44035"/>
         </change>        
     <change id="AttachJavadocSourceToJar">
-        <api name="ui"/>
+        <api name="java_project_ui_old"/>
         <summary>Added support classes for attaching javadoc/source to jar-based classpath items</summary>
         <version major="1" minor="14"/>
         <date day="21" month="1" year="2008"/>
@@ -497,12 +497,12 @@ is the proper place.
         </description>
         <class package="org.netbeans.spi.java.project.support" name="ExtraSourceJavadocSupport"/>
         <class package="org.netbeans.spi.java.project.support" name="LookupMergerSupport"/>
-        <class package="org.netbeans.spi.java.project.support.ui" name="EditJarSupport"/>
+        <class package="org.netbeans.spi.java.project.support.ui" name="EditJarSupport" link="no"/>
         <issue number="70497"/>
     </change>
         
     <change id="IncludeExcludeVisualizer">
-        <api name="ui"/>
+        <api name="java_project_ui_old"/>
         <summary>Added <code>IncludeExcludeVisualizer</code> support class</summary>
         <version major="1" minor="12"/>
         <date day="1" month="3" year="2007"/>
@@ -512,11 +512,11 @@ is the proper place.
             A new utility class which is handy for previewing include and exclude patterns (Ant syntax)
             for source groups, for example in project customizer dialogs.
         </description>
-        <class package="org.netbeans.spi.java.project.support.ui" name="IncludeExcludeVisualizer"/>
+        <class package="org.netbeans.spi.java.project.support.ui" name="IncludeExcludeVisualizer" link="no"/>
         <issue number="49026"/>
     </change>
     <change id="JavaProjectConstants.SOURCES_TYPE_RESOURCES">
-        <api name="general"/>
+        <api name="java_project"/>
         <summary>Add SourceGroup type for resources that are separate from sources</summary>
         <version major="1" minor="11"/>
         <date day="30" month="1" year="2007"/>
@@ -554,7 +554,7 @@ is the proper place.
     </change>
                                                                                                                                 
     <change id="BrokenReferencesModel.updateReference">
-        <api name="general"/>
+        <api name="java_project"/>
         <summary>Semantic changes in the BrokenReferencesModel.updateReference behavior</summary>
         <version major="1" minor="6"/>
         <date day="28" month="8" year="2005"/>
@@ -568,7 +568,7 @@ is the proper place.
         <issue number="63401"/>
     </change>
     <change id="JavaProjectConstants">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Added artifact type representing folder</summary>
             <version major="1" minor="4"/>
             <date day="20" month="4" year="2005"/>
@@ -584,7 +584,7 @@ is the proper place.
             <issue number="57733"/>
         </change>
         <change id="JavaTemplates.factory.package-required">
-            <api name="ui"/>
+            <api name="java_project_ui_old"/>
             <summary>Added a new factory method for creating the name/package chooser wizard panel into the templates SPI.</summary>
             <version major="1" minor="3"/>
             <date day="21" month="3" year="2005"/>
@@ -597,11 +597,11 @@ is the proper place.
                 parameter that allows to specify whether the entered package name is required to be valid (non-empty).
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates"/>
+            <class package="org.netbeans.spi.java.project.support.ui.templates" name="JavaTemplates" link="no"/>
             <issue number="56730"/>
         </change>
         <change id="PackageView.listView">
-            <api name="ui"/>
+            <api name="java_project_ui_old"/>
             <summary>Display of packages in a list added</summary>
             <version major="1" minor="3"/>
             <date day="10" month="1" year="2005"/>
@@ -615,7 +615,7 @@ is the proper place.
                 rendering the packages.
                 </p>
             </description>
-            <class package="org.netbeans.spi.java.project.support.ui" name="PackageView"/>
+            <class package="org.netbeans.spi.java.project.support.ui" name="PackageView" link="no"/>
             <issue number="48618"/>
         </change>
          <change id="ProjectClassPathSupport.createPropertyBasedClassPathImplemenentation">
@@ -656,7 +656,7 @@ is the proper place.
             <issue number="52998"/>
         </change>
         <change id="rel-vers-1">
-            <api name="general"/>
+            <api name="java_project"/>
             <summary>Switched to major release version 1</summary>
             <version major="1" minor="3"/>
             <date day="22" month="12" year="2004"/>
@@ -676,7 +676,7 @@ is the proper place.
         </change>
         
     <change>
-        <api name="ui"/>
+        <api name="java_project_ui_old"/>
         <summary>Introduction of a new interface PackageRenameHandler which allows plugging into <code>PackageViewChildren.PackageNode.setName()</code></summary>
         <version major="1" minor="5"/>
         <date day="11" month="5" year="2005"/>
@@ -687,7 +687,7 @@ is the proper place.
         Any client can put it's PackageRenameHandler into Lookup (only one instance is allowed). 
         Implementation of packageNode.setName() will use this instance to handle rename request.
         </description>
-        <class package="org.netbeans.spi.java.project.support.ui" name="PackageRenameHandler"/>
+        <class package="org.netbeans.spi.java.project.support.ui" name="PackageRenameHandler" link="no"/>
         <issue number="53295"/>
     </change>
         

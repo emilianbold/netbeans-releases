@@ -49,7 +49,7 @@ import org.openide.util.Cancellable;
 
 /**
  * Factory for creation of aggregate progress indication handles and individual contributor instances.
- * For a more simple version of progress indication, see {@link org.netbeans.api.progress.ProgressHandleFactory}
+ * For a more simple version of progress indication, see {@link org.netbeans.api.progress.ProgressHandle}
  *
  * @author mkleint (mkleint@netbeans.org)
  */
