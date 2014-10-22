@@ -45,8 +45,6 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,8 +53,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -77,7 +73,6 @@ public final class ClientSideProjectProperties {
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectProperties.class.getName());
 
     final ClientSideProject project;
-    private final List<JavaScriptLibrarySelectionPanel.SelectedLibrary> newJsLibraries = new CopyOnWriteArrayList<JavaScriptLibrarySelectionPanel.SelectedLibrary>();
 
     private volatile AtomicReference<String> sourceFolder = null;
     private volatile AtomicReference<String> siteRootFolder = null;
@@ -333,34 +328,6 @@ public final class ClientSideProjectProperties {
 
     public void setProjectServer(ProjectServer projectServer) {
         this.projectServer = projectServer;
-    }
-
-    public void setNewJsLibraries(List<SelectedLibrary> newJsLibraries) {
-        assert newJsLibraries != null;
-        // not needed to be locked, called always by just one caller
-        this.newJsLibraries.clear();
-        this.newJsLibraries.addAll(newJsLibraries);
-    }
-
-    List<SelectedLibrary> getNewJsLibraries() {
-        return newJsLibraries;
-    }
-
-    public static String createListOfJsLibraries(List<SelectedLibrary> libs) {
-        StringBuilder sb = new StringBuilder(200);
-        List<SelectedLibrary> selectedLibraries = libs;
-        for (SelectedLibrary lib : selectedLibraries) {
-            if (lib.isDefault()) {
-                continue;
-            }
-            if (sb.length() > 0) {
-                sb.append("|"); // NOI18N
-            }
-            JavaScriptLibrarySelectionPanel.LibraryVersion libraryVersion = lib.getLibraryVersion();
-            assert libraryVersion != null;
-            sb.append(libraryVersion.getLibrary().getName());
-        }
-        return sb.toString();
     }
 
     public void setJsLibFolder(String jsLibFolder) {

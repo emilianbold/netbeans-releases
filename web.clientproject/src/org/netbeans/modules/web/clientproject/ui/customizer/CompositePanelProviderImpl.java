@@ -181,20 +181,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                 assert projectProperties != null;
                 return projectProperties.getResolvedSiteRootFolder();
             }
-//            @Override
-//            public void setLibrariesFolder(Lookup context, String librariesFolder) {
-//                assert librariesFolder != null;
-//                ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
-//                assert projectProperties != null;
-//                projectProperties.setJsLibFolder(librariesFolder);
-//            }
-//            @Override
-//            public void setSelectedLibraries(Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
-//                assert selectedLibraries != null;
-//                ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
-//                assert projectProperties != null;
-//                projectProperties.setNewJsLibraries(selectedLibraries);
-//            }
         });
     }
 
