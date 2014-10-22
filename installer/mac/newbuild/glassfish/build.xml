@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Building glassfish-${glassfish.id}.pkg into ${basedir}/../build/glassfish-${glassfish.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cd ${basedir} ; ${packagemaker.path} -build -v -p ${basedir}/../build/glassfish-${glassfish.id}.pkg -f ${appdir} -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="cd ${basedir} ; pkgbuild --root ${appdir} --scripts ${scriptsdir} --identifier glassfish --install-location ${install.dir}/glassfish-${glassfish.id} ${basedir}/../build/glassfish-${glassfish.id}.pkg"/>
         </exec>
     </target>
     

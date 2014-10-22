@@ -131,10 +131,11 @@ TOMCAT_ID="${tomcat.id}"
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
 
         <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>
+        <echo message="RUNNING: pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.baside --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
         
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="${packagemaker.path} -build -v -p ${basedir}/../../build/baseide-${nb.id}.pkg -f ${builddir}/app -i ${builddir}/Info.plist -r ${scriptsdir} -d ${builddir}/Description.plist"/>
+            <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.baside --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
         </exec>
     </target>
     

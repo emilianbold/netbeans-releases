@@ -39,8 +39,6 @@
 -->
 
 <project name="Mac Installer Properties" basedir="." >
-
-    <property name="packagemaker.path" value="/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"/>
    
     <property name="translatedfiles.src" value="${basedir}/../../../src"/>
         
