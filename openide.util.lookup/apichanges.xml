@@ -49,6 +49,35 @@ made subject to such option by the copyright holder.
     <apidef name="lookup">Lookup API</apidef>
 </apidefs>
 <changes>
+    <change id="lookups.execute">
+        <api name="lookup"/>
+        <summary>A way to control Lookup.getDefault</summary>
+        <version major="8" minor="30"/>
+        <date day="22" month="10" year="2014"/>
+        <author login="jtulach"/>
+        <compatibility
+            addition="yes"
+            binary="compatible" deletion="no" deprecation="no"
+            modification="no" semantic="incompatible" source="compatible"
+        >
+            The clients of <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">
+            Lookup.getDefault()</a> are mostly unaffected by this change,
+            just they need to be ready for the fact that the return 
+            value of the method may no longer be fixed one, but can mutate
+            over time.
+        </compatibility>
+        <description>
+            <p>
+                One can use <a href="@TOP@/org/openide/util/lookup/Lookups.html#executeWith(org.openide.util.Lookup, java.lang.Runnable)">
+                Lookups.execute(yourLookup, yourRunnable)
+                </a> to temporarily influence return value from
+                <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">
+                Lookup.getDefault()</a>. 
+            </p>
+        </description>
+        <class package="org.openide.util.lookup" name="Lookups"/>
+        <issue number="247930"/>
+    </change>
     <change id="named.service.definition">
         <api name="lookup"/>
         <summary>Easy and robust way to register named services</summary>

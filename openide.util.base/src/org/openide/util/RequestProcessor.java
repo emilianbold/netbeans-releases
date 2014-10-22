@@ -79,6 +79,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.lookup.Lookups;
 
 /** Request processor is {@link Executor} (since version 7.16) capable to
  * perform asynchronous requests in a dedicated thread pool.
@@ -629,7 +630,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
         item.enqueued = true;
     }
 
-    Task askForWork(Processor worker, String debug) {
+    Task askForWork(Processor worker, String debug, Lookup[] lkp) {
         if (getQueue().isEmpty() || (stopped && !finishAwaitingTasks)) { // no more work in this burst, return him
             processors.remove(worker);
             Processor.put(worker, debug);
@@ -639,6 +640,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
             Item i = getQueue().first();
             getQueue().remove(i);
             Task t = i.getTask();
+            lkp[0] = i.current;
             i.clear(worker);
 
             return t;
@@ -1728,6 +1730,7 @@ outer:  do {
         private static int counter;
         private final RequestProcessor owner;
         private final int cnt;
+        final Lookup current;
         Object action;
         boolean enqueued;
         String message;
@@ -1738,6 +1741,7 @@ outer:  do {
             action = task;
             owner = rp;
             cnt = counter++;
+            current = Lookup.getDefault();
         }
 
         final Task getTask() {
@@ -2015,9 +2019,10 @@ outer:  do {
 
                 // while we have something to do
                 for (;;) {
+                    Lookup[] lkp = new Lookup[1];
                     // need the same sync as interruptTask
                     synchronized (current.processorLock) {
-                        todo = current.askForWork(this, debug);
+                        todo = current.askForWork(this, debug, lkp);
                         if (todo == null) {
                             break;
                         }
@@ -2030,7 +2035,12 @@ outer:  do {
                             em.log(Level.FINE, "  Executing {0}", todo); // NOI18N
                         }
                         registerParallel(todo, current);
-                        todo.run();
+                        if (lkp[0] == null || lkp[0] == Lookup.getDefault()) {
+                            todo.run();
+                        } else {
+                            Lookups.executeWith(lkp[0], todo);
+                        }
+                        lkp[0] = null;
 
                         if (loggable) {
                             em.log(Level.FINE, "  Execution finished in {0}", getName()); // NOI18N
