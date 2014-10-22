@@ -1226,11 +1226,11 @@ public final class Terminal extends JComponent {
 	     * So in this case just don't enable drag'n'drop feature for FileObjects.
 	     */
 	    try {
-		this.dataObjectDnd = new DataFlavor("application/x-java-openide-dataobjectdnd;class=org.openide.loaders.DataObject;mask={0}");
+		this.dataObjectDnd = new DataFlavor("application/x-java-openide-dataobjectdnd;class=org.openide.loaders.DataObject;mask={0}");//NOI18N
 	    } catch (ClassNotFoundException ex) {
 	    }
 	    try {
-		this.multiTransferObject = new DataFlavor("application/x-java-openide-multinode;class=org.openide.util.datatransfer.MultiTransferObject;mask={0}");
+		this.multiTransferObject = new DataFlavor("application/x-java-openide-multinode;class=org.openide.util.datatransfer.MultiTransferObject;mask={0}");//NOI18N
 	    } catch (ClassNotFoundException ex) {
 	    }
 	    

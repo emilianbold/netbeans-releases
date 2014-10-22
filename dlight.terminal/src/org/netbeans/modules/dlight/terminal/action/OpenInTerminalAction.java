@@ -63,11 +63,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 @ActionID(
-        category = "Window",
-        id = "org.netbeans.modules.dlight.terminal.action.OpenInTerminalAction"
+        category = "Window", //NOI18N
+        id = "org.netbeans.modules.dlight.terminal.action.OpenInTerminalAction" //NOI18N
 )
 @ActionRegistration(
-        displayName = "#CTL_OpenInTerminalActionDescr",
+        displayName = "#CTL_OpenInTerminalActionDescr",//NOI18N
         lazy = false
 )
 @ActionReferences({
