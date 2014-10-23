@@ -63,6 +63,7 @@ import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
@@ -340,7 +341,7 @@ public class JsCompletionItem implements CompletionProposal {
             if (ts != null) {
                 ts.move(offset);
                 if (ts.moveNext()) {
-                    Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.BLOCK_COMMENT, JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.EOL));
+                    Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_DOT, JsTokenId.BLOCK_COMMENT, JsTokenId.WHITESPACE, JsTokenId.LINE_COMMENT, JsTokenId.EOL));
                     if (token.id() == JsTokenId.KEYWORD_NEW) {
                         isAfterNew = true;
                     }
@@ -363,7 +364,22 @@ public class JsCompletionItem implements CompletionProposal {
             if ((jsKind != null && jsKind == JsElement.Kind.CONSTRUCTOR) || Character.isUpperCase(firstChar)) {
                 boolean isAfterNew = isAfterNewKeyword();
                 if (!isAfterNew) {
-                    result = true;
+                    // check return types, whether it can be really constructor
+                    for (String type : returnTypes) {
+                        if (type.endsWith(element.getName())) {
+                            return true;
+                        }
+                    }
+                    if (returnTypes.isEmpty()) {
+                        result = true;
+                    } else if (returnTypes.size() == 1) {
+                        String type = returnTypes.iterator().next(); 
+                        firstChar = type.charAt(0);
+                        if (Character.isUpperCase(firstChar) && !(Type.NUMBER.equals(type) || Type.BOOLEAN.equals(type) 
+                                || Type.STRING.equals(type) || Type.ARRAY.equals(type))) {
+                            result = true;
+                        }
+                    }
                 }
             }
             return result;

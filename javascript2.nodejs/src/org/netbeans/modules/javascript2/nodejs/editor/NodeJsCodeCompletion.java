@@ -98,7 +98,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
             }
 
             Token<? extends JsTokenId> token = null;
-            if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION) {
+            if (jsCompletionContext == CompletionContext.STRING || jsCompletionContext == CompletionContext.EXPRESSION || jsCompletionContext == CompletionContext.GLOBAL) {
                 String wholePrefix = ts.token().id() == JsTokenId.STRING ? ts.token().text().toString().trim() : "";
                 NodeJsContext nodeContext = NodeJsContext.findContext(ts, eOffset);
               
