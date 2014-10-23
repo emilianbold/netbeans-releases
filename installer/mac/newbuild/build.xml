@@ -275,7 +275,6 @@
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}-${nb.id}.pkg"/>
-        <echo message="RUNNING: pkgbuild --root ${module.builddir}/netbeans --scripts ${scriptsdir} --identifier org.netbeans.${module.name} --install-location ${app.name}/Contents/Resources/NetBeans ${basedir}/build/${module.name}-${nb.id}.pkg"/>                      
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>            
             <arg value="pkgbuild --root '${module.builddir}/netbeans' --scripts '${scriptsdir}' --identifier org.netbeans.${module.name} --install-location '/${app.name}/Contents/Resources/NetBeans' '${basedir}/build/${module.name}-${nb.id}.pkg'"/>
@@ -475,7 +474,6 @@
         <condition property="jdk.update.number.long" value="0${jdk.update.number}" else="${jdk.update.number}">
             <length string="${jdk.update.number}" length="1"/>  
         </condition>
-                <!-- todle do xml distribution.xml-->
         <copy file="dmg/distribution${bundle.type}${bundle.type.suffix}.dist" tofile="${pkg.file}/distribution.xml">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
@@ -500,9 +498,7 @@
                 <filter token="SIZE_PHP" value="${sizeof.php}"/>    
             </filterset>
         </copy> 
-        
-        <!-- tohle vyndat - neni potreba struktura metapackage -->
-        <!-- nebo jen nakopirovat jinam - dist pro product build -->
+
         <mkdir dir="${pkg.file}/packages"/>         
         <echo message="Copying ${packages} to '${pkg.file}'/packages..."/>
         <exec executable="sh" failonerror="yes">
