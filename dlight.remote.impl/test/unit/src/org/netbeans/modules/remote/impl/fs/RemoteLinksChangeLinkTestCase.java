@@ -165,34 +165,37 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
             final List<FileEvent> eventList = Collections.synchronizedList(new ArrayList<FileEvent>());
 
             FileChangeListener listener = new FileChangeListener() {
+                private void register(FileEvent fe) {
+                    eventList.add(fe);
+                }
                 @Override
                 public void fileChanged(FileEvent fe) {
-                    eventList.add(fe);
+                    register(fe);
                 }
 
                 @Override
                 public void fileAttributeChanged(FileAttributeEvent fe) {
-                    eventList.add(fe);
+                    register(fe);
                 }
 
                 @Override
                 public void fileDataCreated(FileEvent fe) {
-                    eventList.add(fe);
+                    register(fe);
                 }
 
                 @Override
                 public void fileFolderCreated(FileEvent fe) {
-                    eventList.add(fe);
+                    register(fe);
                 }
 
                 @Override
                 public void fileRenamed(FileRenameEvent fe) {
-                    eventList.add(fe);
+                    register(fe);
                 }
 
                 @Override
                 public void fileDeleted(FileEvent fe) {
-                    eventList.add(fe);
+                    register(fe);
                 }
             };
             linkDirFO.addFileChangeListener(listener);
@@ -208,8 +211,8 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
             ProcessUtils.ExitStatus res2 = ProcessUtils.execute(execEnv, "sh", "-c", changeScript);
             assertEquals("Error executing script \"" + creationScript + "\": " + res1.error, 0, res1.exitCode);
 
-            eventList.clear();
             baseDirFO.refresh();
+            eventList.clear();
             FileUtil.createData(realDirFO1, "file_3");
             assertTrue("Event list should be empty", eventList.isEmpty());
             FileUtil.createData(realDirFO2, "file_4");
