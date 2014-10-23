@@ -207,9 +207,10 @@ public class WatchesModel extends VariablesModel implements TreeModelFilter {
     @Override
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
         if (node instanceof Watch) {
+            Watch watch = (Watch) node;
             Pair<V8Value, String> ew;
             synchronized (evaluatedWatches) {
-                ew = evaluatedWatches.get((Watch) node);
+                ew = evaluatedWatches.get(watch);
             }
             if (ew != null) {
                 if (ew.second() != null) {
@@ -236,12 +237,11 @@ public class WatchesModel extends VariablesModel implements TreeModelFilter {
                     }
                 }
             }
-            if (WATCH_VALUE_COLUMN_ID.equals(columnID)) {
-                return "N/A";
+            if (WATCH_VALUE_COLUMN_ID.equals(columnID) ||
+                WATCH_TO_STRING_COLUMN_ID.equals(columnID)) {
+                return (watch.isEnabled()) ? "N/A" : "";
             } else if(WATCH_TYPE_COLUMN_ID.equals(columnID)) {
                 return "";
-            } else if (WATCH_TO_STRING_COLUMN_ID.equals(columnID)) {
-                return "N/A";
             }
         } else {
             if (WATCH_VALUE_COLUMN_ID.equals(columnID)) {
@@ -293,6 +293,9 @@ public class WatchesModel extends VariablesModel implements TreeModelFilter {
         if (n > 0) {
             WatchCB[] cbs = new WatchCB[n];
             for (int i = 0; i < n; i++) {
+                if (!watches[i].isEnabled()) {
+                    continue;
+                }
                 cbs[i] = new WatchCB();
                 V8Request request = dbg.sendCommandRequest(V8Command.Evaluate,
                                                            new Evaluate.Arguments(watches[i].getExpression()), cbs[i]);
@@ -321,12 +324,14 @@ public class WatchesModel extends VariablesModel implements TreeModelFilter {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                WatchCB wcb = new WatchCB();
-                V8Request request = dbg.sendCommandRequest(V8Command.Evaluate,
-                                                           new Evaluate.Arguments(watch.getExpression()), wcb);
                 Pair<V8Value, String> result = null;
-                if (request != null) {
-                    result = Pair.of(wcb.getValue(), wcb.getError());
+                if (watch.isEnabled()) {
+                    WatchCB wcb = new WatchCB();
+                    V8Request request = dbg.sendCommandRequest(V8Command.Evaluate,
+                                                               new Evaluate.Arguments(watch.getExpression()), wcb);
+                    if (request != null) {
+                        result = Pair.of(wcb.getValue(), wcb.getError());
+                    }
                 }
                 synchronized (evaluatedWatches) {
                     if (result == null) {
