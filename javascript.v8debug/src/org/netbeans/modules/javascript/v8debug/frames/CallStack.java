@@ -76,6 +76,14 @@ public final class CallStack {
         return frames;
     }
     
+    public CallFrame[] createCallFrames() {
+        CallFrame[] cfs = new CallFrame[frames.length];
+        for (int i = 0; i < frames.length; i++) {
+            cfs[i] = new CallFrame(frames[i], rvals);
+        }
+        return cfs;
+    }
+    
     public @CheckForNull CallFrame createTopFrame() {
         if (frames.length > 0) {
             return new CallFrame(frames[0], rvals);
