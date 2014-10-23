@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     </apidefs>
     <changes>
     <change id="weak-listen-on-specific-property">
-        <api name="util"/>
+        <api name="util_base"/>
         <summary>Weak property and vetoable listeners for a specific property name.</summary>
         <version major="9" minor="2"/>
         <date year="2014" month="10" day="22"/>
