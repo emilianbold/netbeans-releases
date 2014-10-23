@@ -146,12 +146,12 @@ function checkSystemversion() {
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
           
-    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-@GLASSFISH_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat-@TOMCAT_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">file:./Contents/Packages/webcommon-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.extide" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/extide-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">glassfish-@GLASSFISH_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">tomcat-@TOMCAT_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">baseide-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">javase-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.webcommon" version="0.0.0.0.1" installKBytes="@SIZE_WEBCOMMON@" auth="Root" onConclusion="None">webcommon-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.extide" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">extide-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">javaee-@NB_ID@.pkg</pkg-ref>
  
 </installer-gui-script>
