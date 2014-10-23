@@ -471,6 +471,10 @@ public final class V8Debugger {
         });
         } catch (IOException ioex) {
             LOG.log(Level.FINE, null, ioex);
+            Throwable cause = ioex.getCause();
+            if (cause != null) {
+                Exceptions.printStackTrace(cause);
+            }
         } finally {
             try {
                 connection.close();
