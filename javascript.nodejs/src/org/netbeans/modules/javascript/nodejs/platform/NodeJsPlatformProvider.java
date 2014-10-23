@@ -244,7 +244,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             }
         }
         try {
-            packageJson.setContent(PackageJson.FIELD_NAME, newName);
+            packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             Notifications.informUser(Bundle.NodeJsPlatformProvider_sync_error());

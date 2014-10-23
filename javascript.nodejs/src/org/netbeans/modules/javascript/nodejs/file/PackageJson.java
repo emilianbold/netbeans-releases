@@ -53,6 +53,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -61,11 +62,13 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -183,13 +186,14 @@ public final class PackageJson {
 
     /**
      * Set new value of the given field.
-     * @param field field to be changed, e.g. {@link #FIELD_NAME}
-     * @param value new value, e.g. new project name
-     * @param fieldHierarchy optional field hierarchy, e.g. {@link #FIELD_ENGINES} for {@link #FIELD_NODE} field
+     * @param fieldHierarchy field (together with its hierarchy) to be changed, e.g. {@link #FIELD_NAME}
+     *                       or list of {@link #FIELD_ENGINES}, {@link #FIELD_NODE}
+     * @param value new value of any type, e.g. new project name
      * @throws IOException if any error occurs
      */
-    public synchronized void setContent(final String field, final String value, final String... fieldHierarchy) throws IOException {
-        assert field != null;
+    public synchronized void setContent(final List<String> fieldHierarchy, final Object value) throws IOException {
+        assert fieldHierarchy != null;
+        assert !fieldHierarchy.isEmpty();
         assert value != null;
         assert !EventQueue.isDispatchThread();
         assert exists();
@@ -207,16 +211,16 @@ public final class PackageJson {
         NbDocument.runAtomic(document, new Runnable() {
             @Override
             public void run() {
-                setContent(documentRef, field, value, fieldHierarchy);
+                setContent(documentRef, fieldHierarchy, value);
             }
         });
         if (!modified) {
             editorCookie.saveDocument();
         }
+        clear(false);
     }
 
-    void setContent(Document document, String field, String value, String... fieldHierarchy) {
-        // XXX fieldHierarchy
+    void setContent(Document document, List<String> fieldHierarchy, Object value) {
         String text;
         try {
             text = document.getText(0, document.getLength() - 1);
@@ -225,24 +229,131 @@ public final class PackageJson {
             assert false;
             return;
         }
-        String fullField = "\"" + field + "\""; // NOI18N
-        int fieldIndex = text.indexOf(fullField);
+        String field = null;
+        int fieldIndex = -1;
+        LinkedList<String> fields = new LinkedList<>(fieldHierarchy);
+        while (!fields.isEmpty()) {
+            String pureField = fields.pollFirst();
+            field = "\"" + JSONValue.escape(pureField) + "\""; // NOI18N
+            fieldIndex = text.indexOf(field, fieldIndex == -1 ? 0 : fieldIndex + field.length());
+            if (fieldIndex == -1) {
+                fields.addFirst(pureField);
+                break;
+            }
+        }
+        assert field != null;
         if (fieldIndex == -1) {
+            insertNewField(document, fields, value, text, fieldIndex);
             return;
         }
-        int colonIndex = text.indexOf(':', fieldIndex + fullField.length());
-        assert colonIndex != -1;
-        int startValueIndex = text.indexOf('"', colonIndex + 1);
-        assert startValueIndex != -1;
-        startValueIndex += 1;
-        int endValueIndex = text.indexOf('"', startValueIndex);
-        assert endValueIndex != -1;
+        int colonIndex = -1;
+        for (int i = fieldIndex + field.length(); i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            switch (ch) {
+                case ' ':
+                    // noop
+                    break;
+                case ':':
+                    colonIndex = i;
+                    break;
+                default:
+                    // unexpected
+                    return;
+            }
+            if (colonIndex != -1) {
+                break;
+            }
+        }
+        if (colonIndex == -1) {
+            return;
+        }
+        int valueStartIndex = -1;
+        for (int i = colonIndex + 1; i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            if (!Character.isWhitespace(ch)) {
+                valueStartIndex = i;
+                break;
+            }
+        }
+        if (valueStartIndex == -1) {
+            return;
+        }
+        char valueFirstChar = text.charAt(valueStartIndex);
+        int valueEndIndex = -1;
+        for (int i = valueStartIndex + 1; i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            if (valueFirstChar == '"') {
+                if (ch == '"') {
+                    valueEndIndex = i + 1;
+                }
+            } else if (Character.isDigit(ch)
+                    || ch == '.') {
+                // number
+                continue;
+            } else {
+                valueEndIndex = i;
+            }
+            if (valueEndIndex != -1) {
+                break;
+            }
+        }
+        if (valueEndIndex == -1) {
+            return;
+        }
+        insertValue(document, valueStartIndex, valueEndIndex, JSONValue.toJSONString(value), !(value instanceof String) && !(value instanceof Number));
+    }
+
+    private void insertNewField(Document document, List<String> fieldHierarchy, Object value, String text, int index) {
+        int startIndex = index;
+        if (startIndex == -1) {
+            startIndex = text.lastIndexOf('}'); // NOI18N
+        } else {
+            startIndex = text.indexOf('}'); // NOI18N
+        }
+        if (startIndex == -1) {
+            startIndex = text.length();
+        }
+        StringBuilder sb = new StringBuilder();
+        if (startIndex > 1) {
+            sb.append(','); // NOI18N
+        }
+        boolean first = true;
+        for (String field : fieldHierarchy) {
+            if (!first) {
+                sb.append('{'); // NOI18N
+            }
+            sb.append('"'); // NOI18N
+            sb.append(JSONValue.escape(field));
+            sb.append('"'); // NOI18N
+            sb.append(':'); // NOI18N
+            first = false;
+        }
+        sb.append(JSONValue.toJSONString(value));
+        insertValue(document, startIndex, -1, sb.toString(), true);
+    }
+
+    private void insertValue(Document document, int valueStartIndex, int valueEndIndex, String value, boolean format) {
         try {
-            document.remove(startValueIndex, endValueIndex - startValueIndex);
-            document.insertString(startValueIndex, value, null);
+            if (valueEndIndex != -1) {
+                document.remove(valueStartIndex, valueEndIndex - valueStartIndex);
+            }
+            document.insertString(valueStartIndex, value, null);
+            if (format) {
+                reformat(document, valueStartIndex, valueStartIndex + value.length());
+            }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.WARNING, null, ex);
             assert false;
+        }
+    }
+
+    private void reformat(Document document, int startOffset, int endOffset) throws BadLocationException {
+        Reformat reformat = Reformat.get(document);
+        reformat.lock();
+        try {
+            reformat.reformat(startOffset, endOffset);
+        } finally {
+            reformat.unlock();
         }
     }
 
@@ -305,28 +416,28 @@ public final class PackageJson {
     }
 
     private void fireChanges(@NullAllowed Map<String, Object> oldContent, @NullAllowed Map<String, Object> newContent) {
-        String oldName = getName(oldContent);
-        String newName = getName(newContent);
+        Object oldName = getName(oldContent);
+        Object newName = getName(newContent);
         if (!Objects.equals(oldName, newName)) {
             propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, newName);
         }
-        String oldStartScript = getStartScript(oldContent);
-        String newStartScript = getStartScript(newContent);
+        Object oldStartScript = getStartScript(oldContent);
+        Object newStartScript = getStartScript(newContent);
         if (!Objects.equals(oldStartScript, newStartScript)) {
             propertyChangeSupport.firePropertyChange(PROP_SCRIPTS_START, oldStartScript, newStartScript);
         }
     }
 
     @CheckForNull
-    private String getName(@NullAllowed Map<String, Object> data) {
+    private Object getName(@NullAllowed Map<String, Object> data) {
         if (data == null) {
             return null;
         }
-        return (String) data.get(FIELD_NAME);
+        return data.get(FIELD_NAME);
     }
 
     @CheckForNull
-    private String getStartScript(@NullAllowed Map<String, Object> data) {
+    private Object getStartScript(@NullAllowed Map<String, Object> data) {
         if (data == null) {
             return null;
         }
@@ -334,7 +445,7 @@ public final class PackageJson {
         if (!(scripts instanceof Map)) {
             return null;
         }
-        return (String) ((Map<String, Object>) scripts).get(FIELD_START);
+        return ((Map<String, Object>) scripts).get(FIELD_START);
     }
 
     //~ Inner classes
