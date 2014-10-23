@@ -44,6 +44,11 @@
 package org.netbeans.modules.cnd.execution;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -58,11 +63,16 @@ import org.openide.util.NbBundle;
  */
 public final class CompileExecSupport extends ExecutionSupport {
 
+    private static final String PROP_LANG_STANDARD = "standard"; // NOI18N
     private static final String PROP_RUN_DIRECTORY = "rundirectory"; // NOI18N
     private static final String PROP_COMPILE_FLAGS = "compileflags"; // NOI18N
     private static final String PROP_LINK_FLAGS = "linkflags"; // NOI18N
 
-    /** new BinaryExecSupport */
+    /**
+     * Support of compile/run standalone files.
+     * 
+     * @param entry
+     */
     public CompileExecSupport(Entry entry) {
         super(entry);
     }
@@ -71,10 +81,92 @@ public final class CompileExecSupport extends ExecutionSupport {
     public void addProperties(Sheet.Set set) {
         //set.put(createParamsProperty(PROP_FILE_PARAMS, getString("PROP_fileParams"), getString("HINT_fileParams"))); // NOI18N;
         //set.put(createRunDirectoryProperty());
+        set.put(createLanguageStandardProperty());
         set.put(createCompileFlagsProperty());
         //set.put(createLinkFlagsProperty());
     }
 
+    
+    /**
+     *  Create language standard property.
+     *
+     *  @return language standard property
+     */
+    private PropertySupport<CndLanguageStandard> createLanguageStandardProperty() {
+
+        return new PropertySupport.ReadWrite<CndLanguageStandard>(PROP_LANG_STANDARD, CndLanguageStandard.class,
+                getString("PROP_LANG_STANDARD"), // NOI18N
+                getString("HINT_LANG_STANDARD")) { // NOI18N
+
+            @Override
+            public CndLanguageStandard getValue() {
+                return getStandard();
+            }
+
+            @Override
+            public void setValue(CndLanguageStandard val) {
+                setStandard(val);
+            }
+
+            @Override
+            public boolean supportsDefaultValue() {
+                return true;
+            }
+
+            @Override
+            public void restoreDefaultValue() {
+                setStandard(null);
+            }
+
+            @Override
+            public boolean canWrite() {
+                return getEntry().getFile().getParent().canWrite();
+            }
+        };
+    }
+
+    /**
+     *  Get standard.
+     *
+     *  @return language standard
+     */
+    public CndLanguageStandard getStandard() {
+        String standard = (String) getEntry().getFile().getAttribute(PROP_LANG_STANDARD);
+        if (standard == null) {
+            FileObject fo = getEntry().getFile();
+            if (fo != null) {
+                String mimeType = FileUtil.getMIMEType(fo);
+                MIMEExtensions mime = MIMEExtensions.get(mimeType);
+                if (mime != null) {
+                    CndLanguageStandard defaultStandard = mime.getDefaultStandard();
+                    if (defaultStandard != null) {
+                        standard = defaultStandard.getID();
+                    }
+                }
+            }
+        }
+        return CndLanguageStandards.StringToLanguageStandard(standard);
+    }
+
+    /**
+     *  Set standard
+     *
+     * @param standard
+     */
+    public void setStandard(CndLanguageStandard standard) {
+        try {
+            if (standard == null) {
+                getEntry().getFile().setAttribute(PROP_LANG_STANDARD, null);
+            } else {
+                getEntry().getFile().setAttribute(PROP_LANG_STANDARD, standard.getID());
+            }
+        } catch (IOException ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                ex.printStackTrace(System.err);
+            }
+        }
+    }
+    
     /**
      *  Create the run directory property.
      *
@@ -123,7 +215,6 @@ public final class CompileExecSupport extends ExecutionSupport {
 
         if (dir == null) {
             dir = "."; // NOI18N
-            setRunDirectory(dir);
         }
 
         return dir;
@@ -132,7 +223,7 @@ public final class CompileExecSupport extends ExecutionSupport {
     /**
      *  Set the run directory
      *
-     *  @param target the run directory
+     *  @param dir the run directory
      */
     public void setRunDirectory(String dir) {
         try {
@@ -194,7 +285,6 @@ public final class CompileExecSupport extends ExecutionSupport {
         String flags = (String) getEntry().getFile().getAttribute(PROP_COMPILE_FLAGS);
         if (flags == null) {
             flags = "-g"; // NOI18N
-            setCompileFlags(flags);
         }
 
         return flags;

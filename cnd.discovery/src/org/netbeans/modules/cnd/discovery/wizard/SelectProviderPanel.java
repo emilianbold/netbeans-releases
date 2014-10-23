@@ -495,6 +495,10 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     public void parserIdle() {
     }
 
+    @Override
+    public void fileRemoved(CsmFile file) {
+    }
+
     static class ProviderItem implements Comparable<ProviderItem> {
         private final DiscoveryProvider provider;
         ProviderItem(DiscoveryProvider provider){
