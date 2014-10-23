@@ -86,7 +86,7 @@ public final class TerminalSupport {
      * @param env
      */
     public static void openTerminal(String termTitle, ExecutionEnvironment env, String dir) {
-        openTerminal(termTitle, env, dir, false);
+        openTerminal(termTitle, env, dir, true);
     }
 
     /**
