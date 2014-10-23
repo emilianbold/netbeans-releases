@@ -134,13 +134,14 @@ public class ProgressAPICompatTest extends NbTestCase {
         assertEquals("Returns JLabel", JLabel.class, m.getReturnType());
         
         InternalHandle ih = new InternalHandle("foo", null, true);
-        JLabel jl = (JLabel)m.invoke(ih);
+        final JLabel jl = (JLabel)m.invoke(ih);
         ProgressHandle ph = ih.createProgressHandle();
         ph.start(1);
         ph.progress("bar", 1);
         // label gets initialized in AWT, wait for the pending EDT queue items
-        SwingUtilities.invokeAndWait(new Runnable() { public void run() {}});
-        assertEquals("bar", jl.getText());
+        SwingUtilities.invokeAndWait(new Runnable() { public void run() {
+            assertEquals("bar", jl.getText());
+        }});
     }
     
     public void testControllerVisualComponent() throws Exception {
