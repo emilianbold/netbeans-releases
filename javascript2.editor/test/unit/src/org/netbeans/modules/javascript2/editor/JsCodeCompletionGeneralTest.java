@@ -371,6 +371,22 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
         checkCompletion("testfiles/completion/general/findObjectByOffset.js", "return this._age.to^Fixed(1);", false);
     }
     
+    public void testIssue248132_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue248132.js", "var issue248132 = Date.U^TC();", false);
+    }
+    
+    public void testIssue248132_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue248132.js", "var issue248132 = Da^te.UTC();", false);
+    }
+    
+    public void testIssue248132_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue248132.js", "var w1 = new window.Wo^rker();", false);
+    }
+    
+    public void testIssue248132_04() throws Exception {
+        checkCompletion("testfiles/completion/general/issue248132.js", "var w2 = window.Wo^rker;", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

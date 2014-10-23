@@ -1,0 +1,5 @@
+Code completion result for source line:
+var issue248132 = Da|te.UTC();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CONSTRUCTO Date                            [PUBLIC]   JS Platform
