@@ -191,6 +191,10 @@ public final class V8Debugger {
         }
     }
     
+    public boolean isFinished() {
+        return finished;
+    }
+    
     public ScriptsHandler getScriptsHandler() {
         return scriptsHandler;
     }
@@ -223,6 +227,14 @@ public final class V8Debugger {
         } catch (IOException ex) {
             return null;
         }
+    }
+    
+    public void suspend() {
+        sendCommandRequest(V8Command.Suspend, null);
+    }
+    
+    public void resume() {
+        sendCommandRequest(V8Command.Continue, null);
     }
     
     public boolean isSuspended() {

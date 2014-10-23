@@ -118,9 +118,9 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
         if (action == ACTION_START) {
             dbg.start();
         } else if (action == ACTION_CONTINUE) {
-            dbg.sendCommandRequest(V8Command.Continue, null);
+            dbg.resume();
         } else if (action == ACTION_PAUSE) {
-            dbg.sendCommandRequest(V8Command.Suspend, null);
+            dbg.suspend();
         } else if (action == ACTION_STEP_INTO) {
             Continue.Arguments ca = new Continue.Arguments(V8StepAction.in);
             dbg.sendCommandRequest(V8Command.Continue, ca);

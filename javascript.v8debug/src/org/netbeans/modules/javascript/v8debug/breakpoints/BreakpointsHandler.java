@@ -47,8 +47,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -83,6 +85,8 @@ public class BreakpointsHandler implements V8Debugger.Listener {
     private final Map<JSLineBreakpoint, SubmittedBreakpoint> submittedBreakpoints = new HashMap<>();
     private final Map<Long, SubmittedBreakpoint> breakpointsById = new HashMap<>();
     private final Set<JSLineBreakpoint> removeAfterSubmit = new WeakSet<>();
+    private final List<ActiveBreakpointListener> abListeners = new CopyOnWriteArrayList<ActiveBreakpointListener>();
+    private volatile JSLineBreakpoint activeBreakpoint;
     
     public BreakpointsHandler(V8Debugger dbg) { // TODO pass in initially submitted breakpoints in the debuggee
         this.dbg = dbg;
@@ -175,14 +179,14 @@ public class BreakpointsHandler implements V8Debugger.Listener {
                 continue;
             }
             JSLineBreakpoint b = sb.getBreakpoint();
-            JSBreakpointStatus.setActive(b);
+            setActiveBreakpoint(b);
         }
     }
 
     @Override
     public void notifySuspended(boolean suspended) {
         if (!suspended) {
-            JSBreakpointStatus.setActive(null);
+            setActiveBreakpoint(null);
         }
     }
 
@@ -200,7 +204,32 @@ public class BreakpointsHandler implements V8Debugger.Listener {
         for (SubmittedBreakpoint sb : sbs) {
             sb.notifyDestroyed();
         }
-        JSBreakpointStatus.setActive(null);
+        setActiveBreakpoint(null);
+    }
+    
+    public JSLineBreakpoint getActiveBreakpoint() {
+        return activeBreakpoint;
+    }
+    
+    private void setActiveBreakpoint(JSLineBreakpoint activeBreakpoint) {
+        this.activeBreakpoint = activeBreakpoint;
+        JSBreakpointStatus.setActive(activeBreakpoint);
+        for (ActiveBreakpointListener abl : abListeners) {
+            abl.notifyActiveBreakpoint(activeBreakpoint);
+        }
+    }
+    
+    public void addActiveBreakpointListener(ActiveBreakpointListener abl) {
+        abListeners.add(abl);
+    }
+
+    public void removeActiveBreakpointListener(ActiveBreakpointListener abl) {
+        abListeners.remove(abl);
+    }
+    
+    public static interface ActiveBreakpointListener {
+        
+        void notifyActiveBreakpoint(JSLineBreakpoint activeBreakpoint);
     }
     
     private final class BreakpointsCommandsCallback implements V8Debugger.CommandResponseCallback {

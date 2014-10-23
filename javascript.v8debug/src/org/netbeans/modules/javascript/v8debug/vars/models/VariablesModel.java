@@ -91,8 +91,6 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     
     public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     
-    private static final Object[] EMPTY_CHILDREN = new Object[]{};
-    
     private final V8Debugger dbg;
     private final VarValuesLoader vvl;
 
