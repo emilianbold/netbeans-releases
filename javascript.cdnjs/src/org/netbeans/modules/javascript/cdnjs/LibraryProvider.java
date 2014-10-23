@@ -284,7 +284,7 @@ public final class LibraryProvider {
                 URLConnection urlConnection = urlObject.openConnection();
                 StringBuilder content = new StringBuilder();
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                        urlConnection.getInputStream()))) {
+                        urlConnection.getInputStream(), "UTF-8"))) { // NOI18N
                     String line;
                     while ((line = reader.readLine()) != null) {
                         content.append(line).append('\n');
