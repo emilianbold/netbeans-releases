@@ -208,7 +208,9 @@ public class AttachCustomizer extends javax.swing.JPanel {
         FileChooserBuilder fchb = new FileChooserBuilder(AttachCustomizer.class);
         fchb.setDirectoriesOnly(true);
         File dir = fchb.showOpenDialog();
-        localSourcesTextField.setText(dir.getAbsolutePath());
+        if (dir != null) {
+            localSourcesTextField.setText(dir.getAbsolutePath());
+        }
     }//GEN-LAST:event_localSourcesButtonActionPerformed
 
 
