@@ -30,7 +30,7 @@ hdiutil mount -verbose -mountpoint ./dist/mountpoint ./dist/template.sparseimage
 
 rm -rf ./dist/mountpoint/*
 echo "Running rsync..."
-rsync -a ./dist_dmg/ --exclude .DS_Store ./dist/mountpoint/
+rsync -a ./dist_pkg/inst_package/ ./dist/mountpoint/
 echo "Running diskutil rename..."
 diskutil rename `pwd`/dist/mountpoint "$volname"
 echo "Running hdiutil detach..."
