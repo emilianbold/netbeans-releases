@@ -35,9 +35,8 @@
                           <Component id="versionComboBox" max="32767" attributes="0"/>
                       </Group>
                       <Component id="descriptionLabel" alignment="0" max="32767" attributes="0"/>
-                      <Component id="descriptionTextLabel" pref="200" max="32767" attributes="0"/>
+                      <Component id="descriptionScrollPane" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -52,8 +51,8 @@
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="librariesScrollPane" max="32767" attributes="0"/>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="descriptionTextLabel" max="32767" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <Component id="descriptionScrollPane" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -104,11 +103,6 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JLabel" name="descriptionTextLabel">
-          <Properties>
-            <Property name="verticalAlignment" type="int" value="1"/>
-          </Properties>
-        </Component>
         <Component class="javax.swing.JComboBox" name="versionComboBox">
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Library.Version&gt;"/>
@@ -124,6 +118,26 @@
             </Property>
           </Properties>
         </Component>
+        <Container class="javax.swing.JScrollPane" name="descriptionScrollPane">
+          <Properties>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="null"/>
+            </Property>
+            <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
+          </Properties>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="descriptionTextLabel">
+              <Properties>
+                <Property name="verticalAlignment" type="int" value="1"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JLabel() {&#xa;    @Override&#xa;    public Dimension getPreferredSize() {&#xa;        Object view = getClientProperty(&quot;html&quot;); // NOI18N&#xa;        Container container = getParent();&#xa;        if ((view instanceof View) &amp;&amp; (container != null)) {&#xa;            Dimension containerDim = container.getSize();&#xa;            ((View)view).setSize(containerDim.width, containerDim.height);&#xa;        }&#xa;        return super.getPreferredSize();&#xa;    }&#xa;}"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
       </SubComponents>
     </Container>
   </NonVisualComponents>
