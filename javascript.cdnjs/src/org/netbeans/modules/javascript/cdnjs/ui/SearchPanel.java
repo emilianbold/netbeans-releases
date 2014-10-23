@@ -42,6 +42,8 @@
 package org.netbeans.modules.javascript.cdnjs.ui;
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -54,6 +56,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListModel;
+import javax.swing.text.View;
 import org.netbeans.modules.javascript.cdnjs.Library;
 import org.netbeans.modules.javascript.cdnjs.LibraryProvider;
 import org.openide.util.NbBundle;
@@ -232,9 +235,21 @@ class SearchPanel extends javax.swing.JPanel {
         librariesList = new javax.swing.JList<Library>();
         librariesLabel = new javax.swing.JLabel();
         descriptionLabel = new javax.swing.JLabel();
-        descriptionTextLabel = new javax.swing.JLabel();
         versionComboBox = new javax.swing.JComboBox<Library.Version>();
         versionLabel = new javax.swing.JLabel();
+        descriptionScrollPane = new javax.swing.JScrollPane();
+        descriptionTextLabel = new javax.swing.JLabel() {
+            @Override
+            public Dimension getPreferredSize() {
+                Object view = getClientProperty("html"); // NOI18N
+                Container container = getParent();
+                if ((view instanceof View) && (container != null)) {
+                    Dimension containerDim = container.getSize();
+                    ((View)view).setSize(containerDim.width, containerDim.height);
+                }
+                return super.getPreferredSize();
+            }
+        };
         searchLabel = new javax.swing.JLabel();
         searchField = new javax.swing.JTextField();
         searchButton = new javax.swing.JButton();
@@ -255,10 +270,14 @@ class SearchPanel extends javax.swing.JPanel {
         descriptionLabel.setLabelFor(descriptionTextLabel);
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.descriptionLabel.text")); // NOI18N
 
-        descriptionTextLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
         versionLabel.setLabelFor(versionComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(versionLabel, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.versionLabel.text")); // NOI18N
+
+        descriptionScrollPane.setBorder(null);
+        descriptionScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        descriptionTextLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        descriptionScrollPane.setViewportView(descriptionTextLabel);
 
         javax.swing.GroupLayout searchPanelLayout = new javax.swing.GroupLayout(searchPanel);
         searchPanel.setLayout(searchPanelLayout);
@@ -276,8 +295,7 @@ class SearchPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(versionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(descriptionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(descriptionTextLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
+                    .addComponent(descriptionScrollPane)))
         );
         searchPanelLayout.setVerticalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -290,7 +308,7 @@ class SearchPanel extends javax.swing.JPanel {
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(librariesScrollPane)
                     .addGroup(searchPanelLayout.createSequentialGroup()
-                        .addComponent(descriptionTextLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(descriptionScrollPane)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(versionLabel)
@@ -378,6 +396,7 @@ class SearchPanel extends javax.swing.JPanel {
     private javax.swing.JButton addButton;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JScrollPane descriptionScrollPane;
     private javax.swing.JLabel descriptionTextLabel;
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JList<Library> librariesList;
