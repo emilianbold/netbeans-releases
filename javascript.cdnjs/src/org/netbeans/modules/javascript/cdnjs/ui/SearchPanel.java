@@ -106,7 +106,15 @@ class SearchPanel extends javax.swing.JPanel {
      */
     private void librarySelected(Library library) {
         boolean emptySelection = (library == null);
-        descriptionTextLabel.setText(emptySelection ? null : "<html>"+library.getDescription()); // NOI18N
+        String description = null;
+        if (!emptySelection) {
+            description = library.getDescription();
+            if (description == null) { // Issue 248134
+                description = ""; // NOI18N
+            }
+            description = "<html>" + description; // NOI18N
+        }
+        descriptionTextLabel.setText(description);
         versionComboBox.setModel(versionComboBoxModelFor(library));
         versionComboBox.setEnabled(!emptySelection);
         addButton.setEnabled(!emptySelection);
