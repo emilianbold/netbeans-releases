@@ -91,7 +91,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     
     public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     
-    private final V8Debugger dbg;
+    protected final V8Debugger dbg;
     private final VarValuesLoader vvl;
 
     public VariablesModel(ContextProvider contextProvider) {
@@ -195,7 +195,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
         }
     }
     
-    private Object[] getObjectChildren(V8Object obj) {
+    protected final Object[] getObjectChildren(V8Object obj) {
         V8Object.Array array = obj.getArray();
         List<Object> children = null;
         if (array != null) {
@@ -240,12 +240,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
             Variable var = (Variable) node;
             try {
                 V8Value value = var.getValue();
-                if (value instanceof V8Object) {
-                    V8Object obj = (V8Object) value;
-                    V8Object.Array array = obj.getArray();
-                    Map<String, V8Object.Property> properties = obj.getProperties();
-                    return !(array != null && array.getLength() > 0 || properties != null && !properties.isEmpty());
-                }
+                return !hasChildren(value);
             } catch (EvaluationError ex) {
             }
         }
@@ -253,6 +248,17 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
             return false;
         }
         return true;
+    }
+    
+    protected final boolean hasChildren(V8Value value) {
+        if (value instanceof V8Object) {
+            V8Object obj = (V8Object) value;
+            V8Object.Array array = obj.getArray();
+            Map<String, V8Object.Property> properties = obj.getProperties();
+            return (array != null && array.getLength() > 0 || properties != null && !properties.isEmpty());
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -379,12 +385,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 } catch (EvaluationError ex) {
                     return "";
                 }
-                V8Value.Type type = value.getType();
-                if (type == V8Value.Type.Object) {
-                    V8Object obj = (V8Object) value;
-                    return obj.getClassName();
-                }
-                return type.toString();
+                return V8Evaluator.getStringType(value);
             } else if (node instanceof ScopeValue) {
                 return "";
             }
@@ -394,11 +395,13 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
 
     @Override
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
+        // TODO
         return true;
     }
 
     @Override
     public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
+        // TODO
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

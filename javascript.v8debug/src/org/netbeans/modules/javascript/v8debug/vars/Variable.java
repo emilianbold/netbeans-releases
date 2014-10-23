@@ -123,4 +123,6 @@ public class Variable {
         }
         return true;
     }
+    
+    // TODO: Attach referenced values?
 }

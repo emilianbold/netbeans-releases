@@ -169,4 +169,13 @@ public class V8Evaluator {
         }
     }
     
+    public static String getStringType(V8Value value) {
+        V8Value.Type type = value.getType();
+        if (type == V8Value.Type.Object) {
+            V8Object obj = (V8Object) value;
+            return obj.getClassName();
+        }
+        return type.toString();
+    }
+    
 }
