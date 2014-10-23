@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  * @author Martin Entlicher
  */
 @NbBundle.Messages("CTL_Connector_name=Node.js Server")
-//@AttachType.Registration(displayName="#CTL_Connector_name")
+@AttachType.Registration(displayName="#CTL_Connector_name")
 public class V8AttachType extends AttachType {
     
     private Reference<AttachCustomizer> customizerRef = new WeakReference<>(null);
