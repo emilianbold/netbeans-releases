@@ -112,16 +112,17 @@ TOMCAT_ID="${tomcat.id}"
                 <filter token="BASEVERSION" value="${baseide.version}"/>
                 <filter token="NB_ID" value="${nb.id}"/>
             </filterset>
-        </copy>
+        </copy>        
 
+        <copy todir="${scriptsdir}" verbose="yes">
+            <fileset dir="${basedir}/pkg/scripts"/>
+        </copy>
+        
         <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
         <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
         <copy file="${basedir}/../../commonfiles/postupgrade_generic" tofile="${scriptsdir}/postupgrade" overwrite="false"/>
         <copy file="${basedir}/../../commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
-
-        <copy todir="${scriptsdir}" verbose="yes">
-            <fileset dir="${basedir}/pkg/scripts"/>
-        </copy>             
+                                  
         <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${netbeans-Title}"/>
@@ -130,9 +131,7 @@ TOMCAT_ID="${tomcat.id}"
         
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
 
-        <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>
-        <echo message="RUNNING: pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.baside --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
-        
+        <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>        
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.baside --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
