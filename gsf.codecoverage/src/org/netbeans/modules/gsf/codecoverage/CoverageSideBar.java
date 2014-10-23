@@ -45,8 +45,10 @@ package org.netbeans.modules.gsf.codecoverage;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -220,53 +222,62 @@ public class CoverageSideBar extends javax.swing.JPanel {
         clearButton = new JButton();
         reportButton = new JButton();
         jButton1 = new JButton();
-        Mnemonics.setLocalizedText(label,NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.label.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(label, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.label.text")); // NOI18N
         label.setToolTipText(NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.label.toolTipText")); // NOI18N
         label.setFocusable(false);
 
         coverageBar.setMinimumSize(new Dimension(40, 10));
 
         warningsLabel.setForeground(UIManager.getDefaults().getColor("nb.errorForeground"));
-        Mnemonics.setLocalizedText(testButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.testButton.text"));
+
+        Mnemonics.setLocalizedText(testButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.testButton.text")); // NOI18N
+        testButton.setEnabled(isActionSupported(ActionProvider.COMMAND_TEST_SINGLE)
+        );
         testButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 testOne(evt);
             }
         });
-        Mnemonics.setLocalizedText(allTestsButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.allTestsButton.text"));
+
+        Mnemonics.setLocalizedText(allTestsButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.allTestsButton.text")); // NOI18N
+        allTestsButton.setEnabled(isActionSupported(getAllTestAction())
+        );
         allTestsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 allTests(evt);
             }
         });
-        Mnemonics.setLocalizedText(clearButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.clearButton.text"));
+
+        Mnemonics.setLocalizedText(clearButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.clearButton.text")); // NOI18N
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 clearResults(evt);
             }
         });
-        Mnemonics.setLocalizedText(reportButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.reportButton.text"));
+
+        Mnemonics.setLocalizedText(reportButton, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.reportButton.text")); // NOI18N
         reportButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 report(evt);
             }
         });
-        Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.jButton1.text"));
+
+        Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(CoverageSideBar.class, "CoverageSideBar.jButton1.text")); // NOI18N
         jButton1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 done(evt);
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(label)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(coverageBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(coverageBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED, 86, Short.MAX_VALUE)
                 .addComponent(warningsLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -280,11 +291,10 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(jButton1))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                 .addComponent(label)
-                .addComponent(coverageBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(coverageBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addComponent(jButton1)
                 .addComponent(reportButton)
                 .addComponent(clearButton)
@@ -302,12 +312,7 @@ public class CoverageSideBar extends javax.swing.JPanel {
 }//GEN-LAST:event_clearResults
 
     private void allTests(ActionEvent evt) {//GEN-FIRST:event_allTests
-        String action = ActionProvider.COMMAND_TEST;
-        CoverageProvider provider = getProvider();
-        if (provider != null && provider.getTestAllAction() != null) {
-            action = provider.getTestAllAction();
-        }
-        runAction(action);
+        runAction(getAllTestAction());
     }//GEN-LAST:event_allTests
 
     private void testOne(ActionEvent evt) {//GEN-FIRST:event_testOne
@@ -349,6 +354,26 @@ public class CoverageSideBar extends javax.swing.JPanel {
                 }
             }
         }
+    }
+    
+    private String getAllTestAction() {
+        String action = ActionProvider.COMMAND_TEST;
+        CoverageProvider provider = getProvider();
+        if (provider != null && provider.getTestAllAction() != null) {
+            action = provider.getTestAllAction();
+        }
+        return action;
+    }
+    
+    private boolean isActionSupported(String action) {
+        Project project = getProject();
+        if (project != null) {
+            ActionProvider provider = project.getLookup().lookup(ActionProvider.class);
+            if (provider != null) {
+                return Arrays.asList(provider.getSupportedActions()).contains(action);
+            }
+        }
+        return false;
     }
 
     private Project getProject() {
