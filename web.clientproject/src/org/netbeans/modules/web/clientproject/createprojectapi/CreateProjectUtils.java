@@ -63,7 +63,7 @@ import org.openide.util.Pair;
 public final class CreateProjectUtils {
 
     /**
-     * Constant for project directory, stored as {@link java.io.File}.
+     * Constant for project directory, stored as {@link java.io.File} (the file does not need to exist).
      * @see #createBaseWizardPanel(String)
      */
     public static final String PROJECT_DIRECTORY = ClientSideProjectWizardIterator.Wizard.PROJECT_DIRECTORY;
@@ -96,11 +96,13 @@ public final class CreateProjectUtils {
      * these tools are enabled by default.
      * <p>
      * Currently, this panel is always finishable.
+     * @param tools information about tools
      * @return panel for "Tools" (Bower, NPM, Grunt) together with its default display name
      */
     @NbBundle.Messages("CreateProjectUtils.tools.displayName=Tools")
-    public static Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> createToolsWizardPanel() {
-        return Pair.<WizardDescriptor.FinishablePanel<WizardDescriptor>, String>of(new ToolsPanel(), Bundle.CreateProjectUtils_tools_displayName());
+    public static Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> createToolsWizardPanel(Tools tools) {
+        return Pair.<WizardDescriptor.FinishablePanel<WizardDescriptor>, String>of(new ToolsPanel(new Tools(tools)),
+                Bundle.CreateProjectUtils_tools_displayName());
     }
 
     /**
@@ -108,33 +110,30 @@ public final class CreateProjectUtils {
      * <p>
      * This method is typically used in <code>WizardIterator</code>.
      * @param project project to be used
-     * @param wizardDescriptor settings to be used
+     * @param toolsPanel panel, created by {@link #createToolsWizardPanel()}
      * @return set of generated files; can be empty but never {@code null}
      * @throws IOException if any error occurs
+     * @see #createToolsWizardPanel()
+     * @since 1.68
      */
-    public static Set<FileObject> instantiateTools(Project project, WizardDescriptor wizardDescriptor) throws IOException {
+    public static Set<FileObject> instantiateTools(Project project, WizardDescriptor.FinishablePanel<WizardDescriptor> toolsPanel) throws IOException {
+        if (!(toolsPanel instanceof ToolsPanel)) {
+            throw new IllegalArgumentException("toolsPanel must be created by #createToolsWizardPanel() method");
+        }
         Set<FileObject> files = new HashSet<>();
         FileObject folder = findBestToolsFolder(project);
         assert folder != null;
-        if (isToolEnabled(wizardDescriptor, ToolsPanel.BOWER_ENABLED)) {
+        Tools tools = ((ToolsPanel) toolsPanel).getTools();
+        if (tools.isBower()) {
             files.add(createFile(folder, "bower.json", "Templates/ClientSide/bower.json")); // NOI18N
         }
-        if (isToolEnabled(wizardDescriptor, ToolsPanel.NPM_ENABLED)) {
+        if (tools.isNpm()) {
             files.add(createFile(folder, "package.json", "Templates/ClientSide/package.json")); // NOI18N
         }
-        if (isToolEnabled(wizardDescriptor, ToolsPanel.GRUNT_ENABLED)) {
+        if (tools.isGrunt()) {
             files.add(createFile(folder, "Gruntfile.js", "Templates/ClientSide/Gruntfile.js")); // NOI18N
         }
         return files;
-    }
-
-    private static boolean isToolEnabled(WizardDescriptor wizardDescriptor, String tool) {
-        Boolean enabled = (Boolean) wizardDescriptor.getProperty(tool);
-        if (enabled == null) {
-            // not set => set as enabled
-            return true;
-        }
-        return enabled;
     }
 
     private static FileObject findBestToolsFolder(Project project) {
@@ -158,6 +157,103 @@ public final class CreateProjectUtils {
         DataFolder dataFolder = DataFolder.findFolder(root);
         DataObject dataIndex = DataObject.find(templateFile);
         return dataIndex.createFromTemplate(dataFolder).getPrimaryFile();
+    }
+
+    //~ Inner classes
+
+    /**
+     * Information about external tools.
+     * @since 1.68
+     */
+    public static final class Tools {
+
+        private volatile boolean npm;
+        private volatile boolean bower;
+        private volatile boolean grunt;
+
+
+        /**
+         * Creates new tools with all tools disabled.
+         */
+        public Tools() {
+        }
+
+        Tools(Tools tools) {
+            npm = tools.npm;
+            bower = tools.bower;
+            grunt = tools.grunt;
+        }
+
+        /**
+         * Creates external tools with all tools enabled.
+         * @return external tools with all tools enabled
+         */
+        public static Tools all() {
+            return new Tools()
+                    .setNpm(true)
+                    .setBower(true)
+                    .setGrunt(true);
+        }
+
+        /**
+         * Is NPM tool enabled?
+         * @return {@code true} if NPM tool is enabled
+         */
+        public boolean isNpm() {
+            return npm;
+        }
+
+        /**
+         * Set NPM tool.
+         * @param npm {@code true} if NPM tool is enabled
+         * @return self
+         */
+        public Tools setNpm(boolean npm) {
+            this.npm = npm;
+            return this;
+        }
+
+        /**
+         * Is Bower tool enabled?
+         * @return {@code true} if Bower tool is enabled
+         */
+        public boolean isBower() {
+            return bower;
+        }
+
+        /**
+         * Set Bower tool.
+         * @param bower {@code true} if Bower tool is enabled
+         * @return self
+         */
+        public Tools setBower(boolean bower) {
+            this.bower = bower;
+            return this;
+        }
+
+        /**
+         * Is Grunt tool enabled?
+         * @return {@code true} if Grunt tool is enabled
+         */
+        public boolean isGrunt() {
+            return grunt;
+        }
+
+        /**
+         * Set Grunt tool.
+         * @param grunt {@code true} if Grunt tool is enabled
+         * @return self
+         */
+        public Tools setGrunt(boolean grunt) {
+            this.grunt = grunt;
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            return "Tools{" + "npm=" + npm + ", bower=" + bower + ", grunt=" + grunt + '}'; // NOI18N
+        }
+
     }
 
 }

@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.grunt.GruntfileExecutor;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
@@ -100,7 +101,8 @@ public class GruntCommand extends Command {
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 }
-            } else if (showCustomizer) {
+            } else if (showCustomizer
+                    && !ClientSideProjectUtilities.isCordovaProject(project)) {
                 NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntCommand_configure(), NotifyDescriptor.YES_NO_OPTION);
                 Object option = DialogDisplayer.getDefault().notify(desc);
                 if (option == NotifyDescriptor.YES_OPTION) {
@@ -108,7 +110,8 @@ public class GruntCommand extends Command {
                 }
                 return true;
             }
-        } else if (showCustomizer) {
+        } else if (showCustomizer
+                && !ClientSideProjectUtilities.isCordovaProject(project)) {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.GruntCommand_notFound()));
         }
         return false;

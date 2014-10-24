@@ -69,7 +69,7 @@ import org.netbeans.modules.collab.core.Debug;
  *
  * @author  Todd Fast <todd.fast@sun.com>
  */
-public class CollabFilesystem extends LocalFileSystem implements FileSystem.Status, FilesharingConstants {
+public class CollabFilesystem extends LocalFileSystem implements StatusDecorator, FilesharingConstants {
     ////////////////////////////////////////////////////////////////////////////
     // Class variables
     ////////////////////////////////////////////////////////////////////////////
@@ -187,6 +187,10 @@ public class CollabFilesystem extends LocalFileSystem implements FileSystem.Stat
             );
 
         return annotation;
+    }
+
+    public String annotateNameHtml(String name, Set files) {
+        return null;
     }
 
     /**

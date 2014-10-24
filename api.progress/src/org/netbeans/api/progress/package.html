@@ -47,7 +47,7 @@ This API allows to visualize tracking for progress of long lasting tasks.<p>
 The usual usecase goes like this:
 <br>
 <pre>
-ProgressHandle handle = ProgressHandleFactory.createHandle("My custom task");
+ProgressHandle handle = ProgressHandle.createHandle("My custom task");
 ...
 // we have 100 workunits
 // at this point the task appears in status bar.
@@ -71,7 +71,7 @@ All these usecases are supported by methods of {@link org.netbeans.api.progress.
 it's possible to include textual information about current progress.
 <br>
 If the task allows to be cancelled by the user, then you have to implement 
-{@link org.openide.util.Cancellable} interface and pass it to the {@link org.netbeans.api.progress.ProgressHandleFactory}
+{@link org.openide.util.Cancellable} interface and pass it to the {@link org.netbeans.api.progress.ProgressHandle}
 when creating the handle.
 </body>
 </html>

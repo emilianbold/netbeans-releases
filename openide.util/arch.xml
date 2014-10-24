@@ -319,7 +319,7 @@ made subject to such option by the copyright holder.
 
 
  <answer id="exec-property">
-  <ul>
+<!--  <ul>
     <li><api type="export" group="systemproperty" name="netbeans.screen.insets" category="private">
     Influences results of Utilities.getUsableScreenBounds</api>.</li>
     <li><api type="export" group="systemproperty" name="netbeans.taskbar.height" category="private">
@@ -333,7 +333,7 @@ made subject to such option by the copyright holder.
     Specifies the time in ms unused <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor</a>
     processor threads remain around, until 
     they get GCed. By default 60s. Primarily used from tests.</api></li>
-  </ul>
+  </ul>-->
  </answer>
 
 
@@ -413,11 +413,11 @@ made subject to such option by the copyright holder.
 
  <answer id="format-types">
   <p>
-    The <a href="http://java.sun.com/j2se/1.3/docs/guide/jar/jar.html#Provider%20Configuration%20File">META-INF/services/...</a> files.
+<!--    The <a href="http://java.sun.com/j2se/1.3/docs/guide/jar/jar.html#Provider%20Configuration%20File">META-INF/services/...</a> files.
     <api name="TranslateNames" category="official" type="export" group="java.io.File" 
     url="@TOP@/org/openide/util/Utilities.html#translate(java.lang.String)">
     <a href="@TOP@/org/openide/util/Utilities.html#translate(java.lang.String)">Utilities.translate</a> 
-    reads <code>META-INF/netbeans/translate.names</code> files from JARs</api>.
+    reads <code>META-INF/netbeans/translate.names</code> files from JARs</api>.-->
   </p>
  </answer>
 
@@ -439,11 +439,11 @@ made subject to such option by the copyright holder.
     system implementation</a>.
     </api>.</li>
 
-    <li><api name="LookupEntityCatalog" category="devel" group="lookup" type="export">
+<!--    <li><api name="LookupEntityCatalog" category="devel" group="lookup" type="export">
     <a href="@org-openide-util-base@/org/openide/xml/EntityCatalog.html">EntityCatalog</a> 
     delegates its methods to all instances of <a href="@org-openide-util-base@/org/openide/xml/EntityCatalog.html">EntityCatalog</a>s
     found in Lookup
-    </api>.</li>
+    </api>.</li>-->
     
     <li><api name="LookupErrorManager" category="devel" group="lookup" type="export">
     <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a> 
@@ -451,12 +451,12 @@ made subject to such option by the copyright holder.
     found in Lookup
     </api>.</li>
             
-    <li><api name="LookupClassLoader" category="devel" group="lookup" type="export">
+<!--    <li><api name="LookupClassLoader" category="devel" group="lookup" type="export">
     Nearly all resource looking functions and reflective code
     uses <a href="@JDK@/java/lang/ClassLoader.html">ClassLoader</a>
     obtained from <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
     for loading system wide resources.
-    </api>.</li>
+    </api>.</li>-->
     
     </ul>
  </answer>

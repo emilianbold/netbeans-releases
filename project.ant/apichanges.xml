@@ -166,7 +166,7 @@ is the proper place.
                    to allow project modules to create license header selection and editing panel.
                 </p>
             </description>
-            <class package="org.netbeans.spi.project.support.ant.ui" name="CustomizerUtilities"/>
+            <class package="org.netbeans.spi.project.support.ant.ui" name="CustomizerUtilities" link="no"/>
             <issue number="226773"/>
         </change>        
         <change id="createSharabilityQuery2">
@@ -371,8 +371,8 @@ is the proper place.
                 Support class added for showing variables manager.
                 </p>
             </description>
-            <class package="org.netbeans.api.project.ant" name="FileChooser"/>
-            <class package="org.netbeans.spi.project.support.ant.ui" name="VariablesSupport"/>
+            <class package="org.netbeans.api.project.ant" name="FileChooser" link="no"/>
+            <class package="org.netbeans.spi.project.support.ant.ui" name="VariablesSupport" link="no"/>
             <issue number="136516"/>
         </change>
 
@@ -416,7 +416,7 @@ is the proper place.
                     <code>ReferenceHelper.createLibraryReference</code>,
                     <code>ReferenceHelper.getProjectLibraryManager</code>,
                     <code>ReferenceHelper.findLibrary</code>) and
-                    custom file chooser (<code>FileChooser</code>)
+                    custom file chooser (<code><a href="@org-netbeans-modules-project-ant-ui@/org/netbeans/api/project/ant/FileChooser.html">FileChooser</a></code>)
                     provide support for collocated library definitions
                     referred to from Ant-based projects.
                 </p>
@@ -424,7 +424,7 @@ is the proper place.
             <class package="org.netbeans.spi.project.support.ant" name="AntProjectHelper"/>
             <class package="org.netbeans.spi.project.support.ant" name="ReferenceHelper"/>
             <class package="org.netbeans.spi.project.support.ant" name="ProjectGenerator"/>
-            <class package="org.netbeans.api.project.ant" name="FileChooser"/>
+            <class package="org.netbeans.api.project.ant" name="FileChooser" link="no"/>
             <issue number="44035"/>
         </change>
 
@@ -544,7 +544,7 @@ is the proper place.
                 is capable of creating Swing models for simple Ant project properties and
                 storing modified values back into properties.
             </description>
-            <class package="org.netbeans.spi.project.support.ant.ui" name="StoreGroup"/>
+            <class package="org.netbeans.spi.project.support.ant.ui" name="StoreGroup" link="no"/>
             <issue number="49648"/>
         </change>
      

@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
          <compatibility addition="yes" binary="compatible" semantic="compatible" />
          <description>
          <p>
-             Module can be declared as <a href="@TOP@architecture-summary.html#modfrag">
+             Module can be declared as <a href="@TOP@architecture-summary.html#usecase-modfrag">
                  Module Fragment
              </a> to join other module loader. Fragment classes may ask to be bytecode-patched
              as superclasses of API classes to preserve compatibility.

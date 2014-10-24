@@ -233,3 +233,9 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-project-ant-ui@" value="${javadoc.docs.org-netbeans-modules-project-ant-ui}"/>
 <replacefilter token="@org-netbeans-modules-java-project-ui@" value="${javadoc.docs.org-netbeans-modules-java-project-ui}"/>
 <replacefilter token="@org-netbeans-modules-xml-catalog-ui@" value="${javadoc.docs.org-netbeans-modules-xml-catalog-ui}"/>
+<replacefilter token="@org-netbeans-api-progress-nb@" value="${javadoc.docs.org-netbeans-api-progress-nb}"/>
+<replacefilter token="@org-netbeans-modules-editor-indent-support@" value="${javadoc.docs.org-netbeans-modules-editor-indent-support}"/>
+<replacefilter token="@org-netbeans-modules-masterfs-ui@" value="${javadoc.docs.org-netbeans-modules-masterfs-ui}"/>
+<replacefilter token="@org-netbeans-modules-parsing-nb@" value="${javadoc.docs.org-netbeans-modules-parsing-nb}"/>
+<replacefilter token="@org-netbeans-modules-project-libraries-ui@" value="${javadoc.docs.org-netbeans-modules-project-libraries-ui}"/>
+<replacefilter token="@org-openide-filesystems-nb@" value="${javadoc.docs.org-openide-filesystems-nb}"/>

@@ -100,7 +100,7 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <apidef name="general">Java Platform UI API</apidef>
+        <apidef name="java_platform_ui">Java Platform UI API</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -108,7 +108,7 @@ is the proper place.
 
     <changes>
         <change id="server.is.free">
-            <api name="general"/>
+            <api name="java_platform_ui"/>
             <summary>Desktop dependent java platform UI extracted</summary>
             <version major="1" minor="37"/>
             <date day="14" month="5" year="2014"/>
@@ -132,6 +132,9 @@ is the proper place.
                     <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/spi/java/platform/GeneralPlatformInstall.html">GeneralPlatformInstall</a></li>
                     <li><a href="@org-netbeans-modules-java-platform-ui@/org/netbeans/spi/java/platform/PlatformInstall.html">PlatformInstall</a></li>
                 </ul>
+                <p>
+                    Please also see <a href="@org-netbeans-modules-java-platform@/apichanges.html">API changes</a> of the original <code>java.platform</code> module.
+                </p>
             </description>
         </change>
 

@@ -109,10 +109,13 @@ public class AttachCustomizer extends javax.swing.JPanel {
         serverPathTextField = new javax.swing.JTextField();
         localSourcesButton = new javax.swing.JButton();
 
+        hostLabel.setLabelFor(hostTextField);
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(AttachCustomizer.class, "AttachCustomizer.hostLabel.text")); // NOI18N
 
+        portLabel.setLabelFor(portTextField);
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(AttachCustomizer.class, "AttachCustomizer.portLabel.text")); // NOI18N
 
+        localSourcesLabel.setLabelFor(localSourcesTextField);
         org.openide.awt.Mnemonics.setLocalizedText(localSourcesLabel, org.openide.util.NbBundle.getMessage(AttachCustomizer.class, "AttachCustomizer.localSourcesLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(localSourcesCheckBox, org.openide.util.NbBundle.getMessage(AttachCustomizer.class, "AttachCustomizer.localSourcesCheckBox.text")); // NOI18N
@@ -122,6 +125,7 @@ public class AttachCustomizer extends javax.swing.JPanel {
             }
         });
 
+        serverPathLabel.setLabelFor(serverPathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(serverPathLabel, org.openide.util.NbBundle.getMessage(AttachCustomizer.class, "AttachCustomizer.serverPathLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(localSourcesButton, org.openide.util.NbBundle.getMessage(AttachCustomizer.class, "AttachCustomizer.localSourcesButton.text")); // NOI18N
@@ -204,7 +208,9 @@ public class AttachCustomizer extends javax.swing.JPanel {
         FileChooserBuilder fchb = new FileChooserBuilder(AttachCustomizer.class);
         fchb.setDirectoriesOnly(true);
         File dir = fchb.showOpenDialog();
-        localSourcesTextField.setText(dir.getAbsolutePath());
+        if (dir != null) {
+            localSourcesTextField.setText(dir.getAbsolutePath());
+        }
     }//GEN-LAST:event_localSourcesButtonActionPerformed
 
 

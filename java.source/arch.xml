@@ -100,9 +100,6 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-quality">
-  <p>
-  <api type="export" category="official" group="java" name="JavaSourceAPI" url="@TOP@index.html"/>
-  </p>
  </answer>
 
 

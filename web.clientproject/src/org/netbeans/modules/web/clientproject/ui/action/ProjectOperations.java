@@ -43,21 +43,23 @@ package org.netbeans.modules.web.clientproject.ui.action;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.node.ImportantFilesNodeFactory;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.openide.filesystems.FileObject;
 
 /**
  * Default project operations.
  */
-public class ProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
+public class ProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOrRenameOperationImplementation {
 
     private final ClientSideProject project;
 
@@ -107,6 +109,16 @@ public class ProjectOperations implements DeleteOperationImplementation, CopyOpe
     }
 
     @Override
+    public void notifyRenaming() throws IOException {
+        // noop
+    }
+
+    @Override
+    public void notifyRenamed(String nueName) throws IOException {
+        project.setName(nueName);
+    }
+
+    @Override
     public List<FileObject> getMetadataFiles() {
         FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
         if (nbproject != null) {
@@ -117,8 +129,18 @@ public class ProjectOperations implements DeleteOperationImplementation, CopyOpe
 
     @Override
     public List<FileObject> getDataFiles() {
+        List<FileObject> files = new ArrayList<>();
         // all the sources
-        return Arrays.asList(ClientSideProjectUtilities.getSourceObjects(project));
+        files.addAll(Arrays.asList(ClientSideProjectUtilities.getSourceObjects(project)));
+        // important files
+        FileObject projectDir = project.getProjectDirectory();
+        for (String path : ImportantFilesNodeFactory.ImportantFilesChildren.FILES.keySet()) {
+            FileObject file = projectDir.getFileObject(path);
+            if (file != null) {
+                files.add(file);
+            }
+        }
+        return files;
     }
 
 }

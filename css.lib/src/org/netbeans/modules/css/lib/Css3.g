@@ -995,7 +995,7 @@ cp_variable_declaration
     :
         {isLessSource()}? cp_variable ws? COLON ws? cp_expression_list
         |
-        {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list (ws? SASS_DEFAULT)?
+        {isScssSource()}? cp_variable ws? COLON ws? cp_expression_list ((ws? SASS_DEFAULT) | (ws? SASS_GLOBAL))*
     ;
 
 //ENTRY POINT FROM CSS GRAMMAR
@@ -1783,6 +1783,7 @@ AT_IDENT	    : AT_SIGN NMCHAR+;
 SASS_VAR            : '$' NMCHAR+;
 SASS_DEFAULT        : '!DEFAULT';
 SASS_OPTIONAL       : '!OPTIONAL';
+SASS_GLOBAL         : '!GLOBAL';
 
 SASS_EXTEND_ONLY_SELECTOR
                     : PERCENTAGE_SYMBOL NMCHAR+;

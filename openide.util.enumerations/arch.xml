@@ -74,7 +74,7 @@ made subject to such option by the copyright holder.
  <answer id="arch-overall">
   <p>
   This module contains utility classes to work with, create, compose or filter enumerations.
-  However as these classes reside in <a href="@TOP@/org/openide/util/enum/package-summary.html">enum</a>
+  However as these classes reside in <a href="@org-openide-util-enumerations@/org/openide/util/enum/package-summary.html">enum</a>
   package, they cannot be referenced when using javac's <code>-source 1.5</code>.
   </p>
  </answer>
@@ -125,7 +125,7 @@ made subject to such option by the copyright holder.
  <answer id="arch-usecases">
   <p>
   Most of the functionality is deprecated, so it is better to go
-  and use <a href="@org-openide-util@/org/openide/util/Enumerations.html">the 
+  and use <a href="@org-openide-util-base@/org/openide/util/Enumerations.html">the 
   replacement API</a> in <code>org-openide-util.jar</code>.
   </p>
  </answer>
@@ -146,7 +146,7 @@ made subject to such option by the copyright holder.
   <p>
    <api name="OldEnumerationsAPI" group="java" category="deprecated" type="export">
        is deprecated and replaced with the
-       <a href="@org-openide-util@/org/openide/util/Enumerations.html">
+       <a href="@org-openide-util-base@/org/openide/util/Enumerations.html">
        Enumerations</a> class.
    </api>
   </p>
