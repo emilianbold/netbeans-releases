@@ -45,8 +45,6 @@
 package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.lib.profiler.common.AttachSettings;
-import java.io.IOException;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.attach.AttachWizard;
 import org.openide.util.Lookup;
@@ -64,10 +62,10 @@ public class Utils {
     public static AttachSettings getAttachSettings(Lookup.Provider project) {
         AttachSettings attachSettings = null;
     
-        try {
-            attachSettings = ProjectStorage.loadAttachSettings(project);
-        } catch (IOException ex) {
-        }
+//        try {
+//            attachSettings = ProjectStorage.loadAttachSettings(project);
+//        } catch (IOException ex) {
+//        }
 
         return attachSettings;
     }

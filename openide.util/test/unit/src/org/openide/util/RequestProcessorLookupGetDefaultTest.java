@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.spi.project;
+package org.openide.util;
 
-import java.io.IOException;
-import org.netbeans.lib.profiler.common.AttachSettings;
-import org.openide.filesystems.FileObject;
+import java.util.concurrent.TimeUnit;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
-/**
- *
- * @author Jiri Sedlacek
- */
-public abstract class ProjectStorageProvider {
+public class RequestProcessorLookupGetDefaultTest extends NbTestCase {
+
+    public RequestProcessorLookupGetDefaultTest(String name) {
+        super(name);
+    }
     
-    /**
-     * Returns attach settings for the provided project or null if not available.
-     * 
-     * @param project project context
-     * @return attach settings for the provided project or null if not available
-     */
-    public abstract AttachSettings loadAttachSettings(Lookup.Provider project) throws IOException;
-    
-    /**
-     * Saves attach settings in context of the provided project.
-     * 
-     * @param project project context
-     * @param settings attach settings
-     */
-    public abstract void saveAttachSettings(Lookup.Provider project, AttachSettings settings);
-    
-    /**
-     * Returns FileObject which can be used as a settings storage for the provided project or null if not available.
-     * 
-     * @param project project context
-     * @param create if <code>true</code> the storage will be created if not already available
-     * @return FileObject which can be used as a settings storage for the provided project or null if not available
-     * @throws IOException 
-     */
-    public abstract FileObject getSettingsFolder(Lookup.Provider project, boolean create)
-            throws IOException;
-    
-    /**
-     * Returns project context for the provided settings storage FileObject or null if not resolvable.
-     * 
-     * @param settingsFolder settings storage
-     * @return project context for the provided settings storage FileObject or null if not resolvable
-     */
-    public abstract Lookup.Provider getProjectFromSettingsFolder(FileObject settingsFolder);
-    
+    public void testChangeOfDefaultLookupAppliedToRPTask() throws Exception {
+        Lookup prev = Lookup.getDefault();
+        final Lookup my = new AbstractLookup(new InstanceContent());
+        final Thread myThread = Thread.currentThread();
+        final RequestProcessor.Task[] task = { null };
+        final boolean[] ok = { false };
+        
+        Lookups.executeWith(my, new Runnable() {
+            @Override
+            public void run() {
+                assertSame("Default lookup has been changed", my, Lookup.getDefault());
+
+                if (task[0] == null) {
+                    assertSame("We are being executed in the same thread", myThread, Thread.currentThread());
+                    // once again in the RP
+                    task[0] = RequestProcessor.getDefault().post(this, 500);
+                } else {
+                    ok[0] = true;
+                }
+            }
+        });
+        assertNotNull("In my lookup code executed OK", task[0]);
+        assertEquals("Current lookup back to normal", prev, Lookup.getDefault());
+        task[0].waitFinished();
+        assertTrue("Even RP task had the right lookup", ok[0]);
+    }
 }

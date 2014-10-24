@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.netbeans.modules.profiler.api.ProfilingSettingsManager.ProfilingSettingsDescriptor;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport;
 import org.netbeans.modules.profiler.api.project.ProfilingSettingsSupport.SettingsCustomizer;
 import org.netbeans.modules.profiler.spi.ProfilingSettingsManagerProvider;
@@ -100,7 +99,8 @@ public class NBProfilingSettingsManager extends ProfilingSettingsManagerProvider
 
         try {
             // get settings folder used for resolving filesystem for atomic action
-            FileObject settingsStorage = ProjectStorage.getSettingsFolder(project, false);
+//            FileObject settingsStorage = ProjectStorage.getSettingsFolder(project, false);
+            FileObject settingsStorage = null;
             if (settingsStorage != null) {
                 // make final copies for atomic action
                 final Lookup.Provider projectF = project;
@@ -191,7 +191,8 @@ public class NBProfilingSettingsManager extends ProfilingSettingsManagerProvider
             }
             
             // get settings folder used for resolving filesystem for atomic action
-            FileObject settingsStorage = ProjectStorage.getSettingsFolder(project, true);
+//            FileObject settingsStorage = ProjectStorage.getSettingsFolder(project, true);
+            FileObject settingsStorage = null;
             if (settingsStorage == null) {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "Cannot create project settings folder for " // NOI18N
                                               + project + ", settings cannot be saved."); // NOI18N
@@ -245,11 +246,12 @@ public class NBProfilingSettingsManager extends ProfilingSettingsManagerProvider
 
     private FileObject getProfilingSettingsStorage(Lookup.Provider project)
                                             throws IOException {  
-        FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
-        FileObject profilingSettingsStorage = projectSettingsFolder.getFileObject(PROFILING_SETTINGS_STORAGE_FILENAME,
-                                                                                  PROFILING_SETTINGS_STORAGE_FILEEXT);
-
-        return profilingSettingsStorage;
+//        FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
+//        FileObject profilingSettingsStorage = projectSettingsFolder.getFileObject(PROFILING_SETTINGS_STORAGE_FILENAME,
+//                                                                                  PROFILING_SETTINGS_STORAGE_FILEEXT);
+//
+//        return profilingSettingsStorage;
+        return null;
     }
 
     private ProfilingSettings[] createDefaultSettings() {
@@ -261,11 +263,12 @@ public class NBProfilingSettingsManager extends ProfilingSettingsManagerProvider
 
     private FileObject createProfilingSettingsStorage(Lookup.Provider project)
                                                throws IOException {   
-        FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
-        FileObject profilingSettingsStorage = projectSettingsFolder.createData(PROFILING_SETTINGS_STORAGE_FILENAME,
-                                                                               PROFILING_SETTINGS_STORAGE_FILEEXT);
-
-        return profilingSettingsStorage;
+//        FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
+//        FileObject profilingSettingsStorage = projectSettingsFolder.createData(PROFILING_SETTINGS_STORAGE_FILENAME,
+//                                                                               PROFILING_SETTINGS_STORAGE_FILEEXT);
+//
+//        return profilingSettingsStorage;
+        return null;
     }
 
     private Properties loadSettings(final FileObject storage)

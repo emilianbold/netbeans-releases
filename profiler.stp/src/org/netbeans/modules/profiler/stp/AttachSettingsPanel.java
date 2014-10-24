@@ -52,7 +52,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -151,7 +150,7 @@ public class AttachSettingsPanel extends JPanel {
                         updateSettingsHint();
                         RequestProcessor.getDefault().post(new Runnable() {
                                 public void run() {
-                                    ProjectStorage.saveAttachSettings(project, attachSettings);
+//                                    ProjectStorage.saveAttachSettings(project, attachSettings);
                                 }
                             });
                     }
