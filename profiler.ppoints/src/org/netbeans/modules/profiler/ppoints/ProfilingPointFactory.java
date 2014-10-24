@@ -45,23 +45,17 @@ package org.netbeans.modules.profiler.ppoints;
 
 import org.netbeans.modules.profiler.ppoints.ui.ValidityAwarePanel;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.Icon;
+import org.netbeans.modules.profiler.api.ProfilerStorage;
 import org.netbeans.modules.profiler.api.icons.Icons;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointsIcons;
 import org.openide.util.Lookup;
@@ -167,34 +161,25 @@ public abstract class ProfilingPointFactory {
         return safeCustomizer;
     }
 
-    ProfilingPoint[] loadProfilingPoints(Lookup.Provider project, FileObject projectSettingsFolder)
+    ProfilingPoint[] loadProfilingPoints(Lookup.Provider project)
                                   throws IOException, InvalidPropertiesFormatException {
-        List<ProfilingPoint> profilingPoints = new ArrayList();
         Properties properties = new Properties();
-        final FileObject profilingPointsStorage = getProfilingPointsStorage(projectSettingsFolder);
+        ProfilerStorage.loadProjectProperties(properties, project, getProfilingPointsStorage());
 
-        if (profilingPointsStorage != null) {
-            final InputStream is = profilingPointsStorage.getInputStream();
-            final BufferedInputStream bis = new BufferedInputStream(is);
-            properties.loadFromXML(bis);
-            bis.close();
+        int index = 0;
+        List<ProfilingPoint> profilingPoints = new ArrayList();
+        while (properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_NAME) != null) { // NOI18N
+            ProfilingPoint profilingPoint = loadProfilingPoint(project, properties, index);
 
-            int index = 0;
-
-            while (properties.getProperty(index + "_" + ProfilingPoint.PROPERTY_NAME) != null) { // NOI18N
-                ProfilingPoint profilingPoint = loadProfilingPoint(project, properties, index);
-
-                if (profilingPoint != null) {
-                    profilingPoints.add(profilingPoint);
-                } else {
-                    ErrorManager.getDefault()
-                                .log(ErrorManager.ERROR,
-                                     "Invalid " + getType() + " Profiling Point format at index " + index + " in project "  // NOI18N
-                                     + ProjectUtilities.getDisplayName(project));
-                }
-
-                index++;
+            if (profilingPoint != null) {
+                profilingPoints.add(profilingPoint);
+            } else {
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "Invalid " + getType() + // NOI18N
+                                             " Profiling Point format at index " + index +  // NOI18N
+                                             " in project " + ProjectUtilities.getDisplayName(project)); // NOI18N
             }
+
+            index++;
         }
 
         ProfilingPoint[] profilingPointsArr = new ProfilingPoint[profilingPoints.size()];
@@ -204,94 +189,26 @@ public abstract class ProfilingPointFactory {
     }
 
     void saveProfilingPoints(Lookup.Provider project) throws IOException {
-        saveProfilingPoints((ProfilingPoint[]) ProfilingPointsManager.getDefault()
-                                                                     .getProfilingPoints(getProfilingPointsClass(), project, false)
-                                                                     .toArray(new ProfilingPoint[0]), project);
+        List<ProfilingPoint> profilingPoints = ProfilingPointsManager.getDefault().getProfilingPoints(getProfilingPointsClass(), project, false);
+        saveProfilingPoints(profilingPoints.toArray(new ProfilingPoint[profilingPoints.size()]), project);
     }
-
-    private FileObject getProfilingPointsStorage(FileObject projectSettingsFolder)
-                                                 throws IOException {
-        if (projectSettingsFolder == null) {
-            return null;
-        }
-
-        String profilingPointClassNameFull = getProfilingPointsClass().getName();
-        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf('.') + 1); // NOI18N
-        FileObject profilingPointsStorage = projectSettingsFolder.getFileObject(profilingPointClassName,
-                                                                                PROFILING_POINT_STORAGE_EXT);
-
-        return profilingPointsStorage;
-    }
-
-    private FileObject createProfilingPointsStorage(Lookup.Provider project)
-                                             throws IOException {
-        FileObject projectSettingsFolder = ProjectStorage.getSettingsFolder(project, true);
-        String profilingPointClassNameFull = getProfilingPointsClass().getName();
-        String profilingPointClassName = profilingPointClassNameFull.substring(profilingPointClassNameFull.lastIndexOf('.') + 1); // NOI18N
-        FileObject profilingPointsStorage = projectSettingsFolder.createData(profilingPointClassName, PROFILING_POINT_STORAGE_EXT);
-
-        return profilingPointsStorage;
-    }
-
-    private void deleteProfilingPointsStorage(Lookup.Provider project)
-                                       throws IOException {
-        FileObject settingsFolder = ProjectStorage.getSettingsFolder(project, false);
-        FileObject profilingPointsStorage = getProfilingPointsStorage(settingsFolder);
-
-        if (profilingPointsStorage != null) {
-            FileLock lock = null;
-
-            try {
-                lock = profilingPointsStorage.lock();
-                profilingPointsStorage.delete(lock);
-            } catch (Exception e) {
-            } finally {
-                if (lock != null) {
-                    lock.releaseLock();
-                }
-            }
-        }
-    }
-
+    
     private void saveProfilingPoints(ProfilingPoint[] profilingPoints, Lookup.Provider project)
                               throws IOException {
+        String storage = getProfilingPointsStorage();
         if (profilingPoints.length > 0) {
-            FileObject settingsFolder = ProjectStorage.getSettingsFolder(project, false);
-            FileObject profilingPointsStorage = getProfilingPointsStorage(settingsFolder);
-
-            if (profilingPointsStorage == null) {
-                profilingPointsStorage = createProfilingPointsStorage(project);
-            }
-
-            if (profilingPointsStorage != null) {
                 Properties properties = new Properties();
-
-                for (int i = 0; i < profilingPoints.length; i++) {
+                for (int i = 0; i < profilingPoints.length; i++)
                     storeProfilingPoint(profilingPoints[i], i, properties);
-                }
-
-                storeSettings(profilingPointsStorage, properties);
-            }
+                ProfilerStorage.saveProjectProperties(properties, project, storage);
         } else {
-            deleteProfilingPointsStorage(project);
+            ProfilerStorage.deleteProjectProperties(project, storage);
         }
     }
-
-    private void storeSettings(final FileObject storage, final Properties properties)
-                        throws IOException {
-        FileLock lock = null;
-
-        try {
-            lock = storage.lock();
-
-            final OutputStream os = storage.getOutputStream(lock);
-            final BufferedOutputStream bos = new BufferedOutputStream(os);
-            properties.storeToXML(os, null);
-            bos.close();
-        } finally {
-            if (lock != null) {
-                lock.releaseLock();
-            }
-        }
+    
+    private String getProfilingPointsStorage() {
+        String fullClass = getProfilingPointsClass().getName();
+        return fullClass.substring(fullClass.lastIndexOf('.') + 1); // NOI18N
     }
+    
 }
