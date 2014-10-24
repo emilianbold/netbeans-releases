@@ -158,9 +158,14 @@ public class CordovaPlatform {
 
         public Version(String version) {
             LOG.fine("Cordova version " + version);
-            assert version.contains("-");
-            api = new SubVersion(version.substring(0, version.indexOf("-")));
-            cli = new SubVersion(version.substring(version.indexOf("-")+1));
+
+            if (version.contains("-")) {// prior 3.7.0, e.g. 3.5.0-0.2.7
+                api = new SubVersion(version.substring(0, version.indexOf("-")));
+                cli = new SubVersion(version.substring(version.indexOf("-") + 1));
+            } else { // after 3.7.0
+                api = new SubVersion(version);
+                cli = new SubVersion("0.0.0");
+            }
         }
 
 
