@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
@@ -60,10 +61,13 @@ import org.netbeans.modules.javascript.cdnjs.ui.SelectionPanel;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -90,6 +94,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         Project project = context.lookup(Project.class);
         Library.Version[] libraries = LibraryPersistence.getDefault().loadLibraries(project);
         File webRoot = customizerContext.getWebRoot(context);
+        if (webRoot == null) {
+            webRoot = FileUtil.toFile(project.getProjectDirectory());
+        }
         String libraryFolder = getProjectPreferences(project).get(PREFERENCES_LIBRARY_FOLDER, null);
         SelectionPanel customizer = new SelectionPanel(libraries, webRoot, libraryFolder);
         category.setStoreListener(new StoreListener(project, webRoot, customizer));
@@ -105,7 +112,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         getProjectPreferences(project).put(PREFERENCES_LIBRARY_FOLDER, libraryFolder);
     }
 
-    static class StoreListener implements ActionListener {
+    static class StoreListener implements ActionListener, Runnable {
         private final Project project;
         private final File webRoot;
         private final SelectionPanel customizer;
@@ -116,16 +123,27 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             this.customizer = customizer;
         }
 
-        // PENDING store in RequestProcessor thread
-        // PENDING use ProgressHandle
         @Override
         public void actionPerformed(ActionEvent e) {
-            String libraryFolder = customizer.getLibraryFolder();
-            storeLibraryFolder(project, libraryFolder);
+            RequestProcessor.getDefault().post(this);
+        }
 
-            Library.Version[] selectedVersions = customizer.getSelectedLibraries();
-            Library.Version[] versionsToStore = updateLibraries(selectedVersions);
-            LibraryPersistence.getDefault().storeLibraries(project, versionsToStore);
+        @Override
+        @NbBundle.Messages("LibraryCustomizer.addingLibraries=Adding the selected JavaScript libraries...")
+        public void run() {
+            ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.LibraryCustomizer_addingLibraries());
+            progressHandle.start();
+
+            try {
+                String libraryFolder = customizer.getLibraryFolder();
+                storeLibraryFolder(project, libraryFolder);
+
+                Library.Version[] selectedVersions = customizer.getSelectedLibraries();
+                Library.Version[] versionsToStore = updateLibraries(selectedVersions);
+                LibraryPersistence.getDefault().storeLibraries(project, versionsToStore);            
+            } finally {
+                progressHandle.finish();
+            }
         }
 
         @NbBundle.Messages({
@@ -226,7 +244,16 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
 
             if (!errors.isEmpty()) {
-                // PENDING
+                StringBuilder message = new StringBuilder();
+                for (String error : errors) {
+                    if (message.length() != 0) {
+                        message.append('\n');
+                    }
+                    message.append(error);
+                }
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        message.toString(), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(descriptor);
             }
  
             return newMap.values().toArray(new Library.Version[newMap.size()]);
@@ -235,21 +262,22 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         private void uninstallLibraries(List<Library.Version> libraries) {
             File projectDir = FileUtil.toFile(project.getProjectDirectory());
             for (Library.Version version : libraries) {
-                File directory = null;
                 for (String fileName : version.getFiles()) {
                     File file = PropertyUtils.resolveFile(projectDir, fileName);
                     if (file.exists()) {
-                        directory = file.getParentFile();
-                        file.delete();
+                        while (!webRoot.equals(file)) {
+                            File parent = file.getParentFile();
+                            if (!file.delete()) {
+                                // We have reached a parent directory that is not empty
+                                break;
+                            }
+                            file = parent;
+                        }
                     } else {
                         Logger.getLogger(LibraryCustomizer.class.getName()).log(
                                 Level.INFO, "Cannot delete file {0} of library {1}. It no longer exists.",
                                 new Object[]{file.getAbsolutePath(), version.getLibrary().getName()});
                     }
-                }
-                // Delete the folder for this library
-                if (directory != null) {
-                    directory.delete();
                 }
             }
         }
@@ -271,7 +299,12 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 if (index != -1) {
                     fileName = fileName.substring(0, index);
                 }
-                FileObject fob = FileUtil.moveFile(tmpFob, libraryFob, fileName);
+                String[] path = fileName.split("/"); // NOI18N
+                FileObject fileFolder = libraryFob;
+                for (int j=0; j<path.length-1; j++) {
+                    fileFolder = FileUtil.createFolder(fileFolder, path[j]);
+                }
+                FileObject fob = FileUtil.moveFile(tmpFob, fileFolder, path[path.length-1]);
                 File file = FileUtil.toFile(fob);
                 pathToStore[i] = PropertyUtils.relativizeFile(projectDir, file);
             }

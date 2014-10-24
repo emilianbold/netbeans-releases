@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.libraries;
 
-import java.beans.Customizer;
-import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.javascript.v8debug.vars;
+
+import org.netbeans.lib.v8debug.V8Scope;
+import org.netbeans.lib.v8debug.vars.V8Object;
+import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
+ * @author Martin
  */
-@NbBundle.Messages({"JavaScriptLibraryType_Name=JavaScript Libraries"})
-public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
+public class ScopeValue {
     
-    /**
-     * Supported volumes.
-     */
-    static String[] VOLUMES = new String[]{WebClientLibraryManager.VOL_REGULAR, 
-        WebClientLibraryManager.VOL_MINIFIED, WebClientLibraryManager.VOL_DOCUMENTED};
-
-    @Override
-    public String getDisplayName() {
-        return Bundle.JavaScriptLibraryType_Name();
-    }
-
-    @Override
-    public String getLibraryType() {
-        return WebClientLibraryManager.TYPE;
-    }
-
-    @Override
-    public String[] getSupportedVolumeTypes() {
-        return VOLUMES.clone();
-    }
-
-    @Override
-    public LibraryImplementation createLibrary() {
-        return LibrariesSupport.createLibraryImplementation(
-                WebClientLibraryManager.TYPE, VOLUMES);
-    }
-
-    @Override
-    public void libraryDeleted(LibraryImplementation libraryImpl) {
-    }
-
-    @Override
-    public void libraryCreated(LibraryImplementation libraryImpl) {
-    }
-
-    @Override
-    public Customizer getCustomizer(String volumeType) {
-        return new JavaScriptLibraryCustomizer(volumeType);
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
+    private final V8Scope scope;
+    private V8Object value;
+    
+    public ScopeValue(V8Scope scope) {
+        this.scope = scope;
     }
     
+    public ScopeValue(V8Scope scope, V8Object value) {
+        this.scope = scope;
+        this.value = value;
+    }
+
+    public V8Scope getScope() {
+        return scope;
+    }
+
+    public V8Object getValue() {
+        return value;
+    }
+
+    public void setValue(V8Object value) {
+        this.value = value;
+    }
+
 }

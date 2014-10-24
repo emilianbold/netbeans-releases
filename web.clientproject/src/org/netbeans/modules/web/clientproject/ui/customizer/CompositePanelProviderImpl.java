@@ -48,11 +48,10 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
+import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
@@ -175,26 +174,12 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             projectType = ClientSideProjectType.TYPE,
             position = 200)
     public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptFiles() {
-        return JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+        return CDNJSLibraries.createCustomizer(new CDNJSLibraries.CustomizerContext() {
             @Override
             public File getWebRoot(Lookup context) {
                 ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
                 assert projectProperties != null;
                 return projectProperties.getResolvedSiteRootFolder();
-            }
-            @Override
-            public void setLibrariesFolder(Lookup context, String librariesFolder) {
-                assert librariesFolder != null;
-                ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
-                assert projectProperties != null;
-                projectProperties.setJsLibFolder(librariesFolder);
-            }
-            @Override
-            public void setSelectedLibraries(Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
-                assert selectedLibraries != null;
-                ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
-                assert projectProperties != null;
-                projectProperties.setNewJsLibraries(selectedLibraries);
             }
         });
     }

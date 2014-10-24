@@ -87,7 +87,8 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
     private NewProjectWizardIterator() {
         baseWizard = CreateProjectUtils.createBaseWizardPanel("NodeJsApplication"); // NOI18N
-        toolsWizard = CreateProjectUtils.createToolsWizardPanel();
+        toolsWizard = CreateProjectUtils.createToolsWizardPanel(new CreateProjectUtils.Tools()
+                .setNpm(true));
     }
 
     @TemplateRegistration(
@@ -131,7 +132,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         files.add(mainFile);
 
         // tools
-        CreateProjectUtils.instantiateTools(project, wizardDescriptor);
+        CreateProjectUtils.instantiateTools(project, toolsWizard.first());
 
         // enable running as node.js
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);

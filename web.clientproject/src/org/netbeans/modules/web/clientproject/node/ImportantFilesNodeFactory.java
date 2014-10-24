@@ -302,7 +302,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     /**
      * Actual list of important files.
      */
-    private static final class ImportantFilesChildren extends Children.Keys<String> {
+    public static final class ImportantFilesChildren extends Children.Keys<String> {
 
         private final FileChangeListener fclStrong = new FileChangeAdapter() {
             public @Override
@@ -332,7 +332,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             "LBL_bower.json=bower.json",
             "LBL_bowerrc=.bowerrc"
         })
-        private static final java.util.Map<String, String> FILES = new LinkedHashMap<>();
+        public static final java.util.Map<String, String> FILES = Collections.synchronizedMap(new LinkedHashMap<String, String>());
 
         static {
             FILES.put("gruntfile.js", Bundle.LBL_gruntfile_js());

@@ -98,6 +98,10 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         startFileTextField.getDocument().addDocumentListener(defaultDocumentListener);
         argsTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        // ui
+        if (!NodeJsUtils.isJsLibrary(project)) {
+            runOnNodeJsLabel.setVisible(false);
+        }
     }
 
     @Override
@@ -169,11 +173,14 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        runOnNodeJsLabel = new JLabel();
         startFileLabel = new JLabel();
         startFileTextField = new JTextField();
         startFileBrowseButton = new JButton();
         argsLabel = new JLabel();
         argsTextField = new JTextField();
+
+        Mnemonics.setLocalizedText(runOnNodeJsLabel, NbBundle.getMessage(NodeJsRunPanel.class, "NodeJsRunPanel.runOnNodeJsLabel.text")); // NOI18N
 
         startFileLabel.setLabelFor(startFileTextField);
         Mnemonics.setLocalizedText(startFileLabel, NbBundle.getMessage(NodeJsRunPanel.class, "NodeJsRunPanel.startFileLabel.text")); // NOI18N
@@ -193,27 +200,31 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(startFileLabel)
-                    .addComponent(argsLabel))
-                .addGap(13, 13, 13)
+                    .addComponent(argsLabel)
+                    .addComponent(startFileLabel))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(startFileTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(startFileBrowseButton))
                     .addComponent(argsTextField)))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(runOnNodeJsLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addComponent(runOnNodeJsLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(startFileLabel)
                     .addComponent(startFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(startFileBrowseButton))
+                    .addComponent(startFileBrowseButton)
+                    .addComponent(startFileLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(argsLabel)
-                    .addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, 0))
+                    .addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -238,6 +249,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel argsLabel;
     private JTextField argsTextField;
+    private JLabel runOnNodeJsLabel;
     private JButton startFileBrowseButton;
     private JLabel startFileLabel;
     private JTextField startFileTextField;

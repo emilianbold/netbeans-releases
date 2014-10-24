@@ -47,6 +47,15 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
             <code-name-base>org.netbeans.modules.javascript.cdnjs</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.40</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.libs.json_simple</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -149,7 +158,10 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
             </module-dependencies>
             <test-dependencies/>
             <friend-packages>
+                <friend>org.netbeans.modules.maven.j2ee</friend>
+                <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
+                <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.javascript.cdnjs.api</package>
             </friend-packages>
         </data>

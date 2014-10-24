@@ -82,6 +82,7 @@ final class NodeJsCustomizerPanel extends JPanel {
     volatile boolean defaultNode;
     volatile String node;
     volatile int debugPort;
+    volatile boolean syncChanges;
 
 
     public NodeJsCustomizerPanel(ProjectCustomizer.Category category, Project project) {
@@ -114,6 +115,8 @@ final class NodeJsCustomizerPanel extends JPanel {
         debugPortSpinner.setModel(debugPortModel);
         debugPort = preferences.getDebugPort();
         debugPortModel.setValue(debugPort);
+        syncChanges = preferences.isSyncEnabled();
+        syncCheckBox.setSelected(syncChanges);
         // ui
         enableAllFields();
         validateData();
@@ -143,6 +146,7 @@ final class NodeJsCustomizerPanel extends JPanel {
             }
         });
         debugPortModel.addChangeListener(new DefaultChangeListener());
+        syncCheckBox.addItemListener(defaultItemListener);
     }
 
     void enableAllFields() {
@@ -156,6 +160,8 @@ final class NodeJsCustomizerPanel extends JPanel {
         debugPortLabel.setEnabled(enabled);
         debugPortSpinner.setEnabled(enabled);
         localDebugInfoLabel.setEnabled(enabled);
+        // sync
+        syncCheckBox.setEnabled(enabled);
     }
 
     void validateData() {
@@ -181,6 +187,7 @@ final class NodeJsCustomizerPanel extends JPanel {
         preferences.setNode(node);
         preferences.setDefaultNode(defaultNode);
         preferences.setDebugPort(debugPort);
+        preferences.setSyncEnabled(syncChanges);
     }
 
     /**
@@ -199,6 +206,7 @@ final class NodeJsCustomizerPanel extends JPanel {
         debugPortLabel = new JLabel();
         debugPortSpinner = new JSpinner();
         localDebugInfoLabel = new JLabel();
+        syncCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(enabledCheckBox, NbBundle.getMessage(NodeJsCustomizerPanel.class, "NodeJsCustomizerPanel.enabledCheckBox.text")); // NOI18N
 
@@ -224,6 +232,8 @@ final class NodeJsCustomizerPanel extends JPanel {
 
         Mnemonics.setLocalizedText(localDebugInfoLabel, NbBundle.getMessage(NodeJsCustomizerPanel.class, "NodeJsCustomizerPanel.localDebugInfoLabel.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(syncCheckBox, NbBundle.getMessage(NodeJsCustomizerPanel.class, "NodeJsCustomizerPanel.syncCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -235,18 +245,19 @@ final class NodeJsCustomizerPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(configureNodeButton))
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(localDebugInfoLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(enabledCheckBox)
                     .addComponent(customNodeRadioButton)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(debugPortLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(debugPortSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(debugPortSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(syncCheckBox))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(localDebugInfoLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -265,7 +276,8 @@ final class NodeJsCustomizerPanel extends JPanel {
                     .addComponent(debugPortSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(localDebugInfoLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(syncCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -285,6 +297,7 @@ final class NodeJsCustomizerPanel extends JPanel {
     private JLabel localDebugInfoLabel;
     private ButtonGroup nodeBbuttonGroup;
     private JPanel nodePathPanel;
+    private JCheckBox syncCheckBox;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -294,6 +307,7 @@ final class NodeJsCustomizerPanel extends JPanel {
         @Override
         public void itemStateChanged(ItemEvent e) {
             defaultNode = defaultNodeRadioButton.isSelected();
+            syncChanges = syncCheckBox.isSelected();
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 enableAllFields();
                 validateData();

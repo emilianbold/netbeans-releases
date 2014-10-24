@@ -91,7 +91,7 @@ public final class NodeJsSupport {
         actionProvider = new NodeJsActionProvider(project);
         sourceRoots = new NodeJsSourceRoots(project);
         preferences = new NodeJsPreferences(project);
-        packageJson = new PackageJson(project);
+        packageJson = new PackageJson(FileUtil.toFile(project.getProjectDirectory()));
     }
 
     @ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
@@ -157,6 +157,7 @@ public final class NodeJsSupport {
         FileUtil.removeFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
         preferences.removePreferenceChangeListener(preferencesListener);
         packageJson.removePropertyChangeListener(packageJsonListener);
+        // cleanup
         packageJson.cleanup();
     }
 
@@ -222,11 +223,11 @@ public final class NodeJsSupport {
                 return;
             }
             String propertyName = evt.getPropertyName();
-            LOGGER.log(Level.FINE, "Processing property change event {0} in package.json in project {1}", new Object[]{propertyName, projectName});
+            LOGGER.log(Level.FINE, "Processing property change event {0} in package.json in project {1}", new Object[] {propertyName, projectName});
             if (PackageJson.PROP_NAME.equals(propertyName)) {
                 firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, evt.getOldValue(), evt.getNewValue());
             } else if (PackageJson.PROP_SCRIPTS_START.equals(propertyName)) {
-                firePropertyChanged(NodeJsPlatformProvider.PROP_START_FILE, evt.getOldValue(), evt.getNewValue());
+                // XXX
             } else {
                 assert false : "Unknown event: " + propertyName;
             }

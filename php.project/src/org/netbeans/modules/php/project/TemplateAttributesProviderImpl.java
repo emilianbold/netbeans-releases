@@ -121,6 +121,7 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
         }
         try {
             Project prj = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+            assert prj != null;
             ProjectInformation info = ProjectUtils.getInformation(prj);
             if (info != null) {
                 String pname = info.getName();

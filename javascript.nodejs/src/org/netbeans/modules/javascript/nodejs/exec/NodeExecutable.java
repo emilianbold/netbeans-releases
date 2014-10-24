@@ -254,7 +254,7 @@ public class NodeExecutable {
     @CheckForNull
     public Future<Integer> run(File script, String args) {
         assert project != null;
-        String projectName = ProjectUtils.getInformation(project).getDisplayName();
+        String projectName = NodeJsUtils.getProjectDisplayName(project);
         Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getRunParams(script, args))
                 .run(getDescriptor());
@@ -276,7 +276,7 @@ public class NodeExecutable {
                 countDownLatch.countDown();
             }
         };
-        String projectName = ProjectUtils.getInformation(project).getDisplayName();
+        String projectName = NodeJsUtils.getProjectDisplayName(project);
         final Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getDebugParams(port, script, args))
                 .run(getDescriptor(countDownTask));

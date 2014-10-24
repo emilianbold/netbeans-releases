@@ -57,6 +57,10 @@ public final class NodeJsUtils {
     private NodeJsUtils() {
     }
 
+    public static String getProjectDisplayName(Project project) {
+        return ProjectUtils.getInformation(project).getDisplayName();
+    }
+
     public static boolean isJsLibrary(Project project) {
         return getSiteRoots(project).isEmpty();
     }

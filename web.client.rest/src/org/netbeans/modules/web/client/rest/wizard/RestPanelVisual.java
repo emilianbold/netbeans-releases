@@ -46,8 +46,6 @@ package org.netbeans.modules.web.client.rest.wizard;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.websvc.rest.client.RESTExplorerPanel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
@@ -56,7 +54,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,6 +79,7 @@ public final class RestPanelVisual extends JPanel  {
         String jsName = suggestJsName(panel.getDescriptor());
         Templates.setTargetName(panel.getDescriptor(), jsName);
         ui.setModel( new DefaultComboBoxModel( RestPanel.JsUi.values()));
+        backboneCheckBox.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -207,48 +205,6 @@ public final class RestPanelVisual extends JPanel  {
     
     void read(WizardDescriptor wizardDescriptor) {
         myBackbone = null;
-        Project project = Templates.getProject(wizardDescriptor);
-        FileObject libs = JSClientIterator.getRootFolder(project).
-                getFileObject(WebClientLibraryManager.LIBS); 
-        boolean backboneExists = false; 
-        if ( libs != null ){
-            FileObject[] children = libs.getChildren();
-            for (FileObject child : children) {
-                String name = child.getName();
-                if (child.isFolder()) {
-                    if (name.startsWith(BACKBONE_JS_)) {
-                        backboneExists = true;
-                        myBackbone = getFile(child, BACKBONE);
-                    }
-                    else if (name.startsWith(UNDERSCORE_JS_)) {
-                        myUnderscore = getFile(child, UNDERSCORE);
-                    }
-                    else if (name.startsWith(JQUERY_JS_)) {
-                        myJQuery = getFile(child, JQUERY_JS);
-                    }
-                }
-                else {
-                    if (name.startsWith(BACKBONE)) {
-                        backboneExists = true;
-                        myBackbone = child;
-                    }
-                    else if (name.startsWith(UNDERSCORE)) {
-                        myUnderscore = child;
-                    }
-                    else if (name.startsWith(JQUERY_JS)) {
-                        myJQuery = child;
-                    }
-                }
-            }
-        }
-        if ( backboneExists ){
-            Mutex.EVENT.readAccess( new Runnable() {
-                @Override
-                public void run() {
-                    backboneCheckBox.setVisible(false);                    
-                }
-            });
-        }
         Object fileName = wizardDescriptor.getProperty(RestPanel.FILE_NAME);
         String jsName=null;
         if ( fileName == null ){
@@ -259,17 +215,6 @@ public final class RestPanelVisual extends JPanel  {
         }
         
         Templates.setTargetName(wizardDescriptor, jsName);
-    }
-    
-    private FileObject getFile(FileObject folder , String prefix){
-        FileObject[] children = folder.getChildren();
-        for (FileObject child : children) {
-            String name = child.getName();
-            if ( name.startsWith(prefix)){
-                return child;
-            }
-        }
-        return null;
     }
 
     private String suggestJsName(  WizardDescriptor descriptor ) {

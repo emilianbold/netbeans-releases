@@ -335,7 +335,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return annotateImage(ImageUtilities.icon2Image(projectInfo.getIcon()));
+            return annotateImage(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON));
         }
 
         @Override
