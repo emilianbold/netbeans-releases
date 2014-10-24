@@ -192,7 +192,7 @@ made subject to such option by the copyright holder.
             <li><b>Long computation of content:</b> What if rendering your
             Navigator view takes long time, more than several milliseconds?
             Right approach is to create and run new task using
-            <a href="@org-openide-util@/org/openide/util/RequestProcessor.html">RequestProcessor techniques</a>, 
+            <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor techniques</a>, 
             each time when panelActivated call arrived or your listeners on 
             data context got called.<br></br>
             While computing, UI of Navigator view

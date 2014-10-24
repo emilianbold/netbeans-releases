@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-overall">
-  <api group="java" name="JavaPlatformAPI" type="export" category="official">
+  <api group="java" name="JavaPlatformUI" type="export" category="official">
    The Java Platform API permits access to installed Java platforms (for example,
    the J2SE JDK, or various mobile-device emulators for J2ME). Particular platform
    types are registered by modules and can store customized information about the

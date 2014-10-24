@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
  <answer id="arch-overall">
   <ul>
    <li>
-    <api group="java" name="ProjectUIAPI" type="export" category="official">
+    <api group="java" name="BaseProjectUIAPI" type="export" category="official">
      <p> 
       The Project UI API provides some miscellaneous APIs and SPIs relating to the
       appearance and UI behavior of generic projects. Most importantly, it permits
@@ -82,7 +82,7 @@ made subject to such option by the copyright holder.
     </api>
    </li>
    <li>
-    <api group="java" name="ProjectUIAPI-provider" type="export" category="friend">
+    <api group="java" name="BaseProjectUIAPI-provider" type="export" category="friend">
      <p>
       Callbacks intended to let the Project UI module plug in implementations of
       APIs defined here. Uses implementation dependencies.

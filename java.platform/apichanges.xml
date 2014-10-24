@@ -197,9 +197,14 @@ is the proper place.
                 java platform chooser for it, the behavior is not changed. If the module provides the CustomPlatformInstall
                 in the global lookup, it has to do the platform selection by itself.
                 </p>
+                <p>
+                The relevant code was moved off to <code>java.platform.ui</code> module. Please
+                see it's <a href="@org-netbeans-modules-java-platform-ui@/apichanges.html">
+                API change document</a>.
+                </p>
             </description>
-            <class package="org.netbeans.spi.java.platform" name="CustomPlatformInstall"/>
-            <class package="org.netbeans.spi.java.platform" name="GeneralPlatformInstall"/>
+            <class package="org.netbeans.spi.java.platform" name="CustomPlatformInstall" link="no"/>
+            <class package="org.netbeans.spi.java.platform" name="GeneralPlatformInstall" link="no"/>
             <issue number="61475"/>
         </change>
         <change id="rel-vers-1">

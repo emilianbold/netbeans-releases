@@ -1547,6 +1547,7 @@ public class Transformer implements ClassFileTransformer {
      </usecase>
      
      <usecase id="modfrag" name="Module Fragments">
+         <a name="usecase-modfrag"></a>
          <p>
             This is a specific case of <a href="#usecase-patch">Patch Classes</a> use-case.
             To maintain binary compatibility when <b>removing</b> methods from API classes,
@@ -1564,7 +1565,7 @@ OpenIDE-Module-Fragment-Host: orignal.module.codename
         <p>
             which ensures contents of the compat module will be loaded using classloader
             of the 'fragment host' module. The compat module will not get its own classloader.
-            The special class itself should be marked using <a href="@TOP@/org/netbeans/modules/PatchPublic.html">PatchPublic</a> annotation,
+            The special class itself should be marked using <a href="@org-openide-modules@/org/openide/modules/PatchFor.html">PatchFor</a> annotation,
             which causes it will be patched as superclass and inserted into the inheritance
             chain.
          </p>

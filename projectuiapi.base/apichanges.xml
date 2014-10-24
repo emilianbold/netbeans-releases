@@ -100,7 +100,7 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <apidef name="general">Project UI API</apidef>
+        <apidef name="BaseProjectUIAPI">Project UI API</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -109,7 +109,7 @@ is the proper place.
     <changes>
 
          <change id="server.is.free">
-            <api name="general"/>
+            <api name="BaseProjectUIAPI"/>
             <summary>Split the api into a desktop (swing, awt) and NetBeans dependent and independent part.</summary>
             <version major="1" minor="78"/>
             <date day="26" month="5" year="2014"/>
@@ -143,8 +143,8 @@ is the proper place.
             </description>
         </change>
     
-        
-    </changes>
+    
+</changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
 

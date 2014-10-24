@@ -151,6 +151,10 @@ is the proper place.
                 if a test need to check reparsing after document change, or data object change. Full implementation may be needed -
                 the implementor can use a <code>test-dependency</code> to the <code>org.netbeans.modules.parsing.nb</code> module.
               </p>
+<!--              <p>
+                  Please refer to the <a href="@org-netbeans-modules-parsing-nb@/apichanges.html">API Changes document</a>
+                  of the new module for entries related to moved classes.
+              </p>-->
           </description>
       </change>
       <change id="Separate.Parsing.Indexing">
@@ -170,6 +174,10 @@ is the proper place.
                   The indexing now resides separately in its <code>parsing.indexing</code> module. Binary compatibility
                   is kept by using module-auto-deps.xml.
               </p>
+              <p>
+                  Please refer to the <a href="@org-netbeans-modules-parsing-indexing@/apichanges.html">API Changes document</a>
+                  of the new module for entries related to moved classes.
+              </p>
           </description>
       </change>
       <change id="SuspendStatus.isSuspendSupported">
@@ -183,7 +191,7 @@ is the proper place.
               Added <code>SuspendStatus.isSuspendSupported</code> which test if active indexing task
               supports suspending.
           </description>
-          <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendStatus"/>
+          <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendStatus" link="no"/>
       </change>
       <change id="QuerySupport.per-project-roots">
           <api name="ParsingAPI"/>
@@ -195,7 +203,7 @@ is the proper place.
           <description>
               Added <code>QuerySupport.findRoots</code> mapping class paths roots by projects.
           </description>
-          <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+          <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport" link="no"/>
       </change>
       <change id="QuerySupport.Query.file">
           <api name="ParsingAPI"/>
@@ -207,7 +215,7 @@ is the proper place.
           <description>
               Added <code>QuerySupport.Query.file</code> factory for query searching index documents created for given file.
           </description>
-          <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+          <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport" link="no"/>
       </change>
       <change id="CancelSupport">
           <api name="ParsingAPI"/>
@@ -249,7 +257,7 @@ is the proper place.
                   so that embeddings can be reindexed.
               </p>
           </description>
-          <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager"/>
+          <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager" link="no"/>
           <issue number="218534"/>
       </change>
   <change id="QuerySupport.Query">
@@ -264,7 +272,7 @@ is the proper place.
               Extended the <code>QuerySupport</code> to allow composite queries with bool operators.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport" link="no"/>
       <issue number="170915"/>
   </change>
   <change id="QuerySupport.findDependentRoots">
@@ -280,7 +288,7 @@ is the proper place.
               It returns all the source roots which have either direct or transitive dependency on the given source root.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport" link="no"/>
       <issue number="227363"/>
   </change>
   <change id="EmbeddingProvider.Registration">
@@ -315,8 +323,8 @@ is the proper place.
                allows indexers to find out that indexing is suspended or to park while it's suspended.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendStatus"/>
-      <class package="org.netbeans.modules.parsing.spi.indexing" name="Context"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendStatus" link="no"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="Context" link="no"/>
       <issue number="208378"/>
   </change>
   <change id="IndexingAwareParserResultTask">
@@ -352,7 +360,7 @@ is the proper place.
              mime type for those indexers which do not have required resource and use mime type which require reading of content.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.spi.indexing" name="ConstrainedBinaryIndexer"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="ConstrainedBinaryIndexer" link="no"/>
       <issue number="205574"/>
   </change>
   <change id="ConstrainedBinaryIndexer">
@@ -369,7 +377,7 @@ is the proper place.
               constraints which need to be fulfilled, the check is done by infrastructure before the indexer is loaded.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.spi.indexing" name="ConstrainedBinaryIndexer"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="ConstrainedBinaryIndexer" link="no"/>
       <issue number="200050"/>
   </change>
   <change id="IndexingManager-refreshIndexAndWait-checkEditor">
@@ -384,7 +392,7 @@ is the proper place.
               Adding refreshIndexAndWait method into the IndexingManager allowing to specify if indexers should use modified content of editors.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager"/>
+      <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager" link="no"/>
       <issue number="196930"/>
   </change>
   <change id="IndexingManager-refreshIndex-checkEditor">
@@ -399,7 +407,7 @@ is the proper place.
               Adding refreshIndex method into the IndexingManager allowing to specify if indexers should use modified content of editors.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager"/>
+      <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager" link="no"/>
       <issue number="194564"/>
   </change>
   <change id="parser-cancelling">
@@ -431,7 +439,7 @@ is the proper place.
               Added <code>PathRecognizerRegistration</code> annotation that simplyfies registering <code>PathRecognizer</code>s.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.spi.indexing" name="PathRecognizerRegistration"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="PathRecognizerRegistration" link="no"/>
       <issue number="169991"/>
   </change>
   <change id="errors-cache">
@@ -447,7 +455,7 @@ is the proper place.
               in the tasklist.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.spi.indexing" name="ErrorsCache"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="ErrorsCache" link="no"/>
       <issue number="179459"/>
   </change>
   <change id="BinaryIndexerFactory-scanStarted-scanFinished">

@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-overall">
-  <api group="java" name="AntProjectAPI" type="export" category="official">
+  <api group="java" name="AntProjectUI" type="export" category="official">
    <p>
    Mostly an SPI for creating project types centered around the Ant build tool.
    Permits Ant-based project types to be registered and supplies various support

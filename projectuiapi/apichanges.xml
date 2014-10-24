@@ -173,7 +173,7 @@ is the proper place.
                     error/warning. 2 new factory methods introduced.
                 </p>
             </description>
-            <class package="org.netbeans.spi.project.ui" name="ProjectProblemsProvider"/>
+            <class package="org.netbeans.spi.project.ui" name="ProjectProblemsProvider" link="no"/>
             <issue number="236325"/>
         </change>
 
@@ -281,7 +281,7 @@ is the proper place.
                     Added support class for provider of project metadata problems.
                 </p>
             </description>
-            <class package="org.netbeans.spi.project.ui.support" name="ProjectProblemsProviderSupport"/>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectProblemsProviderSupport" link="no"/>
             <issue number="219313"/>
         </change>
         <change id="ProjectGroup">
@@ -298,10 +298,10 @@ is the proper place.
                     and listen to changes in currently active group.
                 </p>
             </description>
-            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
-            <class package="org.netbeans.api.project.ui" name="ProjectGroup"/>
-            <class package="org.netbeans.api.project.ui" name="ProjectGroupChangeListener"/>
-            <class package="org.netbeans.api.project.ui" name="ProjectGroupChangeEvent"/>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects" link="no"/>
+            <class package="org.netbeans.api.project.ui" name="ProjectGroup" link="no"/>
+            <class package="org.netbeans.api.project.ui" name="ProjectGroupChangeListener" link="no"/>
+            <class package="org.netbeans.api.project.ui" name="ProjectGroupChangeEvent" link="no"/>
             <issue number="91031"/>
         </change>
         <change id="ProjectProblems">
@@ -319,8 +319,8 @@ is the proper place.
                 </p>
             </description>
             <class package="org.netbeans.api.project.ui" name="ProjectProblems"/>
-            <class package="org.netbeans.spi.project.ui" name="ProjectProblemsProvider"/>
-            <class package="org.netbeans.spi.project.ui" name="ProjectProblemResolver"/>
+            <class package="org.netbeans.spi.project.ui" name="ProjectProblemsProvider" link="no"/>
+            <class package="org.netbeans.spi.project.ui" name="ProjectProblemResolver" link="no"/>
             <issue number="215628"/>
         </change>
         <change id="PathFinder">
@@ -352,8 +352,8 @@ is the proper place.
                     Checking for a main project set explicitly by the user is still common.
                 </p>
             </description>
-            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
-            <class package="org.netbeans.spi.project.ui.templates.support" name="Templates"/>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects" link="no"/>
+            <class package="org.netbeans.spi.project.ui.templates.support" name="Templates" link="no"/>
             <issue number="166780"/>
         </change>
         <change id="FileSensitiveAction.performer">
@@ -387,7 +387,7 @@ is the proper place.
                     module.
                 </p>
             </description>
-            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects" link="no"/>
             <issue number="203220"/>
         </change>
         <change id="Templates.definesMainProject">
@@ -518,7 +518,7 @@ is the proper place.
                   variant that supports visual indication of the open progress.
                 </p>
             </description>
-            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects" link="no"/>
             <issue number="162588"/>
         </change>
         <change id="isProjectOpen">
@@ -535,7 +535,7 @@ is the proper place.
                   such code we offer a handy utility method.
                 </p>
             </description>
-            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects" link="no"/>
             <issue number="161120"/>
         </change>
         <change id="nodefactory-ann">
@@ -613,7 +613,7 @@ is the proper place.
                 also provide an instance in it's lookup and it will be used instead of the default one from project's lookup.
                 In this case the last used templates will not be considered.
             </description>
-            <class package="org.netbeans.spi.project.ui" name="PrivilegedTemplates"/>
+            <class package="org.netbeans.spi.project.ui" name="PrivilegedTemplates" link="no"/>
             <issue number="122942"/>
         </change>
         
@@ -631,7 +631,7 @@ is the proper place.
                 of open project list modification started or that it has
                 finished.
             </description>
-            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects" link="no"/>
             <issue number="124980"/>
         </change>
         
@@ -663,7 +663,7 @@ is the proper place.
                <code>LookupMerger</code> that ensures that from the <code>ProjectOpenedHook</code> instances in project's lookup, the 
                project's own is always called first.
             </description>
-            <class package="org.netbeans.spi.project.ui.support" name="UILookupMergerSupport"/>
+            <class package="org.netbeans.spi.project.ui.support" name="UILookupMergerSupport" link="no"/>
             <issue number="103106"/>
         </change>
         
@@ -731,7 +731,7 @@ is the proper place.
                 Added <code>OpenProjects.PROPERTY_MAIN_PROJECT</code> property and firing changes in main project property value
                 to listeners attached to OpenProjects.
             </description>
-             <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+             <class package="org.netbeans.api.project.ui" name="OpenProjects" link="no"/>
             <issue number="64491"/>
         </change>
         
@@ -750,7 +750,7 @@ is the proper place.
                     <code>RecommendedTemplates</code> added.
 		</p>
             </description>
-            <class package="org.netbeans.spi.project.ui.support" name="UILookupMergerSupport"/>
+            <class package="org.netbeans.spi.project.ui.support" name="UILookupMergerSupport" link="no"/>
             <issue number="83343"/>
         </change>
         
@@ -961,7 +961,7 @@ is the proper place.
                     opens the specified projects. The <code>close</code> method closes the specified projects.
                 </p>
             </description>
-            <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
+            <class package="org.netbeans.api.project.ui" name="OpenProjects" link="no"/>
         </change>
 
         <change id="rel-vers-1">

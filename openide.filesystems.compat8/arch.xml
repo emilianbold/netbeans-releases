@@ -293,8 +293,8 @@
 
  <answer id="resources-file">
   <p>
-      Yes, for initialization of <a href="@openide-filesystems@/org/openide/filesystems/LocalFileSystem.html">LocalFileSystem</a>
-      and <a href="@openide-filesystems@/org/openide/filesystems/JarFileSystem.html">JarFileSystem</a>
+      Yes, for initialization of <a href="@org-openide-filesystems@/org/openide/filesystems/LocalFileSystem.html">LocalFileSystem</a>
+      and <a href="@org-openide-filesystems@/org/openide/filesystems/JarFileSystem.html">JarFileSystem</a>
   </p>
  </answer>
 

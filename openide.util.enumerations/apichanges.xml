@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
         That is the reason why we had to deprecated our 
         <code>org.openide.util.enum</code> package. We are providing 
         replacements of the original classes in form of factory methods
-        <a href="@org-openide-util@/org/openide/util/Enumerations.html">org.openide.util.Enumerations</a>.
+        <a href="@org-openide-util-base@/org/openide/util/Enumerations.html">org.openide.util.Enumerations</a>.
      </description>
      <package name="org.openide.util.enum" />
      <issue number="41166"/>

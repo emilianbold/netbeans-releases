@@ -233,3 +233,9 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-project-ant-ui" value="${javadoc.web.root}/org-netbeans-modules-project-ant-ui"/>
 <property name="javadoc.docs.org-netbeans-modules-java-project-ui" value="${javadoc.web.root}/org-netbeans-modules-java-project-ui"/>
 <property name="javadoc.docs.org-netbeans-modules-xml-catalog-ui" value="${javadoc.web.root}/org-netbeans-modules-xml-catalog-ui"/>
+<property name="javadoc.docs.org-netbeans-api-progress-nb" value="${javadoc.web.root}/org-netbeans-api-progress-nb"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-indent-support" value="${javadoc.web.root}/org-netbeans-modules-editor-indent-support"/>
+<property name="javadoc.docs.org-netbeans-modules-masterfs-ui" value="${javadoc.web.root}/org-netbeans-modules-masterfs-ui"/>
+<property name="javadoc.docs.org-netbeans-modules-parsing-nb" value="${javadoc.web.root}/org-netbeans-modules-parsing-nb"/>
+<property name="javadoc.docs.org-netbeans-modules-project-libraries-ui" value="${javadoc.web.root}/org-netbeans-modules-project-libraries-ui"/>
+<property name="javadoc.docs.org-openide-filesystems-nb" value="${javadoc.web.root}/org-openide-filesystems-nb"/>

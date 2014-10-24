@@ -100,9 +100,7 @@ is the proper place.
 
     <!-- First, a list of API names you may use: -->
     <apidefs>
-        <apidef name="general">Java Project API</apidef>
-        <apidef name="classpath">Classpath Support SPI</apidef>
-        <apidef name="ui">UI Support SPI</apidef>
+        <apidef name="JavaProjectUI">Java Project UI SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
@@ -110,7 +108,7 @@ is the proper place.
 
     <changes>
     <change id="server.is.free">
-            <api name="general"/>
+            <api name="JavaProjectUI"/>
             <summary>Desktop dependent Java Project Support UI extracted</summary>
             <version major="1" minor="62"/>
             <date day="2" month="6" year="2014"/>
@@ -128,7 +126,7 @@ is the proper place.
                     The following packages were moved from 
                     <a href="@org-netbeans-modules-java-project@/overview-summary.html">org.netbeans.modules.java.project</a> 
                     into the
-                    <a href="@org-netbeans-modules-java-project-project-ui@/overview-summary.html">org.netbeans.modules.java.project.ui</a> module:
+                    <a href="@org-netbeans-modules-java-project-ui@/overview-summary.html">org.netbeans.modules.java.project.ui</a> module:
                 </p>
                 <ul>
                     <li><a href="@org-netbeans-modules-java-project-ui@/org/netbeans/api/java/project/runner/package-summary.html">o.n.api.java.project.runner</a></li>

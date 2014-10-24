@@ -138,12 +138,12 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" deprecation="no"/>
             <description>
                 <p>
-                    Added <a href="@TOP@org/openide/filesystems/FileChooserBuilder.html#setAcceptAllFileFilterUsed(boolean)">
+                    Added <a href="@org-openide-filesystems-nb@/org/openide/filesystems/FileChooserBuilder.html#setAcceptAllFileFilterUsed(boolean)">
                     new method</a> to <code>FileChooserBuilder</code> that determines whether the <code>AcceptAll FileFilter</code>
                     should be used in the created file chooser.
                 </p>
             </description>
-            <class package="org.openide.filesystems" name="FileChooserBuilder"/>
+            <class package="org.openide.filesystems" name="FileChooserBuilder" link="no"/>
             <issue number="220401"/>
         </change>
         <change id="FileChooserBuilder-addDefaultFileFilters">
@@ -155,7 +155,7 @@ made subject to such option by the copyright holder.
             <compatibility addition="yes" deprecation="no"/>
             <description>
                 <p>
-                    Added <a href="@TOP@org/openide/filesystems/FileChooserBuilder.html#addDefaultFileFilters()">
+                    Added <a href="@org-openide-filesystems-nb@/org/openide/filesystems/FileChooserBuilder.html#addDefaultFileFilters()">
                     new method</a> to <code>FileChooserBuilder</code> that adds all default
                     <code>FileFilter</code>s to created file chooser.
                 </p>
@@ -165,7 +165,7 @@ made subject to such option by the copyright holder.
                     and <a href="@TOP@org/openide/filesystems/MIMEResolver.ExtensionRegistration.html#showInFileChooser()">MimeResolver.ExtensionRegistration</a>.
                 </p>
             </description>
-            <class package="org.openide.filesystems" name="FileChooserBuilder"/>
+            <class package="org.openide.filesystems" name="FileChooserBuilder" link="no"/>
             <class package="org.openide.filesystems" name="MIMEResolver"/>
             <issue number="209998"/>
         </change>
@@ -811,7 +811,7 @@ made subject to such option by the copyright holder.
                     directory the user last invoked them on, across sessions.
                 </p>
             </description>
-            <class package="org.openide.filesystems" name="FileChooserBuilder"/>
+            <class package="org.openide.filesystems" name="FileChooserBuilder" link="no"/>
             <issue number="47737"/>
         </change>
         <change id="DeclarativeMIMEResolvers">
@@ -1514,10 +1514,10 @@ made subject to such option by the copyright holder.
                     </a>.
                 </p>
             </description>
-            <class package="org.openide.filesystems" name="EnvironmentNotSupportedException"/>
+            <!--<class package="org.openide.filesystems" name="EnvironmentNotSupportedException"/>-->
             <class package="org.openide.filesystems" name="FileObject"/>
             <class package="org.openide.filesystems" name="FileSystem"/>
-            <class package="org.openide.filesystems" name="FileSystemCapability"/>
+            <!--<class package="org.openide.filesystems" name="FileSystemCapability"/>-->
         </change>
         <change id="FileObject.getPath-III">
             <api name="filesystems"/>

@@ -547,7 +547,7 @@ None.
     The following services are looked up:
     <ul>
         <li>Implementations of MIMEResolver and URLMapper are looked up</li>
-        <li>instance of <a href="@TOP@/org/openide/filesystems/FileSystem.Status.html">FileSystem.Status</a> which is
+        <li>instance of FileSystem.Status which is
             used as the Status of the <b>default</b> FileSystem</li>
         <li>instance of <a href="@TOP@/org/openide/filesystems/spi/CustomInstanceFactory.html">CustomInstanceFactory</a>
             which is used to create instances for FileSystem files without <code>instanceCreate</code> attribute</li>
