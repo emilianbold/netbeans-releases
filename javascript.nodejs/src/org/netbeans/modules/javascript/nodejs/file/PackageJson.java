@@ -53,7 +53,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -229,21 +228,49 @@ public final class PackageJson {
             assert false;
             return;
         }
-        String field = null;
+        List<String> fields = new ArrayList<>(fieldHierarchy);
         int fieldIndex = -1;
-        LinkedList<String> fields = new LinkedList<>(fieldHierarchy);
-        while (!fields.isEmpty()) {
-            String pureField = fields.pollFirst();
-            field = "\"" + JSONValue.escape(pureField) + "\""; // NOI18N
-            fieldIndex = text.indexOf(field, fieldIndex == -1 ? 0 : fieldIndex + field.length());
-            if (fieldIndex == -1) {
-                fields.addFirst(pureField);
-                break;
+        int closestFieldIndex = -1;
+        int level = -1;
+        int searchInLevel = 0;
+        String field = null;
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (ch == '{') {
+                level++;
+            } else if (ch == '}') {
+                level--;
+            } else if (Character.isWhitespace(ch)) {
+                continue;
+            }
+            if (field == null) {
+                if (level != searchInLevel) {
+                    continue;
+                }
+                field = "\"" + JSONValue.escape(fields.get(searchInLevel)) + "\""; // NOI18N
+                searchInLevel++;
+            }
+            if (ch == '"'
+                    && text.substring(i).startsWith(field)) {
+                // match
+                closestFieldIndex = i;
+                if (searchInLevel >= fields.size()) {
+                    fieldIndex = i;
+                    break;
+                }
+                i += field.length();
+                field = null;
             }
         }
         assert field != null;
         if (fieldIndex == -1) {
-            insertNewField(document, fields, value, text, fieldIndex);
+            // remove found fields
+            while (searchInLevel > 1) {
+                fields.remove(0);
+                searchInLevel--;
+            }
+            // insert missing fields
+            insertNewField(document, fields, value, text, closestFieldIndex);
             return;
         }
         int colonIndex = -1;
@@ -305,30 +332,54 @@ public final class PackageJson {
 
     private void insertNewField(Document document, List<String> fieldHierarchy, Object value, String text, int index) {
         int startIndex = index;
+        boolean commaBefore;
         if (startIndex == -1) {
             startIndex = text.lastIndexOf('}'); // NOI18N
+            if (startIndex != -1) {
+                for (;;) {
+                    char ch = text.charAt(--startIndex);
+                    if (!Character.isWhitespace(ch)) {
+                        startIndex++;
+                        break;
+                    }
+                }
+            }
+            commaBefore = true;
         } else {
-            startIndex = text.indexOf('}'); // NOI18N
+            startIndex = text.indexOf('{', startIndex); // NOI18N
+            if (startIndex != -1) {
+                startIndex++;
+            }
+            commaBefore = false;
         }
         if (startIndex == -1) {
             startIndex = text.length();
         }
         StringBuilder sb = new StringBuilder();
-        if (startIndex > 1) {
+        if (commaBefore) {
             sb.append(','); // NOI18N
+            sb.append('\n'); // NOI18N
         }
-        boolean first = true;
+        int braces = -1;
         for (String field : fieldHierarchy) {
-            if (!first) {
+            if (braces > 0) {
                 sb.append('{'); // NOI18N
+                sb.append('\n'); // NOI18N
             }
             sb.append('"'); // NOI18N
             sb.append(JSONValue.escape(field));
             sb.append('"'); // NOI18N
             sb.append(':'); // NOI18N
-            first = false;
+            braces++;
         }
         sb.append(JSONValue.toJSONString(value));
+        for (int i = 0; i < braces; i++) {
+            sb.append('}'); // NOI18N
+            sb.append('\n'); // NOI18N
+        }
+        if (!commaBefore) {
+            sb.append(','); // NOI18N
+        }
         insertValue(document, startIndex, -1, sb.toString(), true);
     }
 
