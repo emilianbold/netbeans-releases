@@ -76,7 +76,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
+import org.netbeans.modules.profiler.api.ProfilerStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.netbeans.modules.profiler.v2.SnapshotsWindow;
@@ -483,7 +483,7 @@ public final class TimedTakeSnapshotProfilingPoint extends TimedGlobalProfilingP
     // ---
     FileObject getSnapshotDirectory() throws IOException {
         if (snapshotTarget.equals(TARGET_PROJECT_KEY)) {
-            return ProjectStorage.getSettingsFolder(getProject(), true);
+            return ProfilerStorage.getProjectFolder(getProject(), true);
         } else {
             File f = new File(snapshotFile);
             f.mkdirs();

@@ -68,6 +68,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -81,7 +82,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
-import org.netbeans.modules.profiler.api.project.ProjectStorage;
+import org.netbeans.modules.profiler.api.ProfilerStorage;
 import org.netbeans.modules.profiler.api.project.ProjectProfilingSupport;
 import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
@@ -337,20 +338,26 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         Project mainProject = ProjectUtilities.getMainProject();
 
         if (ProjectUtilities.isJavaProject(mainProject)) {
-            AttachSettings attachSettings = null;
-
+            Properties p = new Properties();
             try {
-                attachSettings = ProjectStorage.loadAttachSettings(mainProject);
+                ProfilerStorage.loadProjectProperties(p, mainProject, "attach"); // NOI18N
             } catch (IOException e) {
                 ProfilerDialogs.displayWarning(Bundle.J2EEProfilerSPI_FailedLoadSettingsMsg(e.getMessage()));
                 ProfilerLogger.log(e);
             }
 
-            if (attachSettings == null) {
-                attachSettings = new AttachSettings();
+            AttachSettings attachSettings = new AttachSettings();
+            if (p.isEmpty()) {
                 attachSettings.setRemote(false);
                 attachSettings.setDirect(true);
-                ProjectStorage.saveAttachSettings(mainProject, attachSettings);
+                attachSettings.store(p);
+                try {
+                    ProfilerStorage.saveProjectProperties(p, mainProject, "attach"); // NOI18N
+                } catch (IOException e) {
+                    ProfilerLogger.log(e);
+                }
+            } else {
+                attachSettings.load(p);
             }
         }
 

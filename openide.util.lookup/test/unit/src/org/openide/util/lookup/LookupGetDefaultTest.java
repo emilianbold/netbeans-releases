@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.api;
+package org.openide.util.lookup;
 
-import java.io.IOException;
-import org.netbeans.modules.profiler.spi.GlobalStorageProvider;
-import org.openide.filesystems.FileObject;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
 
-/**
- * Support for storing and retrieving data.
- *
- * @author Jiri Sedlacek
- */
-public final class GlobalStorage {
-    
-    /**
-     * Returns FileObject which can be used as a general settings storage.
-     * @param create If <code>true</code> the folder will be created if it doesn't exist yet
-     * @return FileObject which can be used as a general settings storage
-     * @throws IOException 
-     */
-    public static FileObject getSettingsFolder(boolean create) throws IOException {
-        GlobalStorageProvider p = provider();
-        if (p != null) return p.getSettingsFolder(create);
-        else return null;
+public class LookupGetDefaultTest extends NbTestCase {
+
+    public LookupGetDefaultTest(String name) {
+        super(name);
     }
     
-    private static GlobalStorageProvider provider() {
-        return Lookup.getDefault().lookup(GlobalStorageProvider.class);
+    public void testCanChangeDefaultLookup() throws Exception {
+        Lookup prev = Lookup.getDefault();
+        final Lookup my = new AbstractLookup();
+        final Thread myThread = Thread.currentThread();
+        final boolean[] ok = { false };
+        
+        Lookups.executeWith(my, new Runnable() {
+            @Override
+            public void run() {
+                assertSame("Default lookup has been changed", my, Lookup.getDefault());
+                assertSame("We are being executed in the same thread", myThread, Thread.currentThread());
+                ok[0] = true;
+            }
+        });
+        assertTrue("In my lookup code executed OK", ok[0]);
+        assertEquals("Current lookup back to normal", prev, Lookup.getDefault());
     }
-    
 }

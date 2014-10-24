@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,39 +39,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.impl;
+package org.netbeans.modules.profiler.v2.ui;
 
-import java.io.IOException;
-import org.netbeans.modules.profiler.spi.GlobalStorageProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.awt.Insets;
+import javax.swing.BorderFactory;
+import javax.swing.JToolBar;
 
 /**
  *
  * @author Jiri Sedlacek
- * @author Jaroslav Bachorik
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.GlobalStorageProvider.class)
-public final class GlobalStorageProviderImpl extends GlobalStorageProvider {
+public class InvisibleToolbar extends JToolBar {
     
-    private static final String PROFILER_FOLDER = "NBProfiler/Config";  // NOI18N
-    private static final String SETTINGS_FOLDER = "Settings";   // NOI18N
-
-    @Override
-    public synchronized FileObject getSettingsFolder(boolean create) throws IOException {
-        final FileObject folder = FileUtil.getConfigFile(PROFILER_FOLDER);
-        FileObject settingsFolder = folder.getFileObject(SETTINGS_FOLDER, null);
-
-        if ((settingsFolder == null) && create) {
-            settingsFolder = folder.createFolder(SETTINGS_FOLDER);
-        }
-
-        return settingsFolder;
+    public InvisibleToolbar() { super(); tweak(); }
+    
+    public InvisibleToolbar(int orientation) { super(orientation); tweak(); }
+    
+    public InvisibleToolbar(String name) { super(name); tweak(); }
+    
+    public InvisibleToolbar(String name, int orientation) { super(name, orientation); tweak(); }
+    
+    private void tweak() {
+        setBorder(BorderFactory.createEmptyBorder());
+        setBorderPainted(false);
+        setFloatable(false);
+        setRollover(true);
+        setOpaque(false);
+        setMargin(new Insets(0, 0, 0, 0));
     }
     
 }
