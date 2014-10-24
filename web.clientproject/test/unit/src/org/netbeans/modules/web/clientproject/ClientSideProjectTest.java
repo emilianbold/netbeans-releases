@@ -64,6 +64,7 @@ import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.test.MockLookup;
 
@@ -137,16 +138,15 @@ public class ClientSideProjectTest extends NbTestCase {
     public void testProjectWithProjectServiceProvider() throws Exception {
         int instances = MySupport.INSTANCES.get();
         ClientSideProject project = createProject("src", "www", "test");
+        MySupport.query = project;
         MySupport mySupport = project.getLookup().lookup(MySupport.class);
         assertNotNull(mySupport);
+        
+        mySupport.task.waitFinished();
+        assertSame("Instance created in parallel is the same", mySupport, mySupport.parallel);
+        
         assertEquals(instances + 1, MySupport.INSTANCES.get());
         assertSame(project, mySupport.getProject());
-    }
-
-    public void testProjectWithProjectServiceProvider10Times() throws Exception {
-        for (int i = 0; i < 10; ++i) {
-            testProjectWithProjectServiceProvider();
-        }
     }
 
     private ClientSideProject createProject(@NullAllowed String sources, @NullAllowed String siteRoot, @NullAllowed String tests) throws Exception {
@@ -288,20 +288,30 @@ public class ClientSideProjectTest extends NbTestCase {
     }
 
     @ProjectServiceProvider(service = MySupport.class, projectType = "org-netbeans-modules-web-clientproject")
-    public static final class MySupport {
+    public static final class MySupport implements Runnable {
 
         public static final AtomicInteger INSTANCES = new AtomicInteger();
+        public static Project query;
 
         private final Project project;
+        MySupport parallel;
+        RequestProcessor.Task task;
 
 
-        public MySupport(Project project) {
+        public MySupport(Project project) throws Exception {
             INSTANCES.incrementAndGet();
             this.project = project;
+            task = RequestProcessor.getDefault().post(this);
+            task.waitFinished(1000);
         }
 
         public Project getProject() {
             return project;
+        }
+
+        @Override
+        public void run() {
+            parallel = query.getLookup().lookup(MySupport.class);
         }
 
     }
