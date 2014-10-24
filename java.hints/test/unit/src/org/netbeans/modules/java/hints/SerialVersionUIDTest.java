@@ -42,9 +42,9 @@ import org.openide.util.NbBundle;
  */
 public class SerialVersionUIDTest extends ErrorHintsTestBase {
 
-    private static final String HINT_SUPPRESS = NbBundle.getMessage(ErrorDescriptionFactory.class, "LBL_FIX_Suppress_Waning", "serial");
-    private static final String HINT_DEFAULT = NbBundle.getMessage(SerialVersionUID.class, "HINT_SerialVersionUID");
-    private static final String HINT_GENERATED = NbBundle.getMessage(SerialVersionUID.class, "HINT_SerialVersionUID_Generated");
+    private String HINT_SUPPRESS;
+    private String HINT_DEFAULT;
+    private String HINT_GENERATED;
 
     public SerialVersionUIDTest(String name) {
         super(name);
@@ -54,6 +54,9 @@ public class SerialVersionUIDTest extends ErrorHintsTestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
+        HINT_SUPPRESS = NbBundle.getMessage(ErrorDescriptionFactory.class, "LBL_FIX_Suppress_Waning", "serial");
+        HINT_DEFAULT = NbBundle.getMessage(SerialVersionUID.class, "HINT_SerialVersionUID");
+        HINT_GENERATED = NbBundle.getMessage(SerialVersionUID.class, "HINT_SerialVersionUID_Generated");
         TestCompilerSettings.commandLine = "-Xlint:serial";
     }
 
