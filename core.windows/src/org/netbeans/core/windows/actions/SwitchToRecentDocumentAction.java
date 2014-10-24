@@ -75,16 +75,16 @@ implements PropertyChangeListener {
     /** Perform the action. Sets/unsets maximzed mode. */
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        TopComponent[] tcs = wm.getRecentViewList();
+        String[] ids = wm.getRecentViewIDList();
         
-        if(tcs.length == 0) {
+        if(ids.length == 0) {
             return;
         }
 
-        for(int i = 0; i < tcs.length; i++) {
-            TopComponent tc = (TopComponent)tcs[i];
+        for(int i = 0; i < ids.length; i++) {
+            String tcId = ids[i];
             
-            ModeImpl mode = (ModeImpl)wm.findMode(tc);
+            ModeImpl mode = (ModeImpl)wm.findModeForOpenedID(tcId);
             if(mode == null) {
                 continue;
             }
@@ -94,8 +94,11 @@ implements PropertyChangeListener {
                 if(mode != wm.getCurrentMaximizedMode()) {
                     wm.switchMaximizedMode(null);
                 }
-                tc.requestActive();
-                break;
+                TopComponent tc = wm.findTopComponent(tcId);
+                if( null != tc ) {
+                    tc.requestActive();
+                    break;
+                }
             }
         }
     }
