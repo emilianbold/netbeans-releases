@@ -48,9 +48,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.ui.ProjectGroup;
@@ -71,55 +73,7 @@ public final class BaseUtilities {
      */
     public static OpenProjectsTrampoline getOpenProjectsTrampoline() {
         OpenProjectsTrampoline instance = Lookup.getDefault().lookup(OpenProjectsTrampoline.class);
-        return instance != null ? instance : new OpenProjectsTrampoline() {
-            final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-            final Collection<Project> open = new ArrayList<Project>();
-            Project main;
-            @Override public Project[] getOpenProjectsAPI() {
-                return open.toArray(new Project[open.size()]);
-            }
-            @Override public void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
-                open.addAll(Arrays.asList(projects));
-                pcs.firePropertyChange(OpenProjects.PROPERTY_OPEN_PROJECTS, null, null);
-            }
-            @Override public void closeAPI(Project[] projects) {
-                open.removeAll(Arrays.asList(projects));
-                pcs.firePropertyChange(OpenProjects.PROPERTY_OPEN_PROJECTS, null, null);
-            }
-            @Override public Future<Project[]> openProjectsAPI() {
-                return RequestProcessor.getDefault().submit(new Callable<Project[]>() {
-                    @Override public Project[] call() {
-                        return getOpenProjectsAPI();
-                    }
-                });
-            }
-            @Override public Project getMainProject() {
-                return main;
-            }
-            @Override public void setMainProject(Project project) {
-                main = project;
-                pcs.firePropertyChange(OpenProjects.PROPERTY_MAIN_PROJECT, null, null);
-            }
-            @Override public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
-                pcs.addPropertyChangeListener(listener);
-            }
-            @Override public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
-                pcs.removePropertyChangeListener(listener);
-            }
-
-            @Override
-            public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
-            }
-
-            @Override
-            public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
-            }
-
-            @Override
-            public ProjectGroup getActiveProjectGroupAPI() {
-                return null;
-            }
-        };
+        return instance != null ? instance : DefaultOpenProjectsTrampoline.getInstance();
     }
     
     // XXX anybody using this
@@ -141,5 +95,74 @@ public final class BaseUtilities {
 
         public abstract ProjectGroup createGroup(String name, Preferences prefs);
 
+    }
+
+    private static final class DefaultOpenProjectsTrampoline implements OpenProjectsTrampoline {
+
+        private static final AtomicReference<DefaultOpenProjectsTrampoline> INSTANCE = new AtomicReference<>();
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private final Collection<Project> open = new ArrayList<>();
+        private Project main;
+
+        private DefaultOpenProjectsTrampoline() {
+        }
+
+        @Override public Project[] getOpenProjectsAPI() {
+            return open.toArray(new Project[open.size()]);
+        }
+        @Override public void openAPI(Project[] projects, boolean openRequiredProjects, boolean showProgress) {
+            open.addAll(Arrays.asList(projects));
+            pcs.firePropertyChange(OpenProjects.PROPERTY_OPEN_PROJECTS, null, null);
+        }
+        @Override public void closeAPI(Project[] projects) {
+            open.removeAll(Arrays.asList(projects));
+            pcs.firePropertyChange(OpenProjects.PROPERTY_OPEN_PROJECTS, null, null);
+        }
+        @Override public Future<Project[]> openProjectsAPI() {
+            return RequestProcessor.getDefault().submit(new Callable<Project[]>() {
+                @Override public Project[] call() {
+                    return getOpenProjectsAPI();
+                }
+            });
+        }
+        @Override public Project getMainProject() {
+            return main;
+        }
+        @Override public void setMainProject(Project project) {
+            main = project;
+            pcs.firePropertyChange(OpenProjects.PROPERTY_MAIN_PROJECT, null, null);
+        }
+        @Override public void addPropertyChangeListenerAPI(PropertyChangeListener listener, Object source) {
+            pcs.addPropertyChangeListener(listener);
+        }
+        @Override public void removePropertyChangeListenerAPI(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void addProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+        }
+
+        @Override
+        public void removeProjectGroupChangeListenerAPI(ProjectGroupChangeListener listener) {
+        }
+
+        @Override
+        public ProjectGroup getActiveProjectGroupAPI() {
+            return null;
+        }
+
+        @NonNull
+        static DefaultOpenProjectsTrampoline getInstance() {
+            DefaultOpenProjectsTrampoline res = INSTANCE.get();
+            if (res == null) {
+                res = new DefaultOpenProjectsTrampoline();
+                if (!INSTANCE.compareAndSet(null, res)) {
+                    res = INSTANCE.get();
+                }
+            }
+            assert res != null;
+            return res;
+        }
     }
 }
