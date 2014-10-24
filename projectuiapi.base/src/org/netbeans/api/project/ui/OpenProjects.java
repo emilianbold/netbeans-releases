@@ -45,7 +45,12 @@
 package org.netbeans.api.project.ui;
 
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +59,8 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.project.uiapi.BaseUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * List of projects open in the GUI.
@@ -87,23 +94,35 @@ public final class OpenProjects {
      * @since org.netbeans.modules.projectuiapi/1 1.20
      */
     public static final String PROPERTY_MAIN_PROJECT = "MainProject"; // NOI18N
-    
-    private static OpenProjects INSTANCE = new OpenProjects();
+
+    //@GuardedBy("instances")
+    private static final Map<OpenProjectsTrampoline,Reference<OpenProjects>> instances = new WeakHashMap<>();
 
     private static final Logger LOG = Logger.getLogger(OpenProjects.class.getName());
-    
-    private OpenProjectsTrampoline trampoline;
-    
-    private OpenProjects() {
-        this.trampoline = BaseUtilities.getOpenProjectsTrampoline();
+
+    private final OpenProjectsTrampoline trampoline;
+
+    private OpenProjects(@NonNull final OpenProjectsTrampoline spi) {
+        Parameters.notNull("spi", spi); //NOI18N
+        this.trampoline = spi;
     }
 
     /**
      * Get the default singleton instance of this class.
      * @return the default instance
      */
-    public static OpenProjects getDefault() {                
-        return INSTANCE;
+    public static OpenProjects getDefault() {
+        final OpenProjectsTrampoline spi = BaseUtilities.getOpenProjectsTrampoline();
+        assert spi != null;
+        synchronized (instances) {
+           OpenProjects api;
+           Reference<OpenProjects> apiRef = instances.get(spi);
+           if (apiRef == null || (api = apiRef.get()) == null) {
+               api = new OpenProjects(spi);
+               instances.put(spi, new WeakReference<>(api));
+           }
+           return api;
+        }
     }
     
     /**
