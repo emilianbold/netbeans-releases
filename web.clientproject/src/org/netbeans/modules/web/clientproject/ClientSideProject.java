@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -85,6 +86,7 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
@@ -120,6 +122,7 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileChooserBuilder;
@@ -154,6 +157,8 @@ public class ClientSideProject implements Project {
 
     @StaticResource
     public static final String HTML5_PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-project.png"; // NOI18N
+
+    static final RequestProcessor RP = new RequestProcessor(ClientSideProject.class);
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
@@ -485,7 +490,7 @@ public class ClientSideProject implements Project {
     }
 
     public void setName(String name) {
-        ClientSideProjectUtilities.setProjectName(projectHelper, name);
+        ClientSideProjectUtilities.setProjectName(projectHelper, name, true);
     }
 
 
@@ -671,10 +676,6 @@ public class ClientSideProject implements Project {
             PlatformProviders.getDefault().projectOpened(project);
             FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
-            FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
-            if (cordova == null) {
-                cordova = projectDirectory.getFileObject("hooks"); // NOI18N
-            }
             FileObject testsFolder = project.getTestsFolder(false);
 
             boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
@@ -684,7 +685,7 @@ public class ClientSideProject implements Project {
                     new Object[] {
                         browserId,
                         testsFolder != null && testsFolder.getChildren().length > 0 ? "YES" : "NO", // NOI18N
-                        cordova != null && cordova.isFolder() ? "YES" : "NO", // NOI18N
+                        ClientSideProjectUtilities.isCordovaProject(project) ? "YES" : "NO", // NOI18N
                         hasGrunt ? "YES" : "NO", // NOI18N
                         hasBower ? "YES" : "NO", // NOI18N
                         hasPackage ? "YES" : "NO", // NOI18N
@@ -962,7 +963,19 @@ public class ClientSideProject implements Project {
 
         @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
+            final String oldName = getName();
             name = null;
+            final String newName = getName();
+            if (!Objects.equals(oldName, newName)) {
+                // #10778
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        PlatformProviders.getDefault().notifyPropertyChanged(ClientSideProject.this,
+                                new PropertyChangeEvent(ClientSideProject.this, PlatformProvider.PROP_PROJECT_NAME, oldName, newName));
+                    }
+                });
+            }
         }
 
         @Override
@@ -1006,8 +1019,10 @@ public class ClientSideProject implements Project {
                     case PlatformProvider.PROP_RUN_CONFIGURATION:
                         runConfigurationChanged((String) event.getNewValue());
                         break;
+                    case PlatformProvider.PROP_PROJECT_NAME:
+                        projectNameChanged(platformProvider, (String) event.getNewValue());
+                        break;
                     default:
-                        // XXX
                         assert false : "Unhandled property change: " + propertyName;
                 }
             }
@@ -1048,6 +1063,23 @@ public class ClientSideProject implements Project {
                     saveRunProperties(null, true);
                     return;
                 }
+            }
+        }
+
+        @NbBundle.Messages({
+            "# {0} - project name",
+            "PlatformProvidersListenerImpl.sync.name=Project name synced to {0}.",
+        })
+        private void projectNameChanged(PlatformProvider platformProvider, String newName) {
+            if (StringUtilities.hasText(newName)
+                    && !getName().equals(newName)) {
+                setName(newName);
+                NotificationDisplayer.getDefault().notify(
+                        platformProvider.getDisplayName(),
+                        NotificationDisplayer.Priority.LOW.getIcon(),
+                        Bundle.PlatformProvidersListenerImpl_sync_name(newName),
+                        null,
+                        NotificationDisplayer.Priority.LOW);
             }
         }
 

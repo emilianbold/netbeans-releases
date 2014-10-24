@@ -11,7 +11,7 @@ function Person() {
     this.dob = new Date();
     this.origin = new Mammal();
     this.props = {
-        a: 2,
+        a: 2, a2 :1,
         b: {
             b1: 1, b2: 3
         }

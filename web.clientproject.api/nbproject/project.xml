@@ -297,7 +297,6 @@
                 <friend>org.netbeans.modules.web.livehtml</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.clientproject.api</package>
-                <package>org.netbeans.modules.web.clientproject.api.jslibs</package>
                 <package>org.netbeans.modules.web.clientproject.api.jstesting</package>
                 <package>org.netbeans.modules.web.clientproject.api.network</package>
                 <package>org.netbeans.modules.web.clientproject.api.platform</package>

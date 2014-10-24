@@ -93,6 +93,7 @@ public class GeneralNodeJs extends JellyTestCase {
     public final String TEST_BASE_NAME = "nodejs_";
     public static int NAME_ITERATOR = 0;
     public static boolean sourcesDownloaded = false;
+    public static int currentLine = -1;
 
     public GeneralNodeJs(String args) {
         super(args);
@@ -209,18 +210,36 @@ public class GeneralNodeJs extends JellyTestCase {
         tabbedPane.selectPage("Node.js");
         JButtonOperator downloadBtn = new JButtonOperator(tabbedPane, "Download Sources");
         downloadBtn.press();
-        evt.waitNoEvent(2000);
+        evt.waitNoEvent(500);
         long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout");
+
         try {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", 30000);
-            downloadBtn.waitComponentEnabled();
+            downloadBtn = new JButtonOperator(tabbedPane, "Download Sources");
+            Waiter waiter = new Waiter(new Waitable() {
+                public Object actionProduced(Object obj) {
+                    if (((JButtonOperator) obj).isEnabled()) {
+                        return (obj);
+                    } else {
+                        return (null);
+                    }
+                }
+
+                public String getDescription() {
+                    return "Component enabled: ";
+                }
+            });
+            waiter.setOutput(downloadBtn.getOutput());
+            waiter.setTimeoutsToCloneOf(downloadBtn.getTimeouts(), "ComponentOperator.WaitComponentEnabledTimeout");
+            waiter.waitAction(downloadBtn);
+
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", defaultTimeout);
         } catch (InterruptedException ex) {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", defaultTimeout);
             Exceptions.printStackTrace(ex);
         }
         optionsOper.ok();
-        evt.waitNoEvent(1000);
+        evt.waitNoEvent(5000);
         waitCompletionScanning();
         GeneralNodeJs.sourcesDownloaded = true;
     }
@@ -423,11 +442,12 @@ public class GeneralNodeJs extends JellyTestCase {
 
     public void testCompletion(EditorOperator eo, int lineNumber) throws Exception {
         waitScanFinished();
+        GeneralNodeJs.currentLine = lineNumber + 1;
         String rawLine = eo.getText(lineNumber);
-        int start = rawLine.indexOf("<!--cc;");
+        int start = rawLine.indexOf("//cc;");
         String rawConfig = rawLine.substring(start + 2);
         String[] config = rawConfig.split(";");
-        eo.setCaretPosition(lineNumber, Integer.parseInt(config[1]));
+        eo.setCaretPosition(lineNumber + 1, Integer.parseInt(config[1]));
         type(eo, config[2]);
         eo.pressKey(KeyEvent.VK_ESCAPE);
         int back = Integer.parseInt(config[3]);
@@ -463,7 +483,7 @@ public class GeneralNodeJs extends JellyTestCase {
                 eo.pressKey(KeyEvent.VK_ENTER);
             }
 
-            assertTrue("Wrong completion result: '" + eo.getText(lineNumber) + "'", eo.getText(lineNumber).contains(config[6].replaceAll("\\|", "")));
+            assertTrue("Wrong completion result: '" + eo.getText(lineNumber + 1) + "'", eo.getText(lineNumber + 1).contains(config[6].replaceAll("\\|", "")));
             completion.listItself.hideAll();
         }
 

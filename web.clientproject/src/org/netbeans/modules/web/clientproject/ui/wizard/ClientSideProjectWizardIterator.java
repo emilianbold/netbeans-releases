@@ -426,7 +426,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public NewHtml5ProjectWizard(boolean withExtenders) {
             this.withExtenders = withExtenders;
             baseWizard = CreateProjectUtils.createBaseWizardPanel(HTML_PROJECT_NAME);
-            toolsWizard = CreateProjectUtils.createToolsWizardPanel();
+            toolsWizard = CreateProjectUtils.createToolsWizardPanel(CreateProjectUtils.Tools.all());
         }
 
         public NewHtml5ProjectWizard() {
@@ -520,7 +520,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             }
 
             // tools
-            files.addAll(CreateProjectUtils.instantiateTools(project, wizardDescriptor));
+            files.addAll(CreateProjectUtils.instantiateTools(project, toolsWizard.first()));
 
             return Pair.of(null, siteRootDir);
         }
@@ -689,7 +689,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         public NewJsLibraryProjectWizard() {
             baseWizard = CreateProjectUtils.createBaseWizardPanel(LIBRARY_PROJECT_NAME);
-            toolsWizard = CreateProjectUtils.createToolsWizardPanel();
+            toolsWizard = CreateProjectUtils.createToolsWizardPanel(CreateProjectUtils.Tools.all());
         }
 
         @Override
@@ -736,7 +736,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             files.add(mainFile);
 
             // tools
-            files.addAll(CreateProjectUtils.instantiateTools(project, wizardDescriptor));
+            files.addAll(CreateProjectUtils.instantiateTools(project, toolsWizard.first()));
 
             return Pair.of(sources, null);
         }

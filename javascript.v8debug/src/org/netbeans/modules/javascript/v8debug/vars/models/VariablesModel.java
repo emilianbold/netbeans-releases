@@ -42,11 +42,19 @@
 
 package org.netbeans.modules.javascript.v8debug.vars.models;
 
+import java.awt.Color;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import org.netbeans.lib.v8debug.PropertyLong;
+import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Frame;
+import org.netbeans.lib.v8debug.V8Request;
+import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Scope;
+import org.netbeans.lib.v8debug.commands.Scope;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8Value;
@@ -54,9 +62,11 @@ import org.netbeans.modules.javascript.v8debug.ReferencedValues;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.V8DebuggerEngineProvider;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
+import org.netbeans.modules.javascript.v8debug.vars.EvaluationError;
+import org.netbeans.modules.javascript.v8debug.vars.ScopeValue;
 import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
-import org.netbeans.modules.javascript.v8debug.vars.VariableArgument;
-import org.netbeans.modules.javascript.v8debug.vars.VariableLocal;
+import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
+import org.netbeans.modules.javascript.v8debug.vars.Variable;
 import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -65,6 +75,7 @@ import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Exceptions;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -80,13 +91,13 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     
     public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     
-    private static final Object[] EMPTY_CHILDREN = new Object[]{};
-    
-    private final V8Debugger dbg;
+    protected final V8Debugger dbg;
+    private final VarValuesLoader vvl;
 
     public VariablesModel(ContextProvider contextProvider) {
         dbg = contextProvider.lookupFirst(null, V8Debugger.class);
         dbg.addListener(this);
+        vvl = contextProvider.lookupFirst(null, VarValuesLoader.class);
     }
 
     @Override
@@ -105,7 +116,13 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
             Map<String, ReferencedValue> argumentRefs = frame.getArgumentRefs();
             Map<String, ReferencedValue> localRefs = frame.getLocalRefs();
             V8Scope[] scopes = frame.getScopes();
-            int n = argumentRefs.size() + localRefs.size() + scopes.length;
+            int numscopes = 0;
+            for (V8Scope scope : scopes) {
+                if (!V8Scope.Type.Local.equals(scope.getType())) {
+                    numscopes++;
+                }
+            }
+            int n = argumentRefs.size() + localRefs.size() + numscopes;
             Object[] ch = new Object[n];
             int i = 0;
             ReferencedValues rvals = cf.getRvals();
@@ -116,7 +133,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 if (v == null) {
                     v = rv.getValue();
                 }
-                ch[i++] = new VariableArgument(name, ref, v);
+                ch[i++] = new Variable(Variable.Kind.ARGUMENT, name, ref, v);
             }
             for (String name : localRefs.keySet()) {
                 ReferencedValue rv = localRefs.get(name);
@@ -125,15 +142,93 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 if (v == null) {
                     v = rv.getValue();
                 }
-                ch[i++] = new VariableLocal(name, ref, v);
+                ch[i++] = new Variable(Variable.Kind.LOCAL, name, ref, v);
             }
             for (V8Scope scope : scopes) {
-                ch[i++] = scope;
+                if (V8Scope.Type.Local.equals(scope.getType())) {
+                    // Vars from local scope are provided automatically
+                    continue;
+                }
+                ch[i++] = new ScopeValue(scope);
             }
             return ch;
+        } else if (parent instanceof Variable) {
+            Variable vl = (Variable) parent;
+            V8Value value;
+            try {
+                value = vvl.getValue(vl);
+            } catch (EvaluationError ee) {
+                value = null;
+            }
+            if (value instanceof V8Object) {
+                V8Object obj = (V8Object) value;
+                return getObjectChildren(obj);
+            }
+            return EMPTY_CHILDREN;
+        } else if (parent instanceof ScopeValue) {
+            ScopeValue sv = (ScopeValue) parent;
+            V8Scope scope = sv.getScope();
+            V8Object sobj = sv.getValue();
+            if (sobj == null) {
+                ReferencedValue<V8Object> sobjr = scope.getObject();
+                if (sobjr != null) {
+                    sobj = sobjr.getValue();
+                    if (sobj == null) {
+                        CallFrame cf = dbg.getCurrentFrame();
+                        if (cf != null) {
+                            sobj = (V8Object) cf.getRvals().getReferencedValue(sobjr.getReference());
+                        }
+                    }
+                }
+                if (sobj == null) {
+                    sv = loadScope(sv);
+                    sobj = sv.getValue();
+                }
+            }
+            if (sobj == null) {
+                return EMPTY_CHILDREN;
+            } else {
+                return getObjectChildren(sobj);
+            }
         } else {
             return EMPTY_CHILDREN;
         }
+    }
+    
+    protected final Object[] getObjectChildren(V8Object obj) {
+        V8Object.Array array = obj.getArray();
+        List<Object> children = null;
+        if (array != null) {
+            children = new ArrayList<>();
+            V8Object.IndexIterator indexIterator = array.getIndexIterator();
+            while (indexIterator.hasNextIndex()) {
+                long index = indexIterator.nextIndex();
+                children.add(new Variable(Variable.Kind.ARRAY_ELEMENT,
+                                          Long.toString(index),
+                                          array.getReferenceAt(index), null));
+            }
+        }
+        Map<String, V8Object.Property> properties = obj.getProperties();
+        Object[] childrenRet;
+        if (children == null) {
+            childrenRet = new Object[properties.size()];
+        } else {
+            childrenRet = null;
+        }
+        int chi = 0;
+        for (String name : properties.keySet()) {
+            V8Object.Property property = properties.get(name);
+            Variable var = new Variable(Variable.Kind.PROPERTY, name, property.getReference(), null);
+            if (children != null) {
+                children.add(var);
+            } else {
+                childrenRet[chi++] = var;
+            }
+        }
+        if (children != null) {
+            childrenRet = children.toArray();
+        }
+        return childrenRet;
     }
 
     @Override
@@ -141,7 +236,29 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
         if (node == ROOT) {
             return false;
         }
+        if (node instanceof Variable) {
+            Variable var = (Variable) node;
+            try {
+                V8Value value = var.getValue();
+                return !hasChildren(value);
+            } catch (EvaluationError ex) {
+            }
+        }
+        if (node instanceof ScopeValue) {
+            return false;
+        }
         return true;
+    }
+    
+    protected final boolean hasChildren(V8Value value) {
+        if (value instanceof V8Object) {
+            V8Object obj = (V8Object) value;
+            V8Object.Array array = obj.getArray();
+            Map<String, V8Object.Property> properties = obj.getProperties();
+            return (array != null && array.getLength() > 0 || properties != null && !properties.isEmpty());
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -186,13 +303,18 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
 
     @Override
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
-        if (node instanceof VariableArgument) {
-            return LOCAL;
+        if (node instanceof Variable) {
+            Variable.Kind varKind = ((Variable) node).getKind();
+            switch (varKind) {
+                case ARGUMENT:
+                case LOCAL:
+                case PROPERTY:
+                case ARRAY_ELEMENT:
+                default:
+                    return LOCAL;
+            }
         }
-        if (node instanceof VariableLocal) {
-            return LOCAL;
-        }
-        if (node instanceof V8Scope) {
+        if (node instanceof ScopeValue) {
             
         }
         throw new UnknownTypeException(node);
@@ -200,11 +322,11 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
 
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
-        if (node instanceof VariableLocal) {
-            return ((VariableLocal) node).getName();
+        if (node instanceof Variable) {
+            return ((Variable) node).getName();
         }
-        if (node instanceof V8Scope) {
-            V8Scope scope = (V8Scope) node;
+        if (node instanceof ScopeValue) {
+            V8Scope scope = ((ScopeValue) node).getScope();
             String text = scope.getText();
             if (text == null) {
                 text = scope.getType().toString();
@@ -221,9 +343,19 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
 
     @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
-        if (node instanceof VariableLocal) {
-            VariableLocal var = (VariableLocal) node;
-            return var.getName() + " = " + V8Evaluator.getStringValue(var.getValue());
+        if (node instanceof Variable) {
+            Variable var = (Variable) node;
+            String strVal;
+            try {
+                V8Value value = var.getValue();
+                if (value == null) {
+                    return null;
+                }
+                strVal = V8Evaluator.getStringValue(value);
+            } catch (EvaluationError ee) {
+                strVal = ">" + ee.getLocalizedMessage() + "<";
+            }
+            return var.getName() + " = " + strVal;
         }
         return null;
     }
@@ -233,23 +365,28 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
         if (node == ROOT) {
             return "";
         } else if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
-            if (node instanceof VariableLocal) {
-                VariableLocal var = (VariableLocal) node;
-                return V8Evaluator.getStringValue(var.getValue());
-            } else if (node instanceof V8Scope) {
+            if (node instanceof Variable) {
+                Variable var = (Variable) node;
+                try {
+                    V8Value value = vvl.getValue(var);
+                    return V8Evaluator.getStringValue(value);
+                } catch (EvaluationError ex) {
+                    return toHTML(ex.getLocalizedMessage(), false, false, Color.red);
+                }
+            } else if (node instanceof ScopeValue) {
                 return "";
             }
         } else if (Constants.LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
-            if (node instanceof VariableLocal) {
-                VariableLocal var = (VariableLocal) node;
-                V8Value value = var.getValue();
-                V8Value.Type type = value.getType();
-                if (type == V8Value.Type.Object) {
-                    V8Object obj = (V8Object) value;
-                    return obj.getClassName();
+            if (node instanceof Variable) {
+                Variable var = (Variable) node;
+                V8Value value;
+                try {
+                    value = vvl.getValue(var);
+                } catch (EvaluationError ex) {
+                    return "";
                 }
-                return type.toString();
-            } else if (node instanceof V8Scope) {
+                return V8Evaluator.getStringType(value);
+            } else if (node instanceof ScopeValue) {
                 return "";
             }
         }
@@ -258,11 +395,13 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
 
     @Override
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
+        // TODO
         return true;
     }
 
     @Override
     public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
+        // TODO
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -274,6 +413,58 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     @Override
     public void notifyFinished() {
         
+    }
+
+    private ScopeValue loadScope(ScopeValue scopeValue) {
+        Scope.Arguments sa;
+        V8Scope scope = scopeValue.getScope();
+        PropertyLong frameIndex = scope.getFrameIndex();
+        if (frameIndex.hasValue()) {
+            sa = new Scope.Arguments(scope.getIndex(), frameIndex.getValue());
+        } else {
+            sa = new Scope.Arguments(scope.getIndex());
+        }
+        final ScopeValue[] newScopeRef = new ScopeValue[] { null };
+        final boolean[] isSet = new boolean[] { false };
+        V8Request cmdRequest = dbg.sendCommandRequest(V8Command.Scope, sa, new V8Debugger.CommandResponseCallback() {
+            @Override
+            public void notifyResponse(V8Request request, V8Response response) {
+                if (response != null && response.isSuccess()) {
+                    Scope.ResponseBody srb = (Scope.ResponseBody) response.getBody();
+                    synchronized (newScopeRef) {
+                        V8Scope scope = srb.getScope();
+                        V8Object obj;
+                        if (!scope.getObject().hasValue()) {
+                            long ref = scope.getObject().getReference();
+                            obj = (V8Object) response.getReferencedValue(ref);
+                        } else {
+                            obj = scope.getObject().getValue();
+                        }
+                        newScopeRef[0] = new ScopeValue(scope, obj);
+                        isSet[0] = true;
+                        newScopeRef.notifyAll();
+                    }
+                } else {
+                    synchronized (newScopeRef) {
+                        isSet[0] = true;
+                        newScopeRef.notifyAll();
+                    }
+                }
+            }
+        });
+        if (cmdRequest != null) {
+            synchronized (newScopeRef) {
+                if (!isSet[0]) {
+                    try {
+                        newScopeRef.wait();
+                    } catch (InterruptedException ex) {}
+                }
+                if (newScopeRef[0] != null) {
+                    scopeValue.setValue(newScopeRef[0].getValue());
+                }
+            }
+        }
+        return scopeValue;
     }
     
 }

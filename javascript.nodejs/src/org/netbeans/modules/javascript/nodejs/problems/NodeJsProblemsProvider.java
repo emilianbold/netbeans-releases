@@ -158,7 +158,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         if (NodeJsUtils.getSourceRoots(project).isEmpty()) {
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.NodeJsProblemProvider_sources_none_title(),
-                    Bundle.NodeJsProblemProvider_sources_none_description(ProjectUtils.getInformation(project).getDisplayName()),
+                    Bundle.NodeJsProblemProvider_sources_none_description(NodeJsUtils.getProjectDisplayName(project)),
                     new CustomizerProblemResolver(project, "NO_SOURCES", WebClientProjectConstants.CUSTOMIZER_SOURCES_IDENT)); // NOI18N
             currentProblems.add(problem);
         }

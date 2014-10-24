@@ -151,7 +151,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
             uiProperties.save();
             ClientSideProjectProperties.ProjectServer server = uiProperties.getProjectServer();
             ClientSideProjectUtilities.logUsage(CustomizerProviderImpl.class, "USG_PROJECT_HTML5_CONFIGURE", // NOI18N
-                    new Object[] { ClientSideProjectProperties.createListOfJsLibraries(uiProperties.getNewJsLibraries()),
+                    new Object[] { "", // NOI18N // This used to be a list of newly added libraries
                         ClientSideProjectProperties.ProjectServer.INTERNAL.equals(server) ? "EMBEDDED" : "EXTERNAL", // NOI18N
                         ClientSideProjectProperties.ProjectServer.INTERNAL.equals(server) ? (uiProperties.getWebRoot().length() > 1 ? "YES" : "NO") : "" // NOI18N
                 });

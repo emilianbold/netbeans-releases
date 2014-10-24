@@ -207,7 +207,7 @@ public final class PhpProjectUtils {
     public static void reformatFile(final DataObject dataObject) throws IOException {
         assert dataObject != null;
 
-        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
+        EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
         assert ec != null : "No editorcookie for " + dataObject;
 
         Document doc = ec.openDocument();

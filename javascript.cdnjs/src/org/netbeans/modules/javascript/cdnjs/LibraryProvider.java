@@ -50,10 +50,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
@@ -173,14 +175,15 @@ public final class LibraryProvider {
         propertyChangeSupport.firePropertyChange(searchTerm, null, libraries);
     }
 
-    // PENDING allow to override this using some system property (in case it changes)
     /**
      * URL pattern for library files.
      * {0} library name
      * {1} version name
      * {2} file name
      */
-    private static final String LIBRARY_FILE_URL_PATTERN = "http://cdnjs.cloudflare.com/ajax/libs/{0}/{1}/{2}";
+    private static final String LIBRARY_FILE_URL_PATTERN = System.getProperty(
+            "netbeans.cdnjs.downloadurl", // NOI18N
+            "http://cdnjs.cloudflare.com/ajax/libs/{0}/{1}/{2}"); // NOI18N
 
     /**
      * Downloads the files of the specified library version. The data are saved
@@ -215,14 +218,16 @@ public final class LibraryProvider {
         return files;
     }
 
+    /** URL of the search web service. */
+    static final String SEARCH_URL_PREFIX =
+            System.getProperty("netbeans.cdnjs.searchurl", // NOI18N
+            "http://api.cdnjs.com/libraries?fields=description,homepage,assets&search="); // NOI18N
+    
     /**
      * Search task - a task that performs one search for libraries matching
      * the given search term.
      */
     final class SearchTask implements Runnable {
-        /** URL of the search web service. */
-        private static final String SEARCH_URL_PREFIX =
-                "http://api.cdnjs.com/libraries?fields=description,homepage,assets&search="; // NOI18N
         /** Name of the 'result' property. */
         private static final String PROPERTY_RESULT = "results"; // NOI18N
         /** Search term. */
@@ -244,8 +249,15 @@ public final class LibraryProvider {
          * @return URL of the query to perform.
          */
         private String getSearchURL() {
-            // PENDING encode searchTerm
-            return SEARCH_URL_PREFIX + searchTerm;
+            String encodedSearchTerm;
+            try {
+                encodedSearchTerm = URLEncoder.encode(searchTerm, "UTF-8"); // NOI18N
+            } catch (UnsupportedEncodingException ueex) {
+                // Should not happen, UTF-8 should be supported everywhere
+                Logger.getLogger(LibraryProvider.class.getName()).log(Level.SEVERE, null, ueex);
+                encodedSearchTerm = searchTerm;
+            }
+            return SEARCH_URL_PREFIX + encodedSearchTerm;
         }
 
         @Override
@@ -272,7 +284,7 @@ public final class LibraryProvider {
                 URLConnection urlConnection = urlObject.openConnection();
                 StringBuilder content = new StringBuilder();
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                        urlConnection.getInputStream()))) {
+                        urlConnection.getInputStream(), "UTF-8"))) { // NOI18N
                     String line;
                     while ((line = reader.readLine()) != null) {
                         content.append(line).append('\n');

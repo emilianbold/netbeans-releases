@@ -14,7 +14,7 @@ function InnerCl() {
     this.ver = 1;
     this.da = new Date();
     this.log = {
-        messages: [],
+        messages: [], msg: "",
         owner: "Smith"
     };
 
