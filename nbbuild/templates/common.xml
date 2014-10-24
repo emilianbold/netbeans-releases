@@ -1355,8 +1355,8 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.projectuiapi.base" release="1" spec="1.78"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.project.ant" addcompiletime="true">
-                <module codenamebase="org.netbeans.modules.project.ant" release="1" spec="1.61"/>
-                <module codenamebase="org.netbeans.modules.project.ant.ui" spec="1.61"/>
+                <module codenamebase="org.netbeans.modules.project.ant" release="1" spec="1.62"/>
+                <module codenamebase="org.netbeans.modules.project.ant.ui" spec="1.62"/>
             </replace>
             <replace codenamebase="org.netbeans.modules.java.project" addcompiletime="true">
                 <module codenamebase="org.netbeans.modules.java.project" release="1" spec="1.62"/>

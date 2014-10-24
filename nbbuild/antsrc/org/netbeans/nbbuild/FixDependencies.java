@@ -189,6 +189,8 @@ public class FixDependencies extends Task {
                             task.execute ();
                             compiled = true;
                         }
+                    } else {
+                        compiled = true; // just for the case - fix will clean up.
                     }
                 } catch (BuildException ex) {
                     if (fail) {
@@ -271,6 +273,9 @@ public class FixDependencies extends Task {
                 int mods = r.modules.size();
                 int changed = 0;
 
+                // first check whether the module's own version is sufficient:
+                Module triggerModule = null;
+                boolean specVersionMissing = false;
                 for (Module m : r.modules) {
                     if (m.codeNameBase.equals(r.codeNameBase)) {
                         log ("Checking dependency: " + r.codeNameBase, Project.MSG_INFO);
@@ -288,13 +293,18 @@ public class FixDependencies extends Task {
                             }
                         } else {
                             log("No specification version present for dependency: " + m.codeNameBase, Project.MSG_WARN);
+                            specVersionMissing = true;
                         }
-                    } else {
-                        if (alldeps.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
-                            changed++;
+                        triggerModule = m;
+                        break;
+                    }
+                }
+                // reached only if the dependencies include OLDER or NONE specification version of the r.codeNameBase
+                for (Module m : r.modules) {
+                    // check if the dependencies already contain the injected module; if so, rather 
+                        if (m != triggerModule && alldeps.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
                             continue;
                         }
-                    }
 
                     if (prefix) {
                         sb.append('\n');
@@ -310,17 +320,35 @@ public class FixDependencies extends Task {
                     sb.append (remove.substring (0, beg));
                     sb.append (m.codeNameBase);
                     String a = remove.substring (aft);
-                    if (m.specVersion != null) {
-                        a = a.replaceAll (
-                            "<specification-version>[0-9\\.]*</specification-version>", 
-                            "<specification-version>" + m.specVersion + "</specification-version>"
-                        );
-                    }
-                    if (m.releaseVersion == null) {
-                        a = a.replaceAll (
-                            "<release-version>[0-9]*</release-version>[\n\r ]*", 
-                            ""
-                        );
+                    if (specVersionMissing) {
+                        int rd = a.indexOf("<run-dependency>");
+                        StringBuilder rep = new StringBuilder("<run-dependency>");
+                        if (m.releaseVersion != null) {
+                            rep.append("<release-version>").append(m.releaseVersion).append("</release-version>");
+                        }
+                        if (m.specVersion != null) {
+                            rep.append("<specification-version>").append(m.specVersion).append("</specification-version>");
+                        }
+                        if (rd != -1) {
+                            int end = a.indexOf("</run-dependency>");
+                            a = a.substring(0, rd) + rep.toString() + a.substring(end);
+                        } else {
+                            rep.append("</run-dependency>");
+                            a = a + rep.toString();
+                        }
+                    } else {
+                        if (m.specVersion != null) {
+                            a = a.replaceAll (
+                                "<specification-version>[0-9\\.]*</specification-version>", 
+                                "<specification-version>" + m.specVersion + "</specification-version>"
+                            );
+                        }
+                        if (m.releaseVersion == null) {
+                            a = a.replaceAll (
+                                "<release-version>[0-9]*</release-version>[\n\r ]*", 
+                                ""
+                            );
+                        }
                     }
                     sb.append (a);
                     prefix = true;
@@ -345,6 +373,7 @@ public class FixDependencies extends Task {
                                     task.execute ();
                                     log ("Dependency on " + m + " is sufficient, skipping the rest", Project.MSG_INFO);
                                     compiled = true;
+                                    stream = x;
                                     continue DEPS;
                                 } else {
                                     log ("Cannot verify dependency on " + m + " no build target, clean target or build script set.", Project.MSG_INFO);
