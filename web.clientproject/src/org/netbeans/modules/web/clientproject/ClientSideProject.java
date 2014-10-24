@@ -676,10 +676,6 @@ public class ClientSideProject implements Project {
             PlatformProviders.getDefault().projectOpened(project);
             FileObject projectDirectory = project.getProjectDirectory();
             // usage logging
-            FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
-            if (cordova == null) {
-                cordova = projectDirectory.getFileObject("hooks"); // NOI18N
-            }
             FileObject testsFolder = project.getTestsFolder(false);
 
             boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
@@ -689,7 +685,7 @@ public class ClientSideProject implements Project {
                     new Object[] {
                         browserId,
                         testsFolder != null && testsFolder.getChildren().length > 0 ? "YES" : "NO", // NOI18N
-                        cordova != null && cordova.isFolder() ? "YES" : "NO", // NOI18N
+                        ClientSideProjectUtilities.isCordovaProject(project) ? "YES" : "NO", // NOI18N
                         hasGrunt ? "YES" : "NO", // NOI18N
                         hasBower ? "YES" : "NO", // NOI18N
                         hasPackage ? "YES" : "NO", // NOI18N

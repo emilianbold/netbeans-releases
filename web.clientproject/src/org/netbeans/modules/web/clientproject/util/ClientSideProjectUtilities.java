@@ -117,6 +117,17 @@ public final class ClientSideProjectUtilities {
         return prj != null || foundButBroken;
     }
 
+    // XXX
+    public static boolean isCordovaProject(Project project) {
+        FileObject projectDirectory = project.getProjectDirectory();
+        FileObject cordova = projectDirectory.getFileObject(".cordova"); // NOI18N
+        if (cordova == null) {
+            cordova = projectDirectory.getFileObject("hooks"); // NOI18N
+        }
+        return cordova != null
+                && cordova.isFolder();
+    }
+
     /**
      * Setup project with the given name and also set the following properties:
      * <ul>
