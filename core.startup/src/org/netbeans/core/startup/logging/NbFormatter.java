@@ -206,13 +206,17 @@ public final class NbFormatter extends java.util.logging.Formatter {
      * @param pw the destination
      */
     public static void printStackTrace(Throwable t, PrintWriter pw) {
-        doPrintStackTrace(pw, t, null);
+        doPrintStackTrace(pw, t, null, 10);
     }
 
     /**
      * #91541: show stack traces in a more natural order.
      */
-    private static void doPrintStackTrace(PrintWriter pw, Throwable t, Throwable higher) {
+    private static void doPrintStackTrace(PrintWriter pw, Throwable t, Throwable higher, int depth) {
+        if (depth == 0) {
+            pw.println("Truncating the output at ten nested exceptions..."); // NOI18N
+            return;
+        }
         //if (t != null) {t.printStackTrace(pw);return;}//XxX
         try {
             if (t.getClass().getMethod("printStackTrace", PrintWriter.class).getDeclaringClass() != Throwable.class) { // NOI18N
@@ -227,7 +231,7 @@ public final class NbFormatter extends java.util.logging.Formatter {
         }
         Throwable lower = t.getCause();
         if (lower != null) {
-            doPrintStackTrace(pw, lower, t);
+            doPrintStackTrace(pw, lower, t, depth - 1);
             pw.print("Caused: "); // NOI18N
         }
         String summary = t.toString();

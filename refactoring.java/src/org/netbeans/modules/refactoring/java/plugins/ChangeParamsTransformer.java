@@ -734,7 +734,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 DocCommentTree newDoc = make.DocComment(Collections.EMPTY_LIST, Collections.EMPTY_LIST, tags);
                 rewrite(synthConstructor? nju : tree, null, newDoc);
             }
-            rewrite(tree, nju);
+            rewrite(tree, make.asReplacementOf(nju, tree));
         }
     }
 

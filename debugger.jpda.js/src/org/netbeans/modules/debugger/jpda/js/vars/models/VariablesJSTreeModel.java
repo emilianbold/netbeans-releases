@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.debugger.jpda.js.vars.JSThis;
 import org.netbeans.modules.debugger.jpda.js.vars.JSVariable;
+import org.netbeans.modules.debugger.jpda.js.vars.ScopeVariable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
@@ -98,9 +99,12 @@ public class VariablesJSTreeModel implements TreeModelFilter {
             }
             return jsVar.getChildren();
         }
+        if (parent instanceof ScopeVariable) {
+            return ((ScopeVariable) parent).getScopeVars();
+        }
         Object[] children = original.getChildren(parent, from, to);
         List<Object> newChildren = new ArrayList<>();
-        List<JSVariable> scopeVars = null;
+        List<ScopeVariable> scopeVars = null;
         Map<String, LocalVariable> localVarsByName = new HashMap<>();
         JSVariable thiz = null;
         This jthis = null;
@@ -115,7 +119,11 @@ public class VariablesJSTreeModel implements TreeModelFilter {
                     continue;
                 } else if (JSUtils.VAR_SCOPE.equals(name)) {
                     //newChildren.addAll(createScopeVars(lv));
-                    scopeVars = createScopeVars(lv);
+                    //scopeVars = createScopeVars(lv);
+                    if (scopeVars == null) {
+                        scopeVars = new ArrayList<>();
+                    }
+                    scopeVars.add(ScopeVariable.create(debugger, lv));
                     continue;
                 } else if (name.startsWith(":")) {
                     continue;
@@ -139,13 +147,16 @@ public class VariablesJSTreeModel implements TreeModelFilter {
             }
         }
         if (scopeVars != null) {
-            Collections.reverse(scopeVars);
+            //Collections.reverse(scopeVars);
             int index = Math.min(localVarsByName.size(), newChildren.size());
-            for (JSVariable sv : scopeVars) {
+            /*for (JSVariable sv : scopeVars) {
                 String name = sv.getKey();
                 if (localVarsByName.containsKey(name)) {
                     continue; // Do not add a scope var (can be a global var) if it's already among local vars
                 }
+                newChildren.add(index, sv);
+            }*/
+            for (ScopeVariable sv : scopeVars) {
                 newChildren.add(index, sv);
             }
         }
@@ -170,6 +181,8 @@ public class VariablesJSTreeModel implements TreeModelFilter {
                 return original.isLeaf(valueObject);
             }
             return !jsVar.isExpandable();
+        } else if (node instanceof ScopeVariable) {
+            return false;
         }
         return original.isLeaf(node);
     }
@@ -186,10 +199,6 @@ public class VariablesJSTreeModel implements TreeModelFilter {
     
     private JSVariable createThisVar(LocalVariable lv) {
         return JSThis.create(debugger, lv);
-    }
-    
-    private List<JSVariable> createScopeVars(LocalVariable lv) {
-        return Arrays.asList(JSVariable.createScopeVars(debugger, lv));
     }
     
 }

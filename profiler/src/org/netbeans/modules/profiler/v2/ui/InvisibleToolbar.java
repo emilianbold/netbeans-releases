@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,57 +39,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.spi.project;
+package org.netbeans.modules.profiler.v2.ui;
 
-import java.io.IOException;
-import org.netbeans.lib.profiler.common.AttachSettings;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import java.awt.Insets;
+import javax.swing.BorderFactory;
+import javax.swing.JToolBar;
 
 /**
  *
  * @author Jiri Sedlacek
  */
-public abstract class ProjectStorageProvider {
+public class InvisibleToolbar extends JToolBar {
     
-    /**
-     * Returns attach settings for the provided project or null if not available.
-     * 
-     * @param project project context
-     * @return attach settings for the provided project or null if not available
-     */
-    public abstract AttachSettings loadAttachSettings(Lookup.Provider project) throws IOException;
+    public InvisibleToolbar() { super(); tweak(); }
     
-    /**
-     * Saves attach settings in context of the provided project.
-     * 
-     * @param project project context
-     * @param settings attach settings
-     */
-    public abstract void saveAttachSettings(Lookup.Provider project, AttachSettings settings);
+    public InvisibleToolbar(int orientation) { super(orientation); tweak(); }
     
-    /**
-     * Returns FileObject which can be used as a settings storage for the provided project or null if not available.
-     * 
-     * @param project project context
-     * @param create if <code>true</code> the storage will be created if not already available
-     * @return FileObject which can be used as a settings storage for the provided project or null if not available
-     * @throws IOException 
-     */
-    public abstract FileObject getSettingsFolder(Lookup.Provider project, boolean create)
-            throws IOException;
+    public InvisibleToolbar(String name) { super(name); tweak(); }
     
-    /**
-     * Returns project context for the provided settings storage FileObject or null if not resolvable.
-     * 
-     * @param settingsFolder settings storage
-     * @return project context for the provided settings storage FileObject or null if not resolvable
-     */
-    public abstract Lookup.Provider getProjectFromSettingsFolder(FileObject settingsFolder);
+    public InvisibleToolbar(String name, int orientation) { super(name, orientation); tweak(); }
+    
+    private void tweak() {
+        setBorder(BorderFactory.createEmptyBorder());
+        setBorderPainted(false);
+        setFloatable(false);
+        setRollover(true);
+        setOpaque(false);
+        setMargin(new Insets(0, 0, 0, 0));
+    }
     
 }

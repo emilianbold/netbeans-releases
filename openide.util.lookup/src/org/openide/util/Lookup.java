@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.openide.util.GlobalLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -115,6 +116,11 @@ public abstract class Lookup {
      * @see ServiceProvider
      */
     public static synchronized Lookup getDefault() {
+        Lookup gLpk = GlobalLookup.current();
+        if (gLpk != null) {
+            return gLpk;
+        }
+        
         if (defaultLookup != null || defaultLookupProvider != null) {
             if (defaultLookupProvider != null) {
                 Lookup lkp = defaultLookupProvider.getLookup();

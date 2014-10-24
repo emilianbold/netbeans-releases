@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.refactoring.java.test;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,7 +85,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performSafeDelete(src.getFileObject("t/A.java"), -1, false);
+        performSafeDelete(src.getFileObject("t/A.java"), 0, false);
         verifyContent(src);
     }
     
@@ -95,7 +98,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performSafeDelete(src.getFileObject("t"), -1, false);
+        performSafeDelete(src.getFileObject("t"), 0, false);
         verifyContent(src);
     }
     
@@ -112,6 +115,38 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 new File("t/A.java", "package t; public class A {\n"
                         + "    public A() {\n"
                         + "    }\n"
+                        + "}\n"));
+    }
+    
+    public void testVariableUsed() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    int i;\n"
+                        + "    public A() {\n"
+                        + "        System.out.println(i)\n"
+                        + "    }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("i;") + 1, false, new Problem(false, "ERR_ReferencesFound"));
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public A() {\n"
+                        + "        System.out.println(i)\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
+    public void testVariableAndMethod() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    int i;\n"
+                        + "    public void foo() {\n"
+                        + "        System.out.println(i);\n"
+                        + "    }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), -1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
                         + "}\n"));
     }
     
@@ -134,6 +169,104 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
+    }
+    
+    public void testMain() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        A a = new A();\n"
+                + "    }\n"
+                + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("main") + 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "}\n"));
+    }
+    
+    public void testRecursive() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        A a = new A();\n"
+                + "        main(args);\n"
+                + "    }\n"
+                + "}\n"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("main") + 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                + "}\n"));
+    }
+    
+    public void testPolymorphic() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public void foo() {\n"
+                        + "        A a = new A();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", source = "package t; public class B extends A {\n"
+                        + "public void foo() { }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/B.java"), source.indexOf("foo") + 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                        + "}\n"));
+    }
+    
+    public void testPolymorphicUsed() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public void foo() {\n"
+                        + "        A a = new A();\n"
+                        + "    }\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        new A().foo();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", source = "package t; public class B extends A {\n"
+                        + "public void foo() { }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/B.java"), source.indexOf("foo") + 1, false, new Problem(false, "ERR_ReferencesFound"));
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        new A().foo();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                        + "}\n"));
+    }
+    
+    public void testPolymorphicMultiple() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    public void foo() {\n"
+                        + "        A a = new A();\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/I.java", "package t; public interface I {\n"
+                        + "public void foo();\n"
+                        + "}\n"),
+                new File("t/B.java", source = "package t; public class B extends A implements I {\n"
+                        + "public void foo() { }\n"
+                        + "}\n"));
+        performSafeDelete(src.getFileObject("t/B.java"), source.indexOf("foo") + 1, false, new Problem(false, "WRN_Implements"));
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "}\n"),
+                new File("t/I.java", "package t; public interface I {\n"
+                        + "public void foo();\n"
+                        + "}\n"),
+                new File("t/B.java", "package t; public class B extends A implements I {\n"
+                        + "}\n"));
     }
     
     public void testMainArgs() throws Exception {
@@ -163,7 +296,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}\n"));
-        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("args") + 1, false, new Problem(false, "WRN_ImplementsFound"));
+        performSafeDelete(src.getFileObject("t/A.java"), source.indexOf("args") + 1, false, new Problem(false, "ERR_ReferencesFound"));
         verifyContent(src,
                 new File("t/A.java", "package t; public class A {\n"
                 + "    public static void main() {\n"
@@ -177,7 +310,7 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
     private void performSafeDelete(FileObject source, final int position, final boolean checkInComments, Problem... expectedProblems) throws Exception {
         final SafeDeleteRefactoring[] r = new SafeDeleteRefactoring[1];
         
-        if(source.isFolder() || position < 0) {
+        if(source.isFolder() || position == 0) {
             r[0] = new SafeDeleteRefactoring(Lookups.fixed(source));
             r[0].setCheckInComments(checkInComments);
         } else {
@@ -189,9 +322,18 @@ public class SafeDeleteVariableTest extends RefactoringTestBase {
                     javac.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cut = javac.getCompilationUnit();
 
-                    TreePath tp = javac.getTreeUtilities().pathFor(position);
-
-                    r[0] = new SafeDeleteRefactoring(Lookups.fixed(TreePathHandle.create(tp, javac)));
+                    if(position > 0) {
+                        TreePath tp = javac.getTreeUtilities().pathFor(position);
+                        r[0] = new SafeDeleteRefactoring(Lookups.fixed(TreePathHandle.create(tp, javac)));
+                    } else {
+                        List<TreePathHandle> handles = new ArrayList<>();
+                        for (Tree typeDecl : cut.getTypeDecls()) {
+                            for (Tree member : ((ClassTree)typeDecl).getMembers()) {
+                                handles.add(TreePathHandle.create(javac.getTrees().getPath(cut, member), javac));
+                            }
+                        }
+                        r[0] = new SafeDeleteRefactoring((Lookups.fixed(handles.toArray(new TreePathHandle[handles.size()]))));
+                    }
                     r[0].setCheckInComments(checkInComments);
                 }
             }, true);

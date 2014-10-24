@@ -902,7 +902,10 @@ public class ElementJavadoc {
             sb.append(' '); //NOI18N
         appendType(sb, fdoc.type(), false, false, false, ctx);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
-        String val = fdoc.constantValueExpression();
+        String val = null;
+        try {
+            val = XMLUtil.toAttributeValue(fdoc.constantValueExpression());
+        } catch (Exception ex) {}
         if (val != null && val.length() > 0)
             sb.append(" = ").append(val); //NOI18N
         sb.append("</tt>"); //NOI18N

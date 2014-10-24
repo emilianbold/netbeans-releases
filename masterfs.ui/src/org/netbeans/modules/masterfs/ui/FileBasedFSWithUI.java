@@ -86,7 +86,7 @@ public class FileBasedFSWithUI extends FileBasedFileSystem {
     }
     
     @ServiceProvider(service = MasterFileSystemFactory.class, 
-            supersedes = "org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem.Factory")
+            supersedes = "org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem$Factory")
     public static class Factory implements MasterFileSystemFactory {
         @Override
         public FileBasedFileSystem createFileSystem() {

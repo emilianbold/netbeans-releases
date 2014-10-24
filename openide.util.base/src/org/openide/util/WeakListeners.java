@@ -285,6 +285,29 @@ public final class WeakListeners {
         return wl;
     }
 
+    /** Creates a weak implementation of PropertyChangeListener to be attached
+     * for a specific property name. Use with 
+     * <code>addPropertyChangeListener(String propertyName, PropertyChangeListener listener)</code>
+     * method. It calls
+     * <code>removePropertyChangeListener(String propertyName, PropertyChangeListener listener)</code>
+     * with the given property name to unregister the listener. Be sure to pass
+     * the same <code>propertyName</code> to this method and to <code>addPropertyChangeListener()</code>
+     * method.
+     *
+     * @param l the listener to delegate to
+     * @param propertyName the name of the property to listen on changes
+     * @param source the source that the listener should detach from when
+     *     listener <CODE>l</CODE> is freed, can be <CODE>null</CODE>
+     * @return a PropertyChangeListener delegating to <CODE>l</CODE>.
+     * @since 9.2
+     */
+    public static PropertyChangeListener propertyChange(PropertyChangeListener l, String propertyName, Object source) {
+        WeakListenerImpl.PropertyChange wl = new WeakListenerImpl.PropertyChange(l, propertyName);
+        wl.setSource(source);
+
+        return wl;
+    }
+
     /** Creates a weak implementation of VetoableChangeListener.
      *
      * @param l the listener to delegate to
@@ -294,6 +317,29 @@ public final class WeakListeners {
      */
     public static VetoableChangeListener vetoableChange(VetoableChangeListener l, Object source) {
         WeakListenerImpl.VetoableChange wl = new WeakListenerImpl.VetoableChange(l);
+        wl.setSource(source);
+
+        return wl;
+    }
+
+    /** Creates a weak implementation of VetoableChangeListener to be attached
+     * for a specific property name. Use with 
+     * <code>addVetoableChangeListener(String propertyName, PropertyChangeListener listener)</code>
+     * method. It calls
+     * <code>removeVetoableChangeListener(String propertyName, PropertyChangeListener listener)</code>
+     * with the given property name to unregister the listener. Be sure to pass
+     * the same <code>propertyName</code> to this method and to <code>addVetoableChangeListener()</code>
+     * method.
+     *
+     * @param l the listener to delegate to
+     * @param propertyName the name of the property to listen on changes
+     * @param source the source that the listener should detach from when
+     *     listener <CODE>l</CODE> is freed, can be <CODE>null</CODE>
+     * @return a VetoableChangeListener delegating to <CODE>l</CODE>.
+     * @since 9.2
+     */
+    public static VetoableChangeListener vetoableChange(VetoableChangeListener l, String propertyName, Object source) {
+        WeakListenerImpl.VetoableChange wl = new WeakListenerImpl.VetoableChange(l, propertyName);
         wl.setSource(source);
 
         return wl;

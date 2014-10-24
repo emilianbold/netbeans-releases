@@ -45,6 +45,7 @@
 package org.openide.util.lookup;
 
 import java.util.Arrays;
+import org.netbeans.modules.openide.util.GlobalLookup;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.implspi.NamedServicesProvider;
 
@@ -278,6 +279,21 @@ public class Lookups {
      */
     public static <T> Lookup.Item<T> lookupItem(T instance, String id) {
         return new LookupItem<T>(instance, id);
+    }
+    
+    /** Temporarily (while the <code>code</code> is running) changes value
+     * of {@link Lookup#getDefault()} to here-in provided lookup. Useful in a
+     * multi user environment where different users and their requests should
+     * be associated with different content of default lookup.
+     * 
+     * @param defaultLookup the lookup to be come default while code is running
+     * @param code the code to execute (synchronously) before the method returns
+     * @since 8.30
+     */
+    public static void executeWith(Lookup defaultLookup, Runnable code) {
+        if (!GlobalLookup.execute(defaultLookup, code)) {
+            code.run();
+        }
     }
 
     private static class LookupItem<T> extends Lookup.Item<T> {

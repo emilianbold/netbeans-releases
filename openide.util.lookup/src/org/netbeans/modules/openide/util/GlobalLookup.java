@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.spi;
+package org.netbeans.modules.openide.util;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author Jiri Sedlacek
- */
-public abstract class GlobalStorageProvider {
+public class GlobalLookup {
+    private static final ThreadLocal<Lookup> CURRENT = new ThreadLocal<Lookup>();
     
-    /**
-     * Returns FileObject which can be used as a general settings storage.
-     * @param create If <code>true</code> the folder will be created if it doesn't exist yet
-     * @return FileObject which can be used as a general settings storage
-     * @throws IOException 
-     */
-    public abstract FileObject getSettingsFolder(boolean create) throws IOException;
+    private GlobalLookup() {
+    }
+
+    public static boolean execute(Lookup defaultLookup, Runnable r) {
+        Lookup prev = CURRENT.get();
+        if (prev == defaultLookup) {
+            return false;
+        }
+        try {
+            CURRENT.set(defaultLookup);
+            r.run();
+        } finally {
+            CURRENT.set(prev);
+        }
+        return true;
+    }
     
+    public static Lookup current() {
+        return CURRENT.get();
+    }
 }

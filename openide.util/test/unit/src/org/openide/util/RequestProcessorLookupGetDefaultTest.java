@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.api;
+package org.openide.util;
 
-import java.io.IOException;
-import org.netbeans.modules.profiler.spi.GlobalStorageProvider;
-import org.openide.filesystems.FileObject;
+import java.util.concurrent.TimeUnit;
+import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
-/**
- * Support for storing and retrieving data.
- *
- * @author Jiri Sedlacek
- */
-public final class GlobalStorage {
-    
-    /**
-     * Returns FileObject which can be used as a general settings storage.
-     * @param create If <code>true</code> the folder will be created if it doesn't exist yet
-     * @return FileObject which can be used as a general settings storage
-     * @throws IOException 
-     */
-    public static FileObject getSettingsFolder(boolean create) throws IOException {
-        GlobalStorageProvider p = provider();
-        if (p != null) return p.getSettingsFolder(create);
-        else return null;
+public class RequestProcessorLookupGetDefaultTest extends NbTestCase {
+
+    public RequestProcessorLookupGetDefaultTest(String name) {
+        super(name);
     }
     
-    private static GlobalStorageProvider provider() {
-        return Lookup.getDefault().lookup(GlobalStorageProvider.class);
+    public void testChangeOfDefaultLookupAppliedToRPTask() throws Exception {
+        Lookup prev = Lookup.getDefault();
+        final Lookup my = new AbstractLookup(new InstanceContent());
+        final Thread myThread = Thread.currentThread();
+        final RequestProcessor.Task[] task = { null };
+        final boolean[] ok = { false };
+        
+        Lookups.executeWith(my, new Runnable() {
+            @Override
+            public void run() {
+                assertSame("Default lookup has been changed", my, Lookup.getDefault());
+
+                if (task[0] == null) {
+                    assertSame("We are being executed in the same thread", myThread, Thread.currentThread());
+                    // once again in the RP
+                    task[0] = RequestProcessor.getDefault().post(this, 500);
+                } else {
+                    ok[0] = true;
+                }
+            }
+        });
+        assertNotNull("In my lookup code executed OK", task[0]);
+        assertEquals("Current lookup back to normal", prev, Lookup.getDefault());
+        task[0].waitFinished();
+        assertTrue("Even RP task had the right lookup", ok[0]);
     }
-    
 }

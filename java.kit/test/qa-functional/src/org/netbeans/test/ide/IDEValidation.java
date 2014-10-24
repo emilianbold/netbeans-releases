@@ -273,23 +273,19 @@ public class IDEValidation extends JellyTestCase {
         // create a new package
         // "Java Classes"
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
-        // "Java Package"
-        String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "packageWizard");
-        NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, SAMPLE1_PACKAGE_NAME);
+        NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, "Java Package", null, SAMPLE1_PACKAGE_NAME);
         // wait package node is created
         Node sample1Node = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), SAMPLE1_PACKAGE_NAME);
 
         // create a new classes
 
-        // "Java Main Class"
-        String mainClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Main.java"); // NOI18N
-        NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, mainClassLabel);
+        NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, "Java Main Class");
         NewJavaFileNameLocationStepOperator nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName(SAMPLE1_CLASS_NAME);
         nameStepOper.finish();
         // check class is opened in Editor
         new EditorOperator(SAMPLE1_FILE_NAME);
-        NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, mainClassLabel);
+        NewFileWizardOperator.invoke(sample1Node, javaClassesLabel, "Java Main Class");
         nameStepOper = new NewJavaFileNameLocationStepOperator();
         nameStepOper.setObjectName(SAMPLE2_CLASS_NAME);
         nameStepOper.finish();
@@ -425,10 +421,8 @@ public class IDEValidation extends JellyTestCase {
         }
         // node Java DB (Embedded) should be present always
         Node javaDBNode = new Node(driversNode, "Java DB (Embedded"); // NOI18N
-        // "Connect Using ..."
-        String connectUsingItem = Bundle.getString("org.netbeans.modules.db.explorer.action.Bundle", "ConnectUsing");
         // open a dialog to create a new connection
-        new ActionNoBlock(null, connectUsingItem).perform(javaDBNode);
+        new ActionNoBlock(null, "Connect Using...").perform(javaDBNode);
         // "New Connection Wizard"
         String connectionDialogTitle = Bundle.getString("org.netbeans.modules.db.explorer.dlg.Bundle", "PredefinedWizard.WizardTitle");
         new NbDialogOperator(connectionDialogTitle).cancel();
@@ -754,9 +748,9 @@ public class IDEValidation extends JellyTestCase {
     /** Test JUnit support
      * - add methods to sample class
      * - from context menu on sample class node call "Tools|Create JUnit Tests" item
+     * - confirm Create Tests dialog
      * - select "JUnit 3.x" in "Select JUnit Version" dialog
      * - click "Select" button to confirm dialog
-     * - confirm Create Tests dialog
      * - find generated test under "Test Packages"
      * - check whether test was open in editor and if includes test of public, 
      * protected, default but not private methods
@@ -799,10 +793,11 @@ public class IDEValidation extends JellyTestCase {
 
         // "Tools"
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
-        // "Create JUnit Tests"
-        String createTestsItem = Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle", "LBL_Action_CreateTest"); // NOI18N
-        ActionNoBlock createTestsAction = new ActionNoBlock(null, toolsItem + "|" + createTestsItem);
+        ActionNoBlock createTestsAction = new ActionNoBlock(null, toolsItem + "|Create/Update Tests");
         createTestsAction.perform(sampleClass2Node);
+        // "Create Tests"
+        String createTestsTitle = Bundle.getString("org.netbeans.modules.junit.Bundle", "JUnitCfgOfCreate.Title");
+        new NbDialogOperator(createTestsTitle).ok();
         // "Select JUnit Version"
         String selectJUnitVersionTitle = Bundle.getString("org.netbeans.modules.junit.Bundle", "LBL_title_select_generator");
         NbDialogOperator selectVersionOper = new NbDialogOperator(selectJUnitVersionTitle);
@@ -812,9 +807,6 @@ public class IDEValidation extends JellyTestCase {
         // "Select"
         String selectLabel = Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle", "LBL_Select");
         new JButtonOperator(selectVersionOper, selectLabel).pushNoBlock();
-        // "Create Tests"
-        String createTestsTitle = Bundle.getString("org.netbeans.modules.junit.Bundle", "JUnitCfgOfCreate.Title");
-        new NbDialogOperator(createTestsTitle).ok();
 
         // wait until test node is created
         // "Test Packages"
@@ -1091,11 +1083,9 @@ public class IDEValidation extends JellyTestCase {
         String dtdsTitle = Bundle.getString("org.netbeans.modules.xml.catalog.Bundle", "LBL_CatalogPanel_Title");
         NbDialogOperator dtdsOper = new NbDialogOperator(dtdsTitle);
 
-        // "NetBeans Catalog"
-        String netbeansCatalogLabel = Bundle.getString("org.netbeans.modules.xml.catalog.impl.Bundle", "NAME_system_catalog");
         String publicID = "-//DTD XMLCatalog//EN";
         Node catalogNode = new Node(new JTreeOperator(dtdsOper),
-                netbeansCatalogLabel + "|"
+                "NetBeans Catalog|"
                 + publicID);
         // view and close it
         new ViewAction().perform(catalogNode);
@@ -1109,9 +1099,7 @@ public class IDEValidation extends JellyTestCase {
         new SourcePackagesNode(SAMPLE_PROJECT_NAME).select();
         // "Java Classes"
         String javaClassesLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Templates/Classes");
-        // "Java Package"
-        String packageLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "packageWizard");
-        NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, packageLabel, null, "xml"); // NOI18N
+        NewJavaFileWizardOperator.create(SAMPLE_PROJECT_NAME, javaClassesLabel, "Java Package", null, "xml"); // NOI18N
         Node xmlNode = new Node(new SourcePackagesNode(SAMPLE_PROJECT_NAME), "xml"); //NOI18N
         // "XML"
         String xmlCategory = Bundle.getString("org.netbeans.api.xml.resources.Bundle", "Templates/XML");

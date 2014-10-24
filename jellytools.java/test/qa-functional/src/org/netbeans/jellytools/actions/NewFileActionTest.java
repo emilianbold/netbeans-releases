@@ -45,7 +45,6 @@ package org.netbeans.jellytools.actions;
 
 import java.io.IOException;
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
@@ -73,6 +72,7 @@ public class NewFileActionTest extends JellyTestCase {
     }
 
     /** method used for explicit testsuite definition
+     * @return test instance
      */
     public static Test suite() {
         return createModuleTest(NewFileActionTest.class, tests);
@@ -90,9 +90,8 @@ public class NewFileActionTest extends JellyTestCase {
         new NewFileAction().performPopup(node);
         new NewFileWizardOperator().close();
         // test constructor with parameter
-        String javaClassLabel = Bundle.getString("org.netbeans.modules.java.project.Bundle", "Class.java");
-        new NewFileAction(javaClassLabel).performPopup(node);
-        new WizardOperator(javaClassLabel).close();
+        new NewFileAction("Java Class").performPopup(node);
+        new WizardOperator("Java Class").close();
     }
 
     /** Test performMenu */

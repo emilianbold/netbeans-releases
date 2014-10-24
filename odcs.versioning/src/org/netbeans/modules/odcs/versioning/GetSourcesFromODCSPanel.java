@@ -96,6 +96,7 @@ import org.openide.util.RequestProcessor;
 import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import static org.netbeans.modules.odcs.versioning.Bundle.*;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport;
+import org.netbeans.modules.team.server.ui.spi.DashboardProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
@@ -401,94 +402,64 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    ProjectHandle<ODCSProject>[] openedProjects = getOpenProjects();
+                    ProjectHandle<ODCSProject>[] openedProjects = server != null ? server.getDashboard().getProjects(true) : null;
                     if (openedProjects != null) {
                         for (final ProjectHandle<ODCSProject> prjHandle : openedProjects) {
                             if(prjHandle == null) {
                                 continue;
                             }
-                            final ODCSProject project = prjHandle.getTeamProject();
+                                                        
+                            final List<ScmRepositoryListItem> items = new ArrayList<ScmRepositoryListItem>();
+                            
                             try {
-                                Collection<ScmRepository> repositories = project.getRepositories();
-                                if(repositories == null) {
-                                    continue;
-                                }
-                                final List<ScmRepositoryListItem> items = new ArrayList<ScmRepositoryListItem>(repositories.size() * 2);
-                                for (final ScmRepository repository : repositories) {
-                                    if (prjAndRepository == null || prjAndRepository.project.getId().equals(prjHandle.getId()) &&
-                                                    prjAndRepository.repository.getUrl().equals(repository.getUrl())) {
-                                        if (SourceAccessorImpl.isSupported(repository.getScmLocation() == ScmLocation.CODE2CLOUD
-                                                ? repository.getType()
-                                                : null)) {
-                                            items.add(new ScmRepositoryListItem(prjHandle, repository, repository.getUrl()));
-                                            if (repository.getAlternateUrl() != null && !repository.getAlternateUrl().isEmpty()
-                                                    && !repository.getUrl().equals(repository.getAlternateUrl())) {
-                                                items.add(new ScmRepositoryListItem(prjHandle, repository, repository.getAlternateUrl()));
-                                            }
-                                        }
+                                if ( prjAndRepository == null || 
+                                     prjAndRepository.project.getId().equals(prjHandle.getId())) 
+                                {
+                                    ODCSProject project = prjHandle.getTeamProject();
+                                    Collection<ScmRepository> repositories = project.getRepositories();
+                                    if(repositories == null) {
+                                        continue;
                                     }
-                                }
-                                if (!items.isEmpty()) {
-                                    EventQueue.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            for (ScmRepositoryListItem item : items) {
-                                                addElement(item);
-                                                if (prjAndRepository != null &&
-                                                    prjAndRepository.project.getId().equals(prjHandle.getId()) &&
-                                                    prjAndRepository.repository.getUrl().equals(item.getUrl())) 
-                                                {
-                                                    setSelectedItem(item);
+                                    for (final ScmRepository repository : repositories) {
+                                        if (prjAndRepository == null || 
+                                            prjAndRepository.repository.getUrl().equals(repository.getUrl())) 
+                                        {
+                                            if (SourceAccessorImpl.isSupported(repository.getScmLocation() == ScmLocation.CODE2CLOUD
+                                                    ? repository.getType()
+                                                    : null)) 
+                                            {
+                                                items.add(new ScmRepositoryListItem(prjHandle, repository, repository.getUrl()));
+                                                if (repository.getAlternateUrl() != null && !repository.getAlternateUrl().isEmpty()
+                                                        && !repository.getUrl().equals(repository.getAlternateUrl())) {
+                                                    items.add(new ScmRepositoryListItem(prjHandle, repository, repository.getAlternateUrl()));
                                                 }
                                             }
                                         }
-                                    });
-                                }
+                                    }
+                                }    
                             } catch (ODCSException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
+                            
+                            if (!items.isEmpty()) {
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        for (ScmRepositoryListItem item : items) {
+                                            addElement(item);
+                                            if (prjAndRepository != null &&
+                                                prjAndRepository.project.getId().equals(prjHandle.getId()) &&
+                                                prjAndRepository.repository.getUrl().equals(item.getUrl())) 
+                                            {
+                                                setSelectedItem(item);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                            
                         }
                     }
-                }
-
-                private ProjectHandle<ODCSProject>[] getOpenProjects() {
-                    if (server == null) {
-                        return new ProjectHandle[0];
-                    }
-                    String odcsName = server.getUrl().getHost();
-                    
-                    // XXX do we need this for ODCS projects? >>>>>>>>>>>>>>>>>>>>>>>>>>
-                    // XXX define a different place for preferences. here as well as at all other places.
-                    Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(odcsName) ? "" : "-" + odcsName)); //NOI18N
-                    int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
-                    ProjectHandle[] handles = new ProjectHandle[count];
-                    ArrayList<String> ids = new ArrayList<String>(count);
-                    for (int i = 0; i < count; i++) {
-                        String id = prefs.get(DashboardSupport.PREF_ID + i, null); //NOI18N
-                        if (null != id && id.trim().length() > 0) {
-                            ids.add(id.trim());
-                        }
-                    }
-
-                    HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
-                    ProjectAccessor<ODCSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
-                    for (String id : ids) {
-                        ProjectHandle handle = projectAcccessor.getNonMemberProject(server, id, false);
-                        if (handle != null) {
-                            projects.add(handle);
-                        } else {
-                            //projects=null;
-                        }
-                    }
-                    
-                    PasswordAuthentication pa = server.getPasswordAuthentication();
-                    if (pa != null) {
-                        List<ProjectHandle<ODCSProject>> memberProjects = projectAcccessor.getMemberProjects(server, new LoginHandleImpl(pa.getUserName()), false);
-                        if(memberProjects != null) {
-                            projects.addAll(memberProjects);
-                        }
-                    }
-                    return projects.toArray(handles);
                 }
             });
         }

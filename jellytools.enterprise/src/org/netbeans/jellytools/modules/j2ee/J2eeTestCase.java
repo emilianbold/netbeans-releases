@@ -385,6 +385,7 @@ public class J2eeTestCase extends JellyTestCase {
      *                 <include name="platform/lib/org-openide-modules.jar"/>
      *                 <include name="platform/core/org-openide-filesystems.jar"/>
      *                 <include name="platform/lib/org-openide-util.jar"/>
+     *                 <include name="platform/lib/org-openide-util-base.jar"/>
      *                 <include name="platform/lib/org-openide-util-lookup.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeapis.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeserver.jar"/>
@@ -447,6 +448,7 @@ public class J2eeTestCase extends JellyTestCase {
      *                 <include name="platform/lib/org-openide-modules.jar"/>
      *                 <include name="platform/core/org-openide-filesystems.jar"/>
      *                 <include name="platform/lib/org-openide-util.jar"/>
+     *                 <include name="platform/lib/org-openide-util-base.jar"/>
      *                 <include name="platform/lib/org-openide-util-lookup.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeapis.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeserver.jar"/>
@@ -531,6 +533,7 @@ public class J2eeTestCase extends JellyTestCase {
         jars.add(new File(findCluster("platform"), "lib/org-openide-modules.jar"));
         jars.add(new File(findCluster("platform"), "core/org-openide-filesystems.jar"));
         jars.add(new File(findCluster("platform"), "lib/org-openide-util.jar"));
+        jars.add(new File(findCluster("platform"), "lib/org-openide-util-base.jar"));
         jars.add(new File(findCluster("platform"), "lib/org-openide-util-lookup.jar"));
         jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeapis.jar"));
         jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeserver.jar"));

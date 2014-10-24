@@ -71,6 +71,21 @@ public class InvertBooleanTest extends RefTestBase {
     public InvertBooleanTest(String name) {
         super(name);
     }
+    
+    public void test238057() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("test/Test.java", "package test;\n public class Test {\n public boolean b() { if (true) return Boolean.getBoolean(\"\"); else return false; } { if (b()) System.err.println(1); \n } }\n"),
+                                 new File("test/Use.java", "package test; public class Use { { new Test().b();\n } }")
+                                 );
+
+        performMethodTest(1);
+
+        assertContent(src,
+                      new File("test/Test.java", "package test;\n public class Test {\n public boolean c() { if (true) return !Boolean.getBoolean(\"\"); else return true; } { if (!c()) System.err.println(1); \n } }\n"),
+                      new File("test/Use.java", "package test; public class Use { { new Test().c();\n } }")/*,
+                      new File("META-INF/upgrade/test.Test.hint", "new test.Test($1, $2) :: $1 instanceof int && $2 instanceof java.util.List<java.lang.String> => test.Test.create($1, $2);;")*/
+                     );
+    }
 
     public void testInvertField1() throws Exception {
         writeFilesAndWaitForScan(src,

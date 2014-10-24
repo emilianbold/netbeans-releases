@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.impl;
+package org.netbeans.core.startup.logging;
 
 import java.io.IOException;
-import org.netbeans.modules.profiler.spi.GlobalStorageProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-/**
- *
- * @author Jiri Sedlacek
- * @author Jaroslav Bachorik
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.GlobalStorageProvider.class)
-public final class GlobalStorageProviderImpl extends GlobalStorageProvider {
+public class NbFormatterTest {
     
-    private static final String PROFILER_FOLDER = "NBProfiler/Config";  // NOI18N
-    private static final String SETTINGS_FOLDER = "Settings";   // NOI18N
+    public NbFormatterTest() {
+    }
 
-    @Override
-    public synchronized FileObject getSettingsFolder(boolean create) throws IOException {
-        final FileObject folder = FileUtil.getConfigFile(PROFILER_FOLDER);
-        FileObject settingsFolder = folder.getFileObject(SETTINGS_FOLDER, null);
-
-        if ((settingsFolder == null) && create) {
-            settingsFolder = folder.createFolder(SETTINGS_FOLDER);
+    @Test public void nestedExceptionsArePrintedToSomeLevel() {
+        Exception ex = new IOException("Root cause");
+        for (int i = 0; i < 1000; i++) {
+            ex = new IllegalStateException("Derived exception #" + i, ex);
         }
-
-        return settingsFolder;
+        
+        StringWriter w = new StringWriter();
+        NbFormatter.printStackTrace(ex, new PrintWriter(w));
+        
+        int notFound = w.toString().indexOf("Root cause");
+        assertEquals("Not all exceptions were printed: " + w, -1, notFound);
+        
+        
+        notFound = w.toString().indexOf("Derived exception #980");
+        assertEquals("Not even #980 was printed", -1, notFound);
+        
+        int found = w.toString().indexOf("Derived exception #990");
+        assertTrue("First 10 exceptions is printed only", found >= 0);
     }
     
 }

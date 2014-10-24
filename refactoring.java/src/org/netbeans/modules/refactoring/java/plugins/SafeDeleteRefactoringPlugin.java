@@ -44,21 +44,21 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -66,7 +66,6 @@ import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
 import org.netbeans.modules.refactoring.java.ui.tree.ElementGrip;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsFactory;
 import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -86,11 +85,12 @@ import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
  * @author Jan Becicka
  */
 public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
-    private SafeDeleteRefactoring refactoring;
-    private WhereUsedQuery[] whereUsedQueries;
     
     private static final String DOT = "."; //NOI18N
     private static final String JAVA_EXTENSION = "java";
+    private final ArrayList<TreePathHandle> grips;
+    private final SafeDeleteRefactoring refactoring;
+    private WhereUsedQuery[] whereUsedQueries;
     
     /**
      * Creates the a new instance of the Safe Delete refactoring
@@ -99,243 +99,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
      */
     public SafeDeleteRefactoringPlugin(SafeDeleteRefactoring refactoring) {
         this.refactoring = refactoring;
+        this.grips = new ArrayList<>();
     }
 
-    /**
-     * For each element to be refactored, the corresponding
-     * prepare method of the underlying WhereUsed query is
-     * invoked to check for usages. If none is present, a
-     * <CODE>SafeDeleteRefactoringElement</CODE> is created
-     * with the corresponding element.
-     * @param refactoringElements
-     * @return
-     */
-    @Override
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        RefactoringSession inner = RefactoringSession.create("delete"); // NOI18N
-        Collection<ElementGrip> abstractMethHandles = new ArrayList<ElementGrip>();
-        Set<Object> refactoredObjects = new HashSet<Object>();
-        Collection<? extends FileObject> files = lookupJavaFileObjects();
-        fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
-        try {
-            for(int i = 0;i < whereUsedQueries.length; ++i) {
-                Object refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(Object.class);
-                refactoredObjects.add(refactoredObject);
-
-                whereUsedQueries[i].prepare(inner);
-                TreePathHandle treePathHandle = grips.get(i);
-                if(Tree.Kind.METHOD == treePathHandle.getKind()){
-                    JavaSource javaSrc = JavaSource.forFileObject(treePathHandle.getFileObject());
-                    try {
-                        javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), true);
-                    } catch (IOException ioException) {
-                        ErrorManager.getDefault().notify(cancelRequested.get()?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
-                    }
-                }
-
-                if (!files.contains(treePathHandle.getFileObject())) {
-                    TransformTask task = new TransformTask(new DeleteTransformer(), grips.get(i));
-                    Problem problem = createAndAddElements(Collections.singleton(grips.get(i).getFileObject()), task, refactoringElements, refactoring);
-                    if (problem != null) {
-                        fireProgressListenerStop();
-                        return problem;
-                    }
-                }
-                fireProgressListenerStep();
-            }
-        } finally {
-            inner.finished();
-        }
-        Problem problemFromWhereUsed = null;
-        Problem problemImplemented = null;
-        for (RefactoringElement refacElem : inner.getRefactoringElements()) {
-            final ElementGrip elem = refacElem.getLookup().lookup(ElementGrip.class);
-            if (files.contains(refacElem.getParentFile())) {
-                continue;
-            }
-
-            if (!isPendingDelete(elem, refactoredObjects)) {
-                final AtomicBoolean override = new AtomicBoolean(false);
-                if (elem != null) {
-                    JavaSource src = JavaSource.forFileObject(elem.getFileObject());
-                    try {
-                        src.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                            @Override
-                            public void cancel() {}
-
-                            @Override
-                            public void run(CompilationController parameter) throws Exception {
-                                parameter.toPhase(JavaSource.Phase.PARSED);
-                                TreePath resolve = elem.getHandle().resolve(parameter);
-                                if(resolve.getLeaf().getKind() == Tree.Kind.METHOD) {
-                                    MethodTree method = (MethodTree) resolve.getLeaf();
-                                    List<? extends AnnotationTree> annotations = method.getModifiers().getAnnotations();
-                                    boolean hasOverride = false;
-                                    for (AnnotationTree annotationTree : annotations) {
-                                        if(annotationTree.toString().equals("@Override()")) { //NOI18N
-                                            hasOverride = true;
-                                        }
-                                    }
-                                    if(!hasOverride) {
-                                        override.set(true);
-                                    }
-                                }
-                            }
-                        }, true);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                if(override.get()) {
-                    problemImplemented = new Problem(false, getString("WRN_ImplementsFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
-                } else {
-                    problemFromWhereUsed = new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring), inner)));
-                }
-                break;
-            }
-        }
-
-        if(problemFromWhereUsed != null && problemImplemented != null){
-            problemFromWhereUsed.setNext(problemImplemented);
-        } else if(problemImplemented != null) {
-            problemFromWhereUsed = problemImplemented;
-        }
-        
-        for(ElementGrip absMethodGrip : abstractMethHandles){
-            if (!isPendingDelete(absMethodGrip, refactoredObjects)) {
-                Problem probAbsMethod = new Problem(false,
-                        getParameterizedString("ERR_OverridesAbstractMethod", 
-                        getMethodName(absMethodGrip.getHandle())));
-                if(problemFromWhereUsed != null){
-                    problemFromWhereUsed.setNext(probAbsMethod);
-                }else{
-                    problemFromWhereUsed = probAbsMethod;
-                }
-                break;
-            }
-        }
-        
-        if(problemFromWhereUsed != null){
-            fireProgressListenerStop();
-            return problemFromWhereUsed;
-        }
-        
-        Collection importStmts = new ArrayList();
-        //If there we no non-import usages, delete the import statements as well.
-        if(importStmts.size() > 0){
-            for (Iterator it = importStmts.iterator(); it.hasNext();) {
-                RefactoringElementImplementation refacElem = 
-                        (RefactoringElementImplementation) it.next();
-                refactoringElements.add(refactoring, refacElem);
-            }
-        }
-        
-        fireProgressListenerStop();
-        return null;
-    }
-
-    private String getWhereUsedItemNames() {
-        final StringBuilder b = new StringBuilder();
-        for (final TreePathHandle handle:grips) {
-            try {
-                JavaSource.forFileObject(handle.getFileObject()).runUserActionTask(new Task<CompilationController>() {
-                    @Override
-                    public void run(CompilationController parameter) throws Exception {
-                        parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        if (b.length() > 0) {
-                            b.append(", ");
-                        }
-                        b.append(handle.resolveElement(parameter).getSimpleName());
-                    }
-                }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return b.toString();
-    }
-
-    private class ProblemDetailsImplemen implements ProblemDetailsImplementation {
-        
-        private RefactoringUI ui;
-        private RefactoringSession rs;
-        
-        public ProblemDetailsImplemen(RefactoringUI ui, RefactoringSession rs) {
-            this.ui = ui;
-            this.rs = rs;
-        }
-        
-        @Override
-        public void showDetails(Action callback, Cancellable parent) {
-            parent.cancel();
-            UI.openRefactoringUI(ui, rs, callback);
-        }
-        
-        @Override
-        public String getDetailsHint() {
-            return getString("LBL_ShowUsages");
-        }
-        
-    }
-    
-    /**
-     * Checks whether the element being refactored is a valid Method/Field/Class
-     * @return Problem returns a generic problem message if the check fails
-     */
-    @Override
-    @NbBundle.Messages({"# {0} - VariableName", "ERR_VarNotInBlockOrMethod=Variable \"{0}\" is not inside a block or method declaration."})
-    public Problem preCheck() {
-        cancelRequest = false;
-        cancelRequested.set(false);
-        final Problem[] problem = new Problem[1];
-        Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
-        for (final TreePathHandle tph : handles) {
-            final FileObject fileObject = tph.getFileObject();
-            if (fileObject == null || !fileObject.isValid()) {
-                return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
-            }
-            JavaSource js = JavaSource.forFileObject(fileObject);
-            if (js==null) {
-                return null;
-            }
-            try {
-                js.runUserActionTask(new Task<CompilationController>() {
-
-                    @Override
-                    public void run(CompilationController javac) throws Exception {
-                        javac.toPhase(JavaSource.Phase.RESOLVED);
-                        TreePath selectedTree = tph.resolve(javac);
-                        if (!TreeUtilities.CLASS_TREE_KINDS.contains(selectedTree.getParentPath().getLeaf().getKind())
-                                && selectedTree.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT
-                                && selectedTree.getLeaf().getKind() == Tree.Kind.VARIABLE) {
-                            switch (selectedTree.getParentPath().getLeaf().getKind()) {
-                                case BLOCK:
-                                case METHOD:
-                                    break;
-                                default:
-                                    problem[0] = new Problem(true, ERR_VarNotInBlockOrMethod(selectedTree.getLeaf().toString()));
-                            }
-                        }
-                    }
-                }, true);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-        return problem[0];
-    }
-    
-    /**
-     * A No-op for this particular refactoring.
-     */
-    @Override
-    public Problem fastCheckParameters() {
-        //Nothing to be done for Safe Delete
-        return null;
-    }
-    
-    private ArrayList<TreePathHandle> grips = new ArrayList<TreePathHandle>();
     /**
      * Invokes the checkParameters of each of the underlying
      * WhereUsed refactorings and returns a Problem (if any)
@@ -373,42 +139,169 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                         }
                     }
                 }, true);
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        grips.addAll(refactoring.getRefactoringSource().lookupAll(TreePathHandle.class));
-
-        whereUsedQueries = new WhereUsedQuery[grips.size()];
-        for(int i = 0;i <  whereUsedQueries.length; ++i) {
-            whereUsedQueries[i] = createQuery(grips.get(i));
-            
-            whereUsedQueries[i].putValue(WhereUsedQuery.SEARCH_IN_COMMENTS, refactoring.isCheckInComments());
-            if(Tree.Kind.METHOD.equals(grips.get(i).getKind())){
-                whereUsedQueries[i].putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,true);
+            } catch (IllegalArgumentException | IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         
-        Problem problemFromUsage = null;
+        grips.addAll(refactoring.getRefactoringSource().lookupAll(TreePathHandle.class));
+        
+        whereUsedQueries = new WhereUsedQuery[grips.size()];
+        for(int i = 0;i <  whereUsedQueries.length; ++i) {
+            final TreePathHandle handle = grips.get(i);
+            final WhereUsedQuery q = new WhereUsedQuery(Lookups.singleton(handle));
+            for (Object o:refactoring.getContext().lookupAll(Object.class)) {
+                q.getContext().add(o);
+            }
+            q.getContext().add(refactoring);
+            q.getContext().add(this);
+            
+            if(Tree.Kind.METHOD.equals(handle.getKind())) {
+                JavaSource source;
+                source = JavaSource.forFileObject(handle.getFileObject());
+                try {
+                    final int index = i;
+                    source.runUserActionTask(new Task<CompilationController>() {
+
+                        @Override
+                        public void run(CompilationController info) throws Exception {
+                            info.toPhase(JavaSource.Phase.RESOLVED);
+                            final Element element = handle.resolveElement(info);
+                            if (element == null) {
+                                throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", handle, info.getClasspathInfo())); // NOI18N
+                            }
+                            ElementKind kind = element.getKind();
+                            if (kind == ElementKind.METHOD) {
+                                Collection<ExecutableElement> overridens = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)element, info);
+                                if(!overridens.isEmpty()) {
+                                    ExecutableElement el = (ExecutableElement) overridens.iterator().next();
+                                    assert el!=null;
+                                    TreePathHandle basem = TreePathHandle.create(el, info);
+                                    q.setRefactoringSource(Lookups.fixed(basem));
+                                    grips.remove(index);
+                                    grips.add(index, basem);
+                                }
+                            }
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                q.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
+                q.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, false);
+            }
+            
+            q.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS, refactoring.isCheckInComments());
+            whereUsedQueries[i] = q;
+        }
+        
+        Problem problemFromUsage;
         for(int i = 0;i < whereUsedQueries.length; ++i) {
 //          Fix for issue 63050. Doesn't make sense to check usages of a Resource.Ignore it.
 //            if(whereUsedQueries[i].getRefactoredObject() instanceof Resource)
 //                continue;
-            if((problemFromUsage = whereUsedQueries[i].checkParameters()) != null) {
+            problemFromUsage = whereUsedQueries[i].checkParameters();
+            if(problemFromUsage != null) {
                 return problemFromUsage;
             }
         }
         return null;
     }
 
+    /**
+     * A No-op for this particular refactoring.
+     */
     @Override
-    protected JavaSource getJavaSource(Phase p) {
+    public Problem fastCheckParameters() {
+        //Nothing to be done for Safe Delete
         return null;
     }
+
+    /**
+     * Checks whether the element being refactored is a valid Method/Field/Class
+     * @return Problem returns a generic problem message if the check fails
+     */
+    @Override
+    @NbBundle.Messages({"# {0} - VariableName", "ERR_VarNotInBlockOrMethod=Variable \"{0}\" is not inside a block or method declaration."})
+    public Problem preCheck() {
+        cancelRequest = false;
+        cancelRequested.set(false);
+        final Problem[] problem = new Problem[1];
+        Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
+        for (final TreePathHandle tph : handles) {
+            final FileObject fileObject = tph.getFileObject();
+            if (fileObject == null || !fileObject.isValid()) {
+                return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
+            }
+            JavaSource js = JavaSource.forFileObject(fileObject);
+            if (js==null) {
+                continue;
+            }
+            try {
+                js.runUserActionTask(new Task<CompilationController>() {
+                    
+                    @Override
+                    public void run(CompilationController javac) throws Exception {
+                        javac.toPhase(JavaSource.Phase.RESOLVED);
+                        TreePath selectedTree = tph.resolve(javac);
+                        if (!TreeUtilities.CLASS_TREE_KINDS.contains(selectedTree.getParentPath().getLeaf().getKind())
+                                && selectedTree.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT
+                                && selectedTree.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                            switch (selectedTree.getParentPath().getLeaf().getKind()) {
+                                case BLOCK:
+                                case METHOD:
+                                    break;
+                                default:
+                                    problem[0] = new Problem(true, ERR_VarNotInBlockOrMethod(selectedTree.getLeaf().toString()));
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return problem[0];
+    }
+
     
+    /**
+     * For each element to be refactored, the corresponding
+     * prepare method of the underlying WhereUsed query is
+     * invoked to check for usages. If none is present, a
+     * <CODE>SafeDeleteRefactoringElement</CODE> is created
+     * with the corresponding element.
+     * @param refactoringElements
+     * @return
+     */
+    @Override
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+        RefactoringSession usages = RefactoringSession.create("delete"); // NOI18N
+        Set<TreePathHandle> refactoredObjects = new HashSet<>();
+        Collection<? extends FileObject> files = lookupJavaFileObjects();
+        Problem problem = findUsagesAndDelete(refactoredObjects, usages, files, refactoringElements);
+        if(problem != null && problem.isFatal()) {
+            return problem;
+        }
+        
+        for (RefactoringElement refacElem : usages.getRefactoringElements()) {
+            final ElementGrip elem = refacElem.getLookup().lookup(ElementGrip.class);
+            if (files.contains(refacElem.getParentFile())) {
+                continue;
+            }
+            if (!isPendingDelete(elem, refactoredObjects)) {
+                problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, "ERR_ReferencesFound"),
+                        ProblemDetailsFactory.createProblemDetails(
+                                new ProblemDetailsImplemen(new WhereUsedQueryUI(
+                                        elem!=null?elem.getHandle():null, getWhereUsedItemNames(), refactoring),
+                                        usages))));
+                break;
+            }
+        }
+        fireProgressListenerStop();
+        return problem;
+    }
+
     private boolean containsHandle(TreePathHandle handle, CompilationInfo info) {
         Element wanted = handle.resolveElement(info);
         for (TreePathHandle current : refactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
@@ -419,24 +312,123 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return false;
     }
     
-    private WhereUsedQuery createQuery(TreePathHandle tph) {
-        WhereUsedQuery q = new WhereUsedQuery(Lookups.singleton(tph));
-        for (Object o:refactoring.getContext().lookupAll(Object.class)) {
-            q.getContext().add(o);
+    private Problem findUsagesAndDelete(Set<TreePathHandle> refactoredObjects, RefactoringSession usages, Collection<? extends FileObject> files, RefactoringElementsBag refactoringElements) throws IllegalArgumentException {
+        fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
+        Problem problem = null;
+        try {
+            for (int i = 0; i < whereUsedQueries.length; ++i) {
+                TreePathHandle refactoredObject = whereUsedQueries[i].getRefactoringSource().lookup(TreePathHandle.class);
+                refactoredObjects.add(refactoredObject);
+                whereUsedQueries[i].prepare(usages);
+                TreePathHandle treePathHandle = grips.get(i);
+                Set<FileObject> relevant = getRelevantFiles(treePathHandle);
+                if(Tree.Kind.METHOD == treePathHandle.getKind()) {
+                    OverriddenAbsMethodFinder finder = new OverriddenAbsMethodFinder(allMethods);
+                    JavaSource javaSrc = JavaSource.forFileObject(treePathHandle.getFileObject());
+                    try {
+                        javaSrc.runUserActionTask(finder, true);
+                    } catch (IOException ioException) {
+                        ErrorManager.getDefault().notify(cancelRequested.get()?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
+                    }
+                    problem = finder.getProblem();
+                }
+                TransformTask task = new TransformTask(new DeleteTransformer(allMethods, files), treePathHandle);
+                problem = JavaPluginUtils.chainProblems(createAndAddElements(relevant, task, refactoringElements, refactoring), problem);
+                fireProgressListenerStep();
+            }
+        } finally {
+            usages.finished();
         }
-        q.getContext().add(refactoring);
-        q.getContext().add(this);
-        return q;
+        
+        return problem;
+    }
+
+    private HashSet<ElementHandle<ExecutableElement>> allMethods;
+    private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
+        if (tph.getKind() == Kind.METHOD) {
+            ClasspathInfo cpInfo = RefactoringUtils.getClasspathInfoFor(tph);
+            final Set<FileObject> set = new LinkedHashSet<>();
+            set.add(tph.getFileObject());
+            JavaSource source = JavaSource.create(cpInfo, tph.getFileObject());
+
+            try {
+                source.runUserActionTask(new CancellableTask<CompilationController>() {
+
+                    @Override
+                    public void cancel() {
+                        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+                    }
+
+                    @Override
+                    public void run(CompilationController info) throws Exception {
+                        final ClassIndex idx = info.getClasspathInfo().getClassIndex();
+                        info.toPhase(JavaSource.Phase.RESOLVED);
+                        final ElementUtilities elmUtils = info.getElementUtilities();
+
+                        //add all references of overriding methods
+                        ExecutableElement el = (ExecutableElement) tph.resolveElement(info);
+                        ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(el);
+                        ElementHandle<TypeElement> enclosingType = ElementHandle.create(elmUtils.enclosingTypeElement(el));
+                        allMethods = new HashSet<>();
+                        allMethods.add(methodHandle);
+                        for (ExecutableElement e : JavaRefactoringUtils.getOverridingMethods(el, info, cancelRequested)) {
+                            ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+                            set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
+                            ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
+                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            allMethods.add(ElementHandle.create(e));
+                        }
+                        //add all references of overriden methods
+                        for (ExecutableElement e : JavaRefactoringUtils.getOverriddenMethods(el, info)) {
+                            ElementHandle<ExecutableElement> handle = ElementHandle.create(e);
+                            set.add(SourceUtils.getFile(handle, info.getClasspathInfo()));
+                            ElementHandle<TypeElement> encl = ElementHandle.create(elmUtils.enclosingTypeElement(e));
+                            set.addAll(idx.getResources(encl, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                            allMethods.add(ElementHandle.create(e));
+                        }
+                        set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+                        set.add(SourceUtils.getFile(methodHandle, info.getClasspathInfo()));
+                    }
+                }, true);
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
+            return set;
+        } else {
+            return Collections.singleton(tph.getFileObject());
+        }
+    }
+    
+
+    private String getWhereUsedItemNames() {
+        final StringBuilder b = new StringBuilder();
+        for (final TreePathHandle handle:grips) {
+            try {
+                JavaSource.forFileObject(handle.getFileObject()).runUserActionTask(new Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController parameter) throws Exception {
+                        parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        if (b.length() > 0) {
+                            b.append(", ");
+                        }
+                        b.append(handle.resolveElement(parameter).getSimpleName());
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return b.toString();
     }
     
     private Collection<? extends FileObject> lookupJavaFileObjects() {
         Lookup lkp = refactoring.getRefactoringSource();
-        Collection<? extends FileObject> javaFiles = null;
+        Collection<? extends FileObject> javaFiles;
         NonRecursiveFolder folder = lkp.lookup(NonRecursiveFolder.class);
         if (folder != null) {
             javaFiles = getJavaFileObjects(folder.getFolder(), false);
         } else {
-            Collection<FileObject> javaFileObjects =  new ArrayList<FileObject>();
+            Collection<FileObject> javaFileObjects =  new ArrayList<>();
             for (FileObject fileObject : lkp.lookupAll(FileObject.class)) {
                 if (fileObject.isFolder()) {
                     javaFileObjects.addAll(getJavaFileObjects(fileObject, true));
@@ -449,26 +441,26 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return javaFiles;
     }
     
-    //Private Helper methods
-    private static String getString(String key) {
-        return NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, key);
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
     }
     
-    private static boolean isPendingDelete(ElementGrip elementGrip, Set<Object> refactoredObjects){
-        ElementGrip parent = elementGrip;
-        if (parent!=null) {
-            do {
-                if (refactoredObjects.contains(parent.getHandle())) {
-                    return true;
-                }
-                parent = parent.getParent();
-            } while (parent!=null);
+    private static void addSourcesInDir(FileObject dirFileObject, boolean isRecursive, Collection<FileObject> javaSrcFiles){
+        for (FileObject childFileObject : dirFileObject.getChildren()) {
+            if (childFileObject.isData() && JAVA_EXTENSION.equalsIgnoreCase(childFileObject.getExt())) {
+                javaSrcFiles.add(childFileObject);
+            }
+            else if (childFileObject.isFolder() && isRecursive) {
+                addSourcesInDir(childFileObject, true, javaSrcFiles);
+            }
         }
-        return false;
     }
-            
-    private static String getParameterizedString(String key, Object parameter){
-        return NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, key, parameter);
+    
+    private static Collection<FileObject> getJavaFileObjects(FileObject dirFileObject, boolean isRecursive){
+        Collection<FileObject> javaSrcFiles = new ArrayList<>();
+        addSourcesInDir(dirFileObject, isRecursive, javaSrcFiles);
+        return javaSrcFiles;
     }
     
     private static String getMethodName(final TreePathHandle methodHandle){
@@ -499,20 +491,38 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         return methodNameString[0];
     }
     
-    private static Collection<FileObject> getJavaFileObjects(FileObject dirFileObject, boolean isRecursive){
-        Collection<FileObject> javaSrcFiles = new ArrayList<FileObject>();
-        addSourcesInDir(dirFileObject, isRecursive, javaSrcFiles);
-        return javaSrcFiles;
+    private static boolean isPendingDelete(ElementGrip elementGrip, Set<TreePathHandle> refactoredObjects) {
+        ElementGrip parent = elementGrip;
+        if (parent!=null) {
+            do {
+                if (refactoredObjects.contains(parent.getHandle())) {
+                    return true;
+                }
+                parent = parent.getParent();
+            } while (parent!=null);
+        }
+        return false;
     }
+    
+    private class ProblemDetailsImplemen implements ProblemDetailsImplementation {
 
-    private static void addSourcesInDir(FileObject dirFileObject, boolean isRecursive, Collection<FileObject> javaSrcFiles) {
-        for (FileObject childFileObject : dirFileObject.getChildren()) {
-            if (childFileObject.isData() && JAVA_EXTENSION.equalsIgnoreCase(childFileObject.getExt())) {
-                javaSrcFiles.add(childFileObject);
-            }
-            else if (childFileObject.isFolder() && isRecursive) {
-                addSourcesInDir(childFileObject, true, javaSrcFiles);
-            }
+        private RefactoringUI ui;
+        private RefactoringSession rs;
+        
+        public ProblemDetailsImplemen(RefactoringUI ui, RefactoringSession rs) {
+            this.ui = ui;
+            this.rs = rs;
+        }
+        
+        @Override
+        public void showDetails(Action callback, Cancellable parent) {
+            parent.cancel();
+            UI.openRefactoringUI(ui, rs, callback);
+        }
+        
+        @Override
+        public String getDetailsHint() {
+            return NbBundle.getMessage(SafeDeleteRefactoringPlugin.class, "LBL_ShowUsages");
         }
     }
 }

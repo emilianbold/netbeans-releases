@@ -50,6 +50,23 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="HideIcons">
+        <api name="explorer"/>
+        <summary>Hide node icons in OutlineView and TreeView.</summary>
+        <version major="6" minor="59"/>
+        <date day="20" month="10" year="2014"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            It is possible not to show icons in OutlineView and in TreeView and it's descendants.
+            Methods OutlineView.setShowNodeIcons(boolean)/isShowNodeIcons()
+            and NodeRenderer.setShowIcons(boolean)/isShowIcons()
+            are added for this purpose.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <class package="org.openide.explorer.view" name="NodeRenderer"/>
+        <issue number="247556"/>
+    </change>
     <change id="NoAutoComplete">
         <api name="explorer"/>
         <summary>Turn auto-complete in combo box editor off.</summary>
