@@ -42,15 +42,87 @@
 
 package org.netbeans.modules.javascript.v8debug.vars;
 
+import java.util.Objects;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
  *
  * @author Martin Entlicher
  */
-public final class VariableArgument extends VariableLocal {
+public class Variable {
     
-    public VariableArgument(String name, long ref, V8Value value) {
-        super(name, ref, value);
+    public static enum Kind {
+        ARGUMENT,
+        LOCAL,
+        PROPERTY,
+        ARRAY_ELEMENT
     }
+    
+    private final Kind kind;
+    private final String name;
+    private final long ref;
+    private V8Value value;
+    private String valueLoadError;
+    
+    public Variable(Kind kind, String name, long ref, V8Value value) {
+        this.kind = kind;
+        this.name = name;
+        this.ref = ref;
+        this.value = value;
+    }
+    
+    public Kind getKind() {
+        return kind;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public long getRef() {
+        return ref;
+    }
+
+    public V8Value getValue() throws EvaluationError {
+        if (valueLoadError != null) {
+            throw new EvaluationError(valueLoadError);
+        }
+        return value;
+    }
+    
+    void setValue(V8Value value) {
+        this.value = value;
+    }
+    
+    void setValueLoadError(String valueLoadError) {
+        this.valueLoadError = valueLoadError;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + Objects.hashCode(this.name);
+        hash = 67 * hash + (int) (this.ref ^ (this.ref >>> 32));
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Variable other = (Variable) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (this.ref != other.ref) {
+            return false;
+        }
+        return true;
+    }
+    
+    // TODO: Attach referenced values?
 }

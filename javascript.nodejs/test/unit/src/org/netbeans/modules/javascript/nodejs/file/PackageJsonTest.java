@@ -48,8 +48,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -57,18 +59,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.junit.Assert;
-import org.netbeans.api.project.Project;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 
 public class PackageJsonTest extends NbTestCase {
 
     private static final ExecutorService EXECUTORS = Executors.newCachedThreadPool();
 
-    private FileObject projectDir;
+    private File directory;
     private PackageJson packageJson;
 
 
@@ -80,11 +81,9 @@ public class PackageJsonTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        File dummy = new File(getWorkDir(), "dummy");
-        assertTrue(dummy.mkdir());
-        projectDir = FileUtil.toFileObject(dummy);
-        assertNotNull(projectDir);
-        packageJson = new PackageJson(new DummyProject(projectDir));
+        directory = new File(getWorkDir(), "dummy");
+        assertTrue(directory.mkdir());
+        packageJson = new PackageJson(directory);
     }
 
     @Override
@@ -118,7 +117,7 @@ public class PackageJsonTest extends NbTestCase {
         CountDownLatch countDownLatch2 = new CountDownLatch(1);
         listener.setCountDownLatch(countDownLatch2);
         Map<String, Object> newData = getData(true, false);
-        newData.put(PackageJson.NAME, "YourProject");
+        newData.put(PackageJson.FIELD_NAME, "YourProject");
         asyncWriteFile(newData);
         // wait
         countDownLatch2.await(1, TimeUnit.MINUTES);
@@ -152,7 +151,7 @@ public class PackageJsonTest extends NbTestCase {
         CountDownLatch countDownLatch2 = new CountDownLatch(1);
         listener.setCountDownLatch(countDownLatch2);
         Map<String, Object> newData = getData(false, true);
-        ((Map<String, Object>) newData.get(PackageJson.SCRIPTS)).put(PackageJson.START, "node app.js --port 2080");
+        ((Map<String, Object>) newData.get(PackageJson.FIELD_SCRIPTS)).put(PackageJson.FIELD_START, "node app.js --port 2080");
         asyncWriteFile(newData);
         // wait
         countDownLatch2.await(1, TimeUnit.MINUTES);
@@ -186,8 +185,8 @@ public class PackageJsonTest extends NbTestCase {
         CountDownLatch countDownLatch2 = new CountDownLatch(1);
         listener.setCountDownLatch(countDownLatch2);
         Map<String, Object> newData = getData(true, true);
-        newData.put(PackageJson.NAME, "YourProject");
-        ((Map<String, Object>) newData.get(PackageJson.SCRIPTS)).put(PackageJson.START, "node app.js --port 2080");
+        newData.put(PackageJson.FIELD_NAME, "YourProject");
+        ((Map<String, Object>) newData.get(PackageJson.FIELD_SCRIPTS)).put(PackageJson.FIELD_START, "node app.js --port 2080");
         asyncWriteFile(newData);
         // wait
         countDownLatch2.await(1, TimeUnit.MINUTES);
@@ -197,7 +196,7 @@ public class PackageJsonTest extends NbTestCase {
         CountDownLatch countDownLatch3 = new CountDownLatch(1);
         listener.setCountDownLatch(countDownLatch3);
         Map<String, Object> newerData = new HashMap<>(newData);
-        ((Map<String, Object>) newerData.get(PackageJson.SCRIPTS)).put(PackageJson.START, "node app.js");
+        ((Map<String, Object>) newerData.get(PackageJson.FIELD_SCRIPTS)).put(PackageJson.FIELD_START, "node app.js");
         asyncWriteFile(newerData);
         // wait
         countDownLatch3.await(1, TimeUnit.MINUTES);
@@ -234,21 +233,188 @@ public class PackageJsonTest extends NbTestCase {
         assertEquals("node app.js", event.getNewValue());
     }
 
+    public void testWriteContent() throws Exception {
+        writeFile(getData(true, true));
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        final String oldName = (String) content.get(PackageJson.FIELD_NAME);
+        assertNotNull(oldName);
+        // needed for FS to notice the change
+        Thread.sleep(1000);
+        // listener
+        CountDownLatch countDownLatch1 = new CountDownLatch(1);
+        PropertyChangeListenerImpl listener = new PropertyChangeListenerImpl();
+        listener.setCountDownLatch(countDownLatch1);
+        packageJson.addPropertyChangeListener(listener);
+        // change name
+        String newName = "some-new-cool-name";
+        packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName);
+        // needed for FS to notice the change
+        Thread.sleep(1000);
+        // manual refresh
+        refreshForFile(packageJson.getFile());
+        // wait
+        countDownLatch1.await(1, TimeUnit.MINUTES);
+        // check events
+        Map<String, List<PropertyChangeEvent>> allEvents = listener.getAllEvents();
+        assertEquals(1, allEvents.size());
+        // name
+        List<PropertyChangeEvent> events = allEvents.get(PackageJson.PROP_NAME);
+        assertNotNull(events);
+        assertEquals(1, events.size());
+        PropertyChangeEvent event = events.get(0);
+        assertEquals(PackageJson.PROP_NAME, event.getPropertyName());
+        assertEquals(oldName, event.getOldValue());
+        assertEquals(newName, event.getNewValue());
+    }
+
+    public void testSetContentString() throws Exception {
+        Map<String, Object> data = getData(true, true);
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals("MyProject", content.get(PackageJson.FIELD_NAME));
+        final String newName = "MyLibrary";
+        packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), newName, content.get(PackageJson.FIELD_NAME));
+    }
+
+    public void testSetContentNumber() throws Exception {
+        Map<String, Object> data = getData(true, true);
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals("MyProject", content.get(PackageJson.FIELD_NAME));
+        final int newName1 = 150;
+        packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName1);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), (long) newName1, content.get(PackageJson.FIELD_NAME));
+        final String newName2 = "MyNewJsLib";
+        packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName2);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), newName2, content.get(PackageJson.FIELD_NAME));
+    }
+
+    public void testSetContentObject() throws Exception {
+        Map<String, Object> data = getData(true, true);
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals("MyProject", content.get(PackageJson.FIELD_NAME));
+        final Map<String, Object> newName = new LinkedHashMap<>();
+        newName.put("simple", "Simple NewName");
+        newName.put("complex", "Complex NewName");
+        packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), newName, content.get(PackageJson.FIELD_NAME));
+    }
+
+    public void testSetContentEscaped() throws Exception {
+        Map<String, Object> data = getData(true, true);
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals("MyProject", content.get(PackageJson.FIELD_NAME));
+        final String newName = "My \" Library";
+        packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), newName, content.get(PackageJson.FIELD_NAME));
+    }
+
+    public void testSetContentSubField() throws Exception {
+        Map<String, Object> data = getData(true, true);
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals("node server.js", getValue(String.class, content, PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START));
+        final String newStartScript = "node src/main.js 8080";
+        packageJson.setContent(Arrays.asList(PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START), newStartScript);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), newStartScript, getValue(String.class, content, PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START));
+    }
+
+    public void testSetContentSameFieldNames() throws Exception {
+        Map<String, Object> data = new LinkedHashMap<>();
+        final String topLevelStart = "some dummy value";
+        data.put(PackageJson.FIELD_START, topLevelStart);
+        data.putAll(getData(true, true));
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(topLevelStart, data.get(PackageJson.FIELD_START));
+        assertEquals("node server.js", getValue(String.class, content, PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START));
+        final String newStartScript = "node src/main.js 8080";
+        packageJson.setContent(Arrays.asList(PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START), newStartScript);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), topLevelStart, data.get(PackageJson.FIELD_START));
+        assertEquals(JSONValue.toJSONString(content), newStartScript, getValue(String.class, content, PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START));
+    }
+
+    public void testSetContentNewField() throws Exception {
+        Map<String, Object> data = getData(true, false);
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals("MyProject", content.get(PackageJson.FIELD_NAME));
+        final String key = "env";
+        final String value = "devel";
+        assertNull(content.get(key));
+        packageJson.setContent(Collections.singletonList(key), value);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), value, content.get(key));
+    }
+
+    public void testSetContentNewSubField() throws Exception {
+        Map<String, Object> data = getData(true, true);
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals("MyProject", content.get(PackageJson.FIELD_NAME));
+        final String key = "executable";
+        final String value = "yes";
+        packageJson.setContent(Arrays.asList(PackageJson.FIELD_SCRIPTS, key), value);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(JSONValue.toJSONString(content), value, getValue(String.class, content, PackageJson.FIELD_SCRIPTS, key));
+    }
+
     private File getFile() {
-        return new File(FileUtil.toFile(projectDir), PackageJson.FILENAME);
+        return new File(directory, PackageJson.FILENAME);
     }
 
     private Map<String, Object> getData(boolean name, boolean startFile) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new LinkedHashMap<>();
         if (name) {
-            data.put(PackageJson.NAME, "MyProject");
+            data.put(PackageJson.FIELD_NAME, "MyProject");
         }
         if (startFile) {
-            Map<String, Object> scripts = new HashMap<>();
-            scripts.put(PackageJson.START, "node server.js");
-            data.put(PackageJson.SCRIPTS, scripts);
+            Map<String, Object> scripts = new LinkedHashMap<>();
+            scripts.put(PackageJson.FIELD_START, "node server.js");
+            data.put(PackageJson.FIELD_SCRIPTS, scripts);
         }
         return data;
+    }
+
+    @CheckForNull
+    private <T> T getValue(Class<T> valueType, Map<String, Object> data, String... fieldHierarchy) {
+        Map<String, Object> subdata = data;
+        for (int i = 0; i < fieldHierarchy.length; ++i) {
+            String field = fieldHierarchy[i];
+            if (i == fieldHierarchy.length - 1) {
+                return valueType.cast(subdata.get(field));
+            }
+            subdata = (Map<String, Object>) subdata.get(field);
+        }
+        return null;
     }
 
     private void writeFile(Map<String, Object> data) throws IOException {
@@ -257,7 +423,7 @@ public class PackageJsonTest extends NbTestCase {
             JSONObject.writeJSONString(data, out);
         }
         assertTrue(file.isFile());
-        FileUtil.refreshFor(file.getParentFile());
+        refreshForFile(file);
     }
 
     private void asyncWriteFile(Map<String, Object> data) {
@@ -274,29 +440,11 @@ public class PackageJsonTest extends NbTestCase {
         });
     }
 
-    //~ Inner classes
-
-    private static final class DummyProject implements Project {
-
-        private final FileObject projectDir;
-
-
-        public DummyProject(FileObject projectDir) {
-            Assert.assertNotNull(projectDir);
-            this.projectDir = projectDir;
-        }
-
-        @Override
-        public FileObject getProjectDirectory() {
-            return projectDir;
-        }
-
-        @Override
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
+    private void refreshForFile(File file) {
+        FileUtil.refreshFor(file.getParentFile());
     }
+
+    //~ Inner classes
 
     private static final class PropertyChangeListenerImpl implements PropertyChangeListener {
 

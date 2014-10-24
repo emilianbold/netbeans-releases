@@ -80,6 +80,10 @@ public enum NodeJsContext {
                     }
                 }
             } else {
+                if ((tokenId == JsTokenId.EOL || tokenId == JsTokenId.OPERATOR_SEMICOLON) && ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
+                    tokenId = token.id();
+                }
                 if ((tokenId == JsTokenId.OPERATOR_ASSIGNMENT || tokenId == JsTokenId.WHITESPACE || tokenId == JsTokenId.IDENTIFIER) && ts.movePrevious()) {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
                     tokenId = token.id();

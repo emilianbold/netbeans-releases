@@ -252,7 +252,7 @@ public class FSCompletionUtils {
             if (!alias.isEmpty()) {
                 path = configPaths.get(alias) + pathToFile.substring(alias.length());
                 if (basePaths.isEmpty()) {
-                    result = findFileObject(parent, composePath(path), true);
+                    result = findFileObject(parent, composePath(path), false);
                     if (result != null) {
                         return result;
                     }
@@ -261,7 +261,7 @@ public class FSCompletionUtils {
             // try directly the base path
             for (String value : basePaths) {
                 String composedPath = composePath(value, path);
-                result = findFileObject(parent, composedPath, true);
+                result = findFileObject(parent, composedPath, false);
                 if (result != null) {
                     return result;
                 }

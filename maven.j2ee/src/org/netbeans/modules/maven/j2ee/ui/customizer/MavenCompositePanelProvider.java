@@ -48,6 +48,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerFrameworks;
@@ -55,8 +56,6 @@ import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEar;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEjb;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
 import org.netbeans.modules.maven.j2ee.web.WebProjectUtils;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -91,7 +90,7 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 258)
     public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptLibraries() {
-        return new FilterProvider(JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+        return new FilterProvider(CDNJSLibraries.createCustomizer(new CDNJSLibraries.CustomizerContext() {
 
             @Override
             public File getWebRoot(Lookup context) {
@@ -104,15 +103,6 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
                 return null;
             }
 
-            @Override
-            public void setLibrariesFolder(@NonNull Lookup context, String librariesFolder) {
-                // noop
-            }
-
-            @Override
-            public void setSelectedLibraries(@NonNull Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
-                // noop
-            }
         }));
      }
     

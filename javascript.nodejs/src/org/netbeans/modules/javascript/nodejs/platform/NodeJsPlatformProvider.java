@@ -43,17 +43,22 @@ package org.netbeans.modules.javascript.nodejs.platform;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.simple.JSONObject;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.Notifications;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
@@ -63,6 +68,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+
 
 @ServiceProvider(service = PlatformProviderImplementation.class, path = PlatformProviders.PLATFORM_PATH, position = 100)
 public final class NodeJsPlatformProvider implements PlatformProviderImplementation, PropertyChangeListener {
@@ -146,16 +152,10 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         String propertyName = event.getPropertyName();
         if (PROP_ENABLED.equals(propertyName)) {
             NodeJsSupport.forProject(project).getPreferences().setEnabled((boolean) event.getNewValue());
+        } else if (PROP_PROJECT_NAME.equals(propertyName)) {
+            projectNameChanged(project, (String) event.getNewValue());
         } else if (PROP_RUN_CONFIGURATION.equals(propertyName)) {
-            Object activeRunConfig = event.getNewValue();
-            boolean runEnabled = false;
-            for (CustomizerPanelImplementation panel : getRunCustomizerPanels(project)) {
-                if (panel.getIdentifier().equals(activeRunConfig)) {
-                    runEnabled = true;
-                    break;
-                }
-            }
-            NodeJsSupport.forProject(project).getPreferences().setRunEnabled(runEnabled);
+            runConfigurationChanged(project, event.getNewValue());
         }
     }
 
@@ -186,17 +186,85 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         if (!packageJson.exists()) {
             return;
         }
-        JSONObject content = packageJson.getContent();
+        Map<String, Object> content = packageJson.getContent();
         if (content == null) {
             // some error
             return;
         }
-        Object engines = content.get("engines"); // NOI18N
-        if (engines instanceof JSONObject) {
-            if (((JSONObject) engines).containsKey("node")) { // NOI18N
+        Object engines = content.get(PackageJson.FIELD_ENGINES);
+        if (engines instanceof Map) {
+            if (((Map<String, Object>) engines).containsKey(PackageJson.FIELD_NODE)) {
                 Notifications.notifyNodeJsDetected(project);
             }
         }
+    }
+
+    @NbBundle.Messages({
+        "NodeJsPlatformProvider.sync.title=Node.js",
+        "NodeJsPlatformProvider.sync.ask=Sync project name change to package.json?",
+        "NodeJsPlatformProvider.sync.error=Cannot write changed project name to package.json.",
+        "# {0} - project name",
+        "NodeJsPlatformProvider.sync.done=Project name {0} synced to package.json.",
+    })
+    private void projectNameChanged(Project project, String newName) {
+        String projectDir = project.getProjectDirectory().getNameExt();
+        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
+        NodeJsPreferences preferences = nodeJsSupport.getPreferences();
+        if (!preferences.isEnabled()) {
+            LOGGER.log(Level.FINE, "Project name change ignored, node.js not enabled in project {0}", projectDir);
+            return;
+        }
+        if (!preferences.isSyncEnabled()) {
+            LOGGER.log(Level.FINE, "Project name change ignored, sync not enabled in project {0}", projectDir);
+            return;
+        }
+        PackageJson packageJson = nodeJsSupport.getPackageJson();
+        if (!packageJson.exists()) {
+            LOGGER.log(Level.FINE, "Project name change ignored, package.json not exist in project {0}", projectDir);
+            return;
+        }
+        LOGGER.log(Level.FINE, "Processing project name change in project {0}", projectDir);
+        Map<String, Object> content = packageJson.getContent();
+        if (content == null) {
+            LOGGER.log(Level.FINE, "Project name change ignored, package.json has no content in project {0}", projectDir);
+            return;
+        }
+        if (!StringUtils.hasText(newName)) {
+            LOGGER.log(Level.FINE, "Project name change ignored, new name is empty in project {0}", projectDir);
+            return;
+        }
+        String name = (String) content.get(PackageJson.FIELD_NAME);
+        if (Objects.equals(name, newName)) {
+            LOGGER.log(Level.FINE, "Project name change ignored, new name same as current name in package.json in project {0}", projectDir);
+            return;
+        }
+        String projectName = NodeJsUtils.getProjectDisplayName(project);
+        if (preferences.isAskSyncEnabled()) {
+            if (!Notifications.askUser(projectName, Bundle.NodeJsPlatformProvider_sync_ask())) {
+                preferences.setSyncEnabled(false);
+                LOGGER.log(Level.FINE, "Project name change ignored, cancelled by user in project {0}", projectDir);
+                return;
+            }
+        }
+        try {
+            packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            Notifications.informUser(Bundle.NodeJsPlatformProvider_sync_error());
+            return;
+        }
+        Notifications.notifyUser(Bundle.NodeJsPlatformProvider_sync_title(), Bundle.NodeJsPlatformProvider_sync_done(projectName));
+    }
+
+    private void runConfigurationChanged(Project project, Object activeRunConfig) {
+        boolean runEnabled = false;
+        for (CustomizerPanelImplementation panel : getRunCustomizerPanels(project)) {
+            if (panel.getIdentifier().equals(activeRunConfig)) {
+                runEnabled = true;
+                break;
+            }
+        }
+        NodeJsSupport.forProject(project).getPreferences().setRunEnabled(runEnabled);
     }
 
 }

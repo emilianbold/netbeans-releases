@@ -45,7 +45,6 @@ package org.netbeans.modules.web.client.rest.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -59,11 +58,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.client.rest.wizard.RestPanel.JsUi;
-import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
-import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -216,17 +212,14 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
 
         if ( existedBackbone == null ) {
             if ( addBackbone!=null && addBackbone ) {
-                FileObject documentRoot = (FileObject)myWizard.getProperty(HtmlPanel.PROP_DOCUMENT_BASE);
-                FileObject libs = FileUtil.createFolder((documentRoot == null ? getRootFolder(project) : documentRoot),
-                        WebClientLibraryManager.LIBS);
                 handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                         "TXT_CreateLibs"));                                 // NOI18N
-                existedBackbone = addLibrary( libs , "backbone.js");        // NOI18N
+                existedBackbone = addLibrary("backbone.js");        // NOI18N
                 if ( existedUnderscore == null ){
-                    existedUnderscore = addLibrary(libs, "underscore.js");  // NOI18N
+                    existedUnderscore = addLibrary("underscore.js");  // NOI18N
                 }
                 if ( existedJQuery == null ){
-                    existedJQuery = addLibrary(libs, "jquery");  // NOI18N
+                    existedJQuery = addLibrary("jquery");  // NOI18N
                 }
             }
         }
@@ -413,30 +406,8 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         }
     }
     
-    private FileObject addLibrary(FileObject libs, String libName ) {
-        Library backbone = WebClientLibraryManager.getDefault().findLibrary(libName,
-                null);    // NOI18N
-        if ( backbone == null ){
-            return null;
-        }
-        try {
-            List<FileObject> files = WebClientLibraryManager.getDefault().addLibraries(new Library[]{backbone},
-                    libs, null);
-            if ( !files.isEmpty() ){
-                return files.get(0);
-            }
-            return null;
-        }
-        catch(IOException e ){
-            return null;
-        }
-        catch(MissingLibResourceException e ){
-            List<FileObject> files = e.getResources();
-            if ( !files.isEmpty() ){
-                return files.get(0);
-            }
-            return null;
-        }
+    private FileObject addLibrary(String libName) {
+        return null; // TODO
     }
     
     private WizardDescriptor myWizard;

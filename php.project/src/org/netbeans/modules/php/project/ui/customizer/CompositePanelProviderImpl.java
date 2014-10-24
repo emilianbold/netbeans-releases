@@ -58,6 +58,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
+import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -69,8 +70,6 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
@@ -292,20 +291,12 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         position = 190
     )
     public static ProjectCustomizer.CompositeCategoryProvider createJsFiles() {
-        return JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+        return CDNJSLibraries.createCustomizer(new CDNJSLibraries.CustomizerContext() {
             @Override
             public File getWebRoot(Lookup context) {
                 PhpProjectProperties projectProperties = context.lookup(PhpProjectProperties.class);
                 assert projectProperties != null;
                 return projectProperties.getResolvedWebRootFolder();
-            }
-            @Override
-            public void setLibrariesFolder(@NonNull Lookup context, String librariesFolder) {
-                // noop
-            }
-            @Override
-            public void setSelectedLibraries(@NonNull Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
-                // noop
             }
         });
     }

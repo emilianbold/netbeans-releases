@@ -58,6 +58,8 @@ import org.netbeans.spi.viewmodel.ModelEvent.TreeChanged;
  */
 public abstract class ViewModelSupport {
 
+    protected static final Object[] EMPTY_CHILDREN = new Object[]{};
+    
     private CopyOnWriteArrayList<ModelListener> myListeners;
     
     protected ViewModelSupport() {

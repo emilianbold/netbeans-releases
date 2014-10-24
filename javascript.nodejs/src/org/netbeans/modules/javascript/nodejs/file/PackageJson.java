@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.nodejs.file;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
@@ -50,26 +51,31 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.json.simple.JSONObject;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.Sources;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.WeakListeners;
+import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 
 /**
  * Class representing project's <tt>package.json</tt> file.
@@ -80,35 +86,49 @@ public final class PackageJson {
 
     public static final String PROP_NAME = "NAME"; // NOI18N
     public static final String PROP_SCRIPTS_START = "SCRIPTS_START"; // NOI18N
+    // file content
+    public static final String FIELD_NAME = "name"; // NOI18N
+    public static final String FIELD_SCRIPTS = "scripts"; // NOI18N
+    public static final String FIELD_START = "start"; // NOI18N
+    public static final String FIELD_ENGINES = "engines"; // NOI18N
+    public static final String FIELD_NODE = "node"; // NOI18N
 
     static final String FILENAME = "package.json"; // NOI18N
-    // file content
-    static final String NAME = "name"; // NOI18N
-    static final String SCRIPTS = "scripts"; // NOI18N
-    static final String START = "start"; // NOI18N
 
-    private final Project project;
+    private static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory() {
+
+        @Override
+        public Map createObjectContainer() {
+            return new LinkedHashMap();
+        }
+
+        @Override
+        public List creatArrayContainer() {
+            return new ArrayList();
+        }
+
+    };
+
+    private final File directory;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private final ChangeListener changeListener = new ChangeListenerImpl();
     private final FileChangeListener fileChangeListener = new FileChangeListenerImpl();
 
     // @GuardedBy("this")
-    private boolean listening = false;
-    // @GuardedBy("this")
     private File packageJson;
     // @GuardedBy("this")
-    private JSONObject content;
+    private Map<String, Object> content;
     private volatile boolean contentInited = false;
 
 
-    public PackageJson(Project project) {
-        assert project != null;
-        this.project = project;
+    public PackageJson(File directory) {
+        assert directory != null;
+        assert directory.isDirectory() || !directory.exists() : "Must be directory or cannot exist: " + directory;
+        this.directory = FileUtil.normalizeFile(directory);
     }
 
     public void cleanup() {
         contentInited = false;
-        clear(true);
+        clear(true, false);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -124,15 +144,26 @@ public final class PackageJson {
         return getPackageJson().isFile();
     }
 
+    public File getFile() {
+        return getPackageJson();
+    }
+
     public String getPath() {
         return getPackageJson().getAbsolutePath();
     }
 
+    /**
+     * Returns <b>shallow</b> copy of the content.
+     * <p>
+     * <b>WARNING:</b> Do not modify the content directly, use {@link #setContent(String, String, String...)} instead!
+     * @return <b>shallow</b> copy of the data
+     * @see #setContent(String, String, String...)
+     */
     @CheckForNull
-    public synchronized JSONObject getContent() {
+    public synchronized Map<String, Object> getContent() {
         initContent();
         if (content != null) {
-            return new JSONObject(content);
+            return new LinkedHashMap<>(content);
         }
         File file = getPackageJson();
         if (!file.isFile()) {
@@ -140,14 +171,241 @@ public final class PackageJson {
         }
         JSONParser parser = new JSONParser();
         try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(packageJson), StandardCharsets.UTF_8))) {
-            content = (JSONObject) parser.parse(reader);
-        } catch (IOException | ParseException ex) {
+            content = (Map<String, Object>) parser.parse(reader, CONTAINER_FACTORY);
+        } catch (ParseException ex) {
             LOGGER.log(Level.INFO, file.getAbsolutePath(), ex);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, file.getAbsolutePath(), ex);
         }
         if (content == null) {
             return null;
         }
-        return new JSONObject(content);
+        return new LinkedHashMap<>(content);
+    }
+
+    /**
+     * Set new value of the given field.
+     * @param fieldHierarchy field (together with its hierarchy) to be changed, e.g. {@link #FIELD_NAME}
+     *                       or list of {@link #FIELD_ENGINES}, {@link #FIELD_NODE}
+     * @param value new value of any type, e.g. new project name
+     * @throws IOException if any error occurs
+     */
+    public synchronized void setContent(final List<String> fieldHierarchy, final Object value) throws IOException {
+        assert fieldHierarchy != null;
+        assert !fieldHierarchy.isEmpty();
+        assert value != null;
+        assert !EventQueue.isDispatchThread();
+        assert exists();
+        initContent();
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(getPackageJson()));
+        EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
+        assert editorCookie != null : "No EditorCookie for " + dataObject;
+        boolean modified = editorCookie.isModified();
+        StyledDocument document = editorCookie.getDocument();
+        if (document == null) {
+            document = editorCookie.openDocument();
+        }
+        assert document != null;
+        final StyledDocument documentRef = document;
+        NbDocument.runAtomic(document, new Runnable() {
+            @Override
+            public void run() {
+                setContent(documentRef, fieldHierarchy, value);
+            }
+        });
+        if (!modified) {
+            editorCookie.saveDocument();
+        }
+        clear(false);
+    }
+
+    void setContent(Document document, List<String> fieldHierarchy, Object value) {
+        String text;
+        try {
+            text = document.getText(0, document.getLength() - 1);
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            assert false;
+            return;
+        }
+        List<String> fields = new ArrayList<>(fieldHierarchy);
+        int fieldIndex = -1;
+        int closestFieldIndex = -1;
+        int level = -1;
+        int searchInLevel = 0;
+        String field = null;
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (ch == '{') {
+                level++;
+            } else if (ch == '}') {
+                level--;
+            } else if (Character.isWhitespace(ch)) {
+                continue;
+            }
+            if (field == null) {
+                if (level != searchInLevel) {
+                    continue;
+                }
+                field = "\"" + JSONValue.escape(fields.get(searchInLevel)) + "\""; // NOI18N
+                searchInLevel++;
+            }
+            if (ch == '"'
+                    && text.substring(i).startsWith(field)) {
+                // match
+                closestFieldIndex = i;
+                if (searchInLevel >= fields.size()) {
+                    fieldIndex = i;
+                    break;
+                }
+                i += field.length();
+                field = null;
+            }
+        }
+        assert field != null;
+        if (fieldIndex == -1) {
+            // remove found fields
+            while (searchInLevel > 1) {
+                fields.remove(0);
+                searchInLevel--;
+            }
+            // insert missing fields
+            insertNewField(document, fields, value, text, closestFieldIndex);
+            return;
+        }
+        int colonIndex = -1;
+        for (int i = fieldIndex + field.length(); i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            switch (ch) {
+                case ' ':
+                    // noop
+                    break;
+                case ':':
+                    colonIndex = i;
+                    break;
+                default:
+                    // unexpected
+                    return;
+            }
+            if (colonIndex != -1) {
+                break;
+            }
+        }
+        if (colonIndex == -1) {
+            return;
+        }
+        int valueStartIndex = -1;
+        for (int i = colonIndex + 1; i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            if (!Character.isWhitespace(ch)) {
+                valueStartIndex = i;
+                break;
+            }
+        }
+        if (valueStartIndex == -1) {
+            return;
+        }
+        char valueFirstChar = text.charAt(valueStartIndex);
+        int valueEndIndex = -1;
+        for (int i = valueStartIndex + 1; i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            if (valueFirstChar == '"') {
+                if (ch == '"') {
+                    valueEndIndex = i + 1;
+                }
+            } else if (Character.isDigit(ch)
+                    || ch == '.') {
+                // number
+                continue;
+            } else {
+                valueEndIndex = i;
+            }
+            if (valueEndIndex != -1) {
+                break;
+            }
+        }
+        if (valueEndIndex == -1) {
+            return;
+        }
+        insertValue(document, valueStartIndex, valueEndIndex, JSONValue.toJSONString(value), !(value instanceof String) && !(value instanceof Number));
+    }
+
+    private void insertNewField(Document document, List<String> fieldHierarchy, Object value, String text, int index) {
+        int startIndex = index;
+        boolean commaBefore;
+        if (startIndex == -1) {
+            startIndex = text.lastIndexOf('}'); // NOI18N
+            if (startIndex != -1) {
+                for (;;) {
+                    char ch = text.charAt(--startIndex);
+                    if (!Character.isWhitespace(ch)) {
+                        startIndex++;
+                        break;
+                    }
+                }
+            }
+            commaBefore = true;
+        } else {
+            startIndex = text.indexOf('{', startIndex); // NOI18N
+            if (startIndex != -1) {
+                startIndex++;
+            }
+            commaBefore = false;
+        }
+        if (startIndex == -1) {
+            startIndex = text.length();
+        }
+        StringBuilder sb = new StringBuilder();
+        if (commaBefore) {
+            sb.append(','); // NOI18N
+            sb.append('\n'); // NOI18N
+        }
+        int braces = -1;
+        for (String field : fieldHierarchy) {
+            if (braces > 0) {
+                sb.append('{'); // NOI18N
+                sb.append('\n'); // NOI18N
+            }
+            sb.append('"'); // NOI18N
+            sb.append(JSONValue.escape(field));
+            sb.append('"'); // NOI18N
+            sb.append(':'); // NOI18N
+            braces++;
+        }
+        sb.append(JSONValue.toJSONString(value));
+        for (int i = 0; i < braces; i++) {
+            sb.append('}'); // NOI18N
+            sb.append('\n'); // NOI18N
+        }
+        if (!commaBefore) {
+            sb.append(','); // NOI18N
+        }
+        insertValue(document, startIndex, -1, sb.toString(), true);
+    }
+
+    private void insertValue(Document document, int valueStartIndex, int valueEndIndex, String value, boolean format) {
+        try {
+            if (valueEndIndex != -1) {
+                document.remove(valueStartIndex, valueEndIndex - valueStartIndex);
+            }
+            document.insertString(valueStartIndex, value, null);
+            if (format) {
+                reformat(document, valueStartIndex, valueStartIndex + value.length());
+            }
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            assert false;
+        }
+    }
+
+    private void reformat(Document document, int startOffset, int endOffset) throws BadLocationException {
+        Reformat reformat = Reformat.get(document);
+        reformat.lock();
+        try {
+            reformat.reformat(startOffset, endOffset);
+        } finally {
+            reformat.unlock();
+        }
     }
 
     private void initContent() {
@@ -160,17 +418,8 @@ public final class PackageJson {
     }
 
     private synchronized File getPackageJson() {
-        if (!listening) {
-            listening = true;
-            Sources sources = ProjectUtils.getSources(project);
-            sources.addChangeListener(WeakListeners.change(changeListener, sources));
-        }
         if (packageJson == null) {
-            // currently, we use only project dir
-            FileObject projectDirectory = project.getProjectDirectory();
-            File projDir = FileUtil.toFile(projectDirectory);
-            assert projDir != null : projectDirectory;
-            packageJson = FileUtil.normalizeFile(new File(projDir, FILENAME));
+            packageJson = new File(directory, FILENAME);
             try {
                 FileUtil.addFileChangeListener(fileChangeListener, packageJson);
                 LOGGER.log(Level.FINE, "Started listening to {0}", packageJson);
@@ -183,8 +432,12 @@ public final class PackageJson {
     }
 
     void clear(boolean newFile) {
-        JSONObject oldContent;
-        JSONObject newContent;
+        clear(newFile, true);
+    }
+
+    void clear(boolean newFile, boolean fireChanges) {
+        Map<String, Object> oldContent;
+        Map<String, Object> newContent = null;
         synchronized (this) {
             oldContent = content;
             if (content != null) {
@@ -204,54 +457,49 @@ public final class PackageJson {
                 }
                 packageJson = null;
             }
-            newContent = getContent();
+            if (fireChanges) {
+                newContent = getContent();
+            }
         }
-        fireChanges(oldContent, newContent);
+        if (fireChanges) {
+            fireChanges(oldContent, newContent);
+        }
     }
 
-    private void fireChanges(@NullAllowed JSONObject oldContent, @NullAllowed JSONObject newContent) {
-        String oldName = getName(oldContent);
-        String newName = getName(newContent);
+    private void fireChanges(@NullAllowed Map<String, Object> oldContent, @NullAllowed Map<String, Object> newContent) {
+        Object oldName = getName(oldContent);
+        Object newName = getName(newContent);
         if (!Objects.equals(oldName, newName)) {
             propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, newName);
         }
-        String oldStartScript = getStartScript(oldContent);
-        String newStartScript = getStartScript(newContent);
+        Object oldStartScript = getStartScript(oldContent);
+        Object newStartScript = getStartScript(newContent);
         if (!Objects.equals(oldStartScript, newStartScript)) {
             propertyChangeSupport.firePropertyChange(PROP_SCRIPTS_START, oldStartScript, newStartScript);
         }
     }
 
     @CheckForNull
-    private String getName(@NullAllowed JSONObject data) {
+    private Object getName(@NullAllowed Map<String, Object> data) {
         if (data == null) {
             return null;
         }
-        return (String) data.get(NAME);
+        return data.get(FIELD_NAME);
     }
 
     @CheckForNull
-    private String getStartScript(@NullAllowed JSONObject data) {
+    private Object getStartScript(@NullAllowed Map<String, Object> data) {
         if (data == null) {
             return null;
         }
-        JSONObject scripts = (JSONObject) data.get(SCRIPTS);
-        if (scripts == null) {
+        Object scripts = data.get(FIELD_SCRIPTS);
+        if (!(scripts instanceof Map)) {
             return null;
         }
-        return (String) scripts.get(START);
+        return ((Map<String, Object>) scripts).get(FIELD_START);
     }
 
     //~ Inner classes
-
-    private final class ChangeListenerImpl implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            clear(true);
-        }
-
-    }
 
     private final class FileChangeListenerImpl extends FileChangeAdapter {
 

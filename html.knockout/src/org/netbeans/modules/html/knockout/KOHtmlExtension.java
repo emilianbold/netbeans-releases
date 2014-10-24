@@ -359,12 +359,12 @@ public class KOHtmlExtension extends HtmlExtension {
     public DeclarationFinder.DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         FileObject fo = info.getSnapshot().getSource().getFileObject();
         if (fo == null) {
-            return DeclarationFinder.DeclarationLocation.NONE;
+            return null;
         }
 
         TokenSequence<? extends HTMLTokenId> ts = LexerUtils.getTokenSequence(info.getSnapshot().getTokenHierarchy(), caretOffset, HTMLTokenId.language(), false);
         if (ts == null) {
-            return DeclarationFinder.DeclarationLocation.NONE;
+            return null;
         }
 
         ts.move(caretOffset);
@@ -405,7 +405,7 @@ public class KOHtmlExtension extends HtmlExtension {
                 }
             }
         }
-        return DeclarationFinder.DeclarationLocation.NONE;
+        return null;
     }
 
     private boolean isTagCustomKnockoutElement(FileObject fo, String tagName) {

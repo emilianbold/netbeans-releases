@@ -199,6 +199,7 @@ public final class PhpProjectGenerator {
                         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
 
                         Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+                        assert project != null;
                         ProjectManager.getDefault().saveProject(project);
 
                         assert verifyProjectProperties(project);

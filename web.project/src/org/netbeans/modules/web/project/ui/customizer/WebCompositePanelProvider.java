@@ -49,8 +49,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
@@ -249,7 +248,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
     
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=350)
     public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptLibraries() {
-        return JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+        return CDNJSLibraries.createCustomizer(new CDNJSLibraries.CustomizerContext(){
             @Override
             public File getWebRoot(Lookup context) {
                 WebProjectProperties projectProperties = context.lookup(WebProjectProperties.class);
@@ -259,14 +258,6 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
                     return FileUtil.toFile(fo);
                 }
                 return null;
-            }
-            @Override
-            public void setLibrariesFolder(Lookup context, String librariesFolder) {
-                // noop
-            }
-            @Override
-            public void setSelectedLibraries(Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
-                // noop
             }
         });
     }
