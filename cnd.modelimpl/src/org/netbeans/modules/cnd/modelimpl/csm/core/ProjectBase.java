@@ -2492,6 +2492,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         CndTextIndex.remove(impl.getTextIndexKey());
                     }
                 }
+                ProgressSupport.instance().fireFileRemoved(impl);
             }
         }
         return removedFromProject;

@@ -65,20 +65,20 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     public static final int STANDARD_DEFAULT = 0;
     public static final int STANDARD_CPP98 = 1;
     public static final int STANDARD_CPP11 = 2;
-    //public static final int STANDARD_CPP14 = 3;
+    public static final int STANDARD_CPP14 = 3;
     public static final int STANDARD_INHERITED = 4;
     private static final String[] STANDARD_NAMES = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_CPP98"),
         getString("STANDARD_CPP11"),
-        //getString("STANDARD_CPP14"),
+        getString("STANDARD_CPP14"),
         getString("STANDARD_INHERITED"),
     };
     private static final String[] STANDARD_NAMES_ROOT = {
         getString("STANDARD_DEFAULT"),
         getString("STANDARD_CPP98"),
         getString("STANDARD_CPP11"),
-        //getString("STANDARD_CPP14"),
+        getString("STANDARD_CPP14"),
     };    
     private IntConfiguration cppStandard;    
     
@@ -106,7 +106,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             case STANDARD_DEFAULT: return LanguageFlavor.DEFAULT.toExternal();
             case STANDARD_CPP98: return LanguageFlavor.CPP.toExternal();
             case STANDARD_CPP11: return LanguageFlavor.CPP11.toExternal();
-            //case STANDARD_CPP14: return LanguageFlavor.CPP14.toExternal();
+            case STANDARD_CPP14: return LanguageFlavor.CPP14.toExternal();
             case STANDARD_INHERITED:  return LanguageFlavor.UNKNOWN.toExternal();
             default: return LanguageFlavor.UNKNOWN.toExternal();
         }
@@ -123,8 +123,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             this.cppStandard.setValue(STANDARD_CPP98);
         } else if (cppStandard == LanguageFlavor.CPP11.toExternal()) {
             this.cppStandard.setValue(STANDARD_CPP11);
-        //} else if (cppStandard == LanguageFlavor.CPP14.toExternal()) {
-        //    this.cppStandard.setValue(STANDARD_CPP14);
+        } else if (cppStandard == LanguageFlavor.CPP14.toExternal()) {
+            this.cppStandard.setValue(STANDARD_CPP14);
         } else if (cppStandard == LanguageFlavor.UNKNOWN.toExternal()) {
             this.cppStandard.setValue(STANDARD_INHERITED);
         }
