@@ -286,6 +286,7 @@ public class MultiSplitPane extends JPanel
     public void mousePressed(MouseEvent e) {
         if( !Switches.isTopComponentResizingEnabled() )
             return;
+        doLayout();
         MultiSplitDivider divider = dividerAtPoint( e.getPoint() );
         if( null == divider )
             return;
