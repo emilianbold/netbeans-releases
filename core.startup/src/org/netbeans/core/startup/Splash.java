@@ -156,6 +156,8 @@ public final class Splash implements Stamps.Updater {
         if (running) {
             if (frame == null) {
                 frame = new Frame(NbBundle.getMessage(Splash.class, "LBL_splash_window_title")); // e.g. for window tray display
+                //#215320
+                frame.setType(Window.Type.POPUP);
                 initFrameIcons(frame); // again, only for possible window tray display
                 frame.setUndecorated(true);
                 // add splash component

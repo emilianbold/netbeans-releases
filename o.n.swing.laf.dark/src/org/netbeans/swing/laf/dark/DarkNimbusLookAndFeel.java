@@ -41,6 +41,7 @@
  */
 package org.netbeans.swing.laf.dark;
 
+import java.awt.Color;
 import javax.swing.UIDefaults;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import org.openide.util.NbBundle;
@@ -62,6 +63,16 @@ public class DarkNimbusLookAndFeel extends NimbusLookAndFeel {
         UIDefaults res = super.getDefaults();
         res.put( "nb.dark.theme", Boolean.TRUE );
         return res;
+    }
+    
+    @Override
+    public Color getDerivedColor(String uiDefaultParentName, float hOffset, float sOffset, float bOffset, int aOffset, boolean uiResource) {
+        float brightness = bOffset;
+        if ((bOffset == -0.34509805f) && "nimbusBlueGrey".equals(uiDefaultParentName)) { //NOI18N
+            //Match only for TreeHandle Color in Nimbus, workaround for #231953
+            brightness = -bOffset; 
+        }
+        return super.getDerivedColor(uiDefaultParentName, hOffset, sOffset, brightness, aOffset, uiResource);
     }
 
     @Override
