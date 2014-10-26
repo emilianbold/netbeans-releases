@@ -88,52 +88,47 @@ public class LazyLookupProviders {
             public Lookup createAdditionalLookup(final Lookup lkp) {
                 final Lookup result =  new ProxyLookup() {
                     Collection<String> serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
-                    final ThreadLocal<Boolean> insideBeforeLookup = new ThreadLocal<Boolean>(); // #212862
-                    final Object LOCK = new Object();
+                    final Thread[] LOCK = { null };
                     @Override protected void beforeLookup(Template<?> template) {
                         safeToLoad();
                         Class<?> service = template.getType();
                         synchronized (LOCK) {
-                            if (serviceNames == null || !serviceNames.contains(service.getName())) {
-                                return;
-                            }
-                        }
-                        if (Boolean.TRUE.equals(insideBeforeLookup.get())) {
-                            return;
-                        }
-                        insideBeforeLookup.set(true);
-                        boolean doSet = false;
-                        try {
-                            synchronized (LOCK) {
-                                if (serviceNames == null) {
-                                    //somehow we got here even though the first serviceNames == null passed.
-                                    // the problem with concurrent execution is that this thread might return before the other one (with doSet == true) manages to finish.
-                                    //theoretically this should not be a problem given the lookup fires a change event, BUT.
-                                    // however is waiting here for completion a viable option? what about deadlocks and reentrance?
+                            for (;;) {
+                                if (serviceNames == null || !serviceNames.contains(service.getName())) {
                                     return;
                                 }
-                                doSet = true;
-                                serviceNames = null;
-                            }
-                            if (doSet) {
-                                Object instance = loadPSPInstance((String) attrs.get("class"), (String) attrs.get("method"), lkp); // NOI18N
-                                if (!service.isInstance(instance)) {
-                                    // JRE #6456938: Class.cast currently throws an exception without details.
-                                    throw new ClassCastException("Instance of " + instance.getClass() + " unassignable to " + service);
+                                if (LOCK[0] == null) {
+                                    break;
                                 }
+                                if (LOCK[0] == Thread.currentThread()) {
+                                    return;
+                                }
+                                try {
+                                    LOCK.wait();
+                                } catch (InterruptedException ex) {
+                                    LOG.log(Level.INFO, null, ex);
+                                }
+                            }
+                            LOCK[0] = Thread.currentThread();
+                        }
+                        try {
+                            Object instance = loadPSPInstance((String) attrs.get("class"), (String) attrs.get("method"), lkp); // NOI18N
+                            if (!service.isInstance(instance)) {
+                                // JRE #6456938: Class.cast currently throws an exception without details.
+                                throw new ClassCastException("Instance of " + instance.getClass() + " unassignable to " + service);
+                            }
                             setLookups(Lookups.singleton(instance));
+                            synchronized (LOCK) {
+                                serviceNames = null;
                             }
                         } catch (Exception x) {
                             Exceptions.attachMessage(x, "while loading from " + attrs);
                             Exceptions.printStackTrace(x);
-                            if (doSet) {
-                                synchronized (LOCK) {
-                                    //go back and try again later? we failed in loadPSPInstance somehow
-                                    serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
-                                }
-                            }
                         } finally {
-                            insideBeforeLookup.set(false);
+                            synchronized (LOCK) {
+                                LOCK[0] = null;
+                                LOCK.notifyAll();
+                            }
                         }
                     }
                     private void safeToLoad() {
