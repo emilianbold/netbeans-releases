@@ -125,9 +125,7 @@ made subject to such option by the copyright holder.
                     <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
+                    <run-dependency><release-version>1</release-version><specification-version>1.78</specification-version></run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectuiapi.base</code-name-base>
