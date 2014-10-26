@@ -61,6 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
@@ -1360,7 +1361,7 @@ public final class MakeActionProvider implements ActionProvider {
         if (cmds == null) {
             throw new IllegalArgumentException(command);
         }
-        return cmds.getCommands(conf, context);
+        return cmds.getCommands(project, conf, context);
     }
 
     @Override
@@ -2000,7 +2001,7 @@ public final class MakeActionProvider implements ActionProvider {
             this.commands = new ArrayList<Command>(commands);
         }
         
-        private String[] getCommands(MakeConfiguration conf, Lookup context) {
+        private String[] getCommands(Project project, MakeConfiguration conf, Lookup context) {
             List<String> res = new ArrayList<>();
             Loop:for(Command command : commands) {
                 String conditions = command.conditions;
@@ -2009,11 +2010,11 @@ public final class MakeActionProvider implements ActionProvider {
                     for(String condition : conditions.split(",")) { //NOI18N
                         boolean can = false;
                         if (MakeCommandFlagsProviderFactory.DEFAULT.canHandle(condition, context, conf)) {
-                            can = MakeCommandFlagsProviderFactory.DEFAULT.createProvider().hasFlag(id, context, conf, condition, can);
+                            can = MakeCommandFlagsProviderFactory.DEFAULT.createProvider().flagValue(id, context, project, conf, condition, can);
                         }
                         for(MakeCommandFlagsProviderFactory factory : Lookup.getDefault().lookupAll(MakeCommandFlagsProviderFactory.class)) {
-                            if (factory.canHandle(condition, context, conf)) {
-                                can = factory.createProvider().hasFlag(id, context, conf, condition, can);
+                            if (factory.canHandle(id, context, conf)) {
+                                can = factory.createProvider().flagValue(id, context, project, conf, condition, can);
                             }
                         }
                         flagValues.put(condition, can);

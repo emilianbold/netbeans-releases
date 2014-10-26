@@ -570,6 +570,10 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     @Override
     public void parserIdle() {
     }
+
+    @Override
+    public void fileRemoved(CsmFile file) {
+    }
     
     private static class NodeLink implements SelfPersistent, Persistent {
         

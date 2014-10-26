@@ -242,6 +242,7 @@
                 <xs:element ref="tns:default" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:cpp98" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:cpp11" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:cpp14" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -268,6 +269,13 @@
     </xs:element>
 
     <xs:element name="cpp11">
+        <xs:complexType>
+            <xs:attribute name="flags" type="xs:string" use="required" />
+            <xs:attribute name="default" type="xs:string" use="optional" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="cpp14">
         <xs:complexType>
             <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />

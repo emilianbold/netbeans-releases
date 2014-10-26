@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.CndLanguageStandards.CndLanguageStandard;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -81,9 +82,14 @@ import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -101,6 +107,8 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     private static final class Lock{}
     private static final Lock lock = new Lock();
     private static final Set<String> toBeRmoved = new HashSet<>();
+    // equals to CompileExecSupport.PROP_LANG_STANDARD
+    private static final String PROP_LANG_STANDARD = "standard"; // NOI18N
 
     private final CsmModelListener listener = new CsmModelListener() {
 
@@ -321,7 +329,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         System.err.printf("### Standalone provider:  %s\n", String.format(pattern, args)); //NOI18N
     }
 
-    /*package*/ static final class NativeProjectImpl implements NativeProject, ChangeListener {
+    /*package*/ static final class NativeProjectImpl implements NativeProject, ChangeListener, FileChangeListener {
 
         private final List<FSPath> sysIncludes;
         private final List<FSPath> usrIncludes;
@@ -422,12 +430,21 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang, impl));
             }
             impl.checkPaths();
-            impl.addFile(file, lang, flavorExt.first());
+            LanguageFlavor resultingFlavor = flavorExt.first();
+            CndLanguageStandard standard = impl.getStandard(file);
+            if (standard != null) {
+                LanguageFlavor standardToFlavor = standardToFlavor(standard);
+                if (standardToFlavor != LanguageFlavor.UNKNOWN) {
+                    resultingFlavor = standardToFlavor;
+                }
+            }
+            impl.addFile(file, lang, resultingFlavor);
             set.add(impl.findFileItem(file));
             MIMEExtensions me = flavorExt.second();
             if (me != null) {
                 me.addChangeListener(impl);
             }
+            file.addFileChangeListener(impl);
             return impl;
         }
 
@@ -591,6 +608,13 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public void stateChanged(ChangeEvent e) {
             Object source = e.getSource();
             if (source instanceof MIMEExtensions) {
+                if (files.size()>0) {
+                    FileObject fo = files.get(0).getFileObject();
+                    Object attribute = fo.getAttribute(PROP_LANG_STANDARD);
+                    if (attribute instanceof String) {
+                        return;
+                    }
+                }
                 ArrayList<NativeProjectItemsListener> list = new ArrayList<>();
                 synchronized (listenersLock) {
                     list.addAll(listeners);
@@ -657,6 +681,76 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         
         @Override
         public void fireFilesPropertiesChanged() {
+        }
+        
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+        }
+
+        private CndLanguageStandard getStandard(FileObject fo) {
+            if (fo == null) {
+                return null;
+            }
+            String mimeType = FileUtil.getMIMEType(fo);
+            if (mimeType == null) {
+                return null;
+            }
+            return CndLanguageStandards.StringToLanguageStandard((String) fo.getAttribute(PROP_LANG_STANDARD));
+        }
+        
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            String name = fe.getName();
+            if (!PROP_LANG_STANDARD.equals(name)) {
+                return;
+            }
+            FileObject fo = fe.getFile();
+            if (fo == null) {
+                return;
+            }
+            CndLanguageStandard standard = getStandard(fo);
+            if (standard == null) {
+                String mimeType = FileUtil.getMIMEType(fo);
+                if (mimeType == null) {
+                    return;
+                }
+                MIMEExtensions me = MIMEExtensions.get(mimeType);
+                if (me == null) {
+                    return;
+                }
+                // use standatd from me
+                stateChanged(new ChangeEvent(me));
+                return;
+            }
+            for(NativeFileItemImpl nfi : files) {
+                NativeFileItem.LanguageFlavor flavor = standardToFlavor(standard);
+                if (flavor != LanguageFlavor.UNKNOWN) {
+                    nfi.setLanguageFlavor(flavor);
+                }
+            }
+            ArrayList<NativeProjectItemsListener> list = new ArrayList<>();
+            synchronized (listenersLock) {
+                list.addAll(listeners);
+            }
+            for(NativeProjectItemsListener listener : list) {
+                listener.filesPropertiesChanged();
+            }
         }
 
         @Override
