@@ -295,6 +295,7 @@ public final class NodeJsSupport {
                 return;
             }
             Notifications.notifyUser(Bundle.PreferencesListener_sync_title(projectName), Bundle.PreferencesListener_sync_done());
+            LOGGER.log(Level.FINE, "Start file/args change synced to package.json in project {0}", projectDir);
         }
 
     }
@@ -367,6 +368,7 @@ public final class NodeJsSupport {
                 preferences.setStartArgs(newStartArgs);
             }
             Notifications.notifyUser(Bundle.PackageJsonListener_sync_title(projectName), Bundle.PackageJsonListener_sync_done());
+            LOGGER.log(Level.FINE, "Start file/args change synced to project.properties in project {0}", projectDir);
         }
 
     }
