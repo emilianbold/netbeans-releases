@@ -222,7 +222,7 @@ public final class PackageJson {
     void setContent(Document document, List<String> fieldHierarchy, Object value) {
         String text;
         try {
-            text = document.getText(0, document.getLength() - 1);
+            text = document.getText(0, document.getLength());
         } catch (BadLocationException ex) {
             LOGGER.log(Level.WARNING, null, ex);
             assert false;
@@ -235,25 +235,27 @@ public final class PackageJson {
         int searchInLevel = 0;
         String field = null;
         for (int i = 0; i < text.length(); i++) {
+            if (field == null) {
+                field = "\"" + JSONValue.escape(fields.get(searchInLevel)) + "\""; // NOI18N
+            }
             char ch = text.charAt(i);
             if (ch == '{') {
                 level++;
+                continue;
             } else if (ch == '}') {
                 level--;
+                continue;
             } else if (Character.isWhitespace(ch)) {
                 continue;
             }
-            if (field == null) {
-                if (level != searchInLevel) {
-                    continue;
-                }
-                field = "\"" + JSONValue.escape(fields.get(searchInLevel)) + "\""; // NOI18N
-                searchInLevel++;
+            if (level != searchInLevel) {
+                continue;
             }
             if (ch == '"'
                     && text.substring(i).startsWith(field)) {
                 // match
                 closestFieldIndex = i;
+                searchInLevel++;
                 if (searchInLevel >= fields.size()) {
                     fieldIndex = i;
                     break;
@@ -265,7 +267,7 @@ public final class PackageJson {
         assert field != null;
         if (fieldIndex == -1) {
             // remove found fields
-            while (searchInLevel > 1) {
+            while (searchInLevel > 0) {
                 fields.remove(0);
                 searchInLevel--;
             }
