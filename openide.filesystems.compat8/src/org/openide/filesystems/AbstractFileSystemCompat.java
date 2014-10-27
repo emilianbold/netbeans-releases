@@ -85,27 +85,27 @@ public abstract class AbstractFileSystemCompat extends FileSystem {
 
         if ((name == null) || (ext == null)) {
             // search for folder, return the object only if it is folder
-            FileObject fo = getAbstractRoot().find(st);
+            FileObject fo = afs().getAbstractRoot().find(st);
 
             return ((fo != null) && fo.isFolder()) ? fo : null;
         } else {
             Enumeration<String> en = Enumerations.concat(st, Enumerations.singleton(name + '.' + ext));
 
             // tries to find it (can return null)
-            return getAbstractRoot().find(en);
+            return afs().getAbstractRoot().find(en);
         }
     }
-
-    abstract AbstractFileObject getAbstractRoot();
     
-    abstract boolean isEnabledRefreshFolder();
+    private AbstractFileSystem afs() {
+        return (AbstractFileSystem)(Object)this;
+    }
 
     /* Action for this filesystem.
     *
     * @return refresh action
     */
     public SystemAction[] getActions() {
-        if (!isEnabledRefreshFolder()) {
+        if (!afs().isEnabledRefreshFolder()) {
             return NO_SYSTEM_ACTIONS;
         } else {
             if (SYSTEM_ACTIONS == null) {
