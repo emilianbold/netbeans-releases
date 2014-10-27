@@ -63,7 +63,7 @@ public class RemoteFilesNodeFactoryImpl implements NodeFactory {
 
         private final Project project;
         private final RemoteFiles remoteFiles;
-        private ChangeSupport changeSupport = new ChangeSupport(this);
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         public RemoteFilesNodeListImpl(Project project) {
             this.project = project;
