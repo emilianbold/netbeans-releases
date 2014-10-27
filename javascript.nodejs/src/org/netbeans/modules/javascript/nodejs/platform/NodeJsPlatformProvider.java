@@ -254,6 +254,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             return;
         }
         Notifications.notifyUser(Bundle.NodeJsPlatformProvider_sync_title(projectName), Bundle.NodeJsPlatformProvider_sync_done(projectName));
+        LOGGER.log(Level.FINE, "Project name change synced to package.json in project {0}", projectDir);
     }
 
     private void runConfigurationChanged(Project project, Object activeRunConfig) {
