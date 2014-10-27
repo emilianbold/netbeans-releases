@@ -191,7 +191,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             // not html or css -> return all source groups
             return allGroups;
         }
-        // html or css file -> return only sources pr site root
+        // html or css file -> return only sources or site root
         List<SourceGroup> groups = new ArrayList<>();
         groups.addAll(Arrays.asList(ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT)));
         groups.addAll(Arrays.asList(ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5)));
