@@ -149,9 +149,15 @@ public final class Notifications {
     }
 
     @CheckReturnValue
-    public static boolean askUser(String title, String question) {
+    public static boolean ask(String title, String question) {
         NotifyDescriptor confirmation = new NotifyDescriptor.Confirmation(question, title, NotifyDescriptor.YES_NO_OPTION);
         return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
+    }
+
+    @NbBundle.Messages("Notifications.ask.sync=Sync changes between project and package.json?")
+    @CheckReturnValue
+    public static boolean askSyncChanges(Project project) {
+        return ask(NodeJsUtils.getProjectDisplayName(project), Bundle.Notifications_ask_sync());
     }
 
 }

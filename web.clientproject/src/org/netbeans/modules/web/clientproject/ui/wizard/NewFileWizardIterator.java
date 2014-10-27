@@ -43,7 +43,10 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -188,10 +191,12 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             // not html or css -> return all source groups
             return allGroups;
         }
-        // html or css file -> return only site root
-        SourceGroup[] siteRootGroups = ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
-        if (siteRootGroups.length != 0) {
-            return siteRootGroups;
+        // html or css file -> return only sources or site root
+        List<SourceGroup> groups = new ArrayList<>();
+        groups.addAll(Arrays.asList(ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT)));
+        groups.addAll(Arrays.asList(ClientSideProjectUtilities.getSourceGroups(project, WebClientProjectConstants.SOURCES_TYPE_HTML5)));
+        if (!groups.isEmpty()) {
+            return groups.toArray(new SourceGroup[groups.size()]);
         }
         return allGroups;
     }
