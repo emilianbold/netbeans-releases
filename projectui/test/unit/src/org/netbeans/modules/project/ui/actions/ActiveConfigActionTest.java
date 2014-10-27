@@ -47,8 +47,19 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -96,7 +107,7 @@ public class ActiveConfigActionTest extends NbTestCase {
      * Test of createContextAwareInstance method, of class ActiveConfigAction.
      */
     @RandomlyFails
-    public void testCreateContextAwareInstance() {
+    public void testCreateContextAwareInstance() throws Exception {
         P p = PF.toCreate;
         
         OpenProjects.getDefault().open(new Project[] { p }, false);
@@ -112,7 +123,7 @@ public class ActiveConfigActionTest extends NbTestCase {
         
         assertNotNull(item);
         assertTrue("Enabled", item.isEnabled());
-        DynamicMenuContent m = (DynamicMenuContent)item;
+        final DynamicMenuContent m = (DynamicMenuContent)item;
         assertEquals("One", 1, m.getMenuPresenters().length);
         
         holder = item;
@@ -123,7 +134,26 @@ public class ActiveConfigActionTest extends NbTestCase {
         WeakReference<Object> ref = new WeakReference<Object>(p);
         p = null;
         PF.toCreate = null;
-        
+
+        //Await refresh
+        final Logger log = Logger.getLogger(ActiveConfigAction.class.getName());
+        final Level origLogLevel = log.getLevel();
+        final FH handler = new FH();
+        log.setLevel(Level.FINEST);
+        log.addHandler(handler);
+        try {
+            handler.get(30, TimeUnit.SECONDS);
+        } finally {
+            log.setLevel(origLogLevel);
+            log.removeHandler(handler);
+        }
+        //Rebuild the current pop up menu
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                m.getMenuPresenters();
+            }
+        });
         assertGC("Reference can go away", ref);
     }
 
@@ -194,5 +224,60 @@ public class ActiveConfigActionTest extends NbTestCase {
             return "Default";
         }
         
+    }
+
+    private static final class FH extends Handler implements Future<Void> {
+
+        private final CountDownLatch done = new CountDownLatch(1);
+        private volatile boolean canceled;
+
+        @Override
+        public void publish(LogRecord record) {
+            if ("view-refreshed".equals(record.getMessage())) { //NOI18N
+                done.countDown();
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return canceled = true;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return canceled;
+        }
+
+        @Override
+        public boolean isDone() {
+            return canceled || done.getCount() == 0;
+        }
+
+        @Override
+        public Void get() throws InterruptedException, ExecutionException {
+            if (canceled) {
+                throw new CancellationException();
+            }
+            done.await();
+            return null;
+        }
+
+        @Override
+        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            if (canceled) {
+                throw new CancellationException();
+            }
+            done.await(timeout, unit);
+            return null;
+        }
+
     }
 }
