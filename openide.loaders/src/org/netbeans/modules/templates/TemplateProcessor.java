@@ -49,7 +49,10 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
@@ -125,7 +128,11 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
             f.urlvalue("instantiatingWizardURL", contentURI(e, t.description(), builder, t, "description"));
         }
         if (e.getKind() != ElementKind.PACKAGE) {
-            f.instanceAttribute("instantiatingIterator", InstantiatingIterator.class);
+            if (t.page().isEmpty()) {
+                f.instanceAttribute("instantiatingIterator", InstantiatingIterator.class);
+            } else {
+                registerHTMLWizard(e, builder, f, t);
+            }
         }
         if (t.content().length > 0) {
             f.url(contentURI(e, t.content()[0], builder, t, "content").toString());
@@ -167,4 +174,29 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
         }
     }
 
+    private void registerHTMLWizard(Element e, LayerBuilder b, LayerBuilder.File f, TemplateRegistration t) throws LayerGenerationException {
+        b.validateResource(t.page(), e, t, "iconBase", true);
+        f.stringvalue("page", t.page());
+        if (e.getKind() != ElementKind.METHOD) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
+                "page() attribute can be used only on static method", e
+            );
+            return;
+        }
+        ExecutableElement ee = (ExecutableElement) e;
+        if (!ee.getModifiers().contains(Modifier.STATIC)) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
+                "page() attribute can be used only on static method", e
+            );
+            return;
+        }
+        TypeElement typeString = processingEnv.getElementUtils().getTypeElement("java.lang.String");
+        if (!processingEnv.getTypeUtils().isSameType(typeString.asType(), ee.getReturnType())) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
+                "page() attribute requires its method to return String", e
+            );
+            return;
+        }
+        f.methodvalue("instantiatingIterator", HTMLWizard.class.getName(), "create");
+    }
 }
