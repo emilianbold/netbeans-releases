@@ -253,7 +253,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             ProviderItem provider = (ProviderItem)item;
             instructionsTextArea.setText(provider.getDescription());
             wizard.stateChanged(null);
-            if ("make-log".equals(provider.getID())) {// NOI18N
+            if (DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) {
                 restrictCompile.setSelected(true);
             } else {
                 restrictCompile.setSelected(false);

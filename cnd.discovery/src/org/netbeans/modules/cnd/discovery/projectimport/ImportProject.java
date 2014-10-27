@@ -187,6 +187,7 @@ public class ImportProject implements PropertyChangeListener {
     private String buildCommand = BUILD_COMMAND;
     private String cleanCommand = CLEAN_COMMAND;
     private String buildResult = "";  // NOI18N
+    private FileObject dwarfSource;
     private Project makeProject;
     private boolean runMake;
     private String includeDirectories = ""; // NOI18N
@@ -358,9 +359,17 @@ public class ImportProject implements PropertyChangeListener {
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            buildResult = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
-            buildResult = CndPathUtilities.normalizeSlashes(buildResult);
-            extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
+            FileObject fo = RemoteFileUtil.getFileObject(buildResult, fileSystemExecutionEnvironment);
+            if (fo != null && fo.isValid()) {
+                dwarfSource = fo;
+            }
+            if (fo != null && fo.isValid() && fo.isFolder()) {
+                // do not set build result
+            } else {
+                buildResult = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(buildResult), pathMode);
+                buildResult = CndPathUtilities.normalizeSlashes(buildResult);
+                extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
+            }
         }
         extConf.getProfile().setRunDirectory(workingDirRel);       
         extConf.getProfile().setBuildFirst(false);
@@ -1481,9 +1490,17 @@ public class ImportProject implements PropertyChangeListener {
             final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
+            if (dwarfSource != null) {
+                if (dwarfSource.isFolder()) {
+                    map.put(DiscoveryWizardDescriptor.BUILD_FOLDER, dwarfSource.getPath());
+                } else {
+                    map.put(DiscoveryWizardDescriptor.BUILD_RESULT, dwarfSource.getPath());
+                }
+            }
+            
             if (extension.canApply(map, makeProject, interrupter)) {
                 DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
-                if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
+                if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) { 
                     if (TRACE) {
                         logger.log(Level.INFO, "#start discovery by log file {0}", provider.getProperty("make-log-file").getValue()); // NOI18N
                     }
@@ -1495,7 +1512,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject, interrupter);
-                    if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
+                    if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) {
                         importResult.put(Step.DiscoveryLog, State.Successful);
                     } else {
                         importResult.put(Step.DiscoveryDwarf, State.Successful);
@@ -1596,7 +1613,7 @@ public class ImportProject implements PropertyChangeListener {
         map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
         DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("model-folder"); // NOI18N
-        provider.getProperty("folder").setValue(nativeProjectPath); // NOI18N
+        provider.getProperty(DiscoveryExtension.FOLDER_PROPERTY).setValue(nativeProjectPath);
         if (manualCA) {
             provider.getProperty("prefer-local").setValue(Boolean.TRUE); // NOI18N
         }
