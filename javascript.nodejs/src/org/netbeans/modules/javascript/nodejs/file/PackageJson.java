@@ -183,6 +183,29 @@ public final class PackageJson {
         return new LinkedHashMap<>(content);
     }
 
+    @CheckForNull
+    public <T> T getContentValue(Class<T> valueType, String... fieldHierarchy) {
+        Map<String, Object> subdata = getContent();
+        if (subdata == null) {
+            return null;
+        }
+        for (int i = 0; i < fieldHierarchy.length; ++i) {
+            String field = fieldHierarchy[i];
+            if (i == fieldHierarchy.length - 1) {
+                Object value = subdata.get(field);
+                if (value == null) {
+                    return null;
+                }
+                return valueType.cast(value);
+            }
+            subdata = (Map<String, Object>) subdata.get(field);
+            if (subdata == null) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     /**
      * Set new value of the given field.
      * @param fieldHierarchy field (together with its hierarchy) to be changed, e.g. {@link #FIELD_NAME}
@@ -364,7 +387,7 @@ public final class PackageJson {
         }
         int braces = -1;
         for (String field : fieldHierarchy) {
-            if (braces > 0) {
+            if (braces > -1) {
                 sb.append('{'); // NOI18N
                 sb.append('\n'); // NOI18N
             }
