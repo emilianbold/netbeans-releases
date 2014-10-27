@@ -67,7 +67,7 @@ import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
-import org.netbeans.libs.git.GitClient.DiffMode;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
@@ -82,16 +82,20 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public class ExportDiffCommand extends GitCommand {
     private final File[] roots;
     private final ProgressMonitor monitor;
-    private final DiffMode mode;
     private final OutputStream out;
     private final FileListener listener;
+    private final String firstCommit;
+    private final String secondCommit;
 
-    public ExportDiffCommand (Repository repository, GitClassFactory gitFactory, File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor, FileListener listener) {
+    public ExportDiffCommand (Repository repository, GitClassFactory gitFactory,
+            File[] roots, String firstCommit, String secondCommit,
+            OutputStream out, ProgressMonitor monitor, FileListener listener) {
         super(repository, gitFactory, monitor);
         this.roots = roots;
         this.monitor = monitor;
         this.listener = listener;
-        this.mode = mode;
+        this.firstCommit = firstCommit;
+        this.secondCommit = secondCommit;
         this.out = out;
     }
 
@@ -111,26 +115,9 @@ public class ExportDiffCommand extends GitCommand {
                 // work-around for autocrlf
                 formatter.setDiffComparator(new AutoCRLFComparator());
             }
-            AbstractTreeIterator firstTree;
-            AbstractTreeIterator secondTree;
-            switch (mode) {
-                case HEAD_VS_INDEX:
-                    or = repository.newObjectReader();
-                    firstTree = getHeadIterator(or);
-                    secondTree = new DirCacheIterator(repository.readDirCache());
-                    break;
-                case HEAD_VS_WORKINGTREE:
-                    or = repository.newObjectReader();
-                    firstTree = getHeadIterator(or);
-                    secondTree = new FileTreeIterator(repository);
-                    break;
-                case INDEX_VS_WORKINGTREE:
-                    firstTree = new DirCacheIterator(repository.readDirCache());
-                    secondTree = new FileTreeIterator(repository);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown diff mode: " + mode);
-            }
+            or = repository.newObjectReader();
+            AbstractTreeIterator firstTree = getIterator(firstCommit, or);
+            AbstractTreeIterator secondTree = getIterator(secondCommit, or);
             List<DiffEntry> diffEntries;
             if (secondTree instanceof WorkingTreeIterator) {
                 // remote when fixed in JGit, see ExportDiffTest.testDiffRenameDetectionProblem
@@ -140,9 +127,6 @@ public class ExportDiffCommand extends GitCommand {
                 RenameDetector detector = formatter.getRenameDetector();
                 detector.reset();
                 detector.addAll(diffEntries);
-                if (or == null) {
-                    or = repository.newObjectReader();
-                }
 		diffEntries = detector.compute(new ContentSource.Pair(ContentSource.create(or), ContentSource.create((WorkingTreeIterator) secondTree)), NullProgressMonitor.INSTANCE);
             } else {
                 formatter.setDetectRenames(true);
@@ -163,6 +147,22 @@ public class ExportDiffCommand extends GitCommand {
                 or.release();
             }
             formatter.release();
+        }
+    }
+
+    private AbstractTreeIterator getIterator (String commit, ObjectReader or) throws IOException, GitException {
+        Repository repository = getRepository();
+        switch (commit) {
+            case Constants.HEAD:
+                return getHeadIterator(or);
+            case GitClient.INDEX:
+                return new DirCacheIterator(repository.readDirCache());
+            case GitClient.WORKING_TREE:
+                return new FileTreeIterator(repository);
+            default:
+                CanonicalTreeParser p = new CanonicalTreeParser();
+                p.reset(or, Utils.findCommit(repository, commit).getTree());
+                return p;
         }
     }
 

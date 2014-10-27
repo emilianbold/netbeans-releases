@@ -301,6 +301,24 @@ public final class GitClient {
         };
     }
     
+    /**
+     * "Commit" identifier representing the state of the working tree. May be
+     * used in {@link #exportDiff(java.io.File[], java.lang.String, java.lang.String, java.io.OutputStream, org.netbeans.libs.git.progress.ProgressMonitor)
+     * }
+     * to diff a working tree state to another commit.
+     *
+     * @since 1.29
+     */
+    public static final String WORKING_TREE = "WORKING_TREE"; // NOI18N
+    /**
+     * "Commit" identifier representing the state in the Index. May be used in {@link #exportDiff(java.io.File[], java.lang.String, java.lang.String, java.io.OutputStream, org.netbeans.libs.git.progress.ProgressMonitor)
+     * }
+     * to diff the Index state to another commit.
+     *
+     * @since 1.29
+     */
+    public static final String INDEX = "INDEX"; // NOI18N
+    
     private final JGitRepository gitRepository;
     private final Set<NotificationListener> listeners;
     private JGitCredentialsProvider credentialsProvider;
@@ -574,7 +592,40 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public void exportDiff (File[] roots, DiffMode mode, OutputStream out, ProgressMonitor monitor) throws GitException {
-        ExportDiffCommand cmd = new ExportDiffCommand(gitRepository.getRepository(), getClassFactory(), roots, mode, out, monitor, delegateListener);
+        switch (mode) {
+            case HEAD_VS_INDEX:
+                exportDiff(roots, Constants.HEAD, INDEX, out, monitor);
+                break;
+            case HEAD_VS_WORKINGTREE:
+                exportDiff(roots, Constants.HEAD, WORKING_TREE, out, monitor);
+                break;
+            case INDEX_VS_WORKINGTREE:
+                exportDiff(roots, INDEX, WORKING_TREE, out, monitor);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown diff mode: " + mode);
+        }
+    }
+    
+    /**
+     * Exports diff of changes between two trees identified by files and two
+     * commit/revision identifiers.
+     *
+     * @param roots the diff will be exported only for files under these roots,
+     * can be empty to export all modifications in the whole tree.
+     * @param commitBase first commit identifier, may be also
+     * {@link #WORKING_TREE} or {@link #INDEX}.
+     * @param commitOther second commit identifier, may be also
+     * {@link #WORKING_TREE} or {@link #INDEX}.
+     * @param out output stream the diff will be printed to
+     * @param monitor progress monitor
+     * @throws GitException an unexpected error occurs
+     * @since 1.29
+     */
+    public void exportDiff (File[] roots, String commitBase, String commitOther, OutputStream out, ProgressMonitor monitor) throws GitException {
+        ExportDiffCommand cmd = new ExportDiffCommand(
+                gitRepository.getRepository(), getClassFactory(), roots,
+                commitBase, commitOther, out, monitor, delegateListener);
         cmd.execute();
     }
     
