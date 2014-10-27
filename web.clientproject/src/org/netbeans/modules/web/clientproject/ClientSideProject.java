@@ -1067,6 +1067,9 @@ public class ClientSideProject implements Project {
         }
 
         @NbBundle.Messages({
+            "# {0} - provider name",
+            "# {1} - project name",
+            "PlatformProvidersListenerImpl.sync.title={0} ({1})",
             "# {0} - project name",
             "PlatformProvidersListenerImpl.sync.name=Project name synced to {0}.",
         })
@@ -1075,7 +1078,7 @@ public class ClientSideProject implements Project {
                     && !getName().equals(newName)) {
                 setName(newName);
                 NotificationDisplayer.getDefault().notify(
-                        platformProvider.getDisplayName(),
+                        Bundle.PlatformProvidersListenerImpl_sync_title(platformProvider.getDisplayName(), newName),
                         NotificationDisplayer.Priority.LOW.getIcon(),
                         Bundle.PlatformProvidersListenerImpl_sync_name(newName),
                         null,
