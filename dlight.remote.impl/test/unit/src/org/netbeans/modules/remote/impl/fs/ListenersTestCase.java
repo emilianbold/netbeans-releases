@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -90,26 +91,32 @@ public class ListenersTestCase extends RemoteFileTestBase {
             System.out.printf("FileEvent[%s]: %s %s\n", listenerName, eventKind, fe);
         }
         
-        public void fileAttributeChanged(FileAttributeEvent fe) {
+         @Override
+       public void fileAttributeChanged(FileAttributeEvent fe) {
             register("fileAttributeChanged", fe);
         }
 
-        public void fileChanged(FileEvent fe) {
+         @Override
+       public void fileChanged(FileEvent fe) {
             register("fileChanged", fe);
         }
 
-        public void fileDataCreated(FileEvent fe) {
+         @Override
+       public void fileDataCreated(FileEvent fe) {
             register("fileDataCreated", fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             register("fileDeleted", fe);
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             register("fileFolderCreated", fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             register("fileRenamed", fe);
         }        
@@ -216,7 +223,39 @@ public class ListenersTestCase extends RemoteFileTestBase {
     public void testGlobalListeners() throws Exception {
         doTestListeners(Kind.GLOBAL);
     }
-           
+
+    @ForAllEnvironments
+    public void testFileExternalChange() throws Exception {
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+
+            FileObject baseDirFO = getFileObject(baseDir);
+            FileObject childFO = baseDirFO.createData("child_file_1");
+
+            Map<FileObject, FileEvent> childMap = new HashMap<FileObject, FileEvent>();
+            Map<FileObject, FileEvent> parentMap = new HashMap<FileObject, FileEvent>();
+
+            baseDirFO.addFileChangeListener(new FCL("Dir", parentMap));
+            childFO.addFileChangeListener(new FCL("File", childMap));
+
+            ProcessUtils.ExitStatus rc = ProcessUtils.execute(getTestExecutionEnvironment(),
+                    "/bin/sh", "-c", "echo new_content > " + childFO.getPath());
+            assertTrue("external modification command failed", rc.exitCode == 0);
+            baseDirFO.refresh();
+
+            FileEvent fe;
+
+            fe = childMap.get(childFO);
+            assertNotNull("No file event fired for child " + childFO, fe);
+
+            fe = parentMap.get(childFO);
+            assertNotNull("No file event for parent " + childFO, fe);
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
     public static Test suite() {
         return RemoteApiTest.createSuite(ListenersTestCase.class);
     }
