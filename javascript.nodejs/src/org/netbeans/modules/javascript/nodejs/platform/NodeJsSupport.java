@@ -45,8 +45,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -65,12 +69,13 @@ import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
 public final class NodeJsSupport {
@@ -86,7 +91,7 @@ public final class NodeJsSupport {
     final NodeJsPreferences preferences;
     private final ActionProvider actionProvider;
     final NodeJsSourceRoots sourceRoots;
-    private final PackageJson packageJson;
+    final PackageJson packageJson;
 
 
     private NodeJsSupport(Project project) {
@@ -212,7 +217,84 @@ public final class NodeJsSupport {
             } else if (NodeJsPreferences.NODE_PATH.equals(key)
                     && !preferences.isDefaultNode()) {
                 fireSourceRootsChanged();
+            } else if (NodeJsPreferences.START_FILE.equals(key)
+                    || NodeJsPreferences.START_ARGS.equals(key)) {
+                startScriptChanged(preferences.getStartFile(), preferences.getStartArgs());
             }
+        }
+
+        @NbBundle.Messages({
+            "PreferencesListener.sync.title=Node.js",
+            "PreferencesListener.sync.ask=Sync start file/arguments change to package.json?",
+            "PreferencesListener.sync.error=Cannot write changed start file/arguments to package.json.",
+            "PreferencesListener.sync.done=Start file/arguments synced to package.json.",
+        })
+        private void startScriptChanged(String newStartFile, String newStartArgs) {
+            String projectDir = project.getProjectDirectory().getNameExt();
+            if (!preferences.isEnabled()) {
+                LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, node.js not enabled in project {0}", projectDir);
+                return;
+            }
+            if (!preferences.isSyncEnabled()) {
+                LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, sync not enabled", projectDir);
+                return;
+            }
+            if (!StringUtils.hasText(newStartFile)
+                    && !StringUtils.hasText(newStartArgs)) {
+                LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, new file and args are empty", projectDir);
+                return;
+            }
+            String relNewStartFile = newStartFile;
+            String relPath = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), new File(newStartFile));
+            if (relPath != null) {
+                relNewStartFile = relPath;
+            }
+            if (!packageJson.exists()) {
+                LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, package.json not exist", projectDir);
+                return;
+            }
+            LOGGER.log(Level.FINE, "Processing Start file/args change in project {0}", projectDir);
+            Map<String, Object> content = packageJson.getContent();
+            if (content == null) {
+                LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, package.json has no or invalid content", projectDir);
+                return;
+            }
+            String startFile = null;
+            String startArgs = null;
+            String startScript = packageJson.getContentValue(String.class, PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START);
+            if (startScript != null) {
+                Pair<String, String> startInfo = NodeJsUtils.parseStartFile(startScript);
+                startFile = startInfo.first();
+                startArgs = startInfo.second();
+            }
+            if (Objects.equals(startFile, relNewStartFile)
+                    && Objects.equals(startArgs, newStartArgs)) {
+                LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, file and args same as in package.json", projectDir);
+                return;
+            }
+            String projectName = NodeJsUtils.getProjectDisplayName(project);
+            if (preferences.isAskSyncEnabled()) {
+                if (!Notifications.askUser(projectName, Bundle.PreferencesListener_sync_ask())) {
+                    preferences.setSyncEnabled(false);
+                    LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, cancelled by user", projectDir);
+                    return;
+                }
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(NodeJsUtils.START_FILE_NODE_PREFIX);
+            sb.append(relNewStartFile);
+            if (StringUtils.hasText(newStartArgs)) {
+                sb.append(" "); // NOI18N
+                sb.append(newStartArgs);
+            }
+            try {
+                packageJson.setContent(Arrays.asList(PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START), sb.toString());
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                Notifications.informUser(Bundle.PreferencesListener_sync_error());
+                return;
+            }
+            Notifications.notifyUser(Bundle.PreferencesListener_sync_title(), Bundle.PreferencesListener_sync_done());
         }
 
     }
@@ -252,46 +334,21 @@ public final class NodeJsSupport {
                 LOGGER.log(Level.FINE, "Start script change ignored in project {0}, it has no text", projectDir);
                 return;
             }
-            String data = newStartScript.trim();
-            String nodePrefix = "node "; // NOI18N
-            if (data.startsWith(nodePrefix)) {
-                data = data.substring(nodePrefix.length());
-            }
-            String[] params = Utilities.parseParameters(data);
-            String newStartFile = null;
-            StringBuilder newStartArgsBuilder = new StringBuilder();
-            for (String param : params) {
-                if (newStartFile == null) {
-                    if (param.startsWith("-")) { // NOI18N
-                        // node param
-                        continue;
-                    }
-                    newStartFile = param;
-                } else {
-                    // args
-                    if (newStartArgsBuilder.length() > 0) {
-                        newStartArgsBuilder.append(" "); // NOI18N
-                    }
-                    newStartArgsBuilder.append(param);
-                }
-            }
+            Pair<String, String> newStartInfo = NodeJsUtils.parseStartFile(newStartScript);
+            String newStartFile = newStartInfo.first();
             if (newStartFile == null) {
                 LOGGER.log(Level.FINE, "Start script change ignored in project {0}, no 'file' found", projectDir);
                 return;
 
             }
             newStartFile = new File(FileUtil.toFile(project.getProjectDirectory()), newStartFile).getAbsolutePath();
-            boolean sync = false;
             String startFile = preferences.getStartFile();
-            if (!newStartFile.equals(startFile)) {
-                sync = true;
-            }
+            boolean syncFile = !Objects.equals(startFile, newStartFile);
             String startArgs = preferences.getStartArgs();
-            String newStartArgs = newStartArgsBuilder.toString();
-            if (!newStartArgs.equals(startArgs)) {
-                sync = true;
-            }
-            if (!sync) {
+            String newStartArgs = newStartInfo.second();
+            boolean syncArgs = !Objects.equals(startArgs, newStartArgs);
+            if (!syncFile
+                    && !syncArgs) {
                 LOGGER.log(Level.FINE, "Start script change ignored in project {0}, same values already set", projectDir);
                 return;
             }
@@ -303,8 +360,12 @@ public final class NodeJsSupport {
                     return;
                 }
             }
-            preferences.setStartFile(newStartFile);
-            preferences.setStartArgs(newStartArgs);
+            if (syncFile) {
+                preferences.setStartFile(newStartFile);
+            }
+            if (syncArgs) {
+                preferences.setStartArgs(newStartArgs);
+            }
             Notifications.notifyUser(Bundle.PackageJsonListener_sync_title(), Bundle.PackageJsonListener_sync_done());
         }
 
