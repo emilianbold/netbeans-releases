@@ -682,6 +682,8 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         RP.post(new Runnable() {
             public @Override void run() {
                 refreshView(lookup);
+                //TEST: ActiveConfigActionTest
+                LOGGER.log(Level.FINEST, "view-refreshed");   //NOI18N
             }
         });
     }
