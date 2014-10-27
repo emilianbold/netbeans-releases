@@ -200,8 +200,8 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     }
 
     @NbBundle.Messages({
-        "NodeJsPlatformProvider.sync.title=Node.js",
-        "NodeJsPlatformProvider.sync.ask=Sync project name change to package.json?",
+        "# {0} - project name",
+        "NodeJsPlatformProvider.sync.title=Node.js ({0})",
         "NodeJsPlatformProvider.sync.error=Cannot write changed project name to package.json.",
         "# {0} - project name",
         "NodeJsPlatformProvider.sync.done=Project name {0} synced to package.json.",
@@ -240,7 +240,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         }
         String projectName = NodeJsUtils.getProjectDisplayName(project);
         if (preferences.isAskSyncEnabled()) {
-            if (!Notifications.askUser(projectName, Bundle.NodeJsPlatformProvider_sync_ask())) {
+            if (!Notifications.askSyncChanges(project)) {
                 preferences.setSyncEnabled(false);
                 LOGGER.log(Level.FINE, "Project name change ignored in project {0}, cancelled by user", projectDir);
                 return;
@@ -253,7 +253,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             Notifications.informUser(Bundle.NodeJsPlatformProvider_sync_error());
             return;
         }
-        Notifications.notifyUser(Bundle.NodeJsPlatformProvider_sync_title(), Bundle.NodeJsPlatformProvider_sync_done(projectName));
+        Notifications.notifyUser(Bundle.NodeJsPlatformProvider_sync_title(projectName), Bundle.NodeJsPlatformProvider_sync_done(projectName));
     }
 
     private void runConfigurationChanged(Project project, Object activeRunConfig) {

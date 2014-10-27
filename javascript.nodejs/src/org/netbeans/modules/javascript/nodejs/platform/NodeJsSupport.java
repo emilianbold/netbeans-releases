@@ -224,8 +224,8 @@ public final class NodeJsSupport {
         }
 
         @NbBundle.Messages({
-            "PreferencesListener.sync.title=Node.js",
-            "PreferencesListener.sync.ask=Sync start file/arguments change to package.json?",
+            "# {0} - project name",
+            "PreferencesListener.sync.title=Node.js ({0})",
             "PreferencesListener.sync.error=Cannot write changed start file/arguments to package.json.",
             "PreferencesListener.sync.done=Start file/arguments synced to package.json.",
         })
@@ -274,7 +274,7 @@ public final class NodeJsSupport {
             }
             String projectName = NodeJsUtils.getProjectDisplayName(project);
             if (preferences.isAskSyncEnabled()) {
-                if (!Notifications.askUser(projectName, Bundle.PreferencesListener_sync_ask())) {
+                if (!Notifications.askSyncChanges(project)) {
                     preferences.setSyncEnabled(false);
                     LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, cancelled by user", projectDir);
                     return;
@@ -294,7 +294,7 @@ public final class NodeJsSupport {
                 Notifications.informUser(Bundle.PreferencesListener_sync_error());
                 return;
             }
-            Notifications.notifyUser(Bundle.PreferencesListener_sync_title(), Bundle.PreferencesListener_sync_done());
+            Notifications.notifyUser(Bundle.PreferencesListener_sync_title(projectName), Bundle.PreferencesListener_sync_done());
         }
 
     }
@@ -324,9 +324,9 @@ public final class NodeJsSupport {
         }
 
         @NbBundle.Messages({
-            "PackageJsonListener.sync.title=Node.js",
-            "PackageJsonListener.sync.ask=Sync start file/args change to Project Properties?",
-            "PackageJsonListener.sync.done=Start file/args synced to Project Properties.",
+            "# {0} - project name",
+            "PackageJsonListener.sync.title=Node.js ({0})",
+            "PackageJsonListener.sync.done=Start file/arguments synced to Project Properties.",
         })
         private void startScriptChanged(String newStartScript) {
             String projectDir = project.getProjectDirectory().getNameExt();
@@ -354,7 +354,7 @@ public final class NodeJsSupport {
             }
             String projectName = NodeJsUtils.getProjectDisplayName(project);
             if (preferences.isAskSyncEnabled()) {
-                if (!Notifications.askUser(projectName, Bundle.PackageJsonListener_sync_ask())) {
+                if (!Notifications.askSyncChanges(project)) {
                     preferences.setSyncEnabled(false);
                     LOGGER.log(Level.FINE, "Start script change ignored in project {0}, cancelled by user", projectDir);
                     return;
@@ -366,7 +366,7 @@ public final class NodeJsSupport {
             if (syncArgs) {
                 preferences.setStartArgs(newStartArgs);
             }
-            Notifications.notifyUser(Bundle.PackageJsonListener_sync_title(), Bundle.PackageJsonListener_sync_done());
+            Notifications.notifyUser(Bundle.PackageJsonListener_sync_title(projectName), Bundle.PackageJsonListener_sync_done());
         }
 
     }
