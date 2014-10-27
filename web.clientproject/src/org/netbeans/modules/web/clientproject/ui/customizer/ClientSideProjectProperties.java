@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
+import org.netbeans.modules.web.clientproject.indirect.LicensePanelSupport;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -55,11 +56,12 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -419,7 +421,8 @@ public final class ClientSideProjectProperties {
 
     public LicensePanelSupport getLicenseSupport() {
         if (licenseSupport == null) {
-            licenseSupport = new LicensePanelSupport(project.getEvaluator(), project.getProjectHelper(),
+            IndirectServices is = project.is;
+            licenseSupport = is.newLicensePanelSupport(project.getEvaluator(), project.getProjectHelper(),
                 getProjectProperty(LicensePanelSupport.LICENSE_PATH, null),
                 getProjectProperty(LicensePanelSupport.LICENSE_NAME, null));
         }

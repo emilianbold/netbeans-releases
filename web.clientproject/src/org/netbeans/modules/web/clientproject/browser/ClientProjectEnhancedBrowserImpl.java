@@ -48,13 +48,13 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.browser.BrowserConfigurationPanel;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.EditableProperties;
 
 public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 

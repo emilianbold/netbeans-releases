@@ -45,6 +45,6 @@ public class ClientSideProjectType {
     
     public static final String TYPE = "org.netbeans.modules.web.clientproject"; // NOI18N
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/clientside-project/1"; // NOI18N
-    static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/clientside-project-private/1"; // NOI18N
+    public static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/clientside-project-private/1"; // NOI18N
     
 }

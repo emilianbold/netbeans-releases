@@ -48,14 +48,12 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import static org.netbeans.modules.web.browser.spi.ProjectBrowserProvider.PROP_BROWSER_ACTIVE;
-import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 
 /**

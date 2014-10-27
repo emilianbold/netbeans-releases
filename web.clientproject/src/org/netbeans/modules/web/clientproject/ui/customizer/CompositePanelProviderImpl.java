@@ -54,9 +54,9 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
+import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -136,7 +136,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (RUN.equals(categoryName)) {
             return new RunPanel(category, uiProperties);
         } else if (LICENSE.equals(categoryName)) {
-            return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, uiProperties.getLicenseSupport());
+            return project.is.createLicenseHeaderCustomizerPanel(category, uiProperties.getLicenseSupport());
         }
         assert false : "No component found for " + category.getDisplayName(); //NOI18N
         return new JPanel();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.ant;
 
-package org.netbeans.modules.web.clientproject;
+import java.io.File;
+import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
-import org.openide.util.ChangeSupport;
+final class ReferenceHelperImpl extends ReferenceHelper {
+    private final org.netbeans.spi.project.support.ant.ReferenceHelper h;
 
-/**
- *
- */
-public class ClientSideProjectSources implements Sources, ChangeListener {
-    
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final ClientSideProject project;
-    private final AntProjectHelper helper;
-    private final PropertyEvaluator evaluator;
+    ReferenceHelperImpl(org.netbeans.spi.project.support.ant.ReferenceHelper h) {
+        this.h = h;
+    }
 
-    // @GuardedBy("this")
-    private Sources delegate;
+    @Override
+    public void fixReferences(File originalPath) {
+        h.fixReferences(originalPath);
+    }
 
-
-    public ClientSideProjectSources(ClientSideProject project, AntProjectHelper helper, PropertyEvaluator evaluator) {
-        this.project = project;
-        this.helper = helper;
-        this.evaluator = evaluator;
+    @Override
+    public String createForeignFileReference(File file, String object) {
+        return h.createForeignFileReference(file, object);
     }
     
-    @Override
-    public synchronized SourceGroup[] getSourceGroups(String type) {
-        assert Thread.holdsLock(this);
-        if (delegate == null) {
-            delegate = project.is.initSources(project, helper, evaluator);
-            delegate.addChangeListener(this);
-        }
-        return delegate.getSourceGroups(type);
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        changeSupport.fireChange();
-    }
-
 }
