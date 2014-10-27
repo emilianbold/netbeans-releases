@@ -101,13 +101,7 @@ public class WhiteListCategoryPanelTest extends NbTestCase {
         assertEquals(Query1.class,items.iterator().next().getClass());
         final Reference<Lookup> wr = new WeakReference<Lookup>(lkp);
         lkp = null;
-        int tries = 0;
-        while (wr.get() != null) {
-            System.gc();
-            if (++tries > 100) {
-                throw new AssertionError();
-            }
-        }
+        assertGC("Lookup gced", wr);    //NOI18N
         lkp = WhiteListLookupProvider.getEnabledUserSelectableWhiteLists(p);
         assertNotNull(lkp);
         items = lkp.lookupAll(WhiteListQueryImplementation.UserSelectable.class);
