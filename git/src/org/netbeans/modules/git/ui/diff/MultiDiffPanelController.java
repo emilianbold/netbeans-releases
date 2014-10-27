@@ -50,8 +50,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -72,17 +75,24 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.libs.git.GitBranch;
@@ -145,6 +155,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.awt.Mnemonics;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -174,6 +185,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private static final RequestProcessor RP = new RequestProcessor("GitDiffWindow", 1, true); //NOI18N
     private final RequestProcessor.Task refreshNodesTask = RP.create(new RefreshNodesTask());
     private final RequestProcessor.Task changeTask = RP.create(new ApplyChangesTask());
+    private static final String TEXT_DIFF = "text/x-diff"; //NOI18N
+    private GitProgressSupport multiTextDiffSupport;
+    private static final String PROP_SEARCH_CONTAINER = "diff.search.container"; //NOI18N
 
     private boolean dividerSet;
 
@@ -445,6 +459,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     }
 
     private void cancelBackgroundTasks() {
+        if (multiTextDiffSupport != null) {
+            multiTextDiffSupport.cancel();
+        }
         if (prepareTask != null) {
             prepareTask.cancel();
         }
@@ -702,11 +719,17 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         refreshComponents();
     }
 
+    @NbBundle.Messages({
+        "MSG_DiffPanel.multiTextualDiff.preparing=Preparing textual diff"
+    })
     private void setDiffIndex (Setup selectedSetup, int location, boolean restartPrepareTask) {
         currentSetup = selectedSetup;
         currentSetupDiffLengthChanged = -1;
 
         if (currentSetup != null) {
+            if (multiTextDiffSupport != null) {
+                multiTextDiffSupport.cancel();
+            }
             if (restartPrepareTask) {
                 if (dpt != null) {
                     dpt.cancel();
@@ -744,7 +767,104 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 displayDiffView();
             }
         } else {
-            diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
+            final JPanel p = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected")); //NOI18N
+            diffView = p;
+            p.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseClicked (MouseEvent e) {
+                    final Map.Entry<File, File[]> actionRoots = getActionRoots();
+                    if (actionRoots != null && p == diffView) {
+                        GitProgressSupport supp = new GitProgressSupport() {
+
+                            @Override
+                            protected void perform () {
+                                try {
+                                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                    exportDiff(bos);
+                                    if (p == diffView && !isCanceled()) {
+                                        final JEditorPane editorPane = new JEditorPane();
+                                        final EditorKit editorKit = CloneableEditorSupport.getEditorKit(TEXT_DIFF);
+                                        final Document doc = prepareDoc(bos, editorKit);
+                                        EventQueue.invokeLater(new Runnable() {
+
+                                            @Override
+                                            public void run () {
+                                                if (p == diffView) {
+                                                    editorPane.setEditorKit(editorKit);
+                                                    editorPane.setDocument(doc);
+                                                    editorPane.setEditable(false);
+                                                    JPanel searchContainer = new JPanel();
+                                                    searchContainer.setLayout(new BoxLayout(searchContainer, BoxLayout.Y_AXIS));
+                                                    JPanel view = new JPanel(new BorderLayout());
+                                                    view.add(searchContainer, BorderLayout.PAGE_END);
+                                                    view.add(new JScrollPane(editorPane), BorderLayout.CENTER);
+                                                    editorPane.putClientProperty(PROP_SEARCH_CONTAINER, searchContainer);
+                                                    diffView = view;
+                                                    displayDiffView();
+                                                }
+                                            }
+                                        });
+                                    }
+                                } catch (GitException | BadLocationException ex) {
+                                    GitClientExceptionHandler.notifyException(ex, true);
+                                } finally {
+                                    EventQueue.invokeLater(new Runnable() {
+
+                                        @Override
+                                        public void run () {
+                                            multiTextDiffSupport = null;
+                                        }
+                                        
+                                    });
+                                }
+                            }
+
+                            private Document prepareDoc (ByteArrayOutputStream bos, EditorKit editorKit) throws BadLocationException {
+                                Document doc = editorKit.createDefaultDocument();
+                                doc.putProperty("mimeType", TEXT_DIFF); //NOI18N
+                                doc.remove(0, doc.getLength());
+                                doc.insertString(0, bos.toString(), null);
+                                bos.reset();
+                                return doc;
+                            }
+
+                            private void exportDiff (ByteArrayOutputStream bos) throws GitException {
+                                GitClient client = getClient();
+                                String revBase, revOther;
+                                if (isLocal()) {
+                                    if (mode == Mode.INDEX_VS_WORKING_TREE) {
+                                        revBase = org.netbeans.libs.git.GitClient.INDEX;
+                                        revOther = org.netbeans.libs.git.GitClient.WORKING_TREE;
+                                    } else if (mode == Mode.HEAD_VS_INDEX) {
+                                        revBase = revisionLeft.getCommitId();
+                                        revOther = org.netbeans.libs.git.GitClient.INDEX;
+                                    } else {
+                                        revBase = revisionLeft.getCommitId();
+                                        revOther = org.netbeans.libs.git.GitClient.WORKING_TREE;
+                                    }
+                                } else {
+                                    revBase = revisionLeft.getCommitId();
+                                    revOther = revisionRight.getCommitId();
+                                }
+                                client.exportDiff(actionRoots.getValue(), revBase, revOther, bos, getProgressMonitor());
+                            }
+                        };
+                        multiTextDiffSupport = supp;
+                        supp.start(Git.getInstance().getRequestProcessor(actionRoots.getKey()),
+                                actionRoots.getKey(), Bundle.MSG_DiffPanel_multiTextualDiff_preparing());
+                    }
+                }
+
+                private Map.Entry<File, File[]> getActionRoots () {
+                    VCSContext ctx = context;
+                    if (ctx == null) {
+                        ctx = GitUtils.getContextForFiles(setups.keySet().toArray(new File[setups.keySet().size()]));
+                    }
+                    return GitUtils.getActionRoots(ctx);
+                }
+                
+            });
             displayDiffView();
         }
 
