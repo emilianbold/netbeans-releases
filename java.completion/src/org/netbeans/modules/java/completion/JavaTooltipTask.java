@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-public class JavaTooltipTask extends BaseTask {
+public final class JavaTooltipTask extends BaseTask {
 
     public static JavaTooltipTask create(final int caretOffset, @NullAllowed final Callable<Boolean> cancel) {
         return new JavaTooltipTask(caretOffset, cancel);

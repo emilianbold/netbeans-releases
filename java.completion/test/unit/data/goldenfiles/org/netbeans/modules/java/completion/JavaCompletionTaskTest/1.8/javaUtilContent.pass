@@ -13,7 +13,6 @@ Calendar
 Collection
 Collections
 Comparator
-Comparators
 ConcurrentModificationException
 Currency
 Date
@@ -89,6 +88,7 @@ SortedMap
 SortedSet
 Spliterator
 Spliterators
+SplittableRandom
 Stack
 StringJoiner
 StringTokenizer
