@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.nodejs.platform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
@@ -60,6 +61,7 @@ import org.netbeans.modules.javascript.nodejs.ui.actions.NodeJsActionProvider;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -67,6 +69,8 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 public final class NodeJsSupport {
@@ -222,15 +226,86 @@ public final class NodeJsSupport {
                 LOGGER.log(Level.FINE, "Property change event in package.json ignored, node.js not enabled in project {0}", projectName);
                 return;
             }
+            if (!preferences.isSyncEnabled()) {
+                LOGGER.log(Level.FINE, "Property change event in package.json ignored, node.js sync not enabled in project {0}", projectName);
+                return;
+            }
             String propertyName = evt.getPropertyName();
             LOGGER.log(Level.FINE, "Processing property change event {0} in package.json in project {1}", new Object[] {propertyName, projectName});
             if (PackageJson.PROP_NAME.equals(propertyName)) {
                 firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, evt.getOldValue(), evt.getNewValue());
             } else if (PackageJson.PROP_SCRIPTS_START.equals(propertyName)) {
-                // XXX
+                startScriptChanged((String) evt.getNewValue());
             } else {
                 assert false : "Unknown event: " + propertyName;
             }
+        }
+
+        @NbBundle.Messages({
+            "PackageJsonListener.sync.title=Node.js",
+            "PackageJsonListener.sync.ask=Sync start file/args change to Project Properties?",
+            "PackageJsonListener.sync.done=Start file/args synced to Project Properties.",
+        })
+        private void startScriptChanged(String newStartScript) {
+            String projectDir = project.getProjectDirectory().getNameExt();
+            if (!StringUtils.hasText(newStartScript)) {
+                LOGGER.log(Level.FINE, "Start script change ignored in project {0}, it has no text", projectDir);
+                return;
+            }
+            String data = newStartScript.trim();
+            String nodePrefix = "node "; // NOI18N
+            if (data.startsWith(nodePrefix)) {
+                data = data.substring(nodePrefix.length());
+            }
+            String[] params = Utilities.parseParameters(data);
+            String newStartFile = null;
+            StringBuilder newStartArgsBuilder = new StringBuilder();
+            for (String param : params) {
+                if (newStartFile == null) {
+                    if (param.startsWith("-")) { // NOI18N
+                        // node param
+                        continue;
+                    }
+                    newStartFile = param;
+                } else {
+                    // args
+                    if (newStartArgsBuilder.length() > 0) {
+                        newStartArgsBuilder.append(" "); // NOI18N
+                    }
+                    newStartArgsBuilder.append(param);
+                }
+            }
+            if (newStartFile == null) {
+                LOGGER.log(Level.FINE, "Start script change ignored in project {0}, no 'file' found", projectDir);
+                return;
+
+            }
+            newStartFile = new File(FileUtil.toFile(project.getProjectDirectory()), newStartFile).getAbsolutePath();
+            boolean sync = false;
+            String startFile = preferences.getStartFile();
+            if (!newStartFile.equals(startFile)) {
+                sync = true;
+            }
+            String startArgs = preferences.getStartArgs();
+            String newStartArgs = newStartArgsBuilder.toString();
+            if (!newStartArgs.equals(startArgs)) {
+                sync = true;
+            }
+            if (!sync) {
+                LOGGER.log(Level.FINE, "Start script change ignored in project {0}, same values already set", projectDir);
+                return;
+            }
+            String projectName = NodeJsUtils.getProjectDisplayName(project);
+            if (preferences.isAskSyncEnabled()) {
+                if (!Notifications.askUser(projectName, Bundle.PackageJsonListener_sync_ask())) {
+                    preferences.setSyncEnabled(false);
+                    LOGGER.log(Level.FINE, "Start script change ignored in project {0}, cancelled by user", projectDir);
+                    return;
+                }
+            }
+            preferences.setStartFile(newStartFile);
+            preferences.setStartArgs(newStartArgs);
+            Notifications.notifyUser(Bundle.PackageJsonListener_sync_title(), Bundle.PackageJsonListener_sync_done());
         }
 
     }
