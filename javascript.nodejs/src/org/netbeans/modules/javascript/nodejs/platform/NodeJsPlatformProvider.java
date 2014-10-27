@@ -200,8 +200,8 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     }
 
     @NbBundle.Messages({
-        "NodeJsPlatformProvider.sync.title=Node.js",
-        "NodeJsPlatformProvider.sync.ask=Sync project name change to package.json?",
+        "# {0} - project name",
+        "NodeJsPlatformProvider.sync.title=Node.js ({0})",
         "NodeJsPlatformProvider.sync.error=Cannot write changed project name to package.json.",
         "# {0} - project name",
         "NodeJsPlatformProvider.sync.done=Project name {0} synced to package.json.",
@@ -211,38 +211,38 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         NodeJsPreferences preferences = nodeJsSupport.getPreferences();
         if (!preferences.isEnabled()) {
-            LOGGER.log(Level.FINE, "Project name change ignored, node.js not enabled in project {0}", projectDir);
+            LOGGER.log(Level.FINE, "Project name change ignored in project {0}, node.js not enabled", projectDir);
             return;
         }
         if (!preferences.isSyncEnabled()) {
-            LOGGER.log(Level.FINE, "Project name change ignored, sync not enabled in project {0}", projectDir);
+            LOGGER.log(Level.FINE, "Project name change ignored in project {0}, sync not enabled", projectDir);
             return;
         }
         PackageJson packageJson = nodeJsSupport.getPackageJson();
         if (!packageJson.exists()) {
-            LOGGER.log(Level.FINE, "Project name change ignored, package.json not exist in project {0}", projectDir);
+            LOGGER.log(Level.FINE, "Project name change ignored in project {0}, package.json not exist", projectDir);
             return;
         }
         LOGGER.log(Level.FINE, "Processing project name change in project {0}", projectDir);
         Map<String, Object> content = packageJson.getContent();
         if (content == null) {
-            LOGGER.log(Level.FINE, "Project name change ignored, package.json has no content in project {0}", projectDir);
+            LOGGER.log(Level.FINE, "Project name change ignored in project {0}, package.json has no or invalid content", projectDir);
             return;
         }
         if (!StringUtils.hasText(newName)) {
-            LOGGER.log(Level.FINE, "Project name change ignored, new name is empty in project {0}", projectDir);
+            LOGGER.log(Level.FINE, "Project name change ignored in project {0}, new name is empty", projectDir);
             return;
         }
         String name = (String) content.get(PackageJson.FIELD_NAME);
         if (Objects.equals(name, newName)) {
-            LOGGER.log(Level.FINE, "Project name change ignored, new name same as current name in package.json in project {0}", projectDir);
+            LOGGER.log(Level.FINE, "Project name change ignored in project {0}, new name same as current name in package.json", projectDir);
             return;
         }
         String projectName = NodeJsUtils.getProjectDisplayName(project);
         if (preferences.isAskSyncEnabled()) {
-            if (!Notifications.askUser(projectName, Bundle.NodeJsPlatformProvider_sync_ask())) {
+            if (!Notifications.askSyncChanges(project)) {
                 preferences.setSyncEnabled(false);
-                LOGGER.log(Level.FINE, "Project name change ignored, cancelled by user in project {0}", projectDir);
+                LOGGER.log(Level.FINE, "Project name change ignored in project {0}, cancelled by user", projectDir);
                 return;
             }
         }
@@ -253,7 +253,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             Notifications.informUser(Bundle.NodeJsPlatformProvider_sync_error());
             return;
         }
-        Notifications.notifyUser(Bundle.NodeJsPlatformProvider_sync_title(), Bundle.NodeJsPlatformProvider_sync_done(projectName));
+        Notifications.notifyUser(Bundle.NodeJsPlatformProvider_sync_title(projectName), Bundle.NodeJsPlatformProvider_sync_done(projectName));
     }
 
     private void runConfigurationChanged(Project project, Object activeRunConfig) {
