@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.netbeans.modules.projectapi.nb.NbProjectInformationProvider;
 import org.netbeans.modules.projectapi.nb.NbProjectManager;
 import org.openide.filesystems.FileObject;
@@ -87,6 +88,7 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
         MockLookup.setLookup(Lookups.fixed(
             new NbProjectManager(),
             new NbProjectInformationProvider(),
+            new NbMutexEventProvider(),
             TestUtil.testProjectFactory()));
         pm = ProjectManager.getDefault();
         OpenProjectList.waitProjectsFullyOpen();
