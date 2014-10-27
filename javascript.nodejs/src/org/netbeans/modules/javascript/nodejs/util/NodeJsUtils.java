@@ -51,8 +51,13 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
+import org.openide.util.Utilities;
 
 public final class NodeJsUtils {
+
+    public static final String START_FILE_NODE_PREFIX = "node "; // NOI18N
+
 
     private NodeJsUtils() {
     }
@@ -111,6 +116,33 @@ public final class NodeJsUtils {
             roots.add(root);
         }
         return roots;
+    }
+
+    public static Pair<String, String> parseStartFile(String line) {
+        assert line != null;
+        String data = line.trim();
+        if (data.startsWith(START_FILE_NODE_PREFIX)) {
+            data = data.substring(START_FILE_NODE_PREFIX.length());
+        }
+        String[] params = Utilities.parseParameters(data);
+        String startFile = null;
+        StringBuilder startArgsBuilder = new StringBuilder();
+        for (String param : params) {
+            if (startFile == null) {
+                if (param.startsWith("-")) { // NOI18N
+                    // node param
+                    continue;
+                }
+                startFile = param;
+            } else {
+                // args
+                if (startArgsBuilder.length() > 0) {
+                    startArgsBuilder.append(" "); // NOI18N
+                }
+                startArgsBuilder.append(param);
+            }
+        }
+        return Pair.of(startFile, startArgsBuilder.toString());
     }
 
 }

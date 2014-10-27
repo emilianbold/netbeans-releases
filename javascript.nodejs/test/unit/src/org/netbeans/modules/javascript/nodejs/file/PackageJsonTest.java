@@ -358,6 +358,26 @@ public class PackageJsonTest extends NbTestCase {
         assertEquals(JSONValue.toJSONString(content), newStartScript, getValue(String.class, content, PackageJson.FIELD_SCRIPTS, PackageJson.FIELD_START));
     }
 
+    public void testSetContentSameFieldNames2() throws Exception {
+        Map<String, Object> data = new LinkedHashMap<>();
+        Map<String, Object> test = new LinkedHashMap<>();
+        final String testName = "testname";
+        test.put(PackageJson.FIELD_NAME, testName);
+        data.put("test", test);
+        data.put(PackageJson.FIELD_NAME, "oldname");
+        writeFile(data);
+        Map<String, Object> content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals("oldname", content.get(PackageJson.FIELD_NAME));
+        assertEquals(testName, getValue(String.class, content, "test", PackageJson.FIELD_NAME));
+        final String newName = "newname";
+        packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName);
+        content = packageJson.getContent();
+        assertNotNull(content);
+        assertEquals(newName, content.get(PackageJson.FIELD_NAME));
+        assertEquals(testName, getValue(String.class, content, "test", PackageJson.FIELD_NAME));
+    }
+
     public void testSetContentNewField() throws Exception {
         Map<String, Object> data = getData(true, false);
         writeFile(data);
