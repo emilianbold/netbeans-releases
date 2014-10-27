@@ -273,6 +273,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     return isTaskCancelled();
                                 }
                             });
+                            ParserManager.parse(Collections.singletonList(source), task);
                             if (task.getDocumentation() != null) {
                                 documentation = new JavaCompletionDoc(task.getDocumentation());
                                 while (!isTaskCancelled()) {
