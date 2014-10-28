@@ -483,7 +483,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
                 controller.getWizardDescriptor(),
                 getString("OUTPUT_CHOOSER_TITLE_TXT"),
                 getString("OUTPUT_CHOOSER_BUTTON_TXT"),
-                JFileChooser.FILES_ONLY,
+                JFileChooser.FILES_AND_DIRECTORIES,
                 filters,
                 seed,
                 false
