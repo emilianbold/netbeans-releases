@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.ant;
 
-package org.netbeans.modules.web.clientproject;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import java.beans.PropertyChangeListener;
+import java.util.Map;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
-import org.openide.util.ChangeSupport;
 
-/**
- *
- */
-public class ClientSideProjectSources implements Sources, ChangeListener {
-    
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final ClientSideProject project;
-    private final AntProjectHelper helper;
-    private final PropertyEvaluator evaluator;
+final class PropertyEvaluatorImpl implements PropertyEvaluator {
+    final org.netbeans.spi.project.support.ant.PropertyEvaluator delegate;
 
-    // @GuardedBy("this")
-    private Sources delegate;
-
-
-    public ClientSideProjectSources(ClientSideProject project, AntProjectHelper helper, PropertyEvaluator evaluator) {
-        this.project = project;
-        this.helper = helper;
-        this.evaluator = evaluator;
-    }
-    
-    @Override
-    public synchronized SourceGroup[] getSourceGroups(String type) {
-        assert Thread.holdsLock(this);
-        if (delegate == null) {
-            delegate = project.is.initSources(project, helper, evaluator);
-            delegate.addChangeListener(this);
-        }
-        return delegate.getSourceGroups(type);
+    public PropertyEvaluatorImpl(org.netbeans.spi.project.support.ant.PropertyEvaluator d) {
+        this.delegate = d;
     }
 
     @Override
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public String getProperty(String prop) {
+        return delegate.getProperty(prop);
     }
 
     @Override
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    public String evaluate(String text) {
+        return delegate.evaluate(text);
     }
 
     @Override
-    public void stateChanged(ChangeEvent e) {
-        changeSupport.fireChange();
+    public Map<String, String> getProperties() {
+        return delegate.getProperties();
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        delegate.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        delegate.removePropertyChangeListener(listener);
+    }
 }

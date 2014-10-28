@@ -62,9 +62,9 @@ import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities.ZipEntryFilter;
 import org.netbeans.modules.web.clientproject.util.FileUtilities.ZipEntryTask;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.EditableProperties;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 

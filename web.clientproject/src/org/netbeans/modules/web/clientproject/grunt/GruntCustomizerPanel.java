@@ -48,10 +48,10 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 

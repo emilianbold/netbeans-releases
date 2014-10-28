@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.indirect;
 
-package org.netbeans.modules.web.clientproject;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
-import org.openide.util.ChangeSupport;
+import java.io.File;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
+import org.openide.filesystems.FileObject;
+import org.openide.util.EditableProperties;
+import org.w3c.dom.Element;
 
 /**
- *
  */
-public class ClientSideProjectSources implements Sources, ChangeListener {
+public abstract class AntProjectHelper {
+    public static Object PRIVATE_PROPERTIES_PATH = new Object();
+    public static Object PROJECT_PROPERTIES_PATH = new Object();
+
+    public abstract EditableProperties getProperties(Object path);
+
+    public abstract void putProperties(Object path, EditableProperties privateProps);
+
+    public abstract SharabilityQueryImplementation2 createSharabilityQuery2(PropertyEvaluator evaluator, String[] toArray, String[] string);
+
+    public abstract PropertyEvaluator getStandardPropertyEvaluator();
+
+    public abstract File resolveFile(String licensePath);
+
+    public abstract FileObject getProjectDirectory();
+
+    public abstract FileObject resolveFileObject(String sourceFolder);
+
+    public abstract void notifyDeleted();
+
+    public abstract AuxiliaryConfiguration createAuxiliaryConfiguration();
     
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final ClientSideProject project;
-    private final AntProjectHelper helper;
-    private final PropertyEvaluator evaluator;
-
-    // @GuardedBy("this")
-    private Sources delegate;
-
-
-    public ClientSideProjectSources(ClientSideProject project, AntProjectHelper helper, PropertyEvaluator evaluator) {
-        this.project = project;
-        this.helper = helper;
-        this.evaluator = evaluator;
-    }
+    public abstract void addAntProjectListener(AntProjectListener l);
     
-    @Override
-    public synchronized SourceGroup[] getSourceGroups(String type) {
-        assert Thread.holdsLock(this);
-        if (delegate == null) {
-            delegate = project.is.initSources(project, helper, evaluator);
-            delegate.addChangeListener(this);
-        }
-        return delegate.getSourceGroups(type);
-    }
+    public abstract void removeAntProjectListener(AntProjectListener l);
 
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
+    public abstract Element getPrimaryConfigurationData(boolean b);
 
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
+    public abstract Object createCacheDirectoryProvider();
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        changeSupport.fireChange();
-    }
+    public abstract Object createAuxiliaryProperties();
 
+    public abstract void putPrimaryConfigurationData(Element data, boolean b);
 }
