@@ -177,7 +177,7 @@ public abstract class FileSystemCompat {
         if (capabilityListener == null) {
             capabilityListener = new PropertyChangeListener() {
                         public void propertyChange(java.beans.PropertyChangeEvent propertyChangeEvent) {
-                            firePropertyChange(
+                            fs().firePropertyChange(
                                 PROP_CAPABILITIES, propertyChangeEvent.getOldValue(), propertyChangeEvent.getNewValue()
                             );
                         }
@@ -187,8 +187,6 @@ public abstract class FileSystemCompat {
         return capabilityListener;
     }
     
-    abstract void firePropertyChange(String s, Object o, Object n);
-
     /** Reads object from stream and creates listeners.
     * @param in the input stream to read from
     * @exception IOException error during read
@@ -214,7 +212,7 @@ public abstract class FileSystemCompat {
     public final void setHidden(boolean hide) {
         if (hide != hidden) {
             hidden = hide;
-            firePropertyChange(FileSystem.PROP_HIDDEN, (!hide) ? Boolean.TRUE : Boolean.FALSE, hide ? Boolean.TRUE : Boolean.FALSE);
+            fs().firePropertyChange(FileSystem.PROP_HIDDEN, (!hide) ? Boolean.TRUE : Boolean.FALSE, hide ? Boolean.TRUE : Boolean.FALSE);
         }
     }
 

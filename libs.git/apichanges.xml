@@ -111,6 +111,23 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>New method exporting a diff between two arbitrary commits or trees.</summary>
+            <version major="1" minor="29"/>
+            <date day="27" month="10" year="2014"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                    <li>Adding new variant of GitClient.exportDiff which works for any
+                    two arbitrary commits. It is also possible to diff between a commit and the working tree
+                    or the Index.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <issue number="248002"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>New method for updating a reference (branch) to a new commit id.</summary>
             <version major="1" minor="27"/>
             <date day="1" month="7" year="2014"/>

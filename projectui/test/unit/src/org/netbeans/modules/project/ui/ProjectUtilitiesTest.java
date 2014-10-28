@@ -48,6 +48,7 @@ import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
@@ -57,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -84,7 +86,15 @@ import org.w3c.dom.NodeList;
 public class ProjectUtilitiesTest extends NbTestCase {
 
     public static Test suite() {
-        return GraphicsEnvironment.isHeadless() ? new TestSuite() : new TestSuite(ProjectUtilitiesTest.class);
+        final NbTestSuite suite = new NbTestSuite();
+        if (!GraphicsEnvironment.isHeadless()) {
+            suite.addTest(new ProjectUtilitiesTest("testCloseAllDocuments"));                               //NOI18N
+            suite.addTest(new ProjectUtilitiesTest("testSavingModifiedNotOpenedFiles67526"));               //NOI18N
+            suite.addTest(new ProjectUtilitiesTest("testCloseAndOpenProjectAndClosedWithoutOpenFiles"));    //NOI18N
+            suite.addTest(new ProjectUtilitiesTest("testCanUseFileName"));                                  //NOI18N
+            suite.addTest(new ProjectUtilitiesTest("testNavigatorIsNotClosed"));                            //NOI18N
+        }
+        return suite;
     }
 
     static {
@@ -264,23 +274,27 @@ public class ProjectUtilitiesTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // in NB-Core-Build #6826, and reproducibly if testSavingModifiedNotOpenedFiles67526 is not run first
     public void testCloseAndOpenProjectAndClosedWithoutOpenFiles () {
         closeProjectWithOpenedFiles ();
+        assertFalse("The project1 is not opened", OpenProjectList.getDefault ().isOpen(project1));
 
         OpenProjectList.getDefault ().open (project1, false);
+        assertTrue("The project1 is opened", OpenProjectList.getDefault ().isOpen(project1));
 
         for (TopComponent tc : WindowManager.getDefault().getRegistry().getOpened()) {
             assertTrue("TopComponent has been closed successfully.", tc.close());
         }
         
-        if (ProjectUtilities.closeAllDocuments(new Project[] {project1}, false, null)) {
- //           OpenProjectList.getDefault().close(new Project[] {project1}, false);
-        }
+        //The OpenProjectList.close calls ProjectUtilities.closeAllDocuments.
+        //Calling the ProjectUtilities.closeAllDocuments and OpenProjectList.close
+        //causes delete of opened documents -> call just OpenProjectList.close.
+        OpenProjectList.getDefault().close(new Project[] {project1}, false);
 
         AuxiliaryConfiguration aux = project1.getLookup().lookup(AuxiliaryConfiguration.class);
         Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS2, false);
-        assertNull ("OPEN_FILES_ELEMENT not found in the private configuration.", openFilesEl);
+        assertTrue ("Non empty OPEN_FILES_ELEMENT found in the private configuration.",
+            openFilesEl == null ||
+            openFilesEl.getElementsByTagName (ProjectUtilities.FILE_ELEMENT).getLength() == 0);
         
         assertFalse ("Project1 must be closed.", OpenProjectList.getDefault ().isOpen (project1));
     }

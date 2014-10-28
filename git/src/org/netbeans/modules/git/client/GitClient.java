@@ -392,6 +392,17 @@ public final class GitClient {
         }, "exportDiff", roots); //NOI18N
     }
     
+    public void exportDiff (final File[] roots, final String base, final String other, final OutputStream out, final ProgressMonitor monitor) throws GitException {
+        new CommandInvoker().runMethod(new Callable<Void>() {
+
+            @Override
+            public Void call () throws Exception {
+                delegate.exportDiff(roots, base, other, out, monitor);
+                return null;
+            }
+        }, "exportDiff", roots); //NOI18N
+    }
+    
     public Map<String, GitTransportUpdate> fetch (final String remote, final ProgressMonitor monitor) throws GitException.AuthorizationException, GitException {
         return new CommandInvoker().runMethod(new Callable<Map<String, GitTransportUpdate>>() {
 

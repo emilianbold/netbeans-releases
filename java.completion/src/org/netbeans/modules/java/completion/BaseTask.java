@@ -95,7 +95,7 @@ abstract class BaseTask extends UserTask {
 
     protected abstract void resolve(CompilationController controller) throws IOException;
 
-    protected Tree unwrapErrTree(Tree tree) {
+    Tree unwrapErrTree(Tree tree) {
         if (tree != null && tree.getKind() == Tree.Kind.ERRONEOUS) {
             Iterator<? extends Tree> it = ((ErroneousTree) tree).getErrorTrees().iterator();
             tree = it.hasNext() ? it.next() : null;
@@ -103,7 +103,7 @@ abstract class BaseTask extends UserTask {
         return tree;
     }
 
-    protected TypeMirror asMemberOf(Element element, TypeMirror type, Types types) {
+    TypeMirror asMemberOf(Element element, TypeMirror type, Types types) {
         TypeMirror ret = element.asType();
         TypeMirror enclType = element.getEnclosingElement().asType();
         if (enclType.getKind() == TypeKind.DECLARED) {
@@ -119,7 +119,7 @@ abstract class BaseTask extends UserTask {
         return ret;
     }
 
-    protected List<Tree> getArgumentsUpToPos(Env env, Iterable<? extends ExpressionTree> args, int startPos, int position, boolean strict) {
+    List<Tree> getArgumentsUpToPos(Env env, Iterable<? extends ExpressionTree> args, int startPos, int position, boolean strict) {
         List<Tree> ret = new ArrayList<>();
         CompilationUnitTree root = env.getRoot();
         SourcePositions sourcePositions = env.getSourcePositions();
@@ -152,7 +152,7 @@ abstract class BaseTask extends UserTask {
         return null;
     }
 
-    protected TokenSequence<JavaTokenId> findFirstNonWhitespaceToken(Env env, int startPos, int endPos) {
+    TokenSequence<JavaTokenId> findFirstNonWhitespaceToken(Env env, int startPos, int endPos) {
         TokenSequence<JavaTokenId> ts = env.getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
         ts.move(startPos);
         ts = nextNonWhitespaceToken(ts);
@@ -162,7 +162,7 @@ abstract class BaseTask extends UserTask {
         return ts;
     }
 
-    protected TokenSequence<JavaTokenId> nextNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
+    TokenSequence<JavaTokenId> nextNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
         while (ts.moveNext()) {
             switch (ts.token().id()) {
                 case WHITESPACE:
@@ -177,12 +177,12 @@ abstract class BaseTask extends UserTask {
         return null;
     }
 
-    protected TokenSequence<JavaTokenId> findLastNonWhitespaceToken(Env env, Tree tree, int position) {
+    TokenSequence<JavaTokenId> findLastNonWhitespaceToken(Env env, Tree tree, int position) {
         int startPos = (int) env.getSourcePositions().getStartPosition(env.getRoot(), tree);
         return findLastNonWhitespaceToken(env, startPos, position);
     }
 
-    protected TokenSequence<JavaTokenId> findLastNonWhitespaceToken(Env env, int startPos, int endPos) {
+    TokenSequence<JavaTokenId> findLastNonWhitespaceToken(Env env, int startPos, int endPos) {
         TokenSequence<JavaTokenId> ts = env.getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
         ts.move(endPos);
         ts = previousNonWhitespaceToken(ts);
@@ -192,7 +192,7 @@ abstract class BaseTask extends UserTask {
         return ts;
     }
 
-    protected TokenSequence<JavaTokenId> previousNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
+    TokenSequence<JavaTokenId> previousNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
         while (ts.movePrevious()) {
             switch (ts.token().id()) {
                 case WHITESPACE:
@@ -207,7 +207,7 @@ abstract class BaseTask extends UserTask {
         return null;
     }
 
-    protected Env getCompletionEnvironment(CompilationController controller, boolean bottomUpSearch) throws IOException {
+    Env getCompletionEnvironment(CompilationController controller, boolean bottomUpSearch) throws IOException {
         controller.toPhase(JavaSource.Phase.PARSED);
         int offset = controller.getSnapshot().getEmbeddedOffset(caretOffset);
         if (offset < 0 || offset > controller.getText().length()) {
@@ -611,7 +611,7 @@ abstract class BaseTask extends UserTask {
         } while (true);
     }
 
-    protected static class Env {
+    static final class Env {
 
         private final int offset;
         private final String prefix;

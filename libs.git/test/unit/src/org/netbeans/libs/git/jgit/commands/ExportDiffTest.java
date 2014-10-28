@@ -233,10 +233,37 @@ public class ExportDiffTest extends AbstractGitTestCase {
         }
         
     }
+    
+    public void testDiffTwoCommits () throws Exception {
+        File file = new File(workDir, "file");
+        File file2 = new File(workDir, "folder/file2");
+        file2.getParentFile().mkdirs();
+        File patchFile = new File(workDir.getParentFile(), "diff.patch");
+        File[] files = new File[] { file, file2 };
+        
+        write(file, "FILE 1\n");
+        write(file2, "FILE 2\n");
+        add();
+        commit();
+        
+        write(file, "FILE 1 CHANGE\n");
+        write(file2, "FILE 2 CHANGE\n");
+        add();
+        commit();
+        
+        exportDiff(files, patchFile, "master~1", "master");
+        assertFile(patchFile, getGoldenFile("diffTwoCommits.patch"));
+    }
 
     private void exportDiff (File[] files, File patchFile, DiffMode diffMode) throws Exception {
         OutputStream out = new BufferedOutputStream(new FileOutputStream(patchFile));
         getClient(workDir).exportDiff(files, diffMode, out, NULL_PROGRESS_MONITOR);
+        out.close();
+    }
+
+    private void exportDiff (File[] files, File patchFile, String base, String to) throws Exception {
+        OutputStream out = new BufferedOutputStream(new FileOutputStream(patchFile));
+        getClient(workDir).exportDiff(files, base, to, out, NULL_PROGRESS_MONITOR);
         out.close();
     }
 
