@@ -144,11 +144,12 @@ public final class LibraryProvider {
      * event is set to {@code null} in such case.
      * 
      * @param searchTerm search term.
+     * @param priority priority from {@link Thread#MIN_PRIORITY} to {@link Thread#MAX_PRIORITY}.
      * @return libraries matching the given search term when the search result
      * is already available (which usually doesn't happen). Returns {@code null}
      * otherwise.
      */
-    public Library[] findLibraries(String searchTerm) {
+    public Library[] findLibraries(String searchTerm, int priority) {
         WeakReference<Library[]> reference = cache.get(searchTerm);
         Library[] result = null;
         if (reference != null) {
@@ -156,7 +157,7 @@ public final class LibraryProvider {
         }
         if (result == null) {
             SearchTask task = new SearchTask(searchTerm);
-            RP.post(task);
+            RP.post(task, 0, priority);
         }
         return result;
     }
