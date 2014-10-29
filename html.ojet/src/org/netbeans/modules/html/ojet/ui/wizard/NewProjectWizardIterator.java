@@ -60,7 +60,6 @@ import java.util.zip.ZipFile;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.html.ojet.OJETUtils;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
@@ -79,11 +78,12 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
     private static final Logger LOGGER = Logger.getLogger(NewProjectWizardIterator.class.getName());
 
-    private static final String SKELETON_URL = "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/OracleJET_QuickStartBasic.zip"; // NOI18N
-    private static final File SKELETON_TMP_FILE = new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip"); // NOI18N
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     private static final String XHTML_MIME_TYPE = "text/xhtml"; // NOI18N
 
+    private final String displayName;
+    private final String zipUrl;
+    private final File tmpFile;
     private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
 
     private int index;
@@ -91,8 +91,15 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
     private WizardDescriptor wizardDescriptor;
 
 
-    private NewProjectWizardIterator() {
-        baseWizard = CreateProjectUtils.createBaseWizardPanel("OracleJETApplication"); // NOI18N
+    private NewProjectWizardIterator(String displayName, String projectDirName, String zipUrl, File tmpFile) {
+        assert displayName != null;
+        assert projectDirName != null;
+        assert zipUrl != null;
+        assert tmpFile != null;
+        this.displayName = displayName;
+        this.zipUrl = zipUrl;
+        this.tmpFile = tmpFile;
+        baseWizard = CreateProjectUtils.createBaseWizardPanel(projectDirName);
     }
 
     @TemplateRegistration(
@@ -103,14 +110,31 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
             position = 250)
     @NbBundle.Messages("NewProjectWizardIterator.newProject.displayName=Oracle JET QuickStart Basic")
     public static NewProjectWizardIterator newOracleJETProject() {
-        return new NewProjectWizardIterator();
+        return new NewProjectWizardIterator(
+                Bundle.NewProjectWizardIterator_newProject_displayName(),
+                "OracleJETApplication", // NOI18N
+                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
+                new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip") // NOI18N
+        );
     }
 
-    @NbBundle.Messages({
-        "NewProjectWizardIterator.progress.creating=Creating project...",
-        "NewProjectWizardIterator.progress.downloading=Downloading QuickStart...",
-        "NewProjectWizardIterator.progress.unpacking=Unpacking QuickStart...",
-    })
+    @TemplateRegistration(
+            folder = "Project/Samples/HTML5",
+            displayName = "#NewProjectWizardIterator.newComponentInteractionSample.displayName",
+            description = "../resources/NewComponentInteractionSampleDescription.html",
+            iconBase = OJETUtils.OJET_ICON_PATH,
+            position = 3000)
+    @NbBundle.Messages("NewProjectWizardIterator.newComponentInteractionSample.displayName=Oracle JET Component Interaction Sample")
+    public static NewProjectWizardIterator newComponentInteractionSample() {
+        return new NewProjectWizardIterator(
+                Bundle.NewProjectWizardIterator_newComponentInteractionSample_displayName(),
+                "OracleJETComponentInteraction", // NOI18N
+                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/JET-ComponentInteraction.zip", // NOI18N
+                new File(System.getProperty("java.io.tmpdir"), "JET-ComponentInteraction.zip") // NOI18N
+        );
+    }
+
+    @NbBundle.Messages("NewProjectWizardIterator.progress.creating=Creating project...")
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
@@ -131,10 +155,9 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
                 .setProjectDir(projectDirectory)
                 .setProjectName((String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
                 .setSiteRootFolder(""); // NOI18N
-        Project project = ClientSideProjectGenerator.createProject(createProperties);
+        ClientSideProjectGenerator.createProject(createProperties);
 
-        // quickstart
-        setupQuickStart(handle, files, projectDirectory);
+        setupProject(handle, files, projectDirectory);
 
         handle.finish();
         return files;
@@ -193,7 +216,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
-        wizardDescriptor.putProperty("NewProjectWizard_Title", Bundle.NewProjectWizardIterator_newProject_displayName()); // NOI18N
+        wizardDescriptor.putProperty("NewProjectWizard_Title", displayName); // NOI18N
         return panels[index];
     }
 
@@ -243,31 +266,34 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         // noop
     }
 
-    @NbBundle.Messages("NewProjectWizardIterator.error.download=Oracle JET QuickStart Basic")
-    private void setupQuickStart(ProgressHandle handle, Set<FileObject> files, FileObject projectDirectory) throws IOException {
+    @NbBundle.Messages({
+        "NewProjectWizardIterator.progress.downloading=Downloading archive...",
+        "NewProjectWizardIterator.progress.unpacking=Unpacking archive...",
+    })
+    private void setupProject(ProgressHandle handle, Set<FileObject> files, FileObject projectDirectory) throws IOException {
         try {
             // download
             handle.progress(Bundle.NewProjectWizardIterator_progress_downloading());
-            NetworkSupport.download(SKELETON_URL, SKELETON_TMP_FILE);
+            NetworkSupport.download(zipUrl, tmpFile);
 
             // check
-            if (isHtmlFile(SKELETON_TMP_FILE)) {
+            if (isHtmlFile(tmpFile)) {
                 // likely not in oracle network
-                if (NetworkSupport.showNetworkErrorDialog(Bundle.NewProjectWizardIterator_error_download())) {
-                    setupQuickStart(handle, files, projectDirectory);
+                if (NetworkSupport.showNetworkErrorDialog(displayName)) {
+                    setupProject(handle, files, projectDirectory);
                 }
             } else {
                 // unzip
                 handle.progress(Bundle.NewProjectWizardIterator_progress_unpacking());
-                unzip(SKELETON_TMP_FILE.getAbsolutePath(), FileUtil.toFile(projectDirectory));
+                unzip(tmpFile.getAbsolutePath(), FileUtil.toFile(projectDirectory));
 
                 // index file
                 files.add(projectDirectory.getFileObject("index.html")); // NOI18N
             }
         } catch (NetworkException ex) {
-            LOGGER.log(Level.INFO, "Failed to download Oracle JET QuickStart", ex);
-            if (NetworkSupport.showNetworkErrorDialog(Bundle.NewProjectWizardIterator_error_download())) {
-                setupQuickStart(handle, files, projectDirectory);
+            LOGGER.log(Level.INFO, "Failed to download OJET archive", ex);
+            if (NetworkSupport.showNetworkErrorDialog(displayName)) {
+                setupProject(handle, files, projectDirectory);
             }
         } catch (InterruptedException ex) {
             // cancelled, should not happen
