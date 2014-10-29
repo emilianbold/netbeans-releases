@@ -107,7 +107,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     /*package*/ RemoteDirectory(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteDirectory parent, String remotePath, File cache) {
         super(wrapper, fileSystem, execEnv, parent, remotePath, cache);
-        RemoteFileSystemTransport.registerDirectory(this);
+        if (cache.exists()) {
+            RemoteFileSystemTransport.registerDirectory(this);
+        }
     }
 
     @Override
