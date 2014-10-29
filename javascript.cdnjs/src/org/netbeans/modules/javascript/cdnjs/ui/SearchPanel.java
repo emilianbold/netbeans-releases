@@ -147,7 +147,7 @@ class SearchPanel extends javax.swing.JPanel {
     private void startSearch() {
         librarySelected(null);
         lastSearchTerm = searchField.getText().trim();
-        Library[] libraries = LibraryProvider.getInstance().findLibraries(lastSearchTerm);
+        Library[] libraries = LibraryProvider.getInstance().findLibraries(lastSearchTerm, Thread.MAX_PRIORITY);
         if (libraries == null) {
             messageLabel.setText(Bundle.SearchPanel_message_searching(lastSearchTerm));
             showComponent(messageLabel);
