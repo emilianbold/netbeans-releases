@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.javascript.cdnjs;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Library.
  * 
@@ -198,16 +202,23 @@ public final class Library {
         }
 
         /**
-         * Returns the clone of this library version. The clone references
-         * the same library but is not added into the array of versions
-         * of this library.
+         * Returns a clone of this library version that doesn't contain
+         * the specified files. The clone references the same library but
+         * is not added into the array of versions of this library.
          * 
-         * @return close of this library version.
+         * @param refusedFiles files that should not be included.
+         * @return library version that doesn't contain the specified files.
          */
-        Library.Version cloneVersion() {
+        public Library.Version filterVersion(Collection<String> refusedFiles) {
             Library.Version clone = new Library.Version(library);
             clone.setName(name);
-            clone.setFiles(files);
+            List<String> fileList = new ArrayList<>();
+            for (String file : files) {
+                if (!refusedFiles.contains(file)) {
+                    fileList.add(file);
+                }
+            }
+            clone.setFiles(fileList.toArray(new String[fileList.size()]));
             return clone;
         }
         

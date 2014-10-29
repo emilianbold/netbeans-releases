@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -295,7 +296,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
 
             FileObject projectFob = project.getProjectDirectory();
             File projectDir = FileUtil.toFile(projectFob);
-            Library.Version versionToStore = version.cloneVersion();
+            Library.Version versionToStore = version.filterVersion(Collections.EMPTY_SET);
             String[] pathToStore = new String[version.getFiles().length];
             String[] fileNames = version.getFiles();
             for (int i=0; i<fileNames.length; i++) {

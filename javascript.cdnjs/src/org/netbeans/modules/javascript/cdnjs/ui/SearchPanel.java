@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.cdnjs.ui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -84,6 +85,7 @@ class SearchPanel extends javax.swing.JPanel {
     SearchPanel() {
         initComponents();
         librariesList.setCellRenderer(new LibraryRenderer());
+        libraryInfoPanel.setPreferredSize(librariesScrollPane.getPreferredSize());
         versionComboBox.setRenderer(new LibraryVersionRenderer());
         updateLibraries(new Library[0]);
         librarySelected(null);
@@ -118,13 +120,14 @@ class SearchPanel extends javax.swing.JPanel {
             if (description == null) { // Issue 248134
                 description = ""; // NOI18N
             }
-            description = "<html>" + description; // NOI18N            
+            description = "<html>" + description; // NOI18N
         }
         updateHomePageLink(library, false);
         descriptionTextLabel.setText(description);
         versionComboBox.setModel(versionComboBoxModelFor(library));
         versionComboBox.setEnabled(!emptySelection);
         addButton.setEnabled(!emptySelection);
+        updateFileSelectionPanel();
     }
 
     /**
@@ -212,8 +215,7 @@ class SearchPanel extends javax.swing.JPanel {
      * @return selected library version.
      */
     Library.Version getSelectedVersion() {
-        Object item = versionComboBox.getSelectedItem();
-        return (item instanceof Library.Version) ? (Library.Version)item : null;
+        return fileSelectionPanel.getSelection();
     }
 
     /**
@@ -254,17 +256,34 @@ class SearchPanel extends javax.swing.JPanel {
      * @param linkVisible if {@code true} then the text of the label
      * is underlined, i.e., the label looks like a link.
      */
+    @NbBundle.Messages({
+        "SearchPanel.nohomepage=<No Homepage>"
+    })
     void updateHomePageLink(Library library, boolean linkVisible) {
         String homePage = null;
         if (library != null) {
             homePage = library.getHomePage();
             if (homePage != null) {
-                homePage = "<html>" + (linkVisible ? "<u>" : "") + homePage;
+                homePage = "<html>" + (linkVisible ? "<u>" : "") + homePage; // NOI18N
             }
         }
-        homePageLabel.setVisible(homePage != null);
-        homePageLinkLabel.setVisible(homePage != null);
-        homePageLinkLabel.setText(homePage);
+        if (homePage == null) {
+            homePageLinkLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            homePageLinkLabel.setEnabled(false);
+            homePageLinkLabel.setText((library == null) ? null : Bundle.SearchPanel_nohomepage());
+        } else {
+            homePageLinkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            homePageLinkLabel.setText(homePage);
+            homePageLinkLabel.setEnabled(true);
+        }
+    }
+
+    /**
+     * Updates the file selection panel according to the selected library version.
+     */
+    void updateFileSelectionPanel() {
+        Library.Version version = (Library.Version)versionComboBox.getSelectedItem();
+        fileSelectionPanel.setLibrary(version);
     }
 
     /**
@@ -281,9 +300,11 @@ class SearchPanel extends javax.swing.JPanel {
         searchPanel = new javax.swing.JPanel();
         librariesScrollPane = new javax.swing.JScrollPane();
         librariesList = new javax.swing.JList<Library>();
+        filesLabel = new javax.swing.JLabel();
+        fileSelectionPanel = new org.netbeans.modules.javascript.cdnjs.ui.FileSelectionPanel();
         librariesLabel = new javax.swing.JLabel();
         descriptionLabel = new javax.swing.JLabel();
-        versionComboBox = new javax.swing.JComboBox<Library.Version>();
+        libraryInfoPanel = new javax.swing.JPanel();
         versionLabel = new javax.swing.JLabel();
         descriptionScrollPane = new javax.swing.JScrollPane();
         descriptionTextLabel = new javax.swing.JLabel() {
@@ -298,6 +319,7 @@ class SearchPanel extends javax.swing.JPanel {
                 return super.getPreferredSize();
             }
         };
+        versionComboBox = new javax.swing.JComboBox<Library.Version>();
         homePageLabel = new javax.swing.JLabel();
         homePageLinkLabel = new javax.swing.JLabel() {
             public Dimension getMinimumSize() {
@@ -322,6 +344,8 @@ class SearchPanel extends javax.swing.JPanel {
         librariesList.addListSelectionListener(formListener);
         librariesScrollPane.setViewportView(librariesList);
 
+        org.openide.awt.Mnemonics.setLocalizedText(filesLabel, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.filesLabel.text")); // NOI18N
+
         librariesLabel.setLabelFor(librariesList);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.librariesLabel.text")); // NOI18N
 
@@ -337,55 +361,75 @@ class SearchPanel extends javax.swing.JPanel {
         descriptionTextLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         descriptionScrollPane.setViewportView(descriptionTextLabel);
 
+        versionComboBox.addActionListener(formListener);
+
+        javax.swing.GroupLayout libraryInfoPanelLayout = new javax.swing.GroupLayout(libraryInfoPanel);
+        libraryInfoPanel.setLayout(libraryInfoPanelLayout);
+        libraryInfoPanelLayout.setHorizontalGroup(
+            libraryInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(libraryInfoPanelLayout.createSequentialGroup()
+                .addComponent(versionLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(versionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(descriptionScrollPane)
+        );
+        libraryInfoPanelLayout.setVerticalGroup(
+            libraryInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(libraryInfoPanelLayout.createSequentialGroup()
+                .addComponent(descriptionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 5, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(libraryInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(versionLabel)
+                    .addComponent(versionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
+
         org.openide.awt.Mnemonics.setLocalizedText(homePageLabel, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.homePageLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(homePageLinkLabel, "placeholder"); // NOI18N
-        homePageLinkLabel.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         homePageLinkLabel.addMouseListener(formListener);
 
         javax.swing.GroupLayout searchPanelLayout = new javax.swing.GroupLayout(searchPanel);
         searchPanel.setLayout(searchPanelLayout);
         searchPanelLayout.setHorizontalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(fileSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(searchPanelLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
+                .addComponent(filesLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(searchPanelLayout.createSequentialGroup()
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(librariesLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(descriptionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(descriptionScrollPane)
                     .addGroup(searchPanelLayout.createSequentialGroup()
-                        .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(versionLabel)
-                            .addComponent(homePageLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(homePageLinkLabel)
-                            .addComponent(versionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
+                        .addComponent(descriptionLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(libraryInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(searchPanelLayout.createSequentialGroup()
+                .addComponent(homePageLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(homePageLinkLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         searchPanelLayout.setVerticalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(searchPanelLayout.createSequentialGroup()
-                .addGap(0, 0, 0)
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesLabel)
                     .addComponent(descriptionLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(librariesScrollPane)
+                    .addComponent(libraryInfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(searchPanelLayout.createSequentialGroup()
-                        .addComponent(descriptionScrollPane)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(homePageLabel)
-                            .addComponent(homePageLinkLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(versionLabel)
-                            .addComponent(versionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(0, 0, 0))
+                            .addComponent(homePageLinkLabel))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(filesLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fileSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
         );
 
         searchLabel.setLabelFor(searchField);
@@ -425,7 +469,7 @@ class SearchPanel extends javax.swing.JPanel {
                     .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(searchButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }
@@ -440,6 +484,9 @@ class SearchPanel extends javax.swing.JPanel {
             }
             else if (evt.getSource() == searchButton) {
                 SearchPanel.this.searchButtonActionPerformed(evt);
+            }
+            else if (evt.getSource() == versionComboBox) {
+                SearchPanel.this.versionComboBoxActionPerformed(evt);
             }
         }
 
@@ -488,7 +535,9 @@ class SearchPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_searchButtonActionPerformed
 
     private void homePageLinkLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_homePageLinkLabelMouseClicked
-        showHomePage();
+        if (homePageLinkLabel.isEnabled()) {
+            showHomePage();
+        }
     }//GEN-LAST:event_homePageLinkLabelMouseClicked
 
     private void homePageLinkLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_homePageLinkLabelMouseEntered
@@ -501,6 +550,10 @@ class SearchPanel extends javax.swing.JPanel {
         updateHomePageLink(library, false);
     }//GEN-LAST:event_homePageLinkLabelMouseExited
 
+    private void versionComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_versionComboBoxActionPerformed
+        updateFileSelectionPanel();
+    }//GEN-LAST:event_versionComboBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
@@ -508,11 +561,14 @@ class SearchPanel extends javax.swing.JPanel {
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JScrollPane descriptionScrollPane;
     private javax.swing.JLabel descriptionTextLabel;
+    private org.netbeans.modules.javascript.cdnjs.ui.FileSelectionPanel fileSelectionPanel;
+    private javax.swing.JLabel filesLabel;
     private javax.swing.JLabel homePageLabel;
     private javax.swing.JLabel homePageLinkLabel;
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JList<Library> librariesList;
     private javax.swing.JScrollPane librariesScrollPane;
+    private javax.swing.JPanel libraryInfoPanel;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JButton searchButton;
     private javax.swing.JTextField searchField;

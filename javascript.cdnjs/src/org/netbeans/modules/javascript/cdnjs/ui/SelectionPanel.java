@@ -151,7 +151,10 @@ public class SelectionPanel extends javax.swing.JPanel {
         dialog.setVisible(true);
         panel.deactivate();
         if (descriptor.getValue() == panel.getAddButton()) {
-            addLibrary(panel.getSelectedVersion());
+            Library.Version selectedVersion = panel.getSelectedVersion();
+            if (selectedVersion != null) {
+                addLibrary(selectedVersion);
+            }
         }
     }
 
