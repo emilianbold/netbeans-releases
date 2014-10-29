@@ -84,6 +84,9 @@
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
             <Component class="javax.swing.JList" name="librariesList">
+              <Properties>
+                <Property name="selectionMode" type="int" value="0"/>
+              </Properties>
               <Events>
                 <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="librariesListValueChanged"/>
               </Events>

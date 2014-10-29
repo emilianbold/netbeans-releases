@@ -177,6 +177,7 @@ class SearchPanel extends javax.swing.JPanel {
             showComponent(messageLabel);
         } else {
             librariesList.setModel(libraryListModelFor(libraries));
+            librariesList.setSelectedIndex(0);
             showComponent(searchPanel);
         }
     }
@@ -341,6 +342,7 @@ class SearchPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.cancelButton.text")); // NOI18N
 
+        librariesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         librariesList.addListSelectionListener(formListener);
         librariesScrollPane.setViewportView(librariesList);
 
