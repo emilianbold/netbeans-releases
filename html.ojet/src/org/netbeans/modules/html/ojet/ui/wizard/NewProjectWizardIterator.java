@@ -111,10 +111,26 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
     @NbBundle.Messages("NewProjectWizardIterator.newProject.displayName=Oracle JET QuickStart Basic")
     public static NewProjectWizardIterator newOracleJETProject() {
         return new NewProjectWizardIterator(
-                "Oracle JET QuickStart Basic", // NOI18N
+                Bundle.NewProjectWizardIterator_newProject_displayName(),
                 "OracleJETApplication", // NOI18N
                 "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
                 new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip") // NOI18N
+        );
+    }
+
+    @TemplateRegistration(
+            folder = "Project/Samples/HTML5",
+            displayName = "#NewProjectWizardIterator.newComponentInteractionSample.displayName",
+            description = "../resources/NewComponentInteractionSampleDescription.html",
+            iconBase = OJETUtils.OJET_ICON_PATH,
+            position = 3000)
+    @NbBundle.Messages("NewProjectWizardIterator.newComponentInteractionSample.displayName=Oracle JET Component Interaction Sample")
+    public static NewProjectWizardIterator newComponentInteractionSample() {
+        return new NewProjectWizardIterator(
+                Bundle.NewProjectWizardIterator_newComponentInteractionSample_displayName(),
+                "OracleJETComponentInteraction", // NOI18N
+                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/JET-ComponentInteraction.zip", // NOI18N
+                new File(System.getProperty("java.io.tmpdir"), "JET-ComponentInteraction.zip") // NOI18N
         );
     }
 
@@ -200,7 +216,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
-        wizardDescriptor.putProperty("NewProjectWizard_Title", Bundle.NewProjectWizardIterator_newProject_displayName()); // NOI18N
+        wizardDescriptor.putProperty("NewProjectWizard_Title", displayName); // NOI18N
         return panels[index];
     }
 
