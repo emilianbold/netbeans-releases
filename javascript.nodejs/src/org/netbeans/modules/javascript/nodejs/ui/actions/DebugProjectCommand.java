@@ -46,6 +46,7 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
+import org.netbeans.modules.javascript.nodejs.util.NodeInfo;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
 import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.spi.project.ActionProvider;
@@ -54,7 +55,7 @@ import org.openide.util.Lookup;
 final class DebugProjectCommand extends ProjectCommand {
 
     public DebugProjectCommand(Project project) {
-        super(project);
+        super(project, true);
     }
 
     @Override
@@ -76,18 +77,13 @@ final class DebugProjectCommand extends ProjectCommand {
     }
 
     @Override
-    void runInternal(Lookup context) {
-        NodeExecutable node = getNode();
-        if (node != null) {
-            RunInfo runInfo = getRunInfo();
-            if (runInfo != null) {
-                try {
-                    node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs());
-                } catch (IOException ex) {
-                    warnCannotDebug(ex);
-                }
-            }
+    protected NodeInfo runNodeInternal(NodeExecutable node, RunInfo runInfo) {
+        try {
+            return NodeInfo.debug(node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs()));
+        } catch (IOException ex) {
+            warnCannotDebug(ex);
         }
+        return NodeInfo.none();
     }
 
 }

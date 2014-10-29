@@ -44,9 +44,12 @@ package org.netbeans.modules.javascript.nodejs.ui.customizer;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -77,6 +80,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
 
     private volatile String startFile;
     private volatile String args;
+    private volatile boolean restart;
 
 
     public NodeJsRunPanel(Project project) {
@@ -94,10 +98,13 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         startFileTextField.setText(startFile);
         args = preferences.getStartArgs();
         argsTextField.setText(args);
+        restart = preferences.isRunRestart();
+        restartCheckBox.setSelected(restart);
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         startFileTextField.getDocument().addDocumentListener(defaultDocumentListener);
         argsTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        restartCheckBox.addItemListener(new DefaultItemListener());
         // ui
         if (!NodeJsUtils.isJsLibrary(project)) {
             runOnNodeJsLabel.setVisible(false);
@@ -154,6 +161,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         assert !EventQueue.isDispatchThread();
         preferences.setStartFile(startFile);
         preferences.setStartArgs(args);
+        preferences.setRunRestart(restart);
     }
 
     void fireChange() {
@@ -179,6 +187,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         startFileBrowseButton = new JButton();
         argsLabel = new JLabel();
         argsTextField = new JTextField();
+        restartCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(runOnNodeJsLabel, NbBundle.getMessage(NodeJsRunPanel.class, "NodeJsRunPanel.runOnNodeJsLabel.text")); // NOI18N
 
@@ -195,6 +204,8 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         argsLabel.setLabelFor(argsTextField);
         Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(NodeJsRunPanel.class, "NodeJsRunPanel.argsLabel.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(restartCheckBox, NbBundle.getMessage(NodeJsRunPanel.class, "NodeJsRunPanel.restartCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -209,9 +220,8 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(startFileBrowseButton))
                     .addComponent(argsTextField)))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(runOnNodeJsLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(runOnNodeJsLabel)
+            .addComponent(restartCheckBox)
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -224,7 +234,9 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(argsLabel)
-                    .addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(restartCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -249,6 +261,7 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel argsLabel;
     private JTextField argsTextField;
+    private JCheckBox restartCheckBox;
     private JLabel runOnNodeJsLabel;
     private JButton startFileBrowseButton;
     private JLabel startFileLabel;
@@ -277,6 +290,16 @@ public class NodeJsRunPanel extends JPanel implements CustomizerPanelImplementat
         private void processChange() {
             startFile = startFileTextField.getText();
             args = argsTextField.getText();
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            restart = restartCheckBox.isSelected();
             fireChange();
         }
 
