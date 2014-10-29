@@ -1685,7 +1685,7 @@ LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
 CP_DOTS         : '...';
 LESS_REST       : '@rest...';
-LESS_IMPORT_TYPE    :   'LESS' | 'CSS';
+LESS_IMPORT_TYPE    :   'LESS' | 'CSS' | 'REFERENCE' | 'INLINE' | 'ONCE' | 'MULTIPLE' ;
 
 // -----------------
 // Literal strings. Delimited by either ' or "
