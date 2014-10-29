@@ -62,6 +62,7 @@ public final class NodeJsPreferences {
     public static final String START_FILE = "start.file"; // NOI18N
     public static final String START_ARGS = "start.args"; // NOI18N
     public static final String RUN_ENABLED = "run.enabled"; // NOI18N
+    public static final String RUN_RESTART = "run.restart"; // NOI18N
     public static final String DEBUG_PORT = "debug.port"; // NOI18N
     public static final String SYNC_ENABLED = "sync.enabled"; // NOI18N
     public static final String ASK_RUN_CONFIGURATION = "ask.run.enabled"; // NOI18N
@@ -147,6 +148,14 @@ public final class NodeJsPreferences {
 
     public void setRunEnabled(boolean enabled) {
         getSharedPreferences().putBoolean(RUN_ENABLED, enabled);
+    }
+
+    public boolean isRunRestart() {
+        return getSharedPreferences().getBoolean(RUN_RESTART, false);
+    }
+
+    public void setRunRestart(boolean restart) {
+        getSharedPreferences().putBoolean(RUN_RESTART, restart);
     }
 
     public int getDebugPort() {

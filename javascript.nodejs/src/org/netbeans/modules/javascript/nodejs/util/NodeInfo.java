@@ -39,44 +39,51 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui.actions;
+package org.netbeans.modules.javascript.nodejs.util;
 
-import java.io.File;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
-import org.netbeans.modules.javascript.nodejs.util.NodeInfo;
-import org.netbeans.modules.javascript.nodejs.util.RunInfo;
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
+import java.util.concurrent.Future;
+import org.netbeans.api.annotations.common.NullAllowed;
 
-final class RunProjectCommand extends ProjectCommand {
+public final class NodeInfo {
 
-    public RunProjectCommand(Project project) {
-        super(project, false);
+    private final Future<Integer> currentNodeTask;
+    private final boolean debug;
+
+
+    private NodeInfo(@NullAllowed Future<Integer> currentNodeTask, boolean debug) {
+        this.currentNodeTask = currentNodeTask;
+        this.debug = debug;
     }
 
-    @Override
-    public String getCommandId() {
-        return ActionProvider.COMMAND_RUN;
+    public static NodeInfo run(@NullAllowed Future<Integer> currentNodeTask) {
+        return new NodeInfo(currentNodeTask, false);
     }
 
-    @Override
-    public boolean isEnabledInternal(Lookup context) {
-        return true;
+    public static NodeInfo debug(@NullAllowed Future<Integer> currentNodeTask) {
+        return new NodeInfo(currentNodeTask, true);
     }
 
-    @Override
-    ValidationResult validateRunInfo(RunInfo runInfo) {
-        return new NodeJsPreferencesValidator()
-                .validateRun(runInfo.getStartFile(), runInfo.getStartArgs())
-                .getResult();
+    public static NodeInfo none() {
+        return new NodeInfo(null, false);
     }
 
-    @Override
-    protected NodeInfo runNodeInternal(NodeExecutable node, RunInfo runInfo) {
-        return NodeInfo.run(node.run(new File(runInfo.getStartFile()), runInfo.getStartArgs()));
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public boolean isRunning() {
+        return currentNodeTask != null
+                && !currentNodeTask.isDone();
+    }
+
+    public void stop() {
+        assert currentNodeTask != null;
+        currentNodeTask.cancel(true);
+        try {
+            Thread.sleep(250);
+        } catch (InterruptedException ex) {
+            // noop
+        }
     }
 
 }

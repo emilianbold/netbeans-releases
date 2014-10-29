@@ -42,16 +42,24 @@
 package org.netbeans.modules.javascript.nodejs.ui.actions;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.util.NodeInfo;
+import org.netbeans.modules.javascript.nodejs.util.RunInfo;
 import org.openide.util.Lookup;
 
 abstract class ProjectCommand extends Command {
 
-    public ProjectCommand(Project project) {
+    private final boolean debug;
+
+
+    public ProjectCommand(Project project, boolean debug) {
         super(project);
+        this.debug = debug;
     }
 
     protected abstract boolean isEnabledInternal(Lookup context);
+    protected abstract NodeInfo runNodeInternal(NodeExecutable node, RunInfo runInfo);
 
     @Override
     public final boolean isEnabled(Lookup context) {
@@ -59,6 +67,38 @@ abstract class ProjectCommand extends Command {
             return false;
         }
         return isEnabledInternal(context);
+    }
+
+    @Override
+    final void runInternal(Lookup context) {
+        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
+        NodeInfo currentNodeInfo = nodeJsSupport.getCurrentNodeInfo();
+        if (!currentNodeInfo.isRunning()) {
+            // run it
+            nodeJsSupport.setCurrentNodeInfo(runNode());
+            return;
+        }
+        // node is running
+        assert currentNodeInfo.isRunning();
+        // check type + restart option
+        if (currentNodeInfo.isDebug() != debug
+                || nodeJsSupport.getPreferences().isRunRestart()) {
+            // force restart
+            currentNodeInfo.stop();
+            nodeJsSupport.setCurrentNodeInfo(runNode());
+        }
+    }
+
+    private NodeInfo runNode() {
+        NodeExecutable node = getNode();
+        if (node == null) {
+            return NodeInfo.none();
+        }
+        RunInfo runInfo = getRunInfo();
+        if (runInfo == null) {
+            return NodeInfo.none();
+        }
+        return runNodeInternal(node, runInfo);
     }
 
 }

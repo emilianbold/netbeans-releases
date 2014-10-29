@@ -41,22 +41,33 @@
  */
 package org.netbeans.modules.javascript.cdnjs.ui;
 
+import java.awt.Component;
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.javascript.cdnjs.Library;
+import org.netbeans.modules.javascript.cdnjs.LibraryProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,6 +84,8 @@ public class SelectionPanel extends javax.swing.JPanel {
     private final LibraryTableModel tableModel;
     /** Web-root, i.e., the folder the library folder is relative to. */
     private final File webRoot;
+    /** Maps the name of the library to its CDNJS meta-data. */
+    private final Map<String,Library> libraryInfo = new HashMap<>();
 
     /**
      * Creates a new {@code SelectionPanel}.
@@ -89,6 +102,11 @@ public class SelectionPanel extends javax.swing.JPanel {
         initComponents();
         folderField.setText(libraryFolder);
         librariesTable.getSelectionModel().addListSelectionListener(new Listener());
+        TableCellRenderer versionColumnRenderer = new VersionColumnRenderer();
+        TableColumnModel tableColumnModel = librariesTable.getColumnModel();
+        tableColumnModel.getColumn(1).setCellRenderer(versionColumnRenderer);
+        tableColumnModel.getColumn(2).setCellRenderer(versionColumnRenderer);
+        loadLibraryInfo(existingLibraries);
     }
 
     /**
@@ -162,6 +180,7 @@ public class SelectionPanel extends javax.swing.JPanel {
         }
         libraries.add(libraryVersion);
         Collections.sort(libraries, new LibraryVersionComparator());
+        libraryInfo.put(newLibraryName, libraryVersion.getLibrary());
         tableModel.fireTableDataChanged();
     }
 
@@ -216,6 +235,59 @@ public class SelectionPanel extends javax.swing.JPanel {
             }
             folderField.setText(path);
         }
+    }
+
+    /**
+     * Releases resources and unregisters the listeners used by this panel.
+     */
+    public void dispose() {
+        LibraryProvider.getInstance().removePropertyChangeListener(libraryInfoListener);
+    }
+
+    /** Listener on the CDNJS library provider. */
+    private PropertyChangeListener libraryInfoListener;
+
+    /**
+     * Loads the CDNJS meta-data about the existing libraries.
+     * 
+     * @param existingLibraries libraries already present in the project.
+     */
+    private void loadLibraryInfo(final Library.Version[] existingLibraries) {
+        LibraryProvider provider = LibraryProvider.getInstance();
+        libraryInfoListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                updateLibraryInfo(evt.getPropertyName(), (Library[])evt.getNewValue());
+            }
+        };
+        provider.addPropertyChangeListener(libraryInfoListener);
+        for (Library.Version libraryVersion : existingLibraries) {
+            String libraryName = libraryVersion.getLibrary().getName();
+            Library[] foundLibraries = provider.findLibraries(libraryName, Thread.MIN_PRIORITY);
+            if (foundLibraries != null) {
+                updateLibraryInfo(libraryName, foundLibraries);
+            }
+        }
+    }
+
+    /**
+     * Updates the CDNJS meta-data about the given library.
+     * 
+     * @param libraryName name of the library.
+     * @param foundLibraries search result for a search term equal to the name of the library.
+     */
+    void updateLibraryInfo(String libraryName, Library[] foundLibraries) {
+        if (foundLibraries == null) {
+            libraryInfo.put(libraryName, null);
+        } else {
+            for (Library library : foundLibraries) {
+                if (libraryName.equals(library.getName())) {
+                    libraryInfo.put(libraryName, library);
+                    break;
+                }
+            }
+        }
+        tableModel.fireTableDataChanged();
     }
 
     /**
@@ -358,6 +430,47 @@ public class SelectionPanel extends javax.swing.JPanel {
     }
 
     /**
+     * Renderer of the version columns.
+     */
+    static class VersionColumnRenderer extends DefaultTableCellRenderer {
+        final static Object UP_TO_DATE = new Object();
+        final static Object CHECKING = new Object();
+        final static Object UNKNOWN = new Object();
+
+        @Override
+        @NbBundle.Messages({
+            "SelectionPanel.version.unknown=Version information not available",
+            "SelectionPanel.version.checking=Checking for updates ...",
+            "SelectionPanel.version.uptodate=Up to date",
+        })
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            String icon = null;
+            String toolTip = null;
+            if (value == UNKNOWN) {
+                icon = "org/netbeans/modules/javascript/cdnjs/resources/unknown.png"; // NOI18N
+                toolTip = Bundle.SelectionPanel_version_unknown();
+            } else if (value == CHECKING) {
+                icon = "org/netbeans/modules/javascript/cdnjs/resources/checking.png"; // NOI18N
+                toolTip = Bundle.SelectionPanel_version_checking();
+            } else if (value == UP_TO_DATE) {
+                icon = "org/netbeans/modules/javascript/cdnjs/resources/uptodate.gif"; // NOI18N
+                toolTip = Bundle.SelectionPanel_version_uptodate();
+            }
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setHorizontalAlignment(CENTER);
+            setToolTipText(toolTip);
+            if (icon == null) {
+                setIcon(null);
+            } else {
+                setText(null);
+                setIcon(ImageUtilities.loadImageIcon(icon, false));
+            }
+            return this;
+        }
+        
+    }
+
+    /**
      * Model for the libraries table.
      */
     class LibraryTableModel extends AbstractTableModel {
@@ -369,20 +482,22 @@ public class SelectionPanel extends javax.swing.JPanel {
 
         @Override
         public int getColumnCount() {
-            return 2;
+            return 3;
         }
 
         @Override
         @NbBundle.Messages({
             "SelectionPanel.table.libraryColumn=Library",
-            "SelectionPanel.table.versionColumn=Version"
+            "SelectionPanel.table.versionColumn=Version",
+            "SelectionPanel.table.latestVersionColumn=Latest Version",
         })
         public String getColumnName(int column) {
             String columnName;
-            if (column == 0) {
-                columnName = Bundle.SelectionPanel_table_libraryColumn();
-            } else {
-                columnName = Bundle.SelectionPanel_table_versionColumn();
+            switch (column) {
+                case 0: columnName = Bundle.SelectionPanel_table_libraryColumn(); break;
+                case 1: columnName = Bundle.SelectionPanel_table_versionColumn(); break;
+                case 2: columnName = Bundle.SelectionPanel_table_latestVersionColumn(); break;
+                default: throw new IllegalArgumentException();
             }
             return columnName;
         }
@@ -391,14 +506,28 @@ public class SelectionPanel extends javax.swing.JPanel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             Library.Version libraryVersion = libraries.get(rowIndex);
             Object value;
-            if (columnIndex == 0) {
-                value = libraryVersion.getLibrary().getName();
-            } else {
-                value = libraryVersion.getName();
+            switch (columnIndex) {
+                case 0: value = libraryVersion.getLibrary().getName(); break;
+                case 1: value = libraryVersion.getName(); break;
+                case 2:
+                    String libraryName = libraryVersion.getLibrary().getName();
+                    Library library = libraryInfo.get(libraryName);
+                    if (library == null) {
+                        value = libraryInfo.containsKey(libraryName)
+                                ? VersionColumnRenderer.UNKNOWN
+                                : VersionColumnRenderer.CHECKING;
+                    } else {
+                        String latestVersion = library.getVersions()[0].getName();
+                        String currentVersion = libraryVersion.getName();
+                        value = currentVersion.equals(latestVersion)
+                                ? VersionColumnRenderer.UP_TO_DATE : latestVersion;
+                    }
+                    break;
+                default: throw new IllegalArgumentException();
             }
             return value;
         }
-        
+
     }
 
 }

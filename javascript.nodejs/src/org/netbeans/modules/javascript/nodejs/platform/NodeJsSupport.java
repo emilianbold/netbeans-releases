@@ -64,6 +64,7 @@ import org.netbeans.modules.javascript.nodejs.ui.Notifications;
 import org.netbeans.modules.javascript.nodejs.ui.actions.NodeJsActionProvider;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.NodeInfo;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.web.common.api.Version;
@@ -92,6 +93,8 @@ public final class NodeJsSupport {
     private final ActionProvider actionProvider;
     final NodeJsSourceRoots sourceRoots;
     final PackageJson packageJson;
+
+    private volatile NodeInfo currentNodeInfo = NodeInfo.none();
 
 
     private NodeJsSupport(Project project) {
@@ -168,6 +171,16 @@ public final class NodeJsSupport {
         packageJson.removePropertyChangeListener(packageJsonListener);
         // cleanup
         packageJson.cleanup();
+    }
+
+    public NodeInfo getCurrentNodeInfo() {
+        assert currentNodeInfo != null;
+        return currentNodeInfo;
+    }
+
+    public void setCurrentNodeInfo(NodeInfo currentNodeInfo) {
+        assert currentNodeInfo != null;
+        this.currentNodeInfo = currentNodeInfo;
     }
 
     //~ Inner classes
