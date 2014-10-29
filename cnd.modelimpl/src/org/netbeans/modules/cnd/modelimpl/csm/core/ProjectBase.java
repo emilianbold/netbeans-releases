@@ -3673,6 +3673,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {        
         unitId = aStream.readUnitId();
         fileSystem = PersistentUtils.readFileSystem(aStream);
+        if (fileSystem == null) {
+            // I don't lile this null check very much; but without it,
+            // once fileSystem was read or written as null, it will be null forever,
+            // code assistance not functional at all and even IDE restart doesn't help
+            // see #248225 - NPE in CndFileUtils.toFileObject
+            throw new IOException("Can not restore file system from persistence", new NullPointerException()); //NOI18N
+        }
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();
 
