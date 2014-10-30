@@ -132,7 +132,7 @@ public final class Library {
     /**
      * Returns the versions of this library.
      * 
-     * @return versions of this libarary.
+     * @return versions of this library.
      */
     public Version[] getVersions() {
         return versions;
