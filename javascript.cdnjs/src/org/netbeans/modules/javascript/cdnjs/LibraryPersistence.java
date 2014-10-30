@@ -73,7 +73,9 @@ class LibraryPersistence {
     private static final String ATTR_LIBRARY_NAME = "name"; // NOI18N
     /** Name of the attribute storing the name of the version of the library. */
     private static final String ATTR_VERSION_NAME = "version"; // NOI18N
-    /** Name of the attribute storing the relative path to the library file. */
+    /** Name of the attribute storing the local path (relative to the project's folder) to the library file. */
+    private static final String ATTR_FILE_LOCAL_PATH = "localPath"; // NOI18N
+    /** Name of the attribute storing the relative path to the library file as specified by CDNJS meta-data. */
     private static final String ATTR_FILE_PATH = "path"; // NOI18N
     /** The default instance of this class. */
     private static final LibraryPersistence DEFAULT = new LibraryPersistence();
@@ -132,12 +134,15 @@ class LibraryPersistence {
         library.setVersions(new Library.Version[] { version });
         NodeList fileList = libraryElement.getElementsByTagNameNS(NAMESPACE_URI, ELEMENT_FILE);
         String[] files = new String[fileList.getLength()];
+        String[] localFiles = new String[fileList.getLength()];
         for (int i=0; i<fileList.getLength(); i++) {
             Element fileElement = (Element)fileList.item(i);
             String path = fileElement.getAttribute(ATTR_FILE_PATH);
+            String localPath = fileElement.getAttribute(ATTR_FILE_LOCAL_PATH);
             files[i] = path;
+            localFiles[i] = (localPath == null) ? path : localPath;
         }
-        version.setFiles(files);
+        version.setFileInfo(files, localFiles);
         return version;
     }
 
@@ -160,9 +165,14 @@ class LibraryPersistence {
                 libraryElement.setAttribute(ATTR_LIBRARY_NAME, libraryName);
                 String versionName = library.getName();
                 libraryElement.setAttribute(ATTR_VERSION_NAME, versionName);
-                for (String file : library.getFiles()) {
+                String[] files = library.getFiles();
+                String[] localFiles = library.getLocalFiles();
+                for (int i=0; i<files.length; i++) {
                     Element fileElement = document.createElementNS(NAMESPACE_URI, ELEMENT_FILE);
-                    fileElement.setAttribute(ATTR_FILE_PATH, file);
+                    String path = files[i];
+                    String localPath = localFiles[i];
+                    fileElement.setAttribute(ATTR_FILE_PATH, path);
+                    fileElement.setAttribute(ATTR_FILE_LOCAL_PATH, localPath);
                     libraryElement.appendChild(fileElement);
                 }
                 librariesElement.appendChild(libraryElement);

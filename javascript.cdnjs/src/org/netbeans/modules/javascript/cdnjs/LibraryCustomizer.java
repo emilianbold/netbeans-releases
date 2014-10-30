@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -240,8 +241,8 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 File[] files = downloadedFiles.get(libraryName);
                 if (files != null) {
                     try {
-                        Library.Version versionToStore = installLibrary(librariesFob, version, files);
-                        newMap.put(libraryName, versionToStore);
+                        installLibrary(librariesFob, version, files);
+                        newMap.put(libraryName, version);
                     } catch (IOException ioex) {
                         String errorMessage = Bundle.LibraryCustomizer_installationFailed(libraryName, version.getName());
                         errors.add(errorMessage);
@@ -292,30 +293,39 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             // PENDING move into a new library folder (if the folder has changed)
             
             // Install missing files
-            List<String> pathsToStore = new ArrayList<>();
-            String[] filePaths = newVersion.getFiles();
-            for (int fileIndex = 0; fileIndex < filePaths.length; fileIndex++) {
-                String filePath = filePaths[fileIndex];
+            Map<String,String> oldFilesMap = new HashMap<>();
+            String[] oldFiles = oldVersion.getFiles();
+            String[] oldLocalFiles = oldVersion.getLocalFiles();
+            for (int i=0; i<oldFiles.length; i++) {
+                oldFilesMap.put(oldFiles[i], oldLocalFiles[i]);
+            }
+            List<String> fileList = new ArrayList<>();
+            List<String> localFileList = new ArrayList<>();
+            String[] filesToInstall = newVersion.getFiles();
+            for (int fileIndex = 0; fileIndex < filesToInstall.length; fileIndex++) {
+                String filePath = filesToInstall[fileIndex];
                 try {
-                    String[] pathElements = filePath.split("/"); // NOI18N
-                    FileObject fileFolder = libraryFolder;
-                    for (int j=0; j<pathElements.length-1; j++) {
-                        fileFolder = FileUtil.createFolder(fileFolder, pathElements[j]);
-                    }
-                    String fileName = pathElements[pathElements.length-1];
-                    FileObject fob = fileFolder.getFileObject(fileName);
-                    if (fob == null) {
-                        // installation needed
+                    String localPath = oldFilesMap.get(filePath);
+                    if (localPath == null) {
+                        // Installation needed
+                        String[] pathElements = filePath.split("/"); // NOI18N
+                        FileObject fileFolder = libraryFolder;
+                        for (int j=0; j<pathElements.length-1; j++) {
+                            fileFolder = FileUtil.createFolder(fileFolder, pathElements[j]);
+                        }
                         File file = libraryProvider.downloadLibraryFile(newVersion, fileIndex);
                         FileObject tmpFob = FileUtil.toFileObject(file);
+                        String fileName = pathElements[pathElements.length-1];
                         int index = fileName.lastIndexOf('.');
                         if (index != -1) {
                             fileName = fileName.substring(0,index);
                         }
-                        fob = FileUtil.moveFile(tmpFob, fileFolder, fileName);
+                        FileObject fob = FileUtil.moveFile(tmpFob, fileFolder, fileName);
+                        file = FileUtil.toFile(fob);
+                        localPath = PropertyUtils.relativizeFile(projectDir, file);
                     }
-                    File file = FileUtil.toFile(fob);
-                    pathsToStore.add(PropertyUtils.relativizeFile(projectDir, file));
+                    fileList.add(filePath);
+                    localFileList.add(localPath);
                 } catch (IOException ioex) {
                     String errorMessage = Bundle.LibraryCustomizer_updateFailed(libraryName, filePath);
                     errors.add(errorMessage);
@@ -324,20 +334,24 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
 
             // Remove files that are no longer needed
-            for (String filePath : oldVersion.getFiles()) {
-                if (!pathsToStore.contains(filePath)) {
-                    uninstallFile(filePath);
+            for (int i=0; i<oldFiles.length; i++) {
+                if (!fileList.contains(oldFiles[i])) {
+                    uninstallFile(oldLocalFiles[i]);
                 }
             }
 
-            Library.Version versionToStore = newVersion.filterVersion(Collections.EMPTY_SET);
-            versionToStore.setFiles(pathsToStore.toArray(new String[pathsToStore.size()]));
+            Collection<String> emptySet = Collections.emptySet();
+            Library.Version versionToStore = newVersion.filterVersion(emptySet);
+            versionToStore.setFileInfo(
+                    fileList.toArray(new String[fileList.size()]),
+                    localFileList.toArray(new String[localFileList.size()])
+            );
             return versionToStore;
         }
 
         private void uninstallLibraries(List<Library.Version> libraries) {
             for (Library.Version version : libraries) {
-                for (String fileName : version.getFiles()) {
+                for (String fileName : version.getLocalFiles()) {
                     uninstallFile(fileName);
                 }
             }
@@ -362,16 +376,15 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
         }
 
-        private Library.Version installLibrary(FileObject librariesFolder,
+        private void installLibrary(FileObject librariesFolder,
                 Library.Version version, File[] libraryFiles) throws IOException {
             String libraryName = version.getLibrary().getName();
             FileObject libraryFob = FileUtil.createFolder(librariesFolder, libraryName);
 
             FileObject projectFob = project.getProjectDirectory();
             File projectDir = FileUtil.toFile(projectFob);
-            Library.Version versionToStore = version.filterVersion(Collections.EMPTY_SET);
-            String[] pathToStore = new String[version.getFiles().length];
             String[] fileNames = version.getFiles();
+            String[] localFiles = new String[fileNames.length];
             for (int i=0; i<fileNames.length; i++) {
                 FileObject tmpFob = FileUtil.toFileObject(libraryFiles[i]);
                 String fileName = fileNames[i];
@@ -386,10 +399,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 }
                 FileObject fob = FileUtil.moveFile(tmpFob, fileFolder, path[path.length-1]);
                 File file = FileUtil.toFile(fob);
-                pathToStore[i] = PropertyUtils.relativizeFile(projectDir, file);
+                localFiles[i] = PropertyUtils.relativizeFile(projectDir, file);
             }
-            versionToStore.setFiles(pathToStore);
-            return versionToStore;
+            version.setFileInfo(fileNames, localFiles);
         }
 
         private Map<String,Library.Version> toMap(Library.Version[] libraries) {

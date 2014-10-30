@@ -284,7 +284,7 @@ class SearchPanel extends javax.swing.JPanel {
      */
     void updateFileSelectionPanel() {
         Library.Version version = (Library.Version)versionComboBox.getSelectedItem();
-        fileSelectionPanel.setLibrary(version);
+        fileSelectionPanel.setLibrary(version, null);
     }
 
     /**

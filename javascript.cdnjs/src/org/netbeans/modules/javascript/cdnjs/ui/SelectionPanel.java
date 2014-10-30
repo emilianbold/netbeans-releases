@@ -130,13 +130,13 @@ public class SelectionPanel extends javax.swing.JPanel {
     /**
      * Shows the search panel.
      */
-    @NbBundle.Messages({"SelectionPanel.dialog.title=CDNJS Libraries"})
+    @NbBundle.Messages({"SelectionPanel.searchDialog.title=Add CDNJS Library"})
     private void showSearchPanel() {
         SearchPanel panel = getSearchPanel();
         panel.activate();
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
-                Bundle.SelectionPanel_dialog_title(),
+                Bundle.SelectionPanel_searchDialog_title(),
                 true,
                 new Object[] {
                     panel.getAddButton(),
@@ -154,6 +154,43 @@ public class SelectionPanel extends javax.swing.JPanel {
             Library.Version selectedVersion = panel.getSelectedVersion();
             if (selectedVersion != null) {
                 addLibrary(selectedVersion);
+            }
+        }
+    }
+
+    /**
+     * Shows the edit panel.
+     */
+    @NbBundle.Messages({
+        "SelectionPanel.editDialog.title=Edit Library",
+        "SelectionPanel.editDialog.update=Update",
+        "SelectionPanel.editDialog.cancel=Cancel"
+    })
+    private void showEditPanel() {
+        int selectedRow = librariesTable.getSelectedRow();
+        Library.Version selectedVersion = libraries.get(selectedRow);
+        Library library = libraryInfo.get(selectedVersion.getLibrary().getName());
+        EditPanel editPanel = new EditPanel(library, selectedVersion);
+        String update = Bundle.SelectionPanel_editDialog_update();
+        String cancel = Bundle.SelectionPanel_editDialog_cancel();
+        DialogDescriptor descriptor = new DialogDescriptor(
+                editPanel,
+                Bundle.SelectionPanel_editDialog_title(),
+                true,
+                new Object[] { update, cancel },
+                update,
+                DialogDescriptor.DEFAULT_ALIGN,
+                HelpCtx.DEFAULT_HELP,
+                null
+        );
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.setVisible(true);
+        if (descriptor.getValue() == update) {
+            Library.Version version = editPanel.getSelection();
+            if (version == null) {
+                removeSelectedLibraries();
+            } else {
+                addLibrary(version);
             }
         }
     }
@@ -309,6 +346,7 @@ public class SelectionPanel extends javax.swing.JPanel {
         folderLabel = new javax.swing.JLabel();
         folderField = new javax.swing.JTextField();
         browseButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
 
         FormListener formListener = new FormListener();
 
@@ -327,6 +365,10 @@ public class SelectionPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(SelectionPanel.class, "SelectionPanel.editButton.text")); // NOI18N
+        editButton.setEnabled(false);
+        editButton.addActionListener(formListener);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -344,11 +386,12 @@ public class SelectionPanel extends javax.swing.JPanel {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(addButton)
                         .addComponent(removeButton, javax.swing.GroupLayout.Alignment.TRAILING))
-                    .addComponent(browseButton))
-                .addGap(0, 0, 0))
+                    .addComponent(browseButton)
+                    .addComponent(editButton))
+                .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addButton, browseButton, removeButton});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addButton, browseButton, editButton, removeButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -357,6 +400,8 @@ public class SelectionPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(editButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeButton))
                     .addComponent(librariesScrollPane))
@@ -383,6 +428,9 @@ public class SelectionPanel extends javax.swing.JPanel {
             else if (evt.getSource() == browseButton) {
                 SelectionPanel.this.browseButtonActionPerformed(evt);
             }
+            else if (evt.getSource() == editButton) {
+                SelectionPanel.this.editButtonActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
 
@@ -398,10 +446,14 @@ public class SelectionPanel extends javax.swing.JPanel {
         showBrowseDialog();
     }//GEN-LAST:event_browseButtonActionPerformed
 
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        showEditPanel();
+    }//GEN-LAST:event_editButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton browseButton;
+    private javax.swing.JButton editButton;
     private javax.swing.JTextField folderField;
     private javax.swing.JLabel folderLabel;
     private javax.swing.JScrollPane librariesScrollPane;
@@ -415,8 +467,9 @@ public class SelectionPanel extends javax.swing.JPanel {
     class Listener implements ListSelectionListener {
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            boolean emptySelection = (librariesTable.getSelectedRowCount() == 0);
-            removeButton.setEnabled(!emptySelection);
+            int selectedRows = librariesTable.getSelectedRowCount();
+            editButton.setEnabled(selectedRows == 1);
+            removeButton.setEnabled(selectedRows != 0);
         }
     }
 

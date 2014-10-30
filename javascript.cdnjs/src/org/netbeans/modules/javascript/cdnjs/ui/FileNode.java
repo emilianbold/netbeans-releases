@@ -61,12 +61,12 @@ public class FileNode extends AbstractNode {
      * Creates a new {@code FileNode}.
      * 
      * @param fileName name of a file.
-     * @param installed default value of the "install" property.
+     * @param install default value of the "install" property.
      */
-    public FileNode(String fileName, boolean installed) {
+    public FileNode(String fileName, boolean install) {
         super(Children.LEAF);
         setName(fileName);
-        installProperty.setValue(installed);
+        installProperty.setValue(install);
     }
 
     @Override

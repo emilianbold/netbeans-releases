@@ -383,7 +383,7 @@ public final class LibraryProvider {
                 JSONObject fileData = (JSONObject)filesData.get(i);
                 files[i] = (String)fileData.get(PROPERTY_FILE_NAME);
             }
-            version.setFiles(files);
+            version.setFileInfo(files, null);
 
             return version;
         }
