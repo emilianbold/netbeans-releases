@@ -146,8 +146,10 @@ public final class Library {
         private final Library library;
         /** Name or number of the version. */
         private String name;
-        /** Files of this version. */
+        /** Files of this version (relative path as specified in CDNJS meta-data). */
         private String[] files;
+        /** Local files of this version (relative path from project's folder). */
+        private String[] localFiles;
 
         /**
         * Creates a new {@code Version}.
@@ -175,12 +177,15 @@ public final class Library {
         }
 
         /**
-         * Sets the files of the version.
+         * Sets the file information of the version.
          * 
          * @param files files of the version.
+         * @param localFiles local files of the version (can be {@code null}).
          */
-        void setFiles(String[] files) {
+        void setFileInfo(String[] files, String[] localFiles) {
+            assert (localFiles == null || files.length == localFiles.length);
             this.files = files;
+            this.localFiles = localFiles;
         }
 
         /**
@@ -193,12 +198,23 @@ public final class Library {
         }
 
         /**
-         * Returns the files of this version.
+         * Returns the files of this version (as specified by CDNJS meta-data).
          * 
          * @return files of this version.
          */
         public String[] getFiles() {
             return files;
+        }
+
+        /**
+         * Returns the local files of this version (relative paths
+         * from project's folder).
+         * 
+         * @return local files of this version (or {@code null} when
+         * this library version is not installed).
+         */
+        public String[] getLocalFiles() {
+            return localFiles;
         }
 
         /**
@@ -218,10 +234,10 @@ public final class Library {
                     fileList.add(file);
                 }
             }
-            clone.setFiles(fileList.toArray(new String[fileList.size()]));
+            clone.setFileInfo(fileList.toArray(new String[fileList.size()]), null);
             return clone;
         }
-        
+
     }
     
 }

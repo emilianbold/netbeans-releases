@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.cdnjs.ui;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -62,9 +63,10 @@ public class FilesNode extends AbstractNode {
      * Creates a new {@code FilesNode}.
      * 
      * @param version library version that should be represented by the node.
+     * @param installedFiles installed files of the library (can be {@code null}).
      */
-    public FilesNode(Library.Version version) {
-        super(new FilesChildren(version));
+    public FilesNode(Library.Version version, String[] installedFiles) {
+        super(new FilesChildren(version, installedFiles));
         this.version = version;
     }
 
@@ -102,19 +104,28 @@ public class FilesNode extends AbstractNode {
      * Children of the {@code FilesNode}.
      */
     static class FilesChildren extends Children.Keys<String> {
+        /** Installed files of the library. */
+        private final Set<String> installedFiles;
 
         /**
          * Creates a new {@code FilesChildren} for the given library version.
          * 
          * @param version library that should be represented by the node.
+         * @param installedFiles installed files of the library.
          */
-        FilesChildren(Library.Version version) {
+        FilesChildren(Library.Version version, String[] installedFiles) {
+            if (installedFiles == null) {
+                this.installedFiles = null;
+            } else {
+                this.installedFiles = new HashSet<>(Arrays.asList(installedFiles));
+            }
             setKeys((version == null) ? new String[0] : version.getFiles());
         }
 
         @Override
         protected Node[] createNodes(String key) {
-            return new Node[] {new FileNode(key, true)};
+            boolean install = (installedFiles == null) || installedFiles.contains(key);
+            return new Node[] {new FileNode(key, install)};
         }
     }
     
