@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  */
 public class FileNode extends AbstractNode {
     /** "Install" property of the node. */
-    private InstallProperty installProperty = new InstallProperty();
+    private final InstallProperty installProperty = new InstallProperty();
 
     /**
      * Creates a new {@code FileNode}.
