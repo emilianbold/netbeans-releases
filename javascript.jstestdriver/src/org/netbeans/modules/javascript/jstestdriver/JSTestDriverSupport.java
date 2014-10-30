@@ -185,6 +185,12 @@ public class JSTestDriverSupport {
         assert testDriver != null;
         testDriver.stopServer();
         TestDriverServiceNode.getInstance().refresh();
+        try { // try waiting a bit after stopping server
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
+        }
         if (integratedBrowserPanes != null) {
             for (WebBrowserPane wbp : integratedBrowserPanes) {
                 wbp.close(true);

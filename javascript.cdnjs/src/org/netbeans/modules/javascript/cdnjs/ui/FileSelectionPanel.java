@@ -93,10 +93,11 @@ public class FileSelectionPanel extends JPanel implements ExplorerManager.Provid
     /**
      * Sets the library whose files should be selected.
      * 
-     * @param version 
+     * @param version library version whose files should be selected.
+     * @param installedFiles files that are installed.
      */
-    public void setLibrary(Library.Version version) {
-        manager.setRootContext(new FilesNode(version));
+    public void setLibrary(Library.Version version, String[] installedFiles) {
+        manager.setRootContext(new FilesNode(version, installedFiles));
     }
 
     /**

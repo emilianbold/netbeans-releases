@@ -124,6 +124,7 @@ public class TestDriverServiceNode extends AbstractNode {
         return new Action[] {
             SystemAction.get(StartJSTestDriver.class),
             SystemAction.get(StopJSTestDriver.class),
+            SystemAction.get(RestartJSTestDriver.class),
             SystemAction.get(ConfigureJSTestDriver.class)
         };
     }
@@ -148,6 +149,39 @@ public class TestDriverServiceNode extends AbstractNode {
         @Override
         public String getName() {
             return NbBundle.getMessage(TestDriverServiceNode.class, "ACTION_START");
+        }
+
+
+        @Override
+        protected boolean asynchronous() {
+            return true;
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+
+    }
+
+    public static class RestartJSTestDriver extends NodeAction {
+
+        @Override
+        protected void performAction(Node[] activatedNodes) {
+            JSTestDriverSupport.getDefault().stop();
+            JSTestDriverSupport.getDefault().start(null);
+        }
+
+        @Override
+        protected boolean enable(Node[] activatedNodes) {
+            return JSTestDriverSupport.getDefault().isRunning() && JSTestDriverCustomizerPanel.getPort() != -1 && 
+                    !JSTestDriverSupport.getDefault().wasStartedExternally();
+        }
+
+        @Override
+        @NbBundle.Messages("ACTION_RESTART=Restart")
+        public String getName() {
+            return Bundle.ACTION_RESTART();
         }
 
 
