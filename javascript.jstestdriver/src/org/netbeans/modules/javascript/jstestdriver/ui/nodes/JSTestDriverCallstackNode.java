@@ -57,12 +57,12 @@ public class JSTestDriverCallstackNode extends CallstackFrameNode {
 
     @Override
     public Action getPreferredAction() {
-        return new JumpToCallStackAction(frameInfo, callback);
+        return new JumpToCallStackAction(new String[] {frameInfo}, callback);
     }
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {new JumpToCallStackAction(frameInfo, callback)};
+        return new Action[] {new JumpToCallStackAction(new String[] {frameInfo}, callback)};
     }
 
 }

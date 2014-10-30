@@ -52,14 +52,14 @@ import org.openide.util.Pair;
 
 public class JumpToCallStackAction extends AbstractAction {
 
-    private final String callstackFrameInfo;
+    private final String[] stacktraces;
     private final Callback callback;
 
 
     @NbBundle.Messages("JumpToCallStackAction.name=&Go to Source")
-    public JumpToCallStackAction(String callstackFrameInfo, Callback callback) {
-        assert callstackFrameInfo != null;
-        this.callstackFrameInfo = callstackFrameInfo;
+    public JumpToCallStackAction(String[] stacktraces, Callback callback) {
+        assert stacktraces != null;
+        this.stacktraces = stacktraces;
         this.callback = callback;
 
         String name = Bundle.JumpToCallStackAction_name();
@@ -70,9 +70,15 @@ public class JumpToCallStackAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (callback != null) {
-            Pair<File, int[]> pair = callback.parseLocation(callstackFrameInfo);
-            if (pair != null) {
-                JsTestDriverUtils.openFile(pair.first(), pair.second()[0], pair.second()[1]);
+            // iterate through stacktraces in order to find the correct test case location
+            // if stacktraces.lenght == 1, user probably clicked on a stacktrace node
+            // if stacktraces.lenght > 1, user probably clicked on a failed test method node
+            for (String callstackFrameInfo : stacktraces) {
+                Pair<File, int[]> pair = callback.parseLocation(callstackFrameInfo);
+                if (pair != null) {
+                    JsTestDriverUtils.openFile(pair.first(), pair.second()[0], pair.second()[1]);
+                    return;
+                }
             }
         }
     }
