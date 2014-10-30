@@ -337,35 +337,35 @@ public class TestSession {
         private long elapsedTime;
         
         private int failed(int failedCount) {
-            return failed += failedCount;
+            return failed = failedCount;
         }
 
         private int errors(int errorCount) {
-            return errors += errorCount;
+            return errors = errorCount;
         }
 
         private int passed(int passedCount) {
-            return passed += passedCount;
+            return passed = passedCount;
         }
 
         private int passedWithErrors(int passedWithErrorsCount) {
-            return passedWithErrors += passedWithErrorsCount;
+            return passedWithErrors = passedWithErrorsCount;
         }
 
         private int pending(int pendingCount) {
-            return pending += pendingCount;
+            return pending = pendingCount;
         }
 
         private int skipped(int skippedCount) {
-            return skipped += skippedCount;
+            return skipped = skippedCount;
         }
 
         private int aborted(int abortedCount) {
-            return aborted += abortedCount;
+            return aborted = abortedCount;
         }
 
         private long elapsedTime(long time) {
-            return elapsedTime += time;
+            return elapsedTime = time;
         }
 
         public int getErrors() {
