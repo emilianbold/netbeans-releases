@@ -42,23 +42,36 @@
 package org.netbeans.modules.javascript.cdnjs.ui;
 
 import java.awt.Component;
-import java.util.Arrays;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import org.netbeans.modules.javascript.cdnjs.Library;
 
 /**
+ * Panel for library editing. It allows selection of library version and its files.
  *
  * @author Jan Stola
  */
 public class EditPanel extends javax.swing.JPanel {
+    /** Installed (or the last selected) version of the library. */
     private final Library.Version installedVersion;
 
+    /**
+     * Creates a new {@code EditPanel} for the given library.
+     * 
+     * @param library library to edit.
+     * @param installedVersion installed (or the last selected) version of the library.
+     */
     public EditPanel(Library library, Library.Version installedVersion) {
         initComponents();
         this.installedVersion = installedVersion;
-        Library.Version[] versions = library.getVersions();
+        Library.Version[] versions;
+        if (library == null) {
+            // No meta-data available
+            versions = new Library.Version[] { installedVersion };
+        } else {
+            versions = library.getVersions();
+        }
         versionComboBox.setModel(new DefaultComboBoxModel(versions));
         versionComboBox.setRenderer(new LibraryVersionRenderer());
         
@@ -75,6 +88,9 @@ public class EditPanel extends javax.swing.JPanel {
         updateFileSelectionPanel();
     }
 
+    /**
+     * Updates the file selection panel according to the selected version.
+     */
     private void updateFileSelectionPanel() {
         Library.Version version = (Library.Version)versionComboBox.getSelectedItem();
         String[] installedFiles;
@@ -86,6 +102,13 @@ public class EditPanel extends javax.swing.JPanel {
         fileSelectionPanel.setLibrary(version, installedFiles);
     }
 
+    /**
+     * Returns version of the library whose files reflect the selection made
+     * by the user.
+     * 
+     * @return version of the library whose files reflect the selection made
+     * by the user.
+     */
     Library.Version getSelection() {
         return fileSelectionPanel.getSelection();
     }
