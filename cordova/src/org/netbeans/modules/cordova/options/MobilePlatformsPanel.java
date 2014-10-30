@@ -94,6 +94,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         androidSdkBrowse = new javax.swing.JButton();
         androidSdkDownload = new javax.swing.JLabel();
         androidVersion = new javax.swing.JLabel();
+        envVarWarnLabel = new javax.swing.JLabel();
         iOSPanel = new javax.swing.JPanel();
         identityLabel = new javax.swing.JLabel();
         identityTextField = new javax.swing.JTextField();
@@ -118,24 +119,30 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             }
         });
 
+        envVarWarnLabel.setForeground(new java.awt.Color(255, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(envVarWarnLabel, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.envVarWarnLabel.text")); // NOI18N
+
         javax.swing.GroupLayout androidPanelLayout = new javax.swing.GroupLayout(androidPanel);
         androidPanel.setLayout(androidPanelLayout);
         androidPanelLayout.setHorizontalGroup(
             androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(androidPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(androidSdkLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(androidPanelLayout.createSequentialGroup()
-                        .addComponent(androidSdkField, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
+                        .addComponent(androidSdkLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(androidSdkBrowse))
-                    .addGroup(androidPanelLayout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(androidVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(androidSdkDownload, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(androidPanelLayout.createSequentialGroup()
+                                .addComponent(androidSdkField, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(androidSdkBrowse))
+                            .addGroup(androidPanelLayout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(androidVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(androidSdkDownload, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(envVarWarnLabel))
                 .addContainerGap())
         );
         androidPanelLayout.setVerticalGroup(
@@ -150,7 +157,9 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                 .addGroup(androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(androidSdkDownload, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(androidVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(22, 22, 22))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(envVarWarnLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(identityLabel, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.identityLabel.text")); // NOI18N
@@ -208,7 +217,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(androidPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(iOSPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -251,6 +260,8 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         if (!inited) {
             removeAll();
             initComponents();
+            boolean androidHomeSet = System.getenv("ANDROID_HOME") != null; //NOI18N
+            envVarWarnLabel.setVisible(Utilities.isUnix() && !Utilities.isMac() && !androidHomeSet);
             documentL = new DocumentListener() {
                 @Override
                 public void insertUpdate(DocumentEvent e) {
@@ -350,6 +361,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     private javax.swing.JTextField androidSdkField;
     private javax.swing.JLabel androidSdkLabel;
     private javax.swing.JLabel androidVersion;
+    private javax.swing.JLabel envVarWarnLabel;
     private javax.swing.JPanel iOSPanel;
     private javax.swing.JLabel identityLabel;
     private javax.swing.JTextField identityTextField;
