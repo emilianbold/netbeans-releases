@@ -59,8 +59,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.json.simple.JSONValue;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.javascript.nodejs.file.PackageJson;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -152,15 +156,20 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
         unZipFile(template, projectDirectory, projectName);
         ProjectManager.getDefault().clearNonProjectCache();
 
-        // main file
-        FileObject mainFile = projectDirectory.getFileObject("src/main.js"); // NOI18N
-        assert mainFile != null;
-        files.add(mainFile);
+        // start file
+        Project project = FileOwnerQuery.getOwner(projectDirectory);
+        assert project != null : projectDirectory;
+        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
+        String startFile = nodeJsSupport.getPreferences().getStartFile();
+        assert startFile != null : projectDirectory;
+        FileObject fo = FileUtil.toFileObject(new File(startFile));
+        assert fo != null : startFile;
+        files.add(fo);
 
         // package.json?
-        FileObject packageJson = projectDirectory.getFileObject("package.json"); // NOI18N
-        if (packageJson != null) {
-            files.add(packageJson);
+        PackageJson packageJson = nodeJsSupport.getPackageJson();
+        if (packageJson.exists()) {
+            files.add(FileUtil.toFileObject(packageJson.getFile()));
         }
 
         handle.finish();
