@@ -271,7 +271,7 @@ import org.openide.util.lookup.Lookups;
             try {
                 weight = writeCapability.getMaintenanceWeight();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
             if (weight < Stats.defragmentationThreashold) {
                 //we are done, no need to go inside, no maintenance is required
