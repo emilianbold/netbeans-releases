@@ -63,9 +63,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,8 +74,6 @@ import jdk.nashorn.internal.ir.ForNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -95,7 +91,6 @@ import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -131,7 +126,7 @@ public class ModelVisitor extends PathNodeVisitor {
         this.occurrenceBuilder = occurrenceBuilder;
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult; 
-        this.scriptName = fileObject != null ? fileObject.getName() : "";
+        this.scriptName = fileObject != null ? fileObject.getName().replace('.', '_') : "";
     }
 
     public JsObject getGlobalObject() {
