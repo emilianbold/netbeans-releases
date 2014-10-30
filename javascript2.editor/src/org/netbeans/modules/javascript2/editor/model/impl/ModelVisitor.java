@@ -2029,7 +2029,13 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         if (whereKind.isFunction() && !where.getModifiers().contains(Modifier.PRIVATE) && !where.isAnonymous()) {
             // public or protected method
-            return parent;
+            if (parent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                if (Character.isUpperCase(parent.getName().charAt(0))) {
+                    return parent;
+                }
+            } else {
+                return parent;
+            }
         }
         if (isInPropertyNode()) {
             // this is used in a method of an object -> this is the object
