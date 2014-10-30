@@ -169,18 +169,16 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             Map<String,Library.Version> oldMap = toMap(oldLibraries);
             Map<String,Library.Version> newMap = toMap(newLibraries);
 
-            // Identify versions to install
+            // Identify versions to install and keep
             List<Library.Version> toInstall = new ArrayList<>();
+            List<String> toKeep = new ArrayList<>();
             for (Library.Version newVersion : newLibraries) {
                 String libraryName = newVersion.getLibrary().getName();
                 Library.Version oldVersion = oldMap.get(libraryName);
                 if (oldVersion == null) {
                     toInstall.add(newVersion);
                 } else if (oldVersion.getName().equals(newVersion.getName())) {
-                    // Replacing new by old because the old one contains
-                    // the information about the installed files
-                    // (that we want to store).
-                    newMap.put(libraryName, oldVersion);
+                    toKeep.add(libraryName);
                 } else {
                     toInstall.add(newVersion);
                 }
@@ -205,7 +203,10 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             for (Library.Version version : toInstall) {
                 String libraryName = version.getLibrary().getName();
                 try {
-                    File[] files =  LibraryProvider.getInstance().downloadLibrary(version);
+                    File[] files = new File[version.getFiles().length];
+                    for (int fileIndex=0; fileIndex<files.length; fileIndex++) {
+                        files[fileIndex] = LibraryProvider.getInstance().downloadLibraryFile(version, fileIndex);
+                    }
                     downloadedFiles.put(libraryName, files);
                 } catch (IOException ioex) {
                     String errorMessage = Bundle.LibraryCustomizer_downloadFailed(libraryName, version.getName());
@@ -250,6 +251,14 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 }
             }
 
+            // Install/remove files in the versions that are kept
+            for (String libraryName : toKeep) {
+                Library.Version oldVersion = oldMap.get(libraryName);
+                Library.Version newVersion = newMap.get(libraryName);
+                Library.Version versionToStore = updateLibrary(librariesFob, oldVersion, newVersion, errors);
+                newMap.put(libraryName, versionToStore);
+            }
+
             if (!errors.isEmpty()) {
                 StringBuilder message = new StringBuilder();
                 for (String error : errors) {
@@ -266,26 +275,90 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             return newMap.values().toArray(new Library.Version[newMap.size()]);
         }
 
+        @NbBundle.Messages({
+            "# {0} - library name",
+            "# {1} - file name/path",
+            "LibraryCustomizer.updateFailed=Modification of library {0} failed for file {1}."
+        })
+        private Library.Version updateLibrary(FileObject librariesFolder,
+                Library.Version oldVersion, Library.Version newVersion,
+                List<String> errors) {
+            FileObject projectFob = project.getProjectDirectory();
+            File projectDir = FileUtil.toFile(projectFob);
+            LibraryProvider libraryProvider = LibraryProvider.getInstance();
+            String libraryName = oldVersion.getLibrary().getName();
+            FileObject libraryFolder = librariesFolder.getFileObject(libraryName);
+
+            // PENDING move into a new library folder (if the folder has changed)
+            
+            // Install missing files
+            List<String> pathsToStore = new ArrayList<>();
+            String[] filePaths = newVersion.getFiles();
+            for (int fileIndex = 0; fileIndex < filePaths.length; fileIndex++) {
+                String filePath = filePaths[fileIndex];
+                try {
+                    String[] pathElements = filePath.split("/"); // NOI18N
+                    FileObject fileFolder = libraryFolder;
+                    for (int j=0; j<pathElements.length-1; j++) {
+                        fileFolder = FileUtil.createFolder(fileFolder, pathElements[j]);
+                    }
+                    String fileName = pathElements[pathElements.length-1];
+                    FileObject fob = fileFolder.getFileObject(fileName);
+                    if (fob == null) {
+                        // installation needed
+                        File file = libraryProvider.downloadLibraryFile(newVersion, fileIndex);
+                        FileObject tmpFob = FileUtil.toFileObject(file);
+                        int index = fileName.lastIndexOf('.');
+                        if (index != -1) {
+                            fileName = fileName.substring(0,index);
+                        }
+                        fob = FileUtil.moveFile(tmpFob, fileFolder, fileName);
+                    }
+                    File file = FileUtil.toFile(fob);
+                    pathsToStore.add(PropertyUtils.relativizeFile(projectDir, file));
+                } catch (IOException ioex) {
+                    String errorMessage = Bundle.LibraryCustomizer_updateFailed(libraryName, filePath);
+                    errors.add(errorMessage);
+                    Logger.getLogger(LibraryCustomizer.class.getName()).log(Level.INFO, errorMessage, ioex);
+                }
+            }
+
+            // Remove files that are no longer needed
+            for (String filePath : oldVersion.getFiles()) {
+                if (!pathsToStore.contains(filePath)) {
+                    uninstallFile(filePath);
+                }
+            }
+
+            Library.Version versionToStore = newVersion.filterVersion(Collections.EMPTY_SET);
+            versionToStore.setFiles(pathsToStore.toArray(new String[pathsToStore.size()]));
+            return versionToStore;
+        }
+
         private void uninstallLibraries(List<Library.Version> libraries) {
-            File projectDir = FileUtil.toFile(project.getProjectDirectory());
             for (Library.Version version : libraries) {
                 for (String fileName : version.getFiles()) {
-                    File file = PropertyUtils.resolveFile(projectDir, fileName);
-                    if (file.exists()) {
-                        while (!webRoot.equals(file)) {
-                            File parent = file.getParentFile();
-                            if (!file.delete()) {
-                                // We have reached a parent directory that is not empty
-                                break;
-                            }
-                            file = parent;
-                        }
-                    } else {
-                        Logger.getLogger(LibraryCustomizer.class.getName()).log(
-                                Level.INFO, "Cannot delete file {0} of library {1}. It no longer exists.",
-                                new Object[]{file.getAbsolutePath(), version.getLibrary().getName()});
-                    }
+                    uninstallFile(fileName);
                 }
+            }
+        }
+
+        private void uninstallFile(String filePath) {
+            File projectDir = FileUtil.toFile(project.getProjectDirectory());
+            File file = PropertyUtils.resolveFile(projectDir, filePath);
+            if (file.exists()) {
+                while (!webRoot.equals(file)) {
+                    File parent = file.getParentFile();
+                    if (!file.delete()) {
+                        // We have reached a parent directory that is not empty
+                        break;
+                    }
+                    file = parent;
+                }
+            } else {
+                Logger.getLogger(LibraryCustomizer.class.getName()).log(
+                        Level.INFO, "Cannot delete file {0}. It no longer exists.",
+                        new Object[]{file.getAbsolutePath()});
             }
         }
 
