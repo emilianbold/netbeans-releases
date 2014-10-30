@@ -409,9 +409,9 @@ public final class Terminal extends JComponent {
 	term.addListener(componentListener);
 	term.addListener(termListener);
 	
-	final SupportStream supportStream = new SupportStream();
-	term.pushStream(supportStream);
-	term.setTransferHandler(new TransferHandlerImpl(supportStream));
+//	final SupportStream supportStream = new SupportStream();
+//	term.pushStream(supportStream);
+//	term.setTransferHandler(new TransferHandlerImpl(supportStream));
 
         // Set up to convert clicks on active regions, created by OutputWriter.
         // println(), to outputLineAction notifications.
