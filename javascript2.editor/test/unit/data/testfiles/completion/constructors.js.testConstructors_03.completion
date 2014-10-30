@@ -2,4 +2,4 @@ Code completion result for source line:
 Context.Men.A|ddress = function (street, town){};
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     Address                         [PUBLIC,   constructors.js
+METHOD     Address(street, town): undefin  [PUBLIC,   constructors.js

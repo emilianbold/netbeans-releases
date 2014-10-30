@@ -311,4 +311,8 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testConstructors_03() throws Exception {
         checkCompletion("testfiles/completion/constructors.js", "Context.Men.A^ddress = function (street, town){};", false);
     }
+    
+    public void testIssue237878() throws Exception {
+        checkCompletion("testfiles/completion/issue237878.js", "a.^", false);
+    }
 }

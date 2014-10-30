@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -169,18 +170,16 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             Map<String,Library.Version> oldMap = toMap(oldLibraries);
             Map<String,Library.Version> newMap = toMap(newLibraries);
 
-            // Identify versions to install
+            // Identify versions to install and keep
             List<Library.Version> toInstall = new ArrayList<>();
+            List<String> toKeep = new ArrayList<>();
             for (Library.Version newVersion : newLibraries) {
                 String libraryName = newVersion.getLibrary().getName();
                 Library.Version oldVersion = oldMap.get(libraryName);
                 if (oldVersion == null) {
                     toInstall.add(newVersion);
                 } else if (oldVersion.getName().equals(newVersion.getName())) {
-                    // Replacing new by old because the old one contains
-                    // the information about the installed files
-                    // (that we want to store).
-                    newMap.put(libraryName, oldVersion);
+                    toKeep.add(libraryName);
                 } else {
                     toInstall.add(newVersion);
                 }
@@ -205,7 +204,10 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             for (Library.Version version : toInstall) {
                 String libraryName = version.getLibrary().getName();
                 try {
-                    File[] files =  LibraryProvider.getInstance().downloadLibrary(version);
+                    File[] files = new File[version.getFiles().length];
+                    for (int fileIndex=0; fileIndex<files.length; fileIndex++) {
+                        files[fileIndex] = LibraryProvider.getInstance().downloadLibraryFile(version, fileIndex);
+                    }
                     downloadedFiles.put(libraryName, files);
                 } catch (IOException ioex) {
                     String errorMessage = Bundle.LibraryCustomizer_downloadFailed(libraryName, version.getName());
@@ -239,8 +241,8 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 File[] files = downloadedFiles.get(libraryName);
                 if (files != null) {
                     try {
-                        Library.Version versionToStore = installLibrary(librariesFob, version, files);
-                        newMap.put(libraryName, versionToStore);
+                        installLibrary(librariesFob, version, files);
+                        newMap.put(libraryName, version);
                     } catch (IOException ioex) {
                         String errorMessage = Bundle.LibraryCustomizer_installationFailed(libraryName, version.getName());
                         errors.add(errorMessage);
@@ -248,6 +250,14 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                         newMap.remove(libraryName);
                     }
                 }
+            }
+
+            // Install/remove files in the versions that are kept
+            for (String libraryName : toKeep) {
+                Library.Version oldVersion = oldMap.get(libraryName);
+                Library.Version newVersion = newMap.get(libraryName);
+                Library.Version versionToStore = updateLibrary(librariesFob, oldVersion, newVersion, errors);
+                newMap.put(libraryName, versionToStore);
             }
 
             if (!errors.isEmpty()) {
@@ -266,39 +276,115 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             return newMap.values().toArray(new Library.Version[newMap.size()]);
         }
 
-        private void uninstallLibraries(List<Library.Version> libraries) {
-            File projectDir = FileUtil.toFile(project.getProjectDirectory());
-            for (Library.Version version : libraries) {
-                for (String fileName : version.getFiles()) {
-                    File file = PropertyUtils.resolveFile(projectDir, fileName);
-                    if (file.exists()) {
-                        while (!webRoot.equals(file)) {
-                            File parent = file.getParentFile();
-                            if (!file.delete()) {
-                                // We have reached a parent directory that is not empty
-                                break;
-                            }
-                            file = parent;
+        @NbBundle.Messages({
+            "# {0} - library name",
+            "# {1} - file name/path",
+            "LibraryCustomizer.updateFailed=Modification of library {0} failed for file {1}."
+        })
+        private Library.Version updateLibrary(FileObject librariesFolder,
+                Library.Version oldVersion, Library.Version newVersion,
+                List<String> errors) {
+            FileObject projectFob = project.getProjectDirectory();
+            File projectDir = FileUtil.toFile(projectFob);
+            LibraryProvider libraryProvider = LibraryProvider.getInstance();
+            String libraryName = oldVersion.getLibrary().getName();
+            FileObject libraryFolder = librariesFolder.getFileObject(libraryName);
+
+            // PENDING move into a new library folder (if the folder has changed)
+            
+            // Install missing files
+            Map<String,String> oldFilesMap = new HashMap<>();
+            String[] oldFiles = oldVersion.getFiles();
+            String[] oldLocalFiles = oldVersion.getLocalFiles();
+            for (int i=0; i<oldFiles.length; i++) {
+                oldFilesMap.put(oldFiles[i], oldLocalFiles[i]);
+            }
+            List<String> fileList = new ArrayList<>();
+            List<String> localFileList = new ArrayList<>();
+            String[] filesToInstall = newVersion.getFiles();
+            for (int fileIndex = 0; fileIndex < filesToInstall.length; fileIndex++) {
+                String filePath = filesToInstall[fileIndex];
+                try {
+                    String localPath = oldFilesMap.get(filePath);
+                    if (localPath == null) {
+                        // Installation needed
+                        String[] pathElements = filePath.split("/"); // NOI18N
+                        FileObject fileFolder = libraryFolder;
+                        for (int j=0; j<pathElements.length-1; j++) {
+                            fileFolder = FileUtil.createFolder(fileFolder, pathElements[j]);
                         }
-                    } else {
-                        Logger.getLogger(LibraryCustomizer.class.getName()).log(
-                                Level.INFO, "Cannot delete file {0} of library {1}. It no longer exists.",
-                                new Object[]{file.getAbsolutePath(), version.getLibrary().getName()});
+                        File file = libraryProvider.downloadLibraryFile(newVersion, fileIndex);
+                        FileObject tmpFob = FileUtil.toFileObject(file);
+                        String fileName = pathElements[pathElements.length-1];
+                        int index = fileName.lastIndexOf('.');
+                        if (index != -1) {
+                            fileName = fileName.substring(0,index);
+                        }
+                        FileObject fob = FileUtil.moveFile(tmpFob, fileFolder, fileName);
+                        file = FileUtil.toFile(fob);
+                        localPath = PropertyUtils.relativizeFile(projectDir, file);
                     }
+                    fileList.add(filePath);
+                    localFileList.add(localPath);
+                } catch (IOException ioex) {
+                    String errorMessage = Bundle.LibraryCustomizer_updateFailed(libraryName, filePath);
+                    errors.add(errorMessage);
+                    Logger.getLogger(LibraryCustomizer.class.getName()).log(Level.INFO, errorMessage, ioex);
+                }
+            }
+
+            // Remove files that are no longer needed
+            for (int i=0; i<oldFiles.length; i++) {
+                if (!fileList.contains(oldFiles[i])) {
+                    uninstallFile(oldLocalFiles[i]);
+                }
+            }
+
+            Collection<String> emptySet = Collections.emptySet();
+            Library.Version versionToStore = newVersion.filterVersion(emptySet);
+            versionToStore.setFileInfo(
+                    fileList.toArray(new String[fileList.size()]),
+                    localFileList.toArray(new String[localFileList.size()])
+            );
+            return versionToStore;
+        }
+
+        private void uninstallLibraries(List<Library.Version> libraries) {
+            for (Library.Version version : libraries) {
+                for (String fileName : version.getLocalFiles()) {
+                    uninstallFile(fileName);
                 }
             }
         }
 
-        private Library.Version installLibrary(FileObject librariesFolder,
+        private void uninstallFile(String filePath) {
+            File projectDir = FileUtil.toFile(project.getProjectDirectory());
+            File file = PropertyUtils.resolveFile(projectDir, filePath);
+            if (file.exists()) {
+                while (!webRoot.equals(file)) {
+                    File parent = file.getParentFile();
+                    if (!file.delete()) {
+                        // We have reached a parent directory that is not empty
+                        break;
+                    }
+                    file = parent;
+                }
+            } else {
+                Logger.getLogger(LibraryCustomizer.class.getName()).log(
+                        Level.INFO, "Cannot delete file {0}. It no longer exists.",
+                        new Object[]{file.getAbsolutePath()});
+            }
+        }
+
+        private void installLibrary(FileObject librariesFolder,
                 Library.Version version, File[] libraryFiles) throws IOException {
             String libraryName = version.getLibrary().getName();
             FileObject libraryFob = FileUtil.createFolder(librariesFolder, libraryName);
 
             FileObject projectFob = project.getProjectDirectory();
             File projectDir = FileUtil.toFile(projectFob);
-            Library.Version versionToStore = version.filterVersion(Collections.EMPTY_SET);
-            String[] pathToStore = new String[version.getFiles().length];
             String[] fileNames = version.getFiles();
+            String[] localFiles = new String[fileNames.length];
             for (int i=0; i<fileNames.length; i++) {
                 FileObject tmpFob = FileUtil.toFileObject(libraryFiles[i]);
                 String fileName = fileNames[i];
@@ -313,10 +399,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 }
                 FileObject fob = FileUtil.moveFile(tmpFob, fileFolder, path[path.length-1]);
                 File file = FileUtil.toFile(fob);
-                pathToStore[i] = PropertyUtils.relativizeFile(projectDir, file);
+                localFiles[i] = PropertyUtils.relativizeFile(projectDir, file);
             }
-            versionToStore.setFiles(pathToStore);
-            return versionToStore;
+            version.setFileInfo(fileNames, localFiles);
         }
 
         private Map<String,Library.Version> toMap(Library.Version[] libraries) {
