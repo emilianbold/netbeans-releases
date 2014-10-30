@@ -381,7 +381,7 @@ import org.openide.filesystems.FileSystem;
             din = new RepositoryDataInputImpl(RepositoryImplUtil.getBufferedDataInputStream(indexFile));
             idx = FileIndexFactory.getDefaultFactory().readIndex(din);
         } catch (IOException ex) {
-            RepositoryExceptions.throwException("IndexedStorageFile", ex);
+            RepositoryExceptions.throwException("IndexedStorageFile", ex);//NOI18N
         } finally {
             if (din != null) {
                 try {
