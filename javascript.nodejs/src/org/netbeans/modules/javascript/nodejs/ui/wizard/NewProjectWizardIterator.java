@@ -41,18 +41,10 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.wizard;
 
-import java.awt.Component;
-import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -67,23 +59,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public final class NewProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+public final class NewProjectWizardIterator extends BaseWizardIterator {
 
-    @StaticResource
-    private static final String NODEJS_PROJECT_ICON = "org/netbeans/modules/javascript/nodejs/ui/resources/new-nodejs-project.png"; // NOI18N
     private static final String DEFAULT_SOURCE_FOLDER = "src"; // NOI18N
 
     private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
     private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
-
-    private int index;
-    private WizardDescriptor.Panel<WizardDescriptor>[] panels;
-    private WizardDescriptor wizardDescriptor;
-
 
     private NewProjectWizardIterator() {
         baseWizard = CreateProjectUtils.createBaseWizardPanel("NodeJsApplication"); // NOI18N
@@ -100,6 +84,33 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
     @NbBundle.Messages("NewProjectWizardIterator.newProject.displayName=Node.js Application")
     public static NewProjectWizardIterator newNodeJsProject() {
         return new NewProjectWizardIterator();
+    }
+
+    @Override
+    String getWizardTitle() {
+        return Bundle.NewProjectWizardIterator_newProject_displayName();
+    }
+
+    @Override
+    WizardDescriptor.Panel[] createPanels() {
+        return new WizardDescriptor.Panel[] {
+            baseWizard.first(),
+            toolsWizard.first(),
+        };
+    }
+
+    @Override
+    String[] createSteps() {
+        return new String[] {
+            baseWizard.second(),
+            toolsWizard.second(),
+        };
+    }
+
+    @Override
+    void uninitializeInternal() {
+        wizardDescriptor.putProperty(CreateProjectUtils.PROJECT_DIRECTORY, null);
+        wizardDescriptor.putProperty(CreateProjectUtils.PROJECT_NAME, null);
     }
 
     @NbBundle.Messages("NewProjectWizardIterator.progress.creating=Creating project")
@@ -142,111 +153,6 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
         handle.finish();
         return files;
-    }
-
-    @Override
-    public Set instantiate() throws IOException {
-        throw new UnsupportedOperationException("Not supported");
-    }
-
-    @Override
-    public void initialize(WizardDescriptor wizard) {
-        wizardDescriptor = wizard;
-        // #245975
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run() {
-                initializeInternal();
-            }
-        });
-    }
-
-    void initializeInternal() {
-        assert EventQueue.isDispatchThread();
-        index = 0;
-        panels = new WizardDescriptor.Panel[] {
-            baseWizard.first(),
-            toolsWizard.first(),
-        };
-        // Make sure list of steps is accurate.
-        List<String> steps = Arrays.asList(
-                baseWizard.second(),
-                toolsWizard.second()
-        );
-
-        // XXX should be lazy
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
-            assert steps.get(i) != null : "Missing name for step: " + i;
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent) c;
-                // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[0]));
-                // name
-                jc.setName(steps.get(i));
-            }
-        }
-    }
-
-    @Override
-    public void uninitialize(WizardDescriptor wizard) {
-        wizardDescriptor.putProperty(CreateProjectUtils.PROJECT_DIRECTORY, null);
-        wizardDescriptor.putProperty(CreateProjectUtils.PROJECT_NAME, null);
-        panels = null;
-    }
-
-    @Override
-    public WizardDescriptor.Panel<WizardDescriptor> current() {
-        wizardDescriptor.putProperty("NewProjectWizard_Title", Bundle.NewProjectWizardIterator_newProject_displayName()); // NOI18N
-        return panels[index];
-    }
-
-    @NbBundle.Messages({
-        "# {0} - current step index",
-        "# {1} - number of steps",
-        "NewProjectWizardIterator.name={0} of {1}"
-    })
-    @Override
-    public String name() {
-        return Bundle.NewProjectWizardIterator_name(index + 1, panels.length);
-    }
-
-    @Override
-    public boolean hasNext() {
-        return index < panels.length - 1;
-    }
-
-    @Override
-    public boolean hasPrevious() {
-        return index > 0;
-    }
-
-    @Override
-    public void nextPanel() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-        index++;
-    }
-
-    @Override
-    public void previousPanel() {
-        if (!hasPrevious()) {
-            throw new NoSuchElementException();
-        }
-        index--;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener l) {
-        // noop
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener l) {
-        // noop
     }
 
     private FileObject createMainFile(FileObject sources) throws IOException {

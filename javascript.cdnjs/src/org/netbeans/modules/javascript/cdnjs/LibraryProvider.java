@@ -170,7 +170,7 @@ public final class LibraryProvider {
      */
     void updateCache(String searchTerm, Library[] libraries) {
         if (libraries != null) {
-            WeakReference<Library[]> reference = new WeakReference<Library[]>(libraries);
+            WeakReference<Library[]> reference = new WeakReference<>(libraries);
             cache.put(searchTerm, reference);
         }
         propertyChangeSupport.firePropertyChange(searchTerm, null, libraries);
@@ -187,36 +187,33 @@ public final class LibraryProvider {
             "http://cdnjs.cloudflare.com/ajax/libs/{0}/{1}/{2}"); // NOI18N
 
     /**
-     * Downloads the files of the specified library version. The data are saved
-     * into temporary files that are returned.
+     * Downloads the specified file of the given library version. The data are saved
+     * into a temporary file that is returned.
      * 
-     * @param version library version to download (only libraries/versions
-     * returned by this provider can be downloaded).
-     * @return list of downloaded (temporary) files.
-     * @throws IOException when the downloading of the library failed.
+     * @param version library version whose file should be downloaded
+     * (only libraries/versions returned by this provider can be downloaded).
+     * @param fileIndex 0-based index of the file (in the version's list of files).
+     * @return downloaded (temporary) file.
+     * @throws IOException when the downloading of the file failed.
      */
-    public File[] downloadLibrary(Library.Version version) throws IOException {
+    public File downloadLibraryFile(Library.Version version, int fileIndex) throws IOException {
         String libraryName = version.getLibrary().getName();
         String versionName = version.getName();
         String[] fileNames = version.getFiles();
-        File[] files = new File[fileNames.length];
-        for (int i=0; i<files.length; i++) {
-            String fileName = fileNames[i];
-            String url = MessageFormat.format(LIBRARY_FILE_URL_PATTERN, libraryName, versionName, fileName);
-            URL urlObject = new URL(url);
-            URLConnection urlConnection = urlObject.openConnection();
-            try (InputStream input = urlConnection.getInputStream()) {
-                int index = fileName.lastIndexOf('.');
-                String prefix = (index == -1) ? fileName : fileName.substring(0,index);
-                String suffix = (index == -1) ? "" : fileName.substring(index);
-                File file = File.createTempFile(prefix, suffix);
-                try (OutputStream output = new FileOutputStream(file)) {
-                    FileUtil.copy(input, output);
-                    files[i] = file;
-                }
+        String fileName = fileNames[fileIndex];
+        String url = MessageFormat.format(LIBRARY_FILE_URL_PATTERN, libraryName, versionName, fileName);
+        URL urlObject = new URL(url);
+        URLConnection urlConnection = urlObject.openConnection();
+        try (InputStream input = urlConnection.getInputStream()) {
+            int index = fileName.lastIndexOf('.');
+            String prefix = (index == -1) ? fileName : fileName.substring(0,index);
+            String suffix = (index == -1) ? "" : fileName.substring(index);
+            File file = File.createTempFile(prefix, suffix);
+            try (OutputStream output = new FileOutputStream(file)) {
+                FileUtil.copy(input, output);
+                return file;
             }
         }
-        return files;
     }
 
     /** URL of the search web service. */
@@ -386,7 +383,7 @@ public final class LibraryProvider {
                 JSONObject fileData = (JSONObject)filesData.get(i);
                 files[i] = (String)fileData.get(PROPERTY_FILE_NAME);
             }
-            version.setFiles(files);
+            version.setFileInfo(files, null);
 
             return version;
         }
