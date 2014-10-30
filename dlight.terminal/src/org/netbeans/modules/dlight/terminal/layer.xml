@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+<!--    <folder name="Shortcuts">
+            <file name="SO-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-dlight-terminal-action-OpenInTerminalAction.instance"/>
+            </file>
+    </folder>-->
     <folder name="Windows2">
         <folder name="Components">
             <file name="TerminalContainerTopComponent.settings" url="ui/TerminalContainerTopComponentSettings.xml"/>

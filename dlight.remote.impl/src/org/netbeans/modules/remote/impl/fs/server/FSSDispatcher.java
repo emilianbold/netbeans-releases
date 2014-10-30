@@ -105,6 +105,7 @@ import org.openide.util.RequestProcessor;
     private static final int VERBOSE = Integer.getInteger("remote.fs_server.verbose", 0); // NOI18N
     private static final boolean LOG = Boolean.getBoolean("remote.fs_server.log");
     private static final String SERVER_CACHE = System.getProperty("remote.fs_server.remote.cache");
+    private static final int SERVER_THREADS = Integer.getInteger("remote.fs_server.threads", 0); // NOI18N
 
     // Actually this RP should have only 2 tasks: one reads error, another stdout;
     // but in the case of, say, connection failure and reconnect, old task can still be alive,
@@ -638,6 +639,10 @@ import org.openide.util.RequestProcessor;
             }
             if (cleanupUponStart) {
                 argsList.add("-c"); // NOI18N
+            }
+            if (SERVER_THREADS > 0 ) {
+                argsList.add("-t"); // NOI18N
+                argsList.add(Integer.toString(SERVER_THREADS));
             }
             this.args = argsList.toArray(new String[argsList.size()]);
             processBuilder.setArguments(this.args);

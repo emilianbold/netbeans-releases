@@ -89,4 +89,8 @@ public class CsmProgressAdapter implements CsmProgressListener {
     @Override
     public void fileAddedToParse(CsmFile file) {
     }
+
+    @Override
+    public void fileRemoved(CsmFile file) {
+    }
 }
