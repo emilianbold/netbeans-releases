@@ -407,7 +407,8 @@ public final class Manager {
 
     /**
      */
-    @NbBundle.Messages({"# {0} - project", "LBL_NotificationDisplayer_title=Tests finished successfully for project: {0}",
+    @NbBundle.Messages({"# {0} - number of successful tests", "# {1} - project", 
+        "LBL_NotificationDisplayer_title=Tests ({0}) finished successfully for project: {1}",
         "# {0} - project", 
         "LBL_NotificationDisplayer_NoTestsExecuted_title=No tests executed for project: {0}",
         "LBL_NotificationDisplayer_detailsText=Open Test Results Window"})
@@ -420,7 +421,7 @@ public final class Manager {
                 ? firstDisplay || sessionEnd
                 : sessionEnd;
 
-        SessionResult sessionResult = session.getSessionResult();
+        final SessionResult sessionResult = session.getSessionResult();
 	boolean automaticallyOpen = NbPreferences.forModule(StatisticsPanel.class).getBoolean(StatisticsPanel.PROP_ALWAYS_OPEN_TRW, false);
         if (automaticallyOpen || sessionResult.getErrors() + sessionResult.getFailed() > 0) {
             int displayIndex = getDisplayIndex(session);
@@ -444,7 +445,8 @@ public final class Manager {
                         } else if (!window.isOpened() || (window.isOpened() && !window.isShowing() && isInSlidingMode)) {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/ui/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
-                            String title = session.getSessionResult().getTotal() == 0 ? Bundle.LBL_NotificationDisplayer_NoTestsExecuted_title(projectname) : Bundle.LBL_NotificationDisplayer_title(projectname);
+                            int total = sessionResult.getTotal();
+                            String title = total == 0 ? Bundle.LBL_NotificationDisplayer_NoTestsExecuted_title(projectname) : Bundle.LBL_NotificationDisplayer_title(total, projectname);
                             
                             if(bubbleTask.cancel()) {
                                 bubbleTask.schedule(0);
