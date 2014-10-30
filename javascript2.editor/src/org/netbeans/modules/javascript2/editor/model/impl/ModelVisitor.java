@@ -126,7 +126,7 @@ public class ModelVisitor extends PathNodeVisitor {
         this.occurrenceBuilder = occurrenceBuilder;
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult; 
-        this.scriptName = fileObject != null ? fileObject.getName() : "";
+        this.scriptName = fileObject != null ? fileObject.getName().replace('.', '_') : "";
     }
 
     public JsObject getGlobalObject() {
