@@ -170,7 +170,7 @@ public final class LibraryProvider {
      */
     void updateCache(String searchTerm, Library[] libraries) {
         if (libraries != null) {
-            WeakReference<Library[]> reference = new WeakReference<Library[]>(libraries);
+            WeakReference<Library[]> reference = new WeakReference<>(libraries);
             cache.put(searchTerm, reference);
         }
         propertyChangeSupport.firePropertyChange(searchTerm, null, libraries);
