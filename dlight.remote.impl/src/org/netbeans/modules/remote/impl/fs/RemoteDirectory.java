@@ -1600,7 +1600,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         DirectoryStorage storage = getExistingDirectoryStorage();
         if (storage ==  null ||storage == DirectoryStorage.EMPTY) {
-            return;
+            if (!getFlag(CONNECTION_ISSUES)) {
+                return;
+            }
         }
         // unfortunately we can't skip refresh if there is a storage but no children exists
         // in this case we have to reafresh just storage - but for the time being only RemoteDirectory can do that
