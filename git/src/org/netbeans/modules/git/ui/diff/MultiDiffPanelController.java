@@ -58,6 +58,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -86,7 +87,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -95,6 +95,7 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient.DiffMode;
 import org.netbeans.libs.git.GitException;
@@ -785,7 +786,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                                     if (p == diffView && !isCanceled()) {
                                         final JEditorPane editorPane = new JEditorPane();
                                         final EditorKit editorKit = CloneableEditorSupport.getEditorKit(TEXT_DIFF);
-                                        final Document doc = prepareDoc(bos, editorKit);
+                                        final Document doc = prepareDoc(bos.toString(findEncoding()), editorKit);
+                                        bos.reset();
                                         EventQueue.invokeLater(new Runnable() {
 
                                             @Override
@@ -806,7 +808,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                                             }
                                         });
                                     }
-                                } catch (GitException | BadLocationException ex) {
+                                } catch (GitException | BadLocationException | UnsupportedEncodingException ex) {
                                     GitClientExceptionHandler.notifyException(ex, true);
                                 } finally {
                                     EventQueue.invokeLater(new Runnable() {
@@ -819,13 +821,22 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                                     });
                                 }
                             }
+                            
+                            private String findEncoding () {
+                                for (File f : actionRoots.getValue()) {
+                                    FileObject fo = FileUtil.toFileObject(f);
+                                    if (fo != null && fo.isValid() && fo.isData()) {
+                                        return FileEncodingQuery.getEncoding(fo).name();
+                                    }
+                                }
+                                return "UTF-8"; //NOI18N
+                            }
 
-                            private Document prepareDoc (ByteArrayOutputStream bos, EditorKit editorKit) throws BadLocationException {
+                            private Document prepareDoc (String content, EditorKit editorKit) throws BadLocationException {
                                 Document doc = editorKit.createDefaultDocument();
                                 doc.putProperty("mimeType", TEXT_DIFF); //NOI18N
                                 doc.remove(0, doc.getLength());
-                                doc.insertString(0, bos.toString(), null);
-                                bos.reset();
+                                doc.insertString(0, content, null);
                                 return doc;
                             }
 
