@@ -888,14 +888,21 @@ public class ClientSideProject implements Project {
         }
 
         private FileObject[] getRoots() {
-            List<FileObject> roots = new ArrayList<FileObject>();
-            addRoots(roots, project.getSiteRootFolder(), project.getTestsFolder(false));
+            List<FileObject> roots = new ArrayList<>();
+            FileObject projectDir = project.getProjectDirectory();
+            roots.add(projectDir);
+            addRoots(roots, projectDir, project.getSourcesFolder(), project.getSiteRootFolder(), project.getTestsFolder(false));
             return roots.toArray(new FileObject[roots.size()]);
         }
 
-        private void addRoots(List<FileObject> result, FileObject... roots) {
+        /**
+         * Add extra roots, skip the ones that are underneath the project
+         * directory (already included in search).
+         */
+        private void addRoots(List<FileObject> result, FileObject projectDir, FileObject... roots) {
             for (FileObject root : roots) {
-                if (root != null) {
+                if (root != null
+                        && !FileUtil.isParentOf(projectDir, root)) {
                     result.add(root);
                 }
             }
