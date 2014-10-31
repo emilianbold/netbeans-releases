@@ -54,12 +54,19 @@ import org.openide.util.HelpCtx;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -72,7 +79,7 @@ import org.openide.util.lookup.Lookups;
  */
 @TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_ALWAYS, preferredID=HgVersioningTopComponent.PREFERRED_ID)
 @TopComponent.Registration(mode="output", openAtStartup=false, position=3109)
-public class HgVersioningTopComponent extends TopComponent implements Externalizable {
+public class HgVersioningTopComponent extends TopComponent implements Externalizable, PropertyChangeListener {
    
     private static final long serialVersionUID = 1L;    
     
@@ -84,6 +91,7 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
     public static final String PREFERRED_ID = "hgversioningTC"; // NOI18N
     
     private static HgVersioningTopComponent instance;
+    private WorkingCopyInfo info;
 
     public HgVersioningTopComponent() {
         putClientProperty("SlidingName", NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
@@ -168,6 +176,9 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
      * @param branchTitle a new content title, e.g. "release40" branch // NOI18N
      */ 
     void setBranchTitle(String branchTitle) {
+        if (branchTitle == null) {
+            branchTitle = NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_VersioningView_UnnamedBranchTitle"); //NOI18N
+        }
         this.branchTitle = branchTitle;
         updateTitle();
     }
@@ -263,7 +274,7 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
             setCursor(Cursor.getDefaultCursor());
             context = ctx;
             syncPanel.setContext(ctx);
-            setBranchTitle(NbBundle.getMessage(HgVersioningTopComponent.class, "CTL_VersioningView_UnnamedBranchTitle")); // NOI18N
+            refreshBranchName();
             refreshContent();
         }
         setToolTipText(getName());
@@ -272,5 +283,38 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
     /** Tests whether it shows some content. */
     public boolean hasContext() {
         return context != null && context.getRootFiles().size() > 0;
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (WorkingCopyInfo.PROPERTY_CURRENT_BRANCH.equals(evt.getPropertyName())) {
+            setBranchTitle(((String) evt.getNewValue()));
+            updateTitle();
+        }
+    }
+    
+    void refreshBranchName () {
+        Runnable runnable = new Runnable () {
+            @Override
+            public void run() {
+                if (info != null) {
+                    info.removePropertyChangeListener(HgVersioningTopComponent.this);
+                    info = null;
+                }
+                Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
+                String label = null;
+                if (repositoryRoots.size() == 1) {
+                    info = WorkingCopyInfo.getInstance(repositoryRoots.iterator().next());
+                    info.addPropertyChangeListener(HgVersioningTopComponent.this);
+                    label = info.getCurrentBranch();
+                }
+                setBranchTitle(label);
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            Utils.post(runnable);
+        } else {
+            runnable.run();
+        }
     }
 }

@@ -2847,6 +2847,7 @@ public abstract class HgCommand<T> implements Callable<T> {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger); //NOI18N
             }
         }
+        WorkingCopyInfo.refreshAsync(repository);
     }
 
     public static HgTag[] getTags (File repository, OutputLogger logger) throws HgException {
