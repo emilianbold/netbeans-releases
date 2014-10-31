@@ -404,12 +404,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private Gdb.Factory factory;
 
-    private void start2(Executor executor,
-			String additionalArgv[],
-			Gdb.Factory.Listener listener,
-			boolean connectExisting) {
+    private void start2(final Executor executor,
+			final String additionalArgv[],
+			final Gdb.Factory.Listener listener,
+			final boolean connectExisting) {
 
-	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
+	final String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
 
 	// SHOULD process OPTION_EXEC32?
         String runDir = gdi.getRunDir();
@@ -419,20 +419,35 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             runDir = localToRemote("gdbRunDirectory", runDir); // NOI18N
         }
         
-        if (!CndFileUtils.isExistingDirectory(FileSystemProvider.getFileSystem(executor.getExecutionEnvironment()), runDir)) {
-            NativeDebuggerManager.error(Catalog.format("MSG_NonExistentWorkDir", runDir)); // NOI18N
-            kill();
-            return;
-        }
+        final String finalRunDir = runDir;
+        
+        NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
 
-	factory = new Gdb.Factory(executor, additionalArgv,
-	    listener, false, isShortName(),
-	    gdbInitFile,
-	    getHost(),
-	    connectExisting,
-            runDir,
-	    gdi);
-	factory.start();
+            @Override
+            public void run() {
+                final boolean exists = CndFileUtils.isExistingDirectory(FileSystemProvider.getFileSystem(executor.getExecutionEnvironment()), finalRunDir);
+                
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (!exists) {
+                            NativeDebuggerManager.error(Catalog.format("MSG_NonExistentWorkDir", finalRunDir)); // NOI18N
+                            kill();
+                            return;
+                        }
+                        factory = new Gdb.Factory(executor, additionalArgv,
+                            listener, false, isShortName(),
+                            gdbInitFile,
+                            getHost(),
+                            connectExisting,
+                            finalRunDir,
+                            gdi);
+                        factory.start();
+                    }
+                });
+            }
+        });
     }
 
     /* OLD
