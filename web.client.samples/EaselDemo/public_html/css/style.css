@@ -136,3 +136,11 @@ form.signin input::-webkit-input-placeholder { color:#bbb; text-shadow:0 0 2px #
 }
 .button:hover { background:#ddd; }
 
+#tweetText{
+    color: #999 !important;
+    font-size: 12px;
+}
+#dataSource{
+    font-size: 0.7em;
+    color: #999 !important;
+}

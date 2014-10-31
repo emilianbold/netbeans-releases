@@ -116,7 +116,7 @@ and open the template in the editor.
             </div>
             <div class="row-fluid">
                 <div class="span4">
-                    <div id="jsonp_test" style="position: relative;"><a class="btn tweet-window" href="#tweetBox" >Newest JavaOne Tweet</a></div>
+                    <div id="jsonp_test" style="position: relative;"><a class="btn tweet-window" href="#tweetBox" >Show weather in Prague</a></div>
                 </div>
             </div>
         </div>
@@ -126,15 +126,14 @@ and open the template in the editor.
             <form method='post' class='signin' action='#'>
                 <fieldset class='tweetbox'>
                     <label>
-                        <span><img id="tweetImg" class='avatar' src=''/></span>
+                        <span id="tweetImg"></span>
                     </label>
                     <label>
                         <span id="tweetUsername" class='username'></span>
 			<span id="tweetUser" style="font-size: 12px;"></span>
                     </label>
-                    <label>
-                        <textarea id="tweetText" cols='20' rows='7' readonly='readonly'></textarea>
-                    </label>
+                    <div id="tweetText" ></div><br/>
+                    <div id="dataSource">Data from <a href="http://openweathermap.org">openweathermap.org</a></div>
                 </fieldset>
             </form>
         </div>
