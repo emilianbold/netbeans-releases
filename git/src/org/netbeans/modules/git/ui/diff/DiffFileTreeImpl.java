@@ -58,7 +58,7 @@ import org.openide.nodes.PropertySupport;
  *
  * @author Ondrej Vrabec
  */
-class DiffFileTreeImpl extends FileTreeView<DiffNode> {
+class DiffFileTreeImpl extends FileTreeView<DiffNode> implements DiffFileViewComponent<DiffNode> {
     
     private final MultiDiffPanelController master;
 
@@ -101,8 +101,8 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     @Override
     protected JPopupMenu getPopup () {
         List<Node> nodes = getSelectedNodes();
-        List<File> files = toFiles(nodes);
-        return master.getPopupFor(nodes.toArray(new Node[nodes.size()]), files.toArray(new File[files.size()]));
+        File[] files = toFiles(nodes);
+        return master.getPopupFor(nodes.toArray(new Node[nodes.size()]), files);
     }
     
     @Override
@@ -118,7 +118,12 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         });
     }
 
-    private List<File> toFiles (List<Node> nodes) {
+    @Override
+    public File[] getSelectedFiles () {
+        return toFiles(getSelectedNodes());
+    }
+
+    private File[] toFiles (List<Node> nodes) {
         List<File> files = new ArrayList<>(nodes.size());
         for (Node n : nodes) {
             File f = n.getLookup().lookup(File.class);
@@ -126,7 +131,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
                 files.add(f);
             }
         }
-        return files;
+        return files.toArray(new File[files.size()]);
     }
     
     private static class ColumnDescriptor<T> extends PropertySupport.ReadOnly<T> {
