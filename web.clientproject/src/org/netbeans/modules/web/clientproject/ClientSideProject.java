@@ -129,7 +129,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.EditableProperties;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -504,7 +503,6 @@ public class ClientSideProject implements Project {
                configuration,
                projectHelper.createCacheDirectoryProvider(),
                projectHelper.createAuxiliaryProperties(),
-               getEvaluator(),
                new ClientSideProjectLogicalView(this),
                new RecommendedAndPrivilegedTemplatesImpl(),
                new ClientSideProjectActionProvider(this),
