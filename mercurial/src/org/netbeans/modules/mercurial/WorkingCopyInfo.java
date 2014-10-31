@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
@@ -66,7 +67,12 @@ public class WorkingCopyInfo {
     /**
      * Fired when a working copy parents change
      */
-    public static String PROPERTY_WORKING_COPY_PARENT = WorkingCopyInfo.class.getName() + ".workingCopyParents"; //NOI18N
+    public static final String PROPERTY_WORKING_COPY_PARENT = WorkingCopyInfo.class.getName() + ".workingCopyParents"; //NOI18N
+
+    /**
+     * Fired when the current branch name changes
+     */
+    public static final String PROPERTY_CURRENT_BRANCH = WorkingCopyInfo.class.getName() + ".currBranch"; //NOI18N
 
     private static final WeakHashMap<File, WorkingCopyInfo> cache = new WeakHashMap<File, WorkingCopyInfo>(5);
     private static final Logger LOG = Logger.getLogger(WorkingCopyInfo.class.getName());
@@ -76,6 +82,7 @@ public class WorkingCopyInfo {
     private final WeakReference<File> rootRef;
     private final PropertyChangeSupport propertyChangeSupport;
     private HgLogMessage[] parents = new HgLogMessage[0];
+    private String branch = HgBranch.DEFAULT_NAME;
 
     private WorkingCopyInfo (File root) {
         rootRef = new WeakReference<File>(root);
@@ -125,6 +132,8 @@ public class WorkingCopyInfo {
                 LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
                 List<HgLogMessage> parentInfo = HgCommand.getParents(root, null, null);
                 setParents(parentInfo);
+                String branch = HgCommand.getBranch(root);
+                setBranch(branch);
             }
         } catch (HgException.HgCommandCanceledException ex) {
             // nothing
@@ -155,6 +164,10 @@ public class WorkingCopyInfo {
         return parents;
     }
 
+    public String getCurrentBranch () {
+        return branch;
+    }
+
     private void setParents (List<HgLogMessage> parents) {
         HgLogMessage[] oldParents = this.parents;
         boolean changed = oldParents.length != parents.size();
@@ -179,6 +192,17 @@ public class WorkingCopyInfo {
             HgLogMessage[] newParents = parents.toArray(new HgLogMessage[parents.size()]);
             this.parents = newParents;
             propertyChangeSupport.firePropertyChange(PROPERTY_WORKING_COPY_PARENT, oldParents, newParents);
+        }
+    }
+    
+    private void setBranch (String branch) {
+        if (branch == null) {
+            branch = HgBranch.DEFAULT_NAME;
+        }
+        String oldBranch = this.branch;
+        this.branch = branch;
+        if (!oldBranch.equals(this.branch)) {
+            propertyChangeSupport.firePropertyChange(PROPERTY_CURRENT_BRANCH, oldBranch, branch);
         }
     }
 

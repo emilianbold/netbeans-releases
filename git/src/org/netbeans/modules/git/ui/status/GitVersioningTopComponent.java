@@ -292,11 +292,12 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
             public void run() {
                 if (repositoryInfo != null) {
                     repositoryInfo.removePropertyChangeListener(GitVersioningTopComponent.this);
+                    repositoryInfo = null;
                 }
                 Set<File> repositoryRoots = GitUtils.getRepositoryRoots(context);
                 branchTitle = null;
                 if (repositoryRoots.size() == 1) {
-                    RepositoryInfo repositoryInfo = RepositoryInfo.getInstance(repositoryRoots.iterator().next());
+                    repositoryInfo = RepositoryInfo.getInstance(repositoryRoots.iterator().next());
                     GitBranch branch = repositoryInfo.getActiveBranch();
                     if (branch != null) {
                         setBranchTitle(branch);

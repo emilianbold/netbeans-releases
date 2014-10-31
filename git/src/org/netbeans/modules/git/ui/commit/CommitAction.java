@@ -129,6 +129,9 @@ public class CommitAction extends SingleRepositoryAction {
     }
 
     @Override
+    @NbBundle.Messages({
+        "# {0} - counted context", "# {1} - current branch", "CTL_CommitPanel.title={0} - {1}"
+    })
     protected void performAction (final File repository, final File[] roots, final VCSContext context) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         info.refresh();
@@ -138,6 +141,7 @@ public class CommitAction extends SingleRepositoryAction {
         final GitRepositoryState state = info.getRepositoryState();
         final GitUser user = identifyUser(repository);
         final String mergeCommitMessage = getMergeCommitMessage(repository, state);
+        final String title = Bundle.CTL_CommitPanel_title(Utils.getContextDisplayName(context), info.getActiveBranch().getName());
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -146,7 +150,7 @@ public class CommitAction extends SingleRepositoryAction {
                         ? GitCommitPanelMerged.create(roots, repository, user, mergeCommitMessage)
                         : GitCommitPanel.create(roots, repository, user, isFromGitView(context));
                 VCSCommitTable<GitLocalFileNode> table = panel.getCommitTable();
-                boolean ok = panel.open(context, new HelpCtx("org.netbeans.modules.git.ui.commit.CommitAction")); //NOI18N
+                boolean ok = panel.open(context, new HelpCtx("org.netbeans.modules.git.ui.commit.CommitAction"), title); //NOI18N
 
                 if (ok) {
                     final List<GitLocalFileNode> commitFiles = table.getCommitFiles();

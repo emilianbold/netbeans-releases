@@ -184,10 +184,10 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
     }
 
     @Override
-    public boolean open (VCSContext context, HelpCtx helpCtx) {
+    public boolean open (VCSContext context, HelpCtx helpCtx, String title) {
         // synchronize access to this static field
         assert EventQueue.isDispatchThread();
-        boolean ok = super.open(context, helpCtx);
+        boolean ok = super.open(context, helpCtx, title);
         GitProgressSupport supp = support;
         if (supp != null) {
             supp.cancel();
