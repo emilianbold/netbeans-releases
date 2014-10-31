@@ -141,8 +141,57 @@ public abstract class BaseProvider implements DiscoveryProvider {
     protected final RelocatablePathMapper getRelocatablePathMapper() {
         return mapper;
     }
+    
+    protected  final CompilerSettings getCommpilerSettings(){
+        return myCommpilerSettings;
+    }    
 
-    protected final FileObject resolvePath(ProjectProxy project, String buildArtifact, final FileSystem fileSystem, SourceFileProperties f, String name) {
+    abstract protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage);
+    
+    protected void before() {
+    }
+
+    protected void after() {
+    }
+    
+    protected final List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project,
+            Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
+        try{
+            before();
+            Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
+            if (objFileName.length == 1) {
+                String oldThreadName = Thread.currentThread().getName();
+                try {
+                    Thread.currentThread().setName("Analyzing "+objFileName[0]); // NOI18N
+                    processArtifactFile(objFileName[0], map, progress, project, dlls, buildArtifacts, storage);
+                } catch (Throwable ex) {
+                    ex.printStackTrace(System.err);
+                }
+                Thread.currentThread().setName(oldThreadName);
+            } else {
+                CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
+                RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
+                for (String file : objFileName) {
+                    MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls, buildArtifacts, storage);
+                    rp.post(r);
+                }
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
+            list.addAll(map.values());
+            return list;
+        } finally {
+            PathCache.dispose();
+            getCommpilerSettings().dispose();
+            after();
+        }
+    }
+
+    private final FileObject resolvePath(ProjectProxy project, String buildArtifact, final FileSystem fileSystem, SourceFileProperties f, String name) {
         FileObject fo = fileSystem.findResource(name);
         if (!(f instanceof Relocatable)) {
             return fo;
@@ -228,50 +277,8 @@ public abstract class BaseProvider implements DiscoveryProvider {
         }
         return null;
     }
-    
-    abstract protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage);
-    
-    protected void before() {
-    }
-
-    protected void after() {
-    }
-    
-    protected final List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project,
-            Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
-        try{
-            before();
-            Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
-            if (objFileName.length == 1) {
-                try {
-                    processObjectFile(objFileName[0], map, progress, project, dlls, buildArtifacts, storage);
-                } catch (Throwable ex) {
-                    ex.printStackTrace(System.err);
-                }
-            } else {
-                CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
-                RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
-                for (String file : objFileName) {
-                    MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls, buildArtifacts, storage);
-                    rp.post(r);
-                }
-                try {
-                    countDownLatch.await();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
-            list.addAll(map.values());
-            return list;
-        } finally {
-            PathCache.dispose();
-            getCommpilerSettings().dispose();
-            after();
-        }
-    }
-    
-    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
+        
+    private boolean processArtifactFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
         if (isStoped.get()) {
             return true;
         }
@@ -379,10 +386,6 @@ public abstract class BaseProvider implements DiscoveryProvider {
         return sum;
     }
         
-    public final CompilerSettings getCommpilerSettings(){
-        return myCommpilerSettings;
-    }   
-    
     private class MyRunnable implements Runnable {
         private final String file;
         private final Map<String, SourceFileProperties> map;
@@ -409,7 +412,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
             try {
                 if (!isStoped.get()) {
                     Thread.currentThread().setName("Parallel analyzing "+file); // NOI18N
-                    processObjectFile(file, map, progress, project, dlls, buildArtifacts, storage);
+                    processArtifactFile(file, map, progress, project, dlls, buildArtifacts, storage);
                 }
             } finally {
                 countDownLatch.countDown();
