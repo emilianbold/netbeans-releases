@@ -213,22 +213,23 @@ public abstract class RemoteFileObjectBase {
     protected final Enumeration<FileChangeListener> getListeners() {
         return Collections.enumeration(listeners);
     }
-    
+
     protected final Enumeration<FileChangeListener> getListenersWithParent() {
-        RemoteFileObjectBase p = getParent();
-        if (p == null) {
-            return getListeners();
+        return joinListeners(this, getParent());
+    }
+
+    protected static final Enumeration<FileChangeListener> joinListeners(RemoteFileObjectBase fo1, RemoteFileObjectBase fo2) {
+        if (fo1 == null || fo1.listeners.isEmpty()) {
+            return (fo2 == null) ? Collections.<FileChangeListener>emptyEnumeration() : fo2.getListeners();
+        } else if (fo2 == null || fo2.listeners.isEmpty()) {
+            return (fo1 == null) ? Collections.<FileChangeListener>emptyEnumeration() : fo1.getListeners();
+        } else {
+            List<FileChangeListener> result = new ArrayList<FileChangeListener>(fo1.listeners.size() + fo2.listeners.size());
+            result.addAll(fo1.listeners);
+            result.addAll(fo2.listeners);
+            return Collections.enumeration(result);
         }
-        Enumeration<FileChangeListener> parentListeners = p.getListeners();
-        if (!parentListeners.hasMoreElements()) {
-            return getListeners();
-        }
-        List<FileChangeListener> result = new ArrayList<FileChangeListener>(listeners);
-        while (parentListeners.hasMoreElements()) {
-            result.add(parentListeners.nextElement());
-        }
-        return Collections.enumeration(result);
-    }    
+    }
 
     public void addRecursiveListener(FileChangeListener fcl) {
         if (isFolder()) {
@@ -657,7 +658,7 @@ public abstract class RemoteFileObjectBase {
             }
             // check there are no other child with such name
             if (p.getOwnerFileObject().getFileObject(newNameExt) != null) {
-                throw new IOException("Can not rename to " + newNameExt + ": the file already exists");//NOI18N
+                RemoteIOException.createAndThrow("EXC_CannotRename", getNameExt(), getParent().getPath(), newNameExt);// NOI18N
             }
             
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
