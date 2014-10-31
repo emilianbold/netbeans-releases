@@ -168,6 +168,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
     public @Override InputStream getActionDefinitionStream() {
         return getActionDefinitionStream(id);
     }
+    
     final InputStream getActionDefinitionStream(String forId) {
         checkListener();
         FileObject fo = projectDirectory.getFileObject(getFileNameExt(forId));
@@ -179,7 +180,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
                 LOG.log(Level.WARNING, "Cannot read " + fo, ex); // NOI18N
             }
         }
-       return null;
+        return null;
     }
     
     private synchronized void checkListener() {
@@ -315,7 +316,10 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
                 NetbeansBuildActionXpp3Writer writer = new NetbeansBuildActionXpp3Writer();
                 StringWriter str = new StringWriter();
                 try {
-                    InputStream in = getActionDefinitionStream(DEFAULT);
+                    InputStream in = getActionDefinitionStream();
+                    if (in == null) {
+                      in = getActionDefinitionStream(DEFAULT);
+                    }
                     if (in == null) {
                         return null;
                     }
