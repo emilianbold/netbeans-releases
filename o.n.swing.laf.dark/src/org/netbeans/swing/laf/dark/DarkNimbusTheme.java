@@ -57,6 +57,11 @@ import javax.swing.text.html.StyleSheet;
 public class DarkNimbusTheme {
 
     public static void install( LookAndFeel laf ) {
+
+        Color caretForeground = new Color( 230, 230, 230);
+        Color selectionBackground = new Color( 104, 93, 156);
+        Color selectedText = new Color( 255, 255, 255);        
+        
         UIManager.put( "nb.dark.theme", Boolean.TRUE );
         UIManager.put( "control", new Color( 128, 128, 128) );
         UIManager.put( "info", new Color(128,128,128) );
@@ -69,8 +74,8 @@ public class DarkNimbusTheme {
         UIManager.put( "nimbusLightBackground", new Color( 18, 30, 49) );
         UIManager.put( "nimbusOrange", new Color(191,98,4) );
         UIManager.put( "nimbusRed", new Color(169,46,34) );
-        UIManager.put( "nimbusSelectedText", new Color( 255, 255, 255) );
-        UIManager.put( "nimbusSelectionBackground", new Color( 104, 93, 156) );
+        UIManager.put( "nimbusSelectedText", selectedText );
+        UIManager.put( "nimbusSelectionBackground", selectionBackground );
         UIManager.put( "text", new Color( 230, 230, 230) );
 //        UIManager.put( "nb.imageicon.filter", new DarkIconFilter() );
         UIManager.put( "nb.errorForeground", new Color(127,0,0) ); //NOI18N
@@ -128,9 +133,12 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.startpage.contentheader.color1", new Color(12,33,61) ); //NOI18N
         UIManager.put( "nb.startpage.contentheader.color2", new Color(16,24,42) ); //NOI18N
 
-        UIManager.put( "nb.popupswitcher.background", new Color(18, 30, 49) );
+        UIManager.put( "nb.popupswitcher.background", new Color(18, 30, 49) ); //NOI18N
 
-        UIManager.put( "nb.editor.errorstripe.caret.color", new Color(230, 230, 230) ); //NOI18N
+        UIManager.put( "TextField.selectionForeground", selectedText); //NOI18N
+        UIManager.put( "TextField.selectionBackground", selectionBackground); //NOI18N
+        UIManager.put( "TextField.caretForeground", caretForeground); //NOI18N
+        UIManager.put( "nb.editor.errorstripe.caret.color", caretForeground ); //NOI18N        
 
         UIManager.put( "nb.wizard.hideimage", Boolean.TRUE ); //NOI18N
 
@@ -228,7 +236,7 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.explorer.noFocusSelectionBackground", UIManager.get( "nimbusSelectionBackground") );
 
         //search in projects
-        UIManager.put("nb.search.sandbox.highlight", new Color(104, 93, 156));
+        UIManager.put("nb.search.sandbox.highlight", selectionBackground);
         UIManager.put("nb.search.sandbox.regexp.wrong", new Color(255, 71, 71));
    }
 }
