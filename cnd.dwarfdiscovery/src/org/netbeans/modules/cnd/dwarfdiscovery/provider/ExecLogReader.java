@@ -203,11 +203,9 @@ public final class ExecLogReader {
                             break;
                         }
                         if (logType == 0) {
-                            if (line.startsWith("called:")) {
-                                //NOI18N
+                            if (line.startsWith("called:")) { //NOI18N
                                 logType = 1;
-                            } else if (line.trim().startsWith("[")) {
-                                //NOI18N
+                            } else if (line.trim().startsWith("[")) { //NOI18N
                                 logType = 2;
                             }
                         }
@@ -219,13 +217,11 @@ public final class ExecLogReader {
                             }
                         }
                         if (logType == 1) {
-                            if (line.startsWith("called:")) {
-                                //NOI18N
+                            if (line.startsWith("called:")) { //NOI18N
                                 tool = line.substring(7).trim();
                                 continue;
                             }
-                            if (line.startsWith("\t")) {
-                                //NOI18N
+                            if (line.startsWith("\t")) { //NOI18N
                                 params.add(line.substring(1).trim());
                                 continue;
                             }
@@ -246,16 +242,13 @@ public final class ExecLogReader {
                             }
                         } else if (logType == 2) {
                             line = line.trim();
-                            if (line.startsWith("[") || line.startsWith("]")) {
-                                // NOI18N
+                            if (line.startsWith("[") || line.startsWith("]")) { // NOI18N
                                 continue;
                             }
-                            if (line.startsWith("{")) {
-                                // NOI18N
+                            if (line.startsWith("{")) { // NOI18N
                                 continue;
                             }
-                            if (line.startsWith("}")) {
-                                // NOI18N
+                            if (line.startsWith("}")) { // NOI18N
                                 if (directory != null && command != null && cu != null) {
                                     // create new result entry
                                     try {
@@ -311,8 +304,7 @@ public final class ExecLogReader {
     }
 
     private String removeQuotes(String s) {
-        if (s.endsWith(",")) {
-            // NOI18N
+        if (s.endsWith(",")) { // NOI18N
             s = s.substring(0, s.length() - 1);
         }
         return DiscoveryUtils.removeQuotes(s);
@@ -336,8 +328,7 @@ public final class ExecLogReader {
         } else {
             compiler = tool;
         }
-        if (compiler.endsWith(".exe")) {
-            // NOI18N
+        if (compiler.endsWith(".exe")) { // NOI18N
             compiler = compiler.substring(0, compiler.lastIndexOf('.')); //NOI18N
         }
         if (C_NAMES.contains(compiler)) {
@@ -416,8 +407,7 @@ public final class ExecLogReader {
         List<String> args = new ArrayList<String>();
         while (iterator.hasNext()) {
             String next = iterator.next();
-            if (next.startsWith("@")) {
-                //NOI18N
+            if (next.startsWith("@")) { //NOI18N
                 final String relPath = next.substring(1);
                 String filePath;
                 if (CndPathUtilities.isPathAbsolute(relPath)) {
@@ -435,8 +425,7 @@ public final class ExecLogReader {
                             List<String> additional = DiscoveryUtils.scanCommandLine(next, DiscoveryUtils.LogOrigin.DwarfCompileLine);
                             for (String option : additional) {
                                 if (option.startsWith("'") && option.endsWith("'") || // NOI18N
-                                option.startsWith("\"") && option.endsWith("\"")) {
-                                    // NOI18N
+                                option.startsWith("\"") && option.endsWith("\"")) { // NOI18N
                                     if (option.length() >= 2) {
                                         option = option.substring(1, option.length() - 1);
                                     }
@@ -461,8 +450,7 @@ public final class ExecLogReader {
             if (what == null) {
                 continue;
             }
-            if (what.endsWith(".s") || what.endsWith(".S")) {
-                //NOI18N
+            if (what.endsWith(".s") || what.endsWith(".S")) { //NOI18N
                 // It seems assembler file was compiled by C compiler.
                 // Exclude assembler files from C/C++ code model.
                 continue;
@@ -515,11 +503,9 @@ public final class ExecLogReader {
             //FileObject f = fileSystem.findResource(fullName);
             //if (f != null && f.isValid() && f.isData()) {
             fullName = PathCache.getString(fullName);
-            if (artifacts.languageArtifacts.contains("c")) {
-                // NOI18N
+            if (artifacts.languageArtifacts.contains("c")) { // NOI18N
                 language = ItemProperties.LanguageKind.C;
-            } else if (artifacts.languageArtifacts.contains("c++")) {
-                // NOI18N
+            } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
                 language = ItemProperties.LanguageKind.CPP;
             } else {
                 if (language == ItemProperties.LanguageKind.Unknown) {
@@ -529,8 +515,7 @@ public final class ExecLogReader {
                     } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
                         language = ItemProperties.LanguageKind.C;
                     }
-                } else if (language == ItemProperties.LanguageKind.C && !compiler.equals("cc")) {
-                    // NOI18N
+                } else if (language == ItemProperties.LanguageKind.C && !compiler.equals("cc")) { // NOI18N
                     // GNU driver detect language by mime type
                     String mime = MIMESupport.getKnownSourceFileMIMETypeByExtension(fullName);
                     if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
@@ -610,9 +595,8 @@ public final class ExecLogReader {
 
     private void processLibrary(String tool, List<String> args, CompileLineStorage storage) {
         //TODO: get library name
-        if ("ar".equals(tool)) {
-        } else if ("ld".equals(tool)) {
-            // NOI18N
+        if ("ar".equals(tool)) { // NOI18N
+        } else if ("ld".equals(tool)) { // NOI18N
             // executable or dynamic library
             //called: /usr/ccs/bin/ld
             //        /var/tmp/alsimon-cnd-test-downloads/pkg-config-0.25/glib-1.2.10/gmodule
@@ -648,8 +632,7 @@ public final class ExecLogReader {
             String binary = null;
             while (iterator.hasNext()) {
                 String option = iterator.next();
-                if ("-o".equals(option)) {
-                    // NOI18N
+                if ("-o".equals(option)) { // NOI18N
                     if (iterator.hasNext()) {
                         binary = iterator.next();
                         break;
