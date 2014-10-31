@@ -55,21 +55,23 @@ $(document).ready(function() {
 
 });
 
-function loadTweetData() {
-    $.getJSON('http://search.twitter.com/search.json?q=JavaOne&callback=?', function(data) {
-       $("#tweetImg").attr("src",data.results[0].profile_image_url);
-       $("#tweetUsername").text(data.results[0].from_user_name);
-       $("#tweetUser").text("( @"+ data.results[0].from_user + " )");
-       $("#tweetText").text(data.results[0].text);
+function loadWeather() {
+    $.getJSON('http://api.openweathermap.org/data/2.5/find?q=Prague,cz&units=metric', function(data) {
+        var result = data.list[0];
+       $("#tweetImg").html("<img class='avatar' src='http://openweathermap.org/img/w/"+result.weather[0].icon+".png'/>");
+
+       $("#tweetUsername").html(result.main.temp+" &deg;C");
+       $("#tweetUser").text("Current weather in Prague");
+       $("#tweetText").html(result.weather[0].main+"<br/>Humidity: "+result.main.humidity+" %<br/>Max. temperature: "+result.main.temp_max+" &deg;C<br/>Min. temperature: "+result.main.temp_min+" &deg;C<br/>");
     });
 }
 
-// This is the twitter Popup code section
+// This is the Weather Popup code section
 $(document).ready(function() {
 	$('a.tweet-window').click(function() {
 		
 		// Loading the data from a REST call
-                loadTweetData();
+                loadWeather();
 
 		//Getting the variable's value from a link 
 		var tweetBox = $(this).attr('href');

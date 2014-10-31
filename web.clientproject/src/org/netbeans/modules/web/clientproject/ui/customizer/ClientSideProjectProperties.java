@@ -65,6 +65,7 @@ import org.openide.util.EditableProperties;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -73,6 +74,8 @@ import org.openide.util.NbBundle;
 public final class ClientSideProjectProperties {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectProperties.class.getName());
+
+    private static final RequestProcessor RP = new RequestProcessor(ClientSideProjectProperties.class);
 
     final ClientSideProject project;
 
@@ -111,7 +114,12 @@ public final class ClientSideProjectProperties {
                     return null;
                 }
             });
-            firePropertyChanges();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    firePropertyChanges();
+                }
+            }, 100);
         } catch (MutexException | IOException e) {
             LOGGER.log(Level.WARNING, null, e);
         }
