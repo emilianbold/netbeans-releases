@@ -76,7 +76,7 @@ public final class AggregateProgressFactory extends BasicAggregateProgressFactor
      */
     public static AggregateProgressHandle createHandle(String displayName, ProgressContributor[] contributors, 
                                                        Cancellable allowToCancel, Action linkOutput) {
-        return new AggregateProgressHandle(displayName, contributors, allowToCancel, false,
+        return doCreateHandle(displayName, contributors, allowToCancel, false,
                 ProgressHandleFactory.createHandle(displayName, allowToCancel, linkOutput));
     }
     
@@ -94,7 +94,7 @@ public final class AggregateProgressFactory extends BasicAggregateProgressFactor
      */
     public static AggregateProgressHandle createSystemHandle(String displayName, ProgressContributor[] contributors, 
                                                        Cancellable allowToCancel, Action linkOutput) {
-        return new AggregateProgressHandle(displayName, contributors, allowToCancel, true,
+        return doCreateHandle(displayName, contributors, allowToCancel, true,
                 ProgressHandleFactory.createSystemHandle(displayName, allowToCancel, linkOutput));
     }  
     
