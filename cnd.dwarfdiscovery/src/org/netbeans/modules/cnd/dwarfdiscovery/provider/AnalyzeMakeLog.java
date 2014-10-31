@@ -268,7 +268,7 @@ public class AnalyzeMakeLog extends BaseProvider {
     
     private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage){
         FileSystem fileSystem = getFileSystem(project);
-        LogReader reader = new LogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
+        MakeLogReader reader = new MakeLogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
         List<SourceFileProperties> list = reader.getResults(progress, getStopInterrupter(), storage);
         buildArtifacts.addAll(reader.getArtifacts(progress, getStopInterrupter(), storage));
         return list;

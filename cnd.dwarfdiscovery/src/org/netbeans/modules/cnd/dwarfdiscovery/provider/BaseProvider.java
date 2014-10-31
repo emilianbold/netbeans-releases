@@ -81,6 +81,8 @@ public abstract class BaseProvider implements DiscoveryProvider {
     private Interrupter projectInterrupter;
     private RelocatablePathMapperImpl mapper;
     private CompilerSettings myCommpilerSettings;
+    private FileSystem fileSystem;
+    private RelocatablePathMapper.FS fs;
 
     public BaseProvider() {
         stopIterrupter = new Interrupter() {
@@ -102,6 +104,8 @@ public abstract class BaseProvider implements DiscoveryProvider {
     public final void init(ProjectProxy project) {
         myCommpilerSettings = new CompilerSettings(project);
         mapper = new RelocatablePathMapperImpl(project);
+        fileSystem  = getFileSystem(project);
+        fs = new FSImpl(fileSystem);
     }
 
     public final void store(ProjectProxy project) {
@@ -191,12 +195,11 @@ public abstract class BaseProvider implements DiscoveryProvider {
         }
     }
 
-    private final FileObject resolvePath(ProjectProxy project, String buildArtifact, final FileSystem fileSystem, SourceFileProperties f, String name) {
+    private final FileObject resolvePath(ProjectProxy project, String buildArtifact, SourceFileProperties f, String name) {
         FileObject fo = fileSystem.findResource(name);
         if (!(f instanceof Relocatable)) {
             return fo;
         }
-        RelocatablePathMapper.FS fs = new FSImpl(fileSystem);
         String sourceRoot = null;
         if (project != null) {
             sourceRoot = project.getSourceRoot();
@@ -302,7 +305,6 @@ public abstract class BaseProvider implements DiscoveryProvider {
                 restrictCompileRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
             }
         }
-        FileSystem fileSystem  = getFileSystem(project);
         for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls, buildArtifacts, storage)) {
             if (isStoped.get()) {
                 break;
@@ -316,7 +318,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
                     continue;
                 }
             }
-            FileObject fo = resolvePath(project, file, fileSystem, f, name);
+            FileObject fo = resolvePath(project, file, f, name);
             if (fo == null) {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "Not Exist {0}", name); // NOI18N
