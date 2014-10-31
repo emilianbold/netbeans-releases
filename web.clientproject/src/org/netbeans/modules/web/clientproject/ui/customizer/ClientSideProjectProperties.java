@@ -144,7 +144,11 @@ public final class ClientSideProjectProperties {
         }
         if (siteRootFolder != null) {
             if (siteRootFolderReference != null) {
-                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
+                // do not overwrite site root if target folder does not exist (issue #248174)
+                File siteRootF = project.getProjectHelper().resolveFile(siteRootFolder.get());
+                if (siteRootF != null && siteRootF.exists()) {
+                    putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
+                }
             } else {
                 // siteroot dir removed
                 projectProperties.remove(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
