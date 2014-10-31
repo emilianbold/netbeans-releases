@@ -63,13 +63,14 @@ import org.json.simple.JSONValue;
 import org.junit.Assert;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public class PackageJsonTest extends NbTestCase {
 
     private static final ExecutorService EXECUTORS = Executors.newCachedThreadPool();
 
-    private File directory;
+    private FileObject directory;
     private PackageJson packageJson;
 
 
@@ -81,8 +82,10 @@ public class PackageJsonTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        directory = new File(getWorkDir(), "dummy");
-        assertTrue(directory.mkdir());
+        File dummy = new File(getWorkDir(), "dummy");
+        assertTrue(dummy.mkdir());
+        directory = FileUtil.toFileObject(dummy);
+        assertNotNull(directory);
         packageJson = new PackageJson(directory);
     }
 
@@ -408,7 +411,7 @@ public class PackageJsonTest extends NbTestCase {
     }
 
     private File getFile() {
-        return new File(directory, PackageJson.FILENAME);
+        return new File(FileUtil.toFile(directory), PackageJson.FILENAME);
     }
 
     private Map<String, Object> getData(boolean name, boolean startFile) {

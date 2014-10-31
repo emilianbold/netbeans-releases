@@ -72,6 +72,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -109,9 +110,10 @@ public final class PackageJson {
 
     };
 
-    private final File directory;
+    private final FileObject directory;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private final FileChangeListener fileChangeListener = new FileChangeListenerImpl();
+    private final FileChangeListener directoryListener = new DirectoryListener();
+    private final FileChangeListener packageJsonListener = new PackageJsonListener();
 
     // @GuardedBy("this")
     private File packageJson;
@@ -120,10 +122,11 @@ public final class PackageJson {
     private volatile boolean contentInited = false;
 
 
-    public PackageJson(File directory) {
+    public PackageJson(FileObject directory) {
         assert directory != null;
-        assert directory.isDirectory() || !directory.exists() : "Must be directory or cannot exist: " + directory;
-        this.directory = FileUtil.normalizeFile(directory);
+        assert directory.isFolder() : "Must be folder: " + directory;
+        this.directory = directory;
+        this.directory.addFileChangeListener(directoryListener);
     }
 
     public void cleanup() {
@@ -444,9 +447,9 @@ public final class PackageJson {
 
     private synchronized File getPackageJson() {
         if (packageJson == null) {
-            packageJson = new File(directory, FILENAME);
+            packageJson = new File(FileUtil.toFile(directory), FILENAME);
             try {
-                FileUtil.addFileChangeListener(fileChangeListener, packageJson);
+                FileUtil.addFileChangeListener(packageJsonListener, packageJson);
                 LOGGER.log(Level.FINE, "Started listening to {0}", packageJson);
             } catch (IllegalArgumentException ex) {
                 // ignore, already listening
@@ -472,7 +475,7 @@ public final class PackageJson {
             if (newFile) {
                 if (packageJson != null) {
                     try {
-                        FileUtil.removeFileChangeListener(fileChangeListener, packageJson);
+                        FileUtil.removeFileChangeListener(packageJsonListener, packageJson);
                         LOGGER.log(Level.FINE, "Stopped listenening to {0}", packageJson);
                     } catch (IllegalArgumentException ex) {
                         // not listeneing yet, ignore
@@ -526,7 +529,16 @@ public final class PackageJson {
 
     //~ Inner classes
 
-    private final class FileChangeListenerImpl extends FileChangeAdapter {
+    private final class DirectoryListener extends FileChangeAdapter {
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            clear(true);
+        }
+
+    }
+
+    private final class PackageJsonListener extends FileChangeAdapter {
 
         @Override
         public void fileDataCreated(FileEvent fe) {
