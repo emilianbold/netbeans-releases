@@ -88,7 +88,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class AnalyzeExecLog extends BaseDwarfProvider {
+public class AnalyzeExecLog extends BaseProvider {
 
     private final Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
     public static final String EXEC_LOG_KEY = "exec-log-file"; // NOI18N
@@ -245,7 +245,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         }
         return new ApplicableImpl(true, null, null, 80, false, null, null, null, null);
     }
-
+    
     @Override
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
         ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);

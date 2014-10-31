@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class AnalyzeMakeLog extends BaseDwarfProvider {
+public class AnalyzeMakeLog extends BaseProvider {
     private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String MAKE_LOG_KEY = "make-log-file"; // NOI18N
     public static final String MAKE_LOG_PROVIDER_ID = "make-log"; // NOI18N
