@@ -41,39 +41,48 @@
  */
 package org.netbeans.modules.javascript.jstestdriver.ui.nodes;
 
+import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.ui.api.TestMethodNode;
-import org.netbeans.modules.gsf.testrunner.ui.api.TestRunnerNodeFactory;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.gsf.testrunner.ui.api.TestsuiteNode;
-import org.openide.nodes.Node;
+import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.gsf.testrunner.ui.api.TestMethodNode;
 
 /**
  *
  * @author Theofanis Oikonomou
  */
-public class JSTestDriverTestRunnerNodeFactory extends TestRunnerNodeFactory {
+public class JSTestDriverTestMethodNode extends TestMethodNode {
 
     private final JumpToCallStackAction.Callback callback;
 
-
-    public JSTestDriverTestRunnerNodeFactory(JumpToCallStackAction.Callback callback) {
+    public JSTestDriverTestMethodNode(Testcase testcase, Project project, JumpToCallStackAction.Callback callback) {
+        super(testcase, project);
         this.callback = callback;
     }
 
     @Override
-    public Node createTestMethodNode(Testcase testcase, Project project) {
-        return new JSTestDriverTestMethodNode(testcase, project, callback);
+    public Action[] getActions(boolean context) {
+        Action[] defaultActions = super.getActions(context);
+        Action preferredAction = getPreferredAction();
+        if(preferredAction == null) {
+            return defaultActions;
+        }
+        Action[] actions = new Action[defaultActions.length + 1];
+        actions[0] = preferredAction;
+        System.arraycopy(defaultActions, 0, actions, 1, defaultActions.length);
+        return actions;
     }
 
     @Override
-    public Node createCallstackFrameNode(String frameInfo, String displayName) {
-        return new JSTestDriverCallstackNode(frameInfo, displayName, callback);
-    }
-
-    @Override
-    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
-        return new TestsuiteNode(suiteName, filtered);
+    public Action getPreferredAction() {
+        Trouble trouble = testcase.getTrouble();
+        if(trouble != null) {
+            String[] stackTraces = trouble.getStackTrace();
+            if(stackTraces != null && stackTraces.length > 0) {
+                return new JumpToCallStackAction(stackTraces, callback);
+            }
+        }
+        return super.getPreferredAction();
     }
     
 }
