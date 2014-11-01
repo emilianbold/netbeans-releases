@@ -382,9 +382,12 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                             }
                             File file = new File(path);
                             if (CndFileUtils.exists(file)) {
-                                final String absolutePath = CndFileUtils.normalizeFile(file).getAbsolutePath();
+                                String absolutePath = CndFileUtils.normalizeFile(file).getAbsolutePath();
                                 if (project.resolveSymbolicLinks()) {
-                                    DiscoveryUtils.resolveSymbolicLink(null, absolutePath);
+                                    String s = DiscoveryUtils.resolveSymbolicLink(null, absolutePath);
+                                    if (s != null) {
+                                        absolutePath = s;
+                                    }
                                 }
                                 unique.add(absolutePath);
                             }

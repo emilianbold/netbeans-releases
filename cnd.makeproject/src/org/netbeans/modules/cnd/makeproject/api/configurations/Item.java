@@ -1031,8 +1031,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     switch (itemConfiguration.getCCCompilerConfiguration().getInheritedCppStandard()) {
                         case CCCompilerConfiguration.STANDARD_CPP11:
                             return LanguageFlavor.CPP11;
-                        //case CCCompilerConfiguration.STANDARD_CPP14:
-                        //    return LanguageFlavor.CPP14;
+                        case CCCompilerConfiguration.STANDARD_CPP14:
+                            return LanguageFlavor.CPP14;
                         case CCCompilerConfiguration.STANDARD_CPP98:
                         case CCCompilerConfiguration.STANDARD_DEFAULT:
                             return LanguageFlavor.CPP;
@@ -1048,8 +1048,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     switch (ccCompilerConfiguration.getInheritedCppStandard()) {
                         case CCCompilerConfiguration.STANDARD_CPP11:
                             return LanguageFlavor.CPP11;
-                        //case CCCompilerConfiguration.STANDARD_CPP14:
-                        //    return LanguageFlavor.CPP14;
+                        case CCCompilerConfiguration.STANDARD_CPP14:
+                            return LanguageFlavor.CPP14;
                 }
                 }
             }

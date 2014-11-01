@@ -208,4 +208,11 @@ public class ProgressListenerImpl implements CsmProgressListener {
             System.err.println("  ProgressListenerImpl.parserIdle");
         }
     }
+
+    @Override
+    public void fileRemoved(CsmFile file) {
+        if (TraceFlags.TRACE_PARSER_QUEUE) {
+            System.err.println("  ProgressListenerImpl.fileRemoved " + file.getAbsolutePath());
+        }
+    }
 }

@@ -73,7 +73,7 @@ public final class CndLanguageStandards {
         }
     }
     
-    static CndLanguageStandard StringToLanguageStandard(String st) {
+    public static CndLanguageStandard StringToLanguageStandard(String st) {
         for(CndLanguageStandard standard : CndLanguageStandard.values()) {
             if (standard.id.equals(st)) {
                 return standard;

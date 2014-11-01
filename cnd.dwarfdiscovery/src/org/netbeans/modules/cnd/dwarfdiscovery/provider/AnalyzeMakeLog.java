@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class AnalyzeMakeLog extends BaseDwarfProvider {
+public class AnalyzeMakeLog extends BaseProvider {
     private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String MAKE_LOG_KEY = "make-log-file"; // NOI18N
     public static final String MAKE_LOG_PROVIDER_ID = "make-log"; // NOI18N
@@ -268,7 +268,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     
     private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage){
         FileSystem fileSystem = getFileSystem(project);
-        LogReader reader = new LogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
+        MakeLogReader reader = new MakeLogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
         List<SourceFileProperties> list = reader.getResults(progress, getStopInterrupter(), storage);
         buildArtifacts.addAll(reader.getArtifacts(progress, getStopInterrupter(), storage));
         return list;

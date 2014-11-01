@@ -147,7 +147,7 @@ public final class LayerIndex {
             }
             return true;
         } catch (IOException ex) {
-            ex.printStackTrace(System.err);
+            RepositoryExceptions.throwException(this, ex);
         } finally {
             if (in != null) {
                 try {
