@@ -71,6 +71,9 @@ public interface DiscoveryDescriptor {
     String getBuildResult();
     void setBuildResult(String binaryPath);
 
+    String getBuildFolder();
+    void setBuildFolder(String buildPath);
+
     FileSystem getFileSystem();
     void setFileSystem(FileSystem fs);
 

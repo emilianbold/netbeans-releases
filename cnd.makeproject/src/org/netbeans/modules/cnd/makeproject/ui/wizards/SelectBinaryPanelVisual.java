@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -111,6 +112,8 @@ import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -807,11 +810,37 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void binaryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binaryButtonActionPerformed
-        String path = selectBinaryFile(((EditableComboBox)binaryField).getText());
-        if (path == null) {
-            return;
-        }
-        ((EditableComboBox)binaryField).setText(path);
+        final String oldPath = ((EditableComboBox)binaryField).getText();
+        //if (oldPath.isEmpty()) {
+        //    String path = selectBinaryFile(oldPath, true);
+        //    if (path == null) {
+        //        return;
+        //    }
+        //    ((EditableComboBox)binaryField).setText(path);
+        //} else {
+            FileListEditorPanel panel = new FileListEditorPanel(oldPath, env, fileSystem);
+            JButton jOK = new JButton(NbBundle.getMessage(SelectBinaryPanelVisual.class, "SelectBinaryPanelVisual.Browse.OK.Button")); // NOI18N
+            panel.setPreferredSize(new Dimension(450, 200));
+            DialogDescriptor dd = new DialogDescriptor(panel, getString("SelectBinaryPanelVisual.Browse.Multi.Title"), true, 
+                new Object[] { jOK, DialogDescriptor.CANCEL_OPTION},
+                DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+            try {
+                dialog.setVisible(true);
+            } finally {
+                dialog.dispose();
+            }
+            if (dd.getValue() == jOK) {
+                StringBuilder buf = new StringBuilder();
+                for (String s: panel.getFileList()) {
+                    if (buf.length() > 0) {
+                        buf.append(';');
+                    }
+                    buf.append(s);
+                }
+                ((EditableComboBox)binaryField).setText(buf.toString());
+            }
+        //}
     }//GEN-LAST:event_binaryButtonActionPerformed
 
     private void sourcesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourcesButtonActionPerformed
@@ -856,14 +885,10 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         cancelSearch();
         String binary = ((EditableComboBox)binaryField).getText().trim();
         WizardConstants.PROPERTY_BUILD_RESULT.put(wizardDescriptor, binary);
+        String[] split = binary.split(";"); // NOI18N
         String aBinary = binary;
-        if (binary.startsWith("\"")) { //NOI18N
-            for(String s : binary.split("\"")) { //NOI18N
-                if (!s.trim().isEmpty()) {
-                    aBinary = s;
-                    break;
-                }
-            }
+        if (split.length > 0) {
+            aBinary = split[0];
         }
         WizardConstants.PROPERTY_PREFERED_PROJECT_NAME.put(wizardDescriptor, CndPathUtilities.getBaseName(aBinary));
         WizardConstants.PROPERTY_SOURCE_FOLDER_PATH.put(wizardDescriptor,  sourcesField.getText().trim());
@@ -972,7 +997,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         }
     }
 
-    private String selectBinaryFile(String path) {
+    private String selectBinaryFile(String path, boolean muliSelection) {
         FileFilter[] filters = FileFilterFactory.getBinaryFilters(fileSystem);
         if (path.isEmpty()) { 
             path = SelectModePanel.getDefaultDirectory(env);
@@ -988,17 +1013,22 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         
         JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
                 controller.getWizardDescriptor(),
-                getString("SelectBinaryPanelVisual.Browse.Title"), // NOI18N
-                getString("SelectBinaryPanelVisual.Browse.Select"), // NOI18N
+                muliSelection?getString("SelectBinaryPanelVisual.Browse.Multi.Title"):getString("SelectBinaryPanelVisual.Browse.Title"), // NOI18N
+                muliSelection?getString("SelectBinaryPanelVisual.Browse.Multi.Select"):getString("SelectBinaryPanelVisual.Browse.Select"), // NOI18N
                 JFileChooser.FILES_ONLY,
                 filters,
                 path,
                 false
                 );
-        fileChooser.setMultiSelectionEnabled(true);
+        if (muliSelection) {
+            fileChooser.setMultiSelectionEnabled(true);
+        }
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
+        }
+        if (!muliSelection) {
+            return fileChooser.getSelectedFile().getPath();
         }
         File[] selected = fileChooser.getSelectedFiles();
         if (selected == null || selected.length == 0) {
@@ -1010,18 +1040,16 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             StringBuilder buf = new StringBuilder();
             for(File f : selected) {
                 if (buf.length() > 0) {
-                    buf.append(' ');
+                    buf.append(';');
                 }
-                buf.append('"');
                 buf.append(f.getPath());
-                buf.append('"');
             }
             return buf.toString();
         }
     }
 
     private void tableButtonActionPerformed(int row) {
-        String path = selectBinaryFile((String) table.getModel().getValueAt(row, 2));
+        String path = selectBinaryFile((String) table.getModel().getValueAt(row, 2), false);
         if (path == null) {
             return;
         }

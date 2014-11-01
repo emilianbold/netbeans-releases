@@ -507,7 +507,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                         RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} succeeded", this);
                         file.getParent().updateStat(file, uploadStatus.getStatInfo());
                         FileEvent ev = new FileEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), false, uploadStatus.getStatInfo().getLastModified().getTime());
-                        file.getOwnerFileObject().fireFileChangedEvent(file.getListenersWithParent(), ev);
+                        file.getOwnerFileObject().fireFileChangedEvent(file.getListeners(), ev);
+                        RemoteDirectory parent = file.getParent();
+                        if (parent != null) {
+                            ev = new FileEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), false, uploadStatus.getStatInfo().getLastModified().getTime());
+                            parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);
+                        }
                     } else {
                         RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
                         file.setPendingRemoteDelivery(false);
