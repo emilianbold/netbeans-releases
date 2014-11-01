@@ -74,7 +74,7 @@ import org.openide.util.WeakListeners;
  * 
  * @author Maros Sandor
  */
-class DiffFileTable extends VCSStatusTable<DiffNode> {
+class DiffFileTable extends VCSStatusTable<DiffNode> implements DiffFileViewComponent<DiffNode> {
 
     /**
      * editor cookies belonging to the files being diffed.

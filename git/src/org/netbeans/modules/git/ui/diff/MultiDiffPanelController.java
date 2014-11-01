@@ -180,7 +180,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private PlaceholderPanel diffViewPanel;
     private JComponent infoPanelLoadingFromRepo;
     static final Logger LOG = Logger.getLogger(MultiDiffPanelController.class.getName());
-    private FileViewComponent<DiffNode> activeComponent;
+    private DiffFileViewComponent<DiffNode> activeComponent;
     private DiffFileTable fileListComponent;
     private DiffFileTreeImpl fileTreeComponent;
     private static final RequestProcessor RP = new RequestProcessor("GitDiffWindow", 1, true); //NOI18N
@@ -318,11 +318,11 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         }
     }
 
-    private FileViewComponent<DiffNode> getActiveFileComponent () {
+    private DiffFileViewComponent<DiffNode> getActiveFileComponent () {
         return activeComponent;
     }
 
-    private void setActiveComponent (FileViewComponent<DiffNode> fileComponent) {
+    private void setActiveComponent (DiffFileViewComponent<DiffNode> fileComponent) {
         if (activeComponent == fileComponent) {
             return;
         }
@@ -768,13 +768,16 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 displayDiffView();
             }
         } else {
-            final JPanel p = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected")); //NOI18N
+            DiffFileViewComponent<DiffNode> comp = getActiveFileComponent();
+            final JPanel p = new NoContentPanel(comp == null || comp.getSelectedFiles().length == 0
+                    ? NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected") //NOI18N
+                    : NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_MoreFilesSelected")); //NOI18N
             diffView = p;
             p.addMouseListener(new MouseAdapter() {
 
                 @Override
                 public void mouseClicked (MouseEvent e) {
-                    final Map.Entry<File, File[]> actionRoots = getActionRoots();
+                    final Map.Entry<File, File[]> actionRoots = getSelectedActionRoots();
                     if (actionRoots != null && p == diffView) {
                         GitProgressSupport supp = new GitProgressSupport() {
 
@@ -866,14 +869,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                                 actionRoots.getKey(), Bundle.MSG_DiffPanel_multiTextualDiff_preparing());
                     }
                 }
-
-                private Map.Entry<File, File[]> getActionRoots () {
-                    VCSContext ctx = context;
-                    if (ctx == null) {
-                        ctx = GitUtils.getContextForFiles(setups.keySet().toArray(new File[setups.keySet().size()]));
-                    }
-                    return GitUtils.getActionRoots(ctx);
-                }
                 
             });
             displayDiffView();
@@ -882,6 +877,21 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         delegatingUndoRedo.setDiffView(diffView);
 
         refreshComponents();
+    }
+
+    private Map.Entry<File, File[]> getSelectedActionRoots () {
+        VCSContext ctx = context;
+        DiffFileViewComponent<DiffNode> comp = getActiveFileComponent();
+        File[] selectedFiles = new File[0];
+        if (comp != null) {
+            selectedFiles = comp.getSelectedFiles();
+        }
+        if (selectedFiles.length > 0) {
+            ctx = GitUtils.getContextForFiles(selectedFiles);
+        } else if (ctx == null) {
+            ctx = GitUtils.getContextForFiles(setups.keySet().toArray(new File[setups.keySet().size()]));
+        }
+        return GitUtils.getActionRoots(ctx);
     }
     
     private boolean showingFileComponent() {
