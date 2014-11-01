@@ -621,6 +621,30 @@ NetBeans.releasePage = function() {
     canvas.parentNode.removeChild(canvas);
 };
 
+// Returns Knockout (if available)
+NetBeans.getKnockout = function() {
+    var ko = window.ko;
+    if (!ko) {
+        if (typeof (window.require) === 'function') {
+            try {
+                ko = require('ko');
+            } catch(ex) {}
+            if (!ko) {
+                try {
+                    ko = require('knockout');
+                } catch(e) {}
+            }
+        }
+    }
+    return ko;
+};
+
+// Determines whether the page uses Knockout
+NetBeans.usesKnockout = function() {
+    var ko = this.getKnockout();
+    return !!(ko && ko.observable && ko.applyBindings);
+};
+
 // Insert glass-pane into the inspected page
 NetBeans.insertGlassPane();
 
