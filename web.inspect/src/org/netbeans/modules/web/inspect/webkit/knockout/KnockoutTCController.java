@@ -192,7 +192,7 @@ public class KnockoutTCController implements PropertyChangeListener {
                     return; // this checker is obsolete
                 }
             }
-            String expression = "!!(window.ko && window.ko.observable && window.ko.applyBindings)"; // NOI18N
+            String expression = "window.NetBeans && NetBeans.usesKnockout()"; // NOI18N
             RemoteObject object = pageModel.getWebKit().getRuntime().evaluate(expression);
             boolean koFound = "true".equals(object.getValueAsString()); // NOI18N
             if (koFound) {

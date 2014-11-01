@@ -199,8 +199,8 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("window.ko"); // NOI18N
-                final boolean found = (remoteObject != null && remoteObject.getType() == RemoteObject.Type.OBJECT);
+                RemoteObject remoteObject = pageModel.getWebKit().getRuntime().evaluate("window.NetBeans && NetBeans.usesKnockout()"); // NOI18N
+                final boolean found = "true".equals(remoteObject.getValueAsString()); // NOI18N
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
