@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.indexer;
 
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -79,6 +80,7 @@ import org.apache.maven.settings.Server;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
+import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
 import org.apache.maven.wagon.providers.http.HttpWagon;
@@ -460,6 +462,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         synchronized (indexingMutexes) {
             indexingMutexes.add(mutex);
         }
+        boolean fetchFailed = false;
         try {
             IndexingContext indexingContext = getIndexingContexts().get(repo.getId());
             if (indexingContext == null) {
@@ -522,6 +525,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     }
                     try {
                         remoteIndexUpdater.fetchAndUpdateIndex(iur);
+                    } catch (IOException ex) {
+                        fetchFailed = true;
+                        throw ex;
                     } finally {
                         if (nic != null) {
                             nic.end();
@@ -552,9 +558,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             synchronized (indexingMutexes) {
                 indexingMutexes.remove(mutex);
             }
-            RepositoryPreferences.setLastIndexUpdate(repo.getId(), new Date());
-            fireChangeIndex(repo);
-            
+            if(!fetchFailed) {
+                RepositoryPreferences.setLastIndexUpdate(repo.getId(), new Date());
+                fireChangeIndex(repo);
+            }
         }
     }
 
