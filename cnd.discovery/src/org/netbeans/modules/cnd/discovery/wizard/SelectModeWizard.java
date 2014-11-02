@@ -246,12 +246,12 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
         int assurance = 0;
         for(DiscoveryProvider provider : DiscoveryProviderFactory.findAllProviders()){
             if (provider.isApplicable(proxy)) {
-                if ("dwarf-executable".equals(provider.getID())){ // NOI18N
+                if (DiscoveryExtension.DWARF_PROVIDER.equals(provider.getID())){
                     // select executable if make project has output
                     // and output has debug information.
-                    provider.getProperty("executable").setValue(wizardDescriptor.getBuildResult()); // NOI18N
-                } else if ("dwarf-folder".equals(provider.getID())){ // NOI18N
-                    provider.getProperty("folder").setValue(wizardDescriptor.getRootFolder()); // NOI18N
+                    provider.getProperty(DiscoveryExtension.EXECUTABLR_PROPERTY).setValue(wizardDescriptor.getBuildResult());
+                } else if (DiscoveryExtension.FOLDER_PROVIDER.equals(provider.getID())){
+                    provider.getProperty(DiscoveryExtension.FOLDER_PROPERTY).setValue(wizardDescriptor.getRootFolder());
                 }
                 int i = provider.canAnalyze(proxy, null).getPriority();
                 if (i > assurance) {

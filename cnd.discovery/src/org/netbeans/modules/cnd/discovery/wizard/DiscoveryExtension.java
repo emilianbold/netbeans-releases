@@ -94,6 +94,14 @@ import org.openide.util.NbBundle;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.class)
 public class DiscoveryExtension implements IteratorExtension, DiscoveryExtensionInterface {
+    public static final String FOLDER_PROPERTY = "folder"; //NOI18N
+    public static final String EXECUTABLR_PROPERTY = "executable"; //NOI18N
+    public static final String LIBRARIES_PROPERTY = "libraries"; //NOI18N
+    
+    public static final String DWARF_PROVIDER = "dwarf-executable";// NOI18N
+    public static final String FOLDER_PROVIDER = "dwarf-folder"; // NOI18N
+    public static final String MAKE_LOG_PROVIDER = "make-log"; // NOI18N
+    public static final String EXEC_LOG_PROVIDER = "exec-log"; // NOI18N
     
     /** Creates a new instance of DiscoveryExtension */
     public DiscoveryExtension() {
@@ -189,14 +197,14 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundExecutable",selectedExecutable))); // NOI18N
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
-        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("dwarf-executable"); // NOI18N
+        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.DWARF_PROVIDER);
         if (provider != null && provider.isApplicable(proxy)){
-            provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
+            provider.getProperty(DiscoveryExtension.EXECUTABLR_PROPERTY).setValue(selectedExecutable);
             String aditionalLibraries = descriptor.getAditionalLibraries();
             if (aditionalLibraries == null || aditionalLibraries.isEmpty()) {
-                provider.getProperty("libraries").setValue(new String[0]); // NOI18N
+                provider.getProperty(DiscoveryExtension.LIBRARIES_PROPERTY).setValue(new String[0]);
             } else {
-                provider.getProperty("libraries").setValue(aditionalLibraries.split(";")); // NOI18N
+                provider.getProperty(DiscoveryExtension.LIBRARIES_PROPERTY).setValue(aditionalLibraries.split(";"));
             }
             provider.getProperty("filesystem").setValue(descriptor.getFileSystem()); // NOI18N
             ProviderProperty property = provider.getProperty("find_main");
@@ -223,14 +231,17 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     }
     
     private DiscoveryExtensionInterface.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor, Interrupter interrupter){
-        String rootFolder = descriptor.getRootFolder();
-        if (rootFolder == null) {
+        String buildFolder = descriptor.getBuildFolder();
+        if (buildFolder == null) {
+            buildFolder = descriptor.getRootFolder();
+        }
+        if (buildFolder == null) {
             return ApplicableImpl.getNotApplicable(null);
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
-        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("dwarf-folder"); // NOI18N
+        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.FOLDER_PROVIDER);
         if (provider != null && provider.isApplicable(proxy)){
-            provider.getProperty("folder").setValue(rootFolder); // NOI18N
+            provider.getProperty(DiscoveryExtension.FOLDER_PROPERTY).setValue(buildFolder); 
             Applicable canAnalyze = provider.canAnalyze(proxy, interrupter);
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
@@ -239,7 +250,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                 if (canAnalyze.getErrors().size() > 0) {
                     return ApplicableImpl.getNotApplicable(canAnalyze.getErrors());
                 } else {
-                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeFolder",rootFolder))); // NOI18N
+                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeFolder",buildFolder))); // NOI18N
                 }
             }
         }
@@ -253,7 +264,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         }
         String logFile = descriptor.getBuildLog();
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
-        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("make-log"); // NOI18N
+        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.MAKE_LOG_PROVIDER);
         if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("make-log-file").setValue(logFile); // NOI18N
             Applicable canAnalyze = provider.canAnalyze(proxy, null);
@@ -278,7 +289,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         }
         String logFile = descriptor.getExecLog();
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
-        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("exec-log"); // NOI18N
+        DiscoveryProvider provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.EXEC_LOG_PROVIDER);
         if (provider != null) {
             provider.getProperty("exec-log-file").setValue(logFile); // NOI18N
             if (provider.isApplicable(proxy)){
@@ -311,10 +322,10 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         if (provider == null){
             return false;
         }
-        if ("dwarf-executable".equals(provider.getID())){ // NOI18N
+        if (DiscoveryExtension.DWARF_PROVIDER.equals(provider.getID())){
             String selectedExecutable = descriptor.getBuildResult();
             String additional = descriptor.getAditionalLibraries();
-            provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
+            provider.getProperty(DiscoveryExtension.EXECUTABLR_PROPERTY).setValue(selectedExecutable);
             ProviderProperty property = provider.getProperty("find_main");
             if (property != null) {
                 property.setValue(Boolean.TRUE);
@@ -325,19 +336,18 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                 while(st.hasMoreTokens()){
                     list.add(st.nextToken());
                 }
-                provider.getProperty("libraries").setValue(list.toArray(new String[list.size()])); // NOI18N
+                provider.getProperty(DiscoveryExtension.LIBRARIES_PROPERTY).setValue(list.toArray(new String[list.size()]));
             } else {
-                provider.getProperty("libraries").setValue(new String[0]); // NOI18N
+                provider.getProperty(DiscoveryExtension.LIBRARIES_PROPERTY).setValue(new String[0]); 
             }
-        } else if ("dwarf-folder".equals(provider.getID())){ // NOI18N
-            String rootFolder = descriptor.getRootFolder();
-            provider.getProperty("folder").setValue(rootFolder); // NOI18N
-        } else if ("make-log".equals(provider.getID())){ // NOI18N
-            //String rootFolder = descriptor.getRootFolder();
-            //provider.getProperty("folder").setValue(rootFolder); // NOI18N
-        } else if ("exec-log".equals(provider.getID())){ // NOI18N
-            //String rootFolder = descriptor.getRootFolder();
-            //provider.getProperty("folder").setValue(rootFolder); // NOI18N
+        } else if (DiscoveryExtension.FOLDER_PROVIDER.equals(provider.getID())){
+            String buildFolder = descriptor.getBuildFolder();
+            if (buildFolder == null) {
+                buildFolder = descriptor.getRootFolder();
+            }
+            provider.getProperty(DiscoveryExtension.FOLDER_PROPERTY).setValue(buildFolder); 
+        } else if (DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())){
+        } else if (DiscoveryExtension.EXEC_LOG_PROVIDER.equals(provider.getID())){
         } else {
             return false;
         }
