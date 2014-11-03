@@ -51,7 +51,7 @@ import junit.framework.TestCase;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
-import org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader.CommandLineSource;
+import org.netbeans.modules.cnd.dwarfdiscovery.provider.MakeLogReader.CommandLineSource;
 
 /**
  *
@@ -887,9 +887,9 @@ public class LogReaderTest extends TestCase {
                 "/ws/cheetah/jsr135/src/share/components/direct-player/native";
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
-        LogReader reader = new LogReader(line, "", null, null, null);
-        LogReader.LineInfo li = reader.testCompilerInvocation(line);
-        assert li.compilerType == LogReader.CompilerType.CPP;
+        MakeLogReader reader = new MakeLogReader(line, "", null, null, null);
+        MakeLogReader.LineInfo li = reader.testCompilerInvocation(line);
+        assert li.compilerType == MakeLogReader.CompilerType.CPP;
     }
 
     public void testIcpcInvocation() {
@@ -919,9 +919,9 @@ public class LogReaderTest extends TestCase {
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertTrue(result.startsWith("Source:xsolmod.cpp"));
         //assertDocumentText(line, expResult, result);
-        LogReader reader = new LogReader(line, "", null, null, null);
-        LogReader.LineInfo li = reader.testCompilerInvocation(line);
-        assertEquals(LogReader.CompilerType.CPP, li.compilerType);
+        MakeLogReader reader = new MakeLogReader(line, "", null, null, null);
+        MakeLogReader.LineInfo li = reader.testCompilerInvocation(line);
+        assertEquals(MakeLogReader.CompilerType.CPP, li.compilerType);
     }
 
     private String processLine(String[] line, DiscoveryUtils.LogOrigin isScriptOutput) {
@@ -954,7 +954,7 @@ public class LogReaderTest extends TestCase {
     }
     
     private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
-        line = LogReader.trimBackApostropheCalls(line, null);
+        line = MakeLogReader.trimBackApostropheCalls(line, null);
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         String[] cmds = pattern.split(line);
         Artifacts artifacts = new Artifacts();
@@ -1031,8 +1031,8 @@ public class LogReaderTest extends TestCase {
     }
     
     private void testCompilerInvocation(ItemProperties.LanguageKind ct, String line, int size) {
-        LogReader reader = new LogReader(line, "", null, null, null);
-        LogReader.LineInfo li = reader.testCompilerInvocation(line);
+        MakeLogReader reader = new MakeLogReader(line, "", null, null, null);
+        MakeLogReader.LineInfo li = reader.testCompilerInvocation(line);
         if (ct == ItemProperties.LanguageKind.Unknown) {
             assertEquals(ct, li.getLanguage());
             return;

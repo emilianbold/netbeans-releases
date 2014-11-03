@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.terminal.action;
 
 import java.awt.Component;
@@ -88,11 +87,12 @@ import org.openide.windows.InputOutput;
  * @author Vladimir Voskresensky
  */
 public final class TerminalSupportImpl {
+
     private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 100); // NOI18N
 
     private TerminalSupportImpl() {
     }
-    
+
     public static Component getToolbarPresenter(Action action) {
         JButton button = new JButton(action);
         button.setBorderPainted(false);
@@ -109,7 +109,7 @@ public final class TerminalSupportImpl {
         button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) icon));
         return button;
     }
-    
+
     public static void openTerminalImpl(
             final IOContainer ioContainer,
             final String tabTitle,
@@ -117,8 +117,8 @@ public final class TerminalSupportImpl {
             final String dir,
             final boolean silentMode,
             final boolean pwdFlag) {
-        final IOProvider term = IOProvider.get("Terminal"); // NOI18N
-        if (term != null) {
+        final IOProvider ioProvider = IOProvider.get("Terminal"); // NOI18N
+        if (ioProvider != null) {
             final AtomicBoolean destroyed = new AtomicBoolean(false);
             Runnable runnable = new Runnable() {
 
@@ -176,7 +176,7 @@ public final class TerminalSupportImpl {
 
                     final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
                     try {
-                        InputOutput io = term.getIO(tabTitle, null, ioContainer);
+                        InputOutput io = ioProvider.getIO(tabTitle, null, ioContainer);
                         ioRef.set(io);
 
                         Term term = IOTerm.term(io);
@@ -196,17 +196,28 @@ public final class TerminalSupportImpl {
                         // clear env modified by NB. Let it be initialized by started shell process
                         npb.getEnvironment().put("LD_LIBRARY_PATH", "");// NOI18N
                         npb.getEnvironment().put("DYLD_LIBRARY_PATH", "");// NOI18N
-                        
+
                         npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));
 
+                        /*
+                         * Was: echo -n \"\033]0;" + tabTitle + " `pwd`\007\""
+                         * Why changed:
+                         *  1. Flag "-n" is not always supported by different shells,
+                         *     so use printf instead. (Actually, if "-n" is not supported,
+                         *     almost always PROMPT_COMMAND won't be supported too. (ksh, for example).
+                         *  2. Now we use "033]3" (op_cwd) instead of "033]0" (op_win_title) 
+                         *     and let listeners decide what to do when cwd is changed.
+                         *  3. Removed a useless `pwd` call because cd has already updated
+                         *     $PWD and $OLDPWD variables.
+                         */
                         if (pwdFlag) {
-                            final String promptCommand = "echo -n \"\033]0;" + tabTitle + " `pwd`\007\"";   // NOI18N
+                            final String promptCommand = "printf \"\033]3;${PWD}\007\"";   // NOI18N
                             final String commandName = "PROMPT_COMMAND";                                    // NOI18N
                             String usrPrompt = npb.getEnvironment().get(commandName);
                             npb.getEnvironment().put(commandName,
                                     (usrPrompt == null)
-                                    ? promptCommand
-                                    : promptCommand + ';' + usrPrompt
+                                            ? promptCommand
+                                            : promptCommand + ';' + usrPrompt
                             );
                         }
 
@@ -219,6 +230,7 @@ public final class TerminalSupportImpl {
                         if (shell.endsWith("bash") || shell.endsWith("bash.exe")) { // NOI18N
                             npb.setArguments("--login"); // NOI18N
                         }
+                        
                         NativeExecutionDescriptor descr;
                         descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(true).inputOutput(ioRef.get());
                         descr.postExecution(new Runnable() {
