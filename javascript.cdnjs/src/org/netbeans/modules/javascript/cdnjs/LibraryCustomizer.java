@@ -404,9 +404,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                         if (index != -1) {
                             fileName = fileName.substring(0,index);
                         }
-                        FileObject fob = FileUtil.moveFile(tmpFob, fileFolder, fileName);
-                        file = FileUtil.toFile(fob);
-                        localPath = PropertyUtils.relativizeFile(projectDir, file);
+                        FileObject fob = FileUtil.copyFile(tmpFob, fileFolder, fileName);
+                        file.delete();
+                        localPath = PropertyUtils.relativizeFile(projectDir, FileUtil.toFile(fob));
                     }
                     fileList.add(filePath);
                     localFileList.add(localPath);
@@ -498,7 +498,8 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 for (int j=0; j<path.length-1; j++) {
                     fileFolder = FileUtil.createFolder(fileFolder, path[j]);
                 }
-                FileObject fob = FileUtil.moveFile(tmpFob, fileFolder, path[path.length-1]);
+                FileObject fob = FileUtil.copyFile(tmpFob, fileFolder, path[path.length-1]);
+                libraryFiles[i].delete();
                 File file = FileUtil.toFile(fob);
                 localFiles[i] = PropertyUtils.relativizeFile(projectDir, file);
             }
