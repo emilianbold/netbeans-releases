@@ -232,7 +232,7 @@ public class V8Object extends V8Value {
         }
         
         private int getNewLength() {
-            int newLength = length + length >> 1;
+            int newLength = length + (length >> 1);
             if (newLength < 10) {
                 newLength = 10;
             }
