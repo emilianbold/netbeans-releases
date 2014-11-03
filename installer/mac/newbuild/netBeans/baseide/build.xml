@@ -72,12 +72,11 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-c"/>
             <arg value="ln -s '../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
         </exec>
-        <condition property="do.sign-app">
+        <condition property="sign.option" value="--sign '${signing_identity}'">
             <not>
                 <equals arg1="${signing_identity}" arg2="0"/>
             </not>
-        </condition>
-        <antcall target="sign-app"/>
+        </condition>  
     </target>
     
     <target name="sign-app" description="Singing Mac OS X Application" if="do.sign-app">
@@ -134,7 +133,7 @@ TOMCAT_ID="${tomcat.id}"
         <echo message="Building baseide.pkg into ${basedir}/../../build/baseide.pkg"/>        
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.baside --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
+            <arg value="pkgbuild --root ${builddir}/app --scripts ${scriptsdir} --identifier org.netbeans.baside ${sign.option} --install-location ${install.dir} ${basedir}/../../build/baseide-${nb.id}.pkg"/>
         </exec>
     </target>
     
