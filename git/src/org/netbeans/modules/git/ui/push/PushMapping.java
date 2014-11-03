@@ -68,7 +68,7 @@ public abstract class PushMapping extends ItemSelector.Item {
     private static final String COLOR_REMOVED = GitUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor());
     private static final String COLOR_CONFLICT = GitUtils.getColorString(AnnotationColorProvider.getInstance().CONFLICT_FILE.getActualColor());
     
-    protected PushMapping (String localName, String localId, String remoteName, String remoteId, boolean conflict, boolean preselected, boolean updateNeeded) {
+    protected PushMapping (String localName, String localId, String remoteName, boolean conflict, boolean preselected, boolean updateNeeded) {
         super(preselected, localName == null);
         this.localName = localName;
         this.remoteName = remoteName == null ? localName : remoteName;
@@ -185,7 +185,7 @@ public abstract class PushMapping extends ItemSelector.Item {
          * Denotes a branch to be deleted in a remote repository
          */
         public PushBranchMapping (String remoteBranchName, String remoteBranchId, boolean preselected, boolean updateNeeded) {
-            super(null, null, remoteBranchName, remoteBranchId, false, preselected, updateNeeded);
+            super(null, null, remoteBranchName, false, preselected, updateNeeded);
             this.localBranch = null;
             this.remoteBranchName = remoteBranchName;
             this.remoteBranchId = remoteBranchId;
@@ -198,7 +198,6 @@ public abstract class PushMapping extends ItemSelector.Item {
         public PushBranchMapping (String remoteBranchName, String remoteBranchId, GitBranch localBranch, boolean conflict, boolean preselected, boolean updateNeeded) {
             super(localBranch.getName(), localBranch.getId(), 
                     remoteBranchName, 
-                    remoteBranchId,
                     conflict,
                     preselected,
                     updateNeeded);
@@ -249,15 +248,17 @@ public abstract class PushMapping extends ItemSelector.Item {
     
     public static final class PushTagMapping extends PushMapping {
         private final GitTag tag;
+        private final boolean isUpdate;
         
-        public PushTagMapping (GitTag tag) {
-            super("tags/" + tag.getTagName(), tag.getTaggedObjectId(), null, null, false, false, false); //NOI18N
+        public PushTagMapping (GitTag tag, String remoteName) {
+            super("tags/" + tag.getTagName(), tag.getTaggedObjectId(), remoteName, false, false, remoteName != null); //NOI18N
             this.tag = tag;
+            this.isUpdate = remoteName != null;
         }
 
         @Override
         public String getRefSpec () {
-            return GitUtils.getPushTagRefSpec(tag.getTagName());
+            return GitUtils.getPushTagRefSpec(tag.getTagName(), isUpdate);
         }
 
         @Override

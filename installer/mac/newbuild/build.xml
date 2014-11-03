@@ -273,18 +273,24 @@
         <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
 
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
+                
+        <condition property="sign.option" value="--sign '${signing_identity}'">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition>  
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}-${nb.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
-            <arg value="-c"/>
-            <arg value=" ${packagemaker.path} -build -v -p ${basedir}/build/${module.name}-${nb.id}.pkg -f ${module.builddir}/netbeans -i ${module.builddir}/Info.plist -r ${scriptsdir} -d ${module.builddir}/Description.plist"/>
+            <arg value="-c"/>            
+            <arg value="pkgbuild --root '${module.builddir}/netbeans' --scripts '${scriptsdir}' --identifier org.netbeans.${module.name} ${sign.option} --install-location '/${app.name}/Contents/Resources/NetBeans' '${basedir}/build/${module.name}-${nb.id}.pkg'"/>
         </exec>
-        <echo message="Deleting TokenDefinitions.plist and IFPkgPathMappings, see Issue #184419 for details"/>
+        <!--echo message="Deleting TokenDefinitions.plist and IFPkgPathMappings, see Issue #184419 for details"/>
         <property name="token.def.plist" value="${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Resources/TokenDefinitions.plist"/>
         <exec executable="sh" failonerror="no">
             <arg value="-c"/>
             <arg value="[ -e  '${token.def.plist}' ] &amp;&amp; rm -f '${token.def.plist}' &amp;&amp; /usr/libexec/PlistBuddy -c 'Delete IFPkgPathMappings' '${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Info.plist'"/>
-        </exec>
+        </exec-->
     </target>          
 
 
@@ -341,10 +347,10 @@
     </target>
     <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
-            <delete dir="${basedir}/dist_dmg" failonerror="false"/>                          
+            <delete dir="${basedir}/dist_pkg" failonerror="false"/>                          
             <ant target="build-dmg">
                  <property name="dmg.name" value="${dmg.prefix.name}${bundle.type}-macosx"/>  
-                 <property name="mpkg.name" value="${mpkg.name_nb}"/>
+                 <property name="pkg.name" value="${mpkg.name_nb}"/>
                  <property name="background.name" value="bgimage.tif"/>
                  <property name="license.file" value="${basedir}/dmg/Resources/license.txt"/>                                  
             </ant>     
@@ -354,10 +360,10 @@
             
     <target name="build-jdk-bundle-dmg" depends="clean,init,build-jdk-pkg,build-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
-            <delete dir="${basedir}/dist_dmg" failonerror="false"/>                          
+            <delete dir="${basedir}/dist_pkg" failonerror="false"/>                          
             <ant target="build-dmg">
                  <property name="dmg.name" value="${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-macosx-x64"/>
-                 <property name="mpkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
+                 <property name="pkg.name" value="${mpkg.name_nb}${mpkg.prefix_nb_jdk}${mpkg.version_jdk}"/>
                  <property name="background.name" value="background-jdk.tif"/>
             </ant>     
         </for-each>
@@ -405,7 +411,7 @@
     <target name="build-lproj-dir" depends="init-locale-propeties">
         <echo message="Building ${locale.dir}.lproj dir..."/>        
         <!-- create lproj dir -->
-        <mkdir dir="${mpkg.file}/Contents/Resources/${locale.dir}.lproj"/>
+        <mkdir dir="${pkg.file}/resources/${locale.dir}.lproj"/>
         <!-- copy Welcome.html and Localizable.strings -->
         <condition property="bundle.type.suffix" value="_noupdate" else="">
             <and>
@@ -417,7 +423,7 @@
             <length string="${jdk.update.number}" length="1"/>  
         </condition>
         <copy file="${resources.full.dir}/Welcome${bundle.type}${bundle.type.suffix}${locale.suffix}.html"
-              tofile="${mpkg.file}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false">
+              tofile="${pkg.file}/resources/${locale.dir}.lproj/Welcome.html" failonerror="false">
             <filterset>
                 <filter token="JDK_VERSION_NUMBER" value="${jdk.version.number}"/>
                 <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number.long}"/>
@@ -438,7 +444,7 @@
 
 	<echo message="${Localizable.strings.content}" file="${resources.full.dir}/Localizable.strings" append="false"/>
 
-        <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkg.file}/Contents/Resources/${locale.dir}.lproj" 
+        <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${pkg.file}/resources/${locale.dir}.lproj" 
                       reverse="true" includes="Localizable.strings"/>                        
     </target>     
   
@@ -455,12 +461,12 @@
         <mkdir dir="dist"/>
         <property file="${basedir}/build/sizes.pro"/>         
         <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
-        <property name="mpkg.file" value="${basedir}/dist_dmg/${mpkg.name}.mpkg"/>   
+        <property name="pkg.file" value="${basedir}/dist_pkg"/>
        
         <copy file="${basedir}/dmg/Resources/${background.name}" 
-              tofile="${mpkg.file}/Contents/Resources/background.tif"/>  
+              tofile="${pkg.file}/resources/background.tif"/>  
         <copy file="${license.file}" 
-              tofile="${mpkg.file}/Contents/Resources/License.txt" failonerror="false"/>
+              tofile="${pkg.file}/resources/License.txt" failonerror="false"/>
 
               <ant target="prepare-lproj-dirs"/>
         
@@ -474,8 +480,7 @@
         <condition property="jdk.update.number.long" value="0${jdk.update.number}" else="${jdk.update.number}">
             <length string="${jdk.update.number}" length="1"/>  
         </condition>
-                
-        <copy file="dmg/distribution${bundle.type}${bundle.type.suffix}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
+        <copy file="dmg/distribution${bundle.type}${bundle.type.suffix}.dist" tofile="${pkg.file}/distribution.xml">                                    
             <filterset>
                 <filter token="NB_ID" value="${nb.id}"/>
                 <filter token="GLASSFISH_ID" value="${glassfish.id}"/>
@@ -499,20 +504,15 @@
                 <filter token="SIZE_PHP" value="${sizeof.php}"/>    
             </filterset>
         </copy> 
-        
-        <mkdir dir="${mpkg.file}/Contents/Packages"/>         
-        <echo message="Copying ${packages} to '${mpkg.file}'/Contents/Packages..."/>
+
+        <mkdir dir="${pkg.file}/packages"/>         
+        <echo message="Copying ${packages} to '${pkg.file}'/packages..."/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
+            <arg value="cp -RPf ${packages} '${pkg.file}'/packages"/>
         </exec>
         
-        <condition property="do.sign-app">
-            <not>
-                <equals arg1="${signing_identity}" arg2="0"/>
-            </not>
-        </condition>
-        <antcall target="sign-installer"/>
+        <antcall target="pack-bundle"/>
 
         <condition property="output.dir" value="${output.jdk.dir}" else="">
 	     <istrue value="${do.build.jdk}"/>
@@ -520,18 +520,31 @@
         
         <exec executable="sh" failonerror="yes">
           <arg value="-c"/>
-          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}' '${output.dir}'"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${pkg.name}' '${output.dir}'"/>
         </exec>  
-        <delete dir="dist_dmg" failonerror="false"/>
+        <delete dir="dist_pkg" failonerror="false"/>
     </target>
 
-    <target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
+    <target name="pack-bundle" description="Packs nested packages into the main one">
+        <condition property="sign.option" value="--sign '${signing_identity}'">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition>
+        <mkdir dir="${pkg.file}/inst_package"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-cv"/>
+            <arg value="productbuild --distribution '${pkg.file}/distribution.xml' ${sign.option} --package-path '${pkg.file}/packages' --resources '${pkg.file}/resources/' '${pkg.file}/inst_package/${pkg.name}.pkg'"/>
+        </exec>
+    </target>
+    
+    <!--target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
         <echo message="Sign an OS X Installer '${mpkg.file}'"/>
         <property name="signed.mpkg.file" value="${basedir}/dist_dmg/signed-${mpkg.name}.mpkg"/>   
         <exec executable="sh" failonerror="yes">
             <arg value="-cv"/>
             <arg value="codesign -s '${signing_identity}' -fv '${mpkg.file}'"/>
         </exec>
-    </target>
+    </target-->
     
 </project>

@@ -92,8 +92,17 @@ public class PushCommand extends TransportCommand {
     protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
         List<RefSpec> specs = new ArrayList<RefSpec>(pushRefSpecs.size());
         for (String refSpec : pushRefSpecs) {
-            RefSpec sp = new RefSpec(refSpec).setForceUpdate(false);
-            specs.add(sp);
+            // this may be extra strict. We do not allow force updates for branches,
+            // but maybe we should leave that decision on the caller
+            RefSpec sp = new RefSpec(refSpec);
+            String source = sp.getSource();
+            String dest = sp.getDestination();
+            if (source != null && Transport.REFSPEC_TAGS.matchSource(source)
+                    && dest != null && Transport.REFSPEC_TAGS.matchDestination(sp.getDestination())) {
+                specs.add(sp);
+            } else {
+                specs.add(sp.setForceUpdate(false));
+            }
         }
         // this will ensure that refs/remotes/abc/branch will be updated, too
         List<RefSpec> fetchSpecs = new ArrayList<RefSpec>(fetchRefSpecs == null ? 0 : fetchRefSpecs.size());

@@ -876,6 +876,7 @@ public final class GitUtils {
     private static final String REF_PUSHSPEC_PATTERN = "refs/heads/{0}:refs/heads/{1}"; //NOI18N
     public static final String REF_PUSHSPEC_DEL_PREFIX = ":refs/heads/"; //NOI18N
     private static final String REF_TAG_PUSHSPEC_PATTERN = "refs/tags/{0}:refs/tags/{0}"; //NOI18N
+    private static final String REF_TAG_PUSHSPEC_PATTERN_FORCE = "+" + REF_TAG_PUSHSPEC_PATTERN; //NOI18N
 
     public static String getGlobalRefSpec (String remoteName) {
         return MessageFormat.format(REF_SPEC_GLOBAL_PATTERN, remoteName);
@@ -901,8 +902,10 @@ public final class GitUtils {
         return REF_PUSHSPEC_DEL_PREFIX + remoteRepositoryBranchName;
     }
 
-    public static String getPushTagRefSpec (String tagName) {
-        return MessageFormat.format(REF_TAG_PUSHSPEC_PATTERN, tagName);
+    public static String getPushTagRefSpec (String tagName, boolean forceUpdate) {
+        return MessageFormat.format(forceUpdate
+                ? REF_TAG_PUSHSPEC_PATTERN_FORCE
+                : REF_TAG_PUSHSPEC_PATTERN, tagName);
     }
 
     public static <T> T runWithoutIndexing (Callable<T> callable, List<File> files) throws GitException {
