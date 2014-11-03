@@ -110,7 +110,11 @@ public class V8Object extends V8Value {
             Normal,
             Field,
             Constant,
-            Callbacks
+            Callbacks,
+            Handler,
+            Interceptor,
+            Transition,
+            Nonexistent
         }
         
         public static final int ATTR_NONE = 0;
