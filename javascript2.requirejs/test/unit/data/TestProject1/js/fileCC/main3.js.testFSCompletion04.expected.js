@@ -1,2 +1,2 @@
-requirejs(['folder1/']);
+requirejs(['./folder1/']);
 
