@@ -162,7 +162,7 @@ public class FSCompletionItem implements CompletionProposal {
 
     @Override
     public String getCustomInsertTemplate() {
-        return getName() + (file.isFolder() ? "/" : "");
+        return prefix + file.getName() + (file.isFolder() ? "/" : "");
     }
 
     public FileObject getFile() {

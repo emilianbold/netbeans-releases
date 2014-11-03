@@ -122,12 +122,12 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
     }
     
     public void testFSCompletion04() throws Exception {
-        checkAppliedCompletion("TestProject1/js/fileCC/main3.js", "requirejs(['^']);", "requirejs(['folder1/^']);", "folder1", false);
+        checkAppliedCompletion("TestProject1/js/fileCC/main3.js", "requirejs(['^']);", "requirejs(['./folder1/^']);", "folder1", false);
         
     }
     
     public void testFSCompletion05() throws Exception {
-        checkAppliedCompletion("TestProject1/js/fileCC/main4.js", "requirejs(['fold^']);", "requirejs(['folder1/^']);", "folder1", false);        
+        checkAppliedCompletion("TestProject1/js/fileCC/main4.js", "requirejs(['fold^']);", "requirejs(['./folder1/^']);", "folder1", false);        
     }
     
     public void testFSCompletion06() throws Exception {
@@ -156,6 +156,34 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
     
     public void testMappingCompletion04() throws Exception {
         checkCompletion("TestProject1/js/folder2/fs.js", "'lib/api/v0.1/OM^',", false);        
+    }
+    
+    public void testIssue248197_01() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue248197/mainTest01.js", "var a = require('^');", "var a = require('./aaa^');", "aaa", false);        
+    }
+    
+    public void testIssue248197_02() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue248197/mainTest02.js", "var a2 = require('./^');", "var a2 = require('./aaa^');", "aaa", false);        
+    }
+    
+    public void testIssue248197_03() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue248197/mainTest03.js", "var a3 = require('./a^');", "var a3 = require('./aaa^');", "aaa", false);        
+    }
+    
+    public void testIssue248197_04() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue248197/mainTest04.js", "var l1 = require('^');", "var l1 = require('./lib/^');", "lib", false);        
+    }
+
+    public void testIssue248197_05() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue248197/mainTest05.js", "var l2 = require('./l^');", "var l2 = require('./lib/^');", "lib", false);        
+    }
+
+    public void testIssue248197_06() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue248197/mainTest06.js", "var l3 = require('./lib/^');", "var l3 = require('./lib/bbb^');", "bbb", false);        
+    }
+    
+    public void testIssue248197_07() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue248197/mainTest07.js", "var l4 = require('./lib/b^');", "var l4 = require('./lib/bbb^');", "bbb", false);        
     }
     
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {
