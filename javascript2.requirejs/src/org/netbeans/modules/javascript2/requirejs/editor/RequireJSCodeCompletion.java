@@ -169,16 +169,20 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                         Exceptions.printStackTrace(ex);
                     }
                     if (!writtenPath.isEmpty() && writtenPath.indexOf('/') > -1){
-                        //try to find in the folder structure upto the project root
-                        String possiblePath = FSCompletionUtils.removePlugin(writtenPath.substring(0, writtenPath.lastIndexOf('/')));
-                        FileObject parentFO = fo.getParent();
-                        FileObject targetFO = null;
-                        while (!parentFO.equals(project.getProjectDirectory())) {
-                            targetFO = parentFO.getFileObject(possiblePath);
-                            if (targetFO != null && !relativeTo.contains(parentFO)) {
-                                relativeTo.add(parentFO);
+                        if (!writtenPath.startsWith("./")) {
+                            //try to find in the folder structure upto the project root
+                            String possiblePath = FSCompletionUtils.removePlugin(writtenPath.substring(0, writtenPath.lastIndexOf('/')));
+                            FileObject parentFO = fo.getParent();
+                            FileObject targetFO = null;
+                            while (!parentFO.equals(project.getProjectDirectory())) {
+                                targetFO = parentFO.getFileObject(possiblePath);
+                                if (targetFO != null && !relativeTo.contains(parentFO)) {
+                                    relativeTo.add(parentFO);
+                                }
+                                parentFO = parentFO.getParent();
                             }
-                            parentFO = parentFO.getParent();
+                        } else {
+                            relativeTo.add(fo.getParent());
                         }
                     }
                 }
@@ -207,7 +211,11 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
+                
+                if (!result.isEmpty() && !writtenPath.isEmpty() 
+                        && (writtenPath.charAt(0) == '/' || writtenPath.startsWith("./") || writtenPath.startsWith("../"))) {
+                    return result;
+                }
                 FileObject fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath, fo);
                 String prefixAfterMapping = "";
                 if (fromMapping == null) {
