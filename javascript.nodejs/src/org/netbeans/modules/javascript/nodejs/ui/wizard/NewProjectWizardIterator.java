@@ -65,11 +65,17 @@ import org.openide.util.Pair;
 public final class NewProjectWizardIterator extends BaseWizardIterator {
 
     private static final String DEFAULT_SOURCE_FOLDER = "src"; // NOI18N
+    private static final String DEFAULT_SITE_ROOT_FOLDER = "src/public"; // NOI18N
 
+    private final String displayName;
+    private final boolean withSiteRoot;
     private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> baseWizard;
     private final Pair<WizardDescriptor.FinishablePanel<WizardDescriptor>, String> toolsWizard;
 
-    private NewProjectWizardIterator() {
+    private NewProjectWizardIterator(String displayName, boolean withSiteRoot) {
+        assert displayName != null;
+        this.displayName = displayName;
+        this.withSiteRoot = withSiteRoot;
         baseWizard = CreateProjectUtils.createBaseWizardPanel("NodeJsApplication"); // NOI18N
         toolsWizard = CreateProjectUtils.createToolsWizardPanel(new CreateProjectUtils.Tools()
                 .setNpm(true));
@@ -77,18 +83,29 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
 
     @TemplateRegistration(
             folder = "Project/ClientSide",
-            displayName = "#NewProjectWizardIterator.newProject.displayName",
+            displayName = "#NewProjectWizardIterator.newNodeJsProject.displayName",
             description = "../resources/NewNodeJsProjectDescription.html",
             iconBase = NODEJS_PROJECT_ICON,
             position = 150)
-    @NbBundle.Messages("NewProjectWizardIterator.newProject.displayName=Node.js Application")
+    @NbBundle.Messages("NewProjectWizardIterator.newNodeJsProject.displayName=Node.js Application")
     public static NewProjectWizardIterator newNodeJsProject() {
-        return new NewProjectWizardIterator();
+        return new NewProjectWizardIterator(Bundle.NewProjectWizardIterator_newNodeJsProject_displayName(), false);
+    }
+
+    @TemplateRegistration(
+            folder = "Project/ClientSide",
+            displayName = "#NewProjectWizardIterator.newHtml5ProjectWithNodeJs.displayName",
+            description = "../resources/NewHtml5ProjectWithNodeJsDescription.html",
+            iconBase = NODEJS_PROJECT_ICON,
+            position = 160)
+    @NbBundle.Messages("NewProjectWizardIterator.newHtml5ProjectWithNodeJs.displayName=HTML5/JS Application with Node.js")
+    public static NewProjectWizardIterator newHtml5ProjectWithNodeJs() {
+        return new NewProjectWizardIterator(Bundle.NewProjectWizardIterator_newHtml5ProjectWithNodeJs_displayName(), true);
     }
 
     @Override
     String getWizardTitle() {
-        return Bundle.NewProjectWizardIterator_newProject_displayName();
+        return displayName;
     }
 
     @Override
@@ -134,13 +151,21 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
                 .setProjectDir(projectDirectory)
                 .setProjectName((String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
                 .setSourceFolder(DEFAULT_SOURCE_FOLDER)
+                .setSiteRootFolder(withSiteRoot ? DEFAULT_SITE_ROOT_FOLDER : null)
                 .setPlatformProvider(NodeJsPlatformProvider.IDENT);
         Project project = ClientSideProjectGenerator.createProject(createProperties);
         FileObject sources = projectDirectory.getFileObject(DEFAULT_SOURCE_FOLDER);
         assert sources != null;
         // create main.js file
-        FileObject mainFile = createMainFile(sources);
-        files.add(mainFile);
+        FileObject mainJsFile = createMainJsFile(sources);
+        files.add(mainJsFile);
+        // create index.html?
+        if (withSiteRoot) {
+            FileObject siteRoot = projectDirectory.getFileObject(DEFAULT_SITE_ROOT_FOLDER);
+            assert siteRoot != null;
+            FileObject indexHtmlFile = createIndexHtmlFile(siteRoot);
+            files.add(indexHtmlFile);
+        }
 
         // tools
         CreateProjectUtils.instantiateTools(project, toolsWizard.first());
@@ -148,19 +173,27 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         // enable running as node.js
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         nodeJsSupport.getPreferences().setRunEnabled(true);
-        nodeJsSupport.getPreferences().setStartFile(FileUtil.toFile(mainFile).getAbsolutePath());
+        nodeJsSupport.getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
         nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
 
         handle.finish();
         return files;
     }
 
-    private FileObject createMainFile(FileObject sources) throws IOException {
+    private FileObject createMainJsFile(FileObject sources) throws IOException {
         assert sources != null;
         FileObject template = FileUtil.getConfigFile("Templates/Other/javascript.js"); // NOI18N
         DataFolder dataFolder = DataFolder.findFolder(sources);
         DataObject dataTemplate = DataObject.find(template);
         return dataTemplate.createFromTemplate(dataFolder, "main").getPrimaryFile(); // NOI18N
+    }
+
+    private FileObject createIndexHtmlFile(FileObject siteRoot) throws IOException {
+        assert siteRoot != null;
+        FileObject template = FileUtil.getConfigFile("Templates/Other/html.html"); // NOI18N
+        DataFolder dataFolder = DataFolder.findFolder(siteRoot);
+        DataObject dataTemplate = DataObject.find(template);
+        return dataTemplate.createFromTemplate(dataFolder, "index").getPrimaryFile(); // NOI18N
     }
 
 }
