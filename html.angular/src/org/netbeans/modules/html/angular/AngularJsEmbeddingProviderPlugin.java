@@ -306,7 +306,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             if (!fqn.isEmpty()) {
                 int propNameOffset = controllerName.indexOf(parts[1].trim());
                 embeddings.add(snapshot.create(tokenSequence.offset() + 1 + propNameOffset, parts[1].trim().length(), Constants.JAVASCRIPT_MIMETYPE));
-                sb.append(" = "); //NOI18N
+                sb.append(" = new "); //NOI18N
                 sb.append(fqn);
                 sb.append(";\n"); //NOI18N
             }
@@ -708,7 +708,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             } else {
                                 // we have controllerAs present in configuration
                                 sb.append("(function () {\nvar "); //NOI18N
-                                sb.append(controllerRegistration.getControllerAsName()).append(" = "); //NOI18N
+                                sb.append(controllerRegistration.getControllerAsName()).append(" = new "); //NOI18N
                                 if (!fqn.isEmpty()) {
                                     sb.append(fqn);
                                     sb.append(";\n"); //NOI18N
@@ -736,7 +736,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         // we have controllerAs present in configuration
                         sb.append("(function () {\nvar "); //NOI18N
                         sb.append(controllerRegistration.getControllerAsName());
-                        sb.append(" = "); //NOI18N
+                        sb.append(" = new "); //NOI18N
                         sb.append(controllerRegistration.getControllerName());
                         sb.append(";\n"); //NOI18N
                         sb.append("{ \n"); //NOI18N
