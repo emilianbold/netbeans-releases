@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.web.clientproject.indirect;
 
+import java.io.IOException;
 import java.util.EventListener;
 
 /**
  */
 public interface AntProjectListener extends EventListener {
+    public void projectXmlSaved() throws IOException;
     public void configurationXmlChanged(AntProjectEvent ev);
     public void propertiesChanged(AntProjectEvent ev);
 }

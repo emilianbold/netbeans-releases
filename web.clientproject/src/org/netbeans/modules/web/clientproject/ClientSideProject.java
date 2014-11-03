@@ -92,7 +92,6 @@ import org.netbeans.modules.web.clientproject.indirect.AntProjectEvent;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectListener;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
-import org.netbeans.modules.web.clientproject.indirect.ProjectXmlSavedHook;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
@@ -228,7 +227,7 @@ public class ClientSideProject implements Project {
         eval = is.createEvaluator(helper, getProjectDirectory());
         referenceHelper = is.newReferenceHelper(helper, configuration, eval);
         projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
-        lookup = createLookup(configuration);
+        lookup = createLookup(configuration, helper.getXmlSavedHook());
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -490,13 +489,13 @@ public class ClientSideProject implements Project {
     }
 
 
-    private Lookup createLookup(AuxiliaryConfiguration configuration) {
+    private Lookup createLookup(AuxiliaryConfiguration configuration, Object xmlSavedHook) {
         FileEncodingQueryImplementation fileEncodingQuery =
                 new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING);
         Lookup base = Lookups.fixed(new Object[] {
                this,
                new Info(),
-               new ClientSideProjectXmlSavedHook(),
+               xmlSavedHook,
                new ProjectOperations(this),
                ProjectSearchInfo.create(this),
                fileEncodingQuery,
@@ -588,17 +587,6 @@ public class ClientSideProject implements Project {
             propertyChangeSupport.firePropertyChange(prop , null, null);
         }
 
-    }
-
-    private final class ClientSideProjectXmlSavedHook extends ProjectXmlSavedHook {
-
-        @Override
-        protected void projectXmlSaved() throws IOException {
-            Info info = getLookup().lookup(Info.class);
-            assert info != null;
-            info.firePropertyChange(ProjectInformation.PROP_NAME);
-            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
-        }
     }
 
     private static final class RecommendedAndPrivilegedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
@@ -944,6 +932,13 @@ public class ClientSideProject implements Project {
     }
 
     private final class AntProjectListenerImpl implements AntProjectListener {
+        @Override
+        public void projectXmlSaved() throws IOException {
+            Info info = getLookup().lookup(Info.class);
+            assert info != null;
+            info.firePropertyChange(ProjectInformation.PROP_NAME);
+            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
+        }
 
         @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
