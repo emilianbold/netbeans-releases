@@ -195,8 +195,9 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
                 }
                 
                 for (GitTag tag : localTags.values()) {
-                    if (!tags.containsKey(tag.getTagName())) {
-                        l.add(new PushMapping.PushTagMapping(tag));
+                    String repoTagId = tags.get(tag.getTagName());
+                    if (!tag.getTagId().equals(repoTagId)) {
+                        l.add(new PushMapping.PushTagMapping(tag, repoTagId == null ? null : tag.getTagName()));
                     }
                 }
                 EventQueue.invokeLater(new Runnable () {
