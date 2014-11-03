@@ -186,6 +186,10 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
         checkAppliedCompletion("TestProject1/js/fileCC/issue248197/mainTest07.js", "var l4 = require('./lib/b^');", "var l4 = require('./lib/bbb^');", "bbb", false);        
     }
     
+    public void testIssue248198_01() throws Exception {
+        checkCompletion("TestProject1/js/fileCC/folder1/module2.js", "var a2 = require('./^');", false);        
+    }
+    
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {
         final CodeCompletionHandler.QueryType type = CodeCompletionHandler.QueryType.COMPLETION;
         final boolean caseSensitive = true;
