@@ -59,7 +59,7 @@ public class ReferencesNavTest extends GeneralNodeJs {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(FuncExpNavTest.class).addTest(
+                NbModuleSuite.createConfiguration(ReferencesNavTest.class).addTest(
                         "openProject",
                         "testReference",
                         "testReference2",
