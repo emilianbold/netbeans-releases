@@ -95,7 +95,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class LogReader {
+public class MakeLogReader {
     private String workingDir;
     private String guessWorkingDir;
     private String baseWorkingDir;
@@ -108,13 +108,14 @@ public class LogReader {
     private final CompilerSettings compilerSettings;
     private final RelocatablePathMapper localMapper;
     private final FileSystem fileSystem;
+    private final RelocatablePathMapper.FS fs;
     private final Map<String,String> alreadyConverted = new HashMap<String,String>();
     private final Set<String> C_NAMES;
     private final Set<String> CPP_NAMES;
     private final Set<String> FORTRAN_NAMES;
     private boolean isWindows = false;
 
-    public LogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
+    public MakeLogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
         if (root.length()>0) {
             this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
         } else {
@@ -126,6 +127,7 @@ public class LogReader {
         this.compilerSettings = new CompilerSettings(project);
         this.localMapper = relocatablePathMapper;
         this.fileSystem = fileSystem;
+        fs = new FSImpl(fileSystem);
         C_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCompiler);
         CPP_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCCompiler);
         FORTRAN_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.FortranCompiler);
@@ -150,7 +152,6 @@ public class LogReader {
                     RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(path);
                     if (resolvedPath == null) {
                         if (root != null) {
-                            RelocatablePathMapper.FS fs = new FSImpl(fileSystem);
                             if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
