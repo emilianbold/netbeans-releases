@@ -99,7 +99,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         if (webRoot == null) {
             webRoot = FileUtil.toFile(project.getProjectDirectory());
         }
-        String libraryFolder = getProjectPreferences(project).get(PREFERENCES_LIBRARY_FOLDER, null);
+        String libraryFolder = getLibraryFolder(project);
         final SelectionPanel customizer = new SelectionPanel(libraries, webRoot, libraryFolder);
         category.setStoreListener(new StoreListener(project, webRoot, customizer));
         category.setCloseListener(new ActionListener() {
@@ -114,6 +114,10 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
     private static Preferences getProjectPreferences(Project project) {
         // Using class from web.clientproject.api for backward compatibility
         return ProjectUtils.getPreferences(project, WebClientProjectConstants.class, true);
+    }
+
+    static String getLibraryFolder(Project project) {
+        return getProjectPreferences(project).get(PREFERENCES_LIBRARY_FOLDER, null);
     }
 
     static void storeLibraryFolder(Project project, String libraryFolder) {
@@ -143,12 +147,12 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             progressHandle.start();
 
             try {
-                String libraryFolder = customizer.getLibraryFolder();
-                storeLibraryFolder(project, libraryFolder);
-
                 Library.Version[] selectedVersions = customizer.getSelectedLibraries();
                 Library.Version[] versionsToStore = updateLibraries(selectedVersions);
-                LibraryPersistence.getDefault().storeLibraries(project, versionsToStore);            
+                LibraryPersistence.getDefault().storeLibraries(project, versionsToStore);
+
+                String libraryFolder = customizer.getLibraryFolder();
+                storeLibraryFolder(project, libraryFolder);
             } finally {
                 progressHandle.finish();
             }
@@ -186,7 +190,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
 
             // Create library folder
-            FileObject librariesFob = null;
+            FileObject librariesFob;
             try {
                 String librariesFolderName = customizer.getLibraryFolder();
                 FileObject webRootFob = FileUtil.toFileObject(webRoot);
@@ -195,8 +199,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 String errorMessage = Bundle.LibraryCustomizer_libraryFolderFailure();
                 errors.add(errorMessage);
                 Logger.getLogger(LibraryCustomizer.class.getName()).log(Level.INFO, errorMessage, ioex);
-                toInstall.clear();
-                newMap = oldMap;
+                return oldLibraries;
             }
 
             // Download versions to install
@@ -253,8 +256,14 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
 
             // Install/remove files in the versions that are kept
+            String newLibraryFolder = customizer.getLibraryFolder();
+            String oldLibraryFolder = getLibraryFolder(project);
+            boolean libFolderChanged = !newLibraryFolder.equals(oldLibraryFolder);
             for (String libraryName : toKeep) {
                 Library.Version oldVersion = oldMap.get(libraryName);
+                if (libFolderChanged) {
+                    moveLibrary(librariesFob, oldVersion, errors);
+                }
                 Library.Version newVersion = newMap.get(libraryName);
                 Library.Version versionToStore = updateLibrary(librariesFob, oldVersion, newVersion, errors);
                 newMap.put(libraryName, versionToStore);
@@ -278,6 +287,53 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
 
         @NbBundle.Messages({
             "# {0} - library name",
+            "LibraryCustomizer.libraryFolderCreationFailed=Unable to create the folder for the library {0}!",
+            "# {0} - library name",
+            "# {1} - file path",
+            "LibraryCustomizer.moveFailed=Move of the file {1} of the library {0} failed!",
+        })
+        private void moveLibrary(FileObject librariesFolder, Library.Version version, List<String> errors) {
+            FileObject projectFob = project.getProjectDirectory();
+            String libraryName = version.getLibrary().getName();
+            try {
+                FileObject libraryFolder = FileUtil.createFolder(librariesFolder, libraryName);
+                File projectDir = FileUtil.toFile(projectFob);
+                String[] files = version.getFiles();
+                String[] localFiles = version.getLocalFiles();
+                for (int i=0; i<files.length; i++) {
+                    File file = PropertyUtils.resolveFile(projectDir, localFiles[i]);
+                    if (file.exists()) {
+                        try {
+                            FileObject fob = FileUtil.toFileObject(file);
+                            String[] pathElements = files[i].split("/"); // NOI18N
+                            FileObject fileFolder = libraryFolder;
+                            for (int j=0; j<pathElements.length-1; j++) {
+                                fileFolder = FileUtil.createFolder(fileFolder, pathElements[j]);
+                            }
+                            String fileName = pathElements[pathElements.length-1];
+                            int index = fileName.lastIndexOf('.');
+                            if (index != -1) {
+                                fileName = fileName.substring(0,index);
+                            }
+                            fob = FileUtil.moveFile(fob, fileFolder, fileName);
+                            localFiles[i] = PropertyUtils.relativizeFile(projectDir, FileUtil.toFile(fob));
+                            removeFile(file.getParentFile());
+                        } catch (IOException ioex) {
+                            String errorMessage = Bundle.LibraryCustomizer_moveFailed(libraryName, files[i]);
+                            errors.add(errorMessage);
+                            Logger.getLogger(LibraryCustomizer.class.getName()).log(Level.INFO, errorMessage, ioex);
+                        }
+                    }
+                }
+            } catch (IOException ioex) {
+                String errorMessage = Bundle.LibraryCustomizer_libraryFolderCreationFailed(libraryName);
+                errors.add(errorMessage);
+                Logger.getLogger(LibraryCustomizer.class.getName()).log(Level.INFO, errorMessage, ioex);
+            }
+        }
+
+        @NbBundle.Messages({
+            "# {0} - library name",
             "# {1} - file name/path",
             "LibraryCustomizer.updateFailed=Modification of library {0} failed for file {1}."
         })
@@ -289,8 +345,6 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             LibraryProvider libraryProvider = LibraryProvider.getInstance();
             String libraryName = oldVersion.getLibrary().getName();
             FileObject libraryFolder = librariesFolder.getFileObject(libraryName);
-
-            // PENDING move into a new library folder (if the folder has changed)
             
             // Install missing files
             Map<String,String> oldFilesMap = new HashMap<>();
@@ -357,18 +411,22 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
         }
 
+        private void removeFile(File file) {
+            while (!webRoot.equals(file)) {
+                File parent = file.getParentFile();
+                if (!file.delete()) {
+                    // We have reached a parent directory that is not empty
+                    break;
+                }
+                file = parent;
+            }            
+        }
+
         private void uninstallFile(String filePath) {
             File projectDir = FileUtil.toFile(project.getProjectDirectory());
             File file = PropertyUtils.resolveFile(projectDir, filePath);
             if (file.exists()) {
-                while (!webRoot.equals(file)) {
-                    File parent = file.getParentFile();
-                    if (!file.delete()) {
-                        // We have reached a parent directory that is not empty
-                        break;
-                    }
-                    file = parent;
-                }
+                removeFile(file);
             } else {
                 Logger.getLogger(LibraryCustomizer.class.getName()).log(
                         Level.INFO, "Cannot delete file {0}. It no longer exists.",
