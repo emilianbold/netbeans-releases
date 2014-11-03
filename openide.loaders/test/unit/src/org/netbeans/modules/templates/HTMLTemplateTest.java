@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.templates;
 
+import java.awt.Component;
+import java.util.concurrent.CountDownLatch;
+import javafx.application.Platform;
 import static junit.framework.Assert.*;
 import org.junit.Test;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -72,5 +75,24 @@ public class HTMLTemplateTest {
         WizardDescriptor.Panel<WizardDescriptor> p1 = it.current();
         assertNotNull("Panel found", p1);
         assertTrue("It is HTML wizard: " + p1, p1 instanceof HTMLPanel);
+        
+        Component cmp1 = p1.getComponent();
+        assertNotNull("component initialized", cmp1);
+        
+        while (!p1.isValid()) {
+            awaitFX();
+        }
+        assertTrue("error code set to 0", p1.isValid());
+    }
+    
+    private static void awaitFX() throws Exception {
+        final CountDownLatch cdl = new CountDownLatch(1);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                cdl.countDown();
+            }
+        });
+        cdl.await();
     }
 }

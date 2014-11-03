@@ -43,6 +43,8 @@ package org.netbeans.modules.templates;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,10 +60,13 @@ import javafx.scene.web.WebView;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import net.java.html.BrwsrCtx;
 import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,7 +85,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private JFXPanel p;
     private /* final */ WebView v;
     private ChangeListener listener;
-    private int errorCode;
+    private int errorCode = -1;
 
     private HTMLWizard(FileObject data) {
         this.data = data;
@@ -176,14 +181,13 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         }
     }
 
-    JComponent component(final int index) {
+    final JComponent component(final int index) {
         if (p == null) {
             p = new JFXPanel();
             p.setPreferredSize(new Dimension(300, 200));
             p.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
             p.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
             p.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
-        } else {
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
@@ -202,13 +206,47 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                         p.setScene(scene);
 
                         String page = (String) data.getAttribute("page");
-                        URL u = HTMLPanel.class.getResource(page);
+                        ClassLoader tmpL = Lookup.getDefault().lookup(ClassLoader.class);
+                        if (tmpL == null) {
+                            tmpL = Thread.currentThread().getContextClassLoader();
+                        }
+                        if (tmpL == null) {
+                            tmpL = HTMLPanel.class.getClassLoader();
+                        }
+                        
+                        final ClassLoader l = tmpL;
+                        URL u = l.getResource(page);
                         
                         FXBrowsers.load(v, u, new Runnable() {
                             @Override
                             public void run() {
-                                listenOnProp(HTMLWizard.this, "steps");
-                                listenOnProp(HTMLWizard.this, "errorCode");
+                                try {
+                                    String clazz = (String) data.getAttribute("class");
+                                    String method = (String) data.getAttribute("method");
+                                    Method m = Class.forName(clazz, true, l).getDeclaredMethod(method);
+                                    m.setAccessible(true);
+                                    Object ret = m.invoke(null);
+                                    
+                                    if (ret instanceof String) {
+                                        ret = v.getEngine().executeScript((String) ret);
+                                    } else {
+                                        // Models.isModel(ret);
+                                        throw new IllegalStateException("Returned value should be string: " + ret);
+                                    }
+                                    
+                                    boolean stepsOK = listenOnProp(ret, HTMLWizard.this, "steps");
+                                    boolean errorCodeOK = listenOnProp(ret, HTMLWizard.this, "errorCode");
+                                } catch (NoSuchMethodException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (ClassNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (IllegalAccessException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (IllegalArgumentException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (InvocationTargetException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
                             }
                         });
                     }
@@ -253,15 +291,13 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         */
     }
     
-    @JavaScriptBody(args = {"onChange", "p" }, javacall = true, body = ""
-        + "if (typeof ko === 'undefined') return;\n"
-        + "var data = ko.dataFor(window.document.body);\n"
-        + "if (typeof data === 'undefined') return;\n"
-        + "if (typeof data[p] === 'undefined') return;\n"
+    @JavaScriptBody(args = {"data", "onChange", "p" }, javacall = true, body = ""
+        + "if (typeof data[p] !== 'function') return false;\n"
         + "data[p].subscribe(function(value) {\n"
         + "  onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, value);\n"
         + "});\n"
         + "onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, data[p]());\n"
+        + "return true;\n"
     )
-    static native void listenOnProp(HTMLWizard onChange, String propName);    
+    static native boolean listenOnProp(Object raw, HTMLWizard onChange, String propName);    
 }

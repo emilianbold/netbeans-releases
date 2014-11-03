@@ -51,6 +51,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -197,6 +198,16 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
             );
             return;
         }
+        if (!ee.getParameters().isEmpty()) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
+                "page() attribute requires its method to take no arguments", e
+            );
+            return;
+        }
         f.methodvalue("instantiatingIterator", HTMLWizard.class.getName(), "create");
+        TypeElement te = (TypeElement) e.getEnclosingElement();
+        Name fqn = processingEnv.getElementUtils().getBinaryName(te);
+        f.stringvalue("class", fqn.toString());
+        f.stringvalue("method", ee.getSimpleName().toString());
     }
 }

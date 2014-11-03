@@ -50,9 +50,11 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
         <div>TODO write content</div>
         <script>
             function init() {
-                return {
-                    'valid' : ko.observable(true)
+                var data = {
+                    'errorCode' : ko.observable(0)
                 };
+                ko.applyBindings(data);
+                return data;
             }
         </script>
             
