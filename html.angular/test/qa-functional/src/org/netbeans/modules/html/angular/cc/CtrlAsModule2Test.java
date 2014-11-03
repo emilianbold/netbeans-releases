@@ -85,9 +85,9 @@ public class CtrlAsModule2Test extends GeneralAngular {
     public void openProject() throws Exception {
         startTest();
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
-        openDataProjects("ctrlmodule");
+        openDataProjects("asctrlmodule");
         evt.waitNoEvent(2000);
-        openFile("partials|partial1.html", "ctrlmodule");
+        openFile("partials|partial1.html", "asctrlmodule");
         waitScanFinished();
         CtrlAsModule2Test.originalContent = new EditorOperator("partial1.html").getText();
         endTest();
