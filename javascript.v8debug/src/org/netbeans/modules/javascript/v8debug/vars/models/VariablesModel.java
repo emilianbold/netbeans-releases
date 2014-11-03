@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.lib.v8debug.PropertyLong;
 import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Frame;
@@ -90,7 +91,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                                                                 TableModel,
                                                                 V8Debugger.Listener {
     
-    public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
+    @StaticResource(searchClasspath = true)
+    private static final String ICON_LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
+    @StaticResource(searchClasspath = true)
+    private static final String ICON_SCOPE = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N
     
     protected final V8Debugger dbg;
     private final VarValuesLoader vvl;
@@ -317,11 +321,11 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 case PROPERTY:
                 case ARRAY_ELEMENT:
                 default:
-                    return LOCAL;
+                    return ICON_LOCAL;
             }
         }
         if (node instanceof ScopeValue) {
-            
+            return ICON_SCOPE;
         }
         throw new UnknownTypeException(node);
     }
