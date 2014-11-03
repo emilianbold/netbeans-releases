@@ -262,8 +262,8 @@ public class CtrlModuleArrayETest extends GeneralAngular{
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(KeyEvent.VK_DELETE);
         eo.insert(CtrlModuleArrayETest.originalContent);
-        eo.save();
+//        eo.save();
         eo.pressKey(KeyEvent.VK_ESCAPE);
-        evt.waitNoEvent(1000);
+        evt.waitNoEvent(1500);
     }
 }

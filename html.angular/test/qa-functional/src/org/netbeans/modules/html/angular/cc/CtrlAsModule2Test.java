@@ -183,8 +183,8 @@ public class CtrlAsModule2Test extends GeneralAngular {
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(KeyEvent.VK_DELETE);
         eo.insert(CtrlAsModule2Test.originalContent);
-        eo.save();
+//        eo.save();
         eo.pressKey(KeyEvent.VK_ESCAPE);
-        evt.waitNoEvent(1000);
+        evt.waitNoEvent(1500);
     }
 }
