@@ -7,9 +7,9 @@
 
     <target name="zip-samples">
         <property name="samples" location="${build.classes.dir}/org/netbeans/modules/javascript/nodejs/samples"/>
-        <property name="excludes" value="CVS private build-impl.xml **/.keep" />
         <mkdir dir="${samples}"/>
-        <zip basedir="samples_src/ListDirectory" excludes="${excludes}" destfile="${samples}/ListDirectory.zip"/>
+        <zip basedir="samples_src/ListDirectory" destfile="${samples}/ListDirectory.zip"/>
+        <zip basedir="samples_src/Messages" destfile="${samples}/Messages.zip"/>
     </target>
 
 </project>
