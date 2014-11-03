@@ -128,6 +128,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         private final Project project;
         private final File webRoot;
         private final SelectionPanel customizer;
+        private ProgressHandle progressHandle;
 
         StoreListener(Project project, File webRoot, SelectionPanel customizer) {
             this.project = project;
@@ -141,9 +142,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         }
 
         @Override
-        @NbBundle.Messages("LibraryCustomizer.addingLibraries=Adding the selected JavaScript libraries...")
+        @NbBundle.Messages("LibraryCustomizer.updatingLibraries=Updating JavaScript libraries...")
         public void run() {
-            ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.LibraryCustomizer_addingLibraries());
+            progressHandle = ProgressHandle.createHandle(Bundle.LibraryCustomizer_updatingLibraries());
             progressHandle.start();
 
             try {
@@ -165,7 +166,11 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             "# {0} - library name",
             "# {1} - library version name",
             "LibraryCustomizer.installationFailed=Installation of version {1} of library {0} failed!",
-            "LibraryCustomizer.libraryFolderFailure=Unable to create library folder!"
+            "LibraryCustomizer.libraryFolderFailure=Unable to create library folder!",
+            "LibraryCustomizer.creatingLibraryFolder=Creating a folder for JavaScript libraries.",
+            "# {0} - library name",
+            "# {1} - file path",            
+            "LibraryCustomizer.downloadingFile=Downloading file {1} of {0}."
         })
         private Library.Version[] updateLibraries(Library.Version[] newLibraries) {
             List<String> errors = new ArrayList<>();
@@ -190,6 +195,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
 
             // Create library folder
+            progressHandle.progress(Bundle.LibraryCustomizer_creatingLibraryFolder());
             FileObject librariesFob;
             try {
                 String librariesFolderName = customizer.getLibraryFolder();
@@ -207,8 +213,10 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             for (Library.Version version : toInstall) {
                 String libraryName = version.getLibrary().getName();
                 try {
-                    File[] files = new File[version.getFiles().length];
+                    String[] fileNames = version.getFiles();
+                    File[] files = new File[fileNames.length];
                     for (int fileIndex=0; fileIndex<files.length; fileIndex++) {
+                        progressHandle.progress(Bundle.LibraryCustomizer_downloadingFile(libraryName, fileNames[fileIndex]));
                         files[fileIndex] = LibraryProvider.getInstance().downloadLibraryFile(version, fileIndex);
                     }
                     downloadedFiles.put(libraryName, files);
@@ -291,10 +299,13 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             "# {0} - library name",
             "# {1} - file path",
             "LibraryCustomizer.moveFailed=Move of the file {1} of the library {0} failed!",
+            "# {0} - library name",
+            "LibraryCustomizer.movingLibrary=Moving library {0} into the new library folder."
         })
         private void moveLibrary(FileObject librariesFolder, Library.Version version, List<String> errors) {
-            FileObject projectFob = project.getProjectDirectory();
             String libraryName = version.getLibrary().getName();
+            progressHandle.progress(Bundle.LibraryCustomizer_movingLibrary(libraryName));
+            FileObject projectFob = project.getProjectDirectory();
             try {
                 FileObject libraryFolder = FileUtil.createFolder(librariesFolder, libraryName);
                 File projectDir = FileUtil.toFile(projectFob);
@@ -335,7 +346,10 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         @NbBundle.Messages({
             "# {0} - library name",
             "# {1} - file name/path",
-            "LibraryCustomizer.updateFailed=Modification of library {0} failed for file {1}."
+            "LibraryCustomizer.updateFailed=Update of library {0} failed for file {1}.",
+            "# {0} - library name",
+            "# {1} - file name/path",
+            "LibraryCustomizer.deletingFile=Deleting file {1} of {0}."
         })
         private Library.Version updateLibrary(FileObject librariesFolder,
                 Library.Version oldVersion, Library.Version newVersion,
@@ -370,6 +384,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                         for (int j=0; j<pathElements.length-1; j++) {
                             fileFolder = FileUtil.createFolder(fileFolder, pathElements[j]);
                         }
+                        progressHandle.progress(Bundle.LibraryCustomizer_downloadingFile(libraryName, filePath));
                         File file = libraryProvider.downloadLibraryFile(newVersion, fileIndex);
                         FileObject tmpFob = FileUtil.toFileObject(file);
                         String fileName = pathElements[pathElements.length-1];
@@ -393,6 +408,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             // Remove files that are no longer needed
             for (int i=0; i<oldFiles.length; i++) {
                 if (!fileList.contains(oldFiles[i])) {
+                    progressHandle.progress(Bundle.LibraryCustomizer_deletingFile(libraryName, oldLocalFiles[i]));
                     uninstallFile(oldLocalFiles[i]);
                 }
             }
@@ -406,8 +422,14 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             return versionToStore;
         }
 
+        @NbBundle.Messages({
+            "# {0} - library name",
+            "# {1} - version name",
+            "LibraryCustomizer.removingLibrary=Removing version {1} of {0}."
+        })
         private void uninstallLibraries(List<Library.Version> libraries) {
             for (Library.Version version : libraries) {
+                progressHandle.progress(Bundle.LibraryCustomizer_removingLibrary(version.getLibrary().getName(), version.getName()));
                 for (String fileName : version.getLocalFiles()) {
                     uninstallFile(fileName);
                 }
@@ -437,8 +459,14 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
         }
 
+        @NbBundle.Messages({
+            "# {0} - library name",
+            "# {1} - version name",
+            "LibraryCustomizer.installingLibrary=Installing version {1} of {0}."
+        })
         private void installLibrary(FileObject librariesFolder,
                 Library.Version version, File[] libraryFiles) throws IOException {
+            progressHandle.progress(Bundle.LibraryCustomizer_installingLibrary(version.getLibrary().getName(), version.getName()));
             String libraryName = version.getLibrary().getName();
             FileObject libraryFob = FileUtil.createFolder(librariesFolder, libraryName);
 
