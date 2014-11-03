@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -62,12 +63,6 @@ public class CssRuleStructureItem implements StructureItem {
     private CssNodeElement element;
     private int from;
     private int to;
-
-    private static String escape(String s) {
-        s = s.replace("<", "&lt;");
-        s = s.replace(">", "&gt;");
-        return s;
-    }
 
     CssRuleStructureItem(CharSequence name, CssNodeElement element, Snapshot source) {
         this.name = name;
@@ -88,7 +83,7 @@ public class CssRuleStructureItem implements StructureItem {
 
     @Override
     public String getHtml(HtmlFormatter formatter) {
-        return escape(getName());
+        return StringEscapeUtils.escapeHtml(getName());
     }
 
     @Override

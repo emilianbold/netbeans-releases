@@ -709,4 +709,16 @@ public class Css3ParserLessTest extends CssTestBase {
     public void testIssue240701() {
         assertParses(".linear-gradient-multi(...) {}");
     }
+    
+    public void testIssue248194() {
+        assertParses(
+        "@import (reference) \"foo.less\";\n" +
+        "@import (inline) \"not-less-compatible.css\";\n" +
+        "@import (once) \"foo.less\";\n" +
+        "@import (multiple) \"foo.less\";\n" +
+        "@import (less) \"foo.css\";\n" +
+        "@import (css) \"foo.less\";"
+        );
+    }
+    
 }

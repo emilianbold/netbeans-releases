@@ -85,10 +85,7 @@ public enum CssTokenId implements TokenId {
 
     ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, ERRORS),
 
-    AND(Css3Lexer.AND, OPERATORS),
-    OR(Css3Lexer.OR, OPERATORS),
     NOT(Css3Lexer.NOT, OPERATORS),
-    ONLY(Css3Lexer.ONLY, OPERATORS),
     RESOLUTION(Css3Lexer.RESOLUTION, NUMBERS),
     WS(Css3Lexer.WS, WHITESPACES),
     CHARSET_SYM(Css3Lexer.CHARSET_SYM, AT_RULE_SYMBOL),
@@ -216,11 +213,6 @@ public enum CssTokenId implements TokenId {
      */
     LESS_REST(Css3Lexer.LESS_REST, OTHERS),
 
-    /**
-     * WHEN keyword in guarded mixin
-     * .mixin (@a) "when" (@a > 10), (@a < -10) { ... }
-     */
-    LESS_WHEN(Css3Lexer.LESS_WHEN, OTHERS),
 
     /**
      * & operator in rules:
@@ -274,8 +266,7 @@ public enum CssTokenId implements TokenId {
     LESS_JS_STRING(Css3Lexer.LESS_JS_STRING, STRINGS),
 
     AT_SIGN(Css3Lexer.AT_SIGN, AT_RULE_SYMBOL),
-    LESS_IMPORT_TYPE(Css3Lexer.LESS_IMPORT_TYPE, OPERATORS),
-    
+
     SASS_AT_ROOT(Css3Lexer.SASS_AT_ROOT, AT_RULE_SYMBOL)
 
     ;
