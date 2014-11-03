@@ -108,6 +108,20 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
                 "ListDirectory"); // NOI18N
     }
 
+    @TemplateRegistration(
+            folder = "Project/Samples/HTML5",
+            content = "../../samples/Messages.zip",
+            displayName = "#NewSampleWizardIterator.newMessagesSample.displayName",
+            description = "../resources/NewMessagesSampleDescription.html",
+            iconBase = NODEJS_PROJECT_ICON,
+            position = 1510)
+    @NbBundle.Messages("NewSampleWizardIterator.newMessagesSample.displayName=Messages Sample")
+    public static NewSampleWizardIterator newMessagesSample() {
+        return new NewSampleWizardIterator(
+                Bundle.NewSampleWizardIterator_newMessagesSample_displayName(),
+                "Messages"); // NOI18N
+    }
+
     @Override
     String getWizardTitle() {
         return wizardTitle;
@@ -181,17 +195,19 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
             ZipInputStream str = new ZipInputStream(source);
             ZipEntry entry;
             while ((entry = str.getNextEntry()) != null) {
+                final String name = entry.getName();
                 if (entry.isDirectory()) {
-                    FileUtil.createFolder(projectDir, entry.getName());
+                    FileUtil.createFolder(projectDir, name);
                 } else {
-                    FileObject fo = FileUtil.createData(projectDir, entry.getName());
-                    if ("nbproject/project.xml".equals(entry.getName())) {
+                    FileObject fo = FileUtil.createData(projectDir, name);
+                    if ("nbproject/project.xml".equals(name)) {
                         // set proper project name
                         filterProjectXml(fo, str, projectName);
-                    } else if ("package.json".equals(entry.getName())) {
+                    } else if ("package.json".equals(name)
+                            || "bower.json".equals(name)) {
                         // set proper project name
                         writeFile(str, fo);
-                        filterPackageJson(fo, projectName);
+                        filterJson(fo, projectName);
                     } else {
                         writeFile(str, fo);
                     }
@@ -234,7 +250,7 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
         }
     }
 
-    private static void filterPackageJson(FileObject fo, String name) throws IOException {
+    private static void filterJson(FileObject fo, String name) throws IOException {
         Path path = FileUtil.toFile(fo).toPath();
         Charset charset = StandardCharsets.UTF_8;
         String content = new String(Files.readAllBytes(path), charset);
