@@ -194,20 +194,6 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 }
             }
 
-            // Create library folder
-            progressHandle.progress(Bundle.LibraryCustomizer_creatingLibraryFolder());
-            FileObject librariesFob;
-            try {
-                String librariesFolderName = customizer.getLibraryFolder();
-                FileObject webRootFob = FileUtil.toFileObject(webRoot);
-                librariesFob = FileUtil.createFolder(webRootFob, librariesFolderName);
-            } catch (IOException ioex) {
-                String errorMessage = Bundle.LibraryCustomizer_libraryFolderFailure();
-                errors.add(errorMessage);
-                Logger.getLogger(LibraryCustomizer.class.getName()).log(Level.INFO, errorMessage, ioex);
-                return oldLibraries;
-            }
-
             // Download versions to install
             Map<String,File[]> downloadedFiles = new HashMap<>();
             for (Library.Version version : toInstall) {
@@ -246,6 +232,13 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             // Remove the identified versions
             uninstallLibraries(toRemove);
 
+            // Create library folder
+            FileObject librariesFob = createLibrariesFolder(errors);
+            if (librariesFob == null) {
+                reportErrors(errors);
+                return oldLibraries;
+            }
+
             // Install the identified versions
             for (Library.Version version : toInstall) {
                 String libraryName = version.getLibrary().getName();
@@ -276,7 +269,13 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 Library.Version versionToStore = updateLibrary(librariesFob, oldVersion, newVersion, errors);
                 newMap.put(libraryName, versionToStore);
             }
+            
+            reportErrors(errors);
+ 
+            return newMap.values().toArray(new Library.Version[newMap.size()]);
+        }
 
+        private void reportErrors(List<String> errors) {
             if (!errors.isEmpty()) {
                 StringBuilder message = new StringBuilder();
                 for (String error : errors) {
@@ -289,8 +288,21 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                         message.toString(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notifyLater(descriptor);
             }
- 
-            return newMap.values().toArray(new Library.Version[newMap.size()]);
+        }
+
+        private FileObject createLibrariesFolder(List<String> errors) {
+            progressHandle.progress(Bundle.LibraryCustomizer_creatingLibraryFolder());
+            FileObject librariesFob = null;
+            try {
+                String librariesFolderName = customizer.getLibraryFolder();
+                FileObject webRootFob = FileUtil.toFileObject(webRoot);
+                librariesFob = FileUtil.createFolder(webRootFob, librariesFolderName);
+            } catch (IOException ioex) {
+                String errorMessage = Bundle.LibraryCustomizer_libraryFolderFailure();
+                errors.add(errorMessage);
+                Logger.getLogger(LibraryCustomizer.class.getName()).log(Level.INFO, errorMessage, ioex);
+            }
+            return librariesFob;
         }
 
         @NbBundle.Messages({
