@@ -59,7 +59,8 @@ public class V8Value {
         Frame,
         Script,
         Context,
-        Error;
+        Error,
+        Regexp;
 
         @Override
         public String toString() {

@@ -454,6 +454,7 @@ public class JSONReader {
                                       position, line, column, properties, text);
             case Object:
             case Error:
+            case Regexp:
                 String className = getString(obj, VALUE_CLASS_NAME);
                 constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
