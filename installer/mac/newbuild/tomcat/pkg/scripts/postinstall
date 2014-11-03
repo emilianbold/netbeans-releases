@@ -53,3 +53,17 @@ jdk_home=`"$script_dir"/get_current_jdk.sh`
 if [ -n "$TOMCAT_INSTALL_DIR" ]; then
    sh "$script_dir"/unpack200.sh "$TOMCAT_INSTALL_DIR" "$jdk_home"
 fi
+
+# from postflight script
+"$script_dir"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$2"
+
+cd "$2"
+
+chmod -R a+r *
+
+chmod a+w logs
+
+"$script_dir"/perm.sh "$2"
+
+#add Product ID
+"$script_dir"/addproduct_id.sh "TOMCAT"
