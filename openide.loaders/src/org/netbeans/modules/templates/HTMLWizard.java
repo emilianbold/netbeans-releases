@@ -41,21 +41,46 @@
  */
 package org.netbeans.modules.templates;
 
+import java.awt.Dimension;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
+import javafx.scene.web.WebView;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import net.java.html.boot.fx.FXBrowsers;
+import net.java.html.js.JavaScriptBody;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  */
 public final class HTMLWizard 
-implements WizardDescriptor.InstantiatingIterator<Object> {
+implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+    /** publically known factory method */
     public static WizardDescriptor.InstantiatingIterator<?> create(FileObject data) {
         return new HTMLWizard(data);
     }
     
     private final FileObject data;
+    private int index;
+    private List<String> steps = Collections.emptyList();
+    private List<HTMLPanel> panels;
+    private JFXPanel p;
+    private /* final */ WebView v;
+    private ChangeListener listener;
+    private int errorCode;
 
     private HTMLWizard(FileObject data) {
         this.data = data;
@@ -63,56 +88,180 @@ implements WizardDescriptor.InstantiatingIterator<Object> {
 
     @Override
     public Set instantiate() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new IOException("Can't instantiate yet!");
     }
 
     @Override
     public void initialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public void uninitialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    
+    private List<? extends WizardDescriptor.Panel<WizardDescriptor>> getPanels() {
+        panels = new ArrayList<>();
+        int cnt = steps.size();
+        if (cnt == 0) {
+            cnt = 1;
+        }
+        for (int i = 0; i < cnt; i++) {
+            final HTMLPanel p = new HTMLPanel(i, this);
+            panels.add(p);
+        }
+        return Collections.unmodifiableList(panels);
+    }
+    
     @Override
-    public WizardDescriptor.Panel<Object> current() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
+        return getPanels().get(index);
     }
 
+    @NbBundle.Messages({
+        "# {0} - current index",
+        "# {1} - number of panels",
+        "MSG_HTMLWizardName={0} of {1}"
+    })
     @Override
     public String name() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return Bundle.MSG_HTMLWizardName(index + 1, getPanels().size());
     }
 
     @Override
     public boolean hasNext() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return index < getPanels().size() - 1;
     }
 
     @Override
     public boolean hasPrevious() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return index > 0;
     }
 
     @Override
     public void nextPanel() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        index++;
+        onStepsChange(null);
     }
 
     @Override
     public void previousPanel() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
+        index--;
+        onStepsChange(null);
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        assert this.listener == null;
+        this.listener = l;
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (this.listener == l) {
+            this.listener = null;
+        }
     }
+    
+    private void fireChange() {
+        ChangeListener l = this.listener;
+        if (l != null) {
+            l.stateChanged(new ChangeEvent(this));
+        }
+    }
+
+    JComponent component(final int index) {
+        if (p == null) {
+            p = new JFXPanel();
+            p.setPreferredSize(new Dimension(300, 200));
+            p.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, true);
+            p.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
+            p.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
+        } else {
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (v == null) {
+                        Platform.setImplicitExit(false);
+                        try {
+                            // workaround for 
+                            // https://javafx-jira.kenai.com/browse/RT-38536
+                            Class.forName("com.sun.javafx.image.impl.ByteBgra");
+                        } catch (ClassNotFoundException ignore) {
+                        }
+                        v = new WebView();
+                        BorderPane bp = new BorderPane();
+                        Scene scene = new Scene(bp, Color.ALICEBLUE);
+                        bp.setCenter(v);
+                        p.setScene(scene);
+
+                        String page = (String) data.getAttribute("page");
+                        URL u = HTMLPanel.class.getResource(page);
+                        
+                        FXBrowsers.load(v, u, new Runnable() {
+                            @Override
+                            public void run() {
+                                listenOnProp(HTMLWizard.this, "steps");
+                                listenOnProp(HTMLWizard.this, "errorCode");
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        return p;
+    }
+    
+    final void onChange(String prop, Object data) {
+        if ("steps".equals(prop)) {
+            onStepsChange((Object[])data);
+        }
+        if ("errorCode".equals(prop)) {
+            errorCode = ((Number)data).intValue();
+            fireChange();
+        }
+    }
+
+    boolean isValid() {
+        return errorCode == 0;
+    }
+    
+    private final void onStepsChange(Object[] obj) {
+        if (obj != null) {
+            List<String> arr = new ArrayList<String>();
+            for (Object s : obj) {
+                arr.add(s.toString());
+            }
+            p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, arr.toArray(new String[arr.size()]));
+            if (!arr.equals(steps)) {
+                steps = arr;
+                fireChange();
+            }
+        }
+        p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
+        /*
+        if (data != null) {
+            String current = steps.size() > index ? steps.get(index) : null;
+            data.changeCurrent(current);
+        }
+        */
+    }
+    
+    @JavaScriptBody(args = {"onChange", "p" }, javacall = true, body = ""
+        + "if (typeof ko === 'undefined') return;\n"
+        + "var data = ko.dataFor(window.document.body);\n"
+        + "if (typeof data === 'undefined') return;\n"
+        + "if (typeof data[p] === 'undefined') return;\n"
+        + "data[p].subscribe(function(value) {\n"
+        + "  onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, value);\n"
+        + "});\n"
+        + "onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, data[p]());\n"
+    )
+    static native void listenOnProp(HTMLWizard onChange, String propName);    
 }

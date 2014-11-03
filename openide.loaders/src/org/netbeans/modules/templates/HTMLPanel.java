@@ -41,36 +41,52 @@
  */
 package org.netbeans.modules.templates;
 
-import static junit.framework.Assert.*;
-import org.junit.Test;
-import org.netbeans.api.templates.TemplateRegistration;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
+import org.openide.util.HelpCtx;
 
-public class HTMLTemplateTest {
-    @TemplateRegistration(
-        folder = "Test", iconBase = "org/netbeans/modules/templates/x.png",
-        page = "org/netbeans/modules/templates/x.html"
-    )
-    static String myMethod() {
-        return "init()";
+final class HTMLPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+    private final int index;
+    private final HTMLWizard it;
+
+    public HTMLPanel(int index, HTMLWizard it) {
+        this.index = index;
+        this.it = it;
     }
-    
-    @Test public void checkTheIterator() throws Exception {
-        final String path = "Templates/Test/org-netbeans-modules-templates-HTMLTemplateTest-myMethod";
-        FileObject fo = FileUtil.getConfigFile(path);
-        assertNotNull(fo);
-        
-        DataObject obj = DataObject.find(fo);
-        
-        TemplateWizard.Iterator it = TemplateWizard.getIterator(obj);
-        assertNotNull("Iterator found", it);
-        
-        WizardDescriptor.Panel<WizardDescriptor> p1 = it.current();
-        assertNotNull("Panel found", p1);
-        assertTrue("It is HTML wizard: " + p1, p1 instanceof HTMLPanel);
+
+    @Override
+    public JComponent getComponent() {
+        return it.component(index);
     }
+
+    @Override
+    public HelpCtx getHelp() {
+        // Show no Help button for this panel:
+        return HelpCtx.DEFAULT_HELP;
+        // If you have context help:
+        // return new HelpCtx("help.key.here");
+    }
+
+    @Override
+    public boolean isValid() {
+        return it.isValid();
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor wiz) {
+    }
+
+    @Override
+    public void storeSettings(WizardDescriptor wiz) {
+    }
+
 }

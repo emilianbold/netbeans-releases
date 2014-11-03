@@ -175,7 +175,7 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
     }
 
     private void registerHTMLWizard(Element e, LayerBuilder b, LayerBuilder.File f, TemplateRegistration t) throws LayerGenerationException {
-        b.validateResource(t.page(), e, t, "iconBase", true);
+        b.validateResource(t.page(), e, t, "page", true);
         f.stringvalue("page", t.page());
         if (e.getKind() != ElementKind.METHOD) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
