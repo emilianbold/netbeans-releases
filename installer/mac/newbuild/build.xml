@@ -273,11 +273,17 @@
         <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
 
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
+                
+        <condition property="sign.option" value="--sign '${signing_identity}'">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition>  
         
         <echo message="Building ${module.name} into ${basedir}/build/${module.name}-${nb.id}.pkg"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>            
-            <arg value="pkgbuild --root '${module.builddir}/netbeans' --scripts '${scriptsdir}' --identifier org.netbeans.${module.name} --install-location '/${app.name}/Contents/Resources/NetBeans' '${basedir}/build/${module.name}-${nb.id}.pkg'"/>
+            <arg value="pkgbuild --root '${module.builddir}/netbeans' --scripts '${scriptsdir}' --identifier org.netbeans.${module.name} ${sign.option} --install-location '/${app.name}/Contents/Resources/NetBeans' '${basedir}/build/${module.name}-${nb.id}.pkg'"/>
         </exec>
         <!--echo message="Deleting TokenDefinitions.plist and IFPkgPathMappings, see Issue #184419 for details"/>
         <property name="token.def.plist" value="${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Resources/TokenDefinitions.plist"/>
@@ -506,12 +512,6 @@
             <arg value="cp -RPf ${packages} '${pkg.file}'/packages"/>
         </exec>
         
-        <condition property="do.sign-app">
-            <not>
-                <equals arg1="${signing_identity}" arg2="0"/>
-            </not>
-        </condition>
-        
         <antcall target="pack-bundle"/>
 
         <condition property="output.dir" value="${output.jdk.dir}" else="">
@@ -525,14 +525,13 @@
         <delete dir="dist_pkg" failonerror="false"/>
     </target>
 
-
-    <target name="pack-bundle" description="Packs nested packages into the main one ">
+    <target name="pack-bundle" description="Packs nested packages into the main one">
         <mkdir dir="${pkg.file}/inst_package"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-cv"/>
-            <arg value="productbuild --distribution '${pkg.file}/distribution.xml' --package-path '${pkg.file}/packages' --resources '${pkg.file}/resources/' '${pkg.file}/inst_package/${pkg.name}.pkg'"/>
+            <arg value="productbuild --distribution '${pkg.file}/distribution.xml' ${sign.option} --package-path '${pkg.file}/packages' --resources '${pkg.file}/resources/' '${pkg.file}/inst_package/${pkg.name}.pkg'"/>
         </exec>
-    </target>    
+    </target>
     
     <!--target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
         <echo message="Sign an OS X Installer '${mpkg.file}'"/>
