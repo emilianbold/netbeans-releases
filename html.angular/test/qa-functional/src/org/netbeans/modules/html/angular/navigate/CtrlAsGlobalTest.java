@@ -67,11 +67,11 @@ public class CtrlAsGlobalTest extends GeneralAngular {
                         "testGoTo29",
                         "testGoTo30",
                         "testGoTo31",
-                        "testGoTo32",
+//                        "testGoTo32",
                         "testGoTo33",
-                        "testGoTo34",
-                        "testGoTo35",
-                        "testGoTo36",
+//                        "testGoTo34",
+//                        "testGoTo35",
+//                        "testGoTo36",
                         "testGoTo37"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
