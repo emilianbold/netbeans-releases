@@ -86,6 +86,7 @@ public final class ClientConnection {
     private final Socket server;
     private final InputStream serverIn;
     private final OutputStream serverOut;
+    private final Object outLock = new Object();
     private final byte[] buffer = new byte[BUFFER_SIZE];
     private final ContainerFactory containerFactory = new LinkedJSONContainterFactory();
     private final Set<IOListener> ioListeners = new CopyOnWriteArraySet<>();
@@ -113,6 +114,7 @@ public final class ClientConnection {
         StringBuilder message = new StringBuilder();
         Map<String, String> header = null;
         while ((n = serverIn.read(buffer, readOffset, BUFFER_SIZE - readOffset)) > 0) {
+            n += readOffset;
             int from = 0;
             do {
                 if (contentLength < 0) {
@@ -208,8 +210,10 @@ public final class ClientConnection {
         LOG.log(Level.FINE, "SEND: {0}", text);
         byte[] bytes = text.getBytes(CHAR_SET);
         String contentLength = CONTENT_LENGTH_STR+bytes.length + "\r\n\r\n";
-        serverOut.write(contentLength.getBytes(CHAR_SET));
-        serverOut.write(bytes);
+        synchronized (outLock) {
+            serverOut.write(contentLength.getBytes(CHAR_SET));
+            serverOut.write(bytes);
+        }
     }
     
     public void close() throws IOException {
