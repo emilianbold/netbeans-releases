@@ -133,8 +133,9 @@ class CreateTag implements DocumentListener, ActionListener {
     }
 
     private void validate () {
-        boolean flag = revisionValid & Boolean.TRUE.equals(nameValid);
-        if (revisionValid && !(panel.cbForceUpdate.isEnabled() && panel.cbForceUpdate.isSelected()) && Boolean.FALSE.equals(nameValid)) {
+        boolean flag = revisionValid && (Boolean.TRUE.equals(nameValid)
+                || panel.cbForceUpdate.isEnabled() && panel.cbForceUpdate.isSelected());
+        if (!flag && revisionValid) {
             String tName = getTagName();
             if (tName.isEmpty() || !GitUtils.isValidTagName(tName)) {
                 setInfoMessage(NbBundle.getMessage(CreateTag.class, "MSG_CreateTag.errorTagNameInvalid")); //NOI18N
