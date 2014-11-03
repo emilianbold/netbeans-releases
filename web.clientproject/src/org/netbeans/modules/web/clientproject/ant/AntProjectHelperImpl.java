@@ -139,10 +139,11 @@ final class AntProjectHelperImpl extends AntProjectHelper {
 
     @Override
     public void putProperties(Object path, org.openide.util.EditableProperties props) {
-        EditableProperties copy = new EditableProperties(props);
+        EditableProperties copy = new EditableProperties(true);
+        copy.putAll(props);
         delegate.putProperties(mapPath(path), copy);
     }
-
+    
     @Override
     public org.openide.util.EditableProperties getProperties(Object path) {
         return extract(delegate.getProperties(mapPath(path)));
