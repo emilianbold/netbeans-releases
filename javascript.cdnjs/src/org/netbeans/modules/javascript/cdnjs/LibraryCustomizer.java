@@ -351,7 +351,10 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             String[] oldFiles = oldVersion.getFiles();
             String[] oldLocalFiles = oldVersion.getLocalFiles();
             for (int i=0; i<oldFiles.length; i++) {
-                oldFilesMap.put(oldFiles[i], oldLocalFiles[i]);
+                File file = PropertyUtils.resolveFile(projectDir, oldLocalFiles[i]);
+                if (file.exists()) {
+                    oldFilesMap.put(oldFiles[i], oldLocalFiles[i]);
+                }
             }
             List<String> fileList = new ArrayList<>();
             List<String> localFileList = new ArrayList<>();
