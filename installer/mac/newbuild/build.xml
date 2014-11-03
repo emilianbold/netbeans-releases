@@ -526,6 +526,11 @@
     </target>
 
     <target name="pack-bundle" description="Packs nested packages into the main one">
+        <condition property="sign.option" value="--sign '${signing_identity}'">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition>
         <mkdir dir="${pkg.file}/inst_package"/>
         <exec executable="sh" failonerror="yes">
             <arg value="-cv"/>
