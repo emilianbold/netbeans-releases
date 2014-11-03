@@ -153,11 +153,11 @@ public class Css3LexerTest extends CslTestBase {
 
         ExtCss3Lexer lexer = createLexer(source);
 
-        assertANTLRToken(null ,Css3Lexer.AND, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
         assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken(null ,Css3Lexer.NOT, lexer.nextToken());
         assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
-        assertANTLRToken(null ,Css3Lexer.ONLY, lexer.nextToken());
+        assertANTLRToken(null ,Css3Lexer.IDENT, lexer.nextToken());
         assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken(null ,Css3Lexer.RESOLUTION, lexer.nextToken());
         assertANTLRToken(null, Css3Lexer.WS, lexer.nextToken());
@@ -309,7 +309,7 @@ public class Css3LexerTest extends CslTestBase {
         assertANTLRToken("@import", Css3Lexer.IMPORT_SYM, lexer.nextToken());
         assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken("(", Css3Lexer.LPAREN, lexer.nextToken());
-        assertANTLRToken("css", Css3Lexer.LESS_IMPORT_TYPE, lexer.nextToken());
+        assertANTLRToken("css", Css3Lexer.IDENT, lexer.nextToken());
         assertANTLRToken(")", Css3Lexer.RPAREN, lexer.nextToken());
         assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken("\"theme\"", Css3Lexer.STRING, lexer.nextToken());
@@ -322,7 +322,7 @@ public class Css3LexerTest extends CslTestBase {
         assertANTLRToken("@import", Css3Lexer.IMPORT_SYM, lexer.nextToken());
         assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken("(", Css3Lexer.LPAREN, lexer.nextToken());
-        assertANTLRToken("less", Css3Lexer.LESS_IMPORT_TYPE, lexer.nextToken());
+        assertANTLRToken("less", Css3Lexer.IDENT, lexer.nextToken());
         assertANTLRToken(")", Css3Lexer.RPAREN, lexer.nextToken());
         assertANTLRToken(" ", Css3Lexer.WS, lexer.nextToken());
         assertANTLRToken("\"theme\"", Css3Lexer.STRING, lexer.nextToken());

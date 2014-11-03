@@ -1643,5 +1643,16 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  }\n"
                 + "}\n");
     }
-
+    
+    public void testMixin() {
+        String source = "@mixin simple($selectorPrefix){}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);   
+    }
+    
+    public void testScssVar() {
+        String source = ".test {background-image: $var;}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);   
+    }
 }

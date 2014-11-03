@@ -1331,7 +1331,37 @@ public class Css3ParserTest extends CssTestBase {
                 + "    padding: calc(1 * 1);\n"
                 + "}");
     }
+    
+    public void testLessScssKeywordInCss() {
+        assertParses(".and {}");
+        assertParses(".or {}");
+        assertParses(".not {}");
+        assertParses(".only {}");
+        assertParses(".when {}");
+        assertParses(".less {}");
+        assertParses(".css {}");
+        assertParses(".reference {}");
+        assertParses(".inline {}");
+        assertParses(".once {}");
+        assertParses(".multiple {}");
+    }
 
+    public void testIssue248270() {
+        assertParses("video {\n"
+                + "  display: inline-block;\n"
+                + "  *display: inline;\n"
+                + "  *zoom: 1;\n"
+                + "}\n"
+                + "\n"
+                + "select[multiple],\n"
+                + "select[size] {\n"
+                + "  height: auto;\n"
+                + "}");
+
+        assertParses(".test {\n"
+                + "  display: inline;\n"
+                + "}");
+    }
 //    public void testTemplatingMarksInBody() throws ParseException, BadLocationException {
 //        assertParses(" @@@ ");
 //        assertParses(" @@@ .clz {  } @@@ ");

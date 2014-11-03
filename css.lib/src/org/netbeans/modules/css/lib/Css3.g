@@ -137,6 +137,15 @@ package org.netbeans.modules.css.lib;
         return tokenImage.equalsIgnoreCase(input.LT(1).getText());
     }
 
+    private boolean tokenNameIs(String[] tokens) {
+        for(String tokenImage : tokens) {
+            if(tokenImage.equalsIgnoreCase(input.LT(1).getText())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 /**
      * Use the current stacked followset to work out the valid tokens that
      * can follow on from the current point in the parse, then recover by
@@ -365,7 +374,7 @@ importItem
         //multiple imports in one directive
         {isScssSource()}? IMPORT_SYM ws? resourceIdentifier (ws? COMMA ws? resourceIdentifier)* ((ws? mediaQueryList)=>ws? mediaQueryList)?
         |
-        {isLessSource()}? IMPORT_SYM ws? (LPAREN LESS_IMPORT_TYPE RPAREN ws?)? resourceIdentifier ((ws? mediaQueryList)=>ws? mediaQueryList)?
+        {isLessSource()}? IMPORT_SYM ws? (LPAREN {tokenNameIs(new String[]{"LESS", "CSS", "REFERENCE", "INLINE", "ONCE", "MULTIPLE"})}? IDENT /* 'LESS' | 'CSS' | 'REFERENCE' | 'INLINE' | 'ONCE' | 'MULTIPLE' */  RPAREN ws?)? resourceIdentifier ((ws? mediaQueryList)=>ws? mediaQueryList)?
     ;
 media
     : MEDIA_SYM ws?
@@ -413,13 +422,13 @@ mediaQueryList
 
 mediaQuery
  :
-    (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
-    | mediaExpression ( ws? AND ws? mediaExpression )*
+    (mediaQueryOperator ws? )?  mediaType ( ws? {tokenNameEquals("and")}? IDENT /* AND */ ws? mediaExpression )*
+    | mediaExpression ( ws? {tokenNameEquals("and")}? IDENT /* AND */ ws? mediaExpression )*
     | {isLessSource()}? cp_variable
  ;
 
 mediaQueryOperator
- 	: ONLY | NOT
+ 	: {tokenNameEquals("only")}? IDENT /* ONLY */ | NOT
  	;
 
 mediaType
@@ -758,7 +767,7 @@ cssClass
     : DOT
         (
             IDENT
-            | LESS_IMPORT_TYPE
+            | NOT
             | GEN
             | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
         )
@@ -1035,7 +1044,7 @@ cp_expression
 
 cp_expression_operator
     :
-    OR | AND | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
+    {tokenNameEquals("or")}? IDENT /* OR */ | {tokenNameEquals("and")}? IDENT /* AND */  | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
     ;
 
 cp_expression_atom
@@ -1158,7 +1167,7 @@ cp_arg
 //.mixin (@a) "when (@a > 10), (@a < -10)" { ... }
 less_mixin_guarded
     :
-    LESS_WHEN ws? less_condition (ws? (COMMA | AND) ws? less_condition)*
+    {tokenNameEquals("when")}? IDENT /* WHEN */ ws? less_condition (ws? (COMMA | {tokenNameEquals("and")}? IDENT /* AND */) ws? less_condition)*
     ;
 
 //.truth (@a) when (@a) { ... }
@@ -1681,11 +1690,9 @@ CP_NOT_EQ       : '!='       ;
 LESS            : '<'       ;
 GREATER_OR_EQ   : '>=' | '=>'; //a weird operator variant supported by SASS
 LESS_OR_EQ      : '=<' | '<='; //a weird operator variant supported by SASS
-LESS_WHEN       : 'WHEN'    ;
 LESS_AND        : '&'     ;
 CP_DOTS         : '...';
 LESS_REST       : '@rest...';
-LESS_IMPORT_TYPE    :   'LESS' | 'CSS' | 'REFERENCE' | 'INLINE' | 'ONCE' | 'MULTIPLE' ;
 
 // -----------------
 // Literal strings. Delimited by either ' or "
@@ -1711,11 +1718,7 @@ LESS_JS_STRING  : '`' ( ~('\r'|'\f'|'`') )*
                     )
                     ;
 
-
-ONLY 		: 'ONLY';
 NOT		: 'NOT';
-AND		: 'AND';
-OR		: 'OR';
 
 // -------------
 // Identifier.  Identifier tokens pick up properties names and values
@@ -1774,7 +1777,6 @@ SASS_RETURN         : '@RETURN';
 
 SASS_EACH           : '@EACH';
 SASS_WHILE          : '@WHILE';
-
 SASS_AT_ROOT        : '@AT-ROOT';
 
 AT_SIGN             : '@';
