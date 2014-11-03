@@ -388,7 +388,7 @@ public class JSONReader {
         V8Script.Type scriptType = (scriptTypeNum >= 0) ? V8Script.Type.valueOf((int) scriptTypeNum) : null;
         long compilationTypeNum = getLong(obj, COMPILATION_TYPE);
         V8Script.CompilationType compilationType = (compilationTypeNum >= 0) ? V8Script.CompilationType.valueOf((int) compilationTypeNum) : null;
-        String evalFromScript = getString(obj, EVAL_FROM_SCRIPT);
+        ReferencedValue evalFromScript = getReferencedValue(obj, EVAL_FROM_SCRIPT);
         V8Script.EvalFromLocation evalFromLocation;
         if (V8Script.CompilationType.EVAL.equals(compilationType)) {
             evalFromLocation = new V8Script.EvalFromLocation(getLong(obj, LINE), getLong(obj, COLUMN));
