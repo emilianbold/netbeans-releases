@@ -76,6 +76,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -105,6 +106,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
         return ROOT;
     }
 
+    @NbBundle.Messages({"# {0} - argument number", "CTL_Argument=Argument {0}"})
     @Override
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent == ROOT) {
@@ -126,8 +128,12 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
             Object[] ch = new Object[n];
             int i = 0;
             ReferencedValues rvals = cf.getRvals();
-            for (String name : argumentRefs.keySet()) {
-                ReferencedValue rv = argumentRefs.get(name);
+            for (Map.Entry<String, ReferencedValue> namerv : argumentRefs.entrySet()) {
+                String name = namerv.getKey();
+                if (name == null) {
+                    name = Bundle.CTL_Argument((i+1));
+                }
+                ReferencedValue rv = namerv.getValue();
                 long ref = rv.getReference();
                 V8Value v = rvals.getReferencedValue(ref);
                 if (v == null) {

@@ -160,7 +160,7 @@ public class ScriptsHandler {
     @NonNull
     public FileObject getFile(@NonNull V8Script script) {
         String name = script.getName();
-        if (script.getScriptType() == V8Script.Type.NORMAL) {
+        if (name != null && script.getScriptType() == V8Script.Type.NORMAL) {
             File localFile = null;
             if (doPathTranslation) {
                 try {
@@ -180,6 +180,9 @@ public class ScriptsHandler {
                     return fo;
                 }
             }
+        }
+        if (name == null) {
+            name = "unknown.js";
         }
         String content = script.getSource();
         URL sourceURL;

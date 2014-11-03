@@ -203,6 +203,9 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
             V8Script script = ((V8ScriptValue) scriptValue).getScript();
             if (script != null) {
                 String scriptName = script.getName();
+                if (scriptName == null) {
+                    return null;
+                }
                 int i = scriptName.lastIndexOf('/');
                 if (i < 0) {
                     i = scriptName.lastIndexOf('\\');
