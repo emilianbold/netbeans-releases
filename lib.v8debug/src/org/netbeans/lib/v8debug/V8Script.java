@@ -64,14 +64,14 @@ public final class V8Script {
     private final String text;
     private final Type scriptType;
     private final CompilationType compilationType;
-    private final String evalFromScript;
+    private final ReferencedValue evalFromScript;
     private final EvalFromLocation evalFromLocation;
     
     public V8Script(String name, long id, long lineOffset, long columnOffset,
                     long lineCount, Object data, String source, String sourceStart,
                     long sourceLength, ReferencedValue context, String text,
                     Type scriptType, CompilationType compilationType,
-                    String evalFromScript, EvalFromLocation evalFromLocation) {
+                    ReferencedValue evalFromScript, EvalFromLocation evalFromLocation) {
         this.name = name;
         this.id = id;
         this.lineOffset = lineOffset;
@@ -141,7 +141,7 @@ public final class V8Script {
         return compilationType;
     }
 
-    public String getEvalFromScript() {
+    public ReferencedValue getEvalFromScript() {
         return evalFromScript;
     }
 
