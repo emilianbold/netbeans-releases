@@ -54,8 +54,8 @@ public final class V8Event extends V8Packet {
     public static enum Kind {
         Break,
         Exception,
-        AfterCompile;
-        // TODO: ScriptCollected;
+        AfterCompile,
+        ScriptCollected;
 
         @Override
         public String toString() {
