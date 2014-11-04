@@ -44,6 +44,7 @@ package org.netbeans.modules.templates;
 import java.awt.Component;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
+import javax.swing.JComponent;
 import static junit.framework.Assert.*;
 import org.junit.Test;
 import org.netbeans.api.templates.TemplateRegistration;
@@ -83,6 +84,8 @@ public class HTMLTemplateTest {
             awaitFX();
         }
         assertTrue("error code set to 0", p1.isValid());
+        
+        assertSelectedIndex("Zero th panel is selected", cmp1, 0);
     }
     
     private static void awaitFX() throws Exception {
@@ -94,5 +97,11 @@ public class HTMLTemplateTest {
             }
         });
         cdl.await();
+    }
+    
+    private static void assertSelectedIndex(String msg, Component c, int index) {
+        Object selIndex = ((JComponent)c).getClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX);
+        assertTrue(msg + selIndex, selIndex instanceof Number);
+        assertEquals(msg, index, ((Number)selIndex).intValue());
     }
 }

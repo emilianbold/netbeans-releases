@@ -292,7 +292,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     }
     
     @JavaScriptBody(args = {"data", "onChange", "p" }, javacall = true, body = ""
-        + "if (typeof data[p] !== 'function') return false;\n"
+        + "if (typeof data[p] !== 'function') {\n"
+        + "  onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, null);\n"
+        + "  return false;\n"
+        + "}\n"
         + "data[p].subscribe(function(value) {\n"
         + "  onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, value);\n"
         + "});\n"
