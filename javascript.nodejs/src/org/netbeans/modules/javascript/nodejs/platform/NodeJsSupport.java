@@ -332,8 +332,6 @@ public final class NodeJsSupport {
                 firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, evt.getOldValue(), evt.getNewValue());
             } else if (PackageJson.PROP_SCRIPTS_START.equals(propertyName)) {
                 startScriptChanged((String) evt.getNewValue());
-            } else {
-                assert false : "Unknown event: " + propertyName;
             }
         }
 
