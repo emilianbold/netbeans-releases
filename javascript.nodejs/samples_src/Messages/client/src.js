@@ -78,7 +78,7 @@
             
             template: "<table><thead><tr><th>Original message</th><th>Response</th></tr></thead><tbody data-bind='foreach: messages'><tr><td data-bind='text: original'></td><td data-bind='text: reverted'></td></tr></tbody></table>"
         });
-        ko.components.register("myTitle", {
+        ko.components.register("mytitle", {
             viewModel: function (params) {
                 this.title = ko.observable(params.title);
             },
