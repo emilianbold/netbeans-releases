@@ -130,7 +130,7 @@ IDs and they do not themselves bind them). There are several ways
 to associate help IDs with module features so that they may be used
 by the IDE, mostly revolving around the API class
 
-<a href="@org-openide-util@/org/openide/util/HelpCtx.html"><code>HelpCtx</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/HelpCtx.html"><code>HelpCtx</code></a>.
 
 <p>This class has should be constructed with a help ID,
 which should be a string constant uniquely identifying the feature, and
@@ -166,11 +166,11 @@ specify a <code>HelpCtx</code> in this fashion:
 
 <li> <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getHelpCtx()"><code>TopComponent.getHelpCtx()</code></a>
 
-<li> <a href="@org-openide-util@/org/openide/util/actions/SystemAction.html#getHelpCtx()"><code>SystemAction.getHelpCtx()</code></a>
+<li> <a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getHelpCtx()"><code>SystemAction.getHelpCtx()</code></a>
 
-<li> <a href="@org-openide-util@/org/openide/util/datatransfer/NewType.html#getHelpCtx()"><code>NewType.getHelpCtx()</code></a>
+<li> <a href="@org-openide-util-ui@/org/openide/util/datatransfer/NewType.html#getHelpCtx()"><code>NewType.getHelpCtx()</code></a>
 
-<li> <a href="@org-openide-util@/org/openide/util/datatransfer/PasteType.html#getHelpCtx()"><code>PasteType.getHelpCtx()</code></a>
+<li> <a href="@org-openide-util-ui@/org/openide/util/datatransfer/PasteType.html#getHelpCtx()"><code>PasteType.getHelpCtx()</code></a>
 
 <li> <a href="@org-openide-dialogs@/org/openide/DialogDescriptor.html#getHelpCtx()"><code>DialogDescriptor.getHelpCtx()</code></a>
 
@@ -178,7 +178,7 @@ specify a <code>HelpCtx</code> in this fashion:
 
 <li> <a href="@org-openide-options@/org/openide/options/SystemOption.html#getHelpCtx()"><code>SystemOption.getHelpCtx()</code></a>
 
-<li> <a href="@org-openide-util@/org/openide/ServiceType.html#getHelpCtx()"><code>ServiceType.getHelpCtx()</code></a>
+<li> <a href="@org-openide-util-ui@/org/openide/ServiceType.html#getHelpCtx()"><code>ServiceType.getHelpCtx()</code></a>
 
 (applies equally to executors and compiler types)
 
@@ -191,7 +191,7 @@ specify a <code>HelpCtx</code> in this fashion:
 <li> On any (Swing lightweight) component you use in a GUI, by
 means of
 
-<a href="@org-openide-util@/org/openide/util/HelpCtx.html#setHelpIDString(javax.swing.JComponent,%20java.lang.String)"><code>HelpCtx.setHelpIDString(...)</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/HelpCtx.html#setHelpIDString(javax.swing.JComponent,%20java.lang.String)"><code>HelpCtx.setHelpIDString(...)</code></a>.
 
 This is especially useful for custom property editor components.
 
@@ -247,7 +247,7 @@ or
 they are in (typically beneath <samp>Services/</samp>), you may 
 use the file attribute <code>helpID</code>
 to specify the help ID right in the layer. See the
-<a href="@org-openide-util@/org/openide/util/doc-files/api.html#service-lookup">Services API</a> for details.
+<a href="@org-openide-util-ui@/org/openide/util/doc-files/api.html#service-lookup">Services API</a> for details.
 
 <li> In the <code>&lt;homeID&gt;</code> tag of a help set file; in
 this case, the specified help ID is understood as applying
@@ -283,7 +283,7 @@ the
 </pre>
 
 <p>However for most purposes you can use the simpler
-<a href="@org-openide-util@/org/openide/util/HelpCtx.html#display()"><code>HelpCtx.display</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/HelpCtx.html#display()"><code>HelpCtx.display</code></a>
 method and avoid a direct dependency on this API entirely:</p>
 
 <pre>
