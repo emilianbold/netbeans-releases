@@ -88,6 +88,9 @@ public final class PackageJson {
     public static final String PROP_NAME = "NAME"; // NOI18N
     public static final String PROP_SCRIPTS_START = "SCRIPTS_START"; // NOI18N
     public static final String PROP_DEPENDENCIES = "DEPENDENCIES"; // NOI18N
+    public static final String PROP_DEV_DEPENDENCIES = "DEV_DEPENDENCIES"; // NOI18N
+    public static final String PROP_PEER_DEPENDENCIES = "PEER_DEPENDENCIES"; // NOI18N
+    public static final String PROP_OPTIONAL_DEPENDENCIES = "OPTIONAL_DEPENDENCIES"; // NOI18N
     // file content
     public static final String FIELD_NAME = "name"; // NOI18N
     public static final String FIELD_SCRIPTS = "scripts"; // NOI18N
@@ -95,6 +98,9 @@ public final class PackageJson {
     public static final String FIELD_ENGINES = "engines"; // NOI18N
     public static final String FIELD_NODE = "node"; // NOI18N
     public static final String FIELD_DEPENDENCIES = "dependencies"; // NOI18N
+    public static final String FIELD_DEV_DEPENDENCIES = "devDependencies"; // NOI18N
+    public static final String FIELD_PEER_DEPENDENCIES = "peerDependencies"; // NOI18N
+    public static final String FIELD_OPTIONAL_DEPENDENCIES = "optionalDependencies"; // NOI18N
 
     static final String FILENAME = "package.json"; // NOI18N
 
@@ -513,6 +519,26 @@ public final class PackageJson {
         Object newStartScript = getContentValue(newContent, Object.class, FIELD_SCRIPTS, FIELD_START);
         if (!Objects.equals(oldStartScript, newStartScript)) {
             propertyChangeSupport.firePropertyChange(PROP_SCRIPTS_START, oldStartScript, newStartScript);
+        }
+        Object oldDependencies = getContentValue(oldContent, Object.class, FIELD_DEPENDENCIES);
+        Object newDependencies = getContentValue(newContent, Object.class, FIELD_DEPENDENCIES);
+        if (!Objects.equals(oldDependencies, newDependencies)) {
+            propertyChangeSupport.firePropertyChange(PROP_DEPENDENCIES, oldDependencies, newDependencies);
+        }
+        Object oldDevDependencies = getContentValue(oldContent, Object.class, FIELD_DEV_DEPENDENCIES);
+        Object newDevDependencies = getContentValue(newContent, Object.class, FIELD_DEV_DEPENDENCIES);
+        if (!Objects.equals(oldDevDependencies, newDevDependencies)) {
+            propertyChangeSupport.firePropertyChange(PROP_DEV_DEPENDENCIES, oldDevDependencies, newDevDependencies);
+        }
+        Object oldPeerDependencies = getContentValue(oldContent, Object.class, FIELD_PEER_DEPENDENCIES);
+        Object newPeerDependencies = getContentValue(newContent, Object.class, FIELD_PEER_DEPENDENCIES);
+        if (!Objects.equals(oldPeerDependencies, newPeerDependencies)) {
+            propertyChangeSupport.firePropertyChange(PROP_PEER_DEPENDENCIES, oldPeerDependencies, newPeerDependencies);
+        }
+        Object oldOptionalDependencies = getContentValue(oldContent, Object.class, FIELD_OPTIONAL_DEPENDENCIES);
+        Object newOptionalDependencies = getContentValue(newContent, Object.class, FIELD_OPTIONAL_DEPENDENCIES);
+        if (!Objects.equals(oldOptionalDependencies, newOptionalDependencies)) {
+            propertyChangeSupport.firePropertyChange(PROP_OPTIONAL_DEPENDENCIES, oldOptionalDependencies, newOptionalDependencies);
         }
     }
 
