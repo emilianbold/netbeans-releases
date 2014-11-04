@@ -42,6 +42,7 @@
 package org.netbeans.modules.templates;
 
 import java.awt.Component;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
 import javax.swing.JComponent;
@@ -86,6 +87,8 @@ public class HTMLTemplateTest {
         assertTrue("error code set to 0", p1.isValid());
         
         assertSelectedIndex("Zero th panel is selected", cmp1, 0);
+        
+        assertSteps("There steps", cmp1, "One", "Two", "Three");
     }
     
     private static void awaitFX() throws Exception {
@@ -103,5 +106,13 @@ public class HTMLTemplateTest {
         Object selIndex = ((JComponent)c).getClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX);
         assertTrue(msg + selIndex, selIndex instanceof Number);
         assertEquals(msg, index, ((Number)selIndex).intValue());
+    }
+
+    private static void assertSteps(String msg, Component c, Object... arr) {
+        Object obj = ((JComponent)c).getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
+        assertTrue(msg + " it is array: " + obj, obj instanceof Object[]);
+        Object[] real = (Object[]) obj;
+        assertEquals(msg + " same size", arr.length, real.length);
+        assertEquals(msg, Arrays.asList(arr), Arrays.asList(real));
     }
 }

@@ -42,7 +42,7 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
 -->
 <html>
     <head>
-        <title>TODO supply a title</title>
+        <title>Testing Wizard</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
@@ -51,7 +51,8 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
         <script>
             function init() {
                 var data = {
-                    'errorCode' : ko.observable(0)
+                    'errorCode' : ko.observable(0),
+                    'steps' : ko.observableArray([ 'One', 'Two', 'Three' ])
                 };
                 ko.applyBindings(data);
                 return data;
