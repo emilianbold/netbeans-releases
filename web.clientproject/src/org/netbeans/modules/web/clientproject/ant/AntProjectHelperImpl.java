@@ -42,8 +42,11 @@
 package org.netbeans.modules.web.clientproject.ant;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -52,6 +55,7 @@ import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;
@@ -60,9 +64,14 @@ import org.w3c.dom.Element;
  */
 final class AntProjectHelperImpl extends AntProjectHelper {
     final org.netbeans.spi.project.support.ant.AntProjectHelper delegate;
+    private final L listener;
+    private final Collection<org.netbeans.modules.web.clientproject.indirect.AntProjectListener> antListeners;
 
     public AntProjectHelperImpl(org.netbeans.spi.project.support.ant.AntProjectHelper delegate) {
         this.delegate = delegate;
+        this.listener = new L();
+        this.delegate.addAntProjectListener(listener);
+        this.antListeners = new CopyOnWriteArrayList<>();
     }
 
     public void addAntProjectListener(AntProjectListener listener) {
@@ -114,6 +123,11 @@ final class AntProjectHelperImpl extends AntProjectHelper {
     }
 
     @Override
+    public Object getXmlSavedHook() {
+        return listener;
+    }
+
+    @Override
     public File resolveFile(String path) {
         return delegate.resolveFile(path);
     }
@@ -125,10 +139,11 @@ final class AntProjectHelperImpl extends AntProjectHelper {
 
     @Override
     public void putProperties(Object path, org.openide.util.EditableProperties props) {
-        EditableProperties copy = new EditableProperties(props);
+        EditableProperties copy = new EditableProperties(true);
+        copy.putAll(props);
         delegate.putProperties(mapPath(path), copy);
     }
-
+    
     @Override
     public org.openide.util.EditableProperties getProperties(Object path) {
         return extract(delegate.getProperties(mapPath(path)));
@@ -146,51 +161,35 @@ final class AntProjectHelperImpl extends AntProjectHelper {
 
     @Override
     public void addAntProjectListener(org.netbeans.modules.web.clientproject.indirect.AntProjectListener l) {
-        delegate.addAntProjectListener(new L(l));
+        antListeners.add(l);
     }
 
     @Override
     public void removeAntProjectListener(org.netbeans.modules.web.clientproject.indirect.AntProjectListener l) {
-        delegate.removeAntProjectListener(new L(l));
+        antListeners.remove(l);
     }
     
-    private static final class L implements AntProjectListener {
-        private final org.netbeans.modules.web.clientproject.indirect.AntProjectListener l;
-
-        L(org.netbeans.modules.web.clientproject.indirect.AntProjectListener l) {
-            this.l = l;
-        }
-
+    private final class L extends ProjectXmlSavedHook
+    implements AntProjectListener {
         @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
-            l.configurationXmlChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+            for (org.netbeans.modules.web.clientproject.indirect.AntProjectListener l : antListeners) {
+                l.configurationXmlChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+            }
         }
 
         @Override
         public void propertiesChanged(AntProjectEvent ev) {
-            l.propertiesChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+            for (org.netbeans.modules.web.clientproject.indirect.AntProjectListener l : antListeners) {
+                l.propertiesChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+            }
         }
 
         @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 53 * hash + Objects.hashCode(this.l);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
+        protected void projectXmlSaved() throws IOException {
+            for (org.netbeans.modules.web.clientproject.indirect.AntProjectListener l : antListeners) {
+                l.projectXmlSaved();
             }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final L other = (L) obj;
-            if (!Objects.equals(this.l, other.l)) {
-                return false;
-            }
-            return true;
         }
     }
 

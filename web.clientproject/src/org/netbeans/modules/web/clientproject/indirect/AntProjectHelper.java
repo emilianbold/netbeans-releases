@@ -61,6 +61,8 @@ public abstract class AntProjectHelper {
     public abstract SharabilityQueryImplementation2 createSharabilityQuery2(PropertyEvaluator evaluator, String[] toArray, String[] string);
 
     public abstract PropertyEvaluator getStandardPropertyEvaluator();
+    
+    public abstract Object getXmlSavedHook();
 
     public abstract File resolveFile(String licensePath);
 

@@ -82,6 +82,7 @@ import org.netbeans.lib.v8debug.commands.SetBreakpoint;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
+import org.netbeans.lib.v8debug.events.ScriptCollectedEventBody;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
@@ -528,6 +529,11 @@ public final class V8Debugger {
                 AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
                 V8Script script = aceb.getScript();
                 scriptsHandler.add(script);
+                break;
+            case ScriptCollected:
+                ScriptCollectedEventBody sceb = (ScriptCollectedEventBody) event.getBody();
+                long scriptId = sceb.getScriptId();
+                scriptsHandler.remove(scriptId);
                 break;
             case Break:
                 BreakEventBody beb = (BreakEventBody) event.getBody();

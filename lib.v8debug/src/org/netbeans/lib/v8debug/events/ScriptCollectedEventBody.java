@@ -39,13 +39,24 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.lib.v8debug.events;
 
-import java.io.IOException;
+import org.netbeans.lib.v8debug.V8Body;
 
 /**
+ *
+ * @author Martin Entlicher
  */
-public abstract class ProjectXmlSavedHook {
-    protected abstract void projectXmlSaved() throws IOException;
+public class ScriptCollectedEventBody extends V8Body {
+    
+    private final long scriptId;
+    
+    public ScriptCollectedEventBody(long scriptId) {
+        this.scriptId = scriptId;
+    }
+
+    public long getScriptId() {
+        return scriptId;
+    }
     
 }
