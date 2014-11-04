@@ -289,6 +289,17 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         return t.get();
     }
     
+    final void setProp(final String prop, final Object value) throws InterruptedException, ExecutionException {
+        FutureTask t = new FutureTask(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return changeProperty(data, prop, value);
+            }
+        });
+        FXBrowsers.runInBrowser(v, t);
+        t.get();
+    }
+    
     private void onStepsChange(Object[] obj) {
         if (obj != null) {
             List<String> arr = new ArrayList<>();
@@ -303,7 +314,13 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         }
         p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
         if (steps != null && steps.size() > index) {
-            changeProperty(data, "current", steps.get(index));
+            final String current = steps.get(index);
+            FXBrowsers.runInBrowser(v, new Runnable() {
+                @Override
+                public void run() {
+                    changeProperty(data, "current", current); // NOI18N
+                }
+            });
         }
     }
     

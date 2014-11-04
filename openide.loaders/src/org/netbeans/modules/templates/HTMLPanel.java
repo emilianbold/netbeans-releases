@@ -90,7 +90,7 @@ final class HTMLPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     public void storeSettings(WizardDescriptor wiz) {
     }
 
-    final Object evaluateProp(String name) throws InterruptedException, ExecutionException {
-        return it.evaluateProp(name);
+    final HTMLWizard getWizard() {
+        return it;
     }
 }

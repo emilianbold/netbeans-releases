@@ -77,6 +77,7 @@ public class HTMLTemplateTest {
         WizardDescriptor.Panel<WizardDescriptor> p1 = it.current();
         assertNotNull("Panel found", p1);
         assertTrue("It is HTML wizard: " + p1, p1 instanceof HTMLPanel);
+        HTMLPanel h1 = (HTMLPanel) p1;
         
         Component cmp1 = p1.getComponent();
         assertNotNull("component initialized", cmp1);
@@ -90,7 +91,19 @@ public class HTMLTemplateTest {
         
         assertSteps("There steps", cmp1, "One", "Two", "Three");
         
-        assertCurrentStep((HTMLPanel)p1, "One");
+        assertCurrentStep(h1, "One");
+
+        h1.getWizard().setProp("errorCode", 10);
+        assertFalse("Now we are not valid", h1.getWizard().isValid());
+        
+        h1.getWizard().setProp("errorCode", 0);
+        assertTrue("Now we are valid", h1.getWizard().isValid());
+        
+        h1.getWizard().nextPanel();
+        assertCurrentStep(h1, "Two");
+        
+        h1.getWizard().nextPanel();
+        assertCurrentStep(h1, "Three");
     }
     
     private static void awaitFX() throws Exception {
@@ -119,7 +132,7 @@ public class HTMLTemplateTest {
     }
     
     private static void assertCurrentStep(HTMLPanel p, String name) throws Exception {
-        Object value = p.evaluateProp("current");
+        Object value = p.getWizard().evaluateProp("current");
         assertEquals("Current step is set properly", name, value);
     }
 }
