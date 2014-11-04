@@ -234,10 +234,13 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             uninstallLibraries(toRemove);
 
             // Create library folder
-            FileObject librariesFob = createLibrariesFolder(errors);
-            if (librariesFob == null) {
-                reportErrors(errors);
-                return oldMap.values().toArray(new Library.Version[oldMap.size()]);
+            FileObject librariesFob = null;
+            if (!toInstall.isEmpty() || !toKeep.isEmpty()) {
+                librariesFob = createLibrariesFolder(errors);
+                if (librariesFob == null) {
+                    reportErrors(errors);
+                    return oldMap.values().toArray(new Library.Version[oldMap.size()]);
+                }
             }
 
             // Install the identified versions
