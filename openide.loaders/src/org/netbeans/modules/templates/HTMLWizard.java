@@ -43,14 +43,17 @@ package org.netbeans.modules.templates;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -63,11 +66,12 @@ import javafx.scene.web.WebView;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import net.java.html.BrwsrCtx;
 import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -90,6 +94,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private /* final */ WebView v;
     private ChangeListener listener;
     private int errorCode = -1;
+    private WizardDescriptor wizard;
 
     private HTMLWizard(FileObject definition) {
         this.def = definition;
@@ -97,15 +102,43 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
     @Override
     public Set instantiate() throws IOException {
-        throw new IOException("Can't instantiate yet!");
+        try {
+            FutureTask t = new FutureTask(new Callable<Map<String,Object>>() {
+                @Override
+                public Map<String,Object> call() throws Exception {
+                    Object[] namesAndValues = rawProps(data);
+                    Map<String,Object> map = new TreeMap<>();
+                    for (int i = 0; i < namesAndValues.length; i += 2) {
+                        String name = (String) namesAndValues[i];
+                        Object value = namesAndValues[i + 1];
+                        map.put(name, value);
+                    }
+                    return map;
+                }
+            });
+            FXBrowsers.runInBrowser(v, t);
+            
+            TemplateWizard tw = (TemplateWizard) wizard;
+            Map<String, ? extends Object> params = Collections.singletonMap(
+                "wizard", t.get()
+            );
+            DataObject obj = tw.getTemplate().createFromTemplate(tw.getTargetFolder(), tw.getTargetName(), params);
+            return Collections.singleton(obj);
+        } catch (InterruptedException ex) {
+            throw (IOException)new InterruptedIOException().initCause(ex);
+        } catch (ExecutionException ex) {
+            throw new IOException(ex);
+        }
     }
 
     @Override
     public void initialize(WizardDescriptor wizard) {
+        this.wizard = wizard;
     }
 
     @Override
     public void uninitialize(WizardDescriptor wizard) {
+        this.wizard = null;
     }
 
     
@@ -351,4 +384,15 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         + "return fn();\n"
     )
     static native Object getPropertyValue(Object raw, String propName);
+    
+    @JavaScriptBody(args = { "raw" }, body = ""
+        + "var ret = [];\n"
+        + "for (var n in raw) {\n"
+        + "  var fn = raw[n];\n"
+        + "  ret.push(n);\n"
+        + "  if (typeof fn === 'function') ret.push(fn()); else ret.push(fn);\n"
+        + "}\n"
+        + "return ret;\n"
+    )
+    static native Object[] rawProps(Object raw);
 }

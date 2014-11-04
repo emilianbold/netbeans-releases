@@ -43,6 +43,7 @@ package org.netbeans.modules.templates;
 
 import java.awt.Component;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
 import javax.swing.JComponent;
@@ -52,27 +53,40 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 public class HTMLTemplateTest {
     @TemplateRegistration(
+        scriptEngine = "js",
         folder = "Test", iconBase = "org/netbeans/modules/templates/x.png",
-        page = "org/netbeans/modules/templates/x.html"
+        page = "org/netbeans/modules/templates/x.html",
+        content = "x.js"
     )
     static String myMethod() {
         return "init()";
     }
     
     @Test public void checkTheIterator() throws Exception {
-        final String path = "Templates/Test/org-netbeans-modules-templates-HTMLTemplateTest-myMethod";
+        final String path = "Templates/Test/x.js";
         FileObject fo = FileUtil.getConfigFile(path);
         assertNotNull(fo);
+        
+        FileObject tmp = fo.getFileSystem().getRoot().createFolder("tmp");
+        DataFolder tmpF = DataFolder.findFolder(tmp);
         
         DataObject obj = DataObject.find(fo);
         
         TemplateWizard.Iterator it = TemplateWizard.getIterator(obj);
         assertNotNull("Iterator found", it);
+        
+        TemplateWizard tw = new TemplateWizard();
+        tw.setTemplate(obj);
+        tw.setTargetName("test");
+        tw.setTargetFolder(tmpF);
+        
+        it.initialize(tw);
         
         WizardDescriptor.Panel<WizardDescriptor> p1 = it.current();
         assertNotNull("Panel found", p1);
@@ -104,6 +118,16 @@ public class HTMLTemplateTest {
         
         h1.getWizard().nextPanel();
         assertCurrentStep(h1, "Three");
+        
+        Set res = h1.getWizard().instantiate();
+        assertEquals("One file created: " + res, res.size(), 1);
+        
+        Object dObj = res.iterator().next();
+        assertTrue("It is data object: " + dObj, dObj instanceof DataObject);
+        
+        FileObject created = ((DataObject)dObj).getPrimaryFile();
+        
+        assertTrue("Error: " + created.asText(), created.asText().contains("Hello from Finished"));
     }
     
     private static void awaitFX() throws Exception {

@@ -50,10 +50,15 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
         <div>TODO write content</div>
         <script>
             function init() {
+                var current = ko.observable(null);
                 var data = {
                     'errorCode' : ko.observable(0),
                     'steps' : ko.observableArray([ 'One', 'Two', 'Three' ]),
-                    'current' : ko.observable(null)
+                    'current' : current,
+                    'message' : ko.computed(function() {
+                        if (current() === 'Three') return 'Finished';
+                        return null;
+                    })
                 };
                 ko.applyBindings(data);
                 return data;
