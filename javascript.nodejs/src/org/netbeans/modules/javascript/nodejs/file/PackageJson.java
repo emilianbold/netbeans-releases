@@ -87,12 +87,14 @@ public final class PackageJson {
 
     public static final String PROP_NAME = "NAME"; // NOI18N
     public static final String PROP_SCRIPTS_START = "SCRIPTS_START"; // NOI18N
+    public static final String PROP_DEPENDENCIES = "DEPENDENCIES"; // NOI18N
     // file content
     public static final String FIELD_NAME = "name"; // NOI18N
     public static final String FIELD_SCRIPTS = "scripts"; // NOI18N
     public static final String FIELD_START = "start"; // NOI18N
     public static final String FIELD_ENGINES = "engines"; // NOI18N
     public static final String FIELD_NODE = "node"; // NOI18N
+    public static final String FIELD_DEPENDENCIES = "dependencies"; // NOI18N
 
     static final String FILENAME = "package.json"; // NOI18N
 
@@ -188,7 +190,11 @@ public final class PackageJson {
 
     @CheckForNull
     public <T> T getContentValue(Class<T> valueType, String... fieldHierarchy) {
-        Map<String, Object> subdata = getContent();
+        return getContentValue(getContent(), valueType, fieldHierarchy);
+    }
+
+    private <T> T getContentValue(Map<String, Object> content, Class<T> valueType, String... fieldHierarchy) {
+        Map<String, Object> subdata = content;
         if (subdata == null) {
             return null;
         }
@@ -199,7 +205,10 @@ public final class PackageJson {
                 if (value == null) {
                     return null;
                 }
-                return valueType.cast(value);
+                if (valueType.isAssignableFrom(value.getClass())) {
+                    return valueType.cast(value);
+                }
+                return null;
             }
             subdata = (Map<String, Object>) subdata.get(field);
             if (subdata == null) {
@@ -495,36 +504,16 @@ public final class PackageJson {
     }
 
     private void fireChanges(@NullAllowed Map<String, Object> oldContent, @NullAllowed Map<String, Object> newContent) {
-        Object oldName = getName(oldContent);
-        Object newName = getName(newContent);
+        Object oldName = getContentValue(oldContent, Object.class, FIELD_NAME);
+        Object newName = getContentValue(newContent, Object.class, FIELD_NAME);
         if (!Objects.equals(oldName, newName)) {
             propertyChangeSupport.firePropertyChange(PROP_NAME, oldName, newName);
         }
-        Object oldStartScript = getStartScript(oldContent);
-        Object newStartScript = getStartScript(newContent);
+        Object oldStartScript = getContentValue(oldContent, Object.class, FIELD_SCRIPTS, FIELD_START);
+        Object newStartScript = getContentValue(newContent, Object.class, FIELD_SCRIPTS, FIELD_START);
         if (!Objects.equals(oldStartScript, newStartScript)) {
             propertyChangeSupport.firePropertyChange(PROP_SCRIPTS_START, oldStartScript, newStartScript);
         }
-    }
-
-    @CheckForNull
-    private Object getName(@NullAllowed Map<String, Object> data) {
-        if (data == null) {
-            return null;
-        }
-        return data.get(FIELD_NAME);
-    }
-
-    @CheckForNull
-    private Object getStartScript(@NullAllowed Map<String, Object> data) {
-        if (data == null) {
-            return null;
-        }
-        Object scripts = data.get(FIELD_SCRIPTS);
-        if (!(scripts instanceof Map)) {
-            return null;
-        }
-        return ((Map<String, Object>) scripts).get(FIELD_START);
     }
 
     //~ Inner classes
