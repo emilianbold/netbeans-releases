@@ -226,6 +226,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 Library.Version newVersion = newMap.get(libraryName);
                 if (newVersion == null || !newVersion.getName().equals(oldVersion.getName())) {
                     toRemove.add(oldVersion);
+                    oldMap.remove(libraryName);
                 }
             }
 
@@ -236,7 +237,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             FileObject librariesFob = createLibrariesFolder(errors);
             if (librariesFob == null) {
                 reportErrors(errors);
-                return oldLibraries;
+                return oldMap.values().toArray(new Library.Version[oldMap.size()]);
             }
 
             // Install the identified versions
