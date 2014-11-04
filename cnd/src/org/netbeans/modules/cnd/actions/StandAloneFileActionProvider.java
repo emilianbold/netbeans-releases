@@ -39,19 +39,72 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.api;
+package org.netbeans.modules.cnd.actions;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import java.util.Collection;
+import org.netbeans.modules.cnd.execution.CompileExecSupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface MakeCommandFlagsProvider {
-    public static final String PRE_BUILD_FIRST = "pre-build-first"; //NOI18N
-    public static final String BUILD_FIRST = "build-first"; //NOI18N
+@ServiceProvider(service=ActionProvider.class)
+public class StandAloneFileActionProvider implements ActionProvider {
 
-    boolean flagValue(String commandID, Lookup context, Project project, MakeConfiguration conf, String flag, boolean defaultFlagValue);
+    @Override
+    public String[] getSupportedActions() {
+        return new String[] { ActionProvider.COMMAND_COMPILE_SINGLE };
+    }
+
+    @Override
+    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+        if (files.isEmpty()) {
+            return;
+        }
+        for (DataObject d : files) {
+            final FileObject fo = d.getPrimaryFile();
+            if (fo == null) {
+                continue;
+            }
+            String mimeType = fo.getMIMEType();
+            if (mimeType == null) {
+                continue;
+            }
+            if (MIMENames.isCppOrCOrFortran(mimeType)) {
+                CompileAction.performAction(d.getNodeDelegate());
+                return;
+            }
+        }
+    }
+
+    @Override
+    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+        if (files.isEmpty()) {
+            return false;
+        }
+        for (DataObject d : files) {
+            final FileObject fo = d.getPrimaryFile();
+            if (fo == null) {
+                continue;
+            }
+            String mimeType = fo.getMIMEType();
+            if (mimeType == null) {
+                continue;
+            }
+            if (MIMENames.isCppOrCOrFortran(mimeType)) {
+                return d.getLookup().lookup(CompileExecSupport.class) != null;
+            }
+        }
+        return false;
+    }
+    
 }
