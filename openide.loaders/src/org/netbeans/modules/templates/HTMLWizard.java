@@ -68,6 +68,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
+import netscape.javascript.JSObject;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -266,7 +267,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                                     
                                     if (ret instanceof String) {
                                         data = v.getEngine().executeScript((String) ret);
-                                        if (data == null) {
+                                        if (data == null || "undefined".equals(data)) {
                                             throw new IllegalArgumentException("Executing " + ret + " returned null, that is wrong, should get JSON object with ko bindings");
                                         }
                                     } else {
