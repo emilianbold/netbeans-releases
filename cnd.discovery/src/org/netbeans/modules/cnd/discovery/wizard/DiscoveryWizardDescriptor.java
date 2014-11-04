@@ -66,6 +66,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String PROVIDER = "DW:provider"; // NOI18N
     public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
     public static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
+    public static final String BUILD_FOLDER = "DW:buildFolder"; // NOI18N
     public static final String FILE_SYSTEM = "DW:fileSystem"; // NOI18N
     public static final String LOG_FILE = "DW:logFile"; // NOI18N
     public static final String EXEC_LOG_FILE = "DW:execLogFile"; // NOI18N
@@ -144,6 +145,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         putProperty(BUILD_RESULT, binaryPath);
     }
 
+    @Override
+    public String getBuildFolder() {
+        return (String) getProperty(BUILD_FOLDER);
+    }
+
+    @Override
+    public void setBuildFolder(String buildPath) {
+        putProperty(BUILD_FOLDER, buildPath);
+    }
+   
     @Override
     public FileSystem getFileSystem() {
         return (FileSystem) getProperty(FILE_SYSTEM);
@@ -323,7 +334,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public void setResolveSymbolicLinks(boolean resolveSymbolicLinks) {
         putProperty(RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks);
     }
-   
+
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
         private final WizardDescriptor wizard;
         public DiscoveryWizardDescriptorAdapter(WizardDescriptor wizard){
@@ -379,6 +390,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildResult(String binaryPath) {
             wizard.putProperty(BUILD_RESULT, binaryPath);
+        }
+
+        @Override
+        public String getBuildFolder() {
+            return (String) wizard.getProperty(BUILD_FOLDER);
+        }
+
+        @Override
+        public void setBuildFolder(String buildPath) {
+            wizard.putProperty(BUILD_FOLDER, buildPath);
         }
 
         @Override
@@ -625,6 +646,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildResult(String binaryPath) {
             map.put(BUILD_RESULT, binaryPath);
+        }
+
+        @Override
+        public String getBuildFolder() {
+            return (String) map.get(BUILD_FOLDER);
+        }
+
+        @Override
+        public void setBuildFolder(String buildPath) {
+            map.put(BUILD_FOLDER, buildPath);
         }
 
         @Override

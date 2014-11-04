@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -198,7 +199,78 @@ public class ListenersParityTestCase extends RemoteFileTestBase {
             }
         }    
     }
-    
+
+    private void doTestListenersChange1(boolean externalChange) throws Throwable {
+        File localTmpDir = createTempFile(getClass().getSimpleName(), ".tmp", true);
+        String remoteBaseDir = null;
+        try {
+            remoteBaseDir = mkTempAndRefreshParent(true);
+            FileObject remoteBaseDirFO = getFileObject(remoteBaseDir);
+            FileObject localBaseDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(localTmpDir));
+            File workDir = getWorkDir();
+            File remoteLog = new File(workDir, "remote.dat");
+            File localLog = new File(workDir, "local.dat");
+            doTestListenersChange2(remoteBaseDirFO, remoteLog, externalChange);
+            // for an external change I wasn't able to make masterfs to fire file change event;
+            // but if external change to remote fs behaves the same way internal change for local fs does - then we are fine.
+            doTestListenersChange2(localBaseDirFO, localLog, false);
+            printFile(localLog, "LOCAL ", System.out);
+            printFile(remoteLog, "REMOTE", System.out);
+            File diff = new File(workDir, "diff.diff");
+            try {
+                assertFile("Remote and local events differ, see diff " + remoteLog.getAbsolutePath() + " " + localLog.getAbsolutePath(), remoteLog, localLog, diff);
+            } catch (Throwable ex) {
+                if (diff.exists()) {
+                    printFile(diff, null, System.err);
+                }
+                throw ex;
+            }
+        } finally {
+            removeRemoteDirIfNotNull(remoteBaseDir);
+            if (localTmpDir != null && localTmpDir.exists()) {
+                removeDirectory(localTmpDir);
+            }
+        }
+    }
+
+    private void doTestListenersChange2(FileObject baseDirFO, File log, boolean externalChange) throws Exception {
+        PrintStream out = new PrintStream(log);
+        try {
+            String prefix = baseDirFO.getPath();
+            FileObject subdirFO = baseDirFO.createFolder("child_folder");
+            FileObject childFO = subdirFO.createData("child_file_1");
+            subdirFO.addFileChangeListener(new DumpingFileChangeListener("Dir  listener", prefix, out, true));
+            childFO.addFileChangeListener(new DumpingFileChangeListener("File listener", prefix, out, true));
+            if (externalChange) {
+                ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(childFO);
+                ProcessUtils.ExitStatus rc = ProcessUtils.execute(env, "/bin/sh", "-c", "echo new_content > " + childFO.getPath());
+                assertTrue("external modification command failed", rc.exitCode == 0);
+                if (env.isLocal()) {
+                    //FileUtil.refreshAll();
+                    File[] files = new File[] {FileUtil.toFile(subdirFO), FileUtil.toFile(childFO) };
+                    FileUtil.refreshFor(files);
+                    sleep(5000);
+                }
+                subdirFO.refresh();
+            } else {
+                writeFile(childFO, "new file content\n");
+            }
+        } finally {
+            out.close();
+        }
+    }
+
+
+    @ForAllEnvironments
+    public void testListenersInternalChange() throws Throwable {
+        doTestListenersChange1(false);
+    }
+ 
+    @ForAllEnvironments
+    public void testListenersExternalChange() throws Throwable {
+        doTestListenersChange1(true);
+    }
+
     @ForAllEnvironments
     public void testListenersRename() throws Throwable {                
         doTestListenersRename1(false);

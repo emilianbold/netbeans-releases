@@ -381,7 +381,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
             try {
                 weight = storage.dblStorage.isOpened() ? storage.dblStorage.getFragmentationPercentage() : 0;
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
             if (weight < Stats.defragmentationThreashold) {
                 //we are done, no need to go inside, no maintenance is required
@@ -569,7 +569,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
                 int weight2 = storage2.dblStorage.isOpened() ? storage2.dblStorage.getFragmentationPercentage() : 0;
                 return weight2 - weight1;
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                RepositoryExceptions.throwException(this, ex);
             }
             return 0;
         }
