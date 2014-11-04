@@ -48,7 +48,6 @@
  * "TermListener.java"
  * TermListener.java 1.7 01/07/10
  */
-
 package org.netbeans.lib.terminalemulator;
 
 import java.awt.Dimension;
@@ -56,10 +55,23 @@ import java.awt.Dimension;
 /**
  * Listener for Miscelaneous events.
  */
+public interface MiscListener {
 
-public interface TermListener {
-    public void sizeChanged(Dimension cells, Dimension pixels);
+    /**
+     * Listener for Miscellaneous events on GUI components.
+     */
+    public static interface ComponentListener extends MiscListener {
 
-    public void titleChanged(String title);
-} 
+        public void sizeChanged(Dimension cells, Dimension pixels);
+    }
 
+    /**
+     * Listener for Miscellaneous events on a Term.
+     */
+    public static interface TermListener extends MiscListener {
+
+        public void cwdChanged(String cwd);
+
+        public void titleChanged(String title);
+    }
+}

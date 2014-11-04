@@ -273,6 +273,11 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
         fireChanges(file);
     }
 
+    @Override
+    public void fileRemoved(CsmFile file) {
+        fireChanges(file);
+    }
+
     private void fireChanges(CsmFile file) {
         if (file == null) {
             return;
