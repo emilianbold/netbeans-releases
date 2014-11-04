@@ -89,6 +89,8 @@ public class HTMLTemplateTest {
         assertSelectedIndex("Zero th panel is selected", cmp1, 0);
         
         assertSteps("There steps", cmp1, "One", "Two", "Three");
+        
+        assertCurrentStep((HTMLPanel)p1, "One");
     }
     
     private static void awaitFX() throws Exception {
@@ -114,5 +116,10 @@ public class HTMLTemplateTest {
         Object[] real = (Object[]) obj;
         assertEquals(msg + " same size", arr.length, real.length);
         assertEquals(msg, Arrays.asList(arr), Arrays.asList(real));
+    }
+    
+    private static void assertCurrentStep(HTMLPanel p, String name) throws Exception {
+        Object value = p.evaluateProp("current");
+        assertEquals("Current step is set properly", name, value);
     }
 }

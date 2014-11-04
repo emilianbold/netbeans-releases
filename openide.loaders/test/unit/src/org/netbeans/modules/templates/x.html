@@ -52,7 +52,8 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
             function init() {
                 var data = {
                     'errorCode' : ko.observable(0),
-                    'steps' : ko.observableArray([ 'One', 'Two', 'Three' ])
+                    'steps' : ko.observableArray([ 'One', 'Two', 'Three' ]),
+                    'current' : ko.observable(null)
                 };
                 ko.applyBindings(data);
                 return data;

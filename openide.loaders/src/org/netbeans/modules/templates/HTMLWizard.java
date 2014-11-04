@@ -51,6 +51,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -78,17 +81,18 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         return new HTMLWizard(data);
     }
     
-    private final FileObject data;
+    private final FileObject def;
     private int index;
     private List<String> steps = Collections.emptyList();
     private List<HTMLPanel> panels;
+    private Object data;
     private JFXPanel p;
     private /* final */ WebView v;
     private ChangeListener listener;
     private int errorCode = -1;
 
-    private HTMLWizard(FileObject data) {
-        this.data = data;
+    private HTMLWizard(FileObject definition) {
+        this.def = definition;
     }
 
     @Override
@@ -205,7 +209,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                         bp.setCenter(v);
                         p.setScene(scene);
 
-                        String page = (String) data.getAttribute("page");
+                        String page = (String) def.getAttribute("page");
                         ClassLoader tmpL = Lookup.getDefault().lookup(ClassLoader.class);
                         if (tmpL == null) {
                             tmpL = Thread.currentThread().getContextClassLoader();
@@ -221,21 +225,25 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                             @Override
                             public void run() {
                                 try {
-                                    String clazz = (String) data.getAttribute("class");
-                                    String method = (String) data.getAttribute("method");
+                                    String clazz = (String) def.getAttribute("class");
+                                    String method = (String) def.getAttribute("method");
                                     Method m = Class.forName(clazz, true, l).getDeclaredMethod(method);
                                     m.setAccessible(true);
                                     Object ret = m.invoke(null);
                                     
                                     if (ret instanceof String) {
-                                        ret = v.getEngine().executeScript((String) ret);
+                                        data = v.getEngine().executeScript((String) ret);
+                                        if (data == null) {
+                                            throw new IllegalArgumentException("Executing " + ret + " returned null, that is wrong, should get JSON object with ko bindings");
+                                        }
                                     } else {
                                         // Models.isModel(ret);
                                         throw new IllegalStateException("Returned value should be string: " + ret);
                                     }
                                     
-                                    boolean stepsOK = listenOnProp(ret, HTMLWizard.this, "steps");
-                                    boolean errorCodeOK = listenOnProp(ret, HTMLWizard.this, "errorCode");
+                                    boolean stepsOK = listenOnProp(data, HTMLWizard.this, "steps");
+                                    boolean errorCodeOK = listenOnProp(data, HTMLWizard.this, "errorCode");
+                                    
                                 } catch (NoSuchMethodException ex) {
                                     Exceptions.printStackTrace(ex);
                                 } catch (ClassNotFoundException ex) {
@@ -270,9 +278,20 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         return errorCode == 0;
     }
     
-    private final void onStepsChange(Object[] obj) {
+    final Object evaluateProp(final String prop) throws InterruptedException, ExecutionException {
+        FutureTask t = new FutureTask(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return getPropertyValue(data, prop);
+            }
+        });
+        FXBrowsers.runInBrowser(v, t);
+        return t.get();
+    }
+    
+    private void onStepsChange(Object[] obj) {
         if (obj != null) {
-            List<String> arr = new ArrayList<String>();
+            List<String> arr = new ArrayList<>();
             for (Object s : obj) {
                 arr.add(s.toString());
             }
@@ -283,12 +302,9 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             }
         }
         p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
-        /*
-        if (data != null) {
-            String current = steps.size() > index ? steps.get(index) : null;
-            data.changeCurrent(current);
+        if (steps != null && steps.size() > index) {
+            changeProperty(data, "current", steps.get(index));
         }
-        */
     }
     
     @JavaScriptBody(args = {"data", "onChange", "p" }, javacall = true, body = ""
@@ -302,5 +318,20 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         + "onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, data[p]());\n"
         + "return true;\n"
     )
-    static native boolean listenOnProp(Object raw, HTMLWizard onChange, String propName);    
+    static native boolean listenOnProp(Object raw, HTMLWizard onChange, String propName);
+    
+    @JavaScriptBody(args = { "raw", "propName", "value" }, body = ""
+        + "var fn = raw[propName];\n"
+        + "if (typeof fn !== 'function') return false;\n"
+        + "fn(value);\n"
+        + "return true;\n"
+    )
+    private static native boolean changeProperty(Object raw, String propName, Object value);
+    
+    @JavaScriptBody(args = { "raw", "propName" }, body = ""
+        + "var fn = raw[propName];\n"
+        + "if (typeof fn !== 'function') return null;\n"
+        + "return fn();\n"
+    )
+    static native Object getPropertyValue(Object raw, String propName);
 }

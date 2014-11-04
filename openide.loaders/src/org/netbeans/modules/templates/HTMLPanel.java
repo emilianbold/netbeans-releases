@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.templates;
 
+import java.util.concurrent.ExecutionException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -89,4 +90,7 @@ final class HTMLPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     public void storeSettings(WizardDescriptor wiz) {
     }
 
+    final Object evaluateProp(String name) throws InterruptedException, ExecutionException {
+        return it.evaluateProp(name);
+    }
 }
