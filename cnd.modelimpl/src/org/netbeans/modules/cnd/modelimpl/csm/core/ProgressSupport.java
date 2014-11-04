@@ -131,6 +131,18 @@ public class ProgressSupport {
         }
     }
 
+    /*package-local*/ void fireFileRemoved(FileImpl file) {
+        if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
+            System.err.println("fireFileRemoved " + file.getAbsolutePath());
+        }
+        for (CsmProgressListener listener : getProgressListeners()) {
+            try { // have to do this to not allow a listener to crush code model threads
+                listener.fileRemoved(file);;
+            } catch (Throwable e) {
+                DiagnosticExceptoins.register(e);
+            }
+        }
+    }
     /*package-local*/ void fireProjectParsingStarted(ProjectBase project) {
         if (TraceFlags.TRACE_PARSER_QUEUE || TraceFlags.TRACE_PARSER_PROGRESS) {
             System.err.println("fireProjectParsingStarted " + project.getName());

@@ -136,5 +136,9 @@ public class BadgeProviderUpdater implements CsmModelListener, CsmProgressListen
     @Override
     public void parserIdle() {
     }
+
+    @Override
+    public void fileRemoved(CsmFile file) {
+    }
 }
 

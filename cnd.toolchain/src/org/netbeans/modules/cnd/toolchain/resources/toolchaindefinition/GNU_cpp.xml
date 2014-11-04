@@ -81,6 +81,7 @@ made subject to such option by the copyright holder.
             <default flags="" default="true"/>
             <cpp98 flags="-std=c++98"/>
             <cpp11 flags="-std=c++11"/>
+            <cpp14 flags="-std=c++14"/>
         </cpp_standard>
         <output_object_file flags="-o " />
         <dependency_generation flags="-MMD -MP -MF &quot;$@.d&quot;" />

@@ -219,19 +219,19 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
     
     void read(final DiscoveryDescriptor wizardDescriptor) {
         String providerID = wizardDescriptor.getProviderID();
-        if ("dwarf-executable".equals(providerID)){ // NOI18N
+        if (DiscoveryExtension.DWARF_PROVIDER.equals(providerID)){
             additionalLibrariesButton.setVisible(true);
             librariesLabel.setVisible(true);
             librariesTextField.setVisible(true);
-        } else if ("exec-log".equals(providerID)){ // NOI18N
+        } else if (DiscoveryExtension.EXEC_LOG_PROVIDER.equals(providerID)){
             additionalLibrariesButton.setVisible(false);
             librariesLabel.setVisible(false);
             librariesTextField.setVisible(false);
-        } else if ("make-log".equals(providerID)){ // NOI18N
+        } else if (DiscoveryExtension.MAKE_LOG_PROVIDER.equals(providerID)){ 
             additionalLibrariesButton.setVisible(false);
             librariesLabel.setVisible(false);
             librariesTextField.setVisible(false);
-        } else if ("dwarf-folder".equals(providerID)){ // NOI18N
+        } else if (DiscoveryExtension.FOLDER_PROVIDER.equals(providerID)){
             additionalLibrariesButton.setVisible(false);
             librariesLabel.setVisible(false);
             librariesTextField.setVisible(false);
