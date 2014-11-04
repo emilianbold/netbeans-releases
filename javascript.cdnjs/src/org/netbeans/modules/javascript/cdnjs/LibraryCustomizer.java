@@ -76,6 +76,7 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+    private static final String DEFAULT_LIBRARY_FOLDER = "js/libs"; // NOI18N
     private static final String CATEGORY_NAME = "JavaScriptFiles"; // NOI18N
     private static final String PREFERENCES_LIBRARY_FOLDER = "js.libs.folder"; // NOI18N
     private final CDNJSLibraries.CustomizerContext customizerContext;
@@ -117,7 +118,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
     }
 
     static String getLibraryFolder(Project project) {
-        return getProjectPreferences(project).get(PREFERENCES_LIBRARY_FOLDER, null);
+        return getProjectPreferences(project).get(PREFERENCES_LIBRARY_FOLDER, DEFAULT_LIBRARY_FOLDER);
     }
 
     static void storeLibraryFolder(Project project, String libraryFolder) {
@@ -234,10 +235,13 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             uninstallLibraries(toRemove);
 
             // Create library folder
-            FileObject librariesFob = createLibrariesFolder(errors);
-            if (librariesFob == null) {
-                reportErrors(errors);
-                return oldMap.values().toArray(new Library.Version[oldMap.size()]);
+            FileObject librariesFob = null;
+            if (!toInstall.isEmpty() || !toKeep.isEmpty()) {
+                librariesFob = createLibrariesFolder(errors);
+                if (librariesFob == null) {
+                    reportErrors(errors);
+                    return oldMap.values().toArray(new Library.Version[oldMap.size()]);
+                }
             }
 
             // Install the identified versions
