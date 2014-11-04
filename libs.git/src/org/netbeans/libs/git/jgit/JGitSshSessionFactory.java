@@ -189,8 +189,10 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
             Connector con = ConnectorFactory.getInstance().createConnector(ConnectorFactory.ConnectorKind.ANY);
             if (con != null) {
                 IdentityRepository irepo = new IdentityRepositoryImpl(con);
-                jsch.setIdentityRepository(irepo);
-                agentUsed = true;
+                if (irepo.getStatus() == IdentityRepository.RUNNING) {
+                    jsch.setIdentityRepository(irepo);
+                    agentUsed = true;
+                }
             }
         }
         if (!agentUsed) {
@@ -240,7 +242,8 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
 
         @Override
         public int getStatus () {
-            return connector.isAvailable() ? IdentityRepository.RUNNING : IdentityRepository.UNAVAILABLE;
+            return connector.isAvailable() && proxy.isRunning()
+                    ? IdentityRepository.RUNNING : IdentityRepository.UNAVAILABLE;
         }
 
         @Override
