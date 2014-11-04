@@ -350,59 +350,62 @@ public final class V8Debugger {
                     //LOG.fine("getCurrentCallStack(): retrieving the number of frames...");
                     // Find the number of frames first:
                     Backtrace.Arguments bta = new Backtrace.Arguments(0l, 1l, false, true);
-                    V8Request request = sendCommandRequest(V8Command.Backtrace, bta, new CommandResponseCallback() {
-                        @Override
-                        public void notifyResponse(V8Request request, V8Response response) {
-                            if (response == null) {
-                                synchronized (currentCallStackRetrieveLock) {
-                                    currentCallStackRetrieveLock.notifyAll();
-                                }
-                                return ;
-                            }
-                            Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
-                            long numFrames = btrb.getTotalFrames();
-                            //LOG.fine("getCurrentCallStack(): "+numFrames+" frames retrieved.");
-                            if (numFrames == 0) {
-                                synchronized (currentCallStackRetrieveLock) {
-                                    csRef[0] = CallStack.EMPTY;
-                                    currentCallStackRetrieveLock.notifyAll();
-                                }
-                            }
-                            if (numFrames == 1l) {
-                                synchronized (currentCallStackRetrieveLock) {
-                                    csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
-                                    currentCallStackRetrieveLock.notifyAll();
-                                }
-                            } else {
-                                //LOG.fine("getCurrentCallStack(): retrieving "+numFrames+" frames...");
-                                // Find numFrames frames now:
-                                Backtrace.Arguments bta = new Backtrace.Arguments(0l, numFrames, false, true);
-                                V8Request request2 = sendCommandRequest(V8Command.Backtrace, bta, new CommandResponseCallback() {
-                                    @Override
-                                    public void notifyResponse(V8Request request, V8Response response) {
-                                        if (response != null) {
-                                            Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
-                                            csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
-                                            //LOG.fine("getCurrentCallStack(): All frames retrieved: "+csRef[0]);
-                                        }
-                                        synchronized (currentCallStackRetrieveLock) {
-                                            currentCallStackRetrieveLock.notifyAll();
-                                        }
+                    final Object csRetrievingLock = new Object();
+                    synchronized (csRetrievingLock) {
+                        V8Request request = sendCommandRequest(V8Command.Backtrace, bta, new CommandResponseCallback() {
+                            @Override
+                            public void notifyResponse(V8Request request, V8Response response) {
+                                if (response == null) {
+                                    synchronized (csRetrievingLock) {
+                                        csRetrievingLock.notifyAll();
                                     }
-                                });
-                                if (request2 == null) {
-                                    // Failed, notify
-                                    synchronized (currentCallStackRetrieveLock) {
-                                        currentCallStackRetrieveLock.notifyAll();
+                                    return ;
+                                }
+                                Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
+                                long numFrames = btrb.getTotalFrames();
+                                //LOG.fine("getCurrentCallStack(): "+numFrames+" frames retrieved.");
+                                if (numFrames == 0) {
+                                    synchronized (csRetrievingLock) {
+                                        csRef[0] = CallStack.EMPTY;
+                                        csRetrievingLock.notifyAll();
                                     }
                                 }
+                                if (numFrames == 1l) {
+                                    synchronized (csRetrievingLock) {
+                                        csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
+                                        csRetrievingLock.notifyAll();
+                                    }
+                                } else {
+                                    //LOG.fine("getCurrentCallStack(): retrieving "+numFrames+" frames...");
+                                    // Find numFrames frames now:
+                                    Backtrace.Arguments bta = new Backtrace.Arguments(0l, numFrames, false, true);
+                                    V8Request request2 = sendCommandRequest(V8Command.Backtrace, bta, new CommandResponseCallback() {
+                                        @Override
+                                        public void notifyResponse(V8Request request, V8Response response) {
+                                            if (response != null) {
+                                                Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
+                                                csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
+                                                //LOG.fine("getCurrentCallStack(): All frames retrieved: "+csRef[0]);
+                                            }
+                                            synchronized (csRetrievingLock) {
+                                                csRetrievingLock.notifyAll();
+                                            }
+                                        }
+                                    });
+                                    if (request2 == null) {
+                                        // Failed, notify
+                                        synchronized (csRetrievingLock) {
+                                            csRetrievingLock.notifyAll();
+                                        }
+                                    }
+                                }
                             }
+                        });
+                        if (request != null) {
+                            try {
+                                csRetrievingLock.wait();
+                            } catch (InterruptedException iex) {}
                         }
-                    });
-                    if (request != null) {
-                        try {
-                            currentCallStackRetrieveLock.wait();
-                        } catch (InterruptedException iex) {}
                     }
                     cs = csRef[0];
                     Lock wl = accessLock.writeLock();
