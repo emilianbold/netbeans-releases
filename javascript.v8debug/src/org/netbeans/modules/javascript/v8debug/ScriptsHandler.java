@@ -123,6 +123,12 @@ public class ScriptsHandler {
         }
     }
     
+    void remove(long scriptId) {
+        synchronized (scriptsById) {
+            V8Script removed = scriptsById.remove(scriptId);
+        }
+    }
+
     @CheckForNull
     public V8Script getScript(long id) {
         synchronized (scriptsById) {
