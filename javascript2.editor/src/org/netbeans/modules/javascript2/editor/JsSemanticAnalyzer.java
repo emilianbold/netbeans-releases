@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,6 +60,8 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.hints.JSHintSupport;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -82,7 +86,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private static final List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
-
+    private Collection<OffsetRange> globalJsHintInlines = new ArrayList<OffsetRange>();
+    
     public JsSemanticAnalyzer() {
         this.cancelled = false;
         this.semanticHighlights = null;
@@ -105,7 +110,10 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
         Model model = result.getModel();
         JsObject global = model.getGlobalObject();
-
+        Collection<Identifier> definedGlobal = JSHintSupport.getDefinedGlobal(result.getSnapshot(), -1);
+        for (Identifier iden: definedGlobal) {
+            globalJsHintInlines.add(iden.getOffsetRange());
+        }
         highlights = count(result, global, highlights);
 
         if (highlights != null && highlights.size() > 0) {
@@ -310,12 +318,15 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         return false;
     }
 
-    private static boolean isCommentOccurence(JsParserResult result, Occurrence occurence) {
+    private boolean isCommentOccurence(JsParserResult result, Occurrence occurence) {
         // Comment blocks are cached by holders so this is faster than calls to token sequences.
         for (JsComment comment : result.getDocumentationHolder().getCommentBlocks().values()) {
             if (comment.getOffsetRange().containsInclusive(occurence.getOffsetRange().getStart())) {
                 return true;
             }
+        }
+        if (globalJsHintInlines.contains(occurence.getOffsetRange())) {
+            return true;
         }
         return false;
     }
