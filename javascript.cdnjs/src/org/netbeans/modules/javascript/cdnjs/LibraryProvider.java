@@ -207,6 +207,9 @@ public final class LibraryProvider {
         try (InputStream input = urlConnection.getInputStream()) {
             int index = fileName.lastIndexOf('.');
             String prefix = (index == -1) ? fileName : fileName.substring(0,index);
+            if (prefix.length() < 3) {
+                prefix = "tmp" + prefix; // NOI18N
+            }
             String suffix = (index == -1) ? "" : fileName.substring(index);
             File file = File.createTempFile(prefix, suffix);
             try (OutputStream output = new FileOutputStream(file)) {
