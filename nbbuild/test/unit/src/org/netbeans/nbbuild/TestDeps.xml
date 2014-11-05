@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
                 <contains string="${unit.runtime.cp}" substring="platform/core/org-openide-filesystems.jar"/>
                 <contains string="${unit.runtime.cp}" substring="platform/modules/org-openide-nodes.jar"/>
                 <contains string="${unit.runtime.cp}" substring="${test.dist.dir}/unit/platform/org-openide-nodes/tests.jar"/>
-                <contains string="${unit.runtime.cp}" substring="platform/lib/org-openide-util-base.jar"/>
+                <contains string="${unit.runtime.cp}" substring="platform/lib/org-openide-util.jar"/>
                 <contains string="${unit.runtime.cp}" substring="platform/modules/org-netbeans-modules-queries.jar"/>
             </and>
         </condition> 
