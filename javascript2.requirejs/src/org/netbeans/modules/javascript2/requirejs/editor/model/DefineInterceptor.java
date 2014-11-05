@@ -140,7 +140,7 @@ public class DefineInterceptor implements FunctionInterceptor {
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot.getTokenHierarchy(), modules.getOffset());
                         if (ts == null) {
                             return Collections.emptyList();
-                        }
+                        } 
                         ts.move(modules.getOffset());
                         if (ts.moveNext()) {
                             Token<? extends JsTokenId> token = ts.token();
