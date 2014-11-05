@@ -65,6 +65,7 @@ public class CsmFileModel {
     private final CsmFileFilter filter;
     private final Action[] actions;
     private FileObject fileObject;
+    private CsmFile csmModelFile;
     private DataObject cdo;
     private boolean isStandalone;
     private Project unopenedProject;
@@ -104,7 +105,13 @@ public class CsmFileModel {
     }
 
     public void addOffset(Node node, CsmOffsetable element, List<IndexOffsetNode> lineNumberIndex) {
-        lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
+        if (csmModelFile.equals(element.getContainingFile())) {
+            lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
+        } else {
+            // element from another file (include in namespace/class/enum)
+            // set negative offsets
+            lineNumberIndex.add(new IndexOffsetNode(node, -1, -1));
+        }
     }
 
     public void addFileOffset(Node node, CsmFile element, List<IndexOffsetNode> lineNumberIndex) {
@@ -115,6 +122,7 @@ public class CsmFileModel {
         boolean oldValue = isStandalone;
         this.fileObject = fo;
         this.cdo = cdo;
+        this.csmModelFile = csmFile;
         isStandalone = CsmStandaloneFileProvider.getDefault().isStandalone(csmFile);
         PreBuildModel preBuildModel = new PreBuildModel(oldValue != isStandalone);
         unopenedProject = null;
@@ -307,8 +315,10 @@ public class CsmFileModel {
                 }
                 scopedNode = scopedNode.getScope();
             }
-            // not found, return last scope
-            return node.getNode();
+            // not found, return last scope if node from current file
+            if (node.getStartOffset() >=0 && node.getEndOffset() >=0 ){
+                return node.getNode();
+            }
         }
         return null;
     }
@@ -318,8 +328,8 @@ public class CsmFileModel {
     }
 
     public static final class PreBuildModel {
-        List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
-        List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
+        final List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
+        final List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
         final boolean forceRebuild;
 
         public PreBuildModel(boolean forceRebuild) {
