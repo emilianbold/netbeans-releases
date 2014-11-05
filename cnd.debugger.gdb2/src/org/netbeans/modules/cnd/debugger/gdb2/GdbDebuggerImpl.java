@@ -797,7 +797,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     @Override
-    public final void stepTo(final String selectedText) {     //FIXUP null function case!
+    public final void stepTo(final String selectedText) {
+        if (selectedText == null || selectedText.trim().isEmpty()) {
+            return;
+        }
         String expandedExpr = MacroSupport.expandMacro(this, selectedText);
         String cmdString = "-data-evaluate-expression " + "\"" + expandedExpr + "\""; // NOI18N
         
