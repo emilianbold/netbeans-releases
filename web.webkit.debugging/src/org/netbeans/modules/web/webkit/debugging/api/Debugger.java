@@ -153,6 +153,9 @@ public final class Debugger {
         }
         
         setBreakpointsActive(lastBreakpointsActive);
+        for (Listener l : listeners ) {
+            l.enabled(true);
+        }
         
         return true;
     }
@@ -193,6 +196,9 @@ public final class Debugger {
             currentCallStack.clear();
             currentCallFrame = null;
             initDOMLister = true;
+        }
+        for (Listener l : listeners ) {
+            l.enabled(false);
         }
     }
 
@@ -683,6 +689,13 @@ public final class Debugger {
          * Object state was reset due to page reload.
          */
         void reset();
+        
+        /**
+         * Debugger was enabled or disabled.
+         * @param enabled <code>true</code> when the debugger was enabled,
+         *                <code>false</code> when disabled.
+         */
+        void enabled(boolean enabled);
     }
     
 }

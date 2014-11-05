@@ -240,6 +240,11 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
     @Override
     public void reset() {
     }
+
+    @Override
+    public void enabled(boolean enabled) {
+        updateDebuggerState();
+    }
     
     private void logJSDebugAction() {
         LogRecord record = new LogRecord(Level.INFO, USG_LOG_MSG);

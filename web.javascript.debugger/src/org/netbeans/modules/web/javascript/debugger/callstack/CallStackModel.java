@@ -54,14 +54,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JToolTip;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.api.ServerURLMapping;
-
 import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -74,7 +74,12 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "CTL_CallstackModel_Column_Name_Name=Name"
 })
-@DebuggerServiceRegistration(path="javascript-debuggerengine/CallStackView", types={ TreeModel.class, NodeModel.class, TableModel.class })
+@DebuggerServiceRegistrations({
+ @DebuggerServiceRegistration(path="javascript-debuggerengine/DebuggingView",
+                              types={ TreeModel.class, NodeModel.class, TableModel.class }),
+ @DebuggerServiceRegistration(path="javascript-debuggerengine/CallStackView",
+                              types={ TreeModel.class, NodeModel.class, TableModel.class })
+})
 public final class CallStackModel extends ViewModelSupport implements TreeModel, NodeModel,
         TableModel, Debugger.Listener, PropertyChangeListener {
 
@@ -298,6 +303,10 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
     public void reset() {
     }
 
+    @Override
+    public void enabled(boolean enabled) {
+    }
+    
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();

@@ -135,5 +135,9 @@ public final class SessionsModel extends ViewModelSupport implements TableModelF
     @Override
     public void reset() {
     }
+
+    @Override
+    public void enabled(boolean enabled) {
+    }
     
 }
