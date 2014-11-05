@@ -40,83 +40,116 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.javascript.debugger.annotation;
+package org.netbeans.modules.web.javascript.debugger.callstack;
 
-import java.io.Closeable;
-import java.io.IOException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
-import org.openide.util.Exceptions;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 
 /**
- *
+ * The default JavaScript thread.
+ * 
  * @author Martin Entlicher
  */
-public class WebJSDebuggerTooltipSupport implements DebuggerTooltipSupport {
+public class JSThread implements DebuggingView.DVThread {
     
     private final Debugger debugger;
-    private final CallFrame frame;
-    private Debugger.Listener closeableListener;
+    private final DebuggingView.DVSupport dvSupport;
+    private final PropertyChangeSupport pchs = new PropertyChangeSupport(this);
     
-    public WebJSDebuggerTooltipSupport(Debugger debugger, CallFrame frame) {
+    public JSThread(Debugger debugger, DebuggingView.DVSupport dvSupport) {
         this.debugger = debugger;
-        this.frame = frame;
-    }
-
-    public Debugger getDebugger() {
-        return debugger;
-    }
-
-    public CallFrame getFrame() {
-        return frame;
+        this.dvSupport = dvSupport;
+        ChangeListener chl = new ChangeListener();
+        debugger.addListener(chl);
     }
 
     @Override
-    public void addCloseable(final Closeable closeable) {
-        closeableListener = new CloseableDebuggerListener(closeable);
-        debugger.addListener(closeableListener);
+    public String getName() {
+        return "default";
     }
 
     @Override
-    public void removeCloseable(Closeable closeable) {
-        debugger.removeListener(closeableListener);
+    public boolean isSuspended() {
+        return debugger.isSuspended();
+    }
+
+    @Override
+    public void resume() {
+        debugger.resume();
+    }
+
+    @Override
+    public void suspend() {
+        debugger.pause();
+    }
+
+    @Override
+    public void makeCurrent() {
+    }
+
+    @Override
+    public DebuggingView.DVSupport getDVSupport() {
+        return dvSupport;
+    }
+
+    @Override
+    public List<DebuggingView.DVThread> getLockerThreads() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public void resumeBlockingThreads() {
+    }
+
+    @Override
+    public Breakpoint getCurrentBreakpoint() {
+        return null; // TODO
+    }
+
+    @Override
+    public boolean isInStep() {
+        return false; // Used when a deadlock occurs during stepping.
     }
     
-    private static class CloseableDebuggerListener implements Debugger.Listener {
-        
-        private final Closeable closeable;
-        
-        public CloseableDebuggerListener(Closeable closeable) {
-            this.closeable = closeable;
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        pchs.addPropertyChangeListener(pcl);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        pchs.removePropertyChangeListener(pcl);
+    }
+
+    private class ChangeListener implements Debugger.Listener {
+
+        public ChangeListener() {}
+
+        @Override
+        public void paused(List<CallFrame> callStack, String reason) {
+            pchs.firePropertyChange(DebuggingView.DVThread.PROP_SUSPENDED, null, true);
         }
 
         @Override
-        public void paused(List<CallFrame> callStack, String reason) {}
-
-        @Override
         public void resumed() {
-            doClose();
+            pchs.firePropertyChange(DebuggingView.DVThread.PROP_SUSPENDED, null, false);
         }
 
         @Override
         public void reset() {
-            doClose();
         }
 
         @Override
         public void enabled(boolean enabled) {
-            if (!enabled) {
-                doClose();
-            }
         }
         
-        private void doClose() {
-            try {
-                closeable.close();
-            } catch (IOException ex) {}
-        }
         
     }
     

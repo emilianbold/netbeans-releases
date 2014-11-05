@@ -779,6 +779,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         resumed();
     }
 
+    @Override
+    public void enabled(boolean enabled) {
+        computeEvaluationButtonState();
+    }
+    
     // ..........................................................................
 
     private synchronized TopComponent getResultViewInstance() {
