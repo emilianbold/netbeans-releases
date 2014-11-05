@@ -64,8 +64,8 @@ import org.openide.util.Pair;
 
 public final class NewProjectWizardIterator extends BaseWizardIterator {
 
-    private static final String DEFAULT_SOURCE_FOLDER = "src"; // NOI18N
-    private static final String DEFAULT_SITE_ROOT_FOLDER = "src/public"; // NOI18N
+    private static final String DEFAULT_SOURCE_FOLDER = ""; // NOI18N
+    private static final String DEFAULT_SITE_ROOT_FOLDER = "public"; // NOI18N
 
     private final String displayName;
     private final boolean withSiteRoot;
