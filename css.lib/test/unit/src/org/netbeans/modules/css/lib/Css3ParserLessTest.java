@@ -721,4 +721,20 @@ public class Css3ParserLessTest extends CssTestBase {
         );
     }
     
+    public void testErrorKeywordInImport() {
+        String source = " @import(wrong) \"test\";";
+        CssParserResult result = TestUtil.parse(source);
+//        TestUtil.dumpTokens(result);
+//        TestUtil.dumpResult(result);
+
+        Node error = NodeUtil.query(result.getParseTree(),
+                TestUtil.bodysetPath
+                + "importItem/less_import_types/error");
+        assertNotNull(error);
+
+        assertEquals(9, error.from());
+        assertEquals(14, error.to());
+        assertEquals("wrong", error.image().toString());
+    }
+    
 }

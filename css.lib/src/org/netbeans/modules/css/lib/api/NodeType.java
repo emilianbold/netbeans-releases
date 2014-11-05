@@ -468,7 +468,11 @@ public enum NodeType {
      */
     sass_map_pair
     
-    
+    , less_import_types
+    , less_when
+    , key_and
+    , key_or
+    , key_only
     ;
     
     
