@@ -119,10 +119,13 @@ public class GlobalIsNotDefined extends JsAstRule {
             add = true;
         }
         if (add) {
+            List<HintFix> fixes;
+            fixes = new ArrayList<HintFix>();
+            fixes.add(new AddJsHintFix(context.getJsParserResult().getSnapshot(), offset, name));
             hints.add(new Hint(this, Bundle.JsGlobalIsNotDefinedHintDesc(name),
                     context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                     ModelUtils.documentOffsetRange(context.getJsParserResult(),
-                    range.getStart(), range.getEnd()), null, 500));
+                    range.getStart(), range.getEnd()), fixes, 500));
         }
     }
     
@@ -153,12 +156,57 @@ public class GlobalIsNotDefined extends JsAstRule {
 
     @Override
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.CURRENT_LINE_WARNING;
+        return HintSeverity.WARNING;
     }
    
     @Override
     public boolean getDefaultEnabled() {
         return true;
+    }
+    
+    private Collection<String> findJsHintGlobalDefinition(Snapshot snapshot) {
+        ArrayList<String> names = new ArrayList<String>();
+        Collection<Identifier> definedGlobal = JSHintSupport.getDefinedGlobal(snapshot, 0);
+        for (Identifier identifier: definedGlobal) {
+            names.add(identifier.getName());
+        }
+        return names;
+    }
+    
+    static class AddJsHintFix implements HintFix {
+
+        private final Snapshot snapshot;
+        private final String name;
+        private int offset;
+
+        public AddJsHintFix(final Snapshot snapshot, final int offset, final String name) {
+            this.snapshot = snapshot;
+            this.name = name;
+            this.offset = offset;
+        }
+        
+        
+        @Override
+        @NbBundle.Messages({"AddGlobalJsHint_Description=Generate JsHint global directive"})
+        public String getDescription() {
+            return Bundle.AddGlobalJsHint_Description();
+        }
+
+        @Override
+        public void implement() throws Exception {
+            JSHintSupport.addGlobalInline(snapshot, offset, name);
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+        
     }
     
 }
