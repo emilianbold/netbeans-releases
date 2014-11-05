@@ -117,6 +117,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         super.addNotify();
     }
     
+    @Override
     protected java.util.Map<PersistentKey,SortedName> getMembers() {
         java.util.Map<PersistentKey,SortedName> res = new HashMap<PersistentKey,SortedName>();
         try {
@@ -171,6 +172,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         return res;
     }
     
+    @Override
     protected boolean canCreateNode(CsmOffsetableDeclaration d) {
         if (d.getName().length() > 0) {
             if( CsmKindUtilities.isClass(d) ) {
@@ -263,6 +265,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         return (CsmNamespace)getHostId().getObject();
     }
     
+    @Override
     protected CsmOffsetableDeclaration findDeclaration(PersistentKey declId){
         return (CsmOffsetableDeclaration) declId.getObject();
     }
@@ -271,6 +274,7 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
 //        return (CsmNamespace) nsId.getObject();
 //    }
     
+    @Override
     protected Node createNode(PersistentKey key) {
         Node node = null;
         ChildrenUpdater updater = getUpdater();
@@ -301,35 +305,49 @@ public class NamespaceKeyArray extends HostKeyArray implements UpdatebleHost, Cs
         return node;
     }
     
+    @Override
     public void projectParsingStarted(CsmProject project) {
     }
     
+    @Override
     public void projectFilesCounted(CsmProject project, int filesCount) {
     }
     
+    @Override
     public void projectParsingFinished(CsmProject project) {
         onPprojectParsingFinished(project);
     }
     
+    @Override
     public void projectLoaded(CsmProject project) {
 	onPprojectParsingFinished(project);
     }
 
+    @Override
     public void projectParsingCancelled(CsmProject project) {
     }
 
+    @Override
     public void fileInvalidated(CsmFile file) {
     }
 
+    @Override
     public void fileAddedToParse(CsmFile file) {
     }
     
+    @Override
     public void fileParsingStarted(CsmFile file) {
     }
     
+    @Override
     public void fileParsingFinished(CsmFile file) {
     }
     
+    @Override
     public void parserIdle() {
+    }
+
+    @Override
+    public void fileRemoved(CsmFile file) {
     }
 }

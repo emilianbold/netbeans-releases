@@ -157,10 +157,10 @@ public class ImportExecutable implements PropertyChangeListener {
     private void createProject() {
         String binaryPath = WizardConstants.PROPERTY_BUILD_RESULT.fromMap(map);
         List<String> libs = new ArrayList<>();
-        if (binaryPath.startsWith("\"")) { //NOI18N
+        {
             String firstBinary = null;
             StringBuilder buf = new StringBuilder();
-            for(String s : binaryPath.split("\"")) { //NOI18N
+            for(String s : binaryPath.split(";")) { //NOI18N
                 String path = s.trim();
                 if (path.isEmpty()) {
                     continue;
@@ -217,6 +217,12 @@ public class ImportExecutable implements PropertyChangeListener {
         ArrayList<String> importantBinaries = new ArrayList<>();
         importantBinaries.add(binaryPath);
         importantBinaries.addAll(libs);
+        {
+            String launcher = projectFolder.getPath()+"/nbproject/private/launcher.properties"; //NOI18N
+            launcher = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(launcher), MakeProjectOptions.getPathMode());
+            launcher = CndPathUtilities.normalizeSlashes(launcher);
+            importantBinaries.add(launcher);
+        }
         
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams.setOpenFlag(false)
@@ -549,7 +555,7 @@ public class ImportExecutable implements PropertyChangeListener {
     private String additionalDependencies(Applicable applicable, MakeConfiguration activeConfiguration, String binariesPath) {
         if (dependencies == null) {
             List<String> binaries = new ArrayList<>();
-            for(String path : binariesPath.split("\"")) { //NOI18N
+            for(String path : binariesPath.split(";")) { //NOI18N
                 if (!path.trim().isEmpty()) {
                     binaries.add(path.trim());
                 }

@@ -471,6 +471,10 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
     @Override
     public void parserIdle() {
     }
+
+    @Override
+    public void fileRemoved(CsmFile file) {
+    }
     
     private void cleanCache() {
         synchronized (lock) {

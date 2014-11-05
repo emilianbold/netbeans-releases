@@ -368,7 +368,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
     
     // resolve windows links
-    protected String convertPath(String path, ExecutionEnvironment execEnv) {
+    protected static String convertPath(String path, ExecutionEnvironment execEnv) {
         if (execEnv.isLocal()) {
             return LinkSupport.resolveWindowsLink(path);
         }
