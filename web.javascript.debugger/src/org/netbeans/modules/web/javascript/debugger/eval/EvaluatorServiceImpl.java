@@ -124,6 +124,11 @@ public class EvaluatorServiceImpl implements EvaluatorService, Debugger.Listener
     public void reset() {
         cleanCache();
     }
+
+    @Override
+    public void enabled(boolean enabled) {
+        cleanCache();
+    }
     
     private void cleanCache() {
         synchronized (expressionsCache) {

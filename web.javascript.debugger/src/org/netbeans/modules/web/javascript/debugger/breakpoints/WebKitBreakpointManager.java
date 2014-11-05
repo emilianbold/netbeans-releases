@@ -306,6 +306,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
 
         @Override
+        public void enabled(boolean enabled) {
+        }
+        
+        @Override
         public void propertyChange(PropertyChangeEvent event) {
             String propertyName = event.getPropertyName();
             if (JSLineBreakpoint.PROP_LINE.equals(propertyName)) {

@@ -434,6 +434,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     }
 
     @Override
+    public void enabled(boolean enabled) {
+    }
+    
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (Debugger.PROP_CURRENT_FRAME.equals(propertyName)) {
