@@ -768,9 +768,12 @@ public class ConfigurationMakefileWriter {
             }
         }
         if (conf.hasCPPFiles(projectDescriptor)) {
-            if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler() && hasCpp11(projectDescriptor, conf)) {
-                AbstractCompiler cpp = (AbstractCompiler)compilerSet.findTool(PredefinedToolKind.CCCompiler);
-                return  "${LINK.cc}" + " "+cpp.getCppStandardOptions(CCCompilerConfiguration.STANDARD_CPP11) +" "; // NOI18N
+            if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+                int hasCpp11 = hasCpp11(projectDescriptor, conf);
+                if (hasCpp11 > 0) {
+                    AbstractCompiler cpp = (AbstractCompiler)compilerSet.findTool(PredefinedToolKind.CCCompiler);
+                    return  "${LINK.cc}" + " "+cpp.getCppStandardOptions(hasCpp11) +" "; // NOI18N
+                }
             }
             return  "${LINK.cc}" + " "; // NOI18N
         } else if (conf.hasFortranFiles(projectDescriptor)) {
@@ -779,7 +782,7 @@ public class ConfigurationMakefileWriter {
         return "${LINK.c}" + " "; // NOI18N
     }
     
-    private static boolean hasCpp11(MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
+    private static int hasCpp11(MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
         Item[] items = configurationDescriptor.getProjectItems();
         // Base it on actual files added to project
         for (int x = 0; x < items.length; x++) {
@@ -795,12 +798,14 @@ public class ConfigurationMakefileWriter {
                 if (compilerConfiguration instanceof CCCompilerConfiguration) {
                     CCCompilerConfiguration cppConf = (CCCompilerConfiguration) compilerConfiguration;
                     if (cppConf.getInheritedCppStandard() == CCCompilerConfiguration.STANDARD_CPP11) {
-                        return true;
-                    }
+                        return CCCompilerConfiguration.STANDARD_CPP11;
+                    } else if (cppConf.getInheritedCppStandard() == CCCompilerConfiguration.STANDARD_CPP14) {
+                        return CCCompilerConfiguration.STANDARD_CPP14;
+                    } 
                 }
             }
         }
-        return false;
+        return 0;
     }
 
     public static void writeLinkTestTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {

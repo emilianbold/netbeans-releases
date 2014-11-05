@@ -907,6 +907,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     public void parserIdle() {
     }
 
+    @Override
+    public void fileRemoved(CsmFile file) {
+    }
+
     private static final class CreateEntry {
         private int number;
         private long time;
