@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.util.Lookup;
 
@@ -52,5 +53,5 @@ public interface MakeCommandFlagsProvider {
     public static final String PRE_BUILD_FIRST = "pre-build-first"; //NOI18N
     public static final String BUILD_FIRST = "build-first"; //NOI18N
 
-    boolean hasFlag(String commandID, Lookup context, MakeConfiguration conf, String flag, boolean defaultFlagValue);
+    boolean flagValue(String commandID, Lookup context, Project project, MakeConfiguration conf, String flag, boolean defaultFlagValue);
 }

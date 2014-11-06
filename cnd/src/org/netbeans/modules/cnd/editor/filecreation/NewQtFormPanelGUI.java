@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
-import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -159,7 +158,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
     public String getTargetFolder() {
         String folderName = tfFolder.getText().trim();
-        return folderName.replace(File.separatorChar, '/'); // NOI18N
+        return folderName.replace(fileSeparatorChar, '/'); // NOI18N
     }
 
     public String getTargetName() {
@@ -175,10 +174,10 @@ import org.openide.loaders.DataObjectNotFoundException;
         FileObject root = getTargetGroup().getRootFolder();
         String folderName = tfFolder.getText().trim();
         String folderDisplayName = root.getPath() +
-                (folderName.startsWith("/") || folderName.startsWith(File.separator) ? "" : "/") + // NOI18N
+                (folderName.startsWith("/") || folderName.startsWith(fileSeparator) ? "" : "/") + // NOI18N
                 folderName +
-                (folderName.endsWith("/") || folderName.endsWith(File.separator) || folderName.length() == 0 ? "" : "/");  // NOI18N
-        folderDisplayName = folderDisplayName.replace('/', File.separatorChar);
+                (folderName.endsWith("/") || folderName.endsWith(fileSeparator) || folderName.length() == 0 ? "" : "/");  // NOI18N
+        folderDisplayName = folderDisplayName.replace('/', fileSeparatorChar);
 
         String formFileName = folderDisplayName + getFormFileName();
 
@@ -456,11 +455,11 @@ import org.openide.loaders.DataObjectNotFoundException;
 
             fo = BrowseFolders.showDialog(new SourceGroup[]{group},
                     project,
-                    tfFolder.getText().replace(File.separatorChar, '/')); // NOI18N
+                    tfFolder.getText().replace(fileSeparatorChar, '/')); // NOI18N
 
             if (fo != null && fo.isFolder()) {
                 String relPath = FileUtil.getRelativePath(group.getRootFolder(), fo);
-                tfFolder.setText(relPath.replace('/', File.separatorChar)); // NOI18N
+                tfFolder.setText(relPath.replace('/', fileSeparatorChar)); // NOI18N
             }
         } else if (cbLocation == e.getSource()) {
             updateCreatedFile();

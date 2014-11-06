@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
@@ -102,7 +101,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         assert project != null;
         
         projectTextField.setText(getProjectDisplayName(project));
-        
+
         Sources sources = ProjectUtils.getSources( project );
                         
         folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
@@ -184,9 +183,9 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         
         if ( folderName.length() == 0 ) {
             return "";
-        }
+        } 
         else {           
-            return folderName.replace( File.separatorChar, '/' ); // NOI18N
+            return folderName.replace( fileSeparatorChar, '/' ); // NOI18N
         }
     }
     
@@ -205,10 +204,10 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         FileObject root = getTargetGroup().getRootFolder();
         String folderName = field.getText().trim();
         String createdFileName = root.getPath() +
-            ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
+            ( folderName.startsWith("/") || folderName.startsWith( fileSeparator ) ? "" : "/" ) + // NOI18N
             folderName +
-            ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" );  // NOI18N
-        return createdFileName.replace( '/', File.separatorChar );
+            ( folderName.endsWith("/") || folderName.endsWith( fileSeparator ) || folderName.length() == 0 ? "" : "/" );  // NOI18N
+        return createdFileName.replace( '/', fileSeparatorChar );
     }
 
     @Override
@@ -240,7 +239,7 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         if ( folderName.length() == 0 ) {
             return "";
         } else {
-            return folderName.replace( File.separatorChar, '/' ); // NOI18N
+            return folderName.replace( fileSeparatorChar, '/' ); // NOI18N
         }
     }
 
@@ -558,21 +557,21 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
             SourceGroup group = getTargetGroup();
             FileObject fo = BrowseFolders.showDialog( new SourceGroup[] { group },
                                            project, 
-                                           folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
+                                           folderTextField.getText().replace( fileSeparatorChar, '/' ) ); // NOI18N
                         
             if ( fo != null && fo.isFolder() ) {
                 String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
-                folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
+                folderTextField.setText( relPath.replace( '/', fileSeparatorChar ) ); // NOI18N
             }                        
         } else if ( headerBrowseButton == e.getSource() ) {
             SourceGroup group = getTargetGroup();
             FileObject fo = BrowseFolders.showDialog( new SourceGroup[] { group },
                                            project,
-                                           headerFolderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
+                                           headerFolderTextField.getText().replace( fileSeparatorChar, '/' ) ); // NOI18N
 
             if ( fo != null && fo.isFolder() ) {
                 String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
-                headerFolderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
+                headerFolderTextField.setText( relPath.replace( '/', fileSeparatorChar ) ); // NOI18N
             }
         } else if ( locationComboBox == e.getSource() )  {
             updateCreatedFile();

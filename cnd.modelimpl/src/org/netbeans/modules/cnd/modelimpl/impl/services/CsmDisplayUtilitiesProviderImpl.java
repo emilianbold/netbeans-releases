@@ -248,13 +248,19 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
                 itemTextBuilder.append(type.getClassifierText()); 
             }
             // Append other qualifiers until reference is reached
+            boolean needSpace = true;
             while (qual != null && !Qualificator.REFERENCE.equals(qual) && !Qualificator.RVALUE_REFERENCE.equals(qual)) {
-                appendQual(itemTextBuilder.append(SPACE), qual);
-                qual = qualIter.hasPrevious() ? qualIter.previous() : null;
+                if (needSpace) {
+                    itemTextBuilder.append(SPACE);
+                }
+                appendQual(itemTextBuilder, qual);
+                Qualificator prev = qualIter.hasPrevious() ? qualIter.previous() : null;
+                needSpace = isSpaceRequired(qual, prev);
+                qual = prev;
             }
             // if there was reference, then add it
-            if (qual != null) {
-                appendQual(itemTextBuilder.append(SPACE), qual);
+            if (qual != null) {     
+                appendQual(needSpace ? itemTextBuilder.append(SPACE) : itemTextBuilder, qual);
             }
             
             return itemTextBuilder.toString();
@@ -312,6 +318,10 @@ public final class CsmDisplayUtilitiesProviderImpl extends CsmDisplayUtilitiesPr
         }
         return txt.toString();
     }
+    
+    private static boolean isSpaceRequired(Qualificator current, Qualificator next) {
+        return Qualificator.CONST.equals(current) || Qualificator.CONST.equals(next);
+    }    
 
     private static String getHtmlizedString(String key, CharSequence value) {
         return getString(key, htmlize(value));

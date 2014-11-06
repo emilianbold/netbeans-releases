@@ -104,6 +104,9 @@ class NonVirtualDestructor extends AbstractCodeAudit {
     private void visit(CsmMember csmMember, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         if (CsmKindUtilities.isDestructor(csmMember)) {
             CsmMethod method = (CsmMethod)csmMember;
+            if (!request.getFile().equals(method.getContainingFile())) {
+                return;
+            }
             if (!CsmVirtualInfoQuery.getDefault().isVirtual(method)) {
                 if (!CsmTypeHierarchyResolver.getDefault().getSubTypes(method.getContainingClass(), true).isEmpty()) {
                     String message = NbBundle.getMessage(NonVirtualDestructor.class, "NonVirtualDestructor.message"); // NOI18N
