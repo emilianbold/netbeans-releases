@@ -251,6 +251,7 @@ public final class V8Debugger {
         rl.lock();
         try {
             f = currentFrame;
+            //LOG.fine("getCurrentFrame(): currentFrame = "+f+", currentCallStack = "+currentCallStack);
             if (f == null && currentCallStack != null) {
                 rl.unlock();
                 rl = null;
@@ -268,6 +269,7 @@ public final class V8Debugger {
                     }
                 }
             }
+            //LOG.fine("  getCurrentFrame(): f = "+f+", isSuspended() = "+isSuspended());
             if (f == null && isSuspended()) {
                 final CallFrame[] fRef = new CallFrame[] { null };
                 if (rl != null) {
@@ -320,6 +322,7 @@ public final class V8Debugger {
                 rl.unlock();
             }
         }
+        //LOG.fine("getCurrentFrame(): return "+f);
         return f;
     }
 
@@ -329,7 +332,7 @@ public final class V8Debugger {
         rl.lock();
         try {
             cs = currentCallStack;
-            //LOG.fine("getCurrentCallStack(): currentCallStack = "+cs);
+            //LOG.fine("getCurrentCallStack(): currentCallStack = "+cs+", isSuspended() = "+isSuspended());
             if (cs == null && isSuspended()) {
                 final CallStack[] csRef = new CallStack[] { null };
                 rl.unlock();
@@ -516,7 +519,14 @@ public final class V8Debugger {
     }
 
     private void handleEvent(V8Event event) {
-        notifySuspended(event.isRunning().getValueOr(true));
+        PropertyBoolean running = event.isRunning();
+        V8Event.Kind eventKind = event.getKind();
+        if (running.hasValue()) {
+            notifySuspended(!event.isRunning().getValue());
+        } else if (eventKind == V8Event.Kind.Break ||
+                   eventKind == V8Event.Kind.Exception) {
+            notifySuspended(true);
+        }
         PropertyBoolean success = event.getSuccess();
         if (success.hasValue() && !success.getValue() && event.getErrorMessage() != null) {
             // an error is reported
@@ -524,7 +534,7 @@ public final class V8Debugger {
             DialogDisplayer.getDefault().notify(error);
             return ;
         }
-        switch (event.getKind()) {
+        switch (eventKind) {
             case AfterCompile:
                 AfterCompileEventBody aceb = (AfterCompileEventBody) event.getBody();
                 V8Script script = aceb.getScript();
