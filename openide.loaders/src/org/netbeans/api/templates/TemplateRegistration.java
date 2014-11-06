@@ -139,4 +139,11 @@ public @interface TemplateRegistration {
      * @since 7.56
      */
     String targetName() default "";
+    
+    /** Location of the HTML page that should be used as a user interface
+     * for the wizard while instantiating this template.
+     * 
+     * @return location to a resource with HTML page
+     */
+    String page() default "";
 }
