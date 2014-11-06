@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.awt.Component;
-import java.io.File;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -66,7 +65,9 @@ import org.openide.util.NbBundle;
  */
 public abstract class CndPanelGUI  extends javax.swing.JPanel implements DocumentListener {
 
-    protected Project project;
+    protected final Project project;
+    protected final char fileSeparatorChar;
+    protected final String fileSeparator;
     protected SourceGroup[] folders;
 
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
@@ -76,6 +77,8 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
     public CndPanelGUI(Project project, SourceGroup[] folders) {
         this.project = project;
         this.folders = folders;
+        fileSeparatorChar = FileSystemProvider.getFileSeparatorChar(project.getProjectDirectory());
+        fileSeparator = ""+fileSeparatorChar;
     }
 
     protected final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -140,7 +143,7 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
         return groups[0];
     }
     
-    protected static String getRelativeNativeName( FileObject root, FileObject folder ) {
+    protected String getRelativeNativeName( FileObject root, FileObject folder ) {
         if (root == null) {
             throw new NullPointerException("null root passed to getRelativeNativeName"); // NOI18N
         }
@@ -154,7 +157,7 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
             path = FileUtil.getRelativePath( root, folder );            
         }
         
-        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
+        return path == null ? "" : path.replace( '/', fileSeparatorChar ); // NOI18N
     }
 
     protected static String generateUniqueSuffix(FileObject folder, String prefix, String... extensions) {
@@ -178,7 +181,7 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
         return NbBundle.getMessage( CndPanelGUI.class, name);
     }
 
-    protected static class GroupCellRenderer extends JLabel implements ListCellRenderer {
+    protected final class GroupCellRenderer extends JLabel implements ListCellRenderer {
     
         public GroupCellRenderer() {
             setOpaque( true );
@@ -191,7 +194,7 @@ public abstract class CndPanelGUI  extends javax.swing.JPanel implements Documen
                 FileObject rootFolder = group.getRootFolder();
                 String displayName = rootFolder.getPath();
                 if (FileSystemProvider.getExecutionEnvironment(rootFolder).isLocal()) {
-                    displayName = displayName.replace('/', File.separatorChar);
+                    displayName = displayName.replace('/', fileSeparatorChar);
                 }
                 setText(displayName);                
                 setIcon( group.getIcon( false ) );
