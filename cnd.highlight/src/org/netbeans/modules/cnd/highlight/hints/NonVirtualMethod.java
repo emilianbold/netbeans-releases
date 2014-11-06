@@ -107,6 +107,9 @@ class NonVirtualMethod extends AbstractCodeAudit {
     private void visit(CsmMember csmMember, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         if (CsmKindUtilities.isMethod(csmMember) && !CsmKindUtilities.isDestructor(csmMember) && !CsmKindUtilities.isConstructor(csmMember)) {
             CsmMethod method = (CsmMethod)csmMember;
+            if (!request.getFile().equals(method.getContainingFile())) {
+                return;
+            }
             CsmVirtualInfoQuery.CsmOverriddenChain overriddenChain = CsmVirtualInfoQuery.getDefault().getOverriddenChain(method);
             if (!overriddenChain.getThisMethod().isVirtual() &&
                 (overriddenChain.getBaseMethods().size() > 0 || overriddenChain.getDerivedMethods().size() > 0)) {

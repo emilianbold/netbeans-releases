@@ -305,6 +305,10 @@ public final class CndParserFactory extends ParserFactory {
         @Override
         public void parserIdle() {
         }
+
+        @Override
+        public void fileRemoved(CsmFile file) {
+        }
     }
 
     public static final void firePropertyChanged() {
