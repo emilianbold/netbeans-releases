@@ -84,8 +84,9 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     @Override
     public final URL getConnectionURL() {
         try {
-            if (indexHtmlLocation == null)
+            if (indexHtmlLocation == null || indexHtmlLocation.isEmpty()) {
                 return null;
+            }
             return new URL(indexHtmlLocation);
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
