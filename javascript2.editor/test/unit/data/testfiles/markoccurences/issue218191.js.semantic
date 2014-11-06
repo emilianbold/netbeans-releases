@@ -3,17 +3,17 @@ var |>GLOBAL:Core<| = |>GLOBAL:Core<| || {};
 |>GLOBAL:Core<|.needModules(function() {
     "use strict";
 
-    var REGEXP = /[+]?\d{1,20}$/; // REGEXP marked as unused
+    var |>LOCAL_VARIABLE_DECLARATION:REGEXP<| = /[+]?\d{1,20}$/; // REGEXP marked as unused
 
     |>GLOBAL:Core<|.|>CLASS:Test<| = {
         |>METHOD:test<|: function(value) {
-            var fieldType; // fieldType marked as unused
+            var |>LOCAL_VARIABLE_DECLARATION:fieldType<|; // fieldType marked as unused
 
-            alert(REGEXP.test(value));
+            alert(|>LOCAL_VARIABLE:REGEXP<|.test(value));
 
-            switch (fieldType) {
+            switch (|>LOCAL_VARIABLE:fieldType<|) {
                 case "test":
-                    alert(REGEXP.test(value));
+                    alert(|>LOCAL_VARIABLE:REGEXP<|.test(value));
                     break;
             }
         }

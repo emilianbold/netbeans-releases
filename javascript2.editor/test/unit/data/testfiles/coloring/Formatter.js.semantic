@@ -43,11 +43,11 @@ var |>GLOBAL:formatter<| = {
      * @type String
      */
     |>METHOD:addSpace<|: function(){
-        var space = "";
-        for(var i = 0; i < this.|>FIELD:indent<|; i++) {
-            space += "&nbsp;";
+        var |>LOCAL_VARIABLE_DECLARATION:space<| = "";
+        for(var |>LOCAL_VARIABLE_DECLARATION:i<| = 0; |>LOCAL_VARIABLE:i<| < this.|>FIELD:indent<|; |>LOCAL_VARIABLE:i<|++) {
+            |>LOCAL_VARIABLE:space<| += "&nbsp;";
         }
-        return space;
+        return |>LOCAL_VARIABLE:space<|;
     },
     
     |>METHOD:print<|: function (text) {
@@ -56,30 +56,30 @@ var |>GLOBAL:formatter<| = {
 
     |>METHOD:printCode<| : function(code) {
 
-        var text = "" + code;
-        text = "<pre>" + code + "</pre>";
-        var textParts = text.split("\"");
-        var number = 0;
-        if (textParts.length > 1){
-            text = "";
-            for (var i = 0; i < textParts.length; i++) {
-                if (number == 0) {
-                    text += textParts[i] + "<font color='#ce7b00'>\"";
-                    number = 1;
+        var |>LOCAL_VARIABLE_DECLARATION:text<| = "" + code;
+        |>LOCAL_VARIABLE:text<| = "<pre>" + code + "</pre>";
+        var |>LOCAL_VARIABLE_DECLARATION:textParts<| = |>LOCAL_VARIABLE:text<|.split("\"");
+        var |>LOCAL_VARIABLE_DECLARATION:number<| = 0;
+        if (|>LOCAL_VARIABLE:textParts<|.length > 1){
+            |>LOCAL_VARIABLE:text<| = "";
+            for (var |>LOCAL_VARIABLE_DECLARATION:i<| = 0; |>LOCAL_VARIABLE:i<| < |>LOCAL_VARIABLE:textParts<|.length; |>LOCAL_VARIABLE:i<|++) {
+                if (|>LOCAL_VARIABLE:number<| == 0) {
+                    |>LOCAL_VARIABLE:text<| += |>LOCAL_VARIABLE:textParts<|[|>LOCAL_VARIABLE:i<|] + "<font color='#ce7b00'>\"";
+                    |>LOCAL_VARIABLE:number<| = 1;
                 } else {
-                    text += textParts[i]+ "\"</font>"; 
-                    number = 0;
+                    |>LOCAL_VARIABLE:text<| += |>LOCAL_VARIABLE:textParts<|[|>LOCAL_VARIABLE:i<|]+ "\"</font>"; 
+                    |>LOCAL_VARIABLE:number<| = 0;
                 }
             }
         }
         
-        text = text.replace(/function/g, "<font color='blue'>function</font>");
-        text = text.replace(/if/g, "<font color='blue'>if</font>");
-        text = text.replace(/return/g, "<font color='blue'>return</font>");
-        text = text.replace(/new/g, "<font color='blue'>new</font>");
-        text = text.replace(/var/g, "<font color='blue'>var</font>");
+        |>LOCAL_VARIABLE:text<| = |>LOCAL_VARIABLE:text<|.replace(/function/g, "<font color='blue'>function</font>");
+        |>LOCAL_VARIABLE:text<| = |>LOCAL_VARIABLE:text<|.replace(/if/g, "<font color='blue'>if</font>");
+        |>LOCAL_VARIABLE:text<| = |>LOCAL_VARIABLE:text<|.replace(/return/g, "<font color='blue'>return</font>");
+        |>LOCAL_VARIABLE:text<| = |>LOCAL_VARIABLE:text<|.replace(/new/g, "<font color='blue'>new</font>");
+        |>LOCAL_VARIABLE:text<| = |>LOCAL_VARIABLE:text<|.replace(/var/g, "<font color='blue'>var</font>");
 
-        |>GLOBAL:document<|.write(text);
+        |>GLOBAL:document<|.write(|>LOCAL_VARIABLE:text<|);
         this.println("");
     }
 

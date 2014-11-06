@@ -45,12 +45,12 @@ var |>GLOBAL:testId<| = 10;
 
 var |>GLOBAL:furniture<| = {
     |>METHOD:getDescription<|: function () {
-        var param = arguments[0];
-        |>GLOBAL:formatter<|.println("color: " + param.color);
-        |>GLOBAL:formatter<|.println("count of legs: " + param.legs);
-        |>GLOBAL:formatter<|.println("name: " + param.name);
+        var |>LOCAL_VARIABLE_DECLARATION:param<| = arguments[0];
+        |>GLOBAL:formatter<|.println("color: " + |>LOCAL_VARIABLE:param<|.color);
+        |>GLOBAL:formatter<|.println("count of legs: " + |>LOCAL_VARIABLE:param<|.legs);
+        |>GLOBAL:formatter<|.println("name: " + |>LOCAL_VARIABLE:param<|.name);
         |>GLOBAL:formatter<|.println("testId: " + |>GLOBAL:testId<|);
-        param.callMaker();
+        |>LOCAL_VARIABLE:param<|.callMaker();
     }
 }
 
