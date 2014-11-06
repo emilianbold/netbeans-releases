@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript.nodejs.ui;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -50,11 +51,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import static javax.swing.Action.NAME;
+import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileUtil;
@@ -77,15 +83,6 @@ public final class NpmLibraries {
         return new NpmLibrariesNodeFactory();
     }
 
-    static NpmDependencies getDependencies(PackageJson packageJson) {
-        Map<String, String> dependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_DEPENDENCIES);
-        Map<String, String> devDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_DEV_DEPENDENCIES);
-        Map<String, String> peerDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_PEER_DEPENDENCIES);
-        Map<String, String> optionalDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_OPTIONAL_DEPENDENCIES);
-        return new NpmDependencies(dependencies, devDependencies, peerDependencies, optionalDependencies);
-    }
-
-
     //~ Inner classes
 
     private static final class NpmLibrariesNodeFactory implements NodeFactory {
@@ -93,20 +90,22 @@ public final class NpmLibraries {
         @Override
         public NodeList<?> createNodes(Project project) {
             assert project != null;
-            return new NpmLibrariesNodeList(new PackageJson(project.getProjectDirectory()));
+            return new NpmLibrariesNodeList(project);
         }
 
     }
 
     private static final class NpmLibrariesNodeList implements NodeList<Node>, PropertyChangeListener {
 
+        private final Project project;
         private final PackageJson packageJson;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
-        NpmLibrariesNodeList(PackageJson packageJson) {
-            assert packageJson != null;
-            this.packageJson = packageJson;
+        NpmLibrariesNodeList(Project project) {
+            assert project != null;
+            this.project = project;
+            packageJson = new PackageJson(project.getProjectDirectory());
         }
 
         @Override
@@ -115,7 +114,7 @@ public final class NpmLibraries {
             if (dependencies.isEmpty()) {
                 return Collections.<Node>emptyList();
             }
-            return Collections.<Node>singletonList(new NpmLibrariesNode(dependencies));
+            return Collections.<Node>singletonList(new NpmLibrariesNode(project, dependencies));
         }
 
         @Override
@@ -157,6 +156,14 @@ public final class NpmLibraries {
             changeSupport.fireChange();
         }
 
+        private static NpmDependencies getDependencies(PackageJson packageJson) {
+            Map<String, String> dependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_DEPENDENCIES);
+            Map<String, String> devDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_DEV_DEPENDENCIES);
+            Map<String, String> peerDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_PEER_DEPENDENCIES);
+            Map<String, String> optionalDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_OPTIONAL_DEPENDENCIES);
+            return new NpmDependencies(dependencies, devDependencies, peerDependencies, optionalDependencies);
+        }
+
     }
 
     private static final class NpmLibrariesNode extends AbstractNode {
@@ -164,11 +171,14 @@ public final class NpmLibraries {
         @StaticResource
         private static final String LIBRARIES_BADGE = "org/netbeans/modules/javascript/nodejs/ui/resources/libraries-badge.png"; // NOI18N
 
+        private final Project project;
         private final Node iconDelegate;
 
 
-        NpmLibrariesNode(final NpmDependencies dependencies) {
+        NpmLibrariesNode(Project project, NpmDependencies dependencies) {
             super(new NpmLibrariesChildren(dependencies));
+            assert project != null;
+            this.project = project;
             iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         }
 
@@ -186,6 +196,13 @@ public final class NpmLibraries {
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new CustomizeLibrariesAction(project),
+            };
         }
 
     }
@@ -207,7 +224,6 @@ public final class NpmLibraries {
 
 
         NpmLibrariesChildren(NpmDependencies dependencies) {
-            super(true);
             assert dependencies != null;
             this.dependencies = dependencies;
         }
@@ -366,6 +382,30 @@ public final class NpmLibraries {
         @Override
         public int compareTo(NpmLibraryInfo other) {
             return name.compareToIgnoreCase(other.name);
+        }
+
+    }
+
+    private static final class CustomizeLibrariesAction extends AbstractAction {
+
+        private final Project project;
+
+
+        @NbBundle.Messages("CustomizeLibrariesAction.name=Properties")
+        CustomizeLibrariesAction(Project project) {
+            assert project != null;
+
+            this.project = project;
+
+            String name = Bundle.CustomizeLibrariesAction_name();
+            putValue(NAME, name);
+            putValue(SHORT_DESCRIPTION, name);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // XXX
+            project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("NPM_LIBRARIES", null); // NOI18N
         }
 
     }
