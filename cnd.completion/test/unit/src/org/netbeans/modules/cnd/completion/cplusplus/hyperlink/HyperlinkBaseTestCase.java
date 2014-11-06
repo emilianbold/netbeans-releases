@@ -155,9 +155,9 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
             assertEquals("Different target *LINE* positions " + positions, destGoldenLine, resultLine);
             assertEquals("Different target *COLUMN* positions " + positions, destGoldenColumn, resultColumn);
         }
-    }
+    }    
     
-    private String toString(String file, int line, int column) {
+    protected String toString(String file, int line, int column) {
         return "[" + file + ":" + "Line-" + line +"; Col-" + column + "]";
     }
     
