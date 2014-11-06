@@ -69,9 +69,9 @@ public class V8DebuggerSessionProvider extends SessionProvider {
                         "CTL_V8LocalAttach=Node.js at port {0}"})
     public static String getSessionName(@NullAllowed String host, int port) {
         if (host != null && !host.isEmpty()) {
-            return Bundle.CTL_V8RemoteAttach(host, port);
+            return Bundle.CTL_V8RemoteAttach(host, Integer.toString(port));
         } else {
-            return Bundle.CTL_V8LocalAttach(port);
+            return Bundle.CTL_V8LocalAttach(Integer.toString(port));
         }
     }
     

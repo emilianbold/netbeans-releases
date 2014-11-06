@@ -384,7 +384,13 @@ public final class DebuggerManager implements ContextProvider {
         
         if (sessionToStart != null) {
             GestureSubmitter.logDebugStart(sessionToStart, engines);
-            setCurrentSession (sessionToStart);
+            if (currentSession == null) {
+                // Set the new session as current only when there is no existing
+                // running session. The current session can be important
+                // and it's the debugger's responsibility to set itself as current
+                // when it thinks it needs an attention.
+                setCurrentSession (sessionToStart);
+            }
         }
 
         k = engines.size ();
