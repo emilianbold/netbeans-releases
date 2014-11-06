@@ -73,7 +73,7 @@ public final class NpmLibraries {
     }
 
     @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 600)
-    public static NodeFactory createNpmLibraries() {
+    public static NodeFactory forHtml5Project() {
         return new NpmLibrariesNodeFactory();
     }
 
