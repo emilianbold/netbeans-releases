@@ -65,6 +65,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -82,6 +83,11 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
     @StaticResource(searchClasspath = true)
     private static final String ICON_CALL_STACK =
             "org/netbeans/modules/debugger/resources/threadsView/call_stack_16.png";
+    @StaticResource(searchClasspath = true)
+    private static final String ICON_EMPTY =
+            "org/netbeans/modules/debugger/resources/empty.gif";
+    
+    private static final Object DBG_RUNNING_NODE = new Object();
     
     private final V8Debugger dbg;
     
@@ -104,6 +110,8 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
                 if (cs != null) {
                     return cs.createCallFrames();
                 }
+            } else {
+                return new Object[] { DBG_RUNNING_NODE };
             }
             return EMPTY_CHILDREN;
         }
@@ -116,6 +124,9 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
             return false;
         }
         if (node instanceof CallStack) {
+            return true;
+        }
+        if (node == DBG_RUNNING_NODE) {
             return true;
         }
         throw new UnknownTypeException(node);
@@ -164,10 +175,13 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
         if (node instanceof CallFrame) {
             return ICON_CALL_STACK;
+        } else if (node == DBG_RUNNING_NODE) {
+            return ICON_EMPTY;
         }
         throw new UnknownTypeException(node);
     }
 
+    @NbBundle.Messages("CTL_DebuggerRunning=Program is Running...")
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof CallFrame) {
@@ -192,6 +206,8 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
                    ":"+line+":"+column+")";
             //text += ":"+line+":"+column;
             return text;
+        } else if (node == DBG_RUNNING_NODE) {
+            return Bundle.CTL_DebuggerRunning();
         }
         throw new UnknownTypeException(node);
     }
@@ -259,6 +275,7 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
         throw new UnsupportedOperationException("Not to be called.");
     }
 
+    @NbBundle.Messages("CTL_DebuggerRunningDescr=No stack trace while program is running.")
     @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
         if (node instanceof CallFrame) {
@@ -269,6 +286,8 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
                 text = text.replace("\\n", "\n");
             }
             return text;
+        } else if (node == DBG_RUNNING_NODE) {
+            return Bundle.CTL_DebuggerRunningDescr();
         }
         throw new UnknownTypeException(node);
     }
