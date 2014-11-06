@@ -70,6 +70,7 @@ import org.netbeans.modules.javascript2.requirejs.editor.EditorUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.FSCompletionUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndexer;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -133,12 +134,13 @@ public class DefineInterceptor implements FunctionInterceptor {
                 if (posibleFunc != null && posibleFunc instanceof JsFunction) {
                     JsFunction defFunc = (JsFunction) posibleFunc;
                     Source source = Source.create(fo);
+                    Snapshot snapshot = source.createSnapshot();
                     List<String> paths = new ArrayList<String>();
-                    if (modules != null) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), modules.getOffset());
+                    if (modules != null && snapshot != null) {
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot.getTokenHierarchy(), modules.getOffset());
                         if (ts == null) {
                             return Collections.emptyList();
-                        }
+                        } 
                         ts.move(modules.getOffset());
                         if (ts.moveNext()) {
                             Token<? extends JsTokenId> token = ts.token();

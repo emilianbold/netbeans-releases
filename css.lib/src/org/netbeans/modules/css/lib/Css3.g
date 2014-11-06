@@ -374,7 +374,7 @@ importItem
         //multiple imports in one directive
         {isScssSource()}? IMPORT_SYM ws? resourceIdentifier (ws? COMMA ws? resourceIdentifier)* ((ws? mediaQueryList)=>ws? mediaQueryList)?
         |
-        {isLessSource()}? IMPORT_SYM ws? (LPAREN {tokenNameIs(new String[]{"LESS", "CSS", "REFERENCE", "INLINE", "ONCE", "MULTIPLE"})}? IDENT /* 'LESS' | 'CSS' | 'REFERENCE' | 'INLINE' | 'ONCE' | 'MULTIPLE' */  RPAREN ws?)? resourceIdentifier ((ws? mediaQueryList)=>ws? mediaQueryList)?
+        {isLessSource()}? IMPORT_SYM ws? (LPAREN less_import_types RPAREN ws?)? resourceIdentifier ((ws? mediaQueryList)=>ws? mediaQueryList)?
     ;
 media
     : MEDIA_SYM ws?
@@ -422,13 +422,13 @@ mediaQueryList
 
 mediaQuery
  :
-    (mediaQueryOperator ws? )?  mediaType ( ws? {tokenNameEquals("and")}? IDENT /* AND */ ws? mediaExpression )*
-    | mediaExpression ( ws? {tokenNameEquals("and")}? IDENT /* AND */ ws? mediaExpression )*
+    (mediaQueryOperator ws? )?  mediaType ( ws? key_and ws? mediaExpression )*
+    | mediaExpression ( ws? key_and ws? mediaExpression )*
     | {isLessSource()}? cp_variable
  ;
 
 mediaQueryOperator
- 	: {tokenNameEquals("only")}? IDENT /* ONLY */ | NOT
+ 	: key_only | NOT
  	;
 
 mediaType
@@ -1044,7 +1044,7 @@ cp_expression
 
 cp_expression_operator
     :
-    {tokenNameEquals("or")}? IDENT /* OR */ | {tokenNameEquals("and")}? IDENT /* AND */  | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
+    key_or | key_and  | CP_EQ | CP_NOT_EQ | LESS | LESS_OR_EQ | GREATER | GREATER_OR_EQ
     ;
 
 cp_expression_atom
@@ -1167,7 +1167,7 @@ cp_arg
 //.mixin (@a) "when (@a > 10), (@a < -10)" { ... }
 less_mixin_guarded
     :
-    {tokenNameEquals("when")}? IDENT /* WHEN */ ws? less_condition (ws? (COMMA | {tokenNameEquals("and")}? IDENT /* AND */) ws? less_condition)*
+    less_when ws? less_condition (ws? (COMMA | key_and) ws? less_condition)*
     ;
 
 //.truth (@a) when (@a) { ... }
@@ -1359,6 +1359,31 @@ sass_content
     SASS_CONTENT
     ;
 
+less_import_types: 
+    {tokenNameIs(new String[]{"LESS", "CSS", "REFERENCE", "INLINE", "ONCE", "MULTIPLE"})}? IDENT
+    ; catch[ RecognitionException rce] {
+        reportError(rce);
+        input.consume();
+    }
+
+less_when:
+    {tokenNameEquals("when")}? IDENT
+    ;
+
+key_and: 
+    {tokenNameEquals("and")}? IDENT
+    ;
+
+key_or:
+    {tokenNameEquals("or")}? IDENT
+    ;
+
+key_only:
+    {tokenNameEquals("only")}? IDENT
+    ;
+
+
+    
 //*** END OF LESS SYNTAX ***
 
 // ==============================================================
