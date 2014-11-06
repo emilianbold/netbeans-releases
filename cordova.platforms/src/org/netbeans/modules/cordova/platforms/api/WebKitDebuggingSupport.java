@@ -47,7 +47,6 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.Device;
 import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
@@ -255,7 +254,10 @@ public final class WebKitDebuggingSupport {
         }
 
         DataObject dObject = context.lookup(DataObject.class);
-        FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
+        FileObject fileObject = dObject == null ? ClientProjectUtilities.getStartFile(p) : dObject.getPrimaryFile();
+        if (fileObject == null) {
+            return null;
+        }
         //TODO: hack to workaround #221791
         return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress()); // NOI18N
     }
