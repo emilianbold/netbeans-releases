@@ -24,6 +24,8 @@
     <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
 
     <fontcolor name="mod-unused" waveUnderlined="999999"/>
+    <fontcolor name="mod-local-variable" default="identifier"/>
+    <fontcolor name="mod-local-variable-declaration" default="identifier"/>
     
     <!-- COMMENTS fonts&colors -->
     <fontcolor name="COMMENT" default="comment"/>

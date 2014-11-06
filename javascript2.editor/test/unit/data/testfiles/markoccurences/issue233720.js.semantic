@@ -1,8 +1,8 @@
 function |>METHOD:ChartP3<|(|>UNUSED:container<|) {
 
     function |>METHOD:buildData<|(|>UNUSED:records<|) {
-        var indexOfBeta = getIndexOfLatestBeta();
-        |>GLOBAL:window<|.|>GLOBAL:console<|.log(indexOfBeta);
+        var |>LOCAL_VARIABLE_DECLARATION:indexOfBeta<| = getIndexOfLatestBeta();
+        |>GLOBAL:window<|.|>GLOBAL:console<|.log(|>LOCAL_VARIABLE:indexOfBeta<|);
     }
 
     function |>METHOD:getIndexOfLatestBeta<|() { // problem here

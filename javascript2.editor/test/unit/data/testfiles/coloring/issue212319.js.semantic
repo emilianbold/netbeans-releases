@@ -8,21 +8,21 @@ var |>GLOBAL:gmap<| = {
                     |>GLOBAL:google<|.maps.LatLngBounds();
         m.|>FIELD:lat<| = m.|>FIELD:lat<| * 57.2957795;
         m.|>FIELD:lng<| = m.|>FIELD:lng<| * 57.2957795;
-        var coords = new |>GLOBAL:google<|.maps.LatLng(m.|>FIELD:lat<|, m.|>FIELD:lng<|);
-        var marker = new |>GLOBAL:google<|.maps.Marker(coords);
-        marker.bindInfoWindowHtml(m.label);
-        |>GLOBAL:gmap<|.|>FIELD:markers<|.push(marker);
-        |>GLOBAL:gmap<|.|>FIELD:bounds<|.extend(coords);
+        var |>LOCAL_VARIABLE_DECLARATION:coords<| = new |>GLOBAL:google<|.maps.LatLng(m.|>FIELD:lat<|, m.|>FIELD:lng<|);
+        var |>LOCAL_VARIABLE_DECLARATION:marker<| = new |>GLOBAL:google<|.maps.Marker(|>LOCAL_VARIABLE:coords<|);
+        |>LOCAL_VARIABLE:marker<|.bindInfoWindowHtml(m.label);
+        |>GLOBAL:gmap<|.|>FIELD:markers<|.push(|>LOCAL_VARIABLE:marker<|);
+        |>GLOBAL:gmap<|.|>FIELD:bounds<|.extend(|>LOCAL_VARIABLE:coords<|);
     },
     |>METHOD:renderMap<|: function(map_id) {
         |>GLOBAL:gmap<|.|>FIELD:map<| = new
                 |>GLOBAL:google<|.maps.Map2(|>GLOBAL:document<|.getElementById(map_id));
-        var zoom = |>GLOBAL:gmap<|.|>FIELD:map<|.getBoundsZoomLevel(|>GLOBAL:gmap<|.|>FIELD:bounds<|);
-        if (zoom > 15) zoom = 15;
-        |>GLOBAL:gmap<|.|>FIELD:map<|.setCenter(|>GLOBAL:gmap<|.|>FIELD:bounds<|.getCenter(), zoom);
-        var i = 0;
-        for (i = 0; i < |>GLOBAL:gmap<|.|>FIELD:markers<|.length; i++) {
-            |>GLOBAL:gmap<|.|>FIELD:map<|.addOverlay(|>GLOBAL:gmap<|.|>FIELD:markers<|[i]);
+        var |>LOCAL_VARIABLE_DECLARATION:zoom<| = |>GLOBAL:gmap<|.|>FIELD:map<|.getBoundsZoomLevel(|>GLOBAL:gmap<|.|>FIELD:bounds<|);
+        if (|>LOCAL_VARIABLE:zoom<| > 15) |>LOCAL_VARIABLE:zoom<| = 15;
+        |>GLOBAL:gmap<|.|>FIELD:map<|.setCenter(|>GLOBAL:gmap<|.|>FIELD:bounds<|.getCenter(), |>LOCAL_VARIABLE:zoom<|);
+        var |>LOCAL_VARIABLE_DECLARATION:i<| = 0;
+        for (|>LOCAL_VARIABLE:i<| = 0; |>LOCAL_VARIABLE:i<| < |>GLOBAL:gmap<|.|>FIELD:markers<|.length; |>LOCAL_VARIABLE:i<|++) {
+            |>GLOBAL:gmap<|.|>FIELD:map<|.addOverlay(|>GLOBAL:gmap<|.|>FIELD:markers<|[|>LOCAL_VARIABLE:i<|]);
         }
         |>GLOBAL:gmap<|.|>FIELD:map<|.setUIToDefault();
     }

@@ -113,6 +113,7 @@ public final class ColoringManager {
         put("mod-global", GLOBAL);
         put("mod-interface", INTERFACE);
         put("mod-local-variable", LOCAL_VARIABLE);
+        put("mod-local-variable-declaration", LOCAL_VARIABLE_DECLARATION);
         put("mod-method", METHOD);
         put("mod-package-private", PACKAGE_PRIVATE);
         put("mod-parameter", PARAMETER);
@@ -125,6 +126,7 @@ public final class ColoringManager {
         put("mod-type-parameter-use", TYPE_PARAMETER_USE);
         put("mod-undefined", UNDEFINED);
         put("mod-unused", UNUSED);
+        
         
         COLORING_MAP.put(ColoringAttributes.UNUSED_SET, getColoring(ColoringAttributes.UNUSED_SET));
         COLORING_MAP.put(ColoringAttributes.FIELD_SET, getColoring(ColoringAttributes.FIELD_SET));
