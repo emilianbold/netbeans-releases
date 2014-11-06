@@ -622,10 +622,13 @@ public final class V8Debugger {
         private final Color sentColor = Color.GREEN.darker();
         private final Color receivedColor = Color.BLUE;
         private final InputOutput ioLogger = IOProvider.getDefault().getIO(Bundle.V8DebugProtocolPane(), false);
+        private final long startTime = System.currentTimeMillis();
 
         @Override
         public synchronized void sent(String str) {
             try {
+                long time = System.currentTimeMillis() - startTime;
+                ioLogger.getOut().append("Sent at "+(time/1000.0)+":");
                 IOColorPrint.print(ioLogger, str, sentColor);
                 ioLogger.getOut().println();
             } catch (IOException ex) {
@@ -636,6 +639,8 @@ public final class V8Debugger {
         @Override
         public synchronized void received(String str) {
             try {
+                long time = System.currentTimeMillis() - startTime;
+                ioLogger.getOut().append("Got at "+(time/1000.0)+":");
                 IOColorPrint.print(ioLogger, str, receivedColor);
                 ioLogger.getOut().println();
             } catch (IOException ex) {
