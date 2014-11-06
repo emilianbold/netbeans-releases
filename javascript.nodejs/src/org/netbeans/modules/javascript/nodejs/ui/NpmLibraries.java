@@ -55,7 +55,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileUtil;
@@ -93,7 +92,8 @@ public final class NpmLibraries {
 
         @Override
         public NodeList<?> createNodes(Project project) {
-            return new NpmLibrariesNodeList(NodeJsSupport.forProject(project).getPackageJson());
+            assert project != null;
+            return new NpmLibrariesNodeList(new PackageJson(project.getProjectDirectory()));
         }
 
     }
