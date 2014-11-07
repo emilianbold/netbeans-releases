@@ -1,13 +1,13 @@
 function |>METHOD:MyApplication<|() {
-    var |>UNUSED:self<| = this;
-    var connectionLess = ["undefinedAction", "about", "compass", "contacts", "addresses"];
-    var forceConnectionCheck = ["search", "directions", "showAddress"];
+    var |>LOCAL_VARIABLE_DECLARATION,UNUSED:self<| = this;
+    var |>LOCAL_VARIABLE_DECLARATION:connectionLess<| = ["undefinedAction", "about", "compass", "contacts", "addresses"];
+    var |>LOCAL_VARIABLE_DECLARATION:forceConnectionCheck<| = ["search", "directions", "showAddress"];
 
     function |>METHOD:checkOK<|(page) {
-        if (forceConnectionCheck.indexOf(page) > 0 ) {
+        if (|>LOCAL_VARIABLE:forceConnectionCheck<|.indexOf(page) > 0 ) {
             return false;
         }
-        if ( (connectionLess.indexOf(page) < 0)) {
+        if ( (|>LOCAL_VARIABLE:connectionLess<|.indexOf(page) < 0)) {
             return false;
         }
         return true;

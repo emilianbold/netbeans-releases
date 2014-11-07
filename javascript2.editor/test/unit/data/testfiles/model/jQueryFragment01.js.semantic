@@ -1,7 +1,7 @@
 var |>GLOBAL:globalProperty<| = "Some global property";
 (function() {
     
-var functionVar = "155";
+var |>LOCAL_VARIABLE_DECLARATION:functionVar<| = "155";
 var |>CLASS:jQuery<| = {};
 jQuery.|>CLASS:event<| = {
     |>FIELD:name<|: "testovaci object",
@@ -25,7 +25,7 @@ jQuery.|>CLASS:event<| = {
             |>GLOBAL:formatter<|.println("this.name: " + this.name);
             |>GLOBAL:formatter<|.println("jQuery.event.name: " + jQuery.event.|>FIELD:name<|);
             |>GLOBAL:formatter<|.println("globalPropery: " + |>GLOBAL:globalProperty<|);
-            |>GLOBAL:formatter<|.println("functionVar: " + functionVar);
+            |>GLOBAL:formatter<|.println("functionVar: " + |>LOCAL_VARIABLE:functionVar<|);
             |>GLOBAL:formatter<|.removeIndent(4);
             
         }

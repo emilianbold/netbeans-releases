@@ -67,6 +67,7 @@ public enum ColoringAttributes {
     GLOBAL,
     INTERFACE,
     LOCAL_VARIABLE,
+    LOCAL_VARIABLE_DECLARATION,
     MARK_OCCURRENCES,
     METHOD,
     PACKAGE_PRIVATE,

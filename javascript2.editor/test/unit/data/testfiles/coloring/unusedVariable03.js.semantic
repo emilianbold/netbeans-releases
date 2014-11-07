@@ -3,9 +3,9 @@
     domElement,
     className) // TODO move into some "domutils" class
   {
-    var func = (add)
+    var |>LOCAL_VARIABLE_DECLARATION:func<| = (add)
                  ? |>GLOBAL:adf<|.mf.internal.amx.addCSSClassName
                  : |>GLOBAL:adf<|.mf.internal.amx.removeCSSClassName;
 
-    return func(domElement, className);
+    return |>LOCAL_VARIABLE:func<|(domElement, className);
   };

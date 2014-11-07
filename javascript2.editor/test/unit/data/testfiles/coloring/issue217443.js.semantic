@@ -6,22 +6,22 @@ var |>GLOBAL:components<| = [];
   
 function |>METHOD:countComponentTables<|() { 
     |>GLOBAL:$<|(".sortable").each(function() { // each table
-        var index = 0;
-        var sums = new Array();
-        var id = |>GLOBAL:$<|(this).attr("id");
+        var |>LOCAL_VARIABLE_DECLARATION:index<| = 0;
+        var |>LOCAL_VARIABLE_DECLARATION:sums<| = new Array();
+        var |>LOCAL_VARIABLE_DECLARATION:id<| = |>GLOBAL:$<|(this).attr("id");
         |>GLOBAL:$<|(this).find("thead th").each(function() {
-            index++;
-            if (index > 1 && (!|>GLOBAL:$<|(this).attr("id") || |>GLOBAL:$<|(this).attr("id").indexOf("dummy") > -1))
-                sums.push(sumOfColumns(id, index, true));
+            |>LOCAL_VARIABLE:index<|++;
+            if (|>LOCAL_VARIABLE:index<| > 1 && (!|>GLOBAL:$<|(this).attr("id") || |>GLOBAL:$<|(this).attr("id").indexOf("dummy") > -1))
+                |>LOCAL_VARIABLE:sums<|.push(sumOfColumns(|>LOCAL_VARIABLE:id<|, |>LOCAL_VARIABLE:index<|, true));
 
         });
 
-        var tfoot = "<tfoot><tr class=\"bug_total_row\"><td>Total</td>";
-        for (var i = 0; i < sums.length; i++) {
-            tfoot += "<td>" + sums[i] + "</td>";
+        var |>LOCAL_VARIABLE_DECLARATION:tfoot<| = "<tfoot><tr class=\"bug_total_row\"><td>Total</td>";
+        for (var |>LOCAL_VARIABLE_DECLARATION:i<| = 0; |>LOCAL_VARIABLE:i<| < |>LOCAL_VARIABLE:sums<|.length; |>LOCAL_VARIABLE:i<|++) {
+            |>LOCAL_VARIABLE:tfoot<| += "<td>" + |>LOCAL_VARIABLE:sums<|[|>LOCAL_VARIABLE:i<|] + "</td>";
         }
 
-        |>GLOBAL:$<|(this).append(tfoot + "</tr></tfoot>");
+        |>GLOBAL:$<|(this).append(|>LOCAL_VARIABLE:tfoot<| + "</tr></tfoot>");
 
 
     });
