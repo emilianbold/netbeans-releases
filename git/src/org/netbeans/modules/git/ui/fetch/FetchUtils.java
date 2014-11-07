@@ -236,6 +236,15 @@ public final class FetchUtils {
         } catch (GitException ex) {
             Logger.getLogger(FetchUtils.class.getName()).log(Level.INFO, null, ex);
         }
+        if (checkActiveBranch && activeBranchToUpdate != null) {
+            // ask user if the current branch should be synced too.
+            if (NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    Bundle.MSG_SyncBranches_activeBranch(activeBranchToUpdate.getName(), activeBranchToUpdate.getTrackedBranch().getName()), 
+                    Bundle.LBL_SyncBranches_activeBranch(),
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE))) {
+                new BranchSynchronizer().syncBranches(repository, new String[] { activeBranchToUpdate.getName() }, true);
+            }
+        }
     }
 
     private static String findRemotePeer (List<String> fetchRefSpecs, GitBranch branch) {
