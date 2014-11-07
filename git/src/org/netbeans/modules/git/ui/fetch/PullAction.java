@@ -69,11 +69,14 @@ import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.client.ProgressDelegate;
 import org.netbeans.modules.git.ui.actions.ActionProgress;
 import org.netbeans.modules.git.ui.actions.ActionProgress.DefaultActionProgress;
+import org.netbeans.modules.git.ui.actions.ActionProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
+import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.rebase.RebaseAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -158,7 +161,7 @@ public class PullAction extends SingleRepositoryAction {
         return new DefaultActionProgress(supp);
     }
 
-    private class GitProgressSupportImpl extends GitProgressSupport {
+    private static class GitProgressSupportImpl extends GitProgressSupport {
 
         private final List<String> fetchRefSpecs;
         private final String branchToMerge;
@@ -218,22 +221,29 @@ public class PullAction extends SingleRepositoryAction {
                         FetchUtils.log(repository, fetchResult, getLogger());
                         if (!isCanceled()) {
                             setDisplayName(Bundle.MSG_PullAction_progress_syncBranches());
-                            FetchUtils.syncTrackingBranches(repository, fetchResult, GitProgressSupportImpl.this);
+                            FetchUtils.syncTrackingBranches(repository, fetchResult, GitProgressSupportImpl.this, GitProgressSupportImpl.this.getProgress(), false);
                         }
                         if (isCanceled() || branchToMerge == null) {
                             return null;
                         }
-                        Callable<ActionProgress> nextAction = getNextAction();
-                        if (nextAction == null) {
-                            cancel();
-                        } else {
-                            ActionProgress p = nextAction.call();
-                            if (p.isCanceled()) {
-                                cancel();
-                            } else if (p.isError()) {
-                                setError(true);
+                        new BranchSynchronizer(branchToMerge, repository, new BranchSynchronizer.GitProgressSupportDelegate() {
+
+                            @Override
+                            public GitClient getClient () throws GitException {
+                                return client;
                             }
-                        }
+
+                            @Override
+                            public OutputLogger getLogger () {
+                                return GitProgressSupportImpl.this.getLogger();
+                            }
+                            
+                            @Override
+                            public ProgressDelegate getProgress () {
+                                return GitProgressSupportImpl.this.getProgress();
+                            }
+                            
+                        }).execute();
                         return null;
                     }
                 }, repository);
@@ -246,11 +256,33 @@ public class PullAction extends SingleRepositoryAction {
                 GitUtils.headChanged(repository);
             }
         }
+    }
+    
+    public static final class BranchSynchronizer extends ActionProgressSupport {
         
-        private Callable<ActionProgress> getNextAction () {
+        public static interface GitProgressSupportDelegate extends ActionProgressSupport.GitProgressSupportDelegate {
+
+            public GitClient getClient () throws GitException;
+
+            public OutputLogger getLogger ();
+            
+        }
+        
+        private final GitProgressSupportDelegate delegate;
+        private final File repository;
+        private final String branchToMerge;
+
+        public BranchSynchronizer (String branchToMerge, File repository, GitProgressSupportDelegate delegate) {
+            super(delegate);
+            this.repository = repository;
+            this.branchToMerge = branchToMerge;
+            this.delegate = delegate;
+        }
+        
+        protected Callable<ActionProgress> getNextAction () {
             Callable<ActionProgress> nextAction = null;
             try {
-                GitClient client = getClient();
+                GitClient client = delegate.getClient();
                 String currentHeadId = null;
                 String branchId = null;
                 Map<String, GitBranch> branches = client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR);
@@ -316,16 +348,15 @@ public class PullAction extends SingleRepositoryAction {
 
             @Override
             public ActionProgress call () throws GitException {
-                GitClient client = getClient();
-                File repository = getRepositoryRoot();
-                setDisplayName(Bundle.MSG_PullAction_merging());
+                GitClient client = delegate.getClient();
+                delegate.getProgress().setDisplayName(Bundle.MSG_PullAction_merging());
                 MergeRevisionAction.MergeContext ctx = new MergeRevisionAction.MergeContext(branchToMerge, null);
-                MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, ctx, getLogger(), getProgressMonitor());
+                MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, ctx, delegate.getLogger(), delegate.getProgress().getProgressMonitor());
                 do {
                     ctx.setContinue(false);
-                    GitRepository.FastForwardOption ffOption = null;
+                    GitRepository.FastForwardOption ffOption = GitRepository.FastForwardOption.FAST_FORWARD;
                     try {
-                        GitMergeResult result = client.merge(branchToMerge, ffOption, getProgressMonitor());
+                        GitMergeResult result = client.merge(branchToMerge, ffOption, delegate.getProgress().getProgressMonitor());
                         mrp.processResult(result);
                         if (result.getMergeStatus() == GitMergeResult.MergeStatus.ALREADY_UP_TO_DATE
                                 || result.getMergeStatus() == GitMergeResult.MergeStatus.FAST_FORWARD
@@ -338,8 +369,8 @@ public class PullAction extends SingleRepositoryAction {
                         }
                         ctx.setContinue(mrp.resolveLocalChanges(ex.getConflicts()));
                     }
-                } while (ctx.isContinue() && !isCanceled());
-                return new ActionProgress.ActionResult(isCanceled(), true);
+                } while (ctx.isContinue() && !delegate.getProgress().isCanceled());
+                return new ActionProgress.ActionResult(delegate.getProgress().isCanceled(), true);
             }
 
         }
@@ -348,15 +379,14 @@ public class PullAction extends SingleRepositoryAction {
 
             @Override
             public ActionProgress call () throws GitException  {
-                setDisplayName(Bundle.MSG_PullAction_rebasing());
+                delegate.getProgress().setDisplayName(Bundle.MSG_PullAction_rebasing());
                 RebaseOperationType op = RebaseOperationType.BEGIN;
-                GitClient client = getClient();
-                File repository = getRepositoryRoot();
-                String origHead = client.log(GitUtils.HEAD, getProgressMonitor()).getRevision();
+                GitClient client = delegate.getClient();
+                String origHead = client.log(GitUtils.HEAD, delegate.getProgress().getProgressMonitor()).getRevision();
                 RebaseAction.RebaseResultProcessor rrp = new RebaseAction.RebaseResultProcessor(client, repository,
-                        branchToMerge, branchToMerge, origHead, getProgressSupport());
-                while (op != null && !isCanceled()) {
-                    GitRebaseResult result = client.rebase(op, branchToMerge, getProgressMonitor());
+                        branchToMerge, branchToMerge, origHead, delegate.getProgress(), delegate.getLogger());
+                while (op != null && !delegate.getProgress().isCanceled()) {
+                    GitRebaseResult result = client.rebase(op, branchToMerge, delegate.getProgress().getProgressMonitor());
                     rrp.processResult(result);
                     op = rrp.getNextAction();
                     if (op == null && (result.getRebaseStatus() == GitRebaseResult.RebaseStatus.FAST_FORWARD
@@ -367,12 +397,8 @@ public class PullAction extends SingleRepositoryAction {
                         return new ActionProgress.ActionResult(false, false);
                     }
                 }
-                return new ActionProgress.ActionResult(isCanceled(), true);
+                return new ActionProgress.ActionResult(delegate.getProgress().isCanceled(), true);
             }
-        }
-
-        private GitProgressSupport getProgressSupport () {
-            return this;
         }
     }
     

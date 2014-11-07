@@ -70,6 +70,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.client.ProgressDelegate;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsExecutor;
@@ -179,6 +180,7 @@ public class RebaseAction extends SingleRepositoryAction {
             @Override
             protected void perform () {
                 try {
+                    final ProgressDelegate progress = getProgress();
                     GitUtils.runWithoutIndexing(new Callable<Void>() {
                         @Override
                         public Void call () throws Exception {
@@ -197,7 +199,7 @@ public class RebaseAction extends SingleRepositoryAction {
                             }
                             GitClient client = getClient();
                             RebaseResultProcessor rrp = new RebaseResultProcessor(client, repository, lOnto, lUpstream, lSource,
-                                    getProgressSupport());
+                                    progress, getProgressSupport().getLogger());
                             RebaseOperationType nextAction = op;
                             while (nextAction != null && !isCanceled()) {
                                 GitRebaseResult result = client.rebase(nextAction, lOnto, getProgressMonitor());
@@ -307,16 +309,16 @@ public class RebaseAction extends SingleRepositoryAction {
         private final String origHead;
         private final String upstream;
         private RebaseOperationType nextAction;
-        private final GitProgressSupport supp;
+        private final ProgressDelegate progress;
         
         public RebaseResultProcessor (GitClient client, File repository, String onto, String upstream, String origHead,
-                GitProgressSupport supp) {
-            super(client, repository, onto, supp.getProgressMonitor());
+                ProgressDelegate progress, OutputLogger logger) {
+            super(client, repository, onto, progress.getProgressMonitor());
             this.origHead = origHead;
             this.onto = onto;
             this.upstream = upstream;
-            this.logger = supp.getLogger();
-            this.supp = supp;
+            this.logger = logger;
+            this.progress = progress;
         }
         
         @NbBundle.Messages({
@@ -493,7 +495,7 @@ public class RebaseAction extends SingleRepositoryAction {
             if (onto != null && upstream != null && origHead != null) {
                 Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
                 if (!hooks.isEmpty() && !pm.isCanceled()) {
-                    supp.setProgress(Bundle.MSG_RebaseAction_updatingHooks());
+                    progress.setProgress(Bundle.MSG_RebaseAction_updatingHooks());
                     try {
                         GitHookContext.LogEntry[] originalEntries = getEntries(client, upstream, origHead, pm);
                         if (pm.isCanceled()) {

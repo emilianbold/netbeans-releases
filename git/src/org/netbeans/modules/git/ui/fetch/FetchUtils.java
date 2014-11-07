@@ -61,12 +61,15 @@ import org.netbeans.libs.git.GitTransportUpdate.Type;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.client.ProgressDelegate;
 import org.netbeans.modules.git.ui.branch.BranchSynchronizer;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.git.utils.LogUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
@@ -194,29 +197,42 @@ public final class FetchUtils {
         
     }
 
-    static void syncTrackingBranches (File repository, Map<String, GitTransportUpdate> updates, GitProgressSupport supp) {
+    @NbBundle.Messages({
+            "# {0} - active branch name",
+            "# {1} - tracking branch name",
+            "MSG_SyncBranches.activeBranch=Current branch \"{0}\" requires a synchronization with its tracking branch \"{1}\".\n\n"
+                    + "Do you want to synchronize the active branch?",
+            "LBL_SyncBranches.activeBranch=Synchronization Needed"
+    })
+    static void syncTrackingBranches (File repository, Map<String, GitTransportUpdate> updates, GitProgressSupport supp, ProgressDelegate progress, boolean checkActiveBranch) {
         List<String> branchNames = new ArrayList<>();
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         Map<String, GitBranch> branches = info.getBranches();
         RepositoryInfo.NBGitConfig cfg = info.getNetbeansConfig();
+        GitBranch activeBranchToUpdate = null;
         for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
             GitTransportUpdate update = e.getValue();
             if (UPDATED_STATUSES.contains(update.getResult())) {
                 if (update.getType() == Type.BRANCH) {
                     String remoteBranchName = e.getValue().getLocalName();
                     for (GitBranch b : branches.values())  {
-                        if (!b.isRemote() && !b.isActive() && b.getTrackedBranch() != null
+                        if (!b.isRemote() && b.getTrackedBranch() != null
                                 && b.getTrackedBranch().getName().equals(remoteBranchName)
                                 && cfg.getAutoSyncBranch(b.getName())) {
-                            // this branch is not active, is local and tracks the remote branch
-                            branchNames.add(b.getName());
+                            if (b.isActive()) {
+                                // should ask user if the active branch should be synced
+                                activeBranchToUpdate = b;
+                            } else {
+                                // this branch is not active, is local and tracks the remote branch
+                                branchNames.add(b.getName());
+                            }
                         }
                     }
                 }
             }
         }
         try {
-            new BranchSynchronizer().syncBranches(repository, branchNames.toArray(new String[branchNames.size()]), supp);
+            new BranchSynchronizer().syncBranches(repository, branchNames.toArray(new String[branchNames.size()]), progress, supp.getLogger());
         } catch (GitException ex) {
             Logger.getLogger(FetchUtils.class.getName()).log(Level.INFO, null, ex);
         }

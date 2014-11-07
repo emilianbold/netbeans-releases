@@ -173,7 +173,7 @@ public class FetchAction extends SingleRepositoryAction {
                         }
                         if (!isCanceled()) {
                             setDisplayName(Bundle.MSG_FetchAction_progress_syncBranches());
-                            FetchUtils.syncTrackingBranches(repository, updates, this);
+                            FetchUtils.syncTrackingBranches(repository, updates, this, getProgress(), true);
                         }
                     }
                 } catch (GitException ex) {
