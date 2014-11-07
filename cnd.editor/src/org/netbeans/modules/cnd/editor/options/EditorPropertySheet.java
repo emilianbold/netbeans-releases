@@ -66,6 +66,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
@@ -556,6 +557,23 @@ public class EditorPropertySheet extends javax.swing.JPanel
             p.putBoolean(SimpleValueNames.EXPAND_TABS, p.getBoolean(EditorOptions.expandTabToSpaces, EditorOptions.expandTabToSpacesDefault));
             p.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
             p.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
+            
+            // Bug 248397 - C/C++ Header tab size and indentation doesn't work properly 
+            if (true) {
+                // Attempt to pass tabsize to editor. Use closed and forbidden SPI.
+                // See org.netbeans.modules.editor.indent.spi.CodeStylePreferences.getPreferences()
+                // and org.netbeans.modules.options.indentation.FormattingPanel.propertyChange()
+                // It is a result of fixing bug 142146 - [65cat] Clean up the formatting settings customizers
+                // The fix does not take into account CND code style specific. CND preferences is a bunch of code styles.
+                Document doc = previewPane.getDocument();
+                doc.putProperty("Tools-Options->Editor->Formatting->Preview - Preferences", p); //NOI18N
+                doc.putProperty(SimpleValueNames.TAB_SIZE,  p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
+            } else {
+                // Alternative simple fix.
+                // Do not use tabs because passing tabsize to editor is tricky.
+                p.putBoolean(EditorOptions.expandTabToSpaces, true);
+            }
+            
             previewPane.setIgnoreRepaint(true);
             refreshPreview(previewPane, p);
             previewPane.setIgnoreRepaint(false);
