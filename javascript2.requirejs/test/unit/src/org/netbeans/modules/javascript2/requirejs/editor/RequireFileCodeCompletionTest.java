@@ -194,6 +194,10 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestProject1/js/folder1/api/v0.1/issue247759.js", "define(['^'], function () {});", false);        
     }
     
+    public void testIssue247729_01() throws Exception {
+        checkAppliedCompletion("TestProject1/js/main3.js", "'text!fileCC/folder2/template/^',", "'text!fileCC/folder2/template/body.html^',", "body", false);        
+    }
+    
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {
         final CodeCompletionHandler.QueryType type = CodeCompletionHandler.QueryType.COMPLETION;
         final boolean caseSensitive = true;

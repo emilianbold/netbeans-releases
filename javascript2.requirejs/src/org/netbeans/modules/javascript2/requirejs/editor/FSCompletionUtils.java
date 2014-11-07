@@ -75,6 +75,7 @@ public class FSCompletionUtils {
             Collection<? extends FileObject> relativeTo,
             final String prefix,
             int anchor,
+            boolean addExtensions,
             FileObjectFilter filter) throws IOException {
 
         assert relativeTo != null;
@@ -141,7 +142,7 @@ public class FSCompletionUtils {
 //                    if (lastSlash == 1 && prefix.charAt(0) == '.') {
                         int newAnchor = anchor - prefix.length();
 //                    }
-                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "./", newAnchor)); //NOI18N
+                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "./", addExtensions, newAnchor)); //NOI18N
                 }
             }
         }
