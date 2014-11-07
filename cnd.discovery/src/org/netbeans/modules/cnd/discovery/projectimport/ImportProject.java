@@ -1538,7 +1538,12 @@ public class ImportProject implements PropertyChangeListener {
             map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
-                    logger.log(Level.INFO, "#start discovery by log file {0}", makeLog.getLocalPath()); // NOI18N
+                    DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
+                    if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) { 
+                        logger.log(Level.INFO, "#start discovery by build log file {0}", makeLog.getLocalPath()); // NOI18N
+                    } else {
+                        logger.log(Level.INFO, "#start discovery by exec log file {0}", makeLog.getLocalPath()); // NOI18N
+                    }
                 }
                 try {
                     done = true;
