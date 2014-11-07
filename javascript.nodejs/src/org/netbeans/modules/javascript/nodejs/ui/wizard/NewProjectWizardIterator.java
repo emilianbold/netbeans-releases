@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.wizard;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
@@ -174,7 +178,10 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         nodeJsSupport.getPreferences().setRunEnabled(true);
         nodeJsSupport.getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
-        nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
+        if (!withSiteRoot) {
+            // set node.js run config only for server-side node.js project (since project URL is not known)
+            SetupProject.setup(project);
+        }
 
         handle.finish();
         return files;
@@ -194,6 +201,37 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         DataFolder dataFolder = DataFolder.findFolder(siteRoot);
         DataObject dataTemplate = DataObject.find(template);
         return dataTemplate.createFromTemplate(dataFolder, "index").getPrimaryFile(); // NOI18N
+    }
+
+    //~ Inner classes
+
+    private static final class SetupProject implements PropertyChangeListener {
+
+        final OpenProjects openProjects = OpenProjects.getDefault();
+        private final Project project;
+
+
+        private SetupProject(Project project) {
+            assert project != null;
+            this.project = project;
+        }
+
+        public static void setup(Project project) {
+            SetupProject setupProject = new SetupProject(project);
+            setupProject.openProjects.addPropertyChangeListener(setupProject);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+                if (Arrays.asList(openProjects.getOpenProjects()).contains(project)) {
+                    openProjects.removePropertyChangeListener(this);
+                    NodeJsSupport.forProject(project)
+                            .firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
+                }
+            }
+        }
+
     }
 
 }
