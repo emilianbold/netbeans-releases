@@ -67,8 +67,9 @@ public class FSCompletionItem implements CompletionProposal {
     private final int anchor;
     private final String prefix;
     private final FSElementHandle element;
+    private final boolean addExtension;
     
-    public FSCompletionItem(final FileObject file, final String prefix, final int anchor) throws IOException {
+    public FSCompletionItem(final FileObject file, final String prefix, final boolean addExtension, final int anchor) throws IOException {
         this.file = file;
         this.element = new FSElementHandle(file);
         DataObject od = DataObject.find(file);
@@ -76,7 +77,7 @@ public class FSCompletionItem implements CompletionProposal {
         icon = new ImageIcon(od.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
 
         this.anchor = anchor;
-
+        this.addExtension = addExtension;
         this.prefix = prefix;
     }
     
@@ -162,7 +163,7 @@ public class FSCompletionItem implements CompletionProposal {
 
     @Override
     public String getCustomInsertTemplate() {
-        return prefix + file.getName() + (file.isFolder() ? "/" : "");
+        return prefix + (addExtension ? file.getNameExt() : file.getName()) + (file.isFolder() ? "/" : "");
     }
 
     public FileObject getFile() {
