@@ -449,6 +449,7 @@ public class GeneralNodeJs extends JellyTestCase {
         String[] config = rawConfig.split(";");
         eo.setCaretPosition(lineNumber + 1, Integer.parseInt(config[1]));
         type(eo, config[2]);
+        evt.waitNoEvent(500);
         eo.pressKey(KeyEvent.VK_ESCAPE);
         int back = Integer.parseInt(config[3]);
         for (int i = 0; i < back; i++) {
