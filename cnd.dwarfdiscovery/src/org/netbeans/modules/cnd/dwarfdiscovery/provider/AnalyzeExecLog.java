@@ -215,7 +215,7 @@ public class AnalyzeExecLog extends BaseProvider {
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         init(project);
         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
-        if (set == null || set.length() == 0) {
+        if (set == null || set.length() == 0 || !ExecLogReader.isSupportedLog(set)) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecLog.class, "NotFoundExecLog")));
         }
         return new ApplicableImpl(true, null, null, 80, false, null, null, null, null);

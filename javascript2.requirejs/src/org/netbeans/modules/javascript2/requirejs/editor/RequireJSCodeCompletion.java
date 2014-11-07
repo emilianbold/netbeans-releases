@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -66,7 +67,9 @@ import org.netbeans.modules.javascript2.requirejs.RequireJsDataProvider;
 import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -110,6 +113,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
             }
             ts.move(offset);
             String writtenPath = prefix;
+            boolean addExtensionInCC = false;
             if (ts.moveNext() && (ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING)) {
                 if (ts.token().id() == JsTokenId.STRING_END) {
                     ts.movePrevious();
@@ -119,7 +123,10 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                     // this is needed, because from JS the prefix is split with '.' and '/'
                     writtenPath = text.substring(0, offset - ts.offset());
                 }
-
+            }
+            if (writtenPath.startsWith("text!")) {
+                // we need to complete the file extension as well
+                addExtensionInCC = true;
             }
             writtenPath = FSCompletionUtils.removePlugin(writtenPath);
             
@@ -207,15 +214,43 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 List<CompletionProposal> result = new ArrayList();
 
                 try {
-                    result = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), new FSCompletionUtils.JSIncludesFilter(fo));
+                    result = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), addExtensionInCC, new FSCompletionUtils.JSIncludesFilter(fo));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
                 
                 if (!result.isEmpty() && !writtenPath.isEmpty() 
-                        && (writtenPath.charAt(0) == '/' || writtenPath.startsWith("./") || writtenPath.startsWith("../"))) {
+                        && (writtenPath.charAt(0) == '/' || writtenPath.startsWith("./") || writtenPath.startsWith("../"))) { //NOI18N
                     return result;
                 }
+                // if the prefix is empty, add all folders to the project root
+                if (writtenPath.isEmpty() && project != null) {
+                    FileObject parentFolder = fo.getParent();
+                    Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
+                        null,
+                        Collections.<String>emptyList(),
+                        Collections.<String>emptyList());
+                    FileObject topFolder = null;
+                    if (!sourceRoots.isEmpty()) {
+                        for(FileObject root: sourceRoots) {
+                            if (FileUtil.isParentOf(root, fo)) {
+                                topFolder = root;
+                                break;
+                            }
+                        }
+                    } else {
+                        topFolder = project.getProjectDirectory();
+                    }
+                    try {
+                        while (FileUtil.isParentOf(topFolder, parentFolder)) {
+                            result.add(new FSCompletionItem(parentFolder, writtenPath, addExtensionInCC, offset));
+                            parentFolder = parentFolder.getParent();
+                        }
+                    } catch (IOException e) {
+                        // do nothing
+                    }
+                }
+                
                 FileObject fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath, fo);
                 String prefixAfterMapping = "";
                 if (fromMapping == null) {
@@ -231,7 +266,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                     relativeTo.clear();
                     relativeTo.add(fromMapping);
                     try {
-                        List<CompletionProposal> newItems = FSCompletionUtils.computeRelativeItems(relativeTo, prefixAfterMapping, ccContext.getCaretOffset(), new FSCompletionUtils.JSIncludesFilter(fo));
+                        List<CompletionProposal> newItems = FSCompletionUtils.computeRelativeItems(relativeTo, prefixAfterMapping, ccContext.getCaretOffset(), addExtensionInCC, new FSCompletionUtils.JSIncludesFilter(fo));
                         for (Iterator<CompletionProposal> it = newItems.iterator(); it.hasNext();) {
                             CompletionProposal proposel = it.next();
                             if (!result.contains(proposel)) {

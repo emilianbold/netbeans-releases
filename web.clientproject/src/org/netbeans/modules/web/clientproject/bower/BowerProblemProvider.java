@@ -51,6 +51,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -75,6 +77,8 @@ import org.openide.util.NbBundle;
  * Problem: Project requires bower install
  */
 public final class BowerProblemProvider extends NodeProblemProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(BowerProblemProvider.class.getName());
 
 
     private final FileChangeListener bowerrcListener = new FileChangeAdapter() {
@@ -117,21 +121,44 @@ public final class BowerProblemProvider extends NodeProblemProvider {
                 final FileObject root = project.getProjectDirectory();
                 root.refresh();
                 final Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
-                FileObject package_json = root.getFileObject("bower.json");//NOI18N
+                FileObject bowerJson = root.getFileObject("bower.json");//NOI18N
                 File bower_modules = new File(root.getPath() + "/" + getBowerRcDir(root));
-                if (package_json != null && !bower_modules.exists()) {
-                    ProjectProblem npmWarning = ProjectProblemsProvider.ProjectProblem.createWarning(Bundle.ERR_BowerInstall(), Bundle.TXT_BowerInstallDescription(), new ProjectProblemResolver() {
-                        @Override
-                        public Future<Result> resolve() {
-                            return new FutureResult();
-                        }
-                    });
-                    currentProblems.add(npmWarning);
+                if (bowerJson != null && !bower_modules.exists()) {
+                    if (hasDeps(bowerJson)) {
+                        ProjectProblem bowerWarning = ProjectProblemsProvider.ProjectProblem.createWarning(Bundle.ERR_BowerInstall(), Bundle.TXT_BowerInstallDescription(), new ProjectProblemResolver() {
+                            @Override
+                            public Future<Result> resolve() {
+                                return new FutureResult();
+                            }
+                        });
+                        currentProblems.add(bowerWarning);
+                    }
                 }
 
                 return currentProblems;
             }
         });
+    }
+
+    static boolean hasDeps(FileObject bowerJson) {
+        JSONParser parser = new JSONParser();
+        try (InputStreamReader inputStreamReader = new InputStreamReader(bowerJson.getInputStream())) {
+            JSONObject content = (JSONObject) parser.parse(inputStreamReader);
+            for (String field : new String[] {"dependencies", "devDependencies"}) { // NOI18N
+                Object deps = content.get(field);
+                if (deps instanceof JSONObject) {
+                    JSONObject ddeps = (JSONObject) deps;
+                    if (!ddeps.isEmpty()) {
+                        return true;
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } catch (ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return false;
     }
     
     private static String getBowerRcDir(FileObject root) {

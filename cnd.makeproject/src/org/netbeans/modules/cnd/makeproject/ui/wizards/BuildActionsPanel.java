@@ -50,17 +50,16 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -78,7 +77,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     
     /*package-local*/ BuildActionsPanel(BuildActionsDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
-        instructionsTextArea.setBackground(instructionPanel.getBackground());
+        instructionsTextPane.setEditorKit(new HTMLEditorKit());
+        instructionsTextPane.setBackground(instructionPanel.getBackground());
         this.controller = buildActionsDescriptorPanel;
         documentListener = new DocumentAdapter() {
             @Override
@@ -101,7 +101,6 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         buildCommandWorkingDirTextField.getDocument().addDocumentListener(documentListener);
         buildCommandTextField.getDocument().addDocumentListener(documentListener);
         cleanCommandTextField.getDocument().addDocumentListener(documentListener);
-        outputTextField.getDocument().addDocumentListener(documentListener);
         buildLogTextField.getDocument().addDocumentListener(documentListener);
         
         // init focus
@@ -113,9 +112,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         buildCommandTextField.getAccessibleContext().setAccessibleDescription(getString("BUILD_COMMAND_AD"));
         buildCommandWorkingDirTextField.getAccessibleContext().setAccessibleDescription(getString("WORKING_DIR_AD"));
         cleanCommandTextField.getAccessibleContext().setAccessibleDescription(getString("CLEAN_COMMAND_AD"));
-        outputTextField.getAccessibleContext().setAccessibleDescription(getString("OUTPUT_AD"));
         buildCommandWorkingDirBrowseButton.getAccessibleContext().setAccessibleDescription(getString("WORKING_DIR_BROWSE_BUTTON_AD"));
-        outputBrowseButton.getAccessibleContext().setAccessibleDescription(getString("OUTPUT_BROWSE_BUTTON_AD"));
     }
     
     private void makefileFieldChanged() {
@@ -143,7 +140,6 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         buildCommandWorkingDirTextField.setText(DEF_WORKING_DIR);
         buildCommandTextField.setText(DEF_BUILD_COMMAND);
         cleanCommandTextField.setText(DEF_CLEAN_COMMAND);
-        outputTextField.setText(""); // NOI18N
         makeCheckBox.setSelected(true);
     }
     
@@ -202,7 +198,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         WizardConstants.PROPERTY_WORKING_DIR.put(wizardDescriptor, buildCommandWorkingDirTextField.getText()); 
         WizardConstants.PROPERTY_BUILD_COMMAND.put(wizardDescriptor, buildCommandTextField.getText()); 
         WizardConstants.PROPERTY_CLEAN_COMMAND.put(wizardDescriptor, cleanCommandTextField.getText()); 
-        WizardConstants.PROPERTY_BUILD_RESULT.put(wizardDescriptor, outputTextField.getText());
+        WizardConstants.PROPERTY_BUILD_RESULT.put(wizardDescriptor, "");
         WizardConstants.PROPERTY_BUILD_LOG.put(wizardDescriptor, buildLogTextField.getText());
         WizardConstants.PROPERTY_RUN_REBUILD.put(wizardDescriptor, makeCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE);
         WizardConstants.PROPERTY_USER_MAKEFILE_PATH.put(wizardDescriptor, makefileName);
@@ -218,13 +214,6 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             if (!CndPathUtilities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) 
                     || !NewProjectWizardUtils.fileExists(buildCommandWorkingDirTextField.getText(), controller.getWizardDescriptor())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
-                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
-                //return false;
-            }
-        }
-        if (outputTextField.getText().length() > 0) {
-            if (!CndPathUtilities.isPathAbsolute(outputTextField.getText())) {
-                String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 //return false;
             }
@@ -246,9 +235,9 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
     private void updateInstriction() {
         if (makeCheckBox.isSelected()) {
-            instructionsTextArea.setText(NbBundle.getMessage(BuildActionsPanel.class, "BuildActionsInstructions"));
+            instructionsTextPane.setText(NbBundle.getMessage(BuildActionsPanel.class, "BuildActionsInstructions"));
         } else {
-            instructionsTextArea.setText(NbBundle.getMessage(BuildActionsPanel.class, "BuildActionsInstructionsNoBuild"));
+            instructionsTextPane.setText(NbBundle.getMessage(BuildActionsPanel.class, "BuildActionsInstructionsNoBuild"));
         }
     }
     
@@ -269,11 +258,9 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         buildCommandTextField = new javax.swing.JTextField();
         cleanCommandLabel = new javax.swing.JLabel();
         cleanCommandTextField = new javax.swing.JTextField();
-        outputLabel = new javax.swing.JLabel();
-        outputTextField = new javax.swing.JTextField();
-        outputBrowseButton = new javax.swing.JButton();
         instructionPanel = new javax.swing.JPanel();
-        instructionsTextArea = new javax.swing.JTextArea();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        instructionsTextPane = new javax.swing.JTextPane();
         group2Label = new javax.swing.JLabel();
         makeCheckBox = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
@@ -351,55 +338,19 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(cleanCommandTextField, gridBagConstraints);
 
-        outputLabel.setLabelFor(outputTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(outputLabel, bundle.getString("OUTPUT_LBL")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
-        add(outputLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
-        add(outputTextField, gridBagConstraints);
+        instructionPanel.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(outputBrowseButton, bundle.getString("OUTPUT_BROWSE_BUTTON_TXT")); // NOI18N
-        outputBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                outputBrowseButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 0);
-        add(outputBrowseButton, gridBagConstraints);
+        jScrollPane1.setBorder(null);
+        jScrollPane1.setViewportView(instructionsTextPane);
 
-        instructionPanel.setLayout(new java.awt.GridBagLayout());
-
-        instructionsTextArea.setEditable(false);
-        instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setWrapStyleWord(true);
-        instructionsTextArea.setOpaque(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        instructionPanel.add(instructionsTextArea, gridBagConstraints);
+        instructionPanel.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
@@ -465,38 +416,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(buildLogButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-    
-    private void outputBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputBrowseButtonActionPerformed
-        String seed = null;
-        if (outputTextField.getText().length() > 0) {
-            seed = outputTextField.getText();
-        } else if (buildCommandWorkingDirTextField.getText().length() > 0) {
-            seed = buildCommandWorkingDirTextField.getText();
-        } else if (FileChooser.getCurrentChooserFile() != null) {
-            seed = FileChooser.getCurrentChooserFile().getPath();
-        } else {
-            seed = System.getProperty("user.home"); // NOI18N
-        }
-        FileSystem fs = NewProjectWizardUtils.getFileSystem(controller.getWizardDescriptor());
-        FileFilter[] filters = FileFilterFactory.getBinaryFilters(fs);
-        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
-                controller.getWizardDescriptor(),
-                getString("OUTPUT_CHOOSER_TITLE_TXT"),
-                getString("OUTPUT_CHOOSER_BUTTON_TXT"),
-                JFileChooser.FILES_AND_DIRECTORIES,
-                filters,
-                seed,
-                false
-                );
-        int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return;
-        }
-        //String path = CndPathUtilities.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
-        String path = CndPathUtilities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
-        outputTextField.setText(path);
-    }//GEN-LAST:event_outputBrowseButtonActionPerformed
-    
+        
     private void buildCommandWorkingDirBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buildCommandWorkingDirBrowseButtonActionPerformed
         String seed;
         if (!buildCommandWorkingDirTextField.getText().isEmpty()) {
@@ -572,12 +492,10 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private javax.swing.JTextField cleanCommandTextField;
     private javax.swing.JLabel group2Label;
     private javax.swing.JPanel instructionPanel;
-    private javax.swing.JTextArea instructionsTextArea;
+    private javax.swing.JTextPane instructionsTextPane;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JCheckBox makeCheckBox;
-    private javax.swing.JButton outputBrowseButton;
-    private javax.swing.JLabel outputLabel;
-    private javax.swing.JTextField outputTextField;
     // End of variables declaration//GEN-END:variables
     
     private static String getString(String s) {

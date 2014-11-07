@@ -2,12 +2,16 @@ Code completion result for source line:
 requirejs(['|']);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+OTHER      text!                                      
 FILE       api                                        
 FILE       config                                     
 FILE       fileCC                                     
 FILE       folder1                                    
 FILE       folder2                                    
+FILE       js                                         
 FILE       lib                                        
 FILE       lib/api                                    
 FILE       main.js                                    
+FILE       main3.js                                   
+FILE       main3.js.testIssue247729_01.ex             
 FILE       utils                                      
