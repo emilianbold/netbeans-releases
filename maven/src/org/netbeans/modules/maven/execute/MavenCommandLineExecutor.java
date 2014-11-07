@@ -77,6 +77,7 @@ import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
+import org.netbeans.api.extexecution.base.Processes;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.maven.api.Constants;
@@ -293,7 +294,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     private void kill(Process prcs, String uuid) {
         Map<String, String> env = new HashMap<String, String>();
         env.put(KEY_UUID, uuid);
-        ExternalProcessSupport.destroy(prcs, env);
+        Processes.killTree(prcs, env);
     }
     
     @Override
