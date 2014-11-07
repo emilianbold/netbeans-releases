@@ -213,11 +213,8 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                 return;
             }
             Map<String, Object> artifacts = new HashMap<>();
-            if (DiscoveryExtension.EXEC_LOG_PROVIDER.equals(provider.getID())) {
-                artifacts.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
-            } else {
-                artifacts.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
-            }
+            artifacts.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
+            artifacts.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
             
             DiscoveryManagerImpl.projectBuilt(project, artifacts, false);
         }

@@ -187,7 +187,8 @@ public final class EvalAnnotation extends Annotation {
      *             call back to EvalAnnotation.extractExpression().
      */
     private static String getSelectedExpr(JEditorPane ep, int offset) {
-        if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
+        //see bz#248407, looks like editorpane is not displayable and no caret is set which will lead to NPE here
+        if ((ep.getCaret() != null) && (ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
             return ep.getSelectedText();
         }
 	return null;
