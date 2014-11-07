@@ -106,6 +106,10 @@ public final class TreePathSupport {
             //It's already expanded, don't waste cycles firing bogus events
             return;
         }
+        TreePath parentPath = path.getParentPath();
+        if (parentPath != null) {
+            expandPath(parentPath);
+        }
         TreeExpansionEvent e = new TreeExpansionEvent (this, path);
         try {
             fireTreeWillExpand(e, true);
