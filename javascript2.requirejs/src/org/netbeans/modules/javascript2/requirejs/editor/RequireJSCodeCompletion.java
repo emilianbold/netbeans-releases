@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -66,7 +67,9 @@ import org.netbeans.modules.javascript2.requirejs.RequireJsDataProvider;
 import org.netbeans.modules.javascript2.requirejs.RequireJsPreferences;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -216,6 +219,34 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                         && (writtenPath.charAt(0) == '/' || writtenPath.startsWith("./") || writtenPath.startsWith("../"))) {
                     return result;
                 }
+                // if the prefix is empty, add all folders to the project root
+                if (writtenPath.isEmpty() && project != null) {
+                    FileObject parentFolder = fo.getParent();
+                    Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
+                        null,
+                        Collections.<String>emptyList(),
+                        Collections.<String>emptyList());
+                    FileObject topFolder = null;
+                    if (!sourceRoots.isEmpty()) {
+                        for(FileObject root: sourceRoots) {
+                            if (FileUtil.isParentOf(root, fo)) {
+                                topFolder = root;
+                                break;
+                            }
+                        }
+                    } else {
+                        topFolder = project.getProjectDirectory();
+                    }
+                    try {
+                        while (FileUtil.isParentOf(topFolder, parentFolder)) {
+                            result.add(new FSCompletionItem(parentFolder, writtenPath, offset));
+                            parentFolder = parentFolder.getParent();
+                        }
+                    } catch (IOException e) {
+                        // do nothing
+                    }
+                }
+                
                 FileObject fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath, fo);
                 String prefixAfterMapping = "";
                 if (fromMapping == null) {
