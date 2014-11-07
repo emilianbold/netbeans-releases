@@ -176,10 +176,10 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
 
         // enable running as node.js
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
-        nodeJsSupport.getPreferences().setRunEnabled(true);
         nodeJsSupport.getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
         if (!withSiteRoot) {
             // set node.js run config only for server-side node.js project (since project URL is not known)
+            nodeJsSupport.getPreferences().setRunEnabled(true);
             SetupProject.setup(project);
         }
 
