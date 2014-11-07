@@ -174,12 +174,10 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         // tools
         CreateProjectUtils.instantiateTools(project, toolsWizard.first());
 
-        // enable running as node.js
-        NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
-        nodeJsSupport.getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
+        // set proper node.js start file
+        NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
         if (!withSiteRoot) {
             // set node.js run config only for server-side node.js project (since project URL is not known)
-            nodeJsSupport.getPreferences().setRunEnabled(true);
             SetupProject.setup(project);
         }
 
@@ -226,8 +224,9 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
             if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
                 if (Arrays.asList(openProjects.getOpenProjects()).contains(project)) {
                     openProjects.removePropertyChangeListener(this);
-                    NodeJsSupport.forProject(project)
-                            .firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
+                    NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
+                    nodeJsSupport.getPreferences().setRunEnabled(true);
+                    nodeJsSupport.firePropertyChanged(NodeJsPlatformProvider.PROP_RUN_CONFIGURATION, null, NodeJsRunPanel.IDENTIFIER);
                 }
             }
         }
