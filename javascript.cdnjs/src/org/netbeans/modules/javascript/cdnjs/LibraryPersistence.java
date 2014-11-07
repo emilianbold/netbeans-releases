@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -60,7 +61,7 @@ import org.w3c.dom.NodeList;
  *
  * @author Jan Stola
  */
-class LibraryPersistence {
+public final class LibraryPersistence {
     /** Name-space used to store the library information. */
     private static final String NAMESPACE_URI = "http://www.netbeans.org/ns/cdnjs-libraries/1"; // NOI18N
     /** Name of the root element. */
@@ -80,6 +81,8 @@ class LibraryPersistence {
     /** The default instance of this class. */
     private static final LibraryPersistence DEFAULT = new LibraryPersistence();
 
+    private final LibraryListener.Support libraryListenerSupport = new LibraryListener.Support();
+
     /**
      * Creates a new {@code LibraryPersistence}.
      */
@@ -88,20 +91,43 @@ class LibraryPersistence {
 
     /**
      * Returns the default instance of this class.
-     * 
+     *
      * @return default instance of this class.
      */
-    static LibraryPersistence getDefault() {
+    public static LibraryPersistence getDefault() {
         return DEFAULT;
     }
 
     /**
+     * Adds a {@link LibraryListener} to the listener list. The same
+     * listener object may be added more than once, and will be called
+     * as many times as it is added. If {@code listener} is {@code null},
+     * no exception is thrown and no action is taken.
+     * @param listener the {@link LibraryListener} to be added, can be {@code null}
+     */
+    public void addLibraryListener(@NullAllowed LibraryListener listener) {
+        libraryListenerSupport.addLibraryListener(listener);
+    }
+
+    /**
+     * Removes a {@link LibraryListener} from the listener list.
+     * If {@code listener} was added more than once,
+     * it will be notified one less time after being removed.
+     * If {@code listener} is {@code null}, or was never added, no exception is
+     * thrown and no action is taken.
+     * @param listener the {@link LibraryListener} to be removed, can be {@code null}
+     */
+    public void removeLibraryListener(@NullAllowed LibraryListener listener) {
+        libraryListenerSupport.removeLibraryListener(listener);
+    }
+
+    /**
      * Loads library information for the given project.
-     * 
+     *
      * @param project project whose library information should be loaded.
      * @return library information for the given project.
      */
-    Library.Version[] loadLibraries(Project project) {
+    public Library.Version[] loadLibraries(Project project) {
         Library.Version[] libraries;
         AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(project);
         Element element = config.getConfigurationFragment(ELEMENT_LIBRARIES, NAMESPACE_URI, true);
@@ -120,7 +146,7 @@ class LibraryPersistence {
 
     /**
      * Loads/parses information about one library from the given DOM element.
-     * 
+     *
      * @param libraryElement element to load information from.
      * @return library version corresponding to the given DOM element.
      */
@@ -148,7 +174,7 @@ class LibraryPersistence {
 
     /**
      * Stores the information about libraries used by the given project.
-     * 
+     *
      * @param project project whose library information should be stored.
      * @param libraries libraries used by the project.
      */
@@ -179,6 +205,8 @@ class LibraryPersistence {
             }
             AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(project);
             config.putConfigurationFragment(librariesElement, true);
+            // fire event
+            libraryListenerSupport.fireLibrariesChanged(project);
         } catch (ParserConfigurationException pcex) {
             Logger.getLogger(LibraryPersistence.class.getName()).log(Level.SEVERE,
                     "Unable to store library information!", pcex); // NOI18N
@@ -194,7 +222,7 @@ class LibraryPersistence {
             String name1 = o1.getLibrary().getName();
             String name2 = o2.getLibrary().getName();
             return name1.compareTo(name2);
-        }        
+        }
     }
 
 }

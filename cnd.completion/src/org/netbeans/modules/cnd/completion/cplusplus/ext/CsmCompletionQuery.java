@@ -2576,7 +2576,7 @@ abstract public class CsmCompletionQuery {
                                             } else if (autoVarType != null) {
                                                 CsmType userFriendlyType = CsmUtilities.iterateTypeChain(autoVarType, new CsmUtilities.SmartTypeUnrollPredicate());
                                                 CsmClassifier autoVarCls = userFriendlyType.getClassifier();
-                                                if (CsmBaseUtilities.isValid(autoVarCls)) {
+                                                if (CsmBaseUtilities.isValid(autoVarCls) && !CsmKindUtilities.isBuiltIn(autoVarCls)) {
                                                     result = new CsmCompletionResult(
                                                             component, 
                                                             getBaseDocument(), 

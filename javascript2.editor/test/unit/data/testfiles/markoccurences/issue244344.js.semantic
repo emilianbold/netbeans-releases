@@ -1,12 +1,12 @@
 var |>GLOBAL:SeLiteMisc<|= {};
 |>GLOBAL:SeLiteMisc<|.|>METHOD:isInstance<|= function |>METHOD:isPrdca<|( object, classes, className, message ) {
-    var |>UNUSED:arr<|= [object, classes, message, className ];
+    var |>LOCAL_VARIABLE_DECLARATION,UNUSED:arr<|= [object, classes, message, className ];
     
     if( typeof classes==='function' ) {
         classes= [classes];
     }
-    for( var i=0; i<classes.length; i++ ) {
-        var |>UNUSED:clazz<|= classes[i];
+    for( var |>LOCAL_VARIABLE_DECLARATION:i<|=0; |>LOCAL_VARIABLE:i<|<classes.length; |>LOCAL_VARIABLE:i<|++ ) {
+        var |>LOCAL_VARIABLE_DECLARATION,UNUSED:clazz<|= classes[|>LOCAL_VARIABLE:i<|];
         if( object ) {
         }
     }    

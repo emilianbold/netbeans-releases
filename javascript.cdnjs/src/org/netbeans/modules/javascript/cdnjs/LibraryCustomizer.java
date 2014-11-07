@@ -76,8 +76,8 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+    public static final String CATEGORY_NAME = "JavaScriptFiles"; // NOI18N
     private static final String DEFAULT_LIBRARY_FOLDER = "js/libs"; // NOI18N
-    private static final String CATEGORY_NAME = "JavaScriptFiles"; // NOI18N
     private static final String PREFERENCES_LIBRARY_FOLDER = "js.libs.folder"; // NOI18N
     private final CDNJSLibraries.CustomizerContext customizerContext;
     

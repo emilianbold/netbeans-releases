@@ -422,7 +422,9 @@ final class CloneableEditorInitializer implements Runnable {
             return true;
 
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex.getCause());
+            if (ex.getCause() != null) {
+                Exceptions.printStackTrace(ex.getCause());
+            }
             return false;
         }
     }

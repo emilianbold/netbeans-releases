@@ -56,12 +56,13 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.Device;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -225,11 +226,20 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
         this.url = url;
     }
     
+    @NbBundle.Messages("ERR_StartFileNotFound=Start file cannot be found.")
      public static void openBrowser(String command, final Lookup context, final AndroidBrowser.Kind kind, final Project project, final BrowserSupport support) throws IllegalArgumentException {
         final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
          if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
             try {
-                final URL urL = new URL(build.getUrl(project, context));
+                final String urlString = build.getUrl(project, context);
+                if (urlString == null) {
+                    DialogDisplayer.getDefault().notify(
+                            new DialogDescriptor.Message(Bundle.ERR_StartFileNotFound()));
+                    CustomizerProvider2 cust = project.getLookup().lookup(CustomizerProvider2.class);
+                    cust.showCustomizer("RUN", null); //NOI18N
+                    return;
+                }
+                final URL urL = new URL(urlString);
                 FileObject f = build.getFile(project, context);
                 support.load(urL, f);
             } catch (MalformedURLException ex) {

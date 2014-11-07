@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.BuildActionsProviderImpl;
+import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
@@ -217,19 +218,19 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
     private void reconfigureCodeAssistance(int rc, ExecLogWrapper execLog) {
         DiscoveryProvider provider = null;
         if (execLog.getExecLog() != null) {
-            provider = DiscoveryProviderFactory.findProvider("exec-log"); // NOI18N
+            provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.EXEC_LOG_PROVIDER);
         }
         if (false) {
             // use incremental configure code assistance only for interceptor.
             if (provider == null) {
-                provider = DiscoveryProviderFactory.findProvider("make-log"); // NOI18N
+                provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.MAKE_LOG_PROVIDER);
             }
         }
         if (provider == null) {
             return;
         }
         HashMap<String, Object> map = new HashMap<>();
-        if ("exec-log".equals(provider.getID())) { // NOI18N
+        if (DiscoveryExtension.EXEC_LOG_PROVIDER.equals(provider.getID())) {
             map.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
         } else {
             map.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());

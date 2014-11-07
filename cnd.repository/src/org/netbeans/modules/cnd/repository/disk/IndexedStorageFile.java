@@ -59,6 +59,7 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.disk.index.ChunkInfo;
 import org.netbeans.modules.cnd.repository.disk.index.CompactFileIndex;
 import org.netbeans.modules.cnd.repository.disk.index.FileIndex;
@@ -145,10 +146,10 @@ import org.openide.filesystems.FileSystem;
             try {
                 buffer = fileRWAccess.readData(chunkInfo.getOffset(), chunkInfo.getSize());                                
             } catch (BufferOverflowException e) {
-                e.printStackTrace(System.err);
+                RepositoryExceptions.throwException(this, e);
                 throw e;
             } catch (BufferUnderflowException e) {
-                e.printStackTrace(System.err);
+                RepositoryExceptions.throwException(this, e);
                 throw e;
             }
             if (Stats.fileStatisticsLevel > 0) {
@@ -380,7 +381,7 @@ import org.openide.filesystems.FileSystem;
             din = new RepositoryDataInputImpl(RepositoryImplUtil.getBufferedDataInputStream(indexFile));
             idx = FileIndexFactory.getDefaultFactory().readIndex(din);
         } catch (IOException ex) {
-            ex.printStackTrace(System.err);
+            RepositoryExceptions.throwException("IndexedStorageFile", ex);//NOI18N
         } finally {
             if (din != null) {
                 try {

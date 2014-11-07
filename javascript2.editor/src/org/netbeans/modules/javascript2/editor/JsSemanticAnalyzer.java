@@ -82,6 +82,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     //public static final EnumSet<ColoringAttributes> UNUSED_VARIABLE_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.VA);
     public static final EnumSet<ColoringAttributes> UNUSED_OBJECT_SET = EnumSet.of( ColoringAttributes.UNUSED,  ColoringAttributes.CLASS);
     public static final EnumSet<ColoringAttributes> UNUSED_METHOD_SET = EnumSet.of( ColoringAttributes.UNUSED,  ColoringAttributes.METHOD);
+    public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_DECLARATION = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE_DECLARATION);
+    public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_DECLARATION_UNUSED = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE_DECLARATION, ColoringAttributes.UNUSED);
+    public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_USE = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE);
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -236,7 +239,11 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                 OffsetRange range = object.getDeclarationName().getOffsetRange();
                                 if (range.getStart() < range.getEnd()) {
                                     // some virtual variables (like arguments) doesn't have to be declared, but are in the model
-                                    highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.UNUSED_SET);
+                                    if (object.getModifiers().contains(Modifier.PRIVATE) || object.getModifiers().contains(Modifier.PROTECTED)) { 
+                                        highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), LOCAL_VARIABLE_DECLARATION_UNUSED);
+                                    } else {
+                                        highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.UNUSED_SET);
+                                    }
                                 }
                             } else if (object instanceof JsObjectImpl && !ModelUtils.ARGUMENTS.equals(object.getName())) {   // NOI18N
                                 if (object.getOccurrences().size() <= ((JsObjectImpl)object).getCountOfAssignments()) {
@@ -247,6 +254,14 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                     for(Occurrence occurence: object.getOccurrences()) {
                                         if (occurence.getOffsetRange().getLength() > 0) {
                                             highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), ColoringAttributes.UNUSED_SET);
+                                        }
+                                    }
+                                } else if (object.getModifiers().contains(Modifier.PRIVATE) || object.getModifiers().contains(Modifier.PROTECTED)) {
+                                    OffsetRange decOffset = object.getDeclarationName().getOffsetRange();
+                                    highlights.put(LexUtilities.getLexerOffsets(result, decOffset), LOCAL_VARIABLE_DECLARATION);
+                                    for(Occurrence occurence: object.getOccurrences()) {
+                                        if (occurence.getOffsetRange().getLength() > 0 && !occurence.getOffsetRange().equals(decOffset)) {
+                                            highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), LOCAL_VARIABLE_USE);
                                         }
                                     }
                                 }

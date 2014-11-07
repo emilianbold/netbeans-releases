@@ -50,6 +50,7 @@ import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 
 /**
  * The cache that maps K to V and stores the most frequently used pairs.
@@ -186,7 +187,7 @@ public class RepositoryCacheMap<K, V> {
                 return minValue.value;
             }
         } catch (NoSuchElementException e) {
-            e.printStackTrace(System.err);
+            RepositoryExceptions.throwException(this, e);
         }
         return null;
     }

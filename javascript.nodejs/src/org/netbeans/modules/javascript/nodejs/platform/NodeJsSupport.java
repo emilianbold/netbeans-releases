@@ -329,10 +329,26 @@ public final class NodeJsSupport {
             String propertyName = evt.getPropertyName();
             LOGGER.log(Level.FINE, "Processing property change event {0} in package.json in project {1}", new Object[] {propertyName, projectName});
             if (PackageJson.PROP_NAME.equals(propertyName)) {
-                firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, evt.getOldValue(), evt.getNewValue());
+                projectNameChanged(evt.getOldValue(), evt.getNewValue());
             } else if (PackageJson.PROP_SCRIPTS_START.equals(propertyName)) {
                 startScriptChanged((String) evt.getNewValue());
             }
+        }
+
+        private void projectNameChanged(Object oldName, Object newName) {
+            if (!(newName instanceof String)) {
+                LOGGER.log(Level.FINE, "Project name change ignored, not a string: {0}", newName);
+                // ignore
+                return;
+            }
+            if (preferences.isAskSyncEnabled()) {
+                if (!Notifications.askSyncChanges(project)) {
+                    preferences.setSyncEnabled(false);
+                    LOGGER.log(Level.FINE, "Project name change ignored in project {0}, cancelled by user", project.getProjectDirectory().getNameExt());
+                    return;
+                }
+            }
+            firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, oldName, newName);
         }
 
         @NbBundle.Messages({

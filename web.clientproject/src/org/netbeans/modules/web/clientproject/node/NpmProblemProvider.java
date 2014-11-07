@@ -100,13 +100,14 @@ public final class NpmProblemProvider extends NodeProblemProvider {
             JSONParser parser = new JSONParser();
             try (InputStreamReader inputStreamReader = new InputStreamReader(package_json.getInputStream())) {
                 r = (JSONObject) parser.parse(inputStreamReader);
-                Object deps = r.get("dependencies");
-                if (deps != null) {
-                    return true;
-                }
-                deps = r.get("devDependencies");
-                if (deps != null) {
-                    return true;
+                for (String field : new String[] {"dependencies", "devDependencies"}) { // NOI18N
+                    Object deps = r.get(field);
+                    if (deps instanceof JSONObject) {
+                        JSONObject ddeps = (JSONObject) deps;
+                        if (!ddeps.isEmpty()) {
+                            return true;
+                        }
+                    }
                 }
             }
         }

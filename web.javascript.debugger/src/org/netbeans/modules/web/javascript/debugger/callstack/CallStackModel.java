@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JToolTip;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
@@ -83,11 +84,18 @@ import org.openide.util.NbBundle;
 public final class CallStackModel extends ViewModelSupport implements TreeModel, NodeModel,
         TableModel, Debugger.Listener, PropertyChangeListener {
 
+    @StaticResource(searchClasspath = true)
     public static final String CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/NonCurrentFrame"; // NOI18N
+    @StaticResource(searchClasspath = true)
     public static final String CURRENT_CALL_STACK =
             "org/netbeans/modules/debugger/resources/callStackView/CurrentFrame"; // NOI18N
+    @StaticResource(searchClasspath = true)
+    private static final String ICON_EMPTY =
+            "org/netbeans/modules/debugger/resources/empty";                // NOI18N
 
+    private static final Object DBG_RUNNING_NODE = new Object();
+    
     private Debugger debugger;
     private ProjectContext pc;
 
@@ -100,16 +108,20 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         debugger.addListener(this);
         debugger.addPropertyChangeListener(this);
         // update now:
-        setStackTrace(debugger.isSuspended() ? debugger.getCurrentCallStack() : new ArrayList<CallFrame>());
+        setStackTrace(debugger.isSuspended() ? debugger.getCurrentCallStack() : null);
     }
 
     private void setStackTrace(List<? extends CallFrame> stackTrace) {
-        List<CallFrame> l = new ArrayList<CallFrame>();
-        this.stackTrace = new AtomicReference<List<? extends CallFrame>>(l);
-        for (CallFrame cf : stackTrace) {
-            if (cf.getScript() != null) {
-                l.add(cf);
+        if (stackTrace == null) {
+            this.stackTrace.set(null);
+        } else {
+            List<CallFrame> l = new ArrayList<CallFrame>();
+            for (CallFrame cf : stackTrace) {
+                if (cf.getScript() != null) {
+                    l.add(cf);
+                }
             }
+            this.stackTrace.set(l);
         }
     }
     
@@ -126,7 +138,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         if (parent == ROOT) {
             List<? extends CallFrame> list = stackTrace.get();
             if ( list == null ){
-                return new Object[0];
+                return new Object[] { DBG_RUNNING_NODE };
             }
             else {
                 if ( from >= list.size() ) {
@@ -148,6 +160,9 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         } else if (node instanceof CallFrame) {
             return true;
         }
+        if (node == DBG_RUNNING_NODE) {
+            return true;
+        }
         
         throw new UnknownTypeException(node);
     }
@@ -157,7 +172,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         if (node == ROOT) {
             List<? extends CallFrame> list = stackTrace.get();
             if ( list == null ){
-                return 0;
+                return 1;
             }
             else {
                 return list.size();
@@ -167,7 +182,8 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         throw new UnknownTypeException(node);
     }
 
-    @NbBundle.Messages("LBL_AnonymousFunction=(anonymous function)")
+    @NbBundle.Messages({"LBL_AnonymousFunction=(anonymous function)",
+                        "CTL_DebuggerRunning=Program is Running..."})
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node == ROOT) {
@@ -183,6 +199,8 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             } else {
                 return frameName;
             }
+        } else if (node == DBG_RUNNING_NODE) {
+            return Bundle.CTL_DebuggerRunning();
         } else {
             throw new UnknownTypeException(node);
         }
@@ -199,16 +217,21 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             }
         } else if (node == ROOT) {
             return null;
+        } else if (node == DBG_RUNNING_NODE) {
+            return ICON_EMPTY;
         }
         throw new UnknownTypeException(node);
     }
 
+    @NbBundle.Messages("CTL_DebuggerRunningDescr=No stack trace while program is running.")
     @Override
     public String getShortDescription(Object node)
             throws UnknownTypeException {
         if (node instanceof CallFrame) {
             CallFrame frame = (CallFrame)node;
             return frame.getScript().getURL() + ":" + (frame.getLineNumber()+1);
+        } else if (node == DBG_RUNNING_NODE) {
+            return Bundle.CTL_DebuggerRunningDescr();
         }
         return null;
     }
@@ -295,7 +318,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
 
     @Override
     public void resumed() {
-        setStackTrace(new ArrayList<CallFrame>());
+        setStackTrace(null);
         refresh();
     }
 

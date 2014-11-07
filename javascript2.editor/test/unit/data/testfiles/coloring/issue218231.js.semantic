@@ -1,6 +1,6 @@
 var |>METHOD:stylizeDisplayName<| = function(|>UNUSED:displayname<|, |>UNUSED:column<|, record) {
-    var displayname = record.get("local display name");
-    return displayname;
+    var |>LOCAL_VARIABLE_DECLARATION:displayname<| = record.get("local display name");
+    return |>LOCAL_VARIABLE:displayname<|;
 };
 
 |>GLOBAL:formatter<|.println("Start");

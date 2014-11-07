@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -41,25 +35,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s): Ivan Soleimanipour.
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-/*
- * "TermListener.java"
- * TermListener.java 1.7 01/07/10
- */
-
-package org.netbeans.lib.terminalemulator;
-
-import java.awt.Dimension;
+package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 /**
- * Listener for Miscelaneous events.
+ *
+ * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
+public class Cpp11TooltipsTestCase extends TooltipsBaseTestCase {
 
-public interface TermListener {
-    public void sizeChanged(Dimension cells, Dimension pixels);
+    public Cpp11TooltipsTestCase(String testName) {
+        super(testName);
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
+        System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+        System.setProperty("cnd.language.flavor.cpp11", "true");         
+        super.setUp();
+    }
 
-    public void titleChanged(String title);
-} 
-
+    public void testBug247751() throws Exception {
+        // Bug #247751 - Provide tooltips and navigation for auto variables
+        performPlainTooltipTest("bug247751.cpp", 75, 15,
+            "Variable var\n" + 
+            "bug247751::std247751::tuple247751<bug247751::std247751::make_tuple247751::Elements &>"
+        );        
+        performPlainTooltipTest("bug247751.cpp", 76, 15,
+            "Variable elem0\n" + 
+            "bug247751::AAA247751 &"
+        );  
+        performPlainTooltipTest("bug247751.cpp", 77, 15,
+            "Variable elem1\n" + 
+            "bug247751::BBB247751 &"
+        );
+        performPlainTooltipTest("bug247751.cpp", 78, 15,
+            "Variable elem2\n" + 
+            "bug247751::CCC247751 &"
+        );
+        performPlainTooltipTest("bug247751.cpp", 80, 15,
+            "Variable mapElem\n" + 
+            "int *&"
+        );
+        performPlainTooltipTest("bug247751.cpp", 82, 15,
+            "Variable stringVar\n" + 
+            "bug247751::std247751::string247751"
+        );        
+    }    
+}

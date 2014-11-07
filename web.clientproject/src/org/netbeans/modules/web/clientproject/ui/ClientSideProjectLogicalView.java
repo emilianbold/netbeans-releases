@@ -519,7 +519,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
 
-    @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=537)
+    @NodeFactory.Registration(projectType="org-netbeans-modules-web-clientproject",position=900)
     public static NodeFactory createRemoteFiles() {
         return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
     }

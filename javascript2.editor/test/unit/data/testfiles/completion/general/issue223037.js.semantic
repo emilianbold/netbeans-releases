@@ -11,9 +11,9 @@ var |>GLOBAL:slideIndex<| = {
     },
     |>METHOD:sendResponse<|: function() {
         this.content.slides.|>FIELD:titles<|[0] = {};
-        var index = 0;
-        for (index; index < 10; index++) {
-            this.content.slides.|>FIELD:titles<|[index] = {
+        var |>LOCAL_VARIABLE_DECLARATION:index<| = 0;
+        for (|>LOCAL_VARIABLE:index<|; |>LOCAL_VARIABLE:index<| < 10; |>LOCAL_VARIABLE:index<|++) {
+            this.content.slides.|>FIELD:titles<|[|>LOCAL_VARIABLE:index<|] = {
                 |>FIELD:note<|: " some note"
             };
         }

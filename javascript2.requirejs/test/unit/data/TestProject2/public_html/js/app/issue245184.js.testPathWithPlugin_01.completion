@@ -3,7 +3,9 @@ Code completion result for source line:
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 FILE       app                                        
+FILE       app                                        
 FILE       issue245156.js                             
+FILE       js                                         
 FILE       moduleApp1.js                              
 FILE       moduleLib1.js                              
 FILE       moduleLib2.js                              

@@ -198,10 +198,10 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         private void invokeWizard(Project project) {
             DiscoveryProvider provider = null;
             if (execLog.getExecLog() != null) {
-                provider = DiscoveryProviderFactory.findProvider("exec-log"); // NOI18N
+                provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.EXEC_LOG_PROVIDER);
             }
             if (provider == null) {
-                provider = DiscoveryProviderFactory.findProvider("make-log"); // NOI18N
+                provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.MAKE_LOG_PROVIDER);
             }
             if (provider == null) {
                 return;
@@ -213,11 +213,8 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                 return;
             }
             Map<String, Object> artifacts = new HashMap<>();
-            if ("exec-log".equals(provider.getID())) { // NOI18N
-                artifacts.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
-            } else {
-                artifacts.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
-            }
+            artifacts.put(DiscoveryManagerImpl.BUILD_EXEC_KEY, execLog.getExecLog());
+            artifacts.put(DiscoveryManagerImpl.BUILD_LOG_KEY, execLog.getBuildLog());
             
             DiscoveryManagerImpl.projectBuilt(project, artifacts, false);
         }

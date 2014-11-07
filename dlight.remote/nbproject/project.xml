@@ -150,6 +150,7 @@
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.remote.impl</friend>
+                <friend>org.netbeans.modules.dlight.terminal</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.mixeddev</friend>
                 <friend>org.netbeans.modules.remotefs.versioning</friend>

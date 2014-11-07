@@ -254,6 +254,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
             } else {
                 JsObject lObject = null;
+                boolean indexNodeReferProperty = false;
                 int assignmentOffset = lhs.getFinish();
                 if (lhs instanceof IndexNode) {
                     IndexNode iNode = (IndexNode)lhs;
@@ -266,6 +267,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (lNode.isString()) {
                             Identifier newPropName = ModelElementFactory.create(parserResult, lNode);
                             if (newPropName != null) {
+                                indexNodeReferProperty = true;
                                 if (lObject.getProperty(lNode.getString()) == null) {
                                     JsObject newProperty = new JsObjectImpl(lObject, newPropName, newPropName.getOffsetRange(), true, parserResult.getSnapshot().getMimeType(), null);
                                     lObject.addProperty(newPropName.getName(), newProperty);
@@ -284,8 +286,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (lhs instanceof IndexNode && lObject instanceof JsArrayImpl) {
                         ((JsArrayImpl)lObject).addTypesInArray(types);
                     } else {
-                        for (TypeUsage type : types) {
-                            lObject.addAssignment(type, assignmentOffset);
+                        boolean isIndexNode = lhs instanceof IndexNode;
+                        if (!isIndexNode || (isIndexNode && indexNodeReferProperty)) {
+                            for (TypeUsage type : types) {
+                                lObject.addAssignment(type, assignmentOffset);
+                            }
                         }
                     }
                 }

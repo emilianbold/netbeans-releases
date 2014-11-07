@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.discovery.services;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,6 +63,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -144,6 +147,11 @@ public final class DiscoveryManagerImpl {
                     } catch (IOException ex) {
                         ex.printStackTrace(System.err);
                     }
+                    saveArtifact(artifact, "-exec"); // NOI18N
+                    artifact = (String) artifacts.get(BUILD_LOG_KEY);
+                    if (artifact != null) {
+                        saveArtifact(artifact, "-build"); // NOI18N
+                    }
                 }
                 return;
             }
@@ -163,18 +171,49 @@ public final class DiscoveryManagerImpl {
                     } catch (IOException ex) {
                         ex.printStackTrace(System.err);
                     }
+                    saveArtifact(artifact, "-build"); // NOI18N
+                    artifact = (String) artifacts.get(BUILD_EXEC_KEY);
+                    if (artifact != null) {
+                        saveArtifact(artifact, "-exec"); // NOI18N
+                    }
+                }
+            }
+        }
+
+        private void saveArtifact(String artifact, String suffix) {
+            if (!isIncremental) {
+                FileObject log = FileUtil.toFileObject(new File(artifact));
+                if (log != null && log.isValid()) {
+                    MakeConfiguration activeConfiguration = getActiveConfiguration();
+                    if (activeConfiguration != null) {
+                        try {
+                            FileObject dest = project.getProjectDirectory().getFileObject("nbproject/private/"+activeConfiguration.getName()+suffix+"."+log.getExt()); // NOI18N
+                            if (dest != null) {
+                                dest.delete();
+                            }
+                            FileUtil.copyFile(log, project.getProjectDirectory().getFileObject("nbproject/private"), // NOI18N
+                                    activeConfiguration.getName()+suffix);
+                        } catch (IOException ex) {
+                            ex.printStackTrace(System.err);
+                        }
+                    }
                 }
             }
         }
         
-        private boolean resolveSymbolicLinks() {
+        private MakeConfiguration getActiveConfiguration() {
             ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor cd = cdp.getConfigurationDescriptor();
             if (cd != null) {
-                MakeConfiguration activeConfiguration = cd.getActiveConfiguration();
-                if (activeConfiguration != null) {
-                    return activeConfiguration.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
-                }
+                return cd.getActiveConfiguration();
+            }
+            return null;
+        }
+
+        private boolean resolveSymbolicLinks() {
+            MakeConfiguration activeConfiguration = getActiveConfiguration();
+            if (activeConfiguration != null) {
+                return activeConfiguration.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
             }
             return false;
         }
