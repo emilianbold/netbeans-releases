@@ -78,6 +78,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -137,6 +139,9 @@ import org.netbeans.swing.outline.DefaultOutlineModel;
  * @author David Strupl
  */
 public class ETable extends JTable {
+    
+    private static final Logger LOG = Logger.getLogger(ETable.class.getName());
+    
     /** Property that is fired when calling {@link #setQuickFilter(int, java.lang.Object)} or
      * {@link #unsetQuickFilter()}. 
      * @since 1.13
@@ -1602,7 +1607,13 @@ public class ETable extends JTable {
             if ((row >= 0) && (row < sortingPermutation.length)) {
                 return sortingPermutation[row];
             }
-            return -1;
+            if (row > 0 && row != Integer.MAX_VALUE) {
+                LOG.log(Level.WARNING,
+                        "Row "+row+" is bigger than sortingPermutation.length = "+sortingPermutation.length,
+                        new IllegalStateException("Row = "+row+", sortingPermutation = "+Arrays.toString(sortingPermutation)));
+                //System.err.println("Row "+row+" is bigger than sortingPermutation length, sortingPermutation = "+Arrays.toString(sortingPermutation));
+            }
+            return row;
         }
         return row;
     }
@@ -1856,6 +1867,7 @@ public class ETable extends JTable {
             if (c != null) {
                 TableModel model = getModel();
                 int noRows = model.getRowCount();
+                //System.err.println("ETable.sortAndFilter(): noRows = "+noRows);
                 List<RowMapping> rows = new ArrayList<RowMapping>();
                 for (int i = 0; i < noRows; i++) {
                     if (acceptByQuickFilter(model, i)) {

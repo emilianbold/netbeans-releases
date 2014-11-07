@@ -81,6 +81,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
     private boolean error;
     private int steps;
     private int unitsProcessed;
+    private ProgressDelegate progress;
 
     public GitProgressSupport () {
         this(1);
@@ -186,6 +187,13 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         if (progressHandle != null) {
             progressHandle.progress(100 * unitsProcessed);
         }
+    }
+    
+    protected final ProgressDelegate getProgress () {
+        if (progress == null) {
+            progress = new ProgressDelegate(this);
+        }
+        return progress;
     }
 
     private void setProgressQueued () {
