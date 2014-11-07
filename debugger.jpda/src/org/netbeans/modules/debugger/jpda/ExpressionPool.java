@@ -302,7 +302,7 @@ public class ExpressionPool {
                 } else if (startIndex >= 0) {
                     int ci = (int) LocationWrapper.codeIndex(l);
                     lineLocationsInExpression.add(locInExpression);
-                    if (line <= (endLine - endlocline)) {
+                    if (startLine <= line && line <= (endLine - endlocline)) {
                         indexes.add(new int[] { startIndex, ci });
                         startIndex = ci;
                         locInExpression = l;
