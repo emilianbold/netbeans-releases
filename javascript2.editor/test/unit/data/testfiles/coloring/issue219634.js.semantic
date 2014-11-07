@@ -3,10 +3,10 @@ function |>METHOD:do_submit<|() {
         return false;
     if (!disallowBlank(|>GLOBAL:document<|.form1.mon_yr, 'Pls. select Month /Year.'))
         return false;
-    var mon_yr = getInputValue(|>GLOBAL:document<|.form1.mon_yr),
-        period = getInputValue(|>GLOBAL:document<|.form1.period);
+    var |>LOCAL_VARIABLE_DECLARATION:mon_yr<| = getInputValue(|>GLOBAL:document<|.form1.mon_yr),
+        |>LOCAL_VARIABLE_DECLARATION:period<| = getInputValue(|>GLOBAL:document<|.form1.period);
 
-    |>GLOBAL:$<|.getJSON('json_txt.php', {|>FIELD:mon_yr<|: mon_yr, |>FIELD:period<|: period},
+    |>GLOBAL:$<|.getJSON('json_txt.php', {|>FIELD:mon_yr<|: |>LOCAL_VARIABLE:mon_yr<|, |>FIELD:period<|: |>LOCAL_VARIABLE:period<|},
     function(j) {
         if (j == 'n') {
             alert('No record found to generate text file.');

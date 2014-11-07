@@ -2,7 +2,7 @@ function |>METHOD:WidgetMilestones<|(|>UNUSED:inHR<|) {
     this.|>FIELD:template<| = "";
 
     function |>METHOD,UNUSED:getDaysToMilestone<|(|>UNUSED:milestoneName<|) {
-        for (var i = 0, max = ChartP3.prototype.milestones.length; i < max; i++) {
+        for (var |>LOCAL_VARIABLE_DECLARATION:i<| = 0, |>LOCAL_VARIABLE_DECLARATION:max<| = ChartP3.prototype.milestones.length; |>LOCAL_VARIABLE:i<| < |>LOCAL_VARIABLE:max<|; |>LOCAL_VARIABLE:i<|++) {
          
         }
     }
@@ -17,26 +17,26 @@ function |>METHOD:ChartP3<|(|>UNUSED:container<|) {
     }
 
     function |>METHOD:inArchive<|() {
-        var t = /.+\.([^?]+)(\?|$)/;
-        var results = |>GLOBAL:window<|.location.pathname.match(t);
-        if (results && results.length > 1) {
-            if (results[1] === "html") {
+        var |>LOCAL_VARIABLE_DECLARATION:t<| = /.+\.([^?]+)(\?|$)/;
+        var |>LOCAL_VARIABLE_DECLARATION:results<| = |>GLOBAL:window<|.location.pathname.match(|>LOCAL_VARIABLE:t<|);
+        if (|>LOCAL_VARIABLE:results<| && |>LOCAL_VARIABLE:results<|.length > 1) {
+            if (|>LOCAL_VARIABLE:results<|[1] === "html") {
                 return true;
             }
         }
         return false;
     }
 
-    var self = this;
-    self.|>CLASS:predictionLinearData<| = {
+    var |>LOCAL_VARIABLE_DECLARATION:self<| = this;
+    |>LOCAL_VARIABLE:self<|.|>CLASS:predictionLinearData<| = {
         |>FIELD:betaFound<|: true
     };
 
-    self.|>FIELD:codeFreezeQC<| = -1;
-    self.|>FIELD:milestones<| = [];
+    |>LOCAL_VARIABLE:self<|.|>FIELD:codeFreezeQC<| = -1;
+    |>LOCAL_VARIABLE:self<|.|>FIELD:milestones<| = [];
 
-    for (var i = 0, max = ChartP3.prototype.milestones.length; i < max; i++) {
-        self.|>FIELD:milestones<|.push(cloneMilestone(ChartP3.prototype.milestones[i]));
+    for (var |>LOCAL_VARIABLE_DECLARATION:i<| = 0, |>LOCAL_VARIABLE_DECLARATION:max<| = ChartP3.prototype.milestones.length; |>LOCAL_VARIABLE:i<| < |>LOCAL_VARIABLE:max<|; |>LOCAL_VARIABLE:i<|++) {
+        |>LOCAL_VARIABLE:self<|.|>FIELD:milestones<|.push(cloneMilestone(ChartP3.prototype.milestones[|>LOCAL_VARIABLE:i<|]));
     }
 
 

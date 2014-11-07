@@ -1,6 +1,6 @@
 |>GLOBAL:Ext<|.onReady(function() {
 
-    var recordFields = [
+    var |>LOCAL_VARIABLE_DECLARATION:recordFields<| = [
     {
         |>FIELD:name<| : 'id',
         |>FIELD:mapping<| : 'service_id'
@@ -32,8 +32,8 @@
     }
     ];
 
-    var remoteJsonStore = new |>GLOBAL:Ext<|.data.JsonStore ({
-        |>FIELD:fields<|          : recordFields,
+    var |>LOCAL_VARIABLE_DECLARATION:remoteJsonStore<| = new |>GLOBAL:Ext<|.data.JsonStore ({
+        |>FIELD:fields<|          : |>LOCAL_VARIABLE:recordFields<|,
         |>FIELD:url<|             : 'http://localhost:8080/ext-test/chapter-07/dataQuery.php',
         |>FIELD:totalProperty<|   : 'totalCount',
         |>FIELD:root<|            : 'records',
@@ -47,12 +47,12 @@
     }
 
     var |>METHOD:stylizeDisplayName<| = function(|>UNUSED:displayname<|, |>UNUSED:column<|, record) {
-        var displayname = record.get('displayname');
+        var |>LOCAL_VARIABLE_DECLARATION:displayname<| = record.get('displayname');
 
-        return String.format('{0}<br />', displayname);
+        return String.format('{0}<br />', |>LOCAL_VARIABLE:displayname<|);
     }
 
-    var columnModel = [
+    var |>LOCAL_VARIABLE_DECLARATION:columnModel<| = [
     {
         |>FIELD:header<|      : 'Service ID',
         |>FIELD:dataIndex<|   : 'serviceid',
@@ -103,15 +103,15 @@
 
     var |>CLASS:pagingToolbar<| = {
         |>FIELD:xtype<|       : 'paging',
-        |>FIELD:store<|       : remoteJsonStore,
+        |>FIELD:store<|       : |>LOCAL_VARIABLE:remoteJsonStore<|,
         |>FIELD:pageSize<|    : 50,
         |>FIELD:displayInfo<| : true
     }
 
     var |>CLASS:grid<| = {
         |>FIELD:xtype<|               : 'grid',
-        |>FIELD:columns<|             : columnModel,
-        |>FIELD:store<|               : remoteJsonStore,
+        |>FIELD:columns<|             : |>LOCAL_VARIABLE:columnModel<|,
+        |>FIELD:store<|               : |>LOCAL_VARIABLE:remoteJsonStore<|,
         |>FIELD:loadMask<|            : true,
         |>FIELD:bbar<|                : pagingToolbar,
         |>FIELD:autoExpandColumn<|    : 'displaynameCol'
