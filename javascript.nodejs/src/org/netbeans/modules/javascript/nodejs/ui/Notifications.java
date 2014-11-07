@@ -54,6 +54,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 public final class Notifications {
@@ -149,9 +150,14 @@ public final class Notifications {
     }
 
     @CheckReturnValue
-    public static boolean ask(String title, String question) {
-        NotifyDescriptor confirmation = new NotifyDescriptor.Confirmation(question, title, NotifyDescriptor.YES_NO_OPTION);
-        return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
+    public static boolean ask(final String title, final String question) {
+        return Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
+            @Override
+            public Boolean run() {
+                NotifyDescriptor confirmation = new NotifyDescriptor.Confirmation(question, title, NotifyDescriptor.YES_NO_OPTION);
+                return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
+            }
+        });
     }
 
     @NbBundle.Messages("Notifications.ask.sync=Sync changes between project and package.json?")

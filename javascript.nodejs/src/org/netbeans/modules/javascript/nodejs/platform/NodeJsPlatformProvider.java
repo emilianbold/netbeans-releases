@@ -67,6 +67,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.PlatformProviderImple
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -79,6 +80,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
 
     @StaticResource
     private static final String ICON_PATH = "org/netbeans/modules/javascript/nodejs/ui/resources/nodejs-badge.png"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(NodeJsPlatformProvider.class);
 
     private final BadgeIcon badgeIcon;
     private final PlatformProviderImplementationListener.Support listenerSupport = new PlatformProviderImplementationListener.Support();
@@ -148,12 +150,18 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
     }
 
     @Override
-    public void notifyPropertyChanged(Project project, PropertyChangeEvent event) {
+    public void notifyPropertyChanged(final Project project, final PropertyChangeEvent event) {
         String propertyName = event.getPropertyName();
         if (PROP_ENABLED.equals(propertyName)) {
             NodeJsSupport.forProject(project).getPreferences().setEnabled((boolean) event.getNewValue());
         } else if (PROP_PROJECT_NAME.equals(propertyName)) {
-            projectNameChanged(project, (String) event.getNewValue());
+            // #248485
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    projectNameChanged(project, (String) event.getNewValue());
+                }
+            }, 500);
         } else if (PROP_RUN_CONFIGURATION.equals(propertyName)) {
             runConfigurationChanged(project, event.getNewValue());
         }
@@ -206,7 +214,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         "# {0} - project name",
         "NodeJsPlatformProvider.sync.done=Project name {0} synced to package.json.",
     })
-    private void projectNameChanged(Project project, String newName) {
+    void projectNameChanged(Project project, String newName) {
         String projectDir = project.getProjectDirectory().getNameExt();
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
         NodeJsPreferences preferences = nodeJsSupport.getPreferences();
