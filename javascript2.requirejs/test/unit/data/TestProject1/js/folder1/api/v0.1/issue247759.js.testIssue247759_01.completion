@@ -2,6 +2,7 @@ Code completion result for source line:
 define(['|'], function () {});
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+OTHER      text!                                      
 FILE       OMessages.js                               
 FILE       Options.js                                 
 FILE       api                                        
