@@ -178,7 +178,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
         NodeJsSupport.forProject(project).getPreferences().setStartFile(FileUtil.toFile(mainJsFile).getAbsolutePath());
         if (!withSiteRoot) {
             // set node.js run config only for server-side node.js project (since project URL is not known)
-            SetupProject.setup(project);
+            SetupProject.setupRun(project);
         }
 
         handle.finish();
@@ -214,7 +214,7 @@ public final class NewProjectWizardIterator extends BaseWizardIterator {
             this.project = project;
         }
 
-        public static void setup(Project project) {
+        public static void setupRun(Project project) {
             SetupProject setupProject = new SetupProject(project);
             setupProject.openProjects.addPropertyChangeListener(setupProject);
         }
