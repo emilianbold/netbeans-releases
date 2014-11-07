@@ -1,69 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
-
-Oracle and Java are registered trademarks of Oracle and/or its affiliates.
-Other names may be trademarks of their respective owners.
-
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
-particular file as subject to the "Classpath" exception as provided
-by Oracle in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-Contributor(s):
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
--->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
   <!ENTITY api-questions SYSTEM "../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml">
 ]>
 
 <api-answers
-  question-version="1.25"
-  author="jtulach@netbeans.org"
+  question-version="1.29"
+  author="sdedic@netbeans.org"
 >
 
   &api-questions;
 
+
+<!--
+        <question id="arch-overall" when="init">
+            Describe the overall architecture. 
+            <hint>
+            What will be API for 
+            <a href="http://wiki.netbeans.org/API_Design#Separate_API_for_clients_from_support_API">
+                clients and what support API</a>? 
+            What parts will be pluggable?
+            How will plug-ins be registered? Please use <code>&lt;api type="export"/&gt;</code>
+            to describe your general APIs and specify their
+            <a href="http://wiki.netbeans.org/API_Stability#Private">
+            stability categories</a>.
+            If possible please provide simple diagrams.
+            </hint>
+        </question>
+-->
  <answer id="arch-overall">
   <p>
-    This module contains general classes needed in NetBeans, extensions to
-    basic JRE contepts, useful methods and other
-    <api group="java" name="UtilitiesAPI" category="official" type="export" url="@TOP@/org/openide/util/doc-files/api.html" /> 
-    classes.
+   The module concentrates general classes and utilities which are independent of
+   client desktop (and Swing UI library) environment. Its desktop-dependent counterpart
+   moved to<a href="@org-openide-util-ui@/org/openide/util/package-summary.html">org.openide.util.ui module</a>.
   </p>
  </answer>
-
-
  <answer id="arch-quality">
   <p>
    There is a lot of unit tests in 
@@ -71,394 +41,218 @@ made subject to such option by the copyright holder.
    system.
   </p>
  </answer>
-
  <answer id="arch-time">
   <p>
-   The module has been around since 1997 and is still improved
-   from time to time.
+   The implementation is already done, the 
+   <a href="@org-openide-util-ui@/org/openide/util/package-summary.html">org.openide.util.ui module</a> 
+   was created after NetBeans 8.0 release.
   </p>
  </answer>
-
-
-
  <answer id="arch-usecases">
-    <usecase id="logging" name="How shall I do or influence logging in NetBeans?">
-    <p>
-        If you are interested in logging from inside your module, or in writing
-        your own log handler or in configuring the whole system, then best place
-        to start is the <a href="@TOP@/org/openide/util/doc-files/logging.html">NetBeans logging guide</a>.
-    </p>
-    </usecase>
+  <p>
+   Use-cases can be found in <a href="@org-openide-util-ui@/architecture-summary.html">org.openide.util.ui module</a> arch summary.
+  </p>
  </answer>
-
-
-
  <answer id="arch-what">
   <p>
-    Described in the <a href="@TOP@/architecture-summary.html#answer-arch-overall">overall</a> answer.
+   Described in the <a href="@TOP@/architecture-summary.html#answer-arch-overall">overall</a> answer.
   </p>
+ </answer>
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
  </answer>
 
 
 
+<!--
+        <question id="compat-deprecation" when="init">
+            How the introduction of your project influences functionality
+            provided by previous version of the product?
+            <hint>
+            If you are planning to deprecate/remove/change any existing APIs,
+            list them here accompanied with the reason explaining why you
+            are doing so.
+            </hint>
+        </question>
+-->
+ <answer id="compat-deprecation">
+  <p>
+   Maintainers of modules, which use <a href="@org-openide-util-ui@/architecture-summary.html">org.openide.util.ui</a> 
+   should review and check their code whether they really need Swing/desktop dependencies. If not, they are
+   encouraged to upgrade their module dependencies and work with <a href="@TOP@/org/openide/util/BaseUtilities.html">BaseUtilities</a>
+   class instead of <a href="@org-openide-util-ui@/org/openide/util/Utilities.html">Utilities</a>.
+  </p>
+ </answer>
  <answer id="compat-i18n">
   <p>
-   There is not much things to localize in this module, so it is properly localized.
-   But it is good to note that the module adds <api name="BrandingSupport" category="official" group="property" type="export" url="@org-openide-util-base@/org/openide/util/NbBundle.html">
-   which is similar to localization but also supports changes of resorces 
-   for application build on top of NetBeans. This is handled by our
-   class <a href="@org-openide-util-base@/org/openide/util/NbBundle.html">NbBundle</a> which 
-   reimplements the JDK's standard <a href="@JDK@/java/util/ResourceBundle.html">ResourceBundle</a>
-   to to take branding into the consideration.
-   </api>. 
+   See <a href="@org-openide-util-ui@/architecture-summary.html">org.openide.util.ui</a>.
   </p>
  </answer>
 
+ <answer id="compat-standards">
+  <p>
+   No.
+  </p>
+ </answer>
  <answer id="compat-version">
   <p>
-   This module has no settings. 
+   No settings.
   </p>
  </answer>
-
-
-
  <answer id="dep-jre">
   <p>
-   Currently JRE 1.4 is needed.
+   JRE 5
   </p>
  </answer>
-
-
-
  <answer id="dep-jrejdk">
   <p>
-   JRE is enough.
+   JRE should be sufficient
   </p>
  </answer>
-
-
  <answer id="dep-nb">
-  <p>
-   This module is independent of other NetBeans modules and can be used 
-   independently. For better interaction with UI parts of NetBeans it however
-   indirectly communicates with <a href="@org-openide-awt@/overview-summary.html">UI Utilities</a>
-   module using <api name="AWTBridge" category="private" group="java" type="export" 
-   url="http://www.netbeans.org/source/browse/openide/util/src/org/netbeans/modules/openide/util/AWTBridge.java">
-   a class that is looked up in <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
-   and if registered can provide better UI elements for <a href="@JDK@/javax/swing/Action.html">Action</a>s.
-   </api>
-   
-  </p>
+  <defaultanswer generate='here' />
  </answer>
-
  <answer id="dep-non-nb">
   <p>
-   Reexports XML APIs so needs some XML parser implementation, but as one 
-   is provided in any 1.4 java, it in fact has no dependencies except on JRE. 
+   No.
   </p>
  </answer>
-
  <answer id="dep-platform">
   <p>
-   Platform independent.
+   Independent.
   </p>
  </answer>
-
-
  <answer id="deploy-dependencies">
   <p>
-  Nothing.
+   None.
   </p>
  </answer>
-
-
-
  <answer id="deploy-jar">
   <p>
-   <api category="devel" group="java.io.File" name="FileLocation" type="export" >
-   the JAR file is located in platform cluster under <code>lib/org-openide-util.jar</code>
-   </api>.
+   Just module JAR>
   </p>
  </answer>
-
-
-
  <answer id="deploy-nbm">
   <p>
-   No reason to not deploy nbm.
+   Yes.
   </p>
  </answer>
-
-
  <answer id="deploy-packages">
   <p>
-   Yes, public packages declared.
+   Yes.
   </p>
  </answer>
-
-
-
  <answer id="deploy-shared">
   <p>
-   Module is on real java classpath and as such it has to be in the shared directory.
+   See <a href="@org-openide-util-ui@/architecture-summary.html">org.openide.util.ui</a>.
   </p>
  </answer>
-
-
  <answer id="exec-ant-tasks">
   <p>
    No.
   </p>
  </answer>
-
-
-
  <answer id="exec-classloader">
   <p>
-   No, we do not create own classloader.
+   No.
   </p>
  </answer>
-
-
-
-<!--
-        <question id="exec-component" when="impl">
-            Is execution of your code influenced by any (string) property
-            of any of your components?
-            
-            <hint>
-            Often <code>JComponent.getClientProperty</code>, <code>Action.getValue</code>
-            or <code>PropertyDescriptor.getValue</code>, etc. are used to influence
-            a behavior of some code. This of course forms an interface that should
-            be documented. Also if one depends on some interface that an object
-            implements (<code>component instanceof Runnable</code>) that forms an
-            API as well.
-            </hint>
-        </question>
--->
  <answer id="exec-component">
-  <ul>
-    <li><api name="HelpID" category="standard" group="property" type="export" url="@TOP@/org/openide/util/HelpCtx.html">
-        read from <a href="@JDK@/javax/swing/JComponent.html">JComponent</a>.getClientProperty
-        to simulate the standard javahelp behaviour and extract the help id for given component.
-        </api>
-    </li>
-
-    <li><api name="iconBase" category="standard" group="property" type="import" >
-        <a href="@TOP@/org/openide/util/actions/SystemAction.html">SystemAction</a> 
-        reacts to expected requests from <a href="@org-openide-awt@/overview-summary.html">UI Utilities</a>
-        module for <code>iconBase</code> property by returning value based on its
-        result of its <code>iconResource()</code> method.
-        </api>
-    </li>
-        
-    <li>
-        <api name="org.openide.util.SharedClassObject.initialize" category="private" group="property" type="export">
-        For purposes of 
-        <code>SystemOption</code>
-        the
-        <a href="@TOP@/org/openide/util/SharedClassObject.html">SharedClassObject</a>
-        handles
-        <code>getProperty ("org.openide.util.SharedClassObject.initialize")</code> 
-        in a special way, by returning 
-        <code>null</code> if initialization is not running and <code>Boolean.TRUE</code> if 
-        it is.
-        </api>
-    </li>
-    
-    <li><api name="OpenIDE-Transmodal-Action" category="devel" group="property" type="export" >
-        <a href="@TOP@/org/openide/util/actions/CallbackSystemAction.html">CallbackSystemAction</a> 
-        checks whether <code>action.getValue("OpenIDE-Transmodal-Action")</code>
-        returns <code>Boolean.TRUE</code> to enable it in dialogs, otherwise
-        the action is disabled when there is an open dialog.
-        </api>
-    </li>
-    
-    
-  </ul>
+  <p>
+   Does not use Swing, thus no Component
+  </p>
  </answer>
-
-
-
-<!--
-        <question id="exec-introspection" when="impl">
-            Does your module use any kind of runtime type information (<code>instanceof</code>,
-            work with <code>java.lang.Class</code>, etc.)?
-            <hint>
-            Check for cases when you have an object of type A and you also
-            expect it to (possibly) be of type B and do some special action. That
-            should be documented. The same applies on operations in meta-level
-            (Class.isInstance(...), Class.isAssignableFrom(...), etc.).
-            </hint>
-        </question>
--->
  <answer id="exec-introspection">
   <p>
-   <a href="@TOP@/org/openide/util/Utilities.html">Utilities</a> provide wrapper
-   for java beans introspection. <api category="private" group="java" name="ParserFactory" type="import" >
-       The <a href="@org-openide-util-base@/org/openide/xml/XMLUtil.html">XMLUtil</a> class is loading
-       a class from <code>core/core.jar</code> to initialize the correct parser factory.
-       This is a fix for <a href="http://www.netbeans.org/issues/show_bug.cgi?id=68942">issue 68942</a>.
-   </api>
-   </p>
+   No.
+  </p>
  </answer>
-
-
-
  <answer id="exec-privateaccess">
   <p>
-  No.
+   <a href="@org-openide-util-ui@/architecture-summary.html">org.openide.util.ui</a> module may
+   call some functionality to preserve compatibility.
   </p>
  </answer>
-
  <answer id="exec-process">
   <p>
-   No external processes executed.
+   No.
   </p>
  </answer>
-
-
  <answer id="exec-property">
-<!--  <ul>
-    <li><api type="export" group="systemproperty" name="netbeans.screen.insets" category="private">
-    Influences results of Utilities.getUsableScreenBounds</api>.</li>
-    <li><api type="export" group="systemproperty" name="netbeans.taskbar.height" category="private">
-    Influences results of Utilities.getUsableScreenBounds</api>.</li>
+  <ul>
     <li>
         <api type='import' group="systemproperty" name="line.separator" category="standard" >
         used on few places
         </api>.
     </li>
     <li><api type="export" group="systemproperty" name="org.openide.util.RequestProcessor.inactiveTime" category="private">
-    Specifies the time in ms unused <a href="@org-openide-util-base@/org/openide/util/RequestProcessor.html">RequestProcessor</a>
+    Specifies the time in ms unused <a href="@TOP@org/openide/util/RequestProcessor.html">RequestProcessor</a>
     processor threads remain around, until 
     they get GCed. By default 60s. Primarily used from tests.</api></li>
-  </ul>-->
+  </ul>
  </answer>
-
-
-
-<!--
-        <question id="exec-reflection" when="impl">
-            Does your code use Java Reflection to execute other code?
-            <hint>
-            This usually indicates a missing or insufficient API in the other
-            part of the system. If the other side is not aware of your dependency
-            this contract can be easily broken.
-            </hint>
-        </question>
--->
  <answer id="exec-reflection">
   <p>
-   <api category="devel" group="java" name="SharedClassObject.setAccessible" type="export" url="@TOP@/org/openide/util/SharedClassObject.html">
-   used to instantiate subclasses. 
-   </api>. 
-   <api category="devel" group="java" name="WeakListener.setAccessible" type="export" url="@org-openide-util-base@/org/openide/util/WeakListeners.html">
+   <api category="devel" group="java" name="WeakListener.setAccessible" type="export" url="@TOP@/org/openide/util/WeakListeners.html">
    used to call the remove method using reflection
    </api>. 
-   <api category="private" group="lookup" name="ActionManagerInvocation" type="export" >
-    because of the API separation, <a href="@TOP@/org/openide/util/actions/CallableSystemAction.html">CallableSystemAction</a> uses lookup for <code>ActionsBridge</code>
-    provided by <code>org-openide-actions</code> module
-    when looking for <a href="@org-openide-actions@/org/openide/actions/ActionManager.html">org.openide.actions.ActionManager</a> implementation.
-    </api>.
+  </p>
+ </answer>
+ <answer id="exec-threading">
+  <p>
+   See <a href="@org-openide-util-ui@/architecture-summary.html">org.openide.util.ui</a>.
+  </p>
+ </answer>
+ <answer id="format-clipboard">
+  <p>
+   No such operation.
+  </p>
+ </answer>
+<answer id="format-dnd">
+  <p>
+   No such operation.
+  </p>
+ </answer>
+ <answer id="format-types">
+  <p>
+    The <a href="http://java.sun.com/j2se/1.3/docs/guide/jar/jar.html#Provider%20Configuration%20File">META-INF/services/...</a> files.
+    <api name="TranslateNames" category="official" type="export" group="java.io.File" 
+    url="@TOP@/org/openide/util/BaseUtilities.html#translate(java.lang.String)">
+    <a href="@TOP@/org/openide/util/BaseUtilities.html#translate(java.lang.String)">Utilities.translate</a> 
+    reads <code>META-INF/netbeans/translate.names</code> files from JARs</api>.
   </p>
  </answer>
 
 
 
 <!--
-        <question id="exec-threading" when="impl">
-            What threading models, if any, does your module adhere to?
+        <question id="lookup-lookup" when="init">
+            Does your module use <code>org.openide.util.Lookup</code>
+            or any similar technology to find any components to communicate with? Which ones?
+            
             <hint>
-                If your module calls foreign APIs which have a specific threading model,
-                indicate how you comply with the requirements for multithreaded access
-                (synchronization, mutexes, etc.) applicable to those APIs.
-                If your module defines any APIs, or has complex internal structures
-                that might be used from multiple threads, declare how you protect
-                data against concurrent access, race conditions, deadlocks, etc.,
-                and whether such rules are enforced by runtime warnings, errors, assertions, etc.
-                Examples: a class might be non-thread-safe (like Java Collections); might
-                be fully thread-safe (internal locking); might require access through a mutex
-                (and may or may not automatically acquire that mutex on behalf of a client method);
-                might be able to run only in the event queue; etc.
-                Also describe when any events are fired: synchronously, asynchronously, etc.
-                Ideas: <a href="http://core.netbeans.org/proposals/threading/index.html#recommendations">Threading Recommendations</a> (in progress)
+            NetBeans is build around a generic registry of services called
+            lookup. It is preferable to use it for registration and discovery
+            if possible. See
+            <a href="http://www.netbeans.org/download/dev/javadoc/org-openide-util/org/openide/util/lookup/doc-files/index.html">
+            The Solution to Comunication Between Components
+            </a>. If you do not plan to use lookup and insist usage
+            of other solution, then please describe why it is not working for
+            you.
+            <br/>
+            When filling the final version of your arch document, please
+            describe the interfaces you are searching for, where 
+            are defined, whether you are searching for just one or more of them,
+            if the order is important, etc. Also classify the stability of such
+            API contract. Use &lt;api group=&amp;lookup&amp; /&gt; tag, so
+            your information gets listed in the summary page of your javadoc.
             </hint>
         </question>
 -->
- <answer id="exec-threading">
-  <p>
-   XXX no answer for exec-threading
-  </p>
- </answer>
-
-
-
- <answer id="format-clipboard">
-  <p>
-    <a href="@TOP@/org/openide/util/datatransfer/MultiTransferObject.html">MultiTransferObject</a> can be 
-    used in <a href="@JDK@/java/awt/datatransfer/Transferable.html">Transferable</a> to represent content
-    composed of multiple independent 
-    <a href="@JDK@/java/awt/datatransfer/Transferable.html">Transferable</a>s.
-  </p>
- </answer>
-
-
-
- <answer id="format-dnd">
-  <p>
-  The same as for clipboard.
-  </p>
- </answer>
-
- <answer id="format-types">
-  <p>
-<!--    The <a href="http://java.sun.com/j2se/1.3/docs/guide/jar/jar.html#Provider%20Configuration%20File">META-INF/services/...</a> files.
-    <api name="TranslateNames" category="official" type="export" group="java.io.File" 
-    url="@TOP@/org/openide/util/Utilities.html#translate(java.lang.String)">
-    <a href="@TOP@/org/openide/util/Utilities.html#translate(java.lang.String)">Utilities.translate</a> 
-    reads <code>META-INF/netbeans/translate.names</code> files from JARs</api>.-->
-  </p>
- </answer>
-
-
-
  <answer id="lookup-lookup">
-    <ul>
-    
-    <li><api name="LookupSharedClassObject" category="devel" group="lookup" type="export">
-    singleton subclasses of <a href="@TOP@/org/openide/util/SharedClassObject.html">SharedClassObject</a> 
-    are searched for using Lookup.
-    </api>.</li>
-
-    <li><api name="LookupContextGlobalProvider" category="stable" group="lookup" type="export">
-    <a href="@TOP@/org/openide/util/Utilities.html#actionsGlobalContext()">actionsGlobalContext</a>
-    searches for <a href="@TOP@/org/openide/util/ContextGlobalProvider.html">ContextGlobalProvider</a> in 
-    <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
-    The provider is usually provided by <a href="@org-openide-windows@/overview-summary.html">window 
-    system implementation</a>.
-    </api>.</li>
-
-<!--    <li><api name="LookupEntityCatalog" category="devel" group="lookup" type="export">
-    <a href="@org-openide-util-base@/org/openide/xml/EntityCatalog.html">EntityCatalog</a> 
-    delegates its methods to all instances of <a href="@org-openide-util-base@/org/openide/xml/EntityCatalog.html">EntityCatalog</a>s
-    found in Lookup
-    </api>.</li>-->
-    
-    <li><api name="LookupErrorManager" category="devel" group="lookup" type="export">
-    <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a> 
-    delegates its methods to all instances of <a href="@TOP@/org/openide/ErrorManager.html">ErrorManager</a>s
-    found in Lookup
-    </api>.</li>
-            
-<!--    <li><api name="LookupClassLoader" category="devel" group="lookup" type="export">
-    Nearly all resource looking functions and reflective code
-    uses <a href="@JDK@/java/lang/ClassLoader.html">ClassLoader</a>
-    obtained from <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
-    for loading system wide resources.
-    </api>.</li>-->
-    
-    </ul>
+  <p>
+   XXX no answer for lookup-lookup
+  </p>
  </answer>
 
 
@@ -467,14 +261,14 @@ made subject to such option by the copyright holder.
         <question id="lookup-register" when="final">
             Do you register anything into lookup for other code to find?
             <hint>
-            Do you register using layer file or using <code>META-INF/services</code>?
+            Do you register using layer file or using a declarative annotation such as <code>@ServiceProvider</code>?
             Who is supposed to find your component?
             </hint>
         </question>
 -->
  <answer id="lookup-register">
   <p>
-   No.
+   XXX no answer for lookup-register
   </p>
  </answer>
 
@@ -491,7 +285,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="lookup-remove">
   <p>
-   No.
+   XXX no answer for lookup-remove
   </p>
  </answer>
 
@@ -504,7 +298,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-exit">
   <p>
-   Nothing.
+   XXX no answer for perf-exit
   </p>
  </answer>
 
@@ -518,7 +312,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   No.
+   XXX no answer for perf-huge_dialogs
   </p>
  </answer>
 
@@ -528,10 +322,24 @@ made subject to such option by the copyright holder.
         <question id="perf-limit" when="init">
             Are there any hard-coded or practical limits in the number or size of
             elements your code can handle?
+            <hint>
+                Most of algorithms have increasing memory and speed complexity
+                with respect to size of data they operate on. What is the critical
+                part of your project that can be seen as a bottleneck with
+                respect to speed or required memory? What are the practical
+                sizes of data you tested your project with? What is your estimate
+                of potential size of data that would cause visible performance
+                problems? Is there some kind of check to detect such situation
+                and prevent "hard" crashes - for example the CloneableEditorSupport
+                checks for size of a file to be opened in editor
+                and if it is larger than 1Mb it shows a dialog giving the
+                user the right to decide - e.g. to cancel or commit suicide.
+            </hint>
         </question>
 -->
  <answer id="perf-limit">
   <p>
+   XXX no answer for perf-limit
   </p>
  </answer>
 
@@ -545,7 +353,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-mem">
   <p>
-   There are no big data structures.
+   XXX no answer for perf-mem
   </p>
  </answer>
 
@@ -567,7 +375,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-menus">
   <p>
-   There are no menus.
+   XXX no answer for perf-menus
   </p>
  </answer>
 
@@ -591,8 +399,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-progress">
   <p>
-   Actions declared as <a href="@TOP@/org/openide/util/actions/CallableSystemAction.html#asynchronous()">CallableSystemAction.asynchronous()</a> 
-   are executed outside of AWT thread on a dedicated request processor one.
+   XXX no answer for perf-progress
   </p>
  </answer>
 
@@ -611,7 +418,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-scale">
   <p>
-   Lookup code scales linearily.
+   XXX no answer for perf-scale
   </p>
  </answer>
 
@@ -629,7 +436,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-spi">
   <p>
-   No enforcing is done.
+   XXX no answer for perf-spi
   </p>
  </answer>
 
@@ -642,7 +449,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-startup">
   <p>
-   No.
+   XXX no answer for perf-startup
   </p>
  </answer>
 
@@ -656,7 +463,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-wakeup">
   <p>
-   No. 
+   XXX no answer for perf-wakeup
   </p>
  </answer>
 
@@ -677,7 +484,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="resources-file">
   <p>
-   No.
+   XXX no answer for resources-file
   </p>
  </answer>
 
@@ -700,7 +507,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="resources-layer">
   <p>
-   No.
+   XXX no answer for resources-layer
   </p>
  </answer>
 
@@ -721,99 +528,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="resources-mask">
   <p>
-   No.
-  </p>
- </answer>
-
-
-
-<!--
-        <question id="resources-read" when="final">
-            Does your module read any resources from layers? For what purpose?
-            
-            <hint>
-            As this is some kind of intermodule dependency, it is a kind of API.
-            Please describe it and classify according to 
-            <a href="http://openide.netbeans.org/tutorial/api-design.html#categories">
-            common stability categories</a>.
-            </hint>
-        </question>
--->
- <answer id="resources-read">
-  <p>
-   No.
-  </p>
- </answer>
-
-
-
-<!--
-        <question id="security-grant" when="final">
-            Does your code grant additional rights to some other code?
-            <hint>Avoid using a class loader that adds extra
-            permissions to loaded code unless really necessary.
-            Also note that your API implementation
-            can also expose unneeded permissions to enemy code by
-            calling AccessController.doPrivileged().</hint>
-        </question>
--->
- <answer id="security-grant">
-  <p>
-   No security permitions manipulated.
-  </p>
- </answer>
-
-
-
-<!--
-        <question id="security-policy" when="final">
-            Does your functionality require modifications to the standard policy file?
-            <hint>Your code might pass control to third-party code not
-            coming from trusted domains. This could be code downloaded over the
-            network or code coming from libraries that are not bundled
-            with NetBeans. Which permissions need to be granted to which domains?</hint>
-        </question>
--->
- <answer id="security-policy">
-  <p>
-   No security permissions manipulated.
-  </p>
- </answer>
-
-
-
-
-<!--
-        <question id="arch-where" when="init">
-            Where one can find sources for your module?
-            <hint>
-                Please provide link to the CVS web client at
-                http://www.netbeans.org/download/source_browse.html
-                or just use tag defaultanswer generate='here'
-            </hint>
-        </question>
--->
- <answer id="arch-where">
-  <defaultanswer generate='here' />
- </answer>
-
-
-
-
-<!--
-        <question id="compat-deprecation" when="init">
-            How the introduction of your project influences functionality
-            provided by previous version of the product?
-            <hint>
-            If you are planning to deprecate/remove/change any existing APIs,
-            list them here accompanied with the reason explaining why you
-            are doing so.
-            </hint>
-        </question>
--->
- <answer id="compat-deprecation">
-  <p>
-   XXX no answer for compat-deprecation
+   XXX no answer for resources-mask
   </p>
  </answer>
 
@@ -839,6 +554,61 @@ made subject to such option by the copyright holder.
  <answer id="resources-preferences">
   <p>
    XXX no answer for resources-preferences
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="resources-read" when="final">
+            Does your module read any resources from layers? For what purpose?
+            
+            <hint>
+            As this is some kind of intermodule dependency, it is a kind of API.
+            Please describe it and classify according to 
+            <a href="http://wiki.netbeans.org/API_Design#What_is_an_API.3F">
+            common stability categories</a>.
+            </hint>
+        </question>
+-->
+ <answer id="resources-read">
+  <p>
+   XXX no answer for resources-read
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  <p>
+   XXX no answer for security-grant
+  </p>
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  <p>
+   XXX no answer for security-policy
   </p>
  </answer>
 

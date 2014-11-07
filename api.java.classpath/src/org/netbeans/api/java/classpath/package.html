@@ -151,7 +151,7 @@ more thoroughly using
     <a href="ClassPath.Entry.html"><font class="type">ClassPath.Entry</font></a> <font class="variable-name">en</font> = (ClassPath.Entry)it.next();
     <font class="keyword">if</font> (!en.<a href="ClassPath.Entry.html#isValid()"><font class="function-name">isValid()</font></a>) {
         <font class="type">IOException</font> <font class="variable-name">x</font> = en.<a href="ClassPath.Entry.html#getError()"><font class="function-name">getError</font></a>();
-        <font class="comment">// Report the error somehow, perhaps using <a href="@org-openide-util@/org/openide/ErrorManager.html"><code>org.openide.ErrorManager</code></a></font>.
+        <font class="comment">// Report the error somehow, perhaps using <a href="@org-openide-util-ui@/org/openide/ErrorManager.html"><code>org.openide.ErrorManager</code></a></font>.
     } <font class="keyword">else</font> {
         <a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html"><font class="type">FileObject</font></a> <font class="variable-name">root</font> = en.<a href="ClassPath.Entry.html#getRoot()"><font class="function-name">getRoot</font></a>();
         <font class="comment">// Do something with the root folder</font>

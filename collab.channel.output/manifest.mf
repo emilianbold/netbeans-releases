@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.collab.channel.output/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/collab/channel/output/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/collab/channel/output/resources/layer.xml
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
-OpenIDE-Module-Specification-Version: 1.3
+OpenIDE-Module-Specification-Version: 1.4
 AutoUpdate-Show-In-Client: false

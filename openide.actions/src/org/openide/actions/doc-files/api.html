@@ -56,7 +56,7 @@ just create a <code>javax.swing.Action</code> and <a href="#adv-install">registe
 Common, global actions such as Cut or Copy are to be found in the
 <a href="../package-summary.html"><code>org.openide.actions</code></a>
 package. The base classes used to create new actions reside in
-<a href="@org-openide-util@/org/openide/util/actions/package-summary.html"><code>org.openide.util.actions</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/actions/package-summary.html"><code>org.openide.util.actions</code></a>
 (you need these only if you want to affect a global action's behavior or 
 provide a context-sensitive action which is disabled or enabled depending on
 what is selected).
@@ -113,7 +113,7 @@ toolbars.
 <h2><a name="intro">Introduction to NetBeans' Action classes</a></h2>
 For historical reasons, the action subclasses available in NetBeans' APIs 
 are subclasses of
-<a href="@org-openide-util@/org/openide/util/actions/SystemAction.html"><code>SystemAction</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html"><code>SystemAction</code></a>.
 It is no longer required that you use <code>SystemAction</code> - for most purposes, 
 generic Swing <code>Action</code> subclasses will work just fine.  For example, one benefit of 
 using <code>SystemAction</code> is automatic handling of mnemonics - just 
@@ -155,7 +155,7 @@ The typical usage pattern for these is along the lines of:
 <pre>
 ActionMap actionMap = topComponent.getActionMap();
 CallbackSystemAction a = SystemAction.get(SomeAction.class);
-actionMap.put(<a href="@org-openide-util@/org/openide/util/actions/CallbackSystemAction.html#getActionMapKey()">a.getActionMapKey()</a>, new MyAction());
+actionMap.put(<a href="@org-openide-util-ui@/org/openide/util/actions/CallbackSystemAction.html#getActionMapKey()">a.getActionMapKey()</a>, new MyAction());
 </pre>
 or directly
 <pre>
@@ -171,7 +171,7 @@ recent versions of NetBeans, this is abstracted into an instance of
 <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html"><code>Lookup</code></a> (which may be the result of
 the selected <code>Node</code>'s <code>getLookup()</code> method, or a merge of several
 selected <code>Node</code>s' <code>Lookup</code>s).  This <code>Lookup</code> instance is found via
-<a href="@org-openide-util@/org/openide/util/Utilities.html#actionsGlobalContext()"><code>Utilities.actionsGlobalContext</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/Utilities.html#actionsGlobalContext()"><code>Utilities.actionsGlobalContext</code></a>.
 So typically, an action will be enabled or disabled depending on the presence
 or absence of a given object in the global action context - which is typically
 the <code>Lookup</code> of the <i>selected <code>Node</code>(s)</i> for whichever <i><code>TopComponent</code></i> has
@@ -203,7 +203,7 @@ or toolbars.  For example, the memory meter (enabled in development builds
 of NetBeans) provides a custom component that shows the amount of memory
 NetBeans is using, which, when clicked, calls <code>System.gc()</code>.
 <p>
-<a href="@org-openide-util@/org/openide/util/actions/Presenter.html"><code>Presenter</code></a> is an
+<a href="@org-openide-util-ui@/org/openide/util/actions/Presenter.html"><code>Presenter</code></a> is an
 empty interface which contains sub-interfaces <code>Presenter.Menu</code>,
 <code>Presenter.Toolbar</code> and <code>Presenter.Popup</code>.  Any 
 action can implement one or more of these interfaces to
@@ -220,7 +220,7 @@ or <code>JMenu</code> instances.</strong>
 </blockquote>
 
 <h2><a name="using-callback">Using <code>CallbackSystemAction</code></a></h2>
-<a href="@org-openide-util@/org/openide/util/actions/CallbackSystemAction.html">
+<a href="@org-openide-util-ui@/org/openide/util/actions/CallbackSystemAction.html">
 <code>CallbackSystemAction</code></a> makes it possible for a single action to have
 multiple implementations, depending on what is selected.  A <code>CallbackSystemAction</code>
 has an <code>ActionPerformer</code> that actually does the work when the user
@@ -232,16 +232,16 @@ may be subclassed. First decide what, if any, state the action
 needs; if it does need some, this should be stored in the class
 itself, rather than in the instance, as it should be a
 singleton. Conventionally,
-<a href="@org-openide-util@/org/openide/util/actions/SystemAction.html#getValue(java.lang.String)"><code>SystemAction.getValue(...)</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getValue(java.lang.String)"><code>SystemAction.getValue(...)</code></a>
 and
 <a
-href="@org-openide-util@/org/openide/util/actions/SystemAction.html#putValue(java.lang.String,%20java.lang.Object)"><code>SystemAction.putValue(...)</code></a>
+href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#putValue(java.lang.String,%20java.lang.Object)"><code>SystemAction.putValue(...)</code></a>
 are used for storage.
 
-<p><a href="@org-openide-util@/org/openide/util/actions/SystemAction.html#getName()"><code>SystemAction.getName()</code></a>,
-<a href="@org-openide-util@/org/openide/util/actions/SystemAction.html#getHelpCtx()"><code>SystemAction.getHelpCtx()</code></a>,
+<p><a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getName()"><code>SystemAction.getName()</code></a>,
+<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#getHelpCtx()"><code>SystemAction.getHelpCtx()</code></a>,
 and
-<a href="@org-openide-util@/org/openide/util/actions/SystemAction.html#iconResource()"><code>SystemAction.iconResource()</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html#iconResource()"><code>SystemAction.iconResource()</code></a>
 should all be overridden to provide basic information about how to
 display the action in its presenters.
 
@@ -250,7 +250,7 @@ to indicate a desired mnemonic position. E.g.
 <samp>My&nbsp;Act&amp;ion</samp> should use the <samp>i</samp> as a
 mnemonic. The default menu and popup presenters honor these mnemonics.
 
-<p><a href="@org-openide-util@/org/openide/util/actions/CallbackSystemAction.html#setSurviveFocusChange(boolean)"><code>CallbackSystemAction.setSurviveFocusChange(...)</code></a>
+<p><a href="@org-openide-util-ui@/org/openide/util/actions/CallbackSystemAction.html#setSurviveFocusChange(boolean)"><code>CallbackSystemAction.setSurviveFocusChange(...)</code></a>
 might be called in the <code>initialize</code> method if it needs to
 be changed.
 
@@ -480,7 +480,7 @@ being that it constructs a JMenu, not an Action.
 
 <li>An action which implements
 
-<a href="@org-openide-util@/org/openide/util/actions/Presenter.Menu.html"><code>Presenter.Menu</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/actions/Presenter.Menu.html"><code>Presenter.Menu</code></a>
 
 In this case, the
 returned <code>JMenuItem</code> will be used in the menu.
@@ -543,7 +543,7 @@ the action in question, and place it in the <samp>Shortcuts/</samp>
 folder. The file name will give the keyboard sequence, named
 according to the method
 
-<a href="@org-openide-util@/org/openide/util/Utilities.html#keyToString(javax.swing.KeyStroke)"><code>Utilities.keyToString(KeyStroke)</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/Utilities.html#keyToString(javax.swing.KeyStroke)"><code>Utilities.keyToString(KeyStroke)</code></a>.
 
 Such instances will be used to create the
 global keymap used as a fallback for all components.

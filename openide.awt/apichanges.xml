@@ -733,8 +733,8 @@ made subject to such option by the copyright holder.
       <compatibility addition="yes" modification="yes" binary="compatible" source="compatible" semantic="incompatible" deprecation="yes" deletion="no"/>
       <description>
         In order to support MacOSX top menus and to fix problems with deprecated <code>JInlineMenu</code>, this new
-        interface was added that allows to handle dynamic content in <a href="@org-openide-util@/org/openide/util/actions/Presenter.Menu.html">Presenter.Menu</a>
- and <a href="@org-openide-util@/org/openide/util/actions/Presenter.Popup.html">Presenter.Popup</a>.
+        interface was added that allows to handle dynamic content in <a href="@org-openide-util-ui@/org/openide/util/actions/Presenter.Menu.html">Presenter.Menu</a>
+ and <a href="@org-openide-util-ui@/org/openide/util/actions/Presenter.Popup.html">Presenter.Popup</a>.
         If the instance returned by Presenter.Menu/Popup is an instance of <a href="@TOP@/org/openide/awt/DynamicMenuContent.html">DynamicMenuContent</a>, it's methods are
         consulted when creating/updating the menu.
         <code>JInlineMenu</code> rewritten to use this new approach in a backward compatible way, however changed during visibility of the menu are not supported.

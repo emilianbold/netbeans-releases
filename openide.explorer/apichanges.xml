@@ -444,7 +444,7 @@ made subject to such option by the copyright holder.
             <a href="@org-openide-nodes@/org/openide/nodes/Node.html">
 						Node.drag</a> method is called when doing copy            
             and in both cases of copy or move the
-            <a href="@org-openide-util@/org/openide/util/datatransfer/ExClipboard.html">
+            <a href="@org-openide-util-ui@/org/openide/util/datatransfer/ExClipboard.html">
 		          ExClipboard.convert
     	      </a> method is called for Transferable containing
             all the nodes, so one can wrap the whole transfer with

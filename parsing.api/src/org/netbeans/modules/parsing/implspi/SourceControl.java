@@ -83,9 +83,12 @@ public final class SourceControl {
         this.resetTask = RP.create(new Runnable() {
             @Override
             public void run() {
-                if (SourceAccessor.getINSTANCE().getEnv(source).isReparseBlocked()) {
+                final SourceAccessor sa = SourceAccessor.getINSTANCE();
+                if (sa.getEnv(source).isReparseBlocked()) {
                     return;
                 }
+                sa.setFlags(source, EnumSet.of(SourceFlags.CHANGE_EXPECTED, SourceFlags.INVALID, SourceFlags.RESCHEDULE_FINISHED_TASKS));
+                sa.setSourceModification(source, false, -1, -1);
                 TaskProcessor.resetStateImpl(source);
             }
         });
