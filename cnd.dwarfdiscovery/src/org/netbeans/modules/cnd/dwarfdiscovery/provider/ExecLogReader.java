@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -141,6 +142,44 @@ public final class ExecLogReader {
         return null;
     }
 
+    static boolean isSupportedLog(String fileName) {
+        File file = new File(fileName);
+        if (!file.exists() || !file.canRead()) {
+            return false;
+        }
+        BufferedReader in = null;
+        try {
+            in = new BufferedReader(new FileReader(file));
+            while (true) {
+                String line = in.readLine();
+                if (line == null) {
+                    break;
+                }
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+                if (line.startsWith("called:")) { //NOI18N
+                    return true;
+                } else if (line.trim().startsWith("[") || line.trim().startsWith("{")) { //NOI18N
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } catch (IOException ex) {
+            return false;
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                }
+            }
+        }
+        return false;
+    }
+    
     // Exec log format
     //called: /opt/solstudio12.2/bin/cc
     //        /var/tmp/as204739-cnd-test-downloads/pkg-config-0.25/popt
@@ -205,7 +244,7 @@ public final class ExecLogReader {
                         if (logType == 0) {
                             if (line.startsWith("called:")) { //NOI18N
                                 logType = 1;
-                            } else if (line.trim().startsWith("[")) { //NOI18N
+                            } else if (line.trim().startsWith("[") || line.trim().startsWith("{")) { //NOI18N
                                 logType = 2;
                             }
                         }

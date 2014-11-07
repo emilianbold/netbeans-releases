@@ -288,6 +288,9 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             return ApplicableImpl.getNotApplicable(null);
         }
         String logFile = descriptor.getExecLog();
+        if (logFile == null) {
+            logFile = descriptor.getBuildLog();
+        }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = DiscoveryProviderFactory.findProvider(DiscoveryExtension.EXEC_LOG_PROVIDER);
         if (provider != null) {

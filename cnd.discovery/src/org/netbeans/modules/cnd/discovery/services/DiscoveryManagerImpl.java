@@ -148,6 +148,10 @@ public final class DiscoveryManagerImpl {
                         ex.printStackTrace(System.err);
                     }
                     saveArtifact(artifact, "-exec"); // NOI18N
+                    artifact = (String) artifacts.get(BUILD_LOG_KEY);
+                    if (artifact != null) {
+                        saveArtifact(artifact, "-build"); // NOI18N
+                    }
                 }
                 return;
             }
@@ -168,6 +172,10 @@ public final class DiscoveryManagerImpl {
                         ex.printStackTrace(System.err);
                     }
                     saveArtifact(artifact, "-build"); // NOI18N
+                    artifact = (String) artifacts.get(BUILD_EXEC_KEY);
+                    if (artifact != null) {
+                        saveArtifact(artifact, "-exec"); // NOI18N
+                    }
                 }
             }
         }
