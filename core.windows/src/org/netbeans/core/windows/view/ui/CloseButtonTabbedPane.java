@@ -226,7 +226,19 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                 setSelectedIndex(selIndex+1);
             }
         } else if( null != scrollRightAction && scrollRightAction.isEnabled() ) {
-            scrollRightAction.actionPerformed(new ActionEvent(this, 0, "")); //NOI18N
+            try {
+                scrollRightAction.actionPerformed(new ActionEvent(this, 0, "")); //NOI18N
+            } catch( ArrayIndexOutOfBoundsException aioobE ) {
+                //#248255
+                //We're using private implementation detail of BasicTabbedPaneUI here and
+                //the default implementation allows scrolling through buttons only.
+                //The logic to enable/disable right scrolling is divided into two parts -
+                //one part disabled the button, the other part disables the action.
+                //When scrolling through the action directly the part that disables the button
+                //never gets called so we're getting an exception like this.
+                invalidate();
+                Logger.getAnonymousLogger().log(Level.INFO, null, aioobE);
+            }
         }
     }
     
