@@ -65,11 +65,11 @@ made subject to such option by the copyright holder.
         <description>#243100: Separate desktop-independent utilities</description>
         <transformation>
             <trigger-dependency type="older">
-                <module-dependency codenamebase="org.openide.util" spec="9.0"/>
+                <module-dependency codenamebase="org.openide.util" spec="9.3"/>
             </trigger-dependency>
             <implies>
                 <result>
-                    <module-dependency codenamebase="org.openide.util.base" spec="9.0"/>
+                    <module-dependency codenamebase="org.openide.util.ui" spec="9.3"/>
                 </result>
             </implies>
         </transformation>

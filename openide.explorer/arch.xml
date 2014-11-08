@@ -194,7 +194,7 @@ JRE is enough.
 The project needs <a href="#java-NodesAPI">Nodes API</a> and 
     <api 
         type="import" group="java" name="UtilitiesAPI" category="official" 
-        url="@org-openide-util@/org/openide/util/doc-files/api.html" 
+        url="@org-openide-util-ui@/org/openide/util/doc-files/api.html" 
     /> 
 which are essential for it to run. Beyond that it uses runtime 
 checks for presence of other APIs (PENDING) to use their 
