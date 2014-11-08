@@ -1278,11 +1278,6 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                     }
                                 });
                             }
-
-                            @Override
-                            public boolean isEnabled () {
-                                return !active;
-                            }
                         });
                         
                         class AutoSyncAction extends AbstractAction implements Presenter.Popup {
@@ -1307,11 +1302,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                             protected void perform () {
                                                 GitModuleConfig.getDefault().setAutoSyncBranch(repo, branch, autoSync);
                                                 if (autoSync) {
-                                                    try {
-                                                        new BranchSynchronizer().syncBranches(repo, new String[] { branch }, this);
-                                                    } catch (GitException ex) {
-                                                        GitClientExceptionHandler.notifyException(ex, true);
-                                                    }
+                                                    new BranchSynchronizer().syncBranches(repo, new String[] { branch }, false);
                                                 }
                                             }
                                         }.start(Git.getInstance().getRequestProcessor(repo), repo,

@@ -47,16 +47,20 @@ import java.awt.event.ActionEvent;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import javax.swing.Action;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRevisionInfo;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.client.ProgressDelegate;
+import org.netbeans.modules.git.ui.fetch.PullAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -86,7 +90,7 @@ public final class BranchSynchronizer {
             protected void perform () {
                 try {
                     new Executor(getClient(), getLogger(), repository, branchNames,
-                            getProgressMonitor(), interactive).execute();
+                            getProgress(), interactive).execute();
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, interactive);
                 }
@@ -95,11 +99,11 @@ public final class BranchSynchronizer {
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_SyncBranchAction_progressName());
     }
 
-    public void syncBranches (File repository, String[] branchNames, GitProgressSupport supp) throws GitException {
+    public void syncBranches (File repository, String[] branchNames, ProgressDelegate progress, OutputLogger logger) throws GitException {
         GitClient client = null;
         try {
             client = Git.getInstance().getClient(repository);
-            new Executor(client, supp.getLogger(), repository, branchNames, supp.getProgressMonitor(), false).execute();
+            new Executor(client, logger, repository, branchNames, progress, false).execute();
         } finally {
             if (client != null) {
                 client.release();
@@ -120,16 +124,16 @@ public final class BranchSynchronizer {
         private final boolean interactive;
         private final File repository;
         private final String[] branchNames;
-        private final ProgressMonitor pm;
+        private final ProgressDelegate progress;
 
         public Executor (GitClient client, OutputLogger logger, File repository,
-                String[] branchNames, ProgressMonitor pm, boolean interactive) {
+                String[] branchNames, ProgressDelegate progress, boolean interactive) {
             this.client = client;
             this.logger = logger;
             this.repository = repository;
             this.branchNames = branchNames;
             this.interactive = interactive;
-            this.pm = pm;
+            this.progress = progress;
         }
         
         private void execute () {
@@ -137,23 +141,57 @@ public final class BranchSynchronizer {
                 try {
                     Map<String, GitBranch> branches = getBranches(repository);
                     GitBranch branch = branches.get(branchName);
-                    if (branch == null || branch.isActive()) {
+                    if (branch == null) {
                         return;
                     }
-                    GitBranch tracked = branch.getTrackedBranch();
+                    final GitBranch tracked = branch.getTrackedBranch();
                     if (tracked == null) {
                         return;
                     }
                     logger.outputLine(Bundle.MSG_SyncBranchAction_result(branch.getName(), tracked.getName()));
-                    GitRevisionInfo ancestor = client.getCommonAncestor(new String[] { branch.getName(), tracked.getName() }, pm);
+                    GitRevisionInfo ancestor = client.getCommonAncestor(new String[] { branch.getName(), tracked.getName() }, progress.getProgressMonitor());
+                    if (progress.isCanceled()) {
+                        return;
+                    }
                     if (equal(ancestor, tracked)) {
                         if (!tracked.isRemote() || equal(ancestor, branch)) {
                             processResult(GitRefUpdateResult.NO_CHANGE, branch, tracked);
                         } else {
                             processPushNeeded(branch);
                         }
+                    } else if (branch.isActive()) {
+                        // active branch, need a merge or rebase
+                        try {
+                            GitUtils.runWithoutIndexing(new Callable<Void>() {
+                                @Override
+                                public Void call () throws Exception {
+                                    new PullAction.BranchSynchronizer(tracked.getName(), repository, new PullAction.BranchSynchronizer.GitProgressSupportDelegate() {
+
+                                        @Override
+                                        public GitClient getClient () throws GitException {
+                                            return client;
+                                        }
+
+                                        @Override
+                                        public OutputLogger getLogger () {
+                                            return logger;
+                                        }
+
+                                        @Override
+                                        public ProgressDelegate getProgress () {
+                                            return progress;
+                                        }
+
+                                    }).execute();
+                                    return null;
+                                }
+                            });
+                        } finally {
+                            Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repository, Git.getInstance().getSeenRoots(repository)));
+                            GitUtils.headChanged(repository);
+                        }
                     } else {
-                        GitRefUpdateResult res = client.updateReference(branchName, tracked.getName(), pm);
+                        GitRefUpdateResult res = client.updateReference(branchName, tracked.getName(), progress.getProgressMonitor());
                         processResult(res, branch, tracked);
                     }
                 } catch (GitException ex) {
