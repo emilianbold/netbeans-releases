@@ -36,3 +36,96 @@ var lRef = {
 
 
 exports.literalRef = lRef;
+
+function FishInst() {
+    this.numberOfHeads = 2;
+    this.fishInfo = function () {
+        return {a1: 1, a2: 2};
+    };
+}
+
+function WizardInst() {
+    this.firstName = "";
+    this.dob = new Date();
+    this.ancestor = new FishInst();
+    this.instProps = {
+        a: 2,
+        aaab: {
+            b1: 1, b2: 3
+        }
+    };
+
+    this.dateOfSpell = function () {
+        return this.dob;
+    };
+
+    this.tomorrow = function () {
+        return new Date();
+    };
+
+}
+
+WizardInst.prototype.nickname = "";
+WizardInst.prototype.getNickName = function () {
+    return this.firstName + " " + this.nickname;
+};
+
+WizardInst.prototype.getSomeAge = function () {
+    return new Date();
+};
+
+WizardInst.prototype.fakeAncestor = new FishInst();
+WizardInst.prototype.configInst = {
+    c1: 1, c2: 2
+};
+
+exports.inst = new WizardInst();
+
+var instReference = new WizardInst();
+
+exports.instRef = instReference;
+
+
+
+
+
+function SampleClass() {
+    this.ale = 1;
+    this.ale2 = {
+        f: 2,
+        f1: 3
+    };
+    this.bar = function () {
+        return new Date();
+    };
+}
+
+function InnerClass() {
+    this.ver = 1;
+    this.da = new Date();
+    this.log = {
+        messages: [], msg: "",
+        owner: "Smith"
+    };
+
+    this.init = function () {
+    };
+}
+
+SampleClass.nest = new InnerClass();
+SampleClass.num  = 1;
+SampleClass.today = new Date();
+SampleClass.something = {
+    foo: 2,
+    testSample: {
+        w: 1,
+        ww: 2
+    },
+    hi: function () {
+    }
+};
+SampleClass.prototype.attempt = 1;
+SampleClass.prototype.getSomething = function () {
+    return {aa: 1, ab: 2};
+};
+exports.constr = SampleClass;
