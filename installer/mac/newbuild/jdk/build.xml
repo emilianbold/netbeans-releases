@@ -40,8 +40,17 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="copy-pkg" depends="get-bits">       
         <exec executable="sh" failonerror="yes">
-            <arg value="-c"/>
-            <arg value="cd ${builddir} ; hdiutil attach jdk.dmg -mountpoint jdk-disk; cp jdk-disk/JDK* .; hdiutil detach jdk-disk; rm ${builddir}/jdk.dmg"/>
+            <arg value="-cv"/>
+            <arg value="cd ${builddir}; 
+hdiutil attach jdk.dmg -mountpoint jdk-disk; 
+pkgutil --expand jdk-disk/JDK* expanded; 
+mkdir flatten; 
+pkgutil --flatten expanded/javaappletplugin.pkg flatten/javaappletplugin.pkg; 
+pkgutil --flatten expanded/jdk*.pkg flatten/jdk.pkg; 
+cp flatten/* .; 
+hdiutil detach jdk-disk; 
+rm ${builddir}/jdk.dmg; 
+rm -rf expanded flatten"/>
         </exec>
     </target>
 
