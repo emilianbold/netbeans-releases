@@ -57,9 +57,9 @@
     <target name="build-jdk-pkg">
         <ant dir="jdk" target="build-pkg"/>              
         <copy todir="${basedir}/build/">
-            <fileset description="Copy ${jdk.package.name}.pkg." dir="${basedir}/jdk/build/" includes="*.pkg"/>
+            <fileset description="Copy jdk.pkg and javaappletplugin.pkg." dir="${basedir}/jdk/build/" includes="*.pkg"/>
         </copy>
-        <echo message="Copy ${jdk.package.name}.pkg into ${basedir}/jdk/build/"/>
+        <echo message="Copy jdk.pkg and javaappletplugin.pkg into ${basedir}/jdk/build/"/>
     </target>
         
     <target name="clean">
@@ -242,7 +242,8 @@
     <target name="build-module">
 
         <property name="module.builddir" value="${basedir}/netBeans/${module.name}/build"/>
-
+        
+        <!-- REMOVE -->
         <copy file="commonfiles/Info.plist" filtering="true" tofile="${module.builddir}/Info.plist">
             <filterset>
                 <filter token="INSTALLDIR" value="${app.name}/Contents/Resources/NetBeans"/>
@@ -252,6 +253,7 @@
         
         <ant target="size-pack-module"/>
         
+        <!-- REMOVE -->
         <copy file="commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${module.builddir}/Description.plist">
             <filterset>
                 <filter token="TITLE" value="${module.title}"/>
@@ -285,12 +287,6 @@
             <arg value="-c"/>            
             <arg value="pkgbuild --root '${module.builddir}/netbeans' --scripts '${scriptsdir}' --identifier org.netbeans.${module.name} ${sign.option} --install-location '/${app.name}/Contents/Resources/NetBeans' '${basedir}/build/${module.name}-${nb.id}.pkg'"/>
         </exec>
-        <!--echo message="Deleting TokenDefinitions.plist and IFPkgPathMappings, see Issue #184419 for details"/>
-        <property name="token.def.plist" value="${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Resources/TokenDefinitions.plist"/>
-        <exec executable="sh" failonerror="no">
-            <arg value="-c"/>
-            <arg value="[ -e  '${token.def.plist}' ] &amp;&amp; rm -f '${token.def.plist}' &amp;&amp; /usr/libexec/PlistBuddy -c 'Delete IFPkgPathMappings' '${basedir}/build/${module.name}-${nb.id}.pkg/Contents/Info.plist'"/>
-        </exec-->
     </target>          
 
 
@@ -335,7 +331,7 @@
                                                -javafx(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javafx-${nb.id}.pkg)
                                           "/>
 
-        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/${jdk.package.name}.pkg)"/>
+        <property name="jdk-bundle.bundles" value="-jdk(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/extide-${nb.id}.pkg ./build/jdk.pkg ./build/javaappletplugin.pkg)"/>
 
         <condition property="all.bundles" value="${main.bundles},${fx.bundles}" else="${main.bundles}"> 
             <equals arg1="${javafx.build}" arg2="1"/>
@@ -345,6 +341,7 @@
         </condition>
         
     </target>
+    
     <target name="build-all-dmg" depends="clean,init,build-pkg,build-glassfish-pkg,build-tomcat-pkg,init-bundles">
         <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
             <delete dir="${basedir}/dist_pkg" failonerror="false"/>                          
@@ -536,15 +533,5 @@
             <arg value="-cv"/>
             <arg value="productbuild --distribution '${pkg.file}/distribution.xml' ${sign.option} --package-path '${pkg.file}/packages' --resources '${pkg.file}/resources/' '${pkg.file}/inst_package/${pkg.name}.pkg'"/>
         </exec>
-    </target>
-    
-    <!--target name="sign-installer" description="Sign an OS X Installer product archive '${mpkg.name}'" if="do.sign-app">
-        <echo message="Sign an OS X Installer '${mpkg.file}'"/>
-        <property name="signed.mpkg.file" value="${basedir}/dist_dmg/signed-${mpkg.name}.mpkg"/>   
-        <exec executable="sh" failonerror="yes">
-            <arg value="-cv"/>
-            <arg value="codesign -s '${signing_identity}' -fv '${mpkg.file}'"/>
-        </exec>
-    </target-->
-    
+    </target>    
 </project>
