@@ -1334,7 +1334,10 @@ made subject to such option by the copyright holder.
             </replace>
             <replace codenamebase="org.openide.util" addcompiletime="true">
                 <module codenamebase="org.openide.util" spec="9.0"/>
-                <module codenamebase="org.openide.util.base" spec="9.0"/>
+                <module codenamebase="org.openide.util.ui" spec="9.3"/>
+            </replace>
+            <replace codenamebase="org.openide.util" addcompiletime="true">
+                <module codenamebase="org.openide.util" spec="9.3"/>
             </replace>
 
             <replace codenamebase="org.openide.filesystems" addcompiletime="true">

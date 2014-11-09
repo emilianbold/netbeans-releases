@@ -183,7 +183,7 @@ No answer
         </question>
 -->
 <answer id="dep-nb">
-<api group="java" name="UtilitiesAPI" type="import" category="official" url="@org-openide-util@/org/openide/util/doc-files/api.html"/>
+<api group="java" name="UtilitiesUIAPI" type="import" category="official" url="@org-openide-util-ui@/org/openide/util/doc-files/api.html"/>
 <defaultanswer generate='none'/>
 </answer>
 

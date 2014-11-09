@@ -86,6 +86,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     private Lookup lookup;
     private IOTabImpl ioTab;
     private IOColorsImpl ioColors;
+    private IOFoldingImpl ioFolding;
     private IOFoldingImpl.NbIoFoldHandleDefinition currentFold = null;
 
     /** Creates a new instance of NbIO 
@@ -321,13 +322,22 @@ class NbIO implements InputOutput, Lookup.Provider {
         return getIn();
     }
 
+    public synchronized IOFoldingImpl getIoFolding() {
+        if (ioFolding == null) {
+            ioFolding = new IOFoldingImpl();
+        }
+        return ioFolding;
+    }
+
+    @Override
     public synchronized Lookup getLookup() {
         if (lookup == null) {
             ioTab = new IOTabImpl();
             ioColors = new IOColorsImpl();
+            ioFolding = getIoFolding();
             lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(),
                     new IOColorLinesImpl(), new IOColorPrintImpl(),
-                    new IOSelectImpl(), new IOFoldingImpl(), options);
+                    new IOSelectImpl(), ioFolding, options);
         }
         return lookup;
     }
@@ -481,6 +491,10 @@ class NbIO implements InputOutput, Lookup.Provider {
         return ioTab != null ? ioTab.getToolTipText() : null;
     }
 
+    void setTooltipText(String toolTip) {
+        post(NbIO.this, IOEvent.CMD_SET_TOOLTIP, toolTip);
+    }
+
     Color getColor(IOColors.OutputType type) {
         return ioColors != null ? ioColors.getColor(type) : AbstractLines.getDefColors()[type.ordinal()];
     }
@@ -508,7 +522,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         @Override
         protected void setToolTipText(String text) {
             toolTip = text;
-            post(NbIO.this, IOEvent.CMD_SET_TOOLTIP, toolTip);
+            NbIO.this.setTooltipText(toolTip);
         }
     }
 
@@ -687,6 +701,20 @@ class NbIO implements InputOutput, Lookup.Provider {
                 return ((AbstractLines) out().getLines());
             }
         }
+
+        /**
+         * Access to fold creation via org.netbeans.api.io API.
+         *
+         * @return The new fold handle definition.
+         */
+        private NbIoFoldHandleDefinition createFold(
+                NbIoFoldHandleDefinition parent, int foldStartIndex,
+                boolean expanded) {
+
+            return new NbIoFoldHandleDefinition(parent, foldStartIndex,
+                    expanded);
+
+        }
     }
 
     private int getLastLineNumber() {
@@ -706,5 +734,40 @@ class NbIO implements InputOutput, Lookup.Provider {
      */
     OutputOptions getOptions() {
         return this.options;
+    }
+
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
+    int startFold(boolean expanded) {
+
+        synchronized (outOrException()) {
+            int foldStartIndex = getLastLineNumber();
+            if (currentFold != null && currentFold.start == foldStartIndex) {
+                return foldStartIndex;
+            } else {
+                currentFold = getIoFolding().createFold(currentFold,
+                        foldStartIndex, expanded);
+                return foldStartIndex;
+            }
+        }
+    }
+
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
+    void endFold(int foldStartIndex) {
+        synchronized (outOrException()) {
+            IOFoldingImpl.NbIoFoldHandleDefinition fold = currentFold;
+            while (fold != null && fold.start != foldStartIndex) {
+                fold = fold.parent;
+            }
+
+            if (fold != null) {
+                IOFoldingImpl.NbIoFoldHandleDefinition nested = currentFold;
+                while (nested != fold) {
+                    nested.finish();
+                    nested = nested.parent;
+                }
+                fold.finish();
+                currentFold = fold.parent;
+            }
+        }
     }
 }

@@ -54,7 +54,6 @@ hcls CancellableRunnableWrapper,RunnableWrapper,Trivial
 CLSS public org.netbeans.api.progress.aggregate.BasicAggregateProgressFactory
 cons public init()
 meth protected static org.netbeans.api.progress.ProgressHandle getProgressHandle(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
-meth protected static org.netbeans.api.progress.aggregate.AggregateProgressHandle doCreateHandle(java.lang.String,org.netbeans.api.progress.aggregate.ProgressContributor[],org.openide.util.Cancellable,boolean)
 meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle createHandle(java.lang.String,org.netbeans.api.progress.aggregate.ProgressContributor[],org.openide.util.Cancellable)
 meth public static org.netbeans.api.progress.aggregate.ProgressContributor createProgressContributor(java.lang.String)
 supr java.lang.Object

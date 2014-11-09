@@ -81,10 +81,12 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.impl.indexing.implspi.ActiveDocumentProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -229,15 +231,18 @@ public final class ModificationResult {
                 } finally {
                     IndexingController.getDefault().exitProtectedMode(null);
                 }
-// TODO: server-split
-//                for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
-//                    if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {
-//                        Source source = Source.create(currentlyVisibleInEditor);
-//                        if (source != null) {
-//                            Utilities.revalidate(source);
-//                        }
-//                    }
-//                }
+                ActiveDocumentProvider provider = Lookup.getDefault().lookup(ActiveDocumentProvider.class);
+                if (provider != null) {
+                    for (Document activeDocument : provider.getActiveDocuments()) {
+                        FileObject fileObject = Utilities.getFileObject(activeDocument);
+                        if (!alreadyRefreshed.contains(fileObject)) {
+                            Source source = Source.create(fileObject);
+                            if (source != null) {
+                                Utilities.revalidate(source);
+                            }
+                        }
+                    }
+                }
             }
             while (lastCommitted.size() > 10) {
                 lastCommitted.removeLast();

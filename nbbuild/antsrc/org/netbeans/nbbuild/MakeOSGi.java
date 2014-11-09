@@ -947,7 +947,7 @@ public class MakeOSGi extends Task {
 
     private static final Set<String> STARTUP_PSEUDO_MODULES = new HashSet<String>(Arrays.asList(
             "org.openide.util.lookup",
-            "org.openide.util.base",
+            "org.openide.util.ui",
             "org.openide.util",
             "org.openide.modules",
             "org.netbeans.bootstrap",
