@@ -116,7 +116,8 @@ public final class RemoteIOException extends IOException {
         throw fsExc;
     }
 
-    public static void annotateException(final Throwable t) {
+    public static <T extends Throwable> T annotateException(T t) {
         Exceptions.attachLocalizedMessage(t, t.getLocalizedMessage());
+        return t;
     }
 }
