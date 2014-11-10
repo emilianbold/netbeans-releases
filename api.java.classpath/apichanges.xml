@@ -76,6 +76,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="GlobalPathRegistryImplementation">
+            <api name="classpath"/>
+            <summary>Added a SPI interface to allow different implementations of <code>GlobalPathRegistry</code></summary>
+            <version major="1" minor="48"/>
+            <date day="31" month="10" year="2014"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added a SPI interface to allow different implementations of the <code>GlobalPathRegistry</code>.
+                    The <code>GlobalPathRegistry</code> uses the first instance od the <code>GlobalPathRegistryImplementation</code>
+                    registered in the global <code>Lookup</code>
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.classpath" name="GlobalPathRegistryImplementation"/>
+        </change>
         <change id="ClassLoaderFactory">
             <api name="classpath"/>
             <summary>Added a SPI interfact to provide <code>ClassPath</code>s <code>ClassLoader</code></summary>
