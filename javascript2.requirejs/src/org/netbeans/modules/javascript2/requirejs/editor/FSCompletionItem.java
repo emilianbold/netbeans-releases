@@ -158,7 +158,7 @@ public class FSCompletionItem implements CompletionProposal {
 
     @Override
     public int getSortPrioOverride() {
-        return -1000;
+        return file.isFolder() ? -1001 : -1000;
     }
 
     @Override
