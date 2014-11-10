@@ -45,46 +45,36 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 /**
- *
  * @author Alexander Simon
+ * 
+ * @param <T> property type
  */
-public interface ProviderProperty {
+public interface ProviderProperty<T> {
 
     /**
-     * Returns property name
+     * @return property name
      */
     String getName();
     
     /**
-     * Returns property description
+     * @return property description
      */
     String getDescription();
     
     /**
-     * Returns property value
+     * @return property value
      */
-    Object getValue();
+    T getValue();
     
     /**
      * Set property value
+     * 
+     * @param value property value
      */
-    void setValue(Object value);
+    void setValue(T value);
     
     /**
-     * Property kind.
+     * @return property kind
      */
-    PropertyKind getKind();
-
-    public enum PropertyKind {
-        MakeFile,
-        BinaryFile,
-        BinaryFiles,
-        SourceFile,
-        MakeLogFile,
-        Folder,
-        Folders,
-        String,
-        Boolean,
-        Object
-    }
+    ProviderPropertyType<T> getPropertyType();
 }

@@ -63,6 +63,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -135,7 +138,7 @@ public final class DiscoveryManagerImpl {
             if (artifact != null) {
                 final Map<String, Object> map = new HashMap<>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
-                map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, artifact);
+                map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, new FSPath(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), artifact));
                 map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks());
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
@@ -159,7 +162,7 @@ public final class DiscoveryManagerImpl {
             if (artifact != null) {
                 final Map<String, Object> map = new HashMap<>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
-                map.put(DiscoveryWizardDescriptor.LOG_FILE, artifact);
+                map.put(DiscoveryWizardDescriptor.LOG_FILE, new FSPath(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), artifact));
                 map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks());
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);

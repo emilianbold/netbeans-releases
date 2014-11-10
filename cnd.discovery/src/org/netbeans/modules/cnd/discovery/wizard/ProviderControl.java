@@ -61,7 +61,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
-import org.netbeans.modules.cnd.discovery.api.ProviderProperty.PropertyKind;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType.PropertyKind;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -78,30 +77,28 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class ProviderControl {
+public class ProviderControl<T> {
     private final ProviderProperty property;
     private final String propertyKey;
     private final DiscoveryDescriptor wizardDescriptor;
     private final JPanel panel;
     private final ChangeListener listener;
-    private String description;
     private JLabel label;
     private EditableComboBox field;
     private JButton button;
     private int chooserMode = 0;
     private static final String LIST_LIST_DELIMITER = ";"; // NOI18N
     
-    public ProviderControl(String key, ProviderProperty property, DiscoveryDescriptor wizardDescriptor,
+    public ProviderControl(String key, ProviderProperty<T> property, DiscoveryDescriptor wizardDescriptor,
             JPanel panel, ChangeListener listener){
         this.propertyKey = key;
         this.property = property;
         this.panel = panel;
         this.listener = listener;
         this.wizardDescriptor = wizardDescriptor;
-        description = property.getDescription();
         label = new JLabel();
         Mnemonics.setLocalizedText(label, property.getName());
-        switch(property.getKind()) {
+        switch(property.getPropertyType().kind()) {
             case MakeLogFile:
                 field = new EditableComboBox();
                 field.setEditable(true);
@@ -113,7 +110,7 @@ public class ProviderControl {
                 button.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getKind()==PropertyKind.BinaryFile,
+                        rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getPropertyType().kind()==PropertyKind.BinaryFile,
                                                         getString("LOG_FILE_CHOOSER_TITLE_TXT"));
                     }
                 });
@@ -130,7 +127,7 @@ public class ProviderControl {
                 button.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getKind()==PropertyKind.BinaryFile,
+                        rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getPropertyType().kind()==PropertyKind.BinaryFile,
                                                         getString("BINARY_FILE_CHOOSER_TITLE_TXT"));
                     }
                 });
@@ -246,7 +243,7 @@ public class ProviderControl {
     }
     
     public void store(){
-        switch(property.getKind()) {
+        switch(property.getPropertyType().kind()) {
             case MakeLogFile:
             case Folder:
             case BinaryFile:
@@ -284,7 +281,7 @@ public class ProviderControl {
     public boolean valid() {
         String path = getComboBoxText();
         File file;
-        switch(property.getKind()) {
+        switch(property.getPropertyType().kind()) {
             case Folder:
                 if (path.length() == 0) {
                     return false;

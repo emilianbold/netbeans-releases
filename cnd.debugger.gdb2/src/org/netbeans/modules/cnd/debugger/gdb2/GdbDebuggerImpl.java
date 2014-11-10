@@ -190,17 +190,23 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    String func = null;
 	    long pc = 0;
             int level = 0;
-
-            if (frameTuple != null) {
-                pc = Address.parseAddr(frameTuple.getConstValue("addr", "0")); // NOI18N
-                func = frameTuple.getConstValue("func"); // NOI18N
-                src = frameTuple.getConstValue("fullname", srcTuple != null ? srcTuple.getConstValue("fullname", null) : null); //NOI18N
-                level = Integer.parseInt(frameTuple.getConstValue("level", "0")); // NOI18N
-                line = Integer.parseInt(frameTuple.getConstValue("line", "0")); //NOI18N
-            } else if (srcTuple != null){
-                // use srcTuple
-                src = srcTuple.getConstValue("fullname", null); // NOI18N
-                line = Integer.parseInt(srcTuple.getConstValue("line", "0")); //NOI18N
+            //20^done,stack=[frame={level="0",addr="<unavailable>",func="??"}] - exception, see bz#247777
+            try {
+                if (frameTuple != null) {
+                    pc = Address.parseAddr(frameTuple.getConstValue("addr", "0")); // NOI18N
+                    func = frameTuple.getConstValue("func"); // NOI18N
+                    src = frameTuple.getConstValue("fullname", srcTuple != null ? srcTuple.getConstValue("fullname", null) : null); //NOI18N
+                    level = Integer.parseInt(frameTuple.getConstValue("level", "0")); // NOI18N
+                    line = Integer.parseInt(frameTuple.getConstValue("line", "0")); //NOI18N
+                } else if (srcTuple != null){
+                    // use srcTuple
+                    src = srcTuple.getConstValue("fullname", null); // NOI18N
+                    line = Integer.parseInt(srcTuple.getConstValue("line", "0")); //NOI18N
+                }
+            }catch (NumberFormatException ex) {
+                //log exception
+                LOG.log(Level.WARNING, "NumberFormatException occurred while parsing  " + (frameTuple != null ? "frameTuple " + frameTuple : //NOI18N
+                        (srcTuple != null ? "srcTuple " + srcTuple : "")), ex);//NOI18N
             }
 
 	    src = debugger.remoteToLocal("MILocation", src); // NOI18N
