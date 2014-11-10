@@ -39,10 +39,13 @@ namespace bug235120 {
     }
 
     // ================= Unique ptr test case =================
+    struct Foo_Content235120 {
+        int abc;
+    };
+    
     struct Foo_235120
     {
-        typedef Foo_235120* Pointer;
-        int abc;
+        typedef Foo_Content235120* Pointer;
     };
 
     struct Bar_235120
@@ -65,7 +68,7 @@ namespace bug235120 {
 
     int main_235120(int argc, char ** argv) 
     {
-        SFINAE_235120<Foo_235120>::Pointer foo = new Foo_235120();
+        SFINAE_235120<Foo_235120>::Pointer foo = new Foo_Content235120();
         foo->abc = 11; //Unable to resolve identifier abc.
         SFINAE_235120<Bar_235120>::Pointer bar = new Bar_235120();
         bar->abc = 11; //Unable to resolve identifier abc.

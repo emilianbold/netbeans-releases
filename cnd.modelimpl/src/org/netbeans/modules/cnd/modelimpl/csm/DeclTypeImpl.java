@@ -78,9 +78,7 @@ public class DeclTypeImpl extends TypeImpl {
     
     private final CsmExpression typeExpression;
     
-    private final ThreadLocal<List<CsmInstantiation>> instantiations = new ThreadLocal<List<CsmInstantiation>>();
-    
-    private volatile CsmType cachedType; 
+    private volatile CsmType cachedType; // TODO: use CsmCacheManager to cache type
     
 
     DeclTypeImpl(AST ast, CsmFile file, CsmScope scope, int pointerDepth, int reference, int arrayDepth, int constQualifiers, int startOffset, int endOffset) {
@@ -92,25 +90,13 @@ public class DeclTypeImpl extends TypeImpl {
     public CsmExpression getTypeExpression() {
         return typeExpression;
     }   
-
-    @Override
-    protected CsmClassifier _getClassifier() {
-        CsmType type = resolve();
-        CsmClassifier classifier = type != null ? type.getClassifier() : null;
-        if (classifier == null) {
-            classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
-        }
-        return classifier;
-    }
     
     @Override
     public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {    
-        CsmClassifier classifier;
-        try {
-            this.instantiations.set(instantiations);
-            classifier = super.getClassifier(instantiations, specialize);
-        } finally {
-            this.instantiations.set(null);
+        CsmType type = resolve(instantiations);
+        CsmClassifier classifier = type != null ? type.getClassifier() : null;
+        if (classifier == null) {
+            classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
         }
         return classifier;
     }    
@@ -121,7 +107,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isPointer(List<CsmInstantiation> instantiations) {
-        CsmType type = resolve();
+        CsmType type = resolve(instantiations);
         return type != null ? type.isPointer() : false;
     }
 
@@ -131,7 +117,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isReference(List<CsmInstantiation> instantiations) {
-        CsmType type = resolve();
+        CsmType type = resolve(instantiations);
         return type != null ? type.isReference() : false;
     }
 
@@ -141,7 +127,7 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isConst(List<CsmInstantiation> instantiations) {
-        CsmType type = resolve();
+        CsmType type = resolve(instantiations);
         return type != null ? type.isConst() : false;
     }    
 
@@ -151,34 +137,34 @@ public class DeclTypeImpl extends TypeImpl {
     }
     
     public boolean isRValueReference(List<CsmInstantiation> instantiations) {
-        CsmType type = resolve();
+        CsmType type = resolve(instantiations);
         return type != null ? type.isRValueReference(): false;
     }
 
-    private boolean canUseCache() {
+    private boolean canUseCache(List<CsmInstantiation> instantiations) {
         // We are allowed to use cache only if context is null
-        return instantiations.get() == null;
+        return instantiations == null;
     }
     
-    private CsmType resolve() {
+    private CsmType resolve(List<CsmInstantiation> instantiations) {
         CsmType type = null;
         
-        if (canUseCache()) {
+        if (canUseCache(instantiations)) {
             type = cachedType;
         }
         
         if (type == null) {
-            if (canUseCache()) {
+            if (canUseCache(instantiations)) {
                 synchronized (this) {
                     if (cachedType == null) {
-                        type = CsmExpressionResolver.resolveType(typeExpression, instantiations.get());
+                        type = CsmExpressionResolver.resolveType(typeExpression, instantiations);
                         cachedType = type;
                     } else {
                         type = cachedType;
                     }
                 }
             } else {
-                type = CsmExpressionResolver.resolveType(typeExpression, instantiations.get());
+                type = CsmExpressionResolver.resolveType(typeExpression, instantiations);
             }
         }
         

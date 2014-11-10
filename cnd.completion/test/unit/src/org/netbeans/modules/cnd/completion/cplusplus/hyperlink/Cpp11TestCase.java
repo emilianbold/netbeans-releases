@@ -250,13 +250,19 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug235120.cpp", 34, 20, "bug235120.cpp", 7, 9);
         performTest("bug235120.cpp", 38, 51, "bug235120.cpp", 3, 9);
         
-        performTest("bug235120.cpp", 69, 15, "bug235120.cpp", 45, 9);
-        performTest("bug235120.cpp", 71, 15, "bug235120.cpp", 50, 9);
+        performTest("bug235120.cpp", 72, 15, "bug235120.cpp", 43, 9);
+        performTest("bug235120.cpp", 74, 15, "bug235120.cpp", 53, 9);
         
-        performTest("bug235120.cpp", 90, 14, "bug235120.cpp", 78, 9);
-        performTest("bug235120.cpp", 119, 59, "bug235120.cpp", 96, 9);        
-        performTest("bug235120.cpp", 120, 27, "bug235120.cpp", 96, 9);
+        performTest("bug235120.cpp", 93, 14, "bug235120.cpp", 81, 9);
+        performTest("bug235120.cpp", 122, 59, "bug235120.cpp", 99, 9);        
+        performTest("bug235120.cpp", 123, 27, "bug235120.cpp", 99, 9);
     }
+    
+    public void bug235120_2() throws Exception {
+        // Bug 235120 - SFINAE type deduction failure.
+        performTest("bug235120_2.cpp", 53, 17, "bug235120_2.cpp", 7, 9);
+        performTest("bug235120_2.cpp", 55, 17, "bug235120_2.cpp", 11, 9);
+    }    
     
     public void bug238413() throws Exception {
         // Bug 238413 - C++11 inline namespaces are not supported

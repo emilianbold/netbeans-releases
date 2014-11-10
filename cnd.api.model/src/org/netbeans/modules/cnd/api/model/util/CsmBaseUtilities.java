@@ -69,10 +69,12 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 
 /**
@@ -80,6 +82,9 @@ import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
  * @author Vladimir Voskresensky
  */
 public class CsmBaseUtilities {
+    
+    private static final int MAX_DEPTH = 20;
+    
     
     /** Creates a new instance of CsmBaseUtilities */
     private CsmBaseUtilities() {
@@ -100,6 +105,70 @@ public class CsmBaseUtilities {
             return obj != null;
         }
     }
+    
+    public static boolean isUnresolved(Object obj) {
+        return CsmBaseUtilitiesProvider.getDefault().isUnresolved(obj);
+    }
+    
+    public static boolean isPointer(CsmType type) {
+        int iteration = MAX_DEPTH;
+        while (type != null && iteration != 0) {
+            if (CsmKindUtilities.isFunctionPointerType(type)) {
+                return (type.getPointerDepth() > 0);
+            }
+            if (type.isPointer()) {
+                return true;
+            }
+            CsmClassifier cls = type.getClassifier();
+            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
+                CsmTypedef td = (CsmTypedef) cls;
+                type = td.getType();
+            } else {
+                break;
+            }
+            iteration--;
+        }
+        return false;
+    }
+
+    public static int isReference(CsmType type) {
+        int iteration = MAX_DEPTH;
+        while (type != null && iteration != 0) {
+            if (type.isReference()) {
+                if (type.isRValueReference()) {
+                    return CsmTypes.TypeDescriptor.RVALUE_REFERENCE;
+                }
+                return CsmTypes.TypeDescriptor.REFERENCE;
+            }
+            CsmClassifier cls = type.getClassifier();
+            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
+                CsmTypedef td = (CsmTypedef) cls;
+                type = td.getType();
+            } else {
+                break;
+            }
+            iteration--;
+        }
+        return 0;
+    }    
+    
+    public static CsmFunctionPointerType tryGetFunctionPointerType(CsmType type) {
+        int iteration = MAX_DEPTH;
+        while (type != null && iteration != 0) {
+            if (CsmKindUtilities.isFunctionPointerType(type)) {
+                return (CsmFunctionPointerType) type;
+            }
+            CsmClassifier cls = type.getClassifier();
+            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
+                CsmTypedef td = (CsmTypedef) cls;
+                type = td.getType();
+            } else {
+                break;
+            }
+            iteration--;
+        }
+        return null;
+    }          
     
     /**
      * Checks if variable has external linkage

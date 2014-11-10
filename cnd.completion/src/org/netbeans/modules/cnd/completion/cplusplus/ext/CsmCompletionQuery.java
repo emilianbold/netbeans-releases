@@ -152,6 +152,8 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.ConstantPredicate;
 
 /**
  *
@@ -2367,6 +2369,7 @@ abstract public class CsmCompletionQuery {
                                 if (!mtdList.isEmpty()) {
                                     List<CsmType> typeList = getTypeList(item, 0);
                                     // check exact overloaded operator
+                                    mtdList = instantiateFunctions(mtdList, null, typeList, new CsmFunctionsAcceptor());
                                     Collection<CsmFunction> filtered = CompletionSupport.filterMethods(this, mtdList, null, typeList, false, false);
                                     if (filtered.size() > 0) {
                                         mtdList = filtered;
@@ -2998,6 +3001,7 @@ abstract public class CsmCompletionQuery {
                             }
                             String parmStr = "*"; // NOI18N
                             List<CsmType> typeList = getTypeList(item, 1);
+                            mtdList = instantiateFunctions(mtdList, genericNameExp, typeList, new ConstantPredicate<CsmFunctional>(true));
                             Collection<CsmFunctional> filtered = CompletionSupport.filterMethods(this, mtdList, genericNameExp, typeList, methodOpen, true);
                             if (filtered.size() > 0) {
                                 mtdList = filtered;
@@ -3005,6 +3009,8 @@ abstract public class CsmCompletionQuery {
                             }
                             if (mtdList.size() > 0) {
                                 if (last && !findType) {
+                                    // TODO: uninstantiating could be removed after adding instantiations for functions/methods/constructors definitions
+                                    mtdList = uninstantiateFunctionDefinitions(mtdList, new ConstantPredicate<CsmFunctional>(true));
                                     result = new CsmCompletionResult(component, getBaseDocument(), mtdList,
                                             formatType(lastType, true, true, false) + mtdName + '(' + parmStr + ')',
                                             item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes);
@@ -3090,6 +3096,24 @@ abstract public class CsmCompletionQuery {
             return cont;
         }
         
+        private <T extends CsmFunctional> List<T> instantiateFunctions(Collection<T> functions, CsmCompletionExpression exp, List<CsmType> passedParams, Predicate<CsmFunctional> acceptor) {
+            List<T> instantiated = new ArrayList<T>(functions.size());
+            for (T func : functions) {
+                CsmFunctional inst = tryInstantiateFunction(func, exp, passedParams);
+                if (acceptor.check(inst)) {
+                    instantiated.add((T) inst);
+                }
+            }
+            return instantiated;
+        }
+        
+        private class CsmFunctionsAcceptor implements Predicate<CsmFunctional> {
+            @Override
+            public boolean check(CsmFunctional value) {
+                return CsmKindUtilities.isFunction(value);
+            }
+        }
+        
         private CsmClassifier tryInstantiateClassifier(CsmClassifier template, CsmCompletionExpression exp) {
             if (exp != null && CsmKindUtilities.isTemplate(template)) {
                 CsmObject inst = CompletionSupport.createInstantiation(this, (CsmTemplate) template, exp, Collections.<CsmType>emptyList());
@@ -3098,6 +3122,16 @@ abstract public class CsmCompletionQuery {
                 }                
             }
             return template;
+        }
+        
+        private CsmFunctional tryInstantiateFunction(CsmFunctional func, CsmCompletionExpression exp, List<CsmType> passedParams) {
+            if (CsmKindUtilities.isTemplate(func)) {
+                CsmObject inst = CompletionSupport.createInstantiation(this, (CsmTemplate) func, exp, passedParams);
+                if (CsmKindUtilities.isFunctional(inst)) {
+                    func = (CsmFunctional) inst;
+                }
+            }
+            return func;
         }
         
         private CsmClassifier resolveClassifier(String var, int varPos)  {
@@ -3912,6 +3946,33 @@ abstract public class CsmCompletionQuery {
             }
         }
         return ret;
+    }
+    
+    private static <T extends CsmFunctional> List<T> uninstantiateFunctionDefinitions(Collection<T> functions, Predicate<CsmFunctional> acceptor) {
+        List<T> uninstantiated = new ArrayList<T>();
+        for (T func : functions) {
+            if (CsmKindUtilities.isFunctionDefinition(func)) {
+                CsmFunctional inst = tryUninstantiateFunction(func);
+                if (acceptor.check(inst)) {
+                    uninstantiated.add((T) inst);
+                }
+            } else {
+                uninstantiated.add(func);
+            }
+        }
+        return uninstantiated;        
+    }
+    
+    private static CsmFunctional tryUninstantiateFunction(CsmFunctional function) {
+        while (CsmKindUtilities.isInstantiation(function)) {
+            CsmOffsetableDeclaration decl = ((CsmInstantiation) function).getTemplateDeclaration();
+            if (CsmKindUtilities.isFunctional(decl)) {
+                function = (CsmFunctional) decl;
+            } else {
+                break;
+            }
+        }
+        return function;
     }
     
     private static boolean isProhibitedResultItem(Object obj) {

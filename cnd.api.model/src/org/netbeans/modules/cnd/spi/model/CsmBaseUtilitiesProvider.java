@@ -76,6 +76,8 @@ public abstract class CsmBaseUtilitiesProvider {
     
     public abstract CsmClass getFunctionClass(CsmFunction fun);
     
+    public abstract boolean isUnresolved(Object obj);
+    
     /**
      * Implementation of the compound provider
      */
@@ -151,6 +153,14 @@ public abstract class CsmBaseUtilitiesProvider {
                 }
             }
             return null;
+        }
+
+        @Override
+        public boolean isUnresolved(Object obj) {
+            for (CsmBaseUtilitiesProvider provider : svcs) {
+                return provider.isUnresolved(obj);
+            }
+            return false;
         }
     }
 }

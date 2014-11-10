@@ -122,6 +122,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
 
 /**
  *
@@ -348,11 +349,11 @@ public final class CompletionSupport implements DocumentListener {
         CsmClassifier fromCls = from.getClassifier();
         CsmClassifier toCls = to.getClassifier();
 
-        if (fromCls == null) {
+        if (fromCls == null || CsmBaseUtilities.isUnresolved(fromCls)) {
             return false;
         }
 
-        if (toCls == null) {
+        if (toCls == null || CsmBaseUtilities.isUnresolved(toCls)) {
             return false;
         }
 
@@ -365,11 +366,11 @@ public final class CompletionSupport implements DocumentListener {
             return (from.getArrayDepth() > to.getArrayDepth()) || (from.getArrayDepth() == to.getArrayDepth() && !CsmCompletion.isPrimitiveClass(fromCls));
         }
         
-        if (canBePointer(from) && to.isPointer()) {
+        if (canBePointer(from) && CsmBaseUtilities.isPointer(to)) {
             return true;
         }
         
-        if (from.isPointer() && canBePointer(to)) {
+        if (CsmBaseUtilities.isPointer(from) && canBePointer(to)) {
             return true;
         }        
 
@@ -441,9 +442,14 @@ public final class CompletionSupport implements DocumentListener {
     private static boolean canBePointer(CsmType type) {
         if (type instanceof CsmCompletion.OffsetableType) {
             CsmClassifier typeCls = type.getClassifier();
-            return CsmCompletion.isPrimitiveClass(typeCls) &&
-                   CsmCompletion.INT_CLASS.getName().equals(typeCls.getName()) &&
-                   ((CsmCompletion.OffsetableType) type).isZeroConst();
+            if (CsmCompletion.NULLPTR_CLASS.getName().equals(typeCls.getName())) {
+                return true;
+            }
+            if (CsmCompletion.isPrimitiveClass(typeCls) &&
+                CsmCompletion.INT_CLASS.getName().equals(typeCls.getName()) &&
+                ((CsmCompletion.OffsetableType) type).isZeroConst()) {
+                return true;
+            }
         }
         return false;
     }
@@ -1114,13 +1120,6 @@ public final class CompletionSupport implements DocumentListener {
 
             if (CsmKindUtilities.isConstructor(entity)) {
                 entity = ((CsmConstructor) entity).getContainingClass();
-            }
-
-            if (CsmKindUtilities.isTemplate(entity)) {
-                CsmObject inst = createInstantiation(context, (CsmTemplate) entity, genericNameExp, typeList);                    
-                if (CsmKindUtilities.isFunction(inst) || CsmKindUtilities.isClassifier(inst)) {
-                    entity = inst;
-                }
             }
             
             if (CsmKindUtilities.isFunctional(entity)) {

@@ -335,7 +335,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     private static AST getLastNode(AST first, boolean greedy) {
         AST last = first;
-        if(last != null) {            
+        int parensDepth = 0;
+        int squareBracketsDepth = 0;
+        int angleBracketsDepth = 0;
+        if(last != null) {   
+            outer:
             for( AST token = last.getNextSibling(); token != null; token = token.getNextSibling() ) {
                 switch( token.getType() ) {                    
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
@@ -349,9 +353,48 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                         return AstUtil.getLastChildRecursively(last);
                         
                     case CPPTokenTypes.LPAREN: 
-                        // lparen cannot be last - entity's end should be on the left side of lparen
+                        ++parensDepth;
+                        // LPAREN cannot be last - entity's end should be on the left side of LPAREN
                         // if there are no type modificators after lparen (*, &, ...)
                         break;
+                        
+                    case CPPTokenTypes.RPAREN:
+                        if (--parensDepth < 0 && !(angleBracketsDepth > 0 || squareBracketsDepth > 0)) {
+                            break outer;
+                        }
+                        last = token;
+                        break;
+                        
+                    case CPPTokenTypes.LESSTHAN:
+                        ++angleBracketsDepth;
+                        // LESSTHAN cannot be last - entity's end should be on the left side of LESSTHAN
+                        break;
+                        
+                    case CPPTokenTypes.GREATERTHAN:
+                        if (--angleBracketsDepth < 0 && !(parensDepth > 0 || squareBracketsDepth > 0)) {
+                            break outer;
+                        }
+                        last = token;
+                        break;
+                        
+                    case CPPTokenTypes.LSQUARE:
+                        ++squareBracketsDepth;
+                        // LSQUARE cannot be last - entity's end should be on the left side of LSQUARE
+                        break;
+                        
+                    case CPPTokenTypes.RSQUARE:
+                        if (--squareBracketsDepth < 0 && !(parensDepth > 0 || angleBracketsDepth > 0)) {
+                            break outer;
+                        }
+                        last = token;
+                        break;      
+                        
+                    case CPPTokenTypes.COMMA:
+                        if (!(squareBracketsDepth > 0 || parensDepth > 0 || angleBracketsDepth > 0)) {
+                            break outer;
+                        }
+                        last = token;
+                        break;                              
                                             
                     default:
                         last = token;

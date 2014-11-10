@@ -136,6 +136,9 @@ import org.netbeans.modules.cnd.utils.CndCollectionUtils;
 import org.netbeans.modules.cnd.utils.MutableObject;
 import org.openide.util.CharSequences;
 import org.openide.util.Pair;
+import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
+import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isReference;
+import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.tryGetFunctionPointerType;
 
 /**
  * Service that provides template instantiations
@@ -145,8 +148,6 @@ import org.openide.util.Pair;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.class)
 public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     private static final Logger LOG = Logger.getLogger(InstantiationProviderImpl.class.getSimpleName());
-    
-    private static final int MAX_DEPTH = 20;
     
     private static final char LT = '<'; // NOI18N
     
@@ -250,6 +251,18 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return instantiate(template, contextFile, contextOffset, params, specialize);
     }
     
+    @Override
+    public CsmObject instantiate(CsmTemplate template, CsmType type) {
+        return instantiate(template, type, true);
+    }
+    
+    public CsmObject instantiate(CsmTemplate template, CsmType type, boolean specialize) {
+        CsmResolveContext context = getLastResolveContext();
+        CsmFile contextFile = (context != null) ? context.getFile() : null;
+        int contextOffset = (context != null) ? context.getOffset() : 0;                
+        return instantiate(template, contextFile, contextOffset, type.getInstantiationParams(), specialize);
+    }        
+    
     public CsmObject instantiate(CsmTemplate template, CsmFile contextFile, int contextOffset, List<CsmSpecializationParameter> params, boolean specialize) {
         long time = System.currentTimeMillis();
         CsmCacheMap cache = getTemplateRelatedCache(template, specialize);
@@ -337,17 +350,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         int contextOffset = (context != null) ? context.getOffset() : 0;        
         return instantiate(template, contextFile, contextOffset, instantiation.getMapping(), specialize);
     }
-
-    @Override
-    public CsmObject instantiate(CsmTemplate template, CsmType type) {
-        return instantiate(template, type, true);
-    }
     
-    public CsmObject instantiate(CsmTemplate template, CsmType type, boolean specialize) {
+    public CsmObject instantiate(CsmTemplate template, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, boolean specialize) {
         CsmResolveContext context = getLastResolveContext();
         CsmFile contextFile = (context != null) ? context.getFile() : null;
-        int contextOffset = (context != null) ? context.getOffset() : 0;                
-        return instantiate(template, contextFile, contextOffset, type.getInstantiationParams(), specialize);
+        int contextOffset = (context != null) ? context.getOffset() : 0;        
+        return instantiate(template, contextFile, contextOffset, mapping, specialize);
     }    
     
     public CsmObject instantiate(CsmTemplate template, CsmFile contextFile, int contextOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, boolean specialize) {
@@ -954,7 +962,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     match += 1;
                                 }
                                 if (declSpecParam.isReference()) {
-                                    int checkReference = checkReference(paramsType.get(i));
+                                    int checkReference = isReference(paramsType.get(i));
                                     if (checkReference > 0) {
                                         match += 1;
                                         if ((checkReference == 2) == declSpecParam.isRValueReference()) {
@@ -1153,67 +1161,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
         
         return null; // parameter not found
-    }     
-    
-    private static CsmFunctionPointerType tryGetFunctionPointerType(CsmType type) {
-        int iteration = MAX_DEPTH;
-        while (type != null && iteration != 0) {
-            if (CsmKindUtilities.isFunctionPointerType(type)) {
-                return (CsmFunctionPointerType) type;
-            }
-            CsmClassifier cls = type.getClassifier();
-            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
-                CsmTypedef td = (CsmTypedef) cls;
-                type = td.getType();
-            } else {
-                break;
-            }
-            iteration--;
-        }
-        return null;
-    }    
-    
-    private static boolean isPointer(CsmType type) {
-        int iteration = MAX_DEPTH;
-        while (type != null && iteration != 0) {
-            if (CsmKindUtilities.isFunctionPointerType(type)) {
-                return (type.getPointerDepth() > 0);
-            }
-            if (type.isPointer()) {
-                return true;
-            }
-            CsmClassifier cls = type.getClassifier();
-            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
-                CsmTypedef td = (CsmTypedef) cls;
-                type = td.getType();
-            } else {
-                break;
-            }
-            iteration--;
-        }
-        return false;
-    }
-
-    private static int checkReference(CsmType type) {
-        int iteration = MAX_DEPTH;
-        while (type != null && iteration != 0) {
-            if (type.isReference()) {
-                if (type.isRValueReference()) {
-                    return 2;
-                }
-                return 1;
-            }
-            CsmClassifier cls = type.getClassifier();
-            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
-                CsmTypedef td = (CsmTypedef) cls;
-                type = td.getType();
-            } else {
-                break;
-            }
-            iteration--;
-        }
-        return 0;
-    }
+    }       
 
     private boolean isClassForward(CsmClassifier cls) {
         while (CsmKindUtilities.isInstantiation(cls)) {
@@ -1762,7 +1710,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             return variadic && digActions.isEmpty();
         }
         
-        private final static CsmType tryGetInstantiationType(CsmType type) {
+        private static CsmType tryGetInstantiationType(CsmType type) {
             CsmType result = CsmUtilities.iterateTypeChain(type, new CsmUtilities.Predicate<CsmType>() {
                 @Override
                 public boolean check(CsmType value) {
@@ -1772,7 +1720,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             return (result != null && result.isInstantiation()) ? result  : null;
         }
         
-        private final static CsmInstantiation tryGetInstantiation(CsmType type) {
+        private static CsmInstantiation tryGetInstantiation(CsmType type) {
             // This is a hack to detect class BaseType
             if (!type.isInstantiation() && type.getStartPosition() == null && type.getEndPosition() == null) {
                 CsmClassifier cls = type.getClassifier();
@@ -1781,7 +1729,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             return null;
         }        
         
-        private final static CsmFunctionPointerType tryGetFunctionPointerType(CsmType type) {
+        private static CsmFunctionPointerType tryGetFunctionPointerType(CsmType type) {
             CsmType result = CsmUtilities.iterateTypeChain(type, new CsmUtilities.Predicate<CsmType>() {
                 @Override
                 public boolean check(CsmType value) {

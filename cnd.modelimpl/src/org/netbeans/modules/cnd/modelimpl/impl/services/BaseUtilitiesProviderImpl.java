@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -201,9 +202,13 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
         
         return clazz;
     }
+
+    @Override
+    public boolean isUnresolved(Object obj) {
+        return Unresolved.isUnresolved(obj);
+    }
     
-    
-    
+        
     public static BaseUtilitiesProviderImpl getImpl() {
         return IMPL;
     }
