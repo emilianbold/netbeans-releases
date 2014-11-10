@@ -1,6 +1,6 @@
-[UNKNOWN]var http =[AFTER_ASSIGNMENT] require[UNKNOWN]('[MODULE_PATH]http'[UNKNOWN]);
-var server =[AFTER_ASSIGNMENT] http[UNKNOWN].createServer(function (req, res) {
-    res.writeHead(200);
-    res.end('Hello Http'); 
-});
-server.listen(8080);
+[UNKNOWN]var http =[AFTER_ASSIGNMENT] require[UNKNOWN]('[MODULE_PATH]http'[UNKNOWN]);[GLOBAL]
+[UNKNOWN]var server =[AFTER_ASSIGNMENT] http[UNKNOWN].createServer(function (req, res) {[GLOBAL]
+    res[UNKNOWN].writeHead(200);[GLOBAL]
+    res[UNKNOWN].end('Hello Http');[GLOBAL] 
+[UNKNOWN]});[GLOBAL]
+server[UNKNOWN].listen(8080);[GLOBAL]
