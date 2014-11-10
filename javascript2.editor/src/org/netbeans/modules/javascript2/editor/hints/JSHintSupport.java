@@ -107,8 +107,11 @@ public class JSHintSupport {
                     iOffset = iOffset + part.length() + 1;
                 }
             }
-            ts.moveNext();
-            token = LexUtilities.findNextIncluding(ts, findToken);
+            if (ts.moveNext()) {
+                token = LexUtilities.findNextIncluding(ts, findToken);
+            } else {
+                break;
+            }
         }
         return names;
     }
