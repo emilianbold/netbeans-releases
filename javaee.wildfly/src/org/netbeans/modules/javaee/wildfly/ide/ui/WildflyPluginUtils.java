@@ -76,6 +76,8 @@ public class WildflyPluginUtils {
 
     public static final Version WILDFLY_8_1_0 = new Version("8.1.0"); // NOI18N
 
+    public static final Version WILDFLY_9_0_0 = new Version("9.0.0"); // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(WildflyPluginUtils.class.getName());
 
     public static final String LIB = "lib" + separatorChar;
@@ -230,6 +232,11 @@ public class WildflyPluginUtils {
         return defaultPort;
     }
 
+     public static String getManagementConnectorPort(String configFile) {
+        String defaultPort = "9999"; // NOI18N
+        return defaultPort;
+    }
+
     /**
      * Return true if the specified port is free, false otherwise.
      */
@@ -263,13 +270,15 @@ public class WildflyPluginUtils {
         assert serverPath != null : "Can't determine version with null server path"; // NOI18N
 
         Version version = null;
-        File serverDir = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org/jboss/as/server/main");
-        File[] files = serverDir.listFiles(new JarFileFilter());
+        File serverDir = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org/jboss/as/version/main");
+        File[] files = serverDir.listFiles(new VersionJarFileFilter());
         if (files != null) {
             for (File jarFile : files) {
-                version = getVersion(jarFile);
-                if (version != null) {
-                    break;
+                if(jarFile.getName().startsWith("jboss-as-version")) {
+                    version = getVersion(jarFile);
+                    if (version != null) {
+                        break;
+                    }
                 }
             }
         }
@@ -279,11 +288,11 @@ public class WildflyPluginUtils {
         return version;
     }
 
-    static class JarFileFilter implements FilenameFilter {
+    static class VersionJarFileFilter implements FilenameFilter {
 
         @Override
         public boolean accept(File dir, String name) {
-            return name.endsWith(".jar");
+            return name.endsWith(".jar") && name.startsWith("jboss-as-version");
         }
     }
 
@@ -298,7 +307,11 @@ public class WildflyPluginUtils {
             Attributes attributes = systemJar.getManifest().getMainAttributes();
             String version = attributes.getValue("Specification-Version"); // NOI18N
             if (version != null) {
-                return new Version(version);
+                Version result = new Version(version);
+                if("1".equals(result.getMajorNumber())) {
+                    result = new Version("9."+ result.getMinorNumber() + "." + result.getMicroNumber());
+                }
+                return result;
             }
             return null;
         } catch (IOException ex) {
