@@ -290,7 +290,19 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
 
                         if (!variableRewrite) {
                             Tree origParent = resolved.getParentPath().getLeaf();
-                            Tree newParent = workingCopy.getTreeUtilities().translate(origParent, Collections.singletonMap(resolved.getLeaf(), make.Identifier(refactoring.getParameterName())));
+                            Tree leaf = resolved.getLeaf();
+                            Tree identifier = make.Identifier(refactoring.getParameterName());
+                            if(leaf.getKind() == Kind.PARENTHESIZED) { // Merge into OperatorPrecedence?
+                                switch (origParent.getKind()) {
+                                    case FOR_LOOP:
+                                    case ENHANCED_FOR_LOOP:
+                                    case WHILE_LOOP:
+                                    case DO_WHILE_LOOP:
+                                    case IF:
+                                        identifier = make.Parenthesized((ExpressionTree) identifier);
+                                }
+                            }
+                            Tree newParent = workingCopy.getTreeUtilities().translate(origParent, Collections.singletonMap(leaf, identifier));
                             workingCopy.rewrite(origParent, newParent);
                         }
                     }

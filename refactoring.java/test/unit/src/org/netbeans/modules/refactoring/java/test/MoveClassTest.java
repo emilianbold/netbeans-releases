@@ -42,7 +42,6 @@
 package org.netbeans.modules.refactoring.java.test;
 
 import java.net.URL;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 
 /**
@@ -55,7 +54,6 @@ public class MoveClassTest extends MoveBaseTest {
         super(name);
     }
     
-    @RandomlyFails
     public void test204444() throws Exception { // #204444 - Improve Move Refactoring to support nested/inner classes
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -80,12 +78,12 @@ public class MoveClassTest extends MoveBaseTest {
         performMove(src.getFileObject("u/B.java"), 0, src.getFileObject("u/C.java"), 0);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
-                + "import u.C.B;\n"
+                + "import u.C;\n"
                 + "public class A {\n"
                 + "    /** Something about i */\n"
-                + "    static int i(B b) { return b.i; }\n"
+                + "    static int i(C.B b) { return b.i; }\n"
                 + "    public void foo() {\n"
-                + "        System.out.println(i(new B()));\n"
+                + "        System.out.println(i(new C.B()));\n"
                 + "    }\n"
                 + "}\n"),
                 new File("u/C.java", "package u;\n"

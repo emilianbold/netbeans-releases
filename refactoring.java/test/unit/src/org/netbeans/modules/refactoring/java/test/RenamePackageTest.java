@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.test;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -61,6 +62,10 @@ public class RenamePackageTest extends RefactoringTestBase {
 
     public RenamePackageTest(String name) {
         super(name, "1.8");
+    }
+    
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
     public void testRenameCasePackage() throws Exception {
