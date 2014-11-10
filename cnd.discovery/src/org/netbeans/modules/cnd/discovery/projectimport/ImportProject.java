@@ -1435,7 +1435,7 @@ public class ImportProject implements PropertyChangeListener {
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
-            map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, new FSPath(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), execLog.getLocalPath()));
+            map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, execLog.getLocalPath());
             map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
@@ -1535,7 +1535,7 @@ public class ImportProject implements PropertyChangeListener {
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
-            map.put(DiscoveryWizardDescriptor.LOG_FILE, new FSPath(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), makeLog.getLocalPath()));
+            map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getLocalPath());
             map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
@@ -1569,7 +1569,7 @@ public class ImportProject implements PropertyChangeListener {
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
             map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
-            map.put(DiscoveryWizardDescriptor.LOG_FILE, new FSPath(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), makeLog.getLocalPath()));
+            map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getLocalPath());
             map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {

@@ -138,7 +138,7 @@ public final class DiscoveryManagerImpl {
             if (artifact != null) {
                 final Map<String, Object> map = new HashMap<>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
-                map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, new FSPath(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), artifact));
+                map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, artifact);
                 map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks());
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
@@ -162,7 +162,7 @@ public final class DiscoveryManagerImpl {
             if (artifact != null) {
                 final Map<String, Object> map = new HashMap<>();
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
-                map.put(DiscoveryWizardDescriptor.LOG_FILE, new FSPath(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), artifact));
+                map.put(DiscoveryWizardDescriptor.LOG_FILE, artifact);
                 map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks());
                 if (isIncremental) {
                     map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
