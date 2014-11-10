@@ -835,6 +835,10 @@ final class DebugCorePanel extends javax.swing.JPanel {
     }
     
     private boolean matchExecutable(Project p) {
+        if (p == null) {
+            adjustAutoCore();
+            return true;
+        }
         ProjectInformation pi = ProjectUtils.getInformation(p);
         String displayName = pi.getDisplayName();
         if (displayName != null && !displayName.trim().isEmpty()) {
@@ -891,7 +895,11 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	if (bundle == null) {
 	    bundle = NbBundle.getBundle(DebugCorePanel.class);
 	}
-	return bundle.getString(s);
+        try{
+            return bundle.getString(s);
+        }catch (Exception e) {
+            return s;
+        }
     }
 
     public boolean asynchronous() {

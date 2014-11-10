@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -75,6 +76,7 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -266,93 +268,38 @@ public class Gdb {
 	    tentativeGdb.startProgressManager().setCancelListener();
 	    tentativeGdb.startProgressManager().updateProgress('>', 1,
 		Catalog.get("StartingGdb"), 0, 0); // NOI18N
-
-	    //
-	    // setup the IOPack
-	    //
-	    ioPack = IOPack.create(remote, ndi, executor);
-	    tentativeGdb.setIOPack(ioPack);
-	    listener.assignIOPack(ioPack);
-
-	    if (Log.Startup.nopty) {
-		// We only need a line discipline for pio because 
-		// the console has it's own "Tap".
-//		ioPack.pio().getTerm().pushStream(new LineDiscipline());
-	    }
-
-	    //
-	    // pass on control to startAsync ...
-	    //
-            
-            START_RP.post(new Runnable() {
+            final Runnable runnable = new Runnable() {                
+                @Override
                 public void run() {
-                    startAsync();
+                    // setup the IOPack: should be invoked  in UI thread
+                    //
+                    ioPack = IOPack.create(remote, ndi, executor);
+                    tentativeGdb.setIOPack(ioPack);
+                    listener.assignIOPack(ioPack);
+                    
+                    if (Log.Startup.nopty) {
+                        // We only need a line discipline for pio because
+                        // the console has it's own "Tap".
+//		ioPack.pio().getTerm().pushStream(new LineDiscipline());
+                    }
+                    
+                    //
+                    // pass on control to startAsync ...
+                    //
+                    START_RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            startAsync();
+                        }
+                    });
+                    
                 }
-            } );
-
-//	    if (DebuggerManager.isAsyncStart()) {
-//		RequestProcessor.getDefault().post(new Runnable() {
-//		    public void run() {
-//			start2();
-//		    }
-//		} );
-//	    } else {
-//		start2();
-//	    }
-
-
-	    /* OLD
-	    // We need the slave name ahead of time
-	    boolean havePio = executor.startIO(getIOPack().pio);
-	    if (!havePio) {
-		;   // SHOULD do something
-	    }
-
-
-	    String gdbname = "gdb";
-
-	    // Startup arguments to gdb:
-
-
-
-	    // Arrange for gdb victims to run under the Pio
-	    boolean ioInWindow =
-		true;
-	    if (executor.slaveName() != null && ioInWindow) {
-		avec.add("-tty");
-		avec.add(executor.slaveName());
-	    }
-
-	    String[] gdb_argv = new String[avec.size()];
-	    for (int vx = 0; vx < avec.size(); vx++) {
-		gdb_argv[vx] = (String) avec.elementAt(vx);
-	    }
-
-
-	    gdb = new Gdb(this);
-
-	    // setup back- and convenience links from Gdb
-	    gdb.setDebugger(this);
-
-
-	    ioPack.console().getTerm().pushStream(gdb.tap());
-	    ioPack.console().getTerm().setCustomColor(0,
-		Color.yellow.darker().darker());
-	    ioPack.console().getTerm().setCustomColor(1,
-		Color.green.darker());
-	    ioPack.console().getTerm().setCustomColor(2,
-		Color.blue.brighter());
-
-
-
-	    int pid = 0;
-	    pid = executor.startEngine(gdbname, gdb_argv, null,
-		ioPack.console());
-	    if (pid == 0) {
-		return;
-	    }
-
-	    */
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                runnable.run();
+            } else {
+                SwingUtilities.invokeLater(runnable);
+            }
 	}
 
 	private void startAsync() {

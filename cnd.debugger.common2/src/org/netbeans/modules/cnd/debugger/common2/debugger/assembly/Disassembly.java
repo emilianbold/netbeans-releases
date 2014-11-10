@@ -437,8 +437,13 @@ public abstract class Disassembly implements StateModel.Listener {
             disLength = getLength();
             try {
                 Writer writer = new OutputStreamWriter(getFileObject().getOutputStream());
-                writer.write(data.toString());
-                writer.close();
+                try {
+                    writer.write(data.toString());
+                } catch (IOException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                } finally {
+                    writer.close();
+                }
             } catch (IOException ex) {
                 //do nothing
             }

@@ -56,66 +56,66 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.Scope;
-import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
-import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
-import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
-import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
-import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
-import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Lookup;
-import org.openide.util.Parameters;
-import org.netbeans.cnd.api.lexer.CndTokenUtilities;
-import org.netbeans.cnd.api.lexer.TokenItem;
-import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver.Scope;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider;
+import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider;
+import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
+import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
-import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
-import org.openide.util.CharSequences;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import static org.netbeans.modules.cnd.completion.impl.xref.Bundle.*;
+import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.CharSequences;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -431,8 +431,8 @@ public final class ReferencesSupport {
             return null;
         }
         CsmObject csmObject = null;
-        // support for overloaded operators
         if (tokenUnderOffset.id() == CppTokenId.OPERATOR) {
+            // support for overloaded operators
             CsmObject foundObject = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
             csmObject = foundObject;
             if (CsmKindUtilities.isFunction(csmObject)) {
@@ -448,7 +448,18 @@ public final class ReferencesSupport {
             } else {
                 csmObject = null;
             }
-        }
+        } /*else if (tokenUnderOffset.id() == CppTokenId.AUTO) {
+            // support for auto keyword
+            CsmObject foundObject = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
+            if (CsmKindUtilities.isVariable(foundObject)) {
+                CsmVariable var = (CsmVariable) foundObject;
+                CsmType varType = var.getType();
+                if (varType != null) {
+                    CsmClassifier varClassifier = (varType != null) ? varType.getClassifier() : null;
+                    
+                }
+            }
+        }*/
         if (csmObject == null) {
             // try with code completion engine
             Collection<CsmObject> objs = CompletionUtilities.findItemsReferencedAtCaretPos(null, doc, CsmCompletionProvider.createCompletionResolver(csmFile, queryScope, fileReferencesContext), offset);

@@ -49,6 +49,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -245,7 +246,11 @@ public abstract class CndPanel implements WizardDescriptor.Panel<WizardDescripto
         int errorVariant = 0;
         
         if (allowFileSeparator) {
-            if (File.separatorChar == '\\') {
+            char separatorChar = File.separatorChar;
+            if (targetFolder != null) {
+                separatorChar = FileSystemProvider.getFileSeparatorChar(targetFolder);
+            }
+            if (separatorChar == '\\') {
                 errorVariant = 3;
                 allowSlash = allowBackslash = true;
             } else {

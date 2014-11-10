@@ -850,7 +850,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
         CppTokenId tokenID = (CppTokenId)token.id();
-        if (!macro && tokenID != null) {
+        if (!macro && tokenID != null && tokenID != CppTokenId.AUTO) {
             String category = tokenID.primaryCategory();
             if (CppTokenId.KEYWORD_CATEGORY.equals(category) || CppTokenId.KEYWORD_DIRECTIVE_CATEGORY.equals(category)) {
                 if (tokenOffset + tokenLen == endScanOffset) {
@@ -2484,6 +2484,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             switch (topID) {
                 case NO_EXP: // declaration started with type name
                 case NEW: // possibly new kwdType[]
+                case SPECIAL_PARENTHESIS_OPEN: // if / for statements
                 case PARENTHESIS_OPEN: // conversion
                 case CONVERSION_OPEN:  // conversion
                 {
