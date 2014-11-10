@@ -111,6 +111,11 @@ public class MakeMasterJNLP extends Task {
             if (codenamebase == null) {
                 throw new BuildException("Not a NetBeans Module: " + jar);
             }
+            if (codenamebase.equals("org.objectweb.asm.all")
+                    && jar.getParentFile().getName().equals("core")
+                    && jar.getParentFile().getParentFile().getName().startsWith("platform")) {
+                continue;
+            }
             {
                 int slash = codenamebase.indexOf('/');
                 if (slash >= 0) {
