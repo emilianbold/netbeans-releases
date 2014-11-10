@@ -97,6 +97,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -1502,7 +1503,7 @@ public class ImportProject implements PropertyChangeListener {
                 DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
                 if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) { 
                     if (TRACE) {
-                        logger.log(Level.INFO, "#start discovery by log file {0}", provider.getProperty("make-log-file").getValue()); // NOI18N
+                        logger.log(Level.INFO, "#start discovery by log file {0}", ProviderPropertyType.MakeLogPropertyType.getProperty(provider)); // NOI18N
                     }
                 } else {
                     if (TRACE) {
@@ -1618,21 +1619,23 @@ public class ImportProject implements PropertyChangeListener {
         map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
         DiscoveryProvider provider = DiscoveryProviderFactory.findProvider("model-folder"); // NOI18N
-        provider.getProperty(DiscoveryExtension.FOLDER_PROPERTY).setValue(nativeProjectPath);
-        if (manualCA) {
-            provider.getProperty("prefer-local").setValue(Boolean.TRUE); // NOI18N
-        }
-        map.put(DiscoveryWizardDescriptor.PROVIDER, provider);
-        map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
-        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
-        descriptor.setProject(makeProject);
-        DiscoveryExtension.buildModel(descriptor, interrupter);
-        try {
-            DiscoveryProjectGeneratorImpl generator = new DiscoveryProjectGeneratorImpl(descriptor);
-            generator.makeProject();
-            importResult.put(Step.DiscoveryModel, State.Successful);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if (provider != null) {
+            ProviderPropertyType.ModelFolderPropertyType.setProperty(provider, nativeProjectPath);
+            if (manualCA) {
+                ProviderPropertyType.PreferLocalFilesPropertyType.setProperty(provider, Boolean.TRUE);
+            }
+            map.put(DiscoveryWizardDescriptor.PROVIDER, provider);
+            map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
+            DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
+            descriptor.setProject(makeProject);
+            DiscoveryExtension.buildModel(descriptor, interrupter);
+            try {
+                DiscoveryProjectGeneratorImpl generator = new DiscoveryProjectGeneratorImpl(descriptor);
+                generator.makeProject();
+                importResult.put(Step.DiscoveryModel, State.Successful);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 

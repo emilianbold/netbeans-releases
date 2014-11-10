@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -73,18 +74,13 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class AnalyzeFolder extends BaseDwarfProvider {
-    private final Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
-    public static final String FOLDER_KEY = "folder"; // NOI18N
     public static final String FOLDER_PROVIDER_ID = "dwarf-folder"; // NOI18N
+    private final Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
+    private final ProviderProperty<String> BINARY_FOLDER_PROPERTY;
     
     public AnalyzeFolder() {
-        clean();
-    }
-    
-    @Override
-    public final void clean() {
         myProperties.clear();
-        myProperties.put(FOLDER_KEY, new ProviderProperty(){
+        BINARY_FOLDER_PROPERTY = new ProviderProperty<String>(){
             private String myPath;
             @Override
             public String getName() {
@@ -95,70 +91,22 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 return i18n("Folder_Files_Description"); // NOI18N
             }
             @Override
-            public Object getValue() {
+            public String getValue() {
                 return myPath;
             }
             @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
+            public void setValue(String value) {
+                myPath = (String)value;
             }
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.Folder;
+            public ProviderPropertyType<String> getPropertyType() {
+                return ProviderPropertyType.ExecutableFolderPropertyType;
             }
-        });
-        myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
-            private String myPath="";
-            @Override
-            public String getName() {
-                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
-            }
-            @Override
-            public String getDescription() {
-                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
-            }
-            @Override
-            public Object getValue() {
-                return myPath;
-            }
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
-            }
-            @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.String;
-            }
-        });
-        myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty(){
-            private String myPath="";
-            @Override
-            public String getName() {
-                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
-            }
-            @Override
-            public String getDescription() {
-                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
-            }
-            @Override
-            public Object getValue() {
-                return myPath;
-            }
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
-            }
-            @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.String;
-            }
-        });
+        };
+        myProperties.put(BINARY_FOLDER_PROPERTY.getPropertyType().key(), BINARY_FOLDER_PROPERTY);
+        
+        myProperties.put(RESTRICT_SOURCE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_SOURCE_ROOT_PROPERTY);
+        myProperties.put(RESTRICT_COMPILE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_COMPILE_ROOT_PROPERTY);
     }
     
     @Override
@@ -190,7 +138,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         init(project);
         resetStopInterrupter(interrupter);
-        String root = (String)getProperty(FOLDER_KEY).getValue();
+        String root = BINARY_FOLDER_PROPERTY.getValue();
         if (root == null || root.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NoBaseFolder")));
         }
@@ -243,7 +191,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                             progress.start();
                         }
                         try {
-                            Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
+                            Set<String> set = getObjectFiles(BINARY_FOLDER_PROPERTY.getValue());
                             if (progress != null) {
                                 progress.start(set.size());
                             }

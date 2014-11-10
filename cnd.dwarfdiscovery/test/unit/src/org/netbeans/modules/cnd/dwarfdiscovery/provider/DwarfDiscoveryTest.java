@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
@@ -321,7 +322,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         String objFileName = dataDir.getAbsolutePath()+path;
         root = dataDir.getAbsolutePath().replace('\\', '/')+root;
         assertTrue(new File(objFileName).exists());
-        provider.getProperty(AnalyzeExecutable.EXECUTABLE_KEY).setValue(objFileName);
+        ProviderPropertyType.ExecutablePropertyType.setProperty(provider, objFileName);
         Applicable canAnalyze = provider.canAnalyze(new ProjectProxy() {
 
             @Override
@@ -391,7 +392,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         final File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
         assertTrue(new File(objFileName).exists());
-        provider.getProperty(AnalyzeExecutable.EXECUTABLE_KEY).setValue(objFileName);
+        ProviderPropertyType.ExecutablePropertyType.setProperty(provider, objFileName);
         List<Configuration> analyze = provider.analyze(new ProjectProxy() {
 
             @Override

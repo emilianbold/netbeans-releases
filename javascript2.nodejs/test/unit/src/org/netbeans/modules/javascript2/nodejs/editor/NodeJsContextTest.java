@@ -64,6 +64,10 @@ public class NodeJsContextTest extends JsTestBase {
         checkCompletionContext("testfiles/context/context01.js");
     }
     
+    public void testContext02() throws Exception {
+        checkCompletionContext("testfiles/context/context02.js");
+    }
+    
     public void testSimpleServer() throws Exception {
         checkCompletionContext("testfiles/context/simpleServer.js");
     }

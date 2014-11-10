@@ -117,6 +117,7 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                         result.addAll((new NodeJsCompletionItem.FilenameSupport()).getItems(ccContext.getParserResult().getSnapshot().getSource().getFileObject(), eOffset - prefixLength, ".." + prefix));
                         break;
                     case AFTER_ASSIGNMENT:
+                    case GLOBAL:
                         if (prefix.isEmpty() || NodeJsUtils.REQUIRE_METHOD_NAME.startsWith(prefix)) {
                             NodeJsElement handle = new NodeJsElement(fo, NodeJsUtils.REQUIRE_METHOD_NAME, NodeJsDataProvider.getDefault(fo).getDocumentationForGlobalObject(NodeJsUtils.REQUIRE_METHOD_NAME), TEMPLATE_REQUIRE, ElementKind.METHOD);
                             result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));

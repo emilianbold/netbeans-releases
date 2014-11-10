@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -69,18 +70,13 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class AnalyzeMakeLog extends BaseProvider {
-    private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
-    public static final String MAKE_LOG_KEY = "make-log-file"; // NOI18N
     public static final String MAKE_LOG_PROVIDER_ID = "make-log"; // NOI18N
+    private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
+    private final ProviderProperty<String> MAKE_LOG_PROPERTY;
     
     public AnalyzeMakeLog() {
-        clean();
-    }
-    
-    @Override
-    public final void clean() {
         myProperties.clear();
-        myProperties.put(MAKE_LOG_KEY, new ProviderProperty(){
+        MAKE_LOG_PROPERTY = new ProviderProperty<String>(){
             private String myPath;
             @Override
             public String getName() {
@@ -91,70 +87,22 @@ public class AnalyzeMakeLog extends BaseProvider {
                 return i18n("Make_Log_File_Description"); // NOI18N
             }
             @Override
-            public Object getValue() {
+            public String getValue() {
                 return myPath;
             }
             @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
+            public void setValue(String value) {
+                myPath = value;
             }
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.MakeLogFile;
+            public ProviderPropertyType getPropertyType() {
+                return ProviderPropertyType.MakeLogPropertyType;
             }
-        });
-        myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
-            private String myPath="";
-            @Override
-            public String getName() {
-                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
-            }
-            @Override
-            public String getDescription() {
-                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
-            }
-            @Override
-            public Object getValue() {
-                return myPath;
-            }
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
-            }
-            @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.String;
-            }
-        });
-        myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty(){
-            private String myPath="";
-            @Override
-            public String getName() {
-                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
-            }
-            @Override
-            public String getDescription() {
-                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
-            }
-            @Override
-            public Object getValue() {
-                return myPath;
-            }
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
-            }
-            @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.String;
-            }
-        });
+        };
+        myProperties.put(MAKE_LOG_PROPERTY.getPropertyType().key(), MAKE_LOG_PROPERTY);
+        
+        myProperties.put(RESTRICT_SOURCE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_SOURCE_ROOT_PROPERTY);
+        myProperties.put(RESTRICT_COMPILE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_COMPILE_ROOT_PROPERTY);
     }
 
     @Override
@@ -185,9 +133,9 @@ public class AnalyzeMakeLog extends BaseProvider {
     @Override
     public boolean isApplicable(ProjectProxy project) {
 //        if (detectMakeLog(project) != null){
-        Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
-        if (o == null || "".equals(o.toString())){ // NOI18N
-            getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
+        String o = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
+        if (o == null || o.isEmpty()) {
+            RESTRICT_COMPILE_ROOT_PROPERTY.setValue(project.getSourceRoot());
             return true;
         }
         return false;
@@ -240,11 +188,11 @@ public class AnalyzeMakeLog extends BaseProvider {
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         init(project);
-        String set = (String)getProperty(MAKE_LOG_KEY).getValue();
+        String set = MAKE_LOG_PROPERTY.getValue();
         if (set == null || set.length() == 0) {
             set = detectMakeLog(project);
             if (set != null && set.length() > 0){
-                getProperty(MAKE_LOG_KEY).setValue(set);
+                MAKE_LOG_PROPERTY.setValue(set);
             }
         }
         if (set == null || set.length() == 0) {
@@ -255,10 +203,9 @@ public class AnalyzeMakeLog extends BaseProvider {
 
     @Override
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
-        ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
-        String root = "";
-        if (p != null) {
-            root = (String)p.getValue();
+        String root = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
+        if (root == null) {
+            root = ""; //NOI18N
         }
         List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, buildArtifacts, storage);
         progress = null;
@@ -300,7 +247,7 @@ public class AnalyzeMakeLog extends BaseProvider {
                 @Override
                 public List<String> getBuildArtifacts() {
                     if (myBuildArtifacts == null){
-                        String set = (String)getProperty(MAKE_LOG_KEY).getValue();
+                        String set = MAKE_LOG_PROPERTY.getValue();
                         if (set == null || set.length() == 0) {
                             set = detectMakeLog(project);
                         }
@@ -316,7 +263,7 @@ public class AnalyzeMakeLog extends BaseProvider {
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
-                        String set = (String)getProperty(MAKE_LOG_KEY).getValue();
+                        String set = MAKE_LOG_PROPERTY.getValue();
                         if (set == null || set.length() == 0) {
                             set = detectMakeLog(project);
                         }

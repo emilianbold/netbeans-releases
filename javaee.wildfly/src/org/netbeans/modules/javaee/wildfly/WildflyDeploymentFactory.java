@@ -130,7 +130,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
         @Override
        public Enumeration<URL> getResources(String name) throws IOException {
            // get rid of annoying warnings
-           if (name.indexOf("jndi.properties") != -1) {// || name.indexOf("i18n_user.properties") != -1) { // NOI18N
+           if (name.contains("jndi.properties")) { // NOI18N
                return Collections.enumeration(Collections.<URL>emptyList());
            }
 
@@ -156,28 +156,15 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
     public static WildFlyClassLoader createWildFlyClassLoader(String serverRoot) {
         try {
             String sep = File.separator;
-            File domFile = new File(serverRoot, WildflyPluginUtils.getModulesBase(serverRoot)
-                    + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
-
-            if (!domFile.exists()) {
-                domFile = null;
+            List<URL> urlList = new ArrayList<URL>();
+            File org = new File(serverRoot, WildflyPluginUtils.getModulesBase(serverRoot) + "org");
+            addUrl(urlList, org, "dom4j" + sep + "main", Pattern.compile("dom4j-.*.jar"));
+            if (urlList.isEmpty()) {
                 LOGGER.log(Level.INFO, "No dom4j.jar availabale on classpath"); // NOI18N
             }
-
-            List<URL> urlList = new ArrayList<URL>();
-
-            if (domFile != null) {
-                urlList.add(domFile.toURI().toURL());
-            }
-
-            File org = new File(serverRoot, WildflyPluginUtils.getModulesBase(serverRoot) + "org");
-
             File jboss = new File(org, "jboss");
+            File wildfly = new File(org, "wildfly");
             File as = new File(jboss, "as");
-
-            if (domFile != null && domFile.exists()) {
-                urlList.add(domFile.toURI().toURL());
-            }
 
             urlList.add(new File(serverRoot, "jboss-modules.jar").toURI().toURL());
             urlList.add(new File(serverRoot, "bin" + sep + "client" + sep + "jboss-client.jar").toURI().toURL());
@@ -197,6 +184,15 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
             addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("jboss-as-protocol-.*.jar"));
             addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
             addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
+
+            //CLI GUI
+            addUrl(urlList, jboss, "aesh" + sep + "main", Pattern.compile("aesh-.*.jar"));
+            addUrl(urlList, jboss, "staxmapper" + sep + "main", Pattern.compile("staxmapper-.*.jar"));
+            addUrl(urlList, wildfly, "security" + sep + "manager" + sep + "main", Pattern.compile("wildfly-security-manager-.*.jar"));
+            addUrl(urlList, jboss, "remoting-jmx" + sep + "main", Pattern.compile("remoting-jmx-.*.jar"));
+            addUrl(urlList, jboss, "vfs" + sep + "main", Pattern.compile("jboss-vfs-.*.jar"));
+            addUrl(urlList, org, "picketbox" + sep + "main", Pattern.compile("picketbox-.*.jar"));
+            addUrl(urlList, as, "cli" + sep + "main", Pattern.compile("wildfly-cli-.*.jar"));
 
             WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}), WildflyDeploymentFactory.class.getClassLoader());
             return loader;

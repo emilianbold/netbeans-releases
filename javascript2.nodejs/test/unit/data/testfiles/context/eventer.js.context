@@ -1,6 +1,6 @@
-[UNKNOWN]server.on('[ASSIGN_LISTENER]connection'[UNKNOWN], function (request) {
-    console.log('Connection');
-});
+[UNKNOWN]server.on('[ASSIGN_LISTENER]connection'[UNKNOWN], function (request) {[GLOBAL]
+    console[UNKNOWN].log('Connection');[GLOBAL]
+[UNKNOWN]});[GLOBAL]
 
-server.on('[ASSIGN_LISTENER]'[UNKNOWN]);
-server.on('
+server[UNKNOWN].on('[ASSIGN_LISTENER]'[UNKNOWN]);[GLOBAL]
+server[UNKNOWN].on('

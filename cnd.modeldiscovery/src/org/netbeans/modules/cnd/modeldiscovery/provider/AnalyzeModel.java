@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -88,20 +89,15 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class AnalyzeModel implements DiscoveryProvider {
-    private final Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
-    public static final String MODEL_FOLDER_KEY = "folder"; // NOI18N
-    public static final String PREFER_LOCAL_FILES = "prefer-local"; // NOI18N
     public static final String MODEL_FOLDER_PROVIDER_ID = "model-folder"; // NOI18N
-    protected boolean isStoped = false;
+    private final Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
+    private final ProviderProperty<String> MODEL_FOLDER_PROPERTY;
+    private final ProviderProperty<Boolean> PREFER_LOCAL_FILES_PROPERTY;
+    private boolean isStoped = false;
     
     public AnalyzeModel() {
-        clean();
-    }
-    
-    @Override
-    public final void clean() {
         myProperties.clear();
-        myProperties.put(MODEL_FOLDER_KEY, new ProviderProperty(){
+        MODEL_FOLDER_PROPERTY = new ProviderProperty<String>(){
             private String myPath;
             @Override
             public String getName() {
@@ -112,21 +108,21 @@ public class AnalyzeModel implements DiscoveryProvider {
                 return i18n("Model_Files_Description"); // NOI18N
             }
             @Override
-            public Object getValue() {
+            public String getValue() {
                 return myPath;
             }
             @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
+            public void setValue(String value) {
+                myPath = value;
             }
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.Folder;
+            public ProviderPropertyType<String> getPropertyType() {
+                return ProviderPropertyType.ModelFolderPropertyType;
             }
-        });
-        myProperties.put(PREFER_LOCAL_FILES, new ProviderProperty(){
+        };
+        myProperties.put(MODEL_FOLDER_PROPERTY.getPropertyType().key(), MODEL_FOLDER_PROPERTY);
+        
+        PREFER_LOCAL_FILES_PROPERTY = new ProviderProperty<Boolean>(){
             private Boolean myValue = Boolean.FALSE;
             @Override
             public String getName() {
@@ -137,20 +133,19 @@ public class AnalyzeModel implements DiscoveryProvider {
                 return i18n("Prefer_Local_Files_Description"); // NOI18N
             }
             @Override
-            public Object getValue() {
+            public Boolean getValue() {
                 return myValue;
             }
             @Override
-            public void setValue(Object value) {
-                if (value instanceof Boolean){
-                    myValue = (Boolean)value;
-                }
+            public void setValue(Boolean value) {
+                myValue = value;
             }
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.Boolean;
+            public ProviderPropertyType<Boolean> getPropertyType() {
+                return ProviderPropertyType.PreferLocalFilesPropertyType;
             }
-        });
+        };
+        myProperties.put(PREFER_LOCAL_FILES_PROPERTY.getPropertyType().key(), PREFER_LOCAL_FILES_PROPERTY);
     }
     
     @Override
@@ -351,7 +346,7 @@ public class AnalyzeModel implements DiscoveryProvider {
             if (root != null && langProject != null) {
                 Map<String,List<String>> searchBase = search(root);
                 PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(getExecutionEnvironment());
-                boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue());
+                boolean preferLocal = PREFER_LOCAL_FILES_PROPERTY.getValue();
                 Item[] items = makeConfigurationDescriptor.getProjectItems();
                 Map<String,Item> projectSearchBase = new HashMap<String,Item>();
                 for (int i = 0; i < items.length; i++){
@@ -385,7 +380,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         @Override
         public List<SourceFileProperties> getSourcesConfiguration() {
             if (myFileProperties == null){
-                myFileProperties = getSourceFileProperties((String)getProperty(MODEL_FOLDER_KEY).getValue());
+                myFileProperties = getSourceFileProperties(MODEL_FOLDER_PROPERTY.getValue());
             }
             return myFileProperties;
         }

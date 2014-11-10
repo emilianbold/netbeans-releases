@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
@@ -78,21 +79,16 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class AnalyzeExecutable extends BaseDwarfProvider {
-    private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
-    public static final String EXECUTABLE_KEY = "executable"; // NOI18N
-    public static final String LIBRARIES_KEY = "libraries"; // NOI18N
-    public static final String FILE_SYSTEM = "filesystem"; // NOI18N
-    public static final String FIND_MAIN_KEY = "find_main"; // NOI18N
     public static final String EXECUTABLE_PROVIDER_ID = "dwarf-executable"; // NOI18N
+    private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
+    private final ProviderProperty<String> EXECUTABLE_PROPERTY;
+    private final ProviderProperty<FileSystem> BYNARY_FILESYSTEM_PROPERTY;
+    private final ProviderProperty<String[]> LIBRARIES_PROPERTY;
+    private final ProviderProperty<Boolean> FIND_MAIN_PROPERTY;
 
     public AnalyzeExecutable() {
-        clean();
-    }
-    
-    @Override
-    public final void clean() {
         myProperties.clear();
-        myProperties.put(EXECUTABLE_KEY, new ProviderProperty(){
+        EXECUTABLE_PROPERTY = new ProviderProperty<String>(){
             private String myPath;
             @Override
             public String getName() {
@@ -103,21 +99,21 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 return i18n("Executable_Files_Description"); // NOI18N
             }
             @Override
-            public Object getValue() {
+            public String getValue() {
                 return myPath;
             }
             @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
+            public void setValue(String value) {
+                myPath = value;
             }
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.BinaryFile;
+            public ProviderPropertyType<String> getPropertyType() {
+                return ProviderPropertyType.ExecutablePropertyType;
             }
-        });
-        myProperties.put(FILE_SYSTEM, new ProviderProperty(){
+        };
+        myProperties.put(EXECUTABLE_PROPERTY.getPropertyType().key(), EXECUTABLE_PROPERTY);
+        
+        BYNARY_FILESYSTEM_PROPERTY = new ProviderProperty<FileSystem>(){
             private FileSystem fs;
             @Override
             public String getName() {
@@ -128,21 +124,20 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 return ""; // NOI18N
             }
             @Override
-            public Object getValue() {
+            public FileSystem getValue() {
                 return fs;
             }
             @Override
-            public void setValue(Object value) {
-                if (value instanceof FileSystem){
-                    fs = (FileSystem)value;
-                }
+            public void setValue(FileSystem value) {
+                fs = value;
             }
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.Object;
+            public ProviderPropertyType<FileSystem> getPropertyType() {
+                return ProviderPropertyType.BinaryFileSystemPropertyType;
             }
-        });
-        myProperties.put(LIBRARIES_KEY, new ProviderProperty(){
+        };
+        myProperties.put(BYNARY_FILESYSTEM_PROPERTY.getPropertyType().key(), BYNARY_FILESYSTEM_PROPERTY);
+        LIBRARIES_PROPERTY = new ProviderProperty<String[]>(){
             private String myPath[];
             @Override
             public String getName() {
@@ -153,21 +148,21 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 return i18n("Libraries_Files_Description"); // NOI18N
             }
             @Override
-            public Object getValue() {
+            public String[] getValue() {
                 return myPath;
             }
             @Override
-            public void setValue(Object value) {
-                if (value instanceof String[]){
-                    myPath = (String[])value;
-                }
+            public void setValue(String[] value) {
+                myPath = value;
             }
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.BinaryFiles;
+            public ProviderPropertyType<String[]> getPropertyType() {
+                return ProviderPropertyType.LibrariesPropertyType;
             }
-        });
-        myProperties.put(FIND_MAIN_KEY, new ProviderProperty(){
+        };
+        myProperties.put(LIBRARIES_PROPERTY.getPropertyType().key(), LIBRARIES_PROPERTY);
+        
+        FIND_MAIN_PROPERTY = new ProviderProperty<Boolean>(){
             private Boolean findMain = Boolean.TRUE;
             @Override
             public String getName() {
@@ -178,70 +173,22 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 return ""; // NOI18N
             }
             @Override
-            public Object getValue() {
+            public Boolean getValue() {
                 return findMain;
             }
             @Override
-            public void setValue(Object value) {
-                if (value instanceof Boolean){
-                    findMain = (Boolean)value;
-                }
+            public void setValue(Boolean value) {
+                findMain = value;
             }
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.Boolean;
+            public ProviderPropertyType<Boolean> getPropertyType() {
+                return ProviderPropertyType.FindMainPropertyType;
             }
-        });
-        myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
-            private String myPath="";
-            @Override
-            public String getName() {
-                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
-            }
-            @Override
-            public String getDescription() {
-                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
-            }
-            @Override
-            public Object getValue() {
-                return myPath;
-            }
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
-            }
-            @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.String;
-            }
-        });
-        myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty(){
-            private String myPath="";
-            @Override
-            public String getName() {
-                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
-            }
-            @Override
-            public String getDescription() {
-                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
-            }
-            @Override
-            public Object getValue() {
-                return myPath;
-            }
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof String){
-                    myPath = (String)value;
-                }
-            }
-            @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.String;
-            }
-        });
+        };
+        myProperties.put(FIND_MAIN_PROPERTY.getPropertyType().key(), FIND_MAIN_PROPERTY);
+        
+        myProperties.put(RESTRICT_SOURCE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_SOURCE_ROOT_PROPERTY);
+        myProperties.put(RESTRICT_COMPILE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_COMPILE_ROOT_PROPERTY);
     }
     
     @Override
@@ -272,14 +219,14 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         init(project);
-        String set = (String)getProperty(EXECUTABLE_KEY).getValue();
+        String set = EXECUTABLE_PROPERTY.getValue();
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "NoExecutable")));
         }
-        String[] additionalLibs = (String[])getProperty(LIBRARIES_KEY).getValue();
-        boolean findMain = (Boolean)getProperty(FIND_MAIN_KEY).getValue();
+        String[] additionalLibs = LIBRARIES_PROPERTY.getValue();
+        boolean findMain = FIND_MAIN_PROPERTY.getValue();
         Set<String> dlls = new HashSet<String>();
-        FileSystem fs = (FileSystem) getProperty(FILE_SYSTEM).getValue();
+        FileSystem fs = BYNARY_FILESYSTEM_PROPERTY.getValue();
         if (fs == null) {
             ArrayList<String> list = new ArrayList<String>();
             list.add(set);
@@ -345,9 +292,9 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         myDependencies = new HashSet<String>();
-                        String set = (String)getProperty(EXECUTABLE_KEY).getValue();
+                        String set = EXECUTABLE_PROPERTY.getValue();
                         if (set != null && set.length() > 0) {
-                            String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
+                            String[] add = LIBRARIES_PROPERTY.getValue();
                             if (add == null || add.length==0) {
                                 myFileProperties = getSourceFileProperties(new String[]{set},null, project, myDependencies, null, new CompileLineStorage());
                             } else {

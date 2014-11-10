@@ -55,37 +55,36 @@ import org.openide.util.Cancellable;
 public interface DiscoveryProvider extends Cancellable {
 
     /**
-     * Returns provider ID
+     * @return provider ID
      */
     String getID();
     
     /**
-     * Returns provider name
+     * @return provider name
      */
     String getName();
 
     /**
-     * Returns provider description
+     * @return provider description
      */
     String getDescription();
     
     /**
-     * Returns property keys of additional information for provider
+     * @return property keys of additional information for provider
      */
     List<String> getPropertyKeys();
 
     /**
-     * Returns property of additional information for provider
+     * @param key property name
+     * 
+     * @return property of additional information for provider
      */
     ProviderProperty getProperty(String key);
     
     /**
-     * Clean provider state
-     */
-   void clean();
-
-    /**
-     * Is analyzer applicable to project
+     * @param project proxy project
+     * 
+     * @return true if analyzer is applicable to project
      */
     boolean isApplicable(ProjectProxy project);
 
@@ -94,11 +93,20 @@ public interface DiscoveryProvider extends Cancellable {
      * Results range is [0,100].
      * 0 provider is not sure about results at all
      * 100 provider is sure about results
+     * 
+     * @param project project proxy
+     * @param interrupter interrupter
+     * 
+     * @return is analyzer applicable to project
      */
     DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter);
 
     /**
-     * Analyze project and returns list of configuration
+     * @param project project proxy
+     * @param progress progress
+     * @param interrupter interrupter
+     * 
+     * @return analyzes project and returns list of configuration
      */
     public List<Configuration> analyze(ProjectProxy project, Progress progress, Interrupter interrupter);
     
