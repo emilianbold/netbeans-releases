@@ -256,7 +256,7 @@
         -->
 
 	<set property="nb.full.version"
-             value="8.0.1.0.${nb.build.number}"/>
+             value="8.0.2.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}"/>
@@ -268,7 +268,7 @@
              value="${nb.files.prefix}-${build.number}"/>
 	
         <set property="jdk.bundle.files.suffix"
-             value="nb-8_0_1"/>
+             value="nb-8_0_2"/>
 	
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
@@ -277,7 +277,7 @@
          value="${nb.files.prefix}"/>
 
     <set property="weblogic.bundle.files.suffix"
-         value="nb-8_0_1"/>
+         value="nb-8_0_2"/>
 
         <condition property="do.build.jdk">
              <or>
