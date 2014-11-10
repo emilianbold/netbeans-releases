@@ -56,6 +56,7 @@ public enum NodeJsContext {
     MODULE_PATH,
     ASSIGN_LISTENER,
     AFTER_ASSIGNMENT,
+    GLOBAL,
     UNKNOWN;
 
     public static NodeJsContext findContext(TokenSequence<? extends JsTokenId> ts, final int offset) {
@@ -80,18 +81,24 @@ public enum NodeJsContext {
                     }
                 }
             } else {
-                if ((tokenId == JsTokenId.EOL || tokenId == JsTokenId.OPERATOR_SEMICOLON) && ts.movePrevious()) {
-                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
+                if ((tokenId == JsTokenId.EOL || tokenId == JsTokenId.OPERATOR_SEMICOLON || tokenId == JsTokenId.OPERATOR_ASSIGNMENT
+                        || tokenId == JsTokenId.WHITESPACE || tokenId == JsTokenId.IDENTIFIER 
+                        || tokenId == JsTokenId.BRACKET_LEFT_CURLY) && ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
                     tokenId = token.id();
                 }
-                if ((tokenId == JsTokenId.OPERATOR_ASSIGNMENT || tokenId == JsTokenId.WHITESPACE || tokenId == JsTokenId.IDENTIFIER) && ts.movePrevious()) {
-                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
+                if (tokenId == JsTokenId.IDENTIFIER && NodeJsUtils.REQUIRE_METHOD_NAME.startsWith(token.text().toString()) && ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
                     tokenId = token.id();
                 }
                 if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
                     // offer require()
                     return AFTER_ASSIGNMENT;
                 }
+                if (tokenId == JsTokenId.OPERATOR_SEMICOLON || tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                    return GLOBAL;
+                }
+                
             }
         }
         return UNKNOWN;
