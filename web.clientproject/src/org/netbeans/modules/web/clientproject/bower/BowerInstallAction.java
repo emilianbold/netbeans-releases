@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-@MIMEResolver.Registration(displayName = "bower", resource = "bower-resolver.xml", position = 124)
+@MIMEResolver.Registration(displayName = "bower", resource = "bower-resolver.xml", position = 128)
 @ActionID(id = "org.netbeans.modules.web.clientproject.grunt.BowerInstallAction", category = "Build")
 @ActionRegistration(displayName = "#CTL_BowerInstallAction", lazy=false)
 @ActionReferences(value = {
@@ -124,4 +124,11 @@ public class BowerInstallAction extends AbstractAction implements ContextAwareAc
             }
         }
     }
+
+    //~ Inner classes
+
+    @MIMEResolver.Registration(displayName = "bowerrc", resource = "bowerrc-resolver.xml", position = 129)
+    private static interface Dummy {
+    }
+
 }
