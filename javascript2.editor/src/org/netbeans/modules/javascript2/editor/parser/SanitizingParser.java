@@ -146,7 +146,7 @@ public abstract class SanitizingParser extends Parser {
                 return false;
             }
 
-            if (size > MAX_MINIMIZE_FILE_SIZE_TO_PARSE) {
+            if (size > MAX_MINIMIZE_FILE_SIZE_TO_PARSE && !snapshot.getMimeType().equals(JsTokenId.JSON_MIME_TYPE)) {
                 // try to find only for the file that has size bigger then 1/3 of the max size
                 boolean isMinified = false;
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(snapshot, 0, language);
