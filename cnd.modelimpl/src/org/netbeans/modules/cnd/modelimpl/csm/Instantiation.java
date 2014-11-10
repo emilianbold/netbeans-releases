@@ -282,6 +282,10 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         } else if (CsmKindUtilities.isFunctionPointerClassifier(template)) {
             // Function pointer
             return new FunctionPointerClassifier((CsmFunctionPointerClassifier) template, mapping);
+        } else if (template instanceof CsmConstructor) {
+            return new Constructor((CsmConstructor)template, mapping);
+        } else if (template instanceof CsmMethod) {
+            return new Method((CsmMethod)template, mapping);            
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
         } else if (template instanceof CsmTypeAlias) {
@@ -1209,15 +1213,17 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
     }
 
-    private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition {
-        private final CsmInstantiation instantiation;
+    private static class Method extends Instantiation<CsmMethod> implements CsmMethod, CsmFunctionDefinition, CsmTemplate {
         private CsmType retType;
         private CsmFunctionDefinition definition = null;
         private CsmClass containingClass = null;
+        
+        public Method(CsmMethod method, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(method, mapping);
+        }
 
         public Method(CsmMethod method, CsmInstantiation instantiation) {
             super(method, instantiation.getMapping());
-            this.instantiation = instantiation;
         }
 
         @Override
@@ -1256,7 +1262,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             if(CsmKindUtilities.isTemplate(containingClass)) {
                 CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
                 if (p instanceof InstantiationProviderImpl) {
-                    CsmObject inst = ((InstantiationProviderImpl) p).instantiate((CsmTemplate)containingClass, instantiation);
+                    CsmObject inst = ((InstantiationProviderImpl) p).instantiate((CsmTemplate)containingClass, this);
                     if (inst instanceof CsmClass) {
                         return (CsmClass) inst;
                     }
@@ -1265,6 +1271,27 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             return containingClass;
         }
 
+        @Override
+        public boolean isSpecialization() {
+            return ((CsmTemplate) declaration).isSpecialization();
+        }
+
+        @Override
+        public boolean isExplicitSpecialization() {
+            return ((CsmTemplate) declaration).isExplicitSpecialization();
+        }
+
+        @Override
+        public List<CsmTemplateParameter> getTemplateParameters() {
+            return ((CsmTemplate) declaration).getTemplateParameters();
+        }
+
+        @Override
+        public CharSequence getDisplayName() {
+            return ((CsmTemplate) declaration).getDisplayName();
+        }
+
+        @Override
         public boolean isTemplate() {
             return ((CsmTemplate)declaration).isTemplate();
         }
@@ -1282,7 +1309,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         @Override
         public CsmType getReturnType() {
             if (retType == null) {
-                retType = createType(declaration.getReturnType(), instantiation);
+                retType = createType(declaration.getReturnType(), this);
             }
             return retType;
         }
@@ -1302,7 +1329,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             Collection<CsmParameter> res = new ArrayList<>();
             Collection<CsmParameter> parameters = declaration.getParameters();
             for (CsmParameter param : parameters) {
-                res.add(new Parameter(param, instantiation));
+                res.add(new Parameter(param, this));
             }
             return res;
         }
@@ -1377,6 +1404,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     }
 
     private static class Constructor extends Method implements CsmConstructor {
+
+        public Constructor(CsmMethod method, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(method, mapping);
+        }
+        
         public Constructor(CsmConstructor method, CsmInstantiation instantiation) {
             super((CsmMethod)method, instantiation);
         }
@@ -1588,7 +1620,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         private Type(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
             this.instantiation = instantiation;
-            inst = type.isInstantiation();
             CsmType origType = type;
             CsmType newType = type;
             parameter = null;
@@ -1643,9 +1674,11 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 this.originalType = origType;
                 this.instantiatedType = origType;
             }
+            
+            inst = instantiationHappened() ? newType.isInstantiation() : origType.isInstantiation();
         }
 
-        public boolean instantiationHappened() {
+        public final boolean instantiationHappened() {
             return originalType != instantiatedType;
         }
 
@@ -1872,34 +1905,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                     } else {
                         classifier = originalType.getClassifier();                        
                     }
-                    if (inst && CsmKindUtilities.isTemplate(classifier)) {
-                        CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                        CsmObject obj = null;
-                        if(ip instanceof InstantiationProviderImpl) {
-                            Resolver resolver = ResolverFactory.createResolver(this);
-                            try {
-                                if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                                    if(!isTemplateParameterTypeBased() || !instantiation.getMapping().keySet().contains(getResolvedTemplateParameter())) {
-                                        obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, instantiation, specialize);
-                                    } else {
-//                                        final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping1 = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>(instantiation.getMapping());
-//                                        mapping1.remove(getResolvedTemplateParameter());
-//                                        obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) classifier, mapping1);
-                                    }
-                                } else {
-                                    return null;
-                                }
-                            } finally {
-                                ResolverFactory.releaseResolver(resolver);
-                            }
-                        } else {
-                            obj = ip.instantiate((CsmTemplate) classifier, instantiation);
-                        }
-                        if (CsmKindUtilities.isClassifier(obj)) {
-                            resolved = (CsmClassifier) obj;
-                            return cacheResolved(instantiations, resolved);
-                        }
-                    }
                     resolved = classifier;
                 } else {
                     if(instantiatedType instanceof TypeImpl) {
@@ -1910,6 +1915,35 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                         resolved = instantiatedType.getClassifier();                        
                     }
                 } 
+                
+                if (inst && CsmKindUtilities.isTemplate(resolved)) {
+                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                    CsmObject obj = null;
+                    if(ip instanceof InstantiationProviderImpl) {
+                        Resolver resolver = ResolverFactory.createResolver(this);
+                        try {
+                            if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                                if(!isTemplateParameterTypeBased() || !instantiation.getMapping().keySet().contains(getResolvedTemplateParameter())) {
+                                    obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) resolved, instantiation, specialize);
+                                } else {
+//                                    final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping1 = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>(instantiation.getMapping());
+//                                    mapping1.remove(getResolvedTemplateParameter());
+//                                    obj = ((InstantiationProviderImpl)ip).instantiate((CsmTemplate) resolved, mapping1);
+                                }
+                            } else {
+                                return null;
+                            }
+                        } finally {
+                            ResolverFactory.releaseResolver(resolver);
+                        }
+                    } else {
+                        obj = ip.instantiate((CsmTemplate) resolved, instantiation);
+                    }
+                    if (CsmKindUtilities.isClassifier(obj)) {
+                        resolved = (CsmClassifier) obj;
+                        return cacheResolved(instantiations, resolved);
+                    }
+                }                
                 
                 if (instantiation != null && !canSkipInstantiation(resolved, instantiation.getMapping())) {
                     if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
@@ -2294,7 +2328,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                             Resolver resolver = ResolverFactory.createResolver(this);
                             try {
                                 if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
-                                    obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) resolved, this, specialize);
+                                    obj = instantiateResolved((InstantiationProviderImpl) ip, resolved, specialize);
                                 } else {
                                     return null;
                                 }
@@ -2370,7 +2404,68 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         public boolean isInstantiation() {
             return (parentType != null && parentType.isInstantiation()) || super.isInstantiation();
         }
-
+                
+        /**
+         * Tries to merge lexical context and parent context into one and
+         * instantiate resolved with that context.
+         * 
+         * Example: 
+         * <code>
+         *   ...
+         *   Alloc::something<T>
+         *   ...
+         * </code>
+         * 
+         * "Alloc" can be template parameter, in that case context from resolved 
+         * template parameter "Alloc" (parent context) can not contain full context 
+         * and therefore template parameter "T".
+         * 
+         * @param ip - instantiation provider
+         * @param resolved - resolved nested name
+         * @param specialize
+         * @return instantiated resolved classifier in appropriate context
+         */
+        private CsmObject instantiateResolved(InstantiationProviderImpl ip, CsmClassifier resolved, boolean specialize) {
+            CsmObject obj = resolved;
+            List<CsmInstantiation> parentInstantiations = new ArrayList<>();
+            while (CsmKindUtilities.isInstantiation(obj)) {
+                parentInstantiations.add((CsmInstantiation) obj);
+                obj = (CsmClassifier) ((CsmInstantiation) obj).getTemplateDeclaration();
+            }                  
+            List<CsmInstantiation> contextInstantiations = new ArrayList<>();
+            CsmType contextType = this;
+            while (contextType instanceof Type) {
+                contextInstantiations.add(((Type) contextType).getInstantiation());
+                contextType = ((Type) contextType).originalType;
+            }
+            if (!parentInstantiations.isEmpty()) {
+                CsmInstantiation firstInst = parentInstantiations.get(0);
+                int matchIndex = -1;
+                for (int ctxIndex = 0; ctxIndex < contextInstantiations.size(); ++ctxIndex) {
+                    if (firstInst.getMapping() == contextInstantiations.get(ctxIndex).getMapping()) {
+                        matchIndex = ctxIndex;
+                        break;
+                    }
+                }
+                if (matchIndex >= 0) {
+                    int matchNumber = 0;
+                    while (matchNumber < parentInstantiations.size() && (matchNumber + matchIndex) < contextInstantiations.size() &&
+                           parentInstantiations.get(matchNumber).getMapping() == contextInstantiations.get(matchNumber + matchIndex).getMapping()) {
+                        ++matchNumber;
+                    }
+                    int insertIndex = matchIndex + matchNumber;
+                    for (int i = matchNumber; i < parentInstantiations.size(); i++) {
+                        contextInstantiations.add(insertIndex++, parentInstantiations.get(i));
+                    }
+                }
+            }
+            Collections.reverse(contextInstantiations);
+            obj = ip.instantiate((CsmTemplate) obj, contextType, false);
+            for (CsmInstantiation contextInst : contextInstantiations) {
+                obj = ip.instantiate((CsmTemplate) obj, contextInst, specialize);                                        
+            }  
+            return obj;
+        }
     }
 
     private static CsmClassifier getNestedClassifier(MemberResolverImpl memberResolver, CsmClassifier parentClassifier, CharSequence ownText) {
