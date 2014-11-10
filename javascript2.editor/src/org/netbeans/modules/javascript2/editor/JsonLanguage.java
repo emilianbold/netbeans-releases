@@ -65,6 +65,9 @@ import org.openide.windows.TopComponent;
 @PathRecognizerRegistration(mimeTypes="text/x-json", libraryPathIds=ClassPathProviderImpl.BOOT_CP, binaryLibraryPathIds={})
 public class JsonLanguage extends DefaultLanguageConfig {
 
+    //~ Inner classes
+
+    @MIMEResolver.Registration(displayName = "jshintrc", resource = "jshintrc-resolver.xml", position = 124)
     @MIMEResolver.ExtensionRegistration(
         extension={ "json" },
         displayName="#JsonResolver",
