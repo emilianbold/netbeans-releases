@@ -308,6 +308,8 @@ public abstract class BaseAction extends TextAction {
                 !"default-typed".equals(actionName) && //NOI18N
                 -1 == actionName.indexOf("caret") && //NOI18N
                 -1 == actionName.indexOf("delete") && //NOI18N
+                -1 == actionName.indexOf("undo") &&//NOI18N
+                -1 == actionName.indexOf("redo") &&//NOI18N
                 -1 == actionName.indexOf("selection") && //NOI18N
                 -1 == actionName.indexOf("build-tool-tip") &&//NOI18N
                 -1 == actionName.indexOf("build-popup-menu") &&//NOI18N
