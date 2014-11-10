@@ -345,8 +345,7 @@ public class JsStructureScanner implements StructureScanner {
 
     @Override
     public Configuration getConfiguration() {
-        // TODO return a configuration to alow filter items. 
-        return null;
+        return new Configuration(true, true);
     }
 
     private boolean hasDeclaredProperty(JsObject jsObject) {
