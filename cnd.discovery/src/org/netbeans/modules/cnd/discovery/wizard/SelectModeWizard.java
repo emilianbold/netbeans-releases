@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.WizardDescriptor;
@@ -249,9 +250,9 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
                 if (DiscoveryExtension.DWARF_PROVIDER.equals(provider.getID())){
                     // select executable if make project has output
                     // and output has debug information.
-                    provider.getProperty(DiscoveryExtension.EXECUTABLR_PROPERTY).setValue(wizardDescriptor.getBuildResult());
+                    ProviderPropertyType.ExecutablePropertyType.setProperty(provider, wizardDescriptor.getBuildResult());
                 } else if (DiscoveryExtension.FOLDER_PROVIDER.equals(provider.getID())){
-                    provider.getProperty(DiscoveryExtension.FOLDER_PROPERTY).setValue(wizardDescriptor.getRootFolder());
+                    ProviderPropertyType.ExecutableFolderPropertyType.setProperty(provider, wizardDescriptor.getRootFolder());
                 }
                 int i = provider.canAnalyze(proxy, null).getPriority();
                 if (i > assurance) {

@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -66,6 +67,7 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -74,8 +76,6 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class BaseProvider implements DiscoveryProvider {
     
-    public static final String RESTRICT_SOURCE_ROOT = "restrict_source_root"; // NOI18N
-    public static final String RESTRICT_COMPILE_ROOT = "restrict_compile_root"; // NOI18N
     private final AtomicBoolean isStoped = new AtomicBoolean(false);
     private final Interrupter stopIterrupter;
     private Interrupter projectInterrupter;
@@ -83,6 +83,8 @@ public abstract class BaseProvider implements DiscoveryProvider {
     private CompilerSettings myCommpilerSettings;
     private FileSystem fileSystem;
     private RelocatablePathMapper.FS fs;
+    protected final ProviderProperty<String> RESTRICT_SOURCE_ROOT_PROPERTY;
+    protected final ProviderProperty<String> RESTRICT_COMPILE_ROOT_PROPERTY;
 
     public BaseProvider() {
         stopIterrupter = new Interrupter() {
@@ -99,6 +101,53 @@ public abstract class BaseProvider implements DiscoveryProvider {
                 return false;
             }
         };
+        RESTRICT_SOURCE_ROOT_PROPERTY = new ProviderProperty<String>() {
+            private String myPath = "";
+            @Override
+            public String getName() {
+                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
+            }
+            @Override
+            public String getDescription() {
+                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
+            }
+            @Override
+            public String getValue() {
+                return myPath;
+            }
+            @Override
+            public void setValue(String value) {
+                myPath = value;
+            }
+            @Override
+            public ProviderPropertyType<String> getPropertyType() {
+                return ProviderPropertyType.RestrictSourceRootPropertyType;
+            }
+        };       
+        
+        RESTRICT_COMPILE_ROOT_PROPERTY = new ProviderProperty<String>() {
+            private String myPath = "";
+            @Override
+            public String getName() {
+                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
+            }
+            @Override
+            public String getDescription() {
+                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
+            }
+            @Override
+            public String getValue() {
+                return myPath;
+            }
+            @Override
+            public void setValue(String value) {
+                myPath = value;
+            }
+            @Override
+            public ProviderPropertyType<String> getPropertyType() {
+                return ProviderPropertyType.RestrictCompileRootPropertyType;
+            }
+        };        
     }
     
     public final void init(ProjectProxy project) {
@@ -289,21 +338,13 @@ public abstract class BaseProvider implements DiscoveryProvider {
         if (project.getProject() != null) {
             bridge = new ProjectBridge(project.getProject());
         }
-        String restrictSourceRoot = null;
-        ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
-        if (p != null) {
-            String s = (String) p.getValue();
-            if (s.length() > 0) {
-                restrictSourceRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
-            }
+        String restrictSourceRoot = RESTRICT_SOURCE_ROOT_PROPERTY.getValue();
+        if (restrictSourceRoot != null && !restrictSourceRoot.isEmpty()) {
+            restrictSourceRoot = CndFileUtils.normalizeFile(new File(restrictSourceRoot)).getAbsolutePath();
         }
-        String restrictCompileRoot = null;
-        p = getProperty(RESTRICT_COMPILE_ROOT);
-        if (p != null) {
-            String s = (String) p.getValue();
-            if (s.length() > 0) {
-                restrictCompileRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
-            }
+        String restrictCompileRoot = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
+        if (restrictCompileRoot != null && !restrictCompileRoot.isEmpty()) {
+            restrictCompileRoot = CndFileUtils.normalizeFile(new File(restrictCompileRoot)).getAbsolutePath();
         }
         for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls, buildArtifacts, storage)) {
             if (isStoped.get()) {
@@ -422,4 +463,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
         }
     }
     
+    private static String i18n(String id) {
+        return NbBundle.getMessage(BaseProvider.class, id);
+    }    
 }

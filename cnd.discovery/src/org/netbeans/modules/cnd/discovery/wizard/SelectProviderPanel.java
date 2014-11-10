@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
@@ -399,20 +400,20 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         }
         ((EditableComboBox)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
         ((EditableComboBox)rootFolder).store();
-        ProviderProperty p = provider.getProvider().getProperty("restrict_source_root"); // NOI18N
+        ProviderProperty p = provider.getProvider().getProperty(ProviderPropertyType.RestrictSourceRootPropertyType.key());
         if (p != null) {
             if (restrictSources.isSelected()){
-                p.setValue(getRootText());
+                ProviderPropertyType.RestrictSourceRootPropertyType.setProperty(provider.getProvider(), getRootText());
             } else {
-                p.setValue(""); // NOI18N
+                ProviderPropertyType.RestrictSourceRootPropertyType.setProperty(provider.getProvider(), ""); // NOI18N
             }
         }
-        p = provider.getProvider().getProperty("restrict_compile_root"); // NOI18N
+        p = provider.getProvider().getProperty(ProviderPropertyType.RestrictCompileRootPropertyType.key()); // NOI18N
         if (p != null) {
             if (restrictCompile.isSelected()){
-                p.setValue(getRootText());
+                ProviderPropertyType.RestrictCompileRootPropertyType.setProperty(provider.getProvider(), getRootText());
             } else {
-                p.setValue(""); // NOI18N
+                ProviderPropertyType.RestrictCompileRootPropertyType.setProperty(provider.getProvider(), ""); // NOI18N
             }
         }
     }

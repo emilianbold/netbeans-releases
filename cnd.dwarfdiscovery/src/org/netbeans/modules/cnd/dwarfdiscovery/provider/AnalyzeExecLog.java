@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.filesystems.FileSystem;
@@ -65,111 +66,39 @@ import org.openide.util.NbBundle;
  * @author Alexander Simon
  */
 public class AnalyzeExecLog extends BaseProvider {
-
-    private final Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
-    public static final String EXEC_LOG_KEY = "exec-log-file"; // NOI18N
     public static final String EXEC_LOG_PROVIDER_ID = "exec-log"; // NOI18N
+    private final Map<String, ProviderProperty<?>> myProperties = new LinkedHashMap<String, ProviderProperty<?>>();
+    private final ProviderProperty<String> EXEC_LOG_PROPERTY;
 
     public AnalyzeExecLog() {
-        clean();
-    }
-
-    @Override
-    public final void clean() {
         myProperties.clear();
-        myProperties.put(EXEC_LOG_KEY, new ProviderProperty() {
-
+        EXEC_LOG_PROPERTY = new ProviderProperty<String>() {
             private String myPath;
-
             @Override
             public String getName() {
                 return i18n("Exec_Log_File_Name"); // NOI18N
             }
-
             @Override
             public String getDescription() {
                 return i18n("Exec_Log_File_Description"); // NOI18N
             }
-
             @Override
-            public Object getValue() {
+            public String getValue() {
                 return myPath;
             }
-
             @Override
-            public void setValue(Object value) {
-                if (value instanceof String) {
-                    myPath = (String) value;
-                }
+            public void setValue(String value) {
+                myPath = value;
             }
-
             @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.MakeLogFile;
+            public ProviderPropertyType<String> getPropertyType() {
+                return ProviderPropertyType.ExecLogPropertyType;
             }
-        });
-        myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty() {
-
-            private String myPath = "";
-
-            @Override
-            public String getName() {
-                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
-            }
-
-            @Override
-            public String getDescription() {
-                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
-            }
-
-            @Override
-            public Object getValue() {
-                return myPath;
-            }
-
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof String) {
-                    myPath = (String) value;
-                }
-            }
-
-            @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.String;
-            }
-        });
-        myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty() {
-
-            private String myPath = "";
-
-            @Override
-            public String getName() {
-                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
-            }
-
-            @Override
-            public String getDescription() {
-                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
-            }
-
-            @Override
-            public Object getValue() {
-                return myPath;
-            }
-
-            @Override
-            public void setValue(Object value) {
-                if (value instanceof String) {
-                    myPath = (String) value;
-                }
-            }
-
-            @Override
-            public ProviderProperty.PropertyKind getKind() {
-                return ProviderProperty.PropertyKind.String;
-            }
-        });
+        };
+        myProperties.put(EXEC_LOG_PROPERTY.getPropertyType().key(), EXEC_LOG_PROPERTY);
+        
+        myProperties.put(RESTRICT_SOURCE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_SOURCE_ROOT_PROPERTY);
+        myProperties.put(RESTRICT_COMPILE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_COMPILE_ROOT_PROPERTY);
     }
 
     @Override
@@ -199,13 +128,13 @@ public class AnalyzeExecLog extends BaseProvider {
 
     @Override
     public boolean isApplicable(ProjectProxy project) {
-        String set = (String) getProperty(EXEC_LOG_KEY).getValue();
+        String set = EXEC_LOG_PROPERTY.getValue();
         if (set != null && set.length() > 0) {
             return true;
         }
-        Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
-        if (o == null || "".equals(o.toString())) { // NOI18N
-            getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
+        String o = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
+        if (o == null || o.isEmpty()) {
+            RESTRICT_COMPILE_ROOT_PROPERTY.setValue(project.getSourceRoot());
             return true;
         }
         return false;
@@ -214,7 +143,7 @@ public class AnalyzeExecLog extends BaseProvider {
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         init(project);
-        String set = (String) getProperty(EXEC_LOG_KEY).getValue();
+        String set = EXEC_LOG_PROPERTY.getValue();
         if (set == null || set.length() == 0 || !ExecLogReader.isSupportedLog(set)) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecLog.class, "NotFoundExecLog")));
         }
@@ -223,10 +152,9 @@ public class AnalyzeExecLog extends BaseProvider {
     
     @Override
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
-        ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
-        String root = "";
-        if (p != null) {
-            root = (String) p.getValue();
+        String root = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
+        if (root == null) {
+            root = "";
         }
         List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, buildArtifacts, storage);
         progress = null;
@@ -270,7 +198,7 @@ public class AnalyzeExecLog extends BaseProvider {
                 public List<String> getBuildArtifacts() {
                     if (myBuildArtifacts == null) {
                         myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
-                        String set = (String) getProperty(EXEC_LOG_KEY).getValue();
+                        String set = EXEC_LOG_PROPERTY.getValue();
                         if (set != null && set.length() > 0) {
                             myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
                             store(project);
@@ -283,7 +211,7 @@ public class AnalyzeExecLog extends BaseProvider {
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null) {
                         myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
-                        String set = (String) getProperty(EXEC_LOG_KEY).getValue();
+                        String set = EXEC_LOG_PROPERTY.getValue();
                         if (set != null && set.length() > 0) {
                             myFileProperties = getSourceFileProperties(new String[]{set}, null, project, null, myBuildArtifacts, new CompileLineStorage());
                             store(project);
