@@ -207,6 +207,7 @@ public enum CppTokenId implements TokenId {
     __INT64("__int64", "keyword"), // g++ // NOI18N
     __INTERRUPT("__interrupt", "keyword"), // g++ // NOI18N
     __IS_CLASS("__is_class", "keyword"), // g++ // NOI18N
+    __IS_ENUM("__is_enum", "keyword"), // g++ // NOI18N
     __IS_POD("__is_pod", "keyword"), // g++ // NOI18N
     __IS_BASE_OF("__is_base_of", "keyword"), // g++ // NOI18N
     _NEAR("_near", "keyword"), // g++ // NOI18N

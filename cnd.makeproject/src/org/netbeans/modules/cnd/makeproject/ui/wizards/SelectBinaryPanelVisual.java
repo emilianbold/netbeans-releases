@@ -230,9 +230,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             final Map<String, Object> map = new HashMap<>();
             List<FSPath> binaries = controller.getWizardStorage().getBinaryPath();
             if (binaries.size() == 1) {
-                map.put("DW:buildResult", binaries.get(0).getPath()); // NOI18N
+                WizardConstants.DISCOVERY_BUILD_RESULT.toMap(map, binaries.get(0).getPath());
             } else {
-                map.put("DW:buildResult", binaries.get(0).getPath()); // NOI18N
+                WizardConstants.DISCOVERY_BUILD_RESULT.toMap(map, binaries.get(0).getPath());
                 StringBuilder buf = new StringBuilder();
                 for(int i = 1; i < binaries.size(); i++) {
                     if (buf.length() > 0) {
@@ -240,11 +240,11 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     }
                     buf.append(binaries.get(i).getPath());
                 }
-                map.put("DW:libraries", buf.toString()); // NOI18N
+                WizardConstants.DISCOVERY_LIBRARIES.toMap(map, buf.toString());
             }
-            map.put("DW:resolveLinks", CommonUtilities.resolveSymbolicLinks()); // NOI18N
+            WizardConstants.DISCOVERY_RESOLVE_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
             if (env.isRemote()) {
-                map.put("DW:fileSystem", fileSystem); // NOI18N
+                WizardConstants.DISCOVERY_BINARY_FILESYSTEM.toMap(map, fileSystem);
             }
             if (extension != null) {
                 RP.post(new Runnable() {
@@ -252,14 +252,12 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     @Override
                     public void run() {
                         extension.discoverArtifacts(map);
-                        @SuppressWarnings("unchecked")
-                        List<String> dlls = (List<String>) map.get("DW:dependencies"); // NOI18N
-                        String root = (String) map.get("DW:rootFolder"); // NOI18N
+                        List<String> dlls = WizardConstants.DISCOVERY_BINARY_DEPENDENCIES.fromMap(map);
+                        String root = WizardConstants.DISCOVERY_ROOT_FOLDER.fromMap(map);
                         if (root == null) {
                             root = "";
                         }
-                        @SuppressWarnings("unchecked")
-                        List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
+                        List<String> searchPaths = WizardConstants.DISCOVERY_BINARY_SEARCH_PATH.fromMap(map);
                         final Map<String, String> resolvedDlls = searchingTable(dlls);
                         updateArtifacts(root, map, resolvedDlls);
                         checkDll(resolvedDlls, root, searchPaths, controller.getWizardStorage().getBinaryPath());
@@ -289,7 +287,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             @Override
             public void run() {
                 if (env.isLocal()) {
-                    CompilerSet compiler = detectCompilerSet((String) map.get("DW:compiler")); // NOI18N
+                    CompilerSet compiler = detectCompilerSet(WizardConstants.DISCOVERY_COMPILER.fromMap(map));
                     if (compiler != null) {
                         WizardConstants.PROPERTY_TOOLCHAIN.put(controller.getWizardDescriptor(), compiler);
                         WizardConstants.PROPERTY_HOST_UID.put(controller.getWizardDescriptor(), ExecutionEnvironmentFactory.getLocal().getHost());
@@ -319,8 +317,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                             updateTableModel(Collections.<String, String>emptyMap(), root, null, true);
                         }
                     }
-                    @SuppressWarnings("unchecked")
-                    List<String> errors = (List<String>) map.get("DW:errors"); // NOI18N
+                    List<String> errors = WizardConstants.DISCOVERY_ERRORS.fromMap(map);
                     if (errors != null && errors.size() > 0) {
                         controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errors.get(0));
                     } else {
@@ -477,23 +474,20 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                             checkedDll.add(entry.getValue());
                             final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                             final Map<String, Object> map = new HashMap<>();
-                            map.put("DW:buildResult", entry.getValue()); // NOI18N
-                            map.put("DW:resolveLinks", Boolean.TRUE); // NOI18N
+                            WizardConstants.DISCOVERY_BUILD_RESULT.toMap(map, entry.getValue());
+                            WizardConstants.DISCOVERY_RESOLVE_LINKS.toMap(map, Boolean.TRUE);
                             if (env.isRemote()) {
-                                map.put("DW:fileSystem", fileSystem); // NOI18N
+                                WizardConstants.DISCOVERY_BINARY_FILESYSTEM.toMap(map, fileSystem);
                             }
                             if (extension != null) {
                                 extension.discoverArtifacts(map);
-                                @SuppressWarnings("unchecked")
-                                List<String> dlls = (List<String>) map.get("DW:dependencies"); // NOI18N
+                                List<String> dlls = WizardConstants.DISCOVERY_BINARY_DEPENDENCIES.fromMap(map);
                                 if (dlls != null) {
                                     for(String so : dlls) {
                                         if (!dllPaths.containsKey(so)) {
                                             secondary.add(so);
                                         }
                                     }
-                                    //@SuppressWarnings("unchecked")
-                                    //List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
                                 }
                             }
                         }

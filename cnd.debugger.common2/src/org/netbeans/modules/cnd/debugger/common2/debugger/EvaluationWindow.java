@@ -203,8 +203,9 @@ public final class EvaluationWindow extends TopComponent {
     public void exprEval(String expr) {
         this.expr = expr;
         format = (FormatOption)format_jcb.getSelectedItem();
-	if (expr != null && !expr.equals("") && format != null) {
-            debugger.exprEval(format, expr);
+	if (expr != null && !expr.equals("")) {
+            //see bz#248470
+            debugger.exprEval(format == null ? FormatOption.EMPTY : format, expr);
         }
     }
 

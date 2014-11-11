@@ -4618,7 +4618,7 @@ trait_type_literals
         LITERAL___has_trivial_assign | LITERAL___has_trivial_copy | LITERAL___has_trivial_destructor | LITERAL___has_virtual_destructor |
         LITERAL___is_abstract | LITERAL___is_empty | LITERAL___is_literal_type | LITERAL___is_polymorphic |
         LITERAL___is_standard_layout | LITERAL___is_trivial | LITERAL___is_union | LITERAL___underlying_type | 
-        LITERAL___is_class | LITERAL___is_base_of | LITERAL___has_trivial_constructor
+        LITERAL___is_class | LITERAL___is_enum | LITERAL___is_base_of | LITERAL___has_trivial_constructor
     ;
 
 

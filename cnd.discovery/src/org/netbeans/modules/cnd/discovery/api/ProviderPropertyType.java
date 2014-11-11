@@ -107,6 +107,6 @@ public final class ProviderPropertyType<T> {
 
     @Override
     public String toString() {
-        return key+"["+kind+"]";
+        return key+"["+kind+"]"; //NOI18N
     }
 }

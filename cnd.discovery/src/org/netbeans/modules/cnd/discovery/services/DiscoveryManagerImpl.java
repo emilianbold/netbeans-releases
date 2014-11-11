@@ -137,12 +137,10 @@ public final class DiscoveryManagerImpl {
             String artifact = (String) artifacts.get(BUILD_EXEC_KEY);
             if (artifact != null) {
                 final Map<String, Object> map = new HashMap<>();
-                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
-                map.put(DiscoveryWizardDescriptor.EXEC_LOG_FILE, artifact);
-                map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks());
-                if (isIncremental) {
-                    map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
-                }
+                DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, findRoot());
+                DiscoveryWizardDescriptor.EXEC_LOG_FILE.toMap(map, artifact);
+                DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymbolicLinks());
+                DiscoveryWizardDescriptor.INCREMENTAL.toMap(map, isIncremental);
                 if (extension.canApply(map, project, null)) {
                     try {
                         postModelTask();
@@ -161,12 +159,10 @@ public final class DiscoveryManagerImpl {
             artifact = (String) artifacts.get(BUILD_LOG_KEY);
             if (artifact != null) {
                 final Map<String, Object> map = new HashMap<>();
-                map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, findRoot());
-                map.put(DiscoveryWizardDescriptor.LOG_FILE, artifact);
-                map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks());
-                if (isIncremental) {
-                    map.put(DiscoveryWizardDescriptor.INCREMENTAL, Boolean.TRUE);
-                }
+                DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, findRoot());
+                DiscoveryWizardDescriptor.LOG_FILE.toMap(map, artifact);
+                DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymbolicLinks());
+                DiscoveryWizardDescriptor.INCREMENTAL.toMap(map, isIncremental);
                 if (extension.canApply(map, project, null)) {
                     try {
                         postModelTask();
