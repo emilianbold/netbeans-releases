@@ -78,6 +78,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     /** Text of the last found token except Syntax.EOT and Syntax.EOL */
     private String lastValidTokenText;
     private boolean errorState = false;
+    /** true if we are parsing current token second time */
+    private boolean alternativeParse = false;
     private boolean inPreprocessor = false;
 
     // helper variables
@@ -227,9 +229,18 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     }
     
     private CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression) {
+        return createTokenExp(id, oldExpression, false);
+    }
+    
+    private CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression, boolean withParams) {
         CsmCompletionExpression exp = new CsmCompletionExpression(id);
         for (int i = 0; i < oldExpression.getTokenCount(); i++) {
             exp.addToken(oldExpression.getTokenID(i), oldExpression.getTokenOffset(i), oldExpression.getTokenText(i));
+        }
+        if (withParams) {
+            for (int i = 0; i < oldExpression.getParameterCount(); i++) {
+                exp.addParameter(oldExpression.getParameter(i));
+            }
         }
         return exp;
     }    
@@ -2438,7 +2449,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
         // Check whether a constant or data type keyword was found
         if (constExp != null) {
-            switch (topID) {
+            switch (topID) {                
                 case DOT_OPEN:
                 case ARROW_OPEN:
                 case SCOPE_OPEN:
@@ -2545,17 +2556,49 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         }
 
         if (errorState) {
-            clearStack();
+            // Code may be like that: "foo(a * 5)", where "foo(a *" was parsed as  
+            // METHOD_OPEN and TYPE_REFERENCE. We need to try to reparse it as an expression.
+            if (!alternativeParse && checkExp(peekExp2(), METHOD_OPEN)) {
+                if (top.getTokenCount() > 0 && (CppTokenId.STAR == top.getTokenID(0) || CppTokenId.AMP == top.getTokenID(0))) {
+                    if (top.getParameterCount() > 0 && checkExp(top.getParameter(0), TYPE)) {
+                        CsmCompletionExpression paramExp = top.getParameter(0);
+                        int newExpType = -1;
+                        boolean withParams = false;
+                        if (paramExp.getTokenCount() > 0 && CppTokenId.IDENTIFIER == paramExp.getTokenID(0)) {
+                            newExpType = VARIABLE;
+                        } else if (paramExp.getTokenCount() > 0 && CppTokenId.SCOPE == paramExp.getTokenID(0)) {
+                            newExpType = SCOPE;
+                            withParams = true;
+                        } else if (paramExp.getTokenCount() > 1 && CppTokenId.LPAREN == paramExp.getTokenID(0) && CppTokenId.RPAREN == paramExp.getTokenID(1)) {
+                            newExpType = METHOD;
+                            withParams = true;
+                        }
+                        if (newExpType >= 0) {
+                            popExp();
+                            pushExp(createTokenExp(newExpType, paramExp, withParams));
+                            pushExp(createTokenExp(OPERATOR, top));
+                            alternativeParse = true;
+                            errorState = false;
+                            tokenImpl(token, tokenOffset, macro);
+                            alternativeParse = false;
+                        }
+                    }
+                }
+            }
+            
+            if (errorState) {
+                clearStack();
 
-            if (tokenID == CppTokenId.IDENTIFIER) {
-                pushExp(createTokenExp(VARIABLE));
-                errorState = false;
-            } else if (tokenID == CppTokenId.AUTO) {
-                pushExp(createTokenExp(AUTO));
-                errorState = false;
-            } else {
-                if(!macro) {
-                    lastSeparatorOffset = tokenOffset;
+                if (tokenID == CppTokenId.IDENTIFIER) {
+                    pushExp(createTokenExp(VARIABLE));
+                    errorState = false;
+                } else if (tokenID == CppTokenId.AUTO) {
+                    pushExp(createTokenExp(AUTO));
+                    errorState = false;
+                } else {
+                    if(!macro) {
+                        lastSeparatorOffset = tokenOffset;
+                    }
                 }
             }
         }

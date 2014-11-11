@@ -1084,6 +1084,42 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug243594.cpp", 17, 16, "bug243594.cpp", 4, 9);
     }
     
+    public void testBug248502() throws Exception {
+        performTest("bug248502.cpp", 24, 27, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 25, 27, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 26, 29, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 27, 28, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 28, 27, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 29, 27, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 29, 27, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 30, 29, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 31, 28, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 32, 48, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 33, 48, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 34, 50, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 35, 49, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 36, 48, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 37, 48, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 38, 50, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 39, 49, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 40, 38, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 41, 38, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 42, 40, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 43, 39, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 44, 38, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 45, 38, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 46, 40, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 47, 39, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 48, 41, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 49, 41, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 50, 43, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 51, 42, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 52, 41, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 53, 41, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 54, 43, "bug248502.cpp", 3, 9);
+        performTest("bug248502.cpp", 55, 42, "bug248502.cpp", 3, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
