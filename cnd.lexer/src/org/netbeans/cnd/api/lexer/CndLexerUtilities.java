@@ -831,6 +831,7 @@ public final class CndLexerUtilities {
             CppTokenId.__NULL,
             CppTokenId.__ALIGNOF,
             CppTokenId.__IS_CLASS,
+            CppTokenId.__IS_ENUM,
             CppTokenId.__IS_POD,
             CppTokenId.__IS_BASE_OF,
             CppTokenId.__HAS_TRIVIAL_CONSTRUCTOR,

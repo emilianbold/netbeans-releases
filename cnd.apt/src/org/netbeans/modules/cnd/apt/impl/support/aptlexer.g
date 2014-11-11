@@ -327,6 +327,7 @@ tokens {
     LITERAL___null="__null"; // NOI18N
     LITERAL___alignof="__alignof"; // NOI18N
     LITERAL___is_class="__is_class"; // NOI18N
+    LITERAL___is_enum="__is_enum"; // NOI18N
     LITERAL___is_pod="__is_pod"; // NOI18N
     LITERAL___is_base_of="__is_base_of"; // NOI18N
     LITERAL___has_trivial_constructor="__has_trivial_constructor"; // NOI18N
