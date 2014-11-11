@@ -75,13 +75,20 @@ public class EvaluateAction extends CallableSystemAction implements StateListene
     } 
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
             // 6574620
             String selectedStr = EditorBridge.getCurrentSelection();
             selectedStr = (selectedStr == null ? "" : selectedStr); // NOI18N
-            EvaluationWindow.getDefault().exprEval(selectedStr);
+            //bz#248470
+            //we are in EDT thread already, no need to use SqingUtilitites
+            EvaluationWindow evalWindow = EvaluationWindow.getDefault();
+            evalWindow.open();
+            evalWindow.requestActive();
+            evalWindow.componentShowing();
+            evalWindow.exprEval(selectedStr);
 	}
 
     }
