@@ -197,5 +197,10 @@ public class JsLanguage extends DefaultLanguageConfig {
         return new JsIndexSearcher();
     }
 
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new JsKeyStrokeHandler();
+    }
 
+    
 }
