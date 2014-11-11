@@ -48,12 +48,14 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import javax.lang.model.element.*;
@@ -67,7 +69,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
-import org.openide.util.Exceptions;
 import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 import org.openide.util.NbBundle;
 
@@ -87,17 +88,17 @@ public class PushDownTransformer extends RefactoringVisitor {
 
     public PushDownTransformer(MemberInfo<ElementHandle<? extends Element>> members[]) {
         this.members = members;
+        this.translateQueue = new LinkedList<>();
     }
 
-    private HashMap<Tree, Tree> original2Translated;
+    private final Deque<Map<Tree, Tree>> translateQueue;
     @Override
     public Tree visitClass(ClassTree node, Element source) {
         final GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
         final TreePath classPath = getCurrentPath();
         
         ClassTree classTree = node;
-        
-        original2Translated = new HashMap<>();
+        translateQueue.addLast(new HashMap<Tree, Tree>());
         Tree value = super.visitClass(classTree, source);
         
         Element el = workingCopy.getTrees().getElement(getCurrentPath());
@@ -113,15 +114,14 @@ public class PushDownTransformer extends RefactoringVisitor {
                 classTree = rewriteSubClass(el, source, genUtils, trees, node);
             }
         }
-        
-        if (classPath.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT) {
-            original2Translated.put(node, classTree);
-            return super.visitClass(node, source);
-        }
-
+        Map<Tree, Tree> original2Translated = translateQueue.pollLast();
         classTree = (ClassTree) workingCopy.getTreeUtilities().translate(classTree, original2Translated);
-        rewrite(node, classTree);
-        
+        if (/* final boolean notTopLevel = classPath.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT; */
+            !translateQueue.isEmpty()) {
+            translateQueue.getLast().put(node, classTree);
+        } else {        
+            rewrite(node, classTree);
+        }
         return value;
     }
 
@@ -172,7 +172,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                             ident = enclosingTypeElement.getSimpleName().toString() + "." + ident;
                         }
                     }
-                    original2Translated.put(node, make.Identifier(ident));
+                    translateQueue.getLast().put(node, make.Identifier(ident));
                 }
                 break;
             }
@@ -321,7 +321,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                                 Set<Modifier> mod = new HashSet<>(njuClass.getModifiers().getFlags());
                                 mod.add(Modifier.ABSTRACT);
                                 ModifiersTree modifiers = make.Modifiers(mod);
-                                original2Translated.put(njuClass.getModifiers(), modifiers);
+                                translateQueue.getLast().put(njuClass.getModifiers(), modifiers);
                             }
                             
                             MethodTree method = (MethodTree) t;
@@ -342,7 +342,7 @@ public class PushDownTransformer extends RefactoringVisitor {
                                     (ExpressionTree)method.getDefaultValue());
                             genUtils.copyComments(method, nju, true);
                             genUtils.copyComments(method, nju, false);
-                            original2Translated.put(method, nju);
+                            translateQueue.getLast().put(method, nju);
                         }
                     } else {
                         njuClass = make.removeClassMember(njuClass, t);
