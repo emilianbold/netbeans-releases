@@ -98,6 +98,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     public static final String FOLDER_PROVIDER = "dwarf-folder"; // NOI18N
     public static final String MAKE_LOG_PROVIDER = "make-log"; // NOI18N
     public static final String EXEC_LOG_PROVIDER = "exec-log"; // NOI18N
+    public static final String MODEL_FOLDER_PROVIDER = "model-folder"; // NOI18N
     
     /** Creates a new instance of DiscoveryExtension */
     public DiscoveryExtension() {
@@ -200,7 +201,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             if (aditionalLibraries == null || aditionalLibraries.isEmpty()) {
                 ProviderPropertyType.LibrariesPropertyType.setProperty(provider, new String[0]);
             } else {
-                ProviderPropertyType.LibrariesPropertyType.setProperty(provider, aditionalLibraries.split(";"));
+                ProviderPropertyType.LibrariesPropertyType.setProperty(provider, aditionalLibraries.split(";")); //NOI18N
             }
             ProviderPropertyType.BinaryFileSystemPropertyType.setProperty(provider, descriptor.getFileSystem());
             ProviderPropertyType.FindMainPropertyType.setProperty(provider, findMain);
