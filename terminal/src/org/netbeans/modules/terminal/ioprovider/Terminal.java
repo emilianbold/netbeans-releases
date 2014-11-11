@@ -124,7 +124,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Extent;
-import org.netbeans.lib.terminalemulator.MiscListener;
+import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.terminal.api.IOResizable;
 import org.openide.DialogDisplayer;
@@ -177,8 +177,7 @@ public final class Terminal extends JComponent {
 
     // Not final so we can dispose of them
     private final ActiveTerm term;
-    private final MiscListener.ComponentListener componentListener;
-    private final MiscListener.TermListener termListener;
+    private final TermListener termListener;
     private FindState findState;
 
     private static final Preferences prefs =
@@ -271,20 +270,17 @@ public final class Terminal extends JComponent {
     /**
      * Adapter to forward Term size change events as property changes.
      */
-    private class MyComponentListener implements MiscListener.ComponentListener {
+    private class MyTermListener implements TermListener {
+
+	private final static int MAX_TITLE_LENGTH = 35;
+	private final static String PREFIX = "..."; // NOI18N
+	private final static String INFIX = " - "; // NOI18N
 
 	@Override
 	public void sizeChanged(Dimension cells, Dimension pixels) {
 	    IOResizable.Size size = new IOResizable.Size(cells, pixels);
 	    tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
 	}
-    }
-
-    private class MyTermListener implements MiscListener.TermListener {
-
-	private final static int MAX_TITLE_LENGTH = 35;
-	private final static String PREFIX = "..."; // NOI18N
-	private final static String INFIX = " - "; // NOI18N
 
 	@Override
 	public void cwdChanged(String cwd) {
@@ -404,9 +400,7 @@ public final class Terminal extends JComponent {
 	    }
 	});
 
-	componentListener = new MyComponentListener();
 	termListener = new MyTermListener();
-	term.addListener(componentListener);
 	term.addListener(termListener);
 	
 //	final SupportStream supportStream = new SupportStream();
@@ -451,7 +445,6 @@ public final class Terminal extends JComponent {
 	disposed = true;
 
         term.getScreen().removeMouseListener(mouseAdapter);
-	term.removeListener(componentListener);
 	term.removeListener(termListener);
 	term.setActionListener(null);
 	findState = null;

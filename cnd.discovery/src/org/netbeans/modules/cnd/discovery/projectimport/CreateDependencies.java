@@ -137,20 +137,17 @@ public class CreateDependencies implements PropertyChangeListener {
                             if (!checkedDll.contains(entry.getValue())) {
                                 checkedDll.add(entry.getValue());
                                 final Map<String, Object> extMap = new HashMap<>();
-                                extMap.put(DiscoveryWizardDescriptor.BUILD_RESULT, entry.getValue());
-                                extMap.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
+                                DiscoveryWizardDescriptor.BUILD_RESULT.toMap(extMap, entry.getValue());
+                                DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(extMap, CommonUtilities.resolveSymbolicLinks());
                                 if (extension != null) {
                                     extension.discoverArtifacts(extMap);
-                                    @SuppressWarnings("unchecked")
-                                    List<String> dlls = (List<String>) extMap.get(DiscoveryWizardDescriptor.DEPENDENCIES);
+                                    List<String> dlls = DiscoveryWizardDescriptor.DEPENDENCIES.fromMap(extMap);
                                     if (dlls != null) {
                                         for(String so : dlls) {
                                             if (!dllPaths.containsKey(so)) {
                                                 secondary.add(so);
                                             }
                                         }
-                                        //@SuppressWarnings("unchecked")
-                                        //List<String> searchPaths = (List<String>) map.get("DW:searchPaths"); // NOI18N
                                     }
                                 }
                             }
@@ -246,9 +243,9 @@ public class CreateDependencies implements PropertyChangeListener {
                     }
                     if (extension != null) {
                         Map<String, Object> map = new HashMap<>();
-                        map.put(DiscoveryWizardDescriptor.BUILD_RESULT, executable);
-                        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, aProject.getProjectDirectory().getPath());
-                        map.put(DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS, CommonUtilities.resolveSymbolicLinks());
+                        DiscoveryWizardDescriptor.BUILD_RESULT.toMap(map, executable);
+                        DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, aProject.getProjectDirectory().getPath());
+                        DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
                         process((DiscoveryExtension)extension, aProject, map);
                     }
                 }

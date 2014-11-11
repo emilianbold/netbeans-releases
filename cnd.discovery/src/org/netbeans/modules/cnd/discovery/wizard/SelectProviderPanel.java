@@ -429,7 +429,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             return false;
         }
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
-        if ("model-folder".equals(provider.getID())){ // NOI18N
+        if (DiscoveryExtension.MODEL_FOLDER_PROVIDER.equals(provider.getID())){ // NOI18N
             Project project = wizardDescriptor.getProject();
             if (project != null){
                 CsmProject langProject = CsmModelAccessor.getModel().getProject(project);

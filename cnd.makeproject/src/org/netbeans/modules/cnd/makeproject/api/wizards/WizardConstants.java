@@ -53,12 +53,13 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Constants that are used by wizards
  * @author Vladimir Kvashin
  */
-public class WizardConstants {
+public final class WizardConstants {
 
     private WizardConstants() {
     }
@@ -107,6 +108,20 @@ public class WizardConstants {
     // the property is not null in case full remote project wizard
     public static final WizardConstant<ExecutionEnvironment> PROPERTY_REMOTE_FILE_SYSTEM_ENV = new WizardConstant<>("REMOTE_FILE_ENV"); //NOI18N
     
+    //Interface to dwarf discovery
+    //Input properties
+    public static final WizardConstant<String> DISCOVERY_BUILD_RESULT = new WizardConstant<>("DW:buildResult"); //NOI18N
+    public static final WizardConstant<String> DISCOVERY_LIBRARIES = new WizardConstant<>("DW:libraries"); //NOI18N
+    public static final WizardConstant<Boolean> DISCOVERY_RESOLVE_LINKS = new WizardConstant<>("DW:resolveLinks"); //NOI18N
+    public static final WizardConstant<FileSystem> DISCOVERY_BINARY_FILESYSTEM = new WizardConstant<>("DW:fileSystem"); //NOI18N
+    //Input/Output properties
+    public static final WizardConstant<String> DISCOVERY_ROOT_FOLDER = new WizardConstant<>("DW:rootFolder"); //NOI18N
+    //Output properties
+    public static final WizardConstant<List<String>> DISCOVERY_BINARY_DEPENDENCIES = new WizardConstant<>("DW:dependencies"); //NOI18N
+    public static final WizardConstant<List<String>> DISCOVERY_BINARY_SEARCH_PATH = new WizardConstant<>("DW:searchPaths"); //NOI18N
+    public static final WizardConstant<String> DISCOVERY_COMPILER = new WizardConstant<>("DW:compiler"); //NOI18N
+    public static final WizardConstant<List<String>> DISCOVERY_ERRORS = new WizardConstant<>("DW:errors"); //NOI18N
+    
     public static ExecutionEnvironment getSourceExecutionEnvironment(WizardDescriptor wizardDescriptor) {
         ExecutionEnvironment env = WizardConstants.PROPERTY_SOURCE_HOST_ENV.get(wizardDescriptor);
         return (env == null) ? NewProjectWizardUtils.getDefaultSourceEnvironment() : env;
@@ -114,7 +129,7 @@ public class WizardConstants {
 
     public static final class WizardConstant<T> {
         private final String key;
-        WizardConstant(String key) {
+        public WizardConstant(String key) {
             this.key = key;
         }
         public String key() {

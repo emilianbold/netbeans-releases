@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants.WizardConstant;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -62,25 +63,27 @@ import org.openide.util.Utilities;
  */
 @SuppressWarnings("unchecked") // NOI18N
 public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor {
-    public static final String PROJECT = "DW:project"; // NOI18N
-    public static final String PROVIDER = "DW:provider"; // NOI18N
-    public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
-    public static final String BUILD_RESULT = "DW:buildResult"; // NOI18N
-    public static final String BUILD_FOLDER = "DW:buildFolder"; // NOI18N
-    public static final String FILE_SYSTEM = "DW:fileSystem"; // NOI18N
-    public static final String LOG_FILE = "DW:logFile"; // NOI18N
-    public static final String EXEC_LOG_FILE = "DW:execLogFile"; // NOI18N
-    public static final String ADDITIONAL_LIBRARIES = "DW:libraries"; // NOI18N
-    public static final String CONFIGURATIONS = "DW:configurations"; // NOI18N
-    public static final String INCLUDED = "DW:included"; // NOI18N
-    public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
-    public static final String COMPILER_NAME = "DW:compiler"; // NOI18N
-    public static final String DEPENDENCIES = "DW:dependencies"; // NOI18N
-    public static final String BUILD_ARTIFACTS = "DW:buildArtifacts"; // NOI18N
-    public static final String SEARCH_PATHS = "DW:searchPaths"; // NOI18N
-    public static final String ERRORS = "DW:errors"; // NOI18N
-    public static final String INCREMENTAL = "DW:incremental"; // NOI18N
-    public static final String RESOLVE_SYMBOLIC_LINKS = "DW:resolveLinks"; // NOI18N
+    // Common properties
+    public static final WizardConstant<String> ROOT_FOLDER =  WizardConstants.DISCOVERY_ROOT_FOLDER;
+    public static final WizardConstant<String> BUILD_RESULT = WizardConstants.DISCOVERY_BUILD_RESULT;
+    public static final WizardConstant<FileSystem> FILE_SYSTEM = WizardConstants.DISCOVERY_BINARY_FILESYSTEM;
+    public static final WizardConstant<String> ADDITIONAL_LIBRARIES = WizardConstants.DISCOVERY_LIBRARIES;
+    public static final WizardConstant<String> COMPILER_NAME = WizardConstants.DISCOVERY_COMPILER;
+    public static final WizardConstant<List<String>> DEPENDENCIES = WizardConstants.DISCOVERY_BINARY_DEPENDENCIES;
+    public static final WizardConstant<List<String>> SEARCH_PATHS = WizardConstants.DISCOVERY_BINARY_SEARCH_PATH;
+    public static final WizardConstant<List<String>> ERRORS = WizardConstants.DISCOVERY_ERRORS;
+    public static final WizardConstant<Boolean> RESOLVE_SYMBOLIC_LINKS = WizardConstants.DISCOVERY_RESOLVE_LINKS;
+
+    public static final WizardConstant<Project> PROJECT = new WizardConstant<>("DW:project"); // NOI18N
+    public static final WizardConstant<DiscoveryProvider> PROVIDER = new WizardConstant<>("DW:provider"); // NOI18N
+    public static final WizardConstant<String> BUILD_FOLDER = new WizardConstant<>("DW:buildFolder"); // NOI18N
+    public static final WizardConstant<String> LOG_FILE = new WizardConstant<>("DW:logFile"); // NOI18N
+    public static final WizardConstant<String> EXEC_LOG_FILE = new WizardConstant<>("DW:execLogFile"); // NOI18N
+    public static final WizardConstant<List<ProjectConfiguration>> CONFIGURATIONS = new WizardConstant<>("DW:configurations"); // NOI18N
+    public static final WizardConstant<List<String>> INCLUDED = new WizardConstant<>("DW:included"); // NOI18N
+    public static final WizardConstant<Boolean> INVOKE_PROVIDER = new WizardConstant<>("DW:invokeProvider"); // NOI18N
+    public static final WizardConstant<List<String>>  BUILD_ARTIFACTS = new WizardConstant<>("DW:buildArtifacts"); // NOI18N
+    public static final WizardConstant<Boolean> INCREMENTAL = new WizardConstant<>("DW:incremental"); // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -103,16 +106,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     
     @Override
     public Project getProject(){
-        return (Project) getProperty(PROJECT);
+        return (Project) getProperty(PROJECT.key());
     }
     @Override
     public void setProject(Project project){
-        putProperty(PROJECT, project);
+        putProperty(PROJECT.key(), project);
     }
     
     @Override
     public String getRootFolder(){
-        return (String) getProperty(ROOT_FOLDER);
+        return (String) getProperty(ROOT_FOLDER.key());
     }
     
     @Override
@@ -121,87 +124,87 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         if (root != null && Utilities.isWindows()) {
             root = root.replace('\\','/');
         }
-        putProperty(ROOT_FOLDER, root);
+        putProperty(ROOT_FOLDER.key(), root);
     }
     
     @Override
     public List<String> getErrors(){
-        return (List<String>) getProperty(ERRORS);
+        return (List<String>) getProperty(ERRORS.key());
     }
 
     @Override
     public void setErrors(List<String> errors){
         stateChanged = true;
-        putProperty(ERRORS, errors);
+        putProperty(ERRORS.key(), errors);
     }
 
     @Override
     public String getBuildResult() {
-        return (String) getProperty(BUILD_RESULT);
+        return (String) getProperty(BUILD_RESULT.key());
     }
     
     @Override
     public void setBuildResult(String binaryPath) {
-        putProperty(BUILD_RESULT, binaryPath);
+        putProperty(BUILD_RESULT.key(), binaryPath);
     }
 
     @Override
     public String getBuildFolder() {
-        return (String) getProperty(BUILD_FOLDER);
+        return (String) getProperty(BUILD_FOLDER.key());
     }
 
     @Override
     public void setBuildFolder(String buildPath) {
-        putProperty(BUILD_FOLDER, buildPath);
+        putProperty(BUILD_FOLDER.key(), buildPath);
     }
    
     @Override
     public FileSystem getFileSystem() {
-        return (FileSystem) getProperty(FILE_SYSTEM);
+        return (FileSystem) getProperty(FILE_SYSTEM.key());
     }
     
     @Override
     public void setFileSystem(FileSystem fs) {
-        putProperty(FILE_SYSTEM, fs);
+        putProperty(FILE_SYSTEM.key(), fs);
     }
     
     @Override
     public String getAditionalLibraries() {
-        return (String) getProperty(ADDITIONAL_LIBRARIES);
+        return (String) getProperty(ADDITIONAL_LIBRARIES.key());
     }
     
     @Override
     public void setAditionalLibraries(String binaryPath) {
-        putProperty(ADDITIONAL_LIBRARIES, binaryPath);
+        putProperty(ADDITIONAL_LIBRARIES.key(), binaryPath);
     }
 
     @Override
     public String getBuildLog() {
-        return (String) getProperty(LOG_FILE);
+        return (String) getProperty(LOG_FILE.key());
     }
 
     @Override
     public void setBuildLog(String logFile) {
-        putProperty(LOG_FILE, logFile);
+        putProperty(LOG_FILE.key(), logFile);
     }
     
     @Override
     public String getExecLog() {
-        return (String) getProperty(EXEC_LOG_FILE);
+        return (String) getProperty(EXEC_LOG_FILE.key());
     }
 
     @Override
     public void setExecLog(String logFile) {
-        putProperty(EXEC_LOG_FILE, logFile);
+        putProperty(EXEC_LOG_FILE.key(), logFile);
     }
     
     @Override
     public DiscoveryProvider getProvider(){
-        return (DiscoveryProvider) getProperty(PROVIDER);
+        return (DiscoveryProvider) getProperty(PROVIDER.key());
     }
     @Override
     public String getProviderID(){
-        DiscoveryProvider provider =(DiscoveryProvider) getProperty(PROVIDER);
+        DiscoveryProvider provider =(DiscoveryProvider) getProperty(PROVIDER.key());
         if (provider != null){
             return provider.getID();
         }
@@ -210,25 +213,25 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setProvider(DiscoveryProvider provider){
         stateChanged = true;
-        putProperty(PROVIDER, provider);
+        putProperty(PROVIDER.key(), provider);
     }
     
     @Override
     public List<ProjectConfiguration> getConfigurations(){
-        return (List<ProjectConfiguration>) getProperty(CONFIGURATIONS);
+        return (List<ProjectConfiguration>) getProperty(CONFIGURATIONS.key());
     }
     @Override
     public void setConfigurations(List<ProjectConfiguration> configuration){
-        putProperty(CONFIGURATIONS, configuration);
+        putProperty(CONFIGURATIONS.key(), configuration);
     }
     
     @Override
     public List<String> getIncludedFiles(){
-        return (List<String>) getProperty(INCLUDED);
+        return (List<String>) getProperty(INCLUDED.key());
     }
     @Override
     public void setIncludedFiles(List<String> includedFiles){
-        putProperty(INCLUDED, includedFiles);
+        putProperty(INCLUDED.key(), includedFiles);
     }
     
     @Override
@@ -277,62 +280,62 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
 
     @Override
     public String getCompilerName() {
-        return (String) getProperty(COMPILER_NAME);
+        return (String) getProperty(COMPILER_NAME.key());
     }
 
     @Override
     public void setCompilerName(String compiler) {
-        putProperty(COMPILER_NAME, compiler);
+        putProperty(COMPILER_NAME.key(), compiler);
     }
 
     @Override
     public List<String> getDependencies() {
-        return (List<String>) getProperty(DEPENDENCIES);
+        return (List<String>) getProperty(DEPENDENCIES.key());
     }
 
     @Override
     public void setDependencies(List<String> dependencies) {
-        putProperty(DEPENDENCIES, dependencies);
+        putProperty(DEPENDENCIES.key(), dependencies);
     }
 
     @Override
     public List<String> getBuildArtifacts() {
-        return (List<String>) getProperty(BUILD_ARTIFACTS);
+        return (List<String>) getProperty(BUILD_ARTIFACTS.key());
     }
 
     @Override
     public void setBuildArtifacts(List<String> buildArtifacts) {
-        putProperty(BUILD_ARTIFACTS, buildArtifacts);
+        putProperty(BUILD_ARTIFACTS.key(), buildArtifacts);
     }
 
     @Override
     public List<String> getSearchPaths() {
-        return (List<String>) getProperty(SEARCH_PATHS);
+        return (List<String>) getProperty(SEARCH_PATHS.key());
     }
 
     @Override
     public void setSearchPaths(List<String> searchPaths) {
-        putProperty(SEARCH_PATHS, searchPaths);
+        putProperty(SEARCH_PATHS.key(), searchPaths);
     }
 
     @Override
     public boolean isIncrementalMode() {
-        return Boolean.TRUE.equals(getProperty(INCREMENTAL));
+        return Boolean.TRUE.equals(getProperty(INCREMENTAL.key()));
     }
 
     @Override
     public void setIncrementalMode(boolean incremental) {
-        putProperty(INCREMENTAL, incremental);
+        putProperty(INCREMENTAL.key(), incremental);
     }
 
     @Override
     public boolean isResolveSymbolicLinks() {
-        return Boolean.TRUE.equals(getProperty(RESOLVE_SYMBOLIC_LINKS));
+        return Boolean.TRUE.equals(getProperty(RESOLVE_SYMBOLIC_LINKS.key()));
     }
 
     @Override
     public void setResolveSymbolicLinks(boolean resolveSymbolicLinks) {
-        putProperty(RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks);
+        putProperty(RESOLVE_SYMBOLIC_LINKS.key(), resolveSymbolicLinks);
     }
 
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
@@ -343,16 +346,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         
         @Override
         public Project getProject(){
-            return (Project) wizard.getProperty(PROJECT);
+            return PROJECT.get(wizard);
         }
         @Override
         public void setProject(Project project){
-            wizard.putProperty(PROJECT, project);
+            PROJECT.put(wizard, project);
         }
         
         @Override
         public String getRootFolder(){
-            String root = (String) wizard.getProperty(ROOT_FOLDER);
+            String root = ROOT_FOLDER.get(wizard);
             if (root == null) {
                 // field in project wizard
                 root = WizardConstants.PROPERTY_WORKING_DIR.get(wizard); // NOI18N
@@ -364,91 +367,91 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         @Override
         public void setRootFolder(String root){
-            wizard.putProperty(INVOKE_PROVIDER, Boolean.TRUE);
+            wizard.putProperty(INVOKE_PROVIDER.key(), Boolean.TRUE);
             if (root != null && Utilities.isWindows()) {
                 root = root.replace('\\','/');
             }
-            wizard.putProperty(ROOT_FOLDER, root);
+            ROOT_FOLDER.put(wizard, root);
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public List<String> getErrors(){
-            return (List<String>) wizard.getProperty(ERRORS);
+            return ERRORS.get(wizard);
         }
 
         @Override
         public void setErrors(List<String> errors){
-            wizard.putProperty(ERRORS, errors);
+            ERRORS.put(wizard, errors);
         }
         
         @Override
         public String getBuildResult() {
-            return (String) wizard.getProperty(BUILD_RESULT);
+            return BUILD_RESULT.get(wizard);
         }
         
         @Override
         public void setBuildResult(String binaryPath) {
-            wizard.putProperty(BUILD_RESULT, binaryPath);
+            BUILD_RESULT.put(wizard, binaryPath);
         }
 
         @Override
         public String getBuildFolder() {
-            return (String) wizard.getProperty(BUILD_FOLDER);
+            return BUILD_FOLDER.get(wizard);
         }
 
         @Override
         public void setBuildFolder(String buildPath) {
-            wizard.putProperty(BUILD_FOLDER, buildPath);
+            BUILD_FOLDER.put(wizard, buildPath);
         }
 
         @Override
         public FileSystem getFileSystem() {
-            return (FileSystem) wizard.getProperty(FILE_SYSTEM);
+            return FILE_SYSTEM.get(wizard);
         }
         
         @Override
         public void setFileSystem(FileSystem fs) {
-            wizard.putProperty(FILE_SYSTEM, fs);
+            FILE_SYSTEM.put(wizard, fs);
         }
         
         @Override
         public String getAditionalLibraries() {
-            return (String) wizard.getProperty(ADDITIONAL_LIBRARIES);
+            return ADDITIONAL_LIBRARIES.get(wizard);
         }
         
         @Override
         public void setAditionalLibraries(String binaryPath) {
-            wizard.putProperty(ADDITIONAL_LIBRARIES, binaryPath);
+            ADDITIONAL_LIBRARIES.put(wizard, binaryPath);
         }
 
         @Override
         public String getBuildLog() {
-            return (String) wizard.getProperty(LOG_FILE);
+            return LOG_FILE.get(wizard);
         }
 
         @Override
         public void setBuildLog(String logFile) {
-            wizard.putProperty(LOG_FILE, logFile);
+            LOG_FILE.put(wizard, logFile);
         }
         
         @Override
         public String getExecLog() {
-            return (String) wizard.getProperty(EXEC_LOG_FILE);
+            return EXEC_LOG_FILE.get(wizard);
         }
 
         @Override
         public void setExecLog(String logFile) {
-            wizard.putProperty(EXEC_LOG_FILE, logFile);
+            EXEC_LOG_FILE.put(wizard, logFile);
         }
         
         @Override
         public DiscoveryProvider getProvider(){
-            return (DiscoveryProvider) wizard.getProperty(PROVIDER);
+            return PROVIDER.get(wizard);
         }
         @Override
         public String getProviderID(){
-            DiscoveryProvider provider =(DiscoveryProvider) wizard.getProperty(PROVIDER);
+            DiscoveryProvider provider =PROVIDER.get(wizard);
             if (provider != null){
                 return provider.getID();
             }
@@ -456,44 +459,40 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         @Override
         public void setProvider(DiscoveryProvider provider){
-            wizard.putProperty(INVOKE_PROVIDER, Boolean.TRUE);
-            wizard.putProperty(PROVIDER, provider);
+            INVOKE_PROVIDER.put(wizard, Boolean.TRUE);
+            PROVIDER.put(wizard, provider);
         }
         
         @Override
         public List<ProjectConfiguration> getConfigurations(){
-            return (List<ProjectConfiguration>) wizard.getProperty(CONFIGURATIONS);
+            return CONFIGURATIONS.get(wizard);
         }
         @Override
         public void setConfigurations(List<ProjectConfiguration> configuration){
-            wizard.putProperty(CONFIGURATIONS, configuration);
+            CONFIGURATIONS.put(wizard, configuration);
         }
         
         @Override
         public List<String> getIncludedFiles(){
-            return (List<String>) wizard.getProperty(INCLUDED);
+            return INCLUDED.get(wizard);
         }
         @Override
         public void setIncludedFiles(List<String> includedFiles){
-            wizard.putProperty(INCLUDED, includedFiles);
+            INCLUDED.put(wizard, includedFiles);
         }
         
         @Override
         public boolean isInvokeProvider(){
-            Boolean res = (Boolean)wizard.getProperty(INVOKE_PROVIDER);
+            Boolean res = INVOKE_PROVIDER.get(wizard);
             if (res == null) {
                 return true;
             }
-            return res.booleanValue();
+            return res;
         }
         
         @Override
         public void setInvokeProvider(boolean invoke){
-            if (invoke) {
-                wizard.putProperty(INVOKE_PROVIDER, Boolean.TRUE);
-            } else {
-                wizard.putProperty(INVOKE_PROVIDER, Boolean.FALSE);
-            }
+            INVOKE_PROVIDER.put(wizard, invoke);
         }
         
         @Override
@@ -531,62 +530,62 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
 
         @Override
         public String getCompilerName() {
-            return (String) wizard.getProperty(COMPILER_NAME);
+            return COMPILER_NAME.get(wizard);
         }
 
         @Override
         public void setCompilerName(String compiler) {
-            wizard.putProperty(COMPILER_NAME, compiler);
+            COMPILER_NAME.put(wizard, compiler);
         }
 
         @Override
         public List<String> getDependencies() {
-            return (List<String>) wizard.getProperty(DEPENDENCIES);
+            return DEPENDENCIES.get(wizard);
         }
 
         @Override
         public void setDependencies(List<String> dependencies) {
-            wizard.putProperty(DEPENDENCIES, dependencies);
+            DEPENDENCIES.put(wizard, dependencies);
         }
 
         @Override
         public List<String> getBuildArtifacts() {
-            return (List<String>) wizard.getProperty(BUILD_ARTIFACTS);
+            return BUILD_ARTIFACTS.get(wizard);
         }
 
         @Override
         public void setBuildArtifacts(List<String> buildArtifacts) {
-            wizard.putProperty(DEPENDENCIES, buildArtifacts);
+            BUILD_ARTIFACTS.put(wizard, buildArtifacts);
         }
 
         @Override
         public List<String> getSearchPaths() {
-            return (List<String>) wizard.getProperty(SEARCH_PATHS);
+            return SEARCH_PATHS.get(wizard);
         }
 
         @Override
         public void setSearchPaths(List<String> searchPaths) {
-            wizard.putProperty(SEARCH_PATHS, searchPaths);
+            SEARCH_PATHS.put(wizard, searchPaths);
         }
 
         @Override
         public boolean isIncrementalMode() {
-            return Boolean.TRUE.equals(wizard.getProperty(INCREMENTAL));
+            return Boolean.TRUE.equals(INCREMENTAL.get(wizard));
         }
 
         @Override
         public void setIncrementalMode(boolean incremental) {
-            wizard.putProperty(INCREMENTAL, incremental);
+            INCREMENTAL.put(wizard, incremental);
         }
 
         @Override
         public boolean isResolveSymbolicLinks() {
-            return Boolean.TRUE.equals(wizard.getProperty(RESOLVE_SYMBOLIC_LINKS));
+            return Boolean.TRUE.equals(RESOLVE_SYMBOLIC_LINKS.get(wizard));
         }
 
         @Override
         public void setResolveSymbolicLinks(boolean resolveSymbolicLinks) {
-            wizard.putProperty(RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks);
+            RESOLVE_SYMBOLIC_LINKS.put(wizard, resolveSymbolicLinks);
         }
     }
 
@@ -599,16 +598,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         
         @Override
         public Project getProject(){
-            return (Project) map.get(PROJECT);
+            return PROJECT.fromMap(map);
         }
         @Override
         public void setProject(Project project){
-            map.put(PROJECT, project);
+            PROJECT.toMap(map, project);
         }
         
         @Override
         public String getRootFolder(){
-            String root = (String) map.get(ROOT_FOLDER);
+            String root = ROOT_FOLDER.fromMap(map);
             if (root == null) {
                 // field in project wizard
                 root = WizardConstants.PROPERTY_WORKING_DIR.fromMap(map); // NOI18N
@@ -620,91 +619,91 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         @Override
         public void setRootFolder(String root){
-            map.put(INVOKE_PROVIDER, Boolean.TRUE);
+            INVOKE_PROVIDER.toMap(map, Boolean.TRUE);
             if (root != null && Utilities.isWindows()) {
                 root = root.replace('\\','/');
             }
-            map.put(ROOT_FOLDER, root);
+            ROOT_FOLDER.toMap(map, root);
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public List<String> getErrors(){
-            return (List<String>) map.get(ERRORS);
+            return ERRORS.fromMap(map);
         }
 
         @Override
         public void setErrors(List<String> errors){
-            map.put(ERRORS, errors);
+            ERRORS.toMap(map, errors);
         }
         
         @Override
         public String getBuildResult() {
-            return (String) map.get(BUILD_RESULT);
+            return BUILD_RESULT.fromMap(map);
         }
         
         @Override
         public void setBuildResult(String binaryPath) {
-            map.put(BUILD_RESULT, binaryPath);
+            BUILD_RESULT.toMap(map, binaryPath);
         }
 
         @Override
         public String getBuildFolder() {
-            return (String) map.get(BUILD_FOLDER);
+            return BUILD_FOLDER.fromMap(map);
         }
 
         @Override
         public void setBuildFolder(String buildPath) {
-            map.put(BUILD_FOLDER, buildPath);
+            BUILD_FOLDER.toMap(map, buildPath);
         }
 
         @Override
         public FileSystem getFileSystem() {
-            return (FileSystem) map.get(FILE_SYSTEM);
+            return FILE_SYSTEM.fromMap(map);
         }
         
         @Override
         public void setFileSystem(FileSystem fs) {
-            map.put(FILE_SYSTEM, fs);
+            FILE_SYSTEM.toMap(map, fs);
         }
         
         @Override
         public String getAditionalLibraries() {
-            return (String) map.get(ADDITIONAL_LIBRARIES);
+            return ADDITIONAL_LIBRARIES.fromMap(map);
         }
         
         @Override
         public void setAditionalLibraries(String binaryPath) {
-            map.put(ADDITIONAL_LIBRARIES, binaryPath);
+            ADDITIONAL_LIBRARIES.toMap(map, binaryPath);
         }
 
         @Override
         public String getBuildLog() {
-            return (String) map.get(LOG_FILE);
+            return LOG_FILE.fromMap(map);
         }
 
         @Override
         public void setBuildLog(String logFile) {
-            map.put(LOG_FILE, logFile);
+            LOG_FILE.toMap(map, logFile);
         }
         
         @Override
         public String getExecLog() {
-            return (String) map.get(EXEC_LOG_FILE);
+            return EXEC_LOG_FILE.fromMap(map);
         }
 
         @Override
         public void setExecLog(String logFile) {
-            map.put(EXEC_LOG_FILE, logFile);
+            EXEC_LOG_FILE.toMap(map, logFile);
         }
         
         @Override
         public DiscoveryProvider getProvider(){
-            return (DiscoveryProvider) map.get(PROVIDER);
+            return PROVIDER.fromMap(map);
         }
         @Override
         public String getProviderID(){
-            DiscoveryProvider provider =(DiscoveryProvider) map.get(PROVIDER);
+            DiscoveryProvider provider = PROVIDER.fromMap(map);
             if (provider != null){
                 return provider.getID();
             }
@@ -712,44 +711,40 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         }
         @Override
         public void setProvider(DiscoveryProvider provider){
-            map.put(INVOKE_PROVIDER, Boolean.TRUE);
-            map.put(PROVIDER, provider);
+            INVOKE_PROVIDER.toMap(map, Boolean.TRUE);
+            PROVIDER.toMap(map, provider);
         }
         
         @Override
         public List<ProjectConfiguration> getConfigurations(){
-            return (List<ProjectConfiguration>) map.get(CONFIGURATIONS);
+            return CONFIGURATIONS.fromMap(map);
         }
         @Override
         public void setConfigurations(List<ProjectConfiguration> configuration){
-            map.put(CONFIGURATIONS, configuration);
+            CONFIGURATIONS.toMap(map, configuration);
         }
         
         @Override
         public List<String> getIncludedFiles(){
-            return (List<String>) map.get(INCLUDED);
+            return INCLUDED.fromMap(map);
         }
         @Override
         public void setIncludedFiles(List<String> includedFiles){
-            map.put(INCLUDED, includedFiles);
+            INCLUDED.toMap(map, includedFiles);
         }
         
         @Override
         public boolean isInvokeProvider(){
-            Boolean res = (Boolean)map.get(INVOKE_PROVIDER);
+            Boolean res = INVOKE_PROVIDER.fromMap(map);
             if (res == null) {
                 return true;
             }
-            return res.booleanValue();
+            return res;
         }
         
         @Override
         public void setInvokeProvider(boolean invoke){
-            if (invoke) {
-                map.put(INVOKE_PROVIDER, Boolean.TRUE);
-            } else {
-                map.put(INVOKE_PROVIDER, Boolean.FALSE);
-            }
+            INVOKE_PROVIDER.toMap(map, invoke);
         }
         
         @Override
@@ -787,62 +782,62 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
 
         @Override
         public String getCompilerName() {
-            return (String) map.get(COMPILER_NAME);
+            return COMPILER_NAME.fromMap(map);
         }
 
         @Override
         public void setCompilerName(String compiler) {
-            map.put(COMPILER_NAME, compiler);
+            COMPILER_NAME.toMap(map, compiler);
         }
 
         @Override
         public List<String> getDependencies() {
-            return (List<String>) map.get(DEPENDENCIES);
+            return DEPENDENCIES.fromMap(map);
         }
 
         @Override
         public void setDependencies(List<String> dependencies) {
-            map.put(DEPENDENCIES, dependencies);
+            DEPENDENCIES.toMap(map, dependencies);
         }
 
         @Override
         public List<String> getBuildArtifacts() {
-            return (List<String>) map.get(BUILD_ARTIFACTS);
+            return BUILD_ARTIFACTS.fromMap(map);
         }
 
         @Override
         public void setBuildArtifacts(List<String> buildArtifacts) {
-            map.put(BUILD_ARTIFACTS, buildArtifacts);
+            BUILD_ARTIFACTS.toMap(map, buildArtifacts);
         }
 
         @Override
         public List<String> getSearchPaths() {
-            return (List<String>) map.get(SEARCH_PATHS);
+            return SEARCH_PATHS.fromMap(map);
         }
 
         @Override
         public void setSearchPaths(List<String> searchPaths) {
-            map.put(SEARCH_PATHS, searchPaths);
+            SEARCH_PATHS.toMap(map, searchPaths);
         }
 
         @Override
         public boolean isIncrementalMode() {
-            return Boolean.TRUE.equals(map.get(INCREMENTAL));
+            return Boolean.TRUE.equals(INCREMENTAL.fromMap(map));
         }
 
         @Override
         public void setIncrementalMode(boolean incremental) {
-            map.put(INCREMENTAL, incremental);
+            INCREMENTAL.toMap(map, incremental);
         }
         
         @Override
         public boolean isResolveSymbolicLinks() {
-            return Boolean.TRUE.equals(map.get(RESOLVE_SYMBOLIC_LINKS));
+            return Boolean.TRUE.equals(RESOLVE_SYMBOLIC_LINKS.fromMap(map));
         }
 
         @Override
         public void setResolveSymbolicLinks(boolean resolveSymbolicLinks) {
-            map.put(RESOLVE_SYMBOLIC_LINKS, resolveSymbolicLinks);
+            RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymbolicLinks);
         }
     }
 }

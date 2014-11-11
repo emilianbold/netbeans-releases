@@ -55,12 +55,9 @@ import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -628,50 +625,44 @@ public class Term extends JComponent implements Accessible {
      * @deprecated Replaced by{@link #addListener(TermListener)}.
      */
     @Deprecated
-    public void setListener(MiscListener l) {
+    public void setListener(TermListener l) {
         addListener(l);
     }
 
     /**
      * Add a TermListener to this.
      */
-    public void addListener(MiscListener l) {
-        miscListeners.add(l);
+    public void addListener(TermListener l) {
+        listeners.add(l);
 	updateTtySize();
     }
 
     /**
      * Remove the given TermListener from this.
      */
-    public void removeListener(MiscListener l) {
-        miscListeners.remove(l);
+    public void removeListener(TermListener l) {
+        listeners.remove(l);
     }
 
     private void fireSizeChanged(Dimension cells, Dimension pixels) {
-        for (MiscListener l : miscListeners) {
-            if (l instanceof MiscListener.ComponentListener) {
-                ((MiscListener.ComponentListener) l).sizeChanged(cells, pixels);
-            }
-        }
+        for (TermListener l : listeners) {
+             l.sizeChanged(cells, pixels);
+         }
     }
     
     private void fireTitleChanged(String title) {
-        for (MiscListener l : miscListeners) {
-            if (l instanceof MiscListener.TermListener) {
-                ((MiscListener.TermListener) l).titleChanged(title);
-            }
+        for (TermListener l : listeners) {
+            l.titleChanged(title);
         }
     }
     
     private void fireCwdChanged(String cwd) {
-        for (MiscListener l : miscListeners) {
-            if (l instanceof MiscListener.TermListener) {
-                ((MiscListener.TermListener) l).cwdChanged(cwd);
-            }
+        for (TermListener l : listeners) {
+            l.cwdChanged(cwd);
         }
     }
     
-    private final java.util.List<MiscListener> miscListeners = new CopyOnWriteArrayList<>();
+    private final java.util.List<TermListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
      * Set/unset focus policy.
