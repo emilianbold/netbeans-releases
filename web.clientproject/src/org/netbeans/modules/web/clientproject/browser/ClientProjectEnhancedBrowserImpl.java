@@ -48,7 +48,7 @@ import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -72,10 +72,10 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
     @Override
     public void save() {
         if (cust != null && browser.hasNetBeansIntegration()) {
-            EditableProperties p = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            EditableProperties p = project.getProjectHelper().getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
             p.put(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+browser.getId(), Boolean.toString(cust.panel.isAutoRefresh())); //NOI18N
             p.put(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+browser.getId(), Boolean.toString(cust.panel.isHighlightSelection())); //NOI18N
-            project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+            project.getProjectHelper().putProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH, p);
         }
     }
 

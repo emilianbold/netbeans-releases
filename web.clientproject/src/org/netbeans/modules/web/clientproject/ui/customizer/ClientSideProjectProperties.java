@@ -56,7 +56,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
@@ -131,8 +131,8 @@ public final class ClientSideProjectProperties {
         String siteRootFolderReference = createForeignFileReference(siteRootFolder, true);
         String testFolderReference = createForeignFileReference(testFolder, false);
         // save properties
-        EditableProperties privateProperties = project.getProjectHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = project.getProjectHelper().getProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH);
+        EditableProperties projectProperties = project.getProjectHelper().getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
 
         if (sourceFolder != null) {
             if (sourceFolderReference != null) {
@@ -186,8 +186,8 @@ public final class ClientSideProjectProperties {
         putProperty(privateProperties, ClientSideProjectConstants.PROJECT_PROJECT_URL, projectUrl);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_WEB_ROOT, webRoot);
         getLicenseSupport().updateProperties(projectProperties);
-        project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-        project.getProjectHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+        project.getProjectHelper().putProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        project.getProjectHelper().putProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
     }
 
     void saveEnhancedBrowserConfiguration() {

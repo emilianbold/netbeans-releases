@@ -53,21 +53,21 @@ import org.openide.filesystems.FileObject;
 /** Class providing indirect access to Ant project support services.
  */
 public abstract class IndirectServices {
-    public abstract AntProjectHelper createProject(FileObject dirFO, String type) throws IOException;
+    public abstract CommonProjectHelper createProject(FileObject dirFO, String type) throws IOException;
     public abstract String getUsablePropertyName(String displayName);
     public abstract File resolveFile(File dir, String relative);
-    public abstract PropertyEvaluator createEvaluator(AntProjectHelper h, FileObject dir);
+    public abstract PropertyEvaluator createEvaluator(CommonProjectHelper h, FileObject dir);
 
     public abstract JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, LicensePanelSupport licenseSupport);
 
     public abstract String relativizeFile(File base, File relative);
     
-    public abstract ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval);
+    public abstract ReferenceHelper newReferenceHelper(CommonProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval);
 
-    public abstract Sources initSources(Project project, AntProjectHelper h, PropertyEvaluator e);
+    public abstract Sources initSources(Project project, CommonProjectHelper h, PropertyEvaluator e);
 
     public abstract LicensePanelSupport newLicensePanelSupport(
-        PropertyEvaluator evaluator, AntProjectHelper projectHelper, 
+        PropertyEvaluator evaluator, CommonProjectHelper projectHelper, 
         String p1, String p2
     );
 }

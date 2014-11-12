@@ -48,7 +48,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.EditableProperties;
@@ -119,7 +119,7 @@ public class GruntCustomizerPanel extends javax.swing.JPanel {
 
     private void storeToProperties(ClientSideProject project) {
         try {
-            EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            EditableProperties projectProperties = project.getProjectHelper().getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
             
             
             Preferences prefs = NbPreferences.forModule(GruntCustomizerPanel.class);
@@ -145,7 +145,7 @@ public class GruntCustomizerPanel extends javax.swing.JPanel {
                 prefs.put(PROP_REBUILD_ACTION, rebuildTextField.getText());
             }
             
-            project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+            project.getProjectHelper().putProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
             prefs.sync();
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);

@@ -88,8 +88,7 @@ import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectListener;
+import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
@@ -153,11 +152,11 @@ public class ClientSideProject implements Project {
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
-    final AntProjectHelper projectHelper;
+    final CommonProjectHelper projectHelper;
     private final ReferenceHelper referenceHelper;
     private final PropertyEvaluator eval;
     private final Lookup lookup;
-    private final AntProjectListener antProjectListenerImpl = new AntProjectListenerImpl();
+    private final CallbackImpl callbackImpl = new CallbackImpl();
     volatile String name;
     private ClassPath sourcePath;
     volatile ClassPathProviderImpl.PathImpl pathImpl;
@@ -218,7 +217,7 @@ public class ClientSideProject implements Project {
     };
 
 
-    public ClientSideProject(AntProjectHelper helper, IndirectServices is) {
+    public ClientSideProject(CommonProjectHelper helper, IndirectServices is) {
         this.projectHelper = helper;
         this.is = is;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
@@ -241,7 +240,7 @@ public class ClientSideProject implements Project {
                 }
             }
         });
-        projectHelper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, antProjectListenerImpl, projectHelper));
+        projectHelper.registerCallback(callbackImpl);
         WindowManager windowManager = WindowManager.getDefault();
         windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
@@ -416,7 +415,7 @@ public class ClientSideProject implements Project {
         return Boolean.parseBoolean(property);
     }
 
-    public AntProjectHelper getProjectHelper() {
+    public CommonProjectHelper getProjectHelper() {
         return projectHelper;
     }
 
@@ -935,7 +934,7 @@ public class ClientSideProject implements Project {
 
     }
 
-    private final class AntProjectListenerImpl implements AntProjectListener {
+    private final class CallbackImpl implements CommonProjectHelper.Callback {
         @Override
         public void projectXmlSaved() throws IOException {
             Info info = getLookup().lookup(Info.class);

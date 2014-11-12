@@ -52,7 +52,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
 import org.netbeans.modules.web.clientproject.indirect.LicensePanelSupport;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
@@ -74,7 +74,7 @@ public final class AntServices extends IndirectServices {
     }
     
     @Override
-    public AntProjectHelper createProject(FileObject dirFO, String type) throws IOException {
+    public CommonProjectHelper createProject(FileObject dirFO, String type) throws IOException {
         return new AntProjectHelperImpl(ProjectGenerator.createProject(dirFO, type));
     }
 
@@ -89,7 +89,7 @@ public final class AntServices extends IndirectServices {
     }
 
     @Override
-    public PropertyEvaluator createEvaluator(AntProjectHelper aph, FileObject dir) {
+    public PropertyEvaluator createEvaluator(CommonProjectHelper aph, FileObject dir) {
         AntProjectHelperImpl impl = (AntProjectHelperImpl) aph;
         org.netbeans.spi.project.support.ant.AntProjectHelper h = impl.delegate;
         
@@ -112,7 +112,7 @@ public final class AntServices extends IndirectServices {
     }
 
     @Override
-    public Sources initSources(Project project, AntProjectHelper h, PropertyEvaluator e) {
+    public Sources initSources(Project project, CommonProjectHelper h, PropertyEvaluator e) {
         AntProjectHelperImpl ih = (AntProjectHelperImpl) h;
         PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) e;
         SourcesHelper sourcesHelper = new SourcesHelper(project, ih.delegate, ip.delegate);
@@ -135,7 +135,7 @@ public final class AntServices extends IndirectServices {
     
 
     @Override
-    public ReferenceHelper newReferenceHelper(AntProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval) {
+    public ReferenceHelper newReferenceHelper(CommonProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval) {
         AntProjectHelperImpl ih = (AntProjectHelperImpl) helper;
         PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) eval;
         org.netbeans.spi.project.support.ant.ReferenceHelper orig;
@@ -153,7 +153,7 @@ public final class AntServices extends IndirectServices {
 
     @Override
     public LicensePanelSupport newLicensePanelSupport(
-        PropertyEvaluator evaluator, AntProjectHelper projectHelper, String p1, String p2
+        PropertyEvaluator evaluator, CommonProjectHelper projectHelper, String p1, String p2
     ) {
         return new LicensePanelSupportImpl(evaluator, projectHelper, p1, p2);
     }

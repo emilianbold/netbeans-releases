@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.LicensePanelSupport;
 import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
@@ -63,9 +63,9 @@ extends LicensePanelSupport implements CustomizerUtilities.LicensePanelContentHa
     private String licenseContent;
 
     private PropertyEvaluator evaluator;
-    private AntProjectHelper antHelper;
+    private CommonProjectHelper antHelper;
 
-    public LicensePanelSupportImpl(PropertyEvaluator evaluator, AntProjectHelper antHelper,
+    public LicensePanelSupportImpl(PropertyEvaluator evaluator, CommonProjectHelper antHelper,
             String licensePath, String licenseName) {
         this.evaluator = evaluator;
         this.antHelper = antHelper;
