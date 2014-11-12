@@ -67,7 +67,7 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectUtils;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
@@ -166,7 +166,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             throw new IOException("Cannot create project directory"); //NOI18N
         }
         FileObject dir = FileUtil.toFileObject(projectDirectory);
-        AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
+        CommonProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
         files.add(dir);
 
@@ -473,7 +473,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public Pair<FileObject, FileObject> instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
-            AntProjectHelper projectHelper = project.getProjectHelper();
+            CommonProjectHelper projectHelper = project.getProjectHelper();
             String customSiteRoot = (String) wizardDescriptor.getProperty(SITE_ROOT);
             // site template
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);

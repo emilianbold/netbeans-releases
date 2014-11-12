@@ -39,13 +39,13 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.modules.web.clientproject.env;
 
 import java.io.File;
 
 /**
  */
-public abstract class ReferenceHelper {
+public abstract class References {
     public abstract void fixReferences(File originalPath);
     public abstract String createForeignFileReference(File file, String object);
 }

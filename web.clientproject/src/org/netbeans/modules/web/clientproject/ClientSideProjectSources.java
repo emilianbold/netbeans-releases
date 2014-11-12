@@ -46,8 +46,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Values;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -57,14 +57,14 @@ public class ClientSideProjectSources implements Sources, ChangeListener {
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final ClientSideProject project;
-    private final AntProjectHelper helper;
-    private final PropertyEvaluator evaluator;
+    private final CommonProjectHelper helper;
+    private final Values evaluator;
 
     // @GuardedBy("this")
     private Sources delegate;
 
 
-    public ClientSideProjectSources(ClientSideProject project, AntProjectHelper helper, PropertyEvaluator evaluator) {
+    public ClientSideProjectSources(ClientSideProject project, CommonProjectHelper helper, Values evaluator) {
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;

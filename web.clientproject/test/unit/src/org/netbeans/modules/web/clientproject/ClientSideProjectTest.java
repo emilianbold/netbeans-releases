@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.sites.SiteZipPanel;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
@@ -151,7 +151,7 @@ public class ClientSideProjectTest extends NbTestCase {
 
     private ClientSideProject createProject(@NullAllowed String sources, @NullAllowed String siteRoot, @NullAllowed String tests) throws Exception {
         FileObject projectDir = FileUtil.toFileObject(getWorkDir()).createFolder("Project" + projectCounter++);
-        AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(projectDir, projectDir.getName());
+        CommonProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(projectDir, projectDir.getName());
         ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
         if (sources != null
                 || siteRoot != null

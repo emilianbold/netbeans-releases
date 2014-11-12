@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.env.Values;
 import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
@@ -193,7 +193,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     }
 
     private void addProjectPropertiesListeners() {
-        PropertyEvaluator evaluator = project.getEvaluator();
+        Values evaluator = project.getEvaluator();
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(projectPropertiesListener, evaluator));
     }
 

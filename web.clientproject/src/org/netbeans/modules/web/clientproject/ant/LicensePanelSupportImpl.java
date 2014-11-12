@@ -47,9 +47,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.LicensePanelSupport;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Licenses;
+import org.netbeans.modules.web.clientproject.env.Values;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,15 +57,15 @@ import org.openide.util.EditableProperties;
 
 // copied from web.common
 final class LicensePanelSupportImpl 
-extends LicensePanelSupport implements CustomizerUtilities.LicensePanelContentHandler {
+extends Licenses implements CustomizerUtilities.LicensePanelContentHandler {
     private String licenseName;
     private String licensePath;
     private String licenseContent;
 
-    private PropertyEvaluator evaluator;
-    private AntProjectHelper antHelper;
+    private Values evaluator;
+    private CommonProjectHelper antHelper;
 
-    public LicensePanelSupportImpl(PropertyEvaluator evaluator, AntProjectHelper antHelper,
+    public LicensePanelSupportImpl(Values evaluator, CommonProjectHelper antHelper,
             String licensePath, String licenseName) {
         this.evaluator = evaluator;
         this.antHelper = antHelper;

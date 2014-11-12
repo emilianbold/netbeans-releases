@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
-import org.netbeans.modules.web.clientproject.indirect.LicensePanelSupport;
+import org.netbeans.modules.web.clientproject.env.Licenses;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -56,8 +56,8 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Env;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.filesystems.FileUtil;
@@ -94,7 +94,7 @@ public final class ClientSideProjectProperties {
     private volatile ClientProjectEnhancedBrowserImplementation enhancedBrowserSettings = null;
 
     //customizer license headers
-    private LicensePanelSupport licenseSupport;
+    private Licenses licenseSupport;
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
@@ -131,8 +131,8 @@ public final class ClientSideProjectProperties {
         String siteRootFolderReference = createForeignFileReference(siteRootFolder, true);
         String testFolderReference = createForeignFileReference(testFolder, false);
         // save properties
-        EditableProperties privateProperties = project.getProjectHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = project.getProjectHelper().getProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH);
+        EditableProperties projectProperties = project.getProjectHelper().getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
 
         if (sourceFolder != null) {
             if (sourceFolderReference != null) {
@@ -186,8 +186,8 @@ public final class ClientSideProjectProperties {
         putProperty(privateProperties, ClientSideProjectConstants.PROJECT_PROJECT_URL, projectUrl);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_WEB_ROOT, webRoot);
         getLicenseSupport().updateProperties(projectProperties);
-        project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-        project.getProjectHelper().putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+        project.getProjectHelper().putProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        project.getProjectHelper().putProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
     }
 
     void saveEnhancedBrowserConfiguration() {
@@ -431,12 +431,12 @@ public final class ClientSideProjectProperties {
         return project.getProjectHelper().resolveFile(path);
     }
 
-    public LicensePanelSupport getLicenseSupport() {
+    public Licenses getLicenseSupport() {
         if (licenseSupport == null) {
-            IndirectServices is = project.is;
+            Env is = project.is;
             licenseSupport = is.newLicensePanelSupport(project.getEvaluator(), project.getProjectHelper(),
-                getProjectProperty(LicensePanelSupport.LICENSE_PATH, null),
-                getProjectProperty(LicensePanelSupport.LICENSE_NAME, null));
+                getProjectProperty(Licenses.LICENSE_PATH, null),
+                getProjectProperty(Licenses.LICENSE_NAME, null));
         }
         return licenseSupport;
     }

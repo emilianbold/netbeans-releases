@@ -51,7 +51,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import static org.netbeans.modules.web.browser.spi.ProjectBrowserProvider.PROP_BROWSER_ACTIVE;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
@@ -86,10 +86,10 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
     public void setActiveBrowser(final WebBrowser browser) throws IllegalArgumentException, IOException {
         ProjectManager.mutex().writeAccess(new Runnable() {
             public void run() {
-		AntProjectHelper helper = project.getProjectHelper();
-		EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+		CommonProjectHelper helper = project.getProjectHelper();
+		EditableProperties privateProps = helper.getProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH);
                 privateProps.put(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER, browser.getId());
-		helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+		helper.putProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                 try {
                     ProjectManager.getDefault().saveProject(project);
                 } catch (IOException ex) {

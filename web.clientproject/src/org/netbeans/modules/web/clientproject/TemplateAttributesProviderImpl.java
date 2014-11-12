@@ -51,7 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
@@ -67,12 +67,12 @@ import org.openide.util.Utilities;
  */
 class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProvider {
 
-    private final AntProjectHelper helper;
+    private final CommonProjectHelper helper;
     private final FileEncodingQueryImplementation encodingQuery;
     private static final Logger LOG = Logger.getLogger(TemplateAttributesProviderImpl.class.getName());
     
 
-    public TemplateAttributesProviderImpl(AntProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
+    public TemplateAttributesProviderImpl(CommonProjectHelper helper, FileEncodingQueryImplementation encodingQuery) {
         super();
         this.helper = helper;
         this.encodingQuery = encodingQuery;
@@ -81,8 +81,8 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
     @Override
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
         Map<String, String> values = new HashMap<>();
-        EditableProperties priv  = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties priv  = helper.getProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH);
+        EditableProperties props = helper.getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
         String licensePath = priv.getProperty("project.licensePath");
         if (licensePath == null) {
             licensePath = props.getProperty("project.licensePath");

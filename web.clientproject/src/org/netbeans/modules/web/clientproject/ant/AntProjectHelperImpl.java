@@ -45,10 +45,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Values;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
@@ -58,28 +59,26 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
+import org.openide.util.WeakSet;
 import org.w3c.dom.Element;
 
 /**
  */
-final class AntProjectHelperImpl extends AntProjectHelper {
+final class AntProjectHelperImpl extends CommonProjectHelper {
     final org.netbeans.spi.project.support.ant.AntProjectHelper delegate;
     private final L listener;
-    private final Collection<org.netbeans.modules.web.clientproject.indirect.AntProjectListener> antListeners;
+    private final Collection<Callback> antListeners;
 
     public AntProjectHelperImpl(org.netbeans.spi.project.support.ant.AntProjectHelper delegate) {
         this.delegate = delegate;
         this.listener = new L();
         this.delegate.addAntProjectListener(listener);
-        this.antListeners = new CopyOnWriteArrayList<>();
+        this.antListeners = Collections.synchronizedSet(new WeakSet<Callback>());
     }
 
-    public void addAntProjectListener(AntProjectListener listener) {
-        delegate.addAntProjectListener(listener);
-    }
-
-    public void removeAntProjectListener(AntProjectListener listener) {
-        delegate.removeAntProjectListener(listener);
+    @Override
+    public void registerCallback(Callback listener) {
+        antListeners.add(listener);
     }
 
     @Override
@@ -118,7 +117,7 @@ final class AntProjectHelperImpl extends AntProjectHelper {
     }
 
     @Override
-    public PropertyEvaluator getStandardPropertyEvaluator() {
+    public Values getStandardPropertyEvaluator() {
         return new PropertyEvaluatorImpl(delegate.getStandardPropertyEvaluator());
     }
 
@@ -152,42 +151,32 @@ final class AntProjectHelperImpl extends AntProjectHelper {
 
     @Override
     public SharabilityQueryImplementation2 createSharabilityQuery2(
-        org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator e,
+        org.netbeans.modules.web.clientproject.env.Values e,
         String[] roots, String[] dirs
     ) {
         PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) e;
         return delegate.createSharabilityQuery2(ip.delegate, roots, dirs);
     }
 
-    @Override
-    public void addAntProjectListener(org.netbeans.modules.web.clientproject.indirect.AntProjectListener l) {
-        antListeners.add(l);
-    }
-
-    @Override
-    public void removeAntProjectListener(org.netbeans.modules.web.clientproject.indirect.AntProjectListener l) {
-        antListeners.remove(l);
-    }
-    
     private final class L extends ProjectXmlSavedHook
     implements AntProjectListener {
         @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
-            for (org.netbeans.modules.web.clientproject.indirect.AntProjectListener l : antListeners) {
-                l.configurationXmlChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+            for (CommonProjectHelper.Callback l : antListeners) {
+                l.configurationXmlChanged();
             }
         }
 
         @Override
         public void propertiesChanged(AntProjectEvent ev) {
-            for (org.netbeans.modules.web.clientproject.indirect.AntProjectListener l : antListeners) {
-                l.propertiesChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+            for (CommonProjectHelper.Callback l : antListeners) {
+                l.propertiesChanged();
             }
         }
 
         @Override
         protected void projectXmlSaved() throws IOException {
-            for (org.netbeans.modules.web.clientproject.indirect.AntProjectListener l : antListeners) {
+            for (CommonProjectHelper.Callback l : antListeners) {
                 l.projectXmlSaved();
             }
         }
@@ -214,9 +203,9 @@ final class AntProjectHelperImpl extends AntProjectHelper {
     }
 
     private static String mapPath(Object path) {
-        if (path == AntProjectHelper.PRIVATE_PROPERTIES_PATH) {
+        if (path == CommonProjectHelper.PRIVATE_PROPERTIES_PATH) {
             return org.netbeans.spi.project.support.ant.AntProjectHelper.PRIVATE_PROPERTIES_PATH;
-        } else if (path == AntProjectHelper.PROJECT_PROPERTIES_PATH) {
+        } else if (path == CommonProjectHelper.PROJECT_PROPERTIES_PATH) {
             return org.netbeans.spi.project.support.ant.AntProjectHelper.PROJECT_PROPERTIES_PATH;
         }
         return path.toString();

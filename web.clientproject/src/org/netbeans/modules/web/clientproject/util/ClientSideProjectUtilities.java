@@ -70,8 +70,8 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Env;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
@@ -135,14 +135,14 @@ public final class ClientSideProjectUtilities {
      * </ul>
      * @param dirFO project directory
      * @param name project name
-     * @return {@link AntProjectHelper}
+     * @return {@link CommonProjectHelper}
      * @throws IOException if any error occurs
      */
-    public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
+    public static CommonProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
         // clearly creation of new project must depend on Ant
-        IndirectServices is = AntServices.newServices();
+        Env is = AntServices.newServices();
         // create project
-        AntProjectHelper projectHelper = is.createProject(dirFO, ClientSideProjectType.TYPE);
+        CommonProjectHelper projectHelper = is.createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name, false);
         // #231319
         ProjectManager.getDefault().clearNonProjectCache();
@@ -166,7 +166,7 @@ public final class ClientSideProjectUtilities {
         assert projectDirectory != null;
         assert projectDirectory.isDirectory();
         // ensure directories exists
-        IndirectServices is = project.is;
+        Env is = project.is;
         if (sources != null) {
             ensureDirectoryExists(is.resolveFile(projectDirectory, sources));
         }
@@ -215,7 +215,7 @@ public final class ClientSideProjectUtilities {
         }
     }
 
-    public static void setProjectName(final AntProjectHelper projectHelper, final String name, final boolean saveProject) {
+    public static void setProjectName(final CommonProjectHelper projectHelper, final String name, final boolean saveProject) {
         ProjectManager.mutex().writeAccess(new Runnable() {
             @Override
             public void run() {

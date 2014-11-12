@@ -49,7 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.env.Values;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -61,11 +61,11 @@ import org.openide.util.Parameters;
  */
 class FileEncodingQueryImpl extends FileEncodingQueryImplementation implements PropertyChangeListener {
 
-    private final PropertyEvaluator eval;
+    private final Values eval;
     private final String sourceEncodingPropertyName;
     private Charset cache;
 
-    public FileEncodingQueryImpl(final PropertyEvaluator eval, final String sourceEncodingPropertyName) {
+    public FileEncodingQueryImpl(final Values eval, final String sourceEncodingPropertyName) {
         assert eval != null;
         assert sourceEncodingPropertyName != null;
 

@@ -39,15 +39,35 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.modules.web.clientproject.env;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.EventListener;
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.Sources;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.filesystems.FileObject;
 
-/**
+/** Class providing indirect access to Ant project support services.
  */
-public interface AntProjectListener extends EventListener {
-    public void projectXmlSaved() throws IOException;
-    public void configurationXmlChanged(AntProjectEvent ev);
-    public void propertiesChanged(AntProjectEvent ev);
+public abstract class Env {
+    public abstract CommonProjectHelper createProject(FileObject dirFO, String type) throws IOException;
+    public abstract String getUsablePropertyName(String displayName);
+    public abstract File resolveFile(File dir, String relative);
+    public abstract Values createEvaluator(CommonProjectHelper h, FileObject dir);
+
+    public abstract JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, Licenses licenseSupport);
+
+    public abstract String relativizeFile(File base, File relative);
+    
+    public abstract References newReferenceHelper(CommonProjectHelper helper, AuxiliaryConfiguration configuration, Values eval);
+
+    public abstract Sources initSources(Project project, CommonProjectHelper h, Values e);
+
+    public abstract Licenses newLicensePanelSupport(
+        Values evaluator, CommonProjectHelper projectHelper, 
+        String p1, String p2
+    );
 }

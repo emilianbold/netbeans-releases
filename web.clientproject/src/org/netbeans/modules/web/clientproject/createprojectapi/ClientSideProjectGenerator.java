@@ -46,7 +46,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.util.Parameters;
 
@@ -74,7 +74,7 @@ public final class ClientSideProjectGenerator {
     public static Project createProject(@NonNull CreateProjectProperties properties) throws IOException {
         Parameters.notNull("properties", properties); // NOI18N
 
-        AntProjectHelper h = ClientSideProjectUtilities.setupProject(properties.getProjectDir(), properties.getProjectName());
+        CommonProjectHelper h = ClientSideProjectUtilities.setupProject(properties.getProjectDir(), properties.getProjectName());
 
         Project project = FileOwnerQuery.getOwner(h.getProjectDirectory());
         assert project != null;
