@@ -1394,6 +1394,10 @@ made subject to such option by the copyright holder.
                 <module codenamebase="org.netbeans.modules.xml.catalog" release="2" spec="2.0"/>
                 <module codenamebase="org.netbeans.modules.xml.catalog.ui" spec="1.0"/>
             </replace>
+            <replace codenamebase="org.openide.loaders" addcompiletime="true">
+                <module codenamebase="org.openide.loaders" spec="7.61"/>
+                <module codenamebase="org.netbeans.api.templates" spec="1.0"/>
+            </replace>
             <fileset dir="nbproject" >
                 <include name="project.xml" />
             </fileset>
