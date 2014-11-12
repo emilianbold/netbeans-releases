@@ -35,7 +35,10 @@
 package org.openide.loaders;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import org.netbeans.api.templates.CreateDescriptor;
 import org.openide.filesystems.FileObject;
 
 /** This is an interface for <q>smart templating</q> that allows
@@ -43,11 +46,34 @@ import org.openide.filesystems.FileObject;
  * and handle them themselves. The NetBeans IDE provides default
  * implementation that allows use of Freemarker templating engine.
  * Read more in the <a href="@TOP@/architecture-summary.html#script">howto document</a>.
- *
+ * <p/>
+ * This SPI is now <b>deprecated</b> and serves just a backward compatilibity SPI adapter
+ * which allows the template API to work with legacy handlers. The templating SPI is delegated
+ * to the original handler methods.
+ * 
  * @author Jaroslav Tulach
  * @since 6.1
+ * @deprecated in 7.59. Use {@link org.netbeans.api.templates.CreateFromTemplateHandler} instead.
  */
-public abstract class CreateFromTemplateHandler {
+public abstract class CreateFromTemplateHandler extends org.netbeans.api.templates.CreateFromTemplateHandler {
+    
+    @Override
+    public boolean accept(CreateDescriptor desc) {
+        return accept(desc.getTemplate());
+    }
+
+    @Override
+    protected List<FileObject> createFromTemplate(CreateDescriptor desc) throws IOException {
+        return Collections.singletonList(
+                createFromTemplate(
+                        desc.getTemplate(),
+                        desc.getTarget(),
+                        desc.getName(),
+                        desc.getParameters()
+                )
+        );
+    }
+    
     /** Method that allows a handler to reject a file. If all handlers
      * reject a file, regular processing defined in {@link DataObject#handleCreateFromTemplate}
      * is going to take place.

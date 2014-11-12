@@ -61,10 +61,13 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.Map;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation;
+import org.netbeans.modules.templates.ScriptingCreateFromTemplateHandler;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -93,8 +96,8 @@ public class Bug138973Test extends NbTestCase {
     public void testBug() throws Exception {
         MockServices.setServices(Pool.class, DataObjectEncodingQueryImplementation.class);
         FileUtil.setMIMEType("test", "text/test");
-
-        FileUtil.createData(FileUtil.getConfigRoot(), "Editors/text/test/" + TestEncoding.class.getName().replace('.', '-') + ".instance");
+        MockMimeLookup.setInstances(MimePath.get("text/test"), new TestEncoding());
+//        FileUtil.createData(FileUtil.getConfigRoot(), "Editors/text/test/" + TestEncoding.class.getName().replace('.', '-') + ".instance");
 
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject templatesFolder = root.createFolder("templates");
@@ -125,11 +128,11 @@ public class Bug138973Test extends NbTestCase {
 
     public static final class SimpleTemplateHandler extends CreateFromTemplateHandler {
         @Override
-        protected boolean accept(FileObject orig) {
+        public boolean accept(FileObject orig) {
             return true;
         }
         @Override
-        protected FileObject createFromTemplate(FileObject template,
+        public FileObject createFromTemplate(FileObject template,
                                                 FileObject targetFolder,
                                                 String name,
                                                 Map<String, Object> parameters) throws IOException {

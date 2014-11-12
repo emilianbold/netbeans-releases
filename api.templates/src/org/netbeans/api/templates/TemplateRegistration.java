@@ -43,8 +43,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.script.ScriptEngineFactory;
-import org.openide.WizardDescriptor.InstantiatingIterator;
-import org.openide.loaders.TemplateWizard;
 
 /**
  * Registers a template the user can select.

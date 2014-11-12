@@ -240,4 +240,5 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-parsing-nb}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-parsing-nb"/>
 <link href="${javadoc.docs.org-netbeans-modules-project-libraries-ui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-project-libraries-ui"/>
 <link href="${javadoc.docs.org-openide-filesystems-nb}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-openide-filesystems-nb"/>
+<link href="${javadoc.docs.org-netbeans-api-templates}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-templates"/>
 <link href="${javadoc.docs.org-netbeans-api-io}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-api-io"/>

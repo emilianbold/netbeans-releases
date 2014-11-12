@@ -49,24 +49,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.logging.*;
 import javax.swing.event.*;
 import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.templates.FileBuilder;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
-import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
-import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.CloneableEditorSupport.Pane;
-import org.openide.text.DataEditorSupport;
 import org.openide.util.*;
 
 /** Provides support for handling of data objects with multiple files.
@@ -876,21 +870,9 @@ public class MultiDataObject extends DataObject {
         }
 
         FileObject pf = null;
-        Map<String,Object> params = null;
-        for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
-            FileObject current = getPrimaryEntry().getFile();
-            if (h.accept(current)) {
-                if (params == null) {
-                    params = DataObject.CreateAction.findParameters(name);
-                }
-                pf = h.createFromTemplate(current, df.getPrimaryFile(), name,
-                    DataObject.CreateAction.enhanceParameters(params, name, current.getExt())
-                );
-                assert pf != null;
-                break;
-            }
-        }
-        if (params == null) {
+        Map<String, Object> params = CreateAction.getCallParameters(name);
+        pf = FileBuilder.createFromTemplate(getPrimaryFile(), df.getPrimaryFile(), name, params, FileBuilder.Mode.FAIL);
+        if (pf == null) {
             // do the regular creation
             pf = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
         }
@@ -899,20 +881,11 @@ public class MultiDataObject extends DataObject {
         Iterator<Entry> it = secondaryEntries().iterator();
         NEXT_ENTRY: while (it.hasNext ()) {
             Entry entry = it.next();
-            for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
-                FileObject current = entry.getFile();
-                if (h.accept(current)) {
-                    if (params == null) {
-                        params = DataObject.CreateAction.findParameters(name);
-                    }
-                    FileObject fo = h.createFromTemplate(current, df.getPrimaryFile(), name, 
-                        DataObject.CreateAction.enhanceParameters(params, name, current.getExt())
-                    );
-                    assert fo != null;
-                    continue NEXT_ENTRY;
-                }
+            FileObject current = entry.getFile();
+            FileObject fo = FileBuilder.createFromTemplate(current, df.getPrimaryFile(), name, params, FileBuilder.Mode.FAIL);
+            if (fo == null) {
+                entry.createFromTemplate (df.getPrimaryFile (), name);
             }
-            entry.createFromTemplate (df.getPrimaryFile (), name);
         }
         
         try {

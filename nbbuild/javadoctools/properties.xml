@@ -239,4 +239,5 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-parsing-nb" value="${javadoc.web.root}/org-netbeans-modules-parsing-nb"/>
 <property name="javadoc.docs.org-netbeans-modules-project-libraries-ui" value="${javadoc.web.root}/org-netbeans-modules-project-libraries-ui"/>
 <property name="javadoc.docs.org-openide-filesystems-nb" value="${javadoc.web.root}/org-openide-filesystems-nb"/>
+<property name="javadoc.docs.org-netbeans-api-templates" value="${javadoc.web.root}/org-netbeans-api-templates"/>
 <property name="javadoc.docs.org-netbeans-api-io" value="${javadoc.web.root}/org-netbeans-api-io"/>

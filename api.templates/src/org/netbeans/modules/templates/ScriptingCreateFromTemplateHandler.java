@@ -39,20 +39,23 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.templates.CreateDescriptor;
+import org.netbeans.api.templates.CreateFromTemplateHandler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.CreateFromTemplateHandler;
-import org.openide.text.IndentEngine;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -72,15 +75,18 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
     private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
     
     @Override
-    protected boolean accept(FileObject orig) {
-        return engine(orig) != null;
+    public boolean accept(CreateDescriptor desc) {
+        return engine(desc.getTemplate()) != null;
     }
 
     @Override
-    protected FileObject createFromTemplate(FileObject template, FileObject f,
-                                            String name,
-                                            Map<String, Object> values) throws IOException {
-        boolean noExt = Boolean.TRUE.equals(values.get(FREE_FILE_EXTENSION)) && name.indexOf('.') != -1;
+    public List<FileObject> createFromTemplate(CreateDescriptor desc) throws IOException {
+        FileObject template = desc.getTemplate();
+        String name = desc.getProposedName();
+        Map<String, ?> values = desc.getParameters();
+        FileObject f = desc.getTarget();
+        
+        boolean noExt = desc.hasFreeExtension() && name.indexOf('.') != -1;
         
         String extWithDot;
         if (noExt) {
@@ -106,33 +112,45 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
             bind.put(ENCODING_PROPERTY_NAME, targetEnc.name());
         }
         
-        Writer w = null;
-        Reader is = null;
-        try {
-            w = new OutputStreamWriter(output.getOutputStream(), targetEnc);
+        //Document doc = createDocument(template.getMIMEType());
+        try (Writer w = new OutputStreamWriter(output.getOutputStream(), targetEnc);
+             Reader is = new InputStreamReader(template.getInputStream(), sourceEnc);
+            /*IndentWriter w2 = new IndentWriter(doc, 0, w, false) */) {
+            StringWriter sw = new StringWriter();
+            ScriptEngine eng2 = desc.isPreformatted() ? null : indentEngine();
             
-            IndentEngine format = IndentEngine.find(template.getMIMEType());
-            if (format != null) {
-                PlainDocument doc = new PlainDocument();
-                doc.putProperty(PlainDocument.StreamDescriptionProperty, template);
-                w = format.createWriter(doc, 0, w);
-            }
-            
-            
-            eng.getContext().setWriter(new PrintWriter(w));
+            eng.getContext().setWriter(new PrintWriter(eng2 != null ? sw : w));
             //eng.getContext().setBindings(bind, ScriptContext.ENGINE_SCOPE);
             eng.getContext().setAttribute(FileObject.class.getName(), template, ScriptContext.ENGINE_SCOPE);
             eng.getContext().setAttribute(ScriptEngine.FILENAME, template.getNameExt(), ScriptContext.ENGINE_SCOPE);
-            is = new InputStreamReader(template.getInputStream(), sourceEnc);
             eng.eval(is);
+            
+            if (eng2 != null) {
+                eng2.getContext().setAttribute("mimeType", template.getMIMEType(), ScriptContext.ENGINE_SCOPE);
+                eng2.getContext().setWriter(w);
+                eng2.eval(new StringReader(sw.toString()));
+            }
         }catch (ScriptException ex) {
             IOException io = new IOException(ex.getMessage(), ex);
             throw io;
-        } finally {
-            if (w != null) w.close();
-            if (is != null) is.close();
         }
-        return output;
+        return Collections.singletonList(output);
+    }
+    
+    public static ScriptEngine indentEngine() {
+        return getEngine(ID_INDENT_ENGINE);
+    }
+    
+    private static final String ID_INDENT_ENGINE = "org.netbeans.api.templates.IndentEngine"; // NOI18N
+    
+    public static ScriptEngine getEngine(String engName) {
+        synchronized (ScriptingCreateFromTemplateHandler.class) {
+            if (manager == null) {
+                ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                manager = new ScriptEngineManager(loader != null ? loader : Thread.currentThread().getContextClassLoader());
+            }
+        }
+        return manager.getEngineByName(engName);
     }
     
     private static ScriptEngine engine(FileObject fo) {
@@ -141,14 +159,22 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
             return (ScriptEngine)obj;
         }
         if (obj instanceof String) {
-            synchronized (ScriptingCreateFromTemplateHandler.class) {
-                if (manager == null) {
-                    ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-                    manager = new ScriptEngineManager(loader != null ? loader : Thread.currentThread().getContextClassLoader());
-                }
-            }
-            return manager.getEngineByName((String) obj);
+            return getEngine((String)obj);
         }
         return null;
     }
+
+    /*
+    public static Document createDocument(String mimeType) {
+        Document doc;
+        try {
+            doc = LineDocumentUtils.createDocument(mimeType);
+        } catch (IllegalArgumentException ex) {
+            // mainly for tests
+            doc = new PlainDocument();
+            doc.putProperty("mimeType", mimeType);
+        }
+        return doc;
+    }
+    */
 }

@@ -1601,6 +1601,19 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             }
         }
         
+        public static Map<String, Object> getCallParameters(String name) {
+            CreateAction c  = CURRENT.get();
+            if (c == null || c.param == null) {
+                return Collections.emptyMap();
+            }
+            return Collections.unmodifiableMap(c.param);
+        }
+        
+        static String getOrigName() {
+            CreateAction c  = CURRENT.get();
+            return c == null ? null : c.name;
+        }
+        
         public static Map<String,Object> findParameters(String name) {
             CreateAction c  = CURRENT.get();
             if (c == null) {

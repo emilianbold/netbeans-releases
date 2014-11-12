@@ -32,7 +32,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.openide.loaders;
+package org.netbeans.api.templates;
 
 import java.util.Map;
 
@@ -40,29 +40,28 @@ import java.util.Map;
  * Implementations of this class can be registered in the global {@link org.openide.util.Lookup}
  * and allows anyone provide additional parameters to each {@link CreateFromTemplateHandler}s
  * when a template is instantiating.
+ * <p/>
+ * Implementations are called in the order of appearance in Lookup. The positions less than 0 are
+ * reserved for the platform. Implementations called later can see and override
+ * values defined by earlier CreateFromTemplateAttributes.
+ * <p/>
  * Read more in the <a href="@TOP@/architecture-summary.html#script">howto document</a>.
  * <p/>
- * Since templating system need not to depend on Data Systems APIs, the relevant interfaces
- * were moved to the {@code openide.filesystems.templates} module. This interface has been kept
- * for backward compatibility and DataSystems provide a compatibility bridge, which allows
- * old providers to participate. Module writers are encouraged to implement 
- * {@link org.netbeans.api.templates.CreateFromTemplateAttributes}
- * instead.
+ * This interface supersedes {@code CreateFromTemplateAttributesProvider} in {@code openide.loaders} module.
  * 
- * @author Jaroslav Tulach
- * @since 6.3
- * @since deprecated from 7.59
- * @deprecated Use {@link CreateFromTemplateAttributes} in {@code openide.filesystems.templates} instead.
+ * @author Svata Dedic
  */
-public interface CreateFromTemplateAttributesProvider {
+public interface CreateFromTemplateAttributes {
     /** Called when a template is about to be instantiated to provide additional
      * values to the {@link CreateFromTemplateHandler} that will handle the 
      * template instantiation.
+     * <p/>
+     * If the returned Map defines the same value as some {@link CreateFromTemplateAttributes} registered
+     * earlier, the Map's value takes precedence. Parameters supplied by the {@link FileBuilder} cannot be
+     * overriden.
      * 
-     * @param template the template that is being processed
-     * @param target the destination folder
-     * @param name the name of the object to create
+     * @param desc the creation request
      * @return map of named objects, or null
      */
-    Map<String,?> attributesFor(DataObject template, DataFolder target, String name);
+    Map<String,?> attributesFor(CreateDescriptor desc);
 }

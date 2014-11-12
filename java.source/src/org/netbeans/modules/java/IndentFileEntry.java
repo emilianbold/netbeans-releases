@@ -115,6 +115,7 @@ public abstract class IndentFileEntry extends FileEntry.Format {
     /** Creates a new Java source from the template. Unlike the standard FileEntry.Format,
         this indents the resulting text using an indentation engine.
     */
+    @Override
     public FileObject createFromTemplate (FileObject f, String name) throws IOException {
         String ext = getFile ().getExt ();
 

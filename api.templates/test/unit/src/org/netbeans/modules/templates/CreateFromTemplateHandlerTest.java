@@ -34,22 +34,20 @@
 
 package org.netbeans.modules.templates;
 
-import java.awt.Dialog;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
-import javax.swing.text.Document;
+import java.util.Set;
+import org.netbeans.api.templates.CreateDescriptor;
+import org.netbeans.api.templates.CreateFromTemplateAttributes;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
@@ -58,16 +56,15 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.text.IndentEngine;
 import org.openide.util.Enumerations;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class IndentEngineIntTest extends NbTestCase {
+public class CreateFromTemplateHandlerTest extends NbTestCase {
     
-    public IndentEngineIntTest(String testName) {
+    public CreateFromTemplateHandlerTest(String testName) {
         super(testName);
     }
     
@@ -75,63 +72,88 @@ public class IndentEngineIntTest extends NbTestCase {
         return true;
     }
     
-
-    @SuppressWarnings("deprecation")
     protected void setUp() throws Exception {
-        MockServices.setServices(DD.class, Pool.class, IEImpl.class);
-        FileUtil.setMIMEType("txt", "text/jarda");
+        Hand.acceptObject = new ArrayList<FileObject>();
+        Hand.fileObject = new ArrayList<FileObject>();
+        Hand.origObject = new ArrayList<FileObject>();
+        Hand.name = null;
+        Hand.parameters = null;
+        
+        MockServices.setServices(Hand.class, Attr.class, Pool.class);
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
     }
 
-    public void testCreateFromTemplateUsingFreemarker() throws Exception {
+    public void testCreateFromTemplate() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
         FileObject fo = FileUtil.createData(root, "simpleObject.txt");
-        OutputStream os = fo.getOutputStream();
-        String txt = "print('<html><h1>'); print(title); print('</h1></html>');";
-        os.write(txt.getBytes());
-        os.close();
-        fo.setAttribute(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, "JavaScript");
-        
         
         DataObject obj = DataObject.find(fo);
         
         DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
         
-        Map<String,String> parameters = Collections.singletonMap("title", "Nazdar");
+        Map<String,String> parameters = Collections.singletonMap("type", "empty");
         DataObject n = obj.createFromTemplate(folder, "complex", parameters);
         
         assertEquals("Created in right place", folder, n.getFolder());
         assertEquals("Created with right name", "complex.txt", n.getName());
         
-        String exp = ">lmth/<>1h/<radzaN>1h<>lmth<";
-        assertEquals(exp, stripNewLines(readFile(n.getPrimaryFile())));
-        
+        assertEquals("The right source", fo, Hand.origObject.get(0));
+        assertEquals("The right source in query", fo, Hand.acceptObject.get(0));
+        assertEquals("The right destiny folder", folder.getPrimaryFile(), Hand.fileObject.get(0));
+        assertEquals("The right name", "complex", Hand.name);
+        if (Hand.parameters.size() < 2) {
+            fail("As least two: " + Hand.parameters + " but was " + Hand.parameters.size());
+        }
+        assertEquals("empty", Hand.parameters.get("type"));
+        assertEquals("complex", Hand.parameters.get("name"));
+        try {
+            Hand.parameters.put("kuk", "buk");
+        } catch (UnsupportedOperationException ex) {
+            // ok
+            return;
+        }
+        fail("Modifications shall be unsupported");
     }
     
-    static String stripNewLines(String str) {
-        return str.replace("\n", "").replace("\r", "");
-    }
+    public static final class Hand extends CreateFromTemplateHandler {
+        public static List<FileObject>  fileObject, origObject, acceptObject;
+        public static String name;
+        public static Map<String, Object> parameters;
     
-    private static String readFile(FileObject fo) throws IOException {
-        return fo.asText();
-    }
-    
-    public static final class DD extends DialogDisplayer {
-        public Object notify(NotifyDescriptor descriptor) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public boolean accept(FileObject fo) {
+            acceptObject.add(fo);
+            return true;
         }
 
-        public Dialog createDialog(final DialogDescriptor descriptor) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public FileObject createFromTemplate(
+            FileObject orig, FileObject f, String n,
+            Map<String, Object> p
+        ) throws IOException {
+            origObject.add(orig);
+            fileObject.add(f);
+            name = n;
+            parameters = p;
+
+            return FileUtil.copyFile(orig, f, name);
+        }
+    }
+    
+    public static final class Attr implements CreateFromTemplateAttributes {
+        @Override
+        public Map<String, ?> attributesFor(CreateDescriptor desc) {
+            return Collections.singletonMap("name", desc.getProposedName());
         }
     }
     
     public static final class Pool extends DataLoaderPool {
         protected Enumeration<DataLoader> loaders() {
-            return Enumerations.<DataLoader>singleton(SimpleLoader.getLoader(SimpleLoader.class));
+            return Enumerations.<DataLoader>array(new DataLoader[] { 
+                SimpleLoader.getLoader(SimpleLoader.class),
+                TwoPartLoader.getLoader(TwoPartLoader.class),
+            });
         }
     }
     
@@ -169,9 +191,6 @@ public class IndentEngineIntTest extends NbTestCase {
             fail("I do not want to be called");
             return null;
         }
-
-        
-        
     }
     
     public static final class SimpleObject extends MultiDataObject {
@@ -183,45 +202,37 @@ public class IndentEngineIntTest extends NbTestCase {
             return getPrimaryFile().getNameExt();
         }
     }
+    
+    
 
-    public static final class IEImpl extends IndentEngine {
-        
-        
-        public int indentLine(Document doc, int offset) {
-            throw new UnsupportedOperationException("Not supported yet.");
+    public static final class TwoPartLoader extends MultiFileLoader {
+        public TwoPartLoader() {
+            super(TwoPartObject.class.getName ());
         }
-
-        public int indentNewLine(Document doc, int offset) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        protected String displayName() {
+            return "TwoPart";
         }
-
-        @Override
-        protected boolean acceptMimeType(String mime) {
-            return "text/jarda".equals(mime); // NOI18N
-        }
-
-        public Writer createWriter(Document doc, int offset, final Writer writer) {
-            class Rotate extends StringWriter {
-                @Override
-                public void close() throws IOException {
-                    super.close();
-                    
-                    String s = toString();
-                    StringBuilder sb = new StringBuilder(s.length());
-                    for (int i = s.length() - 1; i >= 0; i--) {
-                        sb.append(s.charAt(i));
-                    }
-                    
-                    writer.write(sb.toString());
-                    writer.close();
-                }
+        protected FileObject findPrimaryFile(FileObject fo) {
+            if (fo.hasExt("java") || fo.hasExt("form")) {
+                return org.openide.filesystems.FileUtil.findBrother(fo, "java");
+            } else {
+                return null;
             }
-            
-            assertNotNull("There is some document", doc);
-            assertEquals("Its length is 0", 0, doc.getLength());
-            assertEquals("Offset is 0", 0, offset);
-            
-            return new Rotate();
         }
-}
+        protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+            return new TwoPartObject(this, primaryFile);
+        }
+        protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+            return new FE(obj, primaryFile);
+        }
+        protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+            return new FE(obj, secondaryFile);
+        }
+    }
+    public static final class TwoPartObject extends MultiDataObject {
+        public TwoPartObject(TwoPartLoader l, FileObject folder) throws DataObjectExistsException {
+            super(folder, l);
+        }
+    }
+    
 }

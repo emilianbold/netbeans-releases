@@ -109,6 +109,25 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="templates.separation">
+          <api name="loaders"/>
+          <summary>Separate template handling</summary>
+          <version major="7" minor="59"/>
+          <date day="14" month="10" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility addition="no" deletion="no" binary="compatible" 
+                         source="incompatible" deprecation="yes"/>
+          <description>
+              Template handling need not depend on Data System APIs, should be available
+              for clients that only know FileSystems. Relevant interfaces moved to
+              <code>openide.filesystems.templates</code> module; see javadoc for 
+              <a href="@org-openide-filesystems-templates@/org/netbeans/api/templates/FileBuilder.html">
+                  FileBuilder</a> for details.
+          </description>
+          <class package="org.openide.loaders" name="CreateFromTemplateAttributesProvider"/>
+          <class package="org.openide.loaders" name="CreateFromTemplateHandler"/>
+          <issue number=""/>
+      </change>
       <change id="org.netbeans.api.templates.TemplateRegistration.targetName">
           <api name="loaders"/>
           <summary>Introduce targetName for templates.</summary>
