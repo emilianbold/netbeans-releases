@@ -382,12 +382,28 @@ public final class CompletionSupport implements DocumentListener {
         if (fromCls.equals(toCls)) {
             return true; // equal classes
         }
+        
         String tfrom = from.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
         String tto = to.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
 
         if (tfrom.equals(tto)) {
             return true;
         }
+        
+        if (CsmKindUtilities.isTypedefOrTypeAlias(toCls)) {
+            CsmType lastType = CsmUtilities.iterateTypeChain(to, new CsmUtilities.ConstantPredicate<CsmType>(false));
+            toCls = (lastType != null) ? lastType.getClassifier() : toCls;
+        }
+        
+        if (CsmKindUtilities.isTypedefOrTypeAlias(fromCls)) {
+            CsmType lastType = CsmUtilities.iterateTypeChain(from, new CsmUtilities.ConstantPredicate<CsmType>(false));
+            fromCls = (lastType != null) ? lastType.getClassifier() : fromCls;
+        }        
+
+        if (fromCls.equals(toCls)) {
+            return true; // equal classes
+        }           
+        
         if (CsmCompletion.isPrimitiveClass(fromCls) && CsmCompletion.isPrimitiveClass(toCls)) {
             return true;
         }
