@@ -39,54 +39,23 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.ui.action;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.web.clientproject.util.FileUtilities;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.FileSensitiveActions;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.DynamicMenuContent;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+var listdirectory = require('./listdirectory');
+var dir = process.argv[2] || getUserHome();
+var extension = process.argv[3];
 
-@NbBundle.Messages({
-    "DebugSourceFileAction.name.long=Debug File",
-    "DebugSourceFileAction.name.short=Debug",
-})
-@ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.DebugSourceFileAction", category = "Project")
-@ActionRegistration(lazy = false, displayName = "#DebugSourceFileAction.name.long", menuText = "#DebugSourceFileAction.name.short",
-        popupText = "#DebugSourceFileAction.name.short")
-@ActionReferences({
-        @ActionReference(path = "Loaders/text/javascript/Actions", position = 255, separatorAfter = 260),
-        @ActionReference(path = "Editors/text/javascript/Popup", position = 810),
-})
-public class DebugSourceFileAction extends AbstractAction implements ContextAwareAction {
-
-    public DebugSourceFileAction() {
-        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        // hide this action from Tools > Keymap
-        putValue(Action.NAME, ""); // NOI18N
-        setEnabled(false);
+listdirectory(dir, extension, function(err, list) {
+    if (err) {
+        return console.error('Error occurred:', err);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        assert false;
-    }
+    console.log('Listing of', dir, ':');
+    console.log('===================================');
+    list.forEach(function(file) {
+        console.log(file);
+    });
+});
 
-    @Override
-    public Action createContextAwareInstance(Lookup actionContext) {
-        if (FileUtilities.lookupSourceFileOnly(actionContext) == null) {
-            return this;
-        }
-        return FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_DEBUG_SINGLE, Bundle.DebugSourceFileAction_name_long(), null);
-    }
-
+function getUserHome() {
+    return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
 }

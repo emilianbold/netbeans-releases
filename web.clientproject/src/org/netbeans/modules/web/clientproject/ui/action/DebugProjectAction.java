@@ -44,12 +44,11 @@ package org.netbeans.modules.web.clientproject.ui.action;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.web.clientproject.util.FileUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.FileSensitiveActions;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
@@ -57,19 +56,16 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
-    "DebugSourceFileAction.name.long=Debug File",
-    "DebugSourceFileAction.name.short=Debug",
+    "DebugProjectAction.name.long=Debug Project",
+    "DebugProjectAction.name.short=Debug",
 })
-@ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.DebugSourceFileAction", category = "Project")
-@ActionRegistration(lazy = false, displayName = "#DebugSourceFileAction.name.long", menuText = "#DebugSourceFileAction.name.short",
-        popupText = "#DebugSourceFileAction.name.short")
-@ActionReferences({
-        @ActionReference(path = "Loaders/text/javascript/Actions", position = 255, separatorAfter = 260),
-        @ActionReference(path = "Editors/text/javascript/Popup", position = 810),
-})
-public class DebugSourceFileAction extends AbstractAction implements ContextAwareAction {
+@ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.DebugProjectAction", category = "Project")
+@ActionRegistration(lazy = false, displayName = "#DebugProjectAction.name.long", menuText = "#DebugProjectAction.name.short",
+        popupText = "#DebugProjectAction.name.short")
+@ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 710)
+public final class DebugProjectAction extends AbstractAction implements ContextAwareAction {
 
-    public DebugSourceFileAction() {
+    public DebugProjectAction() {
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         // hide this action from Tools > Keymap
         putValue(Action.NAME, ""); // NOI18N
@@ -83,10 +79,12 @@ public class DebugSourceFileAction extends AbstractAction implements ContextAwar
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-        if (FileUtilities.lookupSourceFileOnly(actionContext) == null) {
+        Project project = actionContext.lookup(Project.class);
+        assert project != null : actionContext;
+        if (!project.getLookup().lookup(ActionProvider.class).isActionEnabled(ActionProvider.COMMAND_DEBUG, actionContext)) {
             return this;
         }
-        return FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_DEBUG_SINGLE, Bundle.DebugSourceFileAction_name_long(), null);
+        return ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, Bundle.DebugProjectAction_name_short(), null);
     }
 
 }

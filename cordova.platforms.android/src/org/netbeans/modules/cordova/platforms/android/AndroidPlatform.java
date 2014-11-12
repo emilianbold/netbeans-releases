@@ -222,7 +222,12 @@ public class AndroidPlatform implements MobilePlatform {
 
     @Override
     public String getSdkLocation() {
-        return NbPreferences.forModule(AndroidPlatform.class).get(ANDROID_SDK_ROOT_PREF, null);
+        String sdkLocation = NbPreferences.forModule(AndroidPlatform.class).get(ANDROID_SDK_ROOT_PREF, null);
+        if (sdkLocation != null && !sdkLocation.isEmpty()) {
+            return sdkLocation;
+        } else {
+            return getSdkFromAndroidHome();
+        }
     }
 
     @Override
@@ -395,5 +400,26 @@ public class AndroidPlatform implements MobilePlatform {
         
         
     }
-}
 
+    /**
+     * Sets the Android SDK location from ANDROID_HOME environment variable, if
+     * available.
+     *
+     * @return Android SDK Location or <code>null</code> if Android SDK could
+     * not be found.
+     */
+    private String getSdkFromAndroidHome() {
+        String androidHomeValue = System.getenv("ANDROID_HOME"); //NOI18N
+        if (androidHomeValue != null && !androidHomeValue.isEmpty()) {
+            File androidLoc = new File(androidHomeValue);
+            File androidTools = new File(androidLoc, "platform-tools"); //NOI18N
+            boolean validSdk = androidLoc.exists() && androidLoc.isDirectory()
+                    && androidTools.exists() && androidTools.isDirectory();
+            if (validSdk) {
+                NbPreferences.forModule(AndroidPlatform.class).put(ANDROID_SDK_ROOT_PREF, androidHomeValue);
+                return androidHomeValue;
+            }
+        }
+        return null;
+    }
+}

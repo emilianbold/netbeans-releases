@@ -55,11 +55,18 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 
@@ -78,6 +85,7 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     private final Debugger d;
     private final WebKitDebugging wd;
     private final ProjectContext pc;
+    private final List<FileObject> projectSourceRoots;
     private final Map<Breakpoint, WebKitBreakpointManager> breakpointImpls =
             new HashMap<Breakpoint, WebKitBreakpointManager>();
     
@@ -85,6 +93,7 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         d = lookupProvider.lookupFirst(null, Debugger.class);
         wd = lookupProvider.lookupFirst(null, WebKitDebugging.class);
         pc = lookupProvider.lookupFirst(null, ProjectContext.class);
+        projectSourceRoots = getProjectSourceRoots(pc.getProject());
         DebuggerManager.getDebuggerManager().addDebuggerListener(this);
         createBreakpointImpls();
     }
@@ -96,7 +105,7 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             for (Breakpoint breakpoint : breakpoints) {
                 if (breakpoint instanceof JSLineBreakpoint) {
                     JSLineBreakpoint lb = (JSLineBreakpoint) breakpoint;
-                    if (!breakpointImpls.containsKey(lb)) {
+                    if (acceptBreakpoint(lb) && !breakpointImpls.containsKey(lb)) {
                         WebKitBreakpointManager bm = createWebKitBreakpointManager(lb);
                         breakpointImpls.put(lb, bm);
                         toAdd.add(bm);
@@ -153,6 +162,9 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         AbstractBreakpoint ab = null;
         if (breakpoint instanceof JSLineBreakpoint) {
             lb = (JSLineBreakpoint) breakpoint;
+            if (!acceptBreakpoint(lb)) {
+                return ;
+            }
         } else if (breakpoint instanceof AbstractBreakpoint) {
             ab = (AbstractBreakpoint) breakpoint;
         } else {
@@ -242,6 +254,44 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     public void engineRemoved(DebuggerEngine engine) {}
     @Override
     public void propertyChange(PropertyChangeEvent evt) {}
+    
+    private static List<FileObject> getProjectSourceRoots(Project project) {
+        return getProjectSourceRoots(project, WebClientProjectConstants.SOURCES_TYPE_HTML5_SITE_ROOT);
+    }
+    
+    private static List<FileObject> getProjectSourceRoots(Project project, String type) {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(type);
+        List<FileObject> roots = new ArrayList<FileObject>(sourceGroups.length);
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            roots.add(rootFolder);
+        }
+        if (roots.isEmpty()) {
+            roots.add(project.getProjectDirectory());
+        }
+        return roots;
+    }
+    
+    private boolean acceptBreakpoint(JSLineBreakpoint lb) {
+        FileObject fo = lb.getFileObject();
+        if (fo == null) {
+            return false;
+        }
+        if (RemoteFileCache.isRemoteFile(fo) != null) {
+            return true;
+        }
+        if (FileUtil.toFile(fo) == null) {
+            return true;
+        }
+        boolean isInPrjSources = false;
+        for (FileObject psr : projectSourceRoots) {
+            if (FileUtil.isParentOf(psr, fo)) {
+                isInPrjSources = true;
+                break;
+            }
+        }
+        return isInPrjSources;
+    }
     
     
 }

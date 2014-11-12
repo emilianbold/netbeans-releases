@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
     "RunSourceFileAction.name.short=Run",
 })
 @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.RunSourceFileAction", category = "Project")
-// XXX how to remove action from shortcuts?
 @ActionRegistration(lazy = false, displayName = "#RunSourceFileAction.name.long", menuText = "#RunSourceFileAction.name.short",
         popupText = "#RunSourceFileAction.name.short")
 @ActionReferences({
@@ -72,7 +71,8 @@ public class RunSourceFileAction extends AbstractAction implements ContextAwareA
 
     public RunSourceFileAction() {
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        putValue(Action.NAME, Bundle.RunSourceFileAction_name_long());
+        // hide this action from Tools > Keymap
+        putValue(Action.NAME, ""); // NOI18N
         setEnabled(false);
     }
 
