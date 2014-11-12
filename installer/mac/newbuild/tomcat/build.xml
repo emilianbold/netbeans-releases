@@ -50,24 +50,8 @@
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value='sh ${basedir}/../pack200.sh ${appdir} ${VerifyFile.class.name} ${VerifyFile.classpath}'/>
-        </exec>
-             
+        </exec>                     
         
-        <copy file="pkg/Info.plist" filtering="true" tofile="${builddir}/Info.plist">
-            <filterset>
-                <filter token="INSTALLDIR" value="${tomcat.install.dir}"/>
-                <filter token="APPVERSION" value="${tomcat.version}"/>
-                <filter token="TOMCAT_ID" value="${tomcat.id}"/>
-            </filterset>
-        </copy>
-        
-        <copy file="${basedir}/../commonfiles/Description.plist" overwrite="true" filtering="true" tofile="${builddir}/Description.plist">
-            <filterset>
-                <filter token="TITLE" value="${tomcat-title}"/>
-            </filterset>
-        </copy>
-
-
         <copy  todir="${scriptsdir}">
             <fileset dir="${basedir}/pkg/scripts"/>
         </copy>

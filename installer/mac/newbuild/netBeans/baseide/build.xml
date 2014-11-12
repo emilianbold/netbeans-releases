@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="-c"/>
             <arg value="ln -s '../Resources/NetBeans/bin/netbeans' '${appdir}/Contents/MacOS/netbeans'"/>
         </exec>
-        <condition property="sign.option" value="--sign '${signing_identity}'">
+        <condition property="sign.option" value="--sign '${signing_identity}'" else="">
             <not>
                 <equals arg1="${signing_identity}" arg2="0"/>
             </not>
@@ -121,12 +121,6 @@ TOMCAT_ID="${tomcat.id}"
         <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
         <copy file="${basedir}/../../commonfiles/postupgrade_generic" tofile="${scriptsdir}/postupgrade" overwrite="false"/>
         <copy file="${basedir}/../../commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
-                                  
-        <copy file="${basedir}/../../commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${builddir}/Description.plist">
-            <filterset>
-                <filter token="TITLE" value="${netbeans-Title}"/>
-            </filterset>
-        </copy>
         
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
 
