@@ -52,11 +52,11 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.ClientSideProjectSources;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
-import org.netbeans.modules.web.clientproject.indirect.LicensePanelSupport;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
-import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Env;
+import org.netbeans.modules.web.clientproject.env.Licenses;
+import org.netbeans.modules.web.clientproject.env.Values;
+import org.netbeans.modules.web.clientproject.env.References;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -69,7 +69,7 @@ import org.openide.filesystems.FileUtil;
 
 /** Bridges calls into Ant.
  */
-public final class AntServices extends IndirectServices {
+public final class AntServices extends Env {
     private AntServices() {
     }
     
@@ -89,7 +89,7 @@ public final class AntServices extends IndirectServices {
     }
 
     @Override
-    public PropertyEvaluator createEvaluator(CommonProjectHelper aph, FileObject dir) {
+    public Values createEvaluator(CommonProjectHelper aph, FileObject dir) {
         AntProjectHelperImpl impl = (AntProjectHelperImpl) aph;
         org.netbeans.spi.project.support.ant.AntProjectHelper h = impl.delegate;
         
@@ -112,7 +112,7 @@ public final class AntServices extends IndirectServices {
     }
 
     @Override
-    public Sources initSources(Project project, CommonProjectHelper h, PropertyEvaluator e) {
+    public Sources initSources(Project project, CommonProjectHelper h, Values e) {
         AntProjectHelperImpl ih = (AntProjectHelperImpl) h;
         PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) e;
         SourcesHelper sourcesHelper = new SourcesHelper(project, ih.delegate, ip.delegate);
@@ -135,7 +135,7 @@ public final class AntServices extends IndirectServices {
     
 
     @Override
-    public ReferenceHelper newReferenceHelper(CommonProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval) {
+    public References newReferenceHelper(CommonProjectHelper helper, AuxiliaryConfiguration configuration, Values eval) {
         AntProjectHelperImpl ih = (AntProjectHelperImpl) helper;
         PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) eval;
         org.netbeans.spi.project.support.ant.ReferenceHelper orig;
@@ -146,19 +146,19 @@ public final class AntServices extends IndirectServices {
     }
 
     @Override
-    public JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, LicensePanelSupport licenseSupport) {
+    public JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, Licenses licenseSupport) {
         LicensePanelSupportImpl li = (LicensePanelSupportImpl) licenseSupport;
         return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, li);
     }
 
     @Override
-    public LicensePanelSupport newLicensePanelSupport(
-        PropertyEvaluator evaluator, CommonProjectHelper projectHelper, String p1, String p2
+    public Licenses newLicensePanelSupport(
+        Values evaluator, CommonProjectHelper projectHelper, String p1, String p2
     ) {
         return new LicensePanelSupportImpl(evaluator, projectHelper, p1, p2);
     }
     
-    public static IndirectServices newServices() {
+    public static Env newServices() {
         return new AntServices();
     }
     

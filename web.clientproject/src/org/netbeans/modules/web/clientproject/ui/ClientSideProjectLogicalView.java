@@ -74,7 +74,7 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.env.Values;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ActionProvider;
@@ -243,7 +243,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         private final ClientSideProject project;
         private final ProjectInformation projectInfo;
-        private final PropertyEvaluator evaluator;
+        private final Values evaluator;
         private final ProjectProblemsProvider problemsProvider;
 
 

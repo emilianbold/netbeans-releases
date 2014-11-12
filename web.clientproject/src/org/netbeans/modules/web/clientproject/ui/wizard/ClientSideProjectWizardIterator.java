@@ -67,7 +67,7 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectUtils;
-import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;

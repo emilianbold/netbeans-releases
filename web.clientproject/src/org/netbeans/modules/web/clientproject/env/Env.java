@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.modules.web.clientproject.env;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,22 +52,22 @@ import org.openide.filesystems.FileObject;
 
 /** Class providing indirect access to Ant project support services.
  */
-public abstract class IndirectServices {
+public abstract class Env {
     public abstract CommonProjectHelper createProject(FileObject dirFO, String type) throws IOException;
     public abstract String getUsablePropertyName(String displayName);
     public abstract File resolveFile(File dir, String relative);
-    public abstract PropertyEvaluator createEvaluator(CommonProjectHelper h, FileObject dir);
+    public abstract Values createEvaluator(CommonProjectHelper h, FileObject dir);
 
-    public abstract JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, LicensePanelSupport licenseSupport);
+    public abstract JComponent createLicenseHeaderCustomizerPanel(ProjectCustomizer.Category category, Licenses licenseSupport);
 
     public abstract String relativizeFile(File base, File relative);
     
-    public abstract ReferenceHelper newReferenceHelper(CommonProjectHelper helper, AuxiliaryConfiguration configuration, PropertyEvaluator eval);
+    public abstract References newReferenceHelper(CommonProjectHelper helper, AuxiliaryConfiguration configuration, Values eval);
 
-    public abstract Sources initSources(Project project, CommonProjectHelper h, PropertyEvaluator e);
+    public abstract Sources initSources(Project project, CommonProjectHelper h, Values e);
 
-    public abstract LicensePanelSupport newLicensePanelSupport(
-        PropertyEvaluator evaluator, CommonProjectHelper projectHelper, 
+    public abstract Licenses newLicensePanelSupport(
+        Values evaluator, CommonProjectHelper projectHelper, 
         String p1, String p2
     );
 }

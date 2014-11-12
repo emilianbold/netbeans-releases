@@ -39,13 +39,15 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.modules.web.clientproject.env;
 
-import java.io.File;
+import java.io.IOException;
+import org.openide.util.EditableProperties;
 
-/**
- */
-public abstract class ReferenceHelper {
-    public abstract void fixReferences(File originalPath);
-    public abstract String createForeignFileReference(File file, String object);
+public abstract class Licenses {
+    public static final String LICENSE_NAME = "project.license";
+    public static final String LICENSE_PATH = "project.licensePath";
+
+    public abstract void updateProperties(EditableProperties projectProperties);
+    public abstract void saveLicenseFile() throws IOException;
 }

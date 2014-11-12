@@ -59,7 +59,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
-import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
+import org.netbeans.modules.web.clientproject.env.Env;
 import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;

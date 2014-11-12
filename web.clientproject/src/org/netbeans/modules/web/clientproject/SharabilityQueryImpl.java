@@ -51,8 +51,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery.Sharability;
-import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Values;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
@@ -63,20 +63,20 @@ import org.openide.util.WeakListeners;
 public final class SharabilityQueryImpl implements SharabilityQueryImplementation2, PropertyChangeListener {
 
     private final CommonProjectHelper helper;
-    private final PropertyEvaluator evaluator;
+    private final Values evaluator;
     private final Set<String> sourceRootProperties;
 
     // @GuardedBy("this")
     private SharabilityQueryImplementation2 delegate;
 
 
-    private SharabilityQueryImpl(CommonProjectHelper helper, PropertyEvaluator evaluator, String... sourceRootProperties) {
+    private SharabilityQueryImpl(CommonProjectHelper helper, Values evaluator, String... sourceRootProperties) {
         this.helper = helper;
         this.evaluator = evaluator;
         this.sourceRootProperties = new CopyOnWriteArraySet<String>(Arrays.asList(sourceRootProperties));
     }
 
-    public static SharabilityQueryImpl create(CommonProjectHelper helper, PropertyEvaluator evaluator, String... sourceRootProperties) {
+    public static SharabilityQueryImpl create(CommonProjectHelper helper, Values evaluator, String... sourceRootProperties) {
         SharabilityQueryImpl query = new SharabilityQueryImpl(helper, evaluator, sourceRootProperties);
         query.addSourceRootsListener();
         return query;

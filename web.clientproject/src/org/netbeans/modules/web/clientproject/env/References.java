@@ -39,55 +39,13 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.modules.web.clientproject.env;
 
 import java.io.File;
-import java.io.IOException;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.queries.SharabilityQueryImplementation2;
-import org.openide.filesystems.FileObject;
-import org.openide.util.EditableProperties;
-import org.w3c.dom.Element;
 
 /**
  */
-public abstract class CommonProjectHelper {
-    public static Object PRIVATE_PROPERTIES_PATH = new Object();
-    public static Object PROJECT_PROPERTIES_PATH = new Object();
-
-    public abstract EditableProperties getProperties(Object path);
-
-    public abstract void putProperties(Object path, EditableProperties privateProps);
-
-    public abstract SharabilityQueryImplementation2 createSharabilityQuery2(PropertyEvaluator evaluator, String[] toArray, String[] string);
-
-    public abstract PropertyEvaluator getStandardPropertyEvaluator();
-    
-    public abstract Object getXmlSavedHook();
-
-    public abstract File resolveFile(String licensePath);
-
-    public abstract FileObject getProjectDirectory();
-
-    public abstract FileObject resolveFileObject(String sourceFolder);
-
-    public abstract void notifyDeleted();
-
-    public abstract AuxiliaryConfiguration createAuxiliaryConfiguration();
-    
-    public abstract void registerCallback(Callback l);
-
-    public abstract Element getPrimaryConfigurationData(boolean b);
-
-    public abstract Object createCacheDirectoryProvider();
-
-    public abstract Object createAuxiliaryProperties();
-
-    public abstract void putPrimaryConfigurationData(Element data, boolean b);
-    
-    public interface Callback {
-        public void projectXmlSaved() throws IOException;
-        public void configurationXmlChanged();
-        public void propertiesChanged();
-    }    
+public abstract class References {
+    public abstract void fixReferences(File originalPath);
+    public abstract String createForeignFileReference(File file, String object);
 }

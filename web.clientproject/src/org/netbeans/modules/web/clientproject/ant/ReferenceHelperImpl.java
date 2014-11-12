@@ -42,9 +42,9 @@
 package org.netbeans.modules.web.clientproject.ant;
 
 import java.io.File;
-import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
+import org.netbeans.modules.web.clientproject.env.References;
 
-final class ReferenceHelperImpl extends ReferenceHelper {
+final class ReferenceHelperImpl extends References {
     private final org.netbeans.spi.project.support.ant.ReferenceHelper h;
 
     ReferenceHelperImpl(org.netbeans.spi.project.support.ant.ReferenceHelper h) {

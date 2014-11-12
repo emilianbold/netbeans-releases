@@ -46,7 +46,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.util.Parameters;
 

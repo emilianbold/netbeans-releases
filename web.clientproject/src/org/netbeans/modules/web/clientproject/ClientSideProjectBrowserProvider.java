@@ -51,7 +51,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import static org.netbeans.modules.web.browser.spi.ProjectBrowserProvider.PROP_BROWSER_ACTIVE;
-import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;

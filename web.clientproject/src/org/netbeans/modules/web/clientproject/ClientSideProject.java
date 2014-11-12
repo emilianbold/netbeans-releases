@@ -88,10 +88,10 @@ import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
-import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
-import org.netbeans.modules.web.clientproject.indirect.ReferenceHelper;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Env;
+import org.netbeans.modules.web.clientproject.env.Values;
+import org.netbeans.modules.web.clientproject.env.References;
 import org.netbeans.modules.web.clientproject.node.NpmProblemProvider;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
@@ -153,8 +153,8 @@ public class ClientSideProject implements Project {
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
     final CommonProjectHelper projectHelper;
-    private final ReferenceHelper referenceHelper;
-    private final PropertyEvaluator eval;
+    private final References referenceHelper;
+    private final Values eval;
     private final Lookup lookup;
     private final CallbackImpl callbackImpl = new CallbackImpl();
     volatile String name;
@@ -163,7 +163,7 @@ public class ClientSideProject implements Project {
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
-    public final IndirectServices is;
+    public final Env is;
 
     final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListenerImpl();
 
@@ -217,7 +217,7 @@ public class ClientSideProject implements Project {
     };
 
 
-    public ClientSideProject(CommonProjectHelper helper, IndirectServices is) {
+    public ClientSideProject(CommonProjectHelper helper, Env is) {
         this.projectHelper = helper;
         this.is = is;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
@@ -429,11 +429,11 @@ public class ClientSideProject implements Project {
         return lookup;
     }
 
-    public PropertyEvaluator getEvaluator() {
+    public Values getEvaluator() {
         return eval;
     }
 
-    public ReferenceHelper getReferenceHelper() {
+    public References getReferenceHelper() {
         return referenceHelper;
     }
 

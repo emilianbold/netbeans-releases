@@ -48,8 +48,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Values;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.CacheDirectoryProvider;
@@ -117,7 +117,7 @@ final class AntProjectHelperImpl extends CommonProjectHelper {
     }
 
     @Override
-    public PropertyEvaluator getStandardPropertyEvaluator() {
+    public Values getStandardPropertyEvaluator() {
         return new PropertyEvaluatorImpl(delegate.getStandardPropertyEvaluator());
     }
 
@@ -151,7 +151,7 @@ final class AntProjectHelperImpl extends CommonProjectHelper {
 
     @Override
     public SharabilityQueryImplementation2 createSharabilityQuery2(
-        org.netbeans.modules.web.clientproject.indirect.PropertyEvaluator e,
+        org.netbeans.modules.web.clientproject.env.Values e,
         String[] roots, String[] dirs
     ) {
         PropertyEvaluatorImpl ip = (PropertyEvaluatorImpl) e;

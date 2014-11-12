@@ -70,8 +70,8 @@ import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
-import org.netbeans.modules.web.clientproject.indirect.CommonProjectHelper;
-import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
+import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Env;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
@@ -140,7 +140,7 @@ public final class ClientSideProjectUtilities {
      */
     public static CommonProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
         // clearly creation of new project must depend on Ant
-        IndirectServices is = AntServices.newServices();
+        Env is = AntServices.newServices();
         // create project
         CommonProjectHelper projectHelper = is.createProject(dirFO, ClientSideProjectType.TYPE);
         setProjectName(projectHelper, name, false);
@@ -166,7 +166,7 @@ public final class ClientSideProjectUtilities {
         assert projectDirectory != null;
         assert projectDirectory.isDirectory();
         // ensure directories exists
-        IndirectServices is = project.is;
+        Env is = project.is;
         if (sources != null) {
             ensureDirectoryExists(is.resolveFile(projectDirectory, sources));
         }

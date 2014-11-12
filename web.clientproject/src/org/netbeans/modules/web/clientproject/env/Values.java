@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.clientproject.indirect;
+package org.netbeans.modules.web.clientproject.env;
 
 import java.beans.PropertyChangeListener;
 import java.util.Map;
@@ -59,7 +59,7 @@ import org.netbeans.api.annotations.common.NonNull;
  * @see PropertyUtils#sequentialPropertyEvaluator
  * @see AntProjectHelper#getStandardPropertyEvaluator
  */
-public interface PropertyEvaluator {
+public interface Values {
 
     /**
      * Evaluate a single property.
