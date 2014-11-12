@@ -55,14 +55,17 @@ import java.util.logging.Level;
 * Normally this is sufficient protection. If you really need an atomic read, you may
 * simply lock the file, perform the read, and unlock it when done. The file will still
 * be protected against writes, although the read operation did not request a lock.
-*
+* <p/>
+* The {@code FileLock} implements {@link AutoCloseable}, so it can be created within
+* try-with-resources resource clause and the lock will be released at the end of the try block.
+* 
 * @see FileObject
-*
+* @since 9.2 implements {@code AutoCloseable} interface.
 * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek
 * @version 0.16, Jun 5, 1997
 *
 */
-public class FileLock { // XXX JDK 7: implements AutoCloseable
+public class FileLock implements AutoCloseable {
     // ========================= NONE file lock =====================================
 
     /** Constant that can be used in filesystems that do not support locking.
@@ -109,6 +112,14 @@ public class FileLock { // XXX JDK 7: implements AutoCloseable
         locked = false;
     }
 
+    /**
+     * Releases the lock. Equivalent to {@link #releaseLock} call.
+     */
+    @Override
+    public void close() {
+        releaseLock();
+    }
+    
     //  End of the original part
     // ============================================================================
 

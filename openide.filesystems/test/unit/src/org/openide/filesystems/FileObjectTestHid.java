@@ -283,23 +283,20 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fold = getTestFolder1(root);
         FileObject fo1 = getTestFile1(fold);
 
-        FileLock lock;
-        try {
-            lock = fo1.lock();
+        // use the new AutoCloseable feature
+        try (FileLock lock = fo1.lock()) {
+            fo1.rename(lock, "Aaa", "java");
+            assertEquals("Name is Aaa", "Aaa", fo1.getName());
+            fo1.rename(lock, "bbb", "java");
+            assertEquals("Name is bbb", "bbb", fo1.getName());
+            fo1.rename(lock, "aaa", "java");
+            assertEquals("Name is lowercase", "aaa", fo1.getName());
         } catch (IOException iex) {
             fsAssert(
                 "expected copy will success on writable FS",
                 fs.isReadOnly() || fo1.isReadOnly()
             );
-            return;
         }
-        fo1.rename(lock, "Aaa", "java");
-        assertEquals("Name is Aaa", "Aaa", fo1.getName());
-        fo1.rename(lock, "bbb", "java");
-        assertEquals("Name is bbb", "bbb", fo1.getName());
-        fo1.rename(lock, "aaa", "java");
-        assertEquals("Name is lowercase", "aaa", fo1.getName());
-        lock.releaseLock();
     }
     
     /** Test of copy method, of class org.openide.filesystems.FileObject. */
@@ -540,16 +537,12 @@ public class FileObjectTestHid extends TestBaseHid {
         FileObject fold = getTestFolder1(root);
         FileObject fo1 = getTestFile1(fold);
         FileObject fo2 = getTestFile2(fold);
-        FileLock lock = null;
         
-        try {
-            lock = fo1.lock();
+        try (FileLock lock = fo1.lock()) {
             fo1.move(lock, fold,fo2.getName(),fo2.getExt());
         } catch (IOException iex) {
             /** Test passed*/
             return;
-        } finally {
-            if (lock != null) lock.releaseLock();            
         }
         fsFail  ("move  should fire exception if file already exists");
     }

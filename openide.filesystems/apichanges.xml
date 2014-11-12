@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileLock.closeable">
+            <api name="filesystems"/>
+            <summary>FileLock implements AutoCloseable</summary>
+            <version major="9" minor="3"/>
+            <date year="2014" month="11" day="10"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" deletion="no" deprecation="no" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    <a href="@TOP@org/openide/filesystems/FileLock.html">FileLock</a>
+                    implements AutoCloseable to work well in try-with-resources constructs.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileLock"/>
+            <issue number="247915"/>
+        </change>
         <change id="FileSystemStatus.icons2">
             <api name="filesystems"/>
             <summary>FileSystem.Status API removed</summary>
