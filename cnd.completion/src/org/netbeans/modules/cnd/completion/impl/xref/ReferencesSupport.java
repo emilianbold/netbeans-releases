@@ -53,6 +53,8 @@ import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -265,154 +267,173 @@ public final class ReferencesSupport {
 
     private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
             TokenItem<TokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
-
-        // fast check, if possible
-        // macros have max priority in file
-        List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile, Interrupter.DUMMY);
-        CsmObject csmItem = findMacro(macroUsages, offset);
-        if (csmItem != null) {
-            return csmItem;
-        }
-        CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
-        // TODO: it would be great to check position in named element, but we don't
-        // support this information yet, so
-
-        // fast check for enumerators
-        if (CsmKindUtilities.isEnumerator(objUnderOffset)) {
-            CsmEnumerator enmrtr = (CsmEnumerator) objUnderOffset;
-            if (enmrtr.getExplicitValue() == null) {
-                csmItem = enmrtr;
-            }
-        } else if (CsmKindUtilities.isLabel(objUnderOffset)) {
-            csmItem = objUnderOffset;
-        } else if (CsmKindUtilities.isGotoStatement(objUnderOffset)) {
-            CsmGotoStatement csmGoto = (CsmGotoStatement) objUnderOffset;
-            CsmScope scope = csmGoto.getScope();
-            while (scope != null && CsmKindUtilities.isScopeElement(scope) && !CsmKindUtilities.isFunctionDefinition(scope)) {
-                scope = ((CsmScopeElement) scope).getScope();
-            }
-            if (CsmKindUtilities.isFunctionDefinition(scope)) {
-                Collection<CsmReference> labels = CsmLabelResolver.getDefault().getLabels(
-                        (CsmFunctionDefinition) scope, csmGoto.getLabel(),
-                        EnumSet.of(CsmLabelResolver.LabelKind.Definiton));
-                if (!labels.isEmpty()) {
-                    csmItem = labels.iterator().next().getReferencedObject();
+        final String oldName = Thread.currentThread().getName();
+        try {
+            if (doc instanceof LineDocument) {
+                try {
+                    LineDocument lineDoc = (LineDocument) doc;
+                    Thread.currentThread().setName(
+                        oldName + " (find declaration at "  // NOI18N
+                        + csmFile.getAbsolutePath() + "[" // NOI18N
+                        + (LineDocumentUtils.getLineIndex(lineDoc, offset) + 1) + "," // NOI18N
+                        + (offset - LineDocumentUtils.getLineStart(lineDoc, offset) + 1) + "]" // NOI18N
+                        + ", token \"" + tokenUnderOffset.text() + "\")" // NOI18N
+                    );
+                } catch (BadLocationException ex) {
+                    // Just ignore it
                 }
             }
-// Commented because goto statements could be expression based. 
-// In such case there are inner identifiers
-//            if (csmItem == null) {
-//                // Exit now, don't look for variables, types and etc.
-//                return null;
-//            }
-        } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset) || CsmKindUtilities.isTypeAlias(objUnderOffset)) {
-            CsmType type = CsmKindUtilities.isVariable(objUnderOffset) ? ((CsmVariable) objUnderOffset).getType() : ((CsmTypedef) objUnderOffset).getType();
-            CsmParameter parameter = null;
-            boolean repeat;
-            do {
-                repeat = false;
-                if (CsmOffsetUtilities.isInObject(type, offset)) {
-                    parameter = null;
+            
+            // fast check, if possible
+            // macros have max priority in file
+            List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile, Interrupter.DUMMY);
+            CsmObject csmItem = findMacro(macroUsages, offset);
+            if (csmItem != null) {
+                return csmItem;
+            }
+            CsmObject objUnderOffset = CsmOffsetResolver.findObject(csmFile, offset, fileReferencesContext);
+            // TODO: it would be great to check position in named element, but we don't
+            // support this information yet, so
+
+            // fast check for enumerators
+            if (CsmKindUtilities.isEnumerator(objUnderOffset)) {
+                CsmEnumerator enmrtr = (CsmEnumerator) objUnderOffset;
+                if (enmrtr.getExplicitValue() == null) {
+                    csmItem = enmrtr;
                 }
-                if (CsmKindUtilities.isFunctionPointerType(type)) {
-                    CsmParameter deeperParameter = CsmOffsetUtilities.findObject(
-                            ((CsmFunctionPointerType) type).getParameters(), null, offset);
-                    if (deeperParameter != null) {
-                        parameter = deeperParameter;
-                        type = deeperParameter.getType();
-                        repeat = true;
+            } else if (CsmKindUtilities.isLabel(objUnderOffset)) {
+                csmItem = objUnderOffset;
+            } else if (CsmKindUtilities.isGotoStatement(objUnderOffset)) {
+                CsmGotoStatement csmGoto = (CsmGotoStatement) objUnderOffset;
+                CsmScope scope = csmGoto.getScope();
+                while (scope != null && CsmKindUtilities.isScopeElement(scope) && !CsmKindUtilities.isFunctionDefinition(scope)) {
+                    scope = ((CsmScopeElement) scope).getScope();
+                }
+                if (CsmKindUtilities.isFunctionDefinition(scope)) {
+                    Collection<CsmReference> labels = CsmLabelResolver.getDefault().getLabels(
+                            (CsmFunctionDefinition) scope, csmGoto.getLabel(),
+                            EnumSet.of(CsmLabelResolver.LabelKind.Definiton));
+                    if (!labels.isEmpty()) {
+                        csmItem = labels.iterator().next().getReferencedObject();
                     }
-                } 
-                if (type != null && !type.getInstantiationParams().isEmpty()) {
-                    CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
-                    if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
-                        if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                            type = ((CsmTypeBasedSpecializationParameter) param).getType();
+                }
+    // Commented because goto statements could be expression based. 
+    // In such case there are inner identifiers
+    //            if (csmItem == null) {
+    //                // Exit now, don't look for variables, types and etc.
+    //                return null;
+    //            }
+            } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset) || CsmKindUtilities.isTypeAlias(objUnderOffset)) {
+                CsmType type = CsmKindUtilities.isVariable(objUnderOffset) ? ((CsmVariable) objUnderOffset).getType() : ((CsmTypedef) objUnderOffset).getType();
+                CsmParameter parameter = null;
+                boolean repeat;
+                do {
+                    repeat = false;
+                    if (CsmOffsetUtilities.isInObject(type, offset)) {
+                        parameter = null;
+                    }
+                    if (CsmKindUtilities.isFunctionPointerType(type)) {
+                        CsmParameter deeperParameter = CsmOffsetUtilities.findObject(
+                                ((CsmFunctionPointerType) type).getParameters(), null, offset);
+                        if (deeperParameter != null) {
+                            parameter = deeperParameter;
+                            type = deeperParameter.getType();
                             repeat = true;
                         }
+                    } 
+                    if (type != null && !type.getInstantiationParams().isEmpty()) {
+                        CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
+                        if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
+                            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                                type = ((CsmTypeBasedSpecializationParameter) param).getType();
+                                repeat = true;
+                            }
+                        }
                     }
-                }
-            } while (repeat);
-            csmItem = parameter;
-            
-            if (csmItem == null && CsmKindUtilities.isVariableDeclaration(objUnderOffset)) {
-                if (tokenUnderOffset == null && doc instanceof AbstractDocument) {
-                    ((AbstractDocument) doc).readLock();
-                    try {
-                        tokenUnderOffset = CndTokenUtilities.getTokenCheckPrev(doc, offset);
-                    } finally {
-                        ((AbstractDocument) doc).readUnlock();
+                } while (repeat);
+                csmItem = parameter;
+
+                if (csmItem == null && CsmKindUtilities.isVariableDeclaration(objUnderOffset)) {
+                    if (tokenUnderOffset == null && doc instanceof AbstractDocument) {
+                        ((AbstractDocument) doc).readLock();
+                        try {
+                            tokenUnderOffset = CndTokenUtilities.getTokenCheckPrev(doc, offset);
+                        } finally {
+                            ((AbstractDocument) doc).readUnlock();
+                        }
                     }
-                }
-                if (tokenUnderOffset != null) {
-                    // turned off, due to the problems like
-                    // Cpu MyCpu(type, 0, amount);
-                    // initialization part is part of variable => we need info about name position exactly
-                    CsmVariable var = (CsmVariable) objUnderOffset;
-                    CharSequence name = var.getName();
-                    if (name != null) {
-                        if (name.length() > 0 && tokenUnderOffset.text().toString().equals(name.toString()) && !var.isExtern()) {
-                            // not work yet for arrays declarations IZ#130678
-                            // not work yet for elements with init value IZ#130684
-                            if ((var.getInitialValue() == null) && (var.getType() != null) && (var.getType().getArrayDepth() == 0)) {
-                                csmItem = var;
+                    if (tokenUnderOffset != null) {
+                        // turned off, due to the problems like
+                        // Cpu MyCpu(type, 0, amount);
+                        // initialization part is part of variable => we need info about name position exactly
+                        CsmVariable var = (CsmVariable) objUnderOffset;
+                        CharSequence name = var.getName();
+                        if (name != null) {
+                            if (name.length() > 0 && tokenUnderOffset.text().toString().equals(name.toString()) && !var.isExtern()) {
+                                // not work yet for arrays declarations IZ#130678
+                                // not work yet for elements with init value IZ#130684
+                                if ((var.getInitialValue() == null) && (var.getType() != null) && (var.getType().getArrayDepth() == 0)) {
+                                    csmItem = var;
+                                }
                             }
                         }
                     }
                 }
-            }
-        } else if (CsmKindUtilities.isType(objUnderOffset)) {
-            CsmType type = (CsmType)objUnderOffset;
-            CsmParameter parameter = null;
-            boolean repeat;
-            do {
-                repeat = false;
-                if (CsmOffsetUtilities.isInObject(type, offset)) {
-                    parameter = null;
-                }
-                if (CsmKindUtilities.isFunctionPointerType(type)) {
-                    CsmParameter deeperParameter = CsmOffsetUtilities.findObject(
-                            ((CsmFunctionPointerType) type).getParameters(), null, offset);
-                    if (deeperParameter != null) {
-                        parameter = deeperParameter;
-                        type = deeperParameter.getType();
-                        repeat = true;
+            } else if (CsmKindUtilities.isType(objUnderOffset)) {
+                CsmType type = (CsmType)objUnderOffset;
+                CsmParameter parameter = null;
+                boolean repeat;
+                do {
+                    repeat = false;
+                    if (CsmOffsetUtilities.isInObject(type, offset)) {
+                        parameter = null;
                     }
-                } 
-                if (!type.getInstantiationParams().isEmpty()) {
-                    CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
-                    if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
-                        if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                            type = ((CsmTypeBasedSpecializationParameter) param).getType();
+                    if (CsmKindUtilities.isFunctionPointerType(type)) {
+                        CsmParameter deeperParameter = CsmOffsetUtilities.findObject(
+                                ((CsmFunctionPointerType) type).getParameters(), null, offset);
+                        if (deeperParameter != null) {
+                            parameter = deeperParameter;
+                            type = deeperParameter.getType();
                             repeat = true;
                         }
+                    } 
+                    if (!type.getInstantiationParams().isEmpty()) {
+                        CsmSpecializationParameter param = CsmOffsetUtilities.findObject(type.getInstantiationParams(), null, offset);
+                        if (param != null && !CsmOffsetUtilities.sameOffsets(type, param)) {
+                            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                                type = ((CsmTypeBasedSpecializationParameter) param).getType();
+                                repeat = true;
+                            }
+                        }
                     }
+                } while (repeat);
+                csmItem = parameter;            
+            }
+            if (csmItem == null) {
+                int[] idFunBlk = null;
+                try {
+                    if (doc instanceof BaseDocument) {
+                        idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock((BaseDocument) doc, offset);
+                    }
+                } catch (BadLocationException ex) {
+                    // skip it
                 }
-            } while (repeat);
-            csmItem = parameter;            
-        }
-        if (csmItem == null) {
-            int[] idFunBlk = null;
-            try {
-                if (doc instanceof BaseDocument) {
-                    idFunBlk = NbEditorUtilities.getIdentifierAndMethodBlock((BaseDocument) doc, offset);
+                // check but not for function call
+                if (idFunBlk != null && idFunBlk.length != 3) {
+                    csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY, fileReferencesContext);
                 }
-            } catch (BadLocationException ex) {
-                // skip it
             }
-            // check but not for function call
-            if (idFunBlk != null && idFunBlk.length != 3) {
-                csmItem = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.SMART_QUERY, fileReferencesContext);
+            if (csmItem == null || !CsmIncludeResolver.getDefault().isObjectVisible(csmFile, csmItem)) {
+                // then full check 
+                CsmObject other = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
+                if (other != null) {
+                    csmItem = other;
+                }
             }
+            return csmItem;
+        } finally {
+            Thread.currentThread().setName(oldName);
         }
-        if (csmItem == null || !CsmIncludeResolver.getDefault().isObjectVisible(csmFile, csmItem)) {
-            // then full check 
-            CsmObject other = findDeclaration(csmFile, doc, tokenUnderOffset, offset, QueryScope.GLOBAL_QUERY, fileReferencesContext);
-            if (other != null) {
-                csmItem = other;
-            }
-        }
-        return csmItem;
     }
 
     private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
