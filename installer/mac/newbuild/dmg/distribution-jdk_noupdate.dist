@@ -54,7 +54,7 @@ function checkForMacOSX(supportedVersion) {
 
         // Check if current version is less than supportedVersion, if yes Set the result type to Fatal, and give correct message to user
 
-        if(tProductVersion &lt; supportedVersion)
+        if(system.compareVersions(tProductVersion, supportedVersion) &lt; 0)
         {
             // Set result values
             var osCheckTitle = system.localizedStringWithFormat('OSCHECK_TITLE');
