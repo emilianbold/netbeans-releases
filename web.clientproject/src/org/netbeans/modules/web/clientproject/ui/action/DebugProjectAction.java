@@ -60,7 +60,6 @@ import org.openide.util.NbBundle;
     "DebugProjectAction.name.short=Debug",
 })
 @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.DebugProjectAction", category = "Project")
-// XXX how to remove action from shortcuts?
 @ActionRegistration(lazy = false, displayName = "#DebugProjectAction.name.long", menuText = "#DebugProjectAction.name.short",
         popupText = "#DebugProjectAction.name.short")
 @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 710)
@@ -68,7 +67,8 @@ public final class DebugProjectAction extends AbstractAction implements ContextA
 
     public DebugProjectAction() {
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        putValue(Action.NAME, Bundle.DebugProjectAction_name_long());
+        // hide this action from Tools > Keymap
+        putValue(Action.NAME, ""); // NOI18N
         setEnabled(false);
     }
 
