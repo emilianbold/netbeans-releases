@@ -420,4 +420,35 @@ public final class FileUtils {
         return archiveRoot;
     }
 
+    public static boolean isSubdirectoryOf(File folder, File child) {
+        if (!folder.isDirectory()) {
+            return false;
+        }
+        String fp;
+        try {
+            fp = folder.getCanonicalPath();
+        } catch (IOException ioex) {
+            fp = folder.getAbsolutePath();
+        }
+        String chp;
+        try {
+            chp = child.getCanonicalPath();
+        } catch (IOException ioex) {
+            chp = child.getAbsolutePath();
+        }
+        if (!chp.startsWith(fp)) {
+            return false;
+        }
+        int fl = fp.length();
+        if (chp.length() == fl) {
+            return true;
+        }
+        char separ = chp.charAt(fl);
+        if (File.separatorChar == separ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

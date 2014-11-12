@@ -69,6 +69,7 @@ import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
 /**
@@ -93,6 +94,9 @@ public class BreakpointsHandler implements V8Debugger.Listener {
         dbg.addListener(this);
     }
     
+    @NbBundle.Messages({
+        "MSG_BRKP_Unresolved=Not resolved/inactive at current line."
+    })
     public boolean add(JSLineBreakpoint lb) {
         SetBreakpoint.Arguments srargs = createSetRequestArguments(lb);
         LOG.log(Level.FINE, "Adding {0}, args = {1}", new Object[]{lb, srargs});
@@ -102,6 +106,7 @@ public class BreakpointsHandler implements V8Debugger.Listener {
         synchronized (submittingBreakpoints) {
             submittingBreakpoints.put(srargs, lb);
         }
+        JSBreakpointStatus.setInvalid(lb, Bundle.MSG_BRKP_Unresolved());
         V8Request request = dbg.sendCommandRequest(V8Command.Setbreakpoint, srargs, breakpointsCommandsCallback);
         LOG.log(Level.FINE, "  request = {0}", request);
         if (request == null) {
@@ -234,6 +239,9 @@ public class BreakpointsHandler implements V8Debugger.Listener {
     
     private final class BreakpointsCommandsCallback implements V8Debugger.CommandResponseCallback {
 
+        @NbBundle.Messages({
+            "MSG_BRKP_Resolved=Successfully resolved at current line."
+        })
         @Override
         public void notifyResponse(V8Request request, V8Response response) {
             JSLineBreakpoint lb;
@@ -258,6 +266,8 @@ public class BreakpointsHandler implements V8Debugger.Listener {
                 if (removed) {
                     requestRemove(lb, id);
                     sb.notifyDestroyed();
+                } else {
+                    JSBreakpointStatus.setValid(lb, Bundle.MSG_BRKP_Resolved());
                 }
             } else {
                 JSBreakpointStatus.setInvalid(lb, response.getErrorMessage());

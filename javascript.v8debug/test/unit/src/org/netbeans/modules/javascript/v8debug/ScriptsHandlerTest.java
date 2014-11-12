@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript.v8debug;
 
+import java.util.Collections;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -96,11 +97,13 @@ public class ScriptsHandlerTest {
     @Test
     public void testGetLocalPath() throws Exception {
         System.out.println("getLocalPath");
-        ScriptsHandler instance = new ScriptsHandler(null, null, null);
+        ScriptsHandler instance = new ScriptsHandler(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
         assertEquals("", instance.getLocalPath(""));
         assertEquals("/a/b/c", instance.getLocalPath("/a/b/c"));
         
-        instance = new ScriptsHandler("/home/test", "/var/server/path/", null);
+        instance = new ScriptsHandler(Collections.singletonList("/home/test"),
+                                      Collections.singletonList("/var/server/path/"),
+                                      Collections.EMPTY_SET, null);
         try {
             assertEquals("", instance.getLocalPath(""));
             fail("Did not throw OutOfScope exception.");
@@ -120,15 +123,21 @@ public class ScriptsHandlerTest {
         } catch (ScriptsHandler.OutOfScope oos) {
         }
         
-        instance = new ScriptsHandler("C:\\\\Users\\Test", "/var", null);
+        instance = new ScriptsHandler(Collections.singletonList("C:\\\\Users\\Test"),
+                                      Collections.singletonList("/var"),
+                                      Collections.EMPTY_SET, null);
         assertEquals("C:\\\\Users\\Test", instance.getLocalPath("/var"));
         assertEquals("C:\\\\Users\\Test\\folder\\MyFile.js", instance.getLocalPath("/var/folder/MyFile.js"));
         
-        instance = new ScriptsHandler("C:\\\\", "/var", null);
+        instance = new ScriptsHandler(Collections.singletonList("C:\\\\"),
+                                      Collections.singletonList("/var"),
+                                      Collections.EMPTY_SET, null);
         assertEquals("C:\\\\", instance.getLocalPath("/var"));
         assertEquals("C:\\\\File.js", instance.getLocalPath("/var/File.js"));
         
-        instance = new ScriptsHandler("C:\\\\", "/", null);
+        instance = new ScriptsHandler(Collections.singletonList("C:\\\\"),
+                                      Collections.singletonList("/"),
+                                      Collections.EMPTY_SET, null);
         assertEquals("C:\\\\", instance.getLocalPath("/"));
         assertEquals("C:\\\\File.js", instance.getLocalPath("/File.js"));
     }
@@ -139,10 +148,12 @@ public class ScriptsHandlerTest {
     @Test
     public void testGetServerPath() throws Exception {
         System.out.println("getServerPath");
-        ScriptsHandler instance = new ScriptsHandler(null, null, null);
+        ScriptsHandler instance = new ScriptsHandler(Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_SET, null);
         assertEquals("/a/b/c", instance.getServerPath("/a/b/c"));
         
-        instance = new ScriptsHandler("/home/test", "/var/server/path/", null);
+        instance = new ScriptsHandler(Collections.singletonList("/home/test"),
+                                      Collections.singletonList("/var/server/path/"),
+                                      Collections.EMPTY_SET, null);
         try {
             assertEquals("", instance.getServerPath(""));
             fail("Did not throw OutOfScope exception.");
@@ -162,15 +173,21 @@ public class ScriptsHandlerTest {
         } catch (ScriptsHandler.OutOfScope oos) {
         }
         
-        instance = new ScriptsHandler("C:\\\\Users\\Test", "/var", null);
+        instance = new ScriptsHandler(Collections.singletonList("C:\\\\Users\\Test"),
+                                      Collections.singletonList("/var"),
+                                      Collections.EMPTY_SET, null);
         assertEquals("/var", instance.getServerPath("C:\\\\Users\\Test"));
         assertEquals("/var/folder/MyFile.js", instance.getServerPath("C:\\\\Users\\Test\\folder\\MyFile.js"));
         
-        instance = new ScriptsHandler("C:\\\\", "/var", null);
+        instance = new ScriptsHandler(Collections.singletonList("C:\\\\"),
+                                      Collections.singletonList("/var"),
+                                      Collections.EMPTY_SET, null);
         assertEquals("/var", instance.getServerPath("C:\\\\"));
         assertEquals("/var/File.js", instance.getServerPath("C:\\\\File.js"));
         
-        instance = new ScriptsHandler("C:\\\\", "/", null);
+        instance = new ScriptsHandler(Collections.singletonList("C:\\\\"),
+                                      Collections.singletonList("/"),
+                                      Collections.EMPTY_SET, null);
         assertEquals("/", instance.getServerPath("C:\\\\"));
         assertEquals("/File.js", instance.getServerPath("C:\\\\File.js"));
     }

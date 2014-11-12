@@ -80,6 +80,7 @@ public final class SubmittedBreakpoint {
         bpChangeListener = new BPChangeListener();
         addedChangeListener = WeakListeners.propertyChange(bpChangeListener, breakpoint);
         breakpoint.addPropertyChangeListener(addedChangeListener);
+        JSBreakpointStatus.setValid(breakpoint, null);
     }
 
     public JSLineBreakpoint getBreakpoint() {

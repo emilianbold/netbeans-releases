@@ -47,6 +47,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -376,7 +377,9 @@ public class AttachCustomizer extends javax.swing.JPanel {
                 cp = new Connector.Properties(cproperties.host, cproperties.port);
             } else {
                 cp = new Connector.Properties(cproperties.host, cproperties.port,
-                                              cproperties.localPath, cproperties.serverPath);
+                                              Collections.singletonList(cproperties.localPath),
+                                              Collections.singletonList(cproperties.serverPath),
+                                              Collections.EMPTY_SET);
             }
             try {
                 Connector.connect(cp, null);

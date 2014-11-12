@@ -158,7 +158,10 @@ public final class V8Debugger {
         if (SHOW_V8_PROTOCOL) {
             connection.addIOListener(new CommListener());
         }
-        this.scriptsHandler = new ScriptsHandler(properties.getLocalPath(), properties.getServerPath(), this);
+        this.scriptsHandler = new ScriptsHandler(properties.getLocalPaths(),
+                                                 properties.getServerPaths(),
+                                                 properties.getLocalPathExclusionFilters(),
+                                                 this);
         this.breakpointsHandler = new BreakpointsHandler(this);
         this.finishCallback = finishCallback;
     }

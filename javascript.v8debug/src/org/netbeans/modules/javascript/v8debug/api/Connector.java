@@ -43,6 +43,9 @@
 package org.netbeans.modules.javascript.v8debug.api;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
@@ -75,19 +78,52 @@ public final class Connector {
         
         private final String hostName;
         private final int port;
-        private final String localPath;
-        private final String serverPath;
+        private final List<String> localPaths;
+        private final List<String> serverPaths;
+        private final Collection<String> localPathExclusionFilters;
         
+        /**
+         * Creates simple host and port connection properties.
+         * @param hostName The host name
+         * @param port The port number
+         */
         public Properties(@NullAllowed String hostName, int port) {
-            this(hostName, port, null, null);
+            this(hostName, port, Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_SET);
         }
         
+        /**
+         * Creates properties with specification of local and server paths.
+         * <code>localPaths</code> limits the local paths that are used for breakpoints
+         * submissions. Only sources below <code>localPaths</code> are considered
+         * for debugging. There can be excluded some folders from these local paths
+         * via <code>localPathExclusionFilters</code>.
+         * <p>
+         * If connecting to a remote server, <code>serverPaths</code> should be
+         * defined and must contain the same number of entries as <code>localPaths</code>
+         * in the same order, representing a server location of the copy of local files.
+         * @param hostName The host name
+         * @param port The port number
+         * @param localPaths A list of local folders containing source files.
+         * @param serverPaths Expected to be empty for local connections.
+         *                    For remote connection it must have the same size
+         *                    as <code>localPaths</code> and contain the server
+         *                    location of folders corresponding to local source
+         *                    folders in the same order.
+         * @param localPathExclusionFilters List of folders that are to be excluded
+         *                                  from sources.
+         */
         public Properties(@NullAllowed String hostName, int port,
-                          @NullAllowed String localPath, @NullAllowed String serverPath) {
+                          List<String> localPaths, List<String> serverPaths,
+                          Collection<String> localPathExclusionFilters) {
             this.hostName = hostName;
             this.port = port;
-            this.localPath = localPath;
-            this.serverPath = serverPath;
+            this.localPaths = localPaths;
+            this.serverPaths = serverPaths;
+            this.localPathExclusionFilters = localPathExclusionFilters;
+            if (!serverPaths.isEmpty() && localPaths.size() != serverPaths.size()) {
+                throw new IllegalArgumentException("Different size of localPaths and serverPaths: "+
+                                                   "localPaths = "+localPaths+", serverPaths = "+serverPaths);
+            }
         }
 
         @CheckForNull
@@ -99,14 +135,16 @@ public final class Connector {
             return port;
         }
 
-        @CheckForNull
-        public String getLocalPath() {
-            return localPath;
+        public List<String> getLocalPaths() {
+            return localPaths;
         }
 
-        @CheckForNull
-        public String getServerPath() {
-            return serverPath;
+        public List<String> getServerPaths() {
+            return serverPaths;
+        }
+
+        public Collection<String> getLocalPathExclusionFilters() {
+            return localPathExclusionFilters;
         }
         
     }
