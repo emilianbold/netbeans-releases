@@ -88,7 +88,6 @@ import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
-import org.netbeans.modules.web.clientproject.indirect.AntProjectEvent;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectHelper;
 import org.netbeans.modules.web.clientproject.indirect.AntProjectListener;
 import org.netbeans.modules.web.clientproject.indirect.IndirectServices;
@@ -946,7 +945,7 @@ public class ClientSideProject implements Project {
         }
 
         @Override
-        public void configurationXmlChanged(AntProjectEvent ev) {
+        public void configurationXmlChanged() {
             final String oldName = getName();
             name = null;
             final String newName = getName();
@@ -963,7 +962,7 @@ public class ClientSideProject implements Project {
         }
 
         @Override
-        public void propertiesChanged(AntProjectEvent ev) {
+        public void propertiesChanged() {
         }
 
     }

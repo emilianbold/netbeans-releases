@@ -174,14 +174,14 @@ final class AntProjectHelperImpl extends AntProjectHelper {
         @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
             for (org.netbeans.modules.web.clientproject.indirect.AntProjectListener l : antListeners) {
-                l.configurationXmlChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+                l.configurationXmlChanged();
             }
         }
 
         @Override
         public void propertiesChanged(AntProjectEvent ev) {
             for (org.netbeans.modules.web.clientproject.indirect.AntProjectListener l : antListeners) {
-                l.propertiesChanged(new org.netbeans.modules.web.clientproject.indirect.AntProjectEvent());
+                l.propertiesChanged();
             }
         }
 

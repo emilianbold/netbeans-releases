@@ -48,6 +48,6 @@ import java.util.EventListener;
  */
 public interface AntProjectListener extends EventListener {
     public void projectXmlSaved() throws IOException;
-    public void configurationXmlChanged(AntProjectEvent ev);
-    public void propertiesChanged(AntProjectEvent ev);
+    public void configurationXmlChanged();
+    public void propertiesChanged();
 }
