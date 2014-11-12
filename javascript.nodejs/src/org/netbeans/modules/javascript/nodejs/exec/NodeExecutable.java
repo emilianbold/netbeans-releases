@@ -286,13 +286,33 @@ public class NodeExecutable {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-        Connector.connect(new Connector.Properties("localhost", port), new Runnable() { // NOI18N
+        Connector.Properties props = createConnectorProperties("localhost", port, project); // NOI18N
+        Connector.connect(props, new Runnable() {
             @Override
             public void run() {
                 task.cancel(true);
             }
         });
         return task;
+    }
+
+    private static Connector.Properties createConnectorProperties(String host, int port, Project project) {
+        List<File> sourceRoots = NodeJsUtils.getSourceRoots(project);
+        List<File> siteRoots = NodeJsUtils.getSiteRoots(project);
+        List<String> localPaths = new ArrayList<>(sourceRoots.size());
+        List<String> localPathsExclusionFilter = Collections.EMPTY_LIST;
+        for (File src : sourceRoots) {
+            localPaths.add(src.getAbsolutePath());
+            for (File site : siteRoots) {
+                if (FileUtils.isSubdirectoryOf(src, site)) {
+                    if (localPathsExclusionFilter.isEmpty()) {
+                        localPathsExclusionFilter = new ArrayList<>();
+                    }
+                    localPathsExclusionFilter.add(site.getAbsolutePath());
+                }
+            }
+        }
+        return new Connector.Properties(host, port, localPaths, Collections.EMPTY_LIST, localPathsExclusionFilter);
     }
 
     private ExternalExecutable getExecutable(String title) {

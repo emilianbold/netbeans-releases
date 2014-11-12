@@ -46,8 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,35 +79,78 @@ public class ScriptsHandler {
     private final Map<Long, V8Script> scriptsById = new HashMap<>();
 
     private final boolean doPathTranslation;
+    private final int numPrefixes;
     @NullAllowed
-    private final String localPathPrefix;
+    private final String[] localPathPrefixes;
     private final char localPathSeparator;
     @NullAllowed
-    private final FileObject localRoot;
+    private final FileObject[] localRoots;
     @NullAllowed
-    private final String serverPathPrefix;
+    private final FileObject[] localPathExclusionFilters;
+    @NullAllowed
+    private final String[] serverPathPrefixes;
     private final char serverPathSeparator;
     private final V8Debugger dbg;
     
-    ScriptsHandler(@NullAllowed String localPath,
-                   @NullAllowed String serverPath,
+    ScriptsHandler(@NullAllowed List<String> localPaths,
+                   @NullAllowed List<String> serverPaths,
+                   Collection<String> localPathExclusionFilters,
                    V8Debugger dbg) {
-        if (localPath != null && serverPath != null) {
+        if (!localPaths.isEmpty() && !serverPaths.isEmpty()) {
             this.doPathTranslation = true;
-            this.localPathPrefix = stripSeparator(localPath);
-            this.localPathSeparator = findSeparator(localPath);
-            this.serverPathPrefix = stripSeparator(serverPath);
-            this.serverPathSeparator = findSeparator(serverPath);
-            this.localRoot = FileUtil.toFileObject(new File(localPath));
+            int n = localPaths.size();
+            this.numPrefixes = n;
+            this.localPathPrefixes = new String[n];
+            this.serverPathPrefixes = new String[n];
+            for (int i = 0; i < n; i++) {
+                this.localPathPrefixes[i] = stripSeparator(localPaths.get(i));
+            }
+            this.localPathSeparator = findSeparator(localPaths.get(0));
+            for (int i = 0; i < n; i++) {
+                this.serverPathPrefixes[i] = stripSeparator(serverPaths.get(i));
+            }
+            this.serverPathSeparator = findSeparator(serverPaths.get(0));
         } else {
             this.doPathTranslation = false;
-            this.localPathPrefix = this.serverPathPrefix = null;
+            this.localPathPrefixes = this.serverPathPrefixes = null;
             this.localPathSeparator = this.serverPathSeparator = 0;
-            this.localRoot = null;
+            this.numPrefixes = 0;
+        }
+        if (!localPaths.isEmpty()) {
+            this.localRoots = new FileObject[localPaths.size()];
+            int i = 0;
+            for (String localPath : localPaths) {
+                FileObject localRoot = FileUtil.toFileObject(new File(localPath));
+                if (localRoot != null) {
+                    this.localRoots[i++] = localRoot;
+                }
+            }
+        } else {
+            this.localRoots = null;
+        }
+        if (!localPathExclusionFilters.isEmpty()) {
+            FileObject[] lpefs = new FileObject[localPathExclusionFilters.size()];
+            int i = 0;
+            for (String lpef : localPathExclusionFilters) {
+                FileObject localRoot = FileUtil.toFileObject(new File(lpef));
+                if (localRoot != null) {
+                    lpefs[i++] = localRoot;
+                } else {
+                    Arrays.copyOf(lpefs, lpefs.length - 1);
+                }
+            }
+            this.localPathExclusionFilters = (lpefs.length > 0) ? lpefs : null;
+        } else {
+            this.localPathExclusionFilters = null;
         }
         LOG.log(Level.FINE,
-                "ScriptsHandler: doPathTranslation = {0}, localPathPrefix = {1}, separator = {2}, serverPathPrefix = {3}, separator = {4}",
-                new Object[]{doPathTranslation, localPathPrefix, localPathSeparator, serverPathPrefix, serverPathSeparator});
+                "ScriptsHandler: doPathTranslation = {0}, localPathPrefixes = {1}, separator = {2}, "+
+                                "serverPathPrefixes = {3}, separator = {4}, "+
+                                "localRoots = {5}, localPathExclusionFilters = {6}.",
+                new Object[]{doPathTranslation, Arrays.toString(localPathPrefixes), localPathSeparator,
+                             Arrays.toString(serverPathPrefixes), serverPathSeparator,
+                             Arrays.toString(this.localRoots),
+                             Arrays.toString(this.localPathExclusionFilters) });
         this.dbg = dbg;
     }
 
@@ -144,13 +189,29 @@ public class ScriptsHandler {
     }
     
     public boolean containsLocalFile(FileObject fo) {
-        if (localRoot == null) {
-            return true;
-        }
         if (fo == null) {
             return false;
         }
-        return FileUtil.isParentOf(localRoot, fo);
+        if (SourceFilesCache.URL_PROTOCOL.equals(fo.toURL().getProtocol())) {
+            // virtual file created from source content
+            return true;
+        }
+        if (localPathExclusionFilters != null) {
+            for (FileObject lpef : localPathExclusionFilters) {
+                if (FileUtil.isParentOf(lpef, fo)) {
+                    return false;
+                }
+            }
+        }
+        if (localRoots == null) {
+            return true;
+        }
+        for (FileObject localRoot : localRoots) {
+            if (FileUtil.isParentOf(localRoot, fo)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     @CheckForNull
@@ -204,16 +265,41 @@ public class ScriptsHandler {
         if (!doPathTranslation) {
             return serverPath;
         } else {
-            return translate(serverPath, serverPathPrefix, serverPathSeparator, localPathPrefix, localPathSeparator);
+            for (int i = 0; i < numPrefixes; i++) {
+                if (isChildOf(serverPathPrefixes[i], serverPath)) {
+                    return translate(serverPath, serverPathPrefixes[i], serverPathSeparator,
+                                     localPathPrefixes[i], localPathSeparator);
+                }
+            }
         }
+        throw new OutOfScope(serverPath, Arrays.toString(serverPathPrefixes));
     }
     
     public String getServerPath(@NonNull String localPath) throws OutOfScope {
         if (!doPathTranslation) {
             return localPath;
         } else {
-            return translate(localPath, localPathPrefix, localPathSeparator, serverPathPrefix, serverPathSeparator);
+            for (int i = 0; i < numPrefixes; i++) {
+                if (isChildOf(localPathPrefixes[i], localPath)) {
+                    return translate(localPath, localPathPrefixes[i], localPathSeparator,
+                                     serverPathPrefixes[i], serverPathSeparator);
+                }
+            }
         }
+        throw new OutOfScope(localPath, Arrays.toString(localPathPrefixes));
+    }
+    
+    private static boolean isChildOf(String parent, String child) {
+        if (!child.startsWith(parent)) {
+            return false;
+        }
+        int l = parent.length();
+        if (!isRootPath(parent)) { // When the parent is the root, do not do further checks.
+            if (child.length() > l && !isSeparator(child.charAt(l))) {
+                return false;
+            }
+        }
+        return true;
     }
     
     private static String translate(String path, String pathPrefix, char pathSeparator, String otherPathPrefix, char otherPathSeparator) throws OutOfScope {

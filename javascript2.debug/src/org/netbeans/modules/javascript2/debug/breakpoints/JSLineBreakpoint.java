@@ -248,7 +248,7 @@ public class JSLineBreakpoint extends Breakpoint {
 
     @Override
     public String toString() {
-        return "JSLineBreakpoint{" + "line=" + line + ", isEnabled=" + isEnabled + ", condition=" + condition + '}';
+        return "JSLineBreakpoint{" + "line=" + line + ", FileObject = " + getFileObject() + ", isEnabled=" + isEnabled + ", condition=" + condition + '}';
     }
 
     private class FileRemoveListener extends FileChangeAdapter {
