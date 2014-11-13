@@ -48,6 +48,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -90,6 +93,7 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImp
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.Antiloop;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
@@ -109,6 +113,8 @@ public class VariableProvider {
     private int variableStartOffset;
     private int variableEndOffset;
     
+    // pattern to parse fun calls like __is_class(T)
+    private static final Pattern intrisicOneArgFunCall = Pattern.compile("([\\w_]+)\\(([\\w_]+)\\)");    
     
     public VariableProvider(int level, CsmScope scope) {
         this.level = level;
@@ -149,11 +155,12 @@ public class VariableProvider {
             if (decl != null) { // TODO: why this condition?
                 for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entries()) {
                     CsmTemplateParameter param = entry.getKey();
-                    String scopeQualifiedName = CsmKindUtilities.isQualified(scope) ? 
+                    final String scopeQualifiedName = CsmKindUtilities.isQualified(scope) ? 
                             ((CsmQualifiedNamedElement) scope).getQualifiedName().toString() : 
                             decl.getQualifiedName().toString();
-                    if (variableName.equals(param.getQualifiedName().toString()) ||
-                            (scopeQualifiedName + APTUtils.SCOPE + variableName).equals(param.getQualifiedName().toString())) {
+                    final String fullVariableName = scopeQualifiedName + APTUtils.SCOPE + variableName;
+                    if (variableName.equals(param.getQualifiedName().toString()) || 
+                            fullVariableName.equals(param.getQualifiedName().toString())) {
                         CsmSpecializationParameter spec = entry.getValue();
                         if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
                             CsmExpressionBasedSpecializationParameter specParam = (CsmExpressionBasedSpecializationParameter) spec;
@@ -281,18 +288,7 @@ public class VariableProvider {
                                 }
 
                                 if (CsmKindUtilities.isTemplateParameterType(type)) {
-                                    CsmSpecializationParameter instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
-                                    int iteration = 15;
-                                    while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
-                                            CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
-                                        CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
-                                        if (nextInstantiatedType != null) {
-                                            instantiatedType = nextInstantiatedType;
-                                        } else {
-                                            break;
-                                        }
-                                        iteration--;
-                                    } 
+                                    CsmSpecializationParameter instantiatedType = resolveTemplateParameter(((CsmTemplateParameterType) type).getParameter());
                                     if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType)) {
                                         type = ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
                                     }
@@ -360,6 +356,18 @@ public class VariableProvider {
     }
     
     public int getFunCallValue(String funCall) {
+        if (funCall != null) {
+            if (funCall.startsWith(CppTokenId.__IS_CLASS.fixedText())) {
+                CsmType type = resolveIntrisicTypeTraceFunParam(CppTokenId.__IS_CLASS.fixedText(), funCall);
+                return (type != null && CsmKindUtilities.isClass(type.getClassifier())) ? 1 : 0;
+            } else if (funCall.startsWith(CppTokenId.__IS_ENUM.fixedText())) {
+                CsmType type = resolveIntrisicTypeTraceFunParam(CppTokenId.__IS_ENUM.fixedText(), funCall);
+                return (type != null && CsmKindUtilities.isEnum(type.getClassifier())) ? 1 : 0;                
+            } else if (funCall.startsWith(CppTokenId.__IS_UNION.fixedText())) {
+                CsmType type = resolveIntrisicTypeTraceFunParam(CppTokenId.__IS_UNION.fixedText(), funCall);
+                return (type != null && CsmKindUtilities.isUnion(type.getClassifier())) ? 1 : 0;                
+            }
+        }
         return Integer.MAX_VALUE; // Not supported yet
     }
     
@@ -412,6 +420,60 @@ public class VariableProvider {
         }
         
         return Utils.getSizeOfType(objType, variableFile);
+    }
+    
+    private CsmType resolveIntrisicTypeTraceFunParam(String suggestedFunName, String funCall) {
+        Matcher matcher =  intrisicOneArgFunCall.matcher(funCall);
+        if (matcher.matches() && matcher.groupCount() >= 2 && suggestedFunName.equals(matcher.group(1))) {
+            String paramName = matcher.group(2);
+            CsmSpecializationParameter resolvedParam = resolveTemplateParameter(paramName);
+            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(resolvedParam)) {
+                CsmType type = ((CsmTypeBasedSpecializationParameter) resolvedParam).getType();
+                return CsmUtilities.iterateTypeChain(type, new CsmUtilities.ConstantPredicate<CsmType>(false));
+            }
+        }
+        return null;
+    }
+    
+    private CsmSpecializationParameter resolveTemplateParameter(String variableName) {
+        if (decl != null) { // TODO: why this condition?
+            final String scopeQualifiedName = CsmKindUtilities.isQualified(scope) ? 
+                ((CsmQualifiedNamedElement) scope).getQualifiedName().toString() : 
+                decl.getQualifiedName().toString();
+            
+            final String fullVariableName = scopeQualifiedName + APTUtils.SCOPE + variableName;
+        
+            for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entries()) {
+                CsmTemplateParameter param = entry.getKey();
+                if (variableName.equals(param.getQualifiedName().toString()) || 
+                        fullVariableName.equals(param.getQualifiedName().toString())) {        
+                    if (CsmKindUtilities.isTypeBasedSpecalizationParameter(entry.getValue())) {
+                        final CsmType paramType = ((CsmTypeBasedSpecializationParameter) entry.getValue()).getType();
+                        if (CsmKindUtilities.isTemplateParameterType(paramType)) {
+                            return resolveTemplateParameter(((CsmTemplateParameterType) paramType).getParameter());
+                        }
+                    }
+                    return entry.getValue();
+                }
+            }
+        }
+        return null;
+    }
+    
+    private CsmSpecializationParameter resolveTemplateParameter(CsmTemplateParameter param) {
+        CsmSpecializationParameter instParam = mapping.get(param);
+        int iteration = 15;
+        while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam) &&
+                CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instParam).getType()) && iteration != 0) {
+            CsmSpecializationParameter nextInstParam = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instParam).getType()).getParameter());
+            if (nextInstParam != null) {
+                instParam = nextInstParam;
+            } else {
+                break;
+            }
+            iteration--;
+        } 
+        return instParam;
     }
     
     private CsmType instantiateType(CsmType type, CsmInstantiation inst) {
