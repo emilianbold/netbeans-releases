@@ -823,7 +823,7 @@ public final class MakeActionProvider implements ActionProvider {
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
         try {
-            FileSystem fs = FileSystemProvider.getFileSystem(conf.getDevelopmentHost().getExecutionEnvironment());
+            FileSystem fs = FileSystemProvider.getFileSystem(conf.getFileSystemHost());
             FileObject root = fs.getRoot();
             String toRelativePath = CndPathUtilities.toRelativePath(root, workingDir);
             FileUtil.createFolder(fs.getRoot(), toRelativePath);

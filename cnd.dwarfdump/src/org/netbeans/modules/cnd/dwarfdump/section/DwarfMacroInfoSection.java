@@ -258,6 +258,30 @@ public class DwarfMacroInfoSection extends ElfSection {
     public List<Integer> getCommandIncudedFiles(DwarfMacinfoTable table, long offset, long base) throws IOException{
         List<Integer> res = new ArrayList<Integer>();
         reader.seek(header.getSectionOffset() + offset);
+        offstSize = 4;
+        long labelSectionAdress = -1;
+        if (isMacro) {
+            int dwarfVersion = reader.readShort();
+            byte bitness = reader.readByte(); // 2 - 32, 3 - 64
+            if ((bitness & 1)==1) {
+                offstSize = 8;
+            }
+            if ((bitness & 2)==2) {
+                if (offstSize == 4) {
+                    labelSectionAdress = reader.readInt();
+                } else {
+                    labelSectionAdress = reader.readLong();
+                }
+            }
+            if ((bitness & 4)==4) {
+                int count = reader.readByte() & 0xFF;
+                for(int i = 0; i < count; i++) {
+                    byte opcode = reader.readByte();
+                    long arg = reader.readUnsignedLEB128();
+                    reader.seek(reader.getFilePointer() + arg);
+                }
+            }
+        }
         int level = 0;
         int lineNum;
         int  fileIdx;
@@ -287,7 +311,9 @@ public class DwarfMacroInfoSection extends ElfSection {
                     }
                     break;
                 case DW_MACINFO_end_file:
-                    level--;
+                    if (level>0) {
+                        level--;
+                    }
                     break;
                 case DW_MACINFO_vendor_ext:
                     reader.readUnsignedLEB128();

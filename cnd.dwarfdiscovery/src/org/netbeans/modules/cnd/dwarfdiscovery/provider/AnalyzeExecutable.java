@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import org.netbeans.modules.cnd.dwarfdiscovery.RemoteJavaExecution;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -71,6 +70,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
@@ -82,7 +82,6 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     public static final String EXECUTABLE_PROVIDER_ID = "dwarf-executable"; // NOI18N
     private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     private final ProviderProperty<String> EXECUTABLE_PROPERTY;
-    private final ProviderProperty<FileSystem> BYNARY_FILESYSTEM_PROPERTY;
     private final ProviderProperty<String[]> LIBRARIES_PROPERTY;
     private final ProviderProperty<Boolean> FIND_MAIN_PROPERTY;
 
@@ -113,30 +112,6 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         };
         myProperties.put(EXECUTABLE_PROPERTY.getPropertyType().key(), EXECUTABLE_PROPERTY);
         
-        BYNARY_FILESYSTEM_PROPERTY = new ProviderProperty<FileSystem>(){
-            private FileSystem fs;
-            @Override
-            public String getName() {
-                return ""; // NOI18N
-            }
-            @Override
-            public String getDescription() {
-                return ""; // NOI18N
-            }
-            @Override
-            public FileSystem getValue() {
-                return fs;
-            }
-            @Override
-            public void setValue(FileSystem value) {
-                fs = value;
-            }
-            @Override
-            public ProviderPropertyType<FileSystem> getPropertyType() {
-                return ProviderPropertyType.BinaryFileSystemPropertyType;
-            }
-        };
-        myProperties.put(BYNARY_FILESYSTEM_PROPERTY.getPropertyType().key(), BYNARY_FILESYSTEM_PROPERTY);
         LIBRARIES_PROPERTY = new ProviderProperty<String[]>(){
             private String myPath[];
             @Override
@@ -186,7 +161,8 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
             }
         };
         myProperties.put(FIND_MAIN_PROPERTY.getPropertyType().key(), FIND_MAIN_PROPERTY);
-        
+        // inherited properties
+        myProperties.put(BYNARY_FILESYSTEM_PROPERTY.getPropertyType().key(), BYNARY_FILESYSTEM_PROPERTY);
         myProperties.put(RESTRICT_SOURCE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_SOURCE_ROOT_PROPERTY);
         myProperties.put(RESTRICT_COMPILE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_COMPILE_ROOT_PROPERTY);
     }
@@ -227,7 +203,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         boolean findMain = FIND_MAIN_PROPERTY.getValue();
         Set<String> dlls = new HashSet<String>();
         FileSystem fs = BYNARY_FILESYSTEM_PROPERTY.getValue();
-        if (fs == null) {
+        if (fs == null || CndFileUtils.isLocalFileSystem(fs)) {
             ArrayList<String> list = new ArrayList<String>();
             list.add(set);
             if (additionalLibs != null) {
@@ -327,11 +303,11 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                             if (getStopInterrupter().cancelled()) {
                                 break;
                             }
-                            File file = new File(path);
-                            if (CndFileUtils.exists(file)) {
-                                String absolutePath = CndFileUtils.normalizeFile(file).getAbsolutePath();
+                            FileObject file = getSourceFileSystem().findResource(path);
+                            if (file != null && file.isValid()) {
+                                String absolutePath = CndFileUtils.normalizePath(file);
                                 if (project.resolveSymbolicLinks()) {
-                                    String s = DiscoveryUtils.resolveSymbolicLink(null, absolutePath);
+                                    String s = DiscoveryUtils.resolveSymbolicLink(getSourceFileSystem(), absolutePath);
                                     if (s != null) {
                                         absolutePath = s;
                                     }

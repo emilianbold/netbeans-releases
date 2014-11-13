@@ -887,7 +887,7 @@ public class LogReaderTest extends TestCase {
                 "/ws/cheetah/jsr135/src/share/components/direct-player/native";
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
-        MakeLogReader reader = new MakeLogReader(line, "", null, null, null);
+        MakeLogReader reader = new MakeLogReader(null, "", null, null, null);
         MakeLogReader.LineInfo li = reader.testCompilerInvocation(line);
         assert li.compilerType == MakeLogReader.CompilerType.CPP;
     }
@@ -919,7 +919,7 @@ public class LogReaderTest extends TestCase {
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertTrue(result.startsWith("Source:xsolmod.cpp"));
         //assertDocumentText(line, expResult, result);
-        MakeLogReader reader = new MakeLogReader(line, "", null, null, null);
+        MakeLogReader reader = new MakeLogReader(null, "", null, null, null);
         MakeLogReader.LineInfo li = reader.testCompilerInvocation(line);
         assertEquals(MakeLogReader.CompilerType.CPP, li.compilerType);
     }
@@ -1031,7 +1031,7 @@ public class LogReaderTest extends TestCase {
     }
     
     private void testCompilerInvocation(ItemProperties.LanguageKind ct, String line, int size) {
-        MakeLogReader reader = new MakeLogReader(line, "", null, null, null);
+        MakeLogReader reader = new MakeLogReader(null, "", null, null, null);
         MakeLogReader.LineInfo li = reader.testCompilerInvocation(line);
         if (ct == ItemProperties.LanguageKind.Unknown) {
             assertEquals(ct, li.getLanguage());
@@ -1043,8 +1043,8 @@ public class LogReaderTest extends TestCase {
         List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false);
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
-            CommandLineSource cs = new CommandLineSource(li, artifacts, "/", what, artifacts.userIncludes,  artifacts.userFiles, artifacts.userMacros, null);
-            assertEquals(ct, cs.getLanguageKind());
+            ItemProperties.LanguageKind detectLanguage = MakeLogReader.detectLanguage(li, artifacts, what);
+            assertEquals(ct, detectLanguage);
         }
     }
 

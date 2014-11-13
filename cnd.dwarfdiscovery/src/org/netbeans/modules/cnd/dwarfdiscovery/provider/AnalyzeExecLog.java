@@ -57,7 +57,10 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
@@ -69,6 +72,7 @@ public class AnalyzeExecLog extends BaseProvider {
     public static final String EXEC_LOG_PROVIDER_ID = "exec-log"; // NOI18N
     private final Map<String, ProviderProperty<?>> myProperties = new LinkedHashMap<String, ProviderProperty<?>>();
     private final ProviderProperty<String> EXEC_LOG_PROPERTY;
+    private final ProviderProperty<FileSystem> LOG_FILESYSTEM_PROPERTY;
 
     public AnalyzeExecLog() {
         myProperties.clear();
@@ -96,6 +100,31 @@ public class AnalyzeExecLog extends BaseProvider {
             }
         };
         myProperties.put(EXEC_LOG_PROPERTY.getPropertyType().key(), EXEC_LOG_PROPERTY);
+        
+        LOG_FILESYSTEM_PROPERTY = new ProviderProperty<FileSystem>(){
+            private FileSystem fs;
+            @Override
+            public String getName() {
+                return ""; // NOI18N
+            }
+            @Override
+            public String getDescription() {
+                return ""; // NOI18N
+            }
+            @Override
+            public FileSystem getValue() {
+                return fs;
+            }
+            @Override
+            public void setValue(FileSystem value) {
+                fs = value;
+            }
+            @Override
+            public ProviderPropertyType<FileSystem> getPropertyType() {
+                return ProviderPropertyType.LogFileSystemPropertyType;
+            }
+        };
+        myProperties.put(LOG_FILESYSTEM_PROPERTY.getPropertyType().key(), LOG_FILESYSTEM_PROPERTY);
         
         myProperties.put(RESTRICT_SOURCE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_SOURCE_ROOT_PROPERTY);
         myProperties.put(RESTRICT_COMPILE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_COMPILE_ROOT_PROPERTY);
@@ -130,7 +159,9 @@ public class AnalyzeExecLog extends BaseProvider {
     public boolean isApplicable(ProjectProxy project) {
         String set = EXEC_LOG_PROPERTY.getValue();
         if (set != null && set.length() > 0) {
-            return true;
+            if (getLog(set) != null) {
+                return true;
+            }
         }
         String o = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
         if (o == null || o.isEmpty()) {
@@ -140,30 +171,43 @@ public class AnalyzeExecLog extends BaseProvider {
         return false;
     }
 
+    private FileObject getLog(String set) {
+        FileSystem fs = LOG_FILESYSTEM_PROPERTY.getValue();
+        if (fs == null) {
+            fs = CndFileSystemProvider.getLocalFileSystem();
+        }
+        FSPath log = new FSPath(fs, set);
+        FileObject fo = log.getFileObject();
+        if (fo != null && fo.isValid() && fo.isData() && fo.canRead()) {
+            return fo;
+        }
+        return null;
+    }
+    
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         init(project);
         String set = EXEC_LOG_PROPERTY.getValue();
-        if (set == null || set.length() == 0 || !ExecLogReader.isSupportedLog(set)) {
+        if (set == null || set.length() == 0 || !ExecLogReader.isSupportedLog(getLog(set))) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecLog.class, "NotFoundExecLog")));
         }
         return new ApplicableImpl(true, null, null, 80, false, null, null, null, null);
     }
     
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
+    protected List<SourceFileProperties> getSourceFileProperties(String logFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
         String root = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
         if (root == null) {
             root = "";
         }
-        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, buildArtifacts, storage);
+        List<SourceFileProperties> res = runLogReader(getLog(logFileName), root, progress, project, buildArtifacts, storage);
         progress = null;
         return res;
 
     }
-    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage) {
+    private List<SourceFileProperties> runLogReader(FileObject logFileObject, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage) {
         FileSystem fileSystem = getFileSystem(project);
-        ExecLogReader reader = new ExecLogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
+        ExecLogReader reader = new ExecLogReader(logFileObject, root, project, getRelocatablePathMapper(), fileSystem);
         List<SourceFileProperties> list = reader.getResults(progress, getStopInterrupter(), storage);
         buildArtifacts.addAll(reader.getArtifacts(progress, getStopInterrupter(), storage));
         return list;

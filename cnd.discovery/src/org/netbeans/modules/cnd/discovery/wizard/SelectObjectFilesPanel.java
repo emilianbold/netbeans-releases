@@ -49,7 +49,11 @@ import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -84,6 +88,17 @@ public final class SelectObjectFilesPanel extends JPanel {
                         if (first) {
                             instructionsTextArea.setText(property.getDescription());
                             first = false;
+                        }
+                        break;
+                    case ArtifactFileSystem:
+                        try {
+                            FileSystem fileSystem = wizardDescriptor.getProject().getProjectDirectory().getFileSystem();
+                            if (ProviderPropertyType.LogFileSystemPropertyType == property.getPropertyType()) {
+                                ProviderPropertyType.LogFileSystemPropertyType.setProperty(provider, fileSystem);
+                            } else if (ProviderPropertyType.BinaryFileSystemPropertyType == property.getPropertyType()) {
+                                ProviderPropertyType.BinaryFileSystemPropertyType.setProperty(provider, fileSystem);
+                            } 
+                        } catch (FileStateInvalidException ex) {
                         }
                         break;
                     default:

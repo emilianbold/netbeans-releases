@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
@@ -232,7 +233,7 @@ public class CompileLineService {
         return new SourceFile(cu);
     }
 
-    public static final class SourceFile {
+    public static final class SourceFile implements CompilationUnitInterface {
 
         private final String compileLine;
         private final String compileDir;
@@ -274,16 +275,20 @@ public class CompileLineService {
             this.mainLine = mainLine;
         }
 
-        public final String getCompileDir() {
+        public final String getCompilationDir() {
             return compileDir;
         }
 
-        public final String getSource() {
+        public final String getSourceFileName() {
             return sourceFile;
         }
 
-        public final String getCompileLine() {
+        public final String getCommandLine() {
             return compileLine;
+        }
+
+        public DwarfEntry getRoot() {
+            return null;
         }
 
         public final Map<String,String> getUserMacros() {
@@ -307,6 +312,22 @@ public class CompileLineService {
             return userIncludes;
         }
         
+        public String getSourceFileAbsolutePath() {
+            return absolutePath;
+        }
+
+        public String getSourceLanguage() {
+            return sourceLanguage;
+        }
+
+        public boolean hasMain() {
+            return hasMain;
+        }
+
+        public int getMainLine() {
+            return mainLine;
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -341,7 +362,6 @@ public class CompileLineService {
         public String toString() {
             return "SourceFile{" + "compileLine=" + compileLine + ", compileDir=" + compileDir + ", sourceFile=" + sourceFile + '}'; // NOI18N
         }
-        
         
         private void initMacrosAndPaths(){
             userPaths = new ArrayList<String>();
@@ -454,23 +474,6 @@ public class CompileLineService {
             }
             return res;
         }
-
-        public String getSourceFileAbsolutePath() {
-            return absolutePath;
-        }
-
-        public String getSourceLanguage() {
-            return sourceLanguage;
-        }
-
-        public boolean hasMain() {
-            return hasMain;
-        }
-
-        public int getMainLine() {
-            return mainLine;
-        }
-
     }
 
     private static Set<String> getObjectFiles(String root){

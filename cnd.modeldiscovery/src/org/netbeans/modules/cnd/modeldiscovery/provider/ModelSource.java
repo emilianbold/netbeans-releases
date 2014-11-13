@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
 /**
@@ -91,6 +92,7 @@ public class ModelSource implements SourceFileProperties {
     private final Set<CharSequence> includedFiles = new HashSet<CharSequence>();
     private Map<String,String> userMacros;
     private final boolean preferLocal;
+    private final FileSystem sourceFileSystem;
     
     public ModelSource(Item item, CsmFile file, Map<String,List<String>> searchBase, Map<String,Item> projectSearchBase, PkgConfig pkgConfig, boolean preferLocal){
         this.item = item;
@@ -99,6 +101,7 @@ public class ModelSource implements SourceFileProperties {
         this.projectSearchBase = projectSearchBase;
         this.pkgConfig = pkgConfig;
         this.preferLocal = preferLocal;
+        sourceFileSystem = item.getFSPath().getFileSystem();
     }
 
     public Set<CharSequence> getIncludedFiles() {
@@ -110,7 +113,7 @@ public class ModelSource implements SourceFileProperties {
 
     @Override
     public String getCompilePath() {
-        return new File( getItemPath()).getParentFile().getAbsolutePath();
+        return CndPathUtilities.getDirName(getItemPath());
     }
     
     @Override
@@ -119,7 +122,7 @@ public class ModelSource implements SourceFileProperties {
             itemPath = item.getAbsPath();
             itemPath = itemPath.replace('\\','/');
             itemPath = cutLocalRelative(itemPath);
-            if (Utilities.isWindows()) {
+            if (Utilities.isWindows() && CndFileUtils.isLocalFileSystem(sourceFileSystem)) {
                 itemPath = itemPath.replace('/', File.separatorChar);
             }
         }
@@ -175,7 +178,7 @@ public class ModelSource implements SourceFileProperties {
     }
     
     private String getRelativepath(String path){
-        if (Utilities.isWindows()) {
+        if (Utilities.isWindows() && CndFileUtils.isLocalFileSystem(sourceFileSystem)) {
             path = path.replace('/', File.separatorChar);
         }
         path = CndPathUtilities.toRelativePath(getCompilePath(), path);

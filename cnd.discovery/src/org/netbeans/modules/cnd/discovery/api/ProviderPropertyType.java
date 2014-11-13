@@ -53,9 +53,8 @@ import org.openide.filesystems.FileSystem;
 public final class ProviderPropertyType<T> {
 
     public enum PropertyKind {
-        MakeFile,
         BinaryFile,
-        BinaryFileSystem,
+        ArtifactFileSystem,
         BinaryFiles,
         SourceFile,
         MakeLogFile,
@@ -68,11 +67,12 @@ public final class ProviderPropertyType<T> {
     
     public static final ProviderPropertyType<String> ExecLogPropertyType = new ProviderPropertyType<>("exec-log-file", PropertyKind.MakeLogFile); //NOI18N
     public static final ProviderPropertyType<String> MakeLogPropertyType = new ProviderPropertyType<>("make-log-file", PropertyKind.MakeLogFile); //NOI18N
+    public static final ProviderPropertyType<FileSystem> LogFileSystemPropertyType = new ProviderPropertyType<>("log-filesystem", PropertyKind.ArtifactFileSystem); //NOI18N
     public static final ProviderPropertyType<String> RestrictSourceRootPropertyType = new ProviderPropertyType<>("restrict_source_root", PropertyKind.String); //NOI18N
     public static final ProviderPropertyType<String> RestrictCompileRootPropertyType = new ProviderPropertyType<>("restrict_compile_root", PropertyKind.String); //NOI18N
 
     public static final ProviderPropertyType<String> ExecutablePropertyType = new ProviderPropertyType<>("executable", PropertyKind.BinaryFile); //NOI18N
-    public static final ProviderPropertyType<FileSystem> BinaryFileSystemPropertyType = new ProviderPropertyType<>("filesystem", PropertyKind.BinaryFileSystem); //NOI18N
+    public static final ProviderPropertyType<FileSystem> BinaryFileSystemPropertyType = new ProviderPropertyType<>("binary-filesystem", PropertyKind.ArtifactFileSystem); //NOI18N
     public static final ProviderPropertyType<String[]> LibrariesPropertyType = new ProviderPropertyType<>("libraries", PropertyKind.BinaryFiles); //NOI18N
     public static final ProviderPropertyType<Boolean> FindMainPropertyType = new ProviderPropertyType<>("find_main", PropertyKind.Boolean); //NOI18N
     

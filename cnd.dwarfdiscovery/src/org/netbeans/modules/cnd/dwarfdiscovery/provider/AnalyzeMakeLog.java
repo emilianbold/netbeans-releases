@@ -42,10 +42,8 @@
 
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,8 +58,10 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
@@ -73,6 +73,7 @@ public class AnalyzeMakeLog extends BaseProvider {
     public static final String MAKE_LOG_PROVIDER_ID = "make-log"; // NOI18N
     private final Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     private final ProviderProperty<String> MAKE_LOG_PROPERTY;
+    private final ProviderProperty<FileSystem> LOG_FILESYSTEM_PROPERTY;
     
     public AnalyzeMakeLog() {
         myProperties.clear();
@@ -100,6 +101,31 @@ public class AnalyzeMakeLog extends BaseProvider {
             }
         };
         myProperties.put(MAKE_LOG_PROPERTY.getPropertyType().key(), MAKE_LOG_PROPERTY);
+
+        LOG_FILESYSTEM_PROPERTY = new ProviderProperty<FileSystem>(){
+            private FileSystem fs;
+            @Override
+            public String getName() {
+                return ""; // NOI18N
+            }
+            @Override
+            public String getDescription() {
+                return ""; // NOI18N
+            }
+            @Override
+            public FileSystem getValue() {
+                return fs;
+            }
+            @Override
+            public void setValue(FileSystem value) {
+                fs = value;
+            }
+            @Override
+            public ProviderPropertyType<FileSystem> getPropertyType() {
+                return ProviderPropertyType.LogFileSystemPropertyType;
+            }
+        };
+        myProperties.put(LOG_FILESYSTEM_PROPERTY.getPropertyType().key(), LOG_FILESYSTEM_PROPERTY);
         
         myProperties.put(RESTRICT_SOURCE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_SOURCE_ROOT_PROPERTY);
         myProperties.put(RESTRICT_COMPILE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_COMPILE_ROOT_PROPERTY);
@@ -141,46 +167,15 @@ public class AnalyzeMakeLog extends BaseProvider {
         return false;
     }
     
-    private String detectMakeLog(ProjectProxy project){
-        String root = project.getSourceRoot();
-        if (root != null && root.length() > 1) {
-            int i = root.indexOf("/usr/src/"); // NOI18N
-            if (i < 0 && root.endsWith("/usr/src")){ // NOI18N
-                i = root.indexOf("/usr/src"); // NOI18N
-            }
-            if (i > 0) {
-                String latest = null;
-                String logfolder = root.substring(0, i) + "/log"; // NOI18N
-                File log = new File(logfolder);
-                if (log.exists() && log.isDirectory() && log.canRead()) {
-                    File[] ff = log.listFiles();
-                    if (ff != null) {
-                        for (File when : ff) {
-                            if (when.exists() && when.isDirectory() && when.canRead()) {
-                                File[] ww = when.listFiles();
-                                if (ww != null) {
-                                    for (File l : ww) {
-                                        String current = l.getAbsolutePath();
-                                        if (current.endsWith("/nightly.log")) { // NOI18N
-                                            if (latest == null) {
-                                                latest = current;
-                                            } else {
-                                                String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
-                                                String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
-                                                if (folder1.compareTo(folder2) < 0) {
-                                                    latest = current;
-                                                }
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                return latest;
-            }
+    private FileObject getLog(String set) {
+        FileSystem fs = LOG_FILESYSTEM_PROPERTY.getValue();
+        if (fs == null) {
+            fs = CndFileSystemProvider.getLocalFileSystem();
+        }
+        FSPath log = new FSPath(fs, set);
+        FileObject fo = log.getFileObject();
+        if (fo != null && fo.isValid() && fo.isData() && fo.canRead()) {
+            return fo;
         }
         return null;
     }
@@ -189,33 +184,27 @@ public class AnalyzeMakeLog extends BaseProvider {
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
         init(project);
         String set = MAKE_LOG_PROPERTY.getValue();
-        if (set == null || set.length() == 0) {
-            set = detectMakeLog(project);
-            if (set != null && set.length() > 0){
-                MAKE_LOG_PROPERTY.setValue(set);
-            }
-        }
-        if (set == null || set.length() == 0) {
+        if (set == null || set.length() == 0 || getLog(set) == null) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeMakeLog.class, "NotFoundMakeLog")));
         }
         return new ApplicableImpl(true, null, null, 80, false, null, null, null, null);
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
+    protected List<SourceFileProperties> getSourceFileProperties(String logFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
         String root = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
         if (root == null) {
             root = ""; //NOI18N
         }
-        List<SourceFileProperties> res = runLogReader(objFileName, root, progress, project, buildArtifacts, storage);
+        List<SourceFileProperties> res = runLogReader(getLog(logFileName), root, progress, project, buildArtifacts, storage);
         progress = null;
         return res;
 
     }
     
-    private List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage){
+    private List<SourceFileProperties> runLogReader(FileObject logFileObject, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage){
         FileSystem fileSystem = getFileSystem(project);
-        MakeLogReader reader = new MakeLogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
+        MakeLogReader reader = new MakeLogReader(logFileObject, root, project, getRelocatablePathMapper(), fileSystem);
         List<SourceFileProperties> list = reader.getResults(progress, getStopInterrupter(), storage);
         buildArtifacts.addAll(reader.getArtifacts(progress, getStopInterrupter(), storage));
         return list;
@@ -233,7 +222,7 @@ public class AnalyzeMakeLog extends BaseProvider {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myBuildArtifacts;
-                private List<String> myIncludedFiles;
+                private List<String> myIncludedFiles = new ArrayList<String>();;
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
                     return ProjectImpl.divideByLanguage(getSourcesConfiguration(), project);
@@ -248,9 +237,6 @@ public class AnalyzeMakeLog extends BaseProvider {
                 public List<String> getBuildArtifacts() {
                     if (myBuildArtifacts == null){
                         String set = MAKE_LOG_PROPERTY.getValue();
-                        if (set == null || set.length() == 0) {
-                            set = detectMakeLog(project);
-                        }
                         if (set != null && set.length() > 0) {
                             myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
                             myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
@@ -264,9 +250,6 @@ public class AnalyzeMakeLog extends BaseProvider {
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         String set = MAKE_LOG_PROPERTY.getValue();
-                        if (set == null || set.length() == 0) {
-                            set = detectMakeLog(project);
-                        }
                         if (set != null && set.length() > 0) {
                             myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
                             myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
@@ -278,29 +261,6 @@ public class AnalyzeMakeLog extends BaseProvider {
                 
                 @Override
                 public List<String> getIncludedFiles(){
-                    if (myIncludedFiles == null) {
-                        HashSet<String> set = new HashSet<String>();
-                        for(SourceFileProperties source : getSourcesConfiguration()){
-                            if (getStopInterrupter().cancelled()) {
-                                break;
-                            }
-                            if (source instanceof DwarfSource) {
-                                set.addAll( ((DwarfSource)source).getIncludedFiles() );
-                                set.add(source.getItemPath());
-                            }
-                        }
-                        HashSet<String> unique = new HashSet<String>();
-                        for(String path : set){
-                            if (getStopInterrupter().cancelled()) {
-                                break;
-                            }
-                            File file = new File(path);
-                            if (CndFileUtils.exists(file)) {
-                                unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
-                            }
-                        }
-                        myIncludedFiles = new ArrayList<String>(unique);
-                    }
                     return myIncludedFiles;
                 }
             };

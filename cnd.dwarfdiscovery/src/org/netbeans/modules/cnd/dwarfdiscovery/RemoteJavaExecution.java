@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -50,6 +51,7 @@ public class RemoteJavaExecution {
     private final FileSystem fileSystem;
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.remote.projectui.wizard.cnd.dwarf"); // NOI18N
+    private static final Map<ExecutionEnvironment, FileObject> copyedJars = new HashMap<ExecutionEnvironment, FileObject>();
     
     public RemoteJavaExecution(FileSystem fileSystem) {
         this.env = FileSystemProvider.getExecutionEnvironment(fileSystem);
@@ -208,14 +210,21 @@ public class RemoteJavaExecution {
             File jar = InstalledFileLocator.getDefault().locate(relPath, "org.netbeans.modules.cnd.dwarfdump", false); //NOI18N
             if (jar != null) {
                 FileObject from = FileUtil.toFileObject(jar);
-                FileObject tempFolder = fileSystem.getTempFolder();
-                FileObject to = fileSystem.createTempFile(tempFolder, "dwarfdump", ".jar", true); //NOI18N
-                final OutputStream outputStream = to.getOutputStream();
-                final InputStream inputStream = from.getInputStream();
-                FileUtil.copy(inputStream, outputStream);
-                outputStream.close();
-                inputStream.close();
-                return to;
+                synchronized (copyedJars) {
+                    FileObject to = copyedJars.get(env);
+                    if (to != null && to.isValid()) {
+                        return to;
+                    }
+                    FileObject tempFolder = fileSystem.getTempFolder();
+                    to = fileSystem.createTempFile(tempFolder, "dwarfdump", ".jar", true); //NOI18N
+                    final OutputStream outputStream = to.getOutputStream();
+                    final InputStream inputStream = from.getInputStream();
+                    FileUtil.copy(inputStream, outputStream);
+                    outputStream.close();
+                    inputStream.close();
+                    copyedJars.put(env, to);
+                    return to;
+                }
             }
         } catch (Throwable thr) {
             logger.log(Level.INFO, thr.getMessage(), thr);
@@ -244,15 +253,15 @@ public class RemoteJavaExecution {
     public String getSourceRoot(List<SourceFile> compileLines) {
         TreeMap<String,AtomicInteger> realRoots = new TreeMap<String,AtomicInteger>();
         for(SourceFile file : compileLines) {
-            if (file.getCompileLine().length() > 0) {
+            if (file.getCommandLine().length() > 0) {
                 Artifacts artifacts = new Artifacts();
-                List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCompileLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, null, true);
+                List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCommandLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, null, true);
                 for(String what : sourcesList) {
                     if (what == null){
                         continue;
                     }
                     String path;
-                    String dir = file.getCompileDir();
+                    String dir = file.getCompilationDir();
                     if (dir != null) {
                         if (what.startsWith("/")) { //NOI18N
                             path = what;

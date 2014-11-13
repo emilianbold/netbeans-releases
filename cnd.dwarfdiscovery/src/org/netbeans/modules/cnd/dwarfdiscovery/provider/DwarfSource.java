@@ -68,6 +68,8 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
@@ -151,7 +153,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         //File file = new File(fullName);
         fullName = compilerSettings.getNormalizedPath(fullName);
         fullName = linkSupport(fullName);
-        if (fullName != null && normilizeProvider.isWindows()) {
+        if (fullName != null && normilizeProvider.isWindows() && normilizeProvider.isLocalFileSystem()) {
             fullName = fullName.replace('/', '\\');
         }
         fullName = PathCache.getString(fullName);
@@ -297,7 +299,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         if (fileName == null){
             return fileName;
         }
-        if (normilizeProvider.isWindows()) {
+        if (normilizeProvider.isWindows() && normilizeProvider.isLocalFileSystem()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 DwarfSource.LOG.log(Level.FINE, "Try to fix win name:{0}", fileName); // NOI18N
@@ -349,7 +351,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     }
     
     private String linkSupport(String name){
-        if (normilizeProvider.isWindows()) {
+        if (normilizeProvider.isWindows() &&  normilizeProvider.isLocalFileSystem()) {
             if (!new File(name).exists()){
                 String link = name+".lnk"; // NOI18N
                 if (new File(link).exists()){
@@ -514,14 +516,18 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             if (cu instanceof CompilationUnit) {
                 gatherMacros((CompilationUnit)cu);
                 gatherIncludes((CompilationUnit)cu);
-                switch(standard) {
-                    case C89:
-                        importantFlags = "-std=c89";// NOI18N
-                        break;
-                    case C99:
-                        importantFlags = "-std=c99";// NOI18N
-                        break;
-                }
+            } else if (cu instanceof SourceFile) {
+                SourceFile sf = (SourceFile) cu;
+                userIncludes.addAll(sf.getIncludeFiles());
+                userMacros.putAll(sf.getUserMacros());
+            }
+            switch(standard) {
+                case C89:
+                    importantFlags = "-std=c89";// NOI18N
+                    break;
+                case C99:
+                    importantFlags = "-std=c99";// NOI18N
+                    break;
             }
         }
     }
@@ -841,6 +847,11 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                     }
                 }
                 userMacros.put(macro,value);
+            } else if ((entry.type == MACINFO.DW_MACINFO_undef ||
+                 entry.type == MACINFO.DW_MACRO_undef_indirect) &&
+                 entry.definition != null) {
+                String def = PathCache.getString(entry.definition);
+                undefinedMacros.add(def);
             }
         }
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {

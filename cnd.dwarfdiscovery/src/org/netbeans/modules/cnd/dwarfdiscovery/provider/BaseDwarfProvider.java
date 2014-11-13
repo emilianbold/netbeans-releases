@@ -48,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,13 +62,22 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Positi
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
+import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.dwarfdiscovery.RemoteJavaExecution;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,9 +86,33 @@ import org.openide.util.NbBundle;
  */
 public abstract class BaseDwarfProvider extends BaseProvider {
     
+    protected final ProviderProperty<FileSystem> BYNARY_FILESYSTEM_PROPERTY;
     private Map<String,GrepEntry> grepBase = new ConcurrentHashMap<String, GrepEntry>();
 
     public BaseDwarfProvider() {
+        BYNARY_FILESYSTEM_PROPERTY = new ProviderProperty<FileSystem>(){
+            private FileSystem fs;
+            @Override
+            public String getName() {
+                return ""; // NOI18N
+            }
+            @Override
+            public String getDescription() {
+                return ""; // NOI18N
+            }
+            @Override
+            public FileSystem getValue() {
+                return fs;
+            }
+            @Override
+            public void setValue(FileSystem value) {
+                fs = value;
+            }
+            @Override
+            public ProviderPropertyType<FileSystem> getPropertyType() {
+                return ProviderPropertyType.BinaryFileSystemPropertyType;
+            }
+        };
     }
     
     @Override
@@ -147,7 +181,7 @@ public abstract class BaseDwarfProvider extends BaseProvider {
                         }
                         incrementRoot(path, roots);
                         if (project.resolveSymbolicLinks()) {
-                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(null, path);
+                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(getSourceFileSystem(), path);
                             if (resolvedLink != null) {
                                 incrementRoot(resolvedLink, roots);
                             }
@@ -356,9 +390,39 @@ public abstract class BaseDwarfProvider extends BaseProvider {
         }
         return bestRoot;
     }
-
+    
     @Override
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
+        FileSystem fs = BYNARY_FILESYSTEM_PROPERTY.getValue();
+        if (fs == null || CndFileUtils.isLocalFileSystem(fs)) {
+            return getSourceFilePropertiesLocal(objFileName, map, project, dlls, buildArtifacts, storage);
+        } else {
+            return getSourceFilePropertiesRemote(objFileName, map, project, dlls, buildArtifacts, storage);
+        }
+    }
+
+    private List<SourceFileProperties> getSourceFilePropertiesRemote(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
+        List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
+        FileSystem fs = BYNARY_FILESYSTEM_PROPERTY.getValue();
+        ExecutionEnvironment ee = FileSystemProvider.getExecutionEnvironment(fs);
+        if (ConnectionManager.getInstance().isConnectedTo(ee)) {
+            RemoteJavaExecution processor = new RemoteJavaExecution(fs);
+            try {
+                for (SourceFile cu : processor.getCompileLines(objFileName)) {
+                    if (getStopInterrupter().cancelled()) {
+                        break;
+                    }
+                    processUnit(cu, objFileName, storage, map, project, list);
+                }
+            } catch (IOException ex) {
+                DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
+            }
+        }
+        return list;
+    }
+    
+    
+    private List<SourceFileProperties> getSourceFilePropertiesLocal(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try {
@@ -373,74 +437,7 @@ public abstract class BaseDwarfProvider extends BaseProvider {
                     if (getStopInterrupter().cancelled()) {
                         break;
                     }
-                    if (cu.getSourceFileName() == null) {
-                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                            DwarfSource.LOG.log(Level.FINE, "Compilation unit has broken name in file {0}", objFileName);  // NOI18N
-                        }
-                        continue;
-                    }
-                    String lang = cu.getSourceLanguage();
-                    if (lang == null) {
-                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                            DwarfSource.LOG.log(Level.FINE, "Compilation unit has unresolved language in file {0}for {1}", new Object[]{objFileName, cu.getSourceFileName()});  // NOI18N
-                        }
-                        continue;
-                    }
-                    DwarfSource source = null;
-                    if (LANG.DW_LANG_C.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, getCommpilerSettings(), grepBase, storage);
-                    } else if (LANG.DW_LANG_C89.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C89, getCommpilerSettings(), grepBase, storage);
-                    } else if (LANG.DW_LANG_C99.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C99, getCommpilerSettings(), grepBase, storage);
-                    } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, ItemProperties.LanguageStandard.Unknown, getCommpilerSettings(), grepBase, storage);
-                    } else if (LANG.DW_LANG_Fortran77.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F77, getCommpilerSettings(), grepBase, storage);
-                    } else if (LANG.DW_LANG_Fortran90.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F90, getCommpilerSettings(), grepBase, storage);
-                    } else if (LANG.DW_LANG_Fortran95.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F95, getCommpilerSettings(), grepBase, storage);
-                    } else {
-                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                            DwarfSource.LOG.log(Level.FINE, "Unknown language: {0}", lang);  // NOI18N
-                        }
-                        // Ignore other languages
-                    }
-                    if (source != null) {
-                        if (source.getCompilePath() == null) {
-                            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                                DwarfSource.LOG.log(Level.FINE, "Compilation unit has NULL compile path in file {0}", objFileName);  // NOI18N
-                            }
-                            continue;
-                        }
-                        String name = source.getItemPath();
-                        SourceFileProperties old = map.get(name);
-                        if (old != null && old.getUserInludePaths().size() > 0) {
-                            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                                DwarfSource.LOG.log(Level.FINE, "Compilation unit already exist. Skip {0}", name);  // NOI18N
-                            }
-                            // do not process processed item
-                            continue;
-                        }
-                        source.process(cu);
-                        if (project.resolveSymbolicLinks()) {
-                            String resolvedLink = DiscoveryUtils.resolveSymbolicLink(null, name);
-                            if (resolvedLink != null) {
-                                old = map.get(resolvedLink);
-                                if (old != null && old.getUserInludePaths().size() > 0) {
-                                    if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                                        DwarfSource.LOG.log(Level.FINE, "Linked compilation unit already exist. Skip {0}", resolvedLink);  // NOI18N
-                                    }
-                                    // do not process processed item
-                                }
-                                DwarfSource original = DwarfSource.relocateDerivedSourceFile(source, resolvedLink);
-                                list.add(original);
-                                continue;
-                            }
-                        }
-                        list.add(source);
-                    }
+                    processUnit(cu, objFileName, storage, map, project, list);
                 }
             }
             if (dlls != null) {
@@ -473,6 +470,62 @@ public abstract class BaseDwarfProvider extends BaseProvider {
         return list;
     }
 
+    private void processUnit(CompilationUnitInterface cu, String objFileName, CompileLineStorage storage, Map<String, SourceFileProperties> map, ProjectProxy project, List<SourceFileProperties> list) throws IOException {
+        if (cu.getSourceFileName() == null) {
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Compilation unit has broken name in file {0}", objFileName);  // NOI18N
+            }
+            return;
+        }
+        String lang = cu.getSourceLanguage();
+        if (lang == null) {
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Compilation unit has unresolved language in file {0}for {1}", new Object[]{objFileName, cu.getSourceFileName()});  // NOI18N
+            }
+            return;
+        }
+        DwarfSource source = null;
+        if (LANG.DW_LANG_C.toString().equals(lang)) {
+            source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, getCommpilerSettings(), grepBase, storage);
+        } else if (LANG.DW_LANG_C89.toString().equals(lang)) {
+            source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C89, getCommpilerSettings(), grepBase, storage);
+        } else if (LANG.DW_LANG_C99.toString().equals(lang)) {
+            source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C99, getCommpilerSettings(), grepBase, storage);
+        } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
+            source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, ItemProperties.LanguageStandard.Unknown, getCommpilerSettings(), grepBase, storage);
+        } else if (LANG.DW_LANG_Fortran77.toString().equals(lang)) {
+            source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F77, getCommpilerSettings(), grepBase, storage);
+        } else if (LANG.DW_LANG_Fortran90.toString().equals(lang)) {
+            source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F90, getCommpilerSettings(), grepBase, storage);
+        } else if (LANG.DW_LANG_Fortran95.toString().equals(lang)) {
+            source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F95, getCommpilerSettings(), grepBase, storage);
+        } else {
+            if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                DwarfSource.LOG.log(Level.FINE, "Unknown language: {0}", lang);  // NOI18N
+            }
+            // Ignore other languages
+        }
+        if (source != null) {
+            if (source.getCompilePath() == null) {
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "Compilation unit has NULL compile path in file {0}", objFileName);  // NOI18N
+                }
+                return;
+            }
+            String name = source.getItemPath();
+            source.process(cu);
+            if (project.resolveSymbolicLinks()) {
+                String resolvedLink = DiscoveryUtils.resolveSymbolicLink(getSourceFileSystem(), name);
+                if (resolvedLink != null) {
+                    DwarfSource original = DwarfSource.relocateDerivedSourceFile(source, resolvedLink);
+                    list.add(original);
+                    return;
+                }
+            }
+            list.add(source);
+        }
+    }
+    
     public static final class GrepEntry {
         ArrayList<String> includes = new ArrayList<String>();
         String firstMacro = null;

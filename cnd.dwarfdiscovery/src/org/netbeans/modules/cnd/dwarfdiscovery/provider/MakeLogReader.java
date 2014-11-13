@@ -43,9 +43,8 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,6 +66,7 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -100,7 +100,7 @@ public class MakeLogReader {
     private String guessWorkingDir;
     private String baseWorkingDir;
     private final String root;
-    private final String fileName;
+    private final FileObject logFileObject;
     private List<SourceFileProperties> result;
     private List<String> buildArtifacts;
     private final PathMap pathMapper;
@@ -115,13 +115,13 @@ public class MakeLogReader {
     private final Set<String> FORTRAN_NAMES;
     private boolean isWindows = false;
 
-    public MakeLogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
+    public MakeLogReader(FileObject logFileObject, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
         if (root.length()>0) {
-            this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
+            this.root = CndFileUtils.normalizeAbsolutePath(fileSystem, root);
         } else {
             this.root = root;
         }
-        this.fileName = fileName;
+        this.logFileObject = logFileObject;
         this.project = project;
         this.pathMapper = getPathMapper(project);
         this.compilerSettings = new CompilerSettings(project);
@@ -230,13 +230,12 @@ public class MakeLogReader {
 
     private void runImpl(Progress progress, CompileLineStorage storage) {
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-            DwarfSource.LOG.log(Level.FINE, "LogReader is run for {0}", fileName); //NOI18N
+            DwarfSource.LOG.log(Level.FINE, "LogReader is run for {0}", logFileObject); //NOI18N
         }
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
         buildArtifacts = new ArrayList<String>();
-        File file = new File(fileName);
-        if (file.exists() && file.canRead()){
+        if (logFileObject != null && logFileObject.isValid() && logFileObject.canRead()) {
             try {
                 MakeConfiguration conf = getConfiguration(this.project);
                 ExecutionEnvironment executionEnvironment = getExecutionEnvironment(conf);
@@ -249,8 +248,8 @@ public class MakeLogReader {
                     ex.printStackTrace(System.err);
                 }
                 PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(executionEnvironment);
-                BufferedReader in = new BufferedReader(new FileReader(file));
-                long length = file.length();
+                BufferedReader in = new BufferedReader(new InputStreamReader(logFileObject.getInputStream()));
+                long length = logFileObject.getSize();
                 long read = 0;
                 int done = 0;
                 if (length <= 0){
@@ -303,7 +302,7 @@ public class MakeLogReader {
                 }
                 in.close();
             } catch (IOException ex) {
-                 DwarfSource.LOG.log(Level.INFO, "Cannot read file "+fileName, ex); // NOI18N
+                 DwarfSource.LOG.log(Level.INFO, "Cannot read file "+logFileObject, ex); // NOI18N
             }
         }
     }
@@ -543,12 +542,12 @@ public class MakeLogReader {
             return false;
         }
 
-        if (Utilities.isWindows() && workDir.startsWith("/cygdrive/") && workDir.length()>11){ // NOI18N
+        if (Utilities.isWindows() && CndFileUtils.isLocalFileSystem(fileSystem) && workDir.startsWith("/cygdrive/") && workDir.length()>11){ // NOI18N
             workDir = ""+workDir.charAt(10)+":"+workDir.substring(11); // NOI18N
         }
 
         if (workDir.charAt(0) == '/' || workDir.charAt(0) == '\\' || (workDir.length() > 1 && workDir.charAt(1) == ':')) {
-            if ((new File(workDir).exists())) {
+            if ((fs.exists(workDir))) {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE,message);
                 }
@@ -561,19 +560,19 @@ public class MakeLogReader {
                 }
             }
         }
-        String dir = workingDir + File.separator + workDir;
-        if (new File(dir).exists()) {
+        String dir = workingDir + CndFileUtils.getFileSeparatorChar(fileSystem) + workDir;
+        if (fs.exists(dir)) {
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 DwarfSource.LOG.log(Level.FINE,message);
             }
             setWorkingDir(dir);
             return true;
         }
-        if (Utilities.isWindows() && workDir.length()>3 &&
+        if (Utilities.isWindows() && CndFileUtils.isLocalFileSystem(fileSystem) && workDir.length()>3 &&
             workDir.charAt(0)=='/' &&
             workDir.charAt(2)=='/'){
             String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
-            if (new File(d).exists()) {
+            if (fs.exists(d)) {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE,message);
                 }
@@ -582,8 +581,8 @@ public class MakeLogReader {
             }
         }
         if (baseWorkingDir != null) {
-            dir = baseWorkingDir + File.separator + workDir;
-            if (new File(dir).exists()) {
+            dir = baseWorkingDir + CndFileUtils.getFileSeparatorChar(fileSystem) + workDir;
+            if (fs.exists(dir)) {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE,message);
                 }
@@ -602,7 +601,7 @@ public class MakeLogReader {
                 String prefix = root.substring(0,i);
                 if (dir.startsWith(localPath)) {
                     String netFile = prefix + dir;
-                    if (new File(netFile).exists()) {
+                    if (fs.exists(netFile)) {
                         return netFile;
                     }
                 }
@@ -730,14 +729,14 @@ public class MakeLogReader {
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "**>> new working dir: {0}", workingDir);
         }
-        this.workingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
+        this.workingDir = CndFileUtils.normalizeAbsolutePath(fileSystem, workingDir);
     }
 
     private void setGuessWorkingDir(String workingDir) {
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "**>> alternative guess working dir: {0}", workingDir);
         }
-        this.guessWorkingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
+        this.guessWorkingDir = CndFileUtils.normalizeAbsolutePath(fileSystem, workingDir);
     }
 
     private boolean parseLine(String line, CompileLineStorage storage){
@@ -898,8 +897,7 @@ public class MakeLogReader {
                     userMacrosCached.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
                 }
             }
-            File f = new File(file);
-            if (f.exists() && f.isFile()) {
+            if (fs.exists(file) /*&& isData*/) {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                 }
@@ -910,8 +908,7 @@ public class MakeLogReader {
                 file = convertPath(what);
                 if (!file.equals(what)) {
                     what = file;
-                    f = new File(file);
-                    if (f.exists() && f.isFile()) {
+                    if (fs.exists(file) /*&& isData*/) {
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                             DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
                         }
@@ -922,10 +919,10 @@ public class MakeLogReader {
             }
 
             if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
-                f = new File(guessWorkingDir+"/"+what);  //NOI18N
-                if (f.exists() && f.isFile()) {
+                String f = guessWorkingDir+"/"+what;  //NOI18N
+                if (fs.exists(f)) {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                        DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", file);
+                        DwarfSource.LOG.log(Level.FINE, "**** Gotcha guess: {0}", f);
                     }
                     result.add(new CommandLineSource(li, artifacts, guessWorkingDir, convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached, storage));
                     continue;
@@ -944,7 +941,7 @@ public class MakeLogReader {
                     if (res.size() == 1) {
                         result.add(new CommandLineSource(li, artifacts, res.get(0), convertSymbolicLink(what), userIncludesCached, userFilesCached, userMacrosCached, storage));
                         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                            DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), File.separator, what});
+                            DwarfSource.LOG.log(Level.FINE, "** Gotcha: {0}{1}{2}", new Object[]{res.get(0), "/", what});
                         }
                         // kinda adventure but it works
                         setGuessWorkingDir(res.get(0));
@@ -975,16 +972,14 @@ public class MakeLogReader {
             } else {
                 file = workingDir+"/"+what;  //NOI18N
             }
-            File f = new File(file);
-            if (f.exists() && f.isFile()) {
+            if (fs.exists(file) /*&& isData*/) {
                 if (!buildArtifacts.contains(file)) {
                     buildArtifacts.add(file);
                 }
             } else if (!isRelative) {
                 file = convertPath(what);
                 if (!file.equals(what)) {
-                    f = new File(file);
-                    if (f.exists() && f.isFile()) {
+                    if (fs.exists(file) /*&& isData*/) {
                         if (!buildArtifacts.contains(file)) {
                             buildArtifacts.add(file);
                         }
@@ -1025,11 +1020,39 @@ public class MakeLogReader {
         }
     }
 
-    static class CommandLineSource extends RelocatableImpl implements SourceFileProperties {
+    static ItemProperties.LanguageKind detectLanguage(LineInfo li, Artifacts artifacts, String sourcePath) {
+        ItemProperties.LanguageKind language = li.getLanguage();
+        if (artifacts.languageArtifacts.contains("c")) { // NOI18N
+            language = ItemProperties.LanguageKind.C;
+        } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
+            language = ItemProperties.LanguageKind.CPP;
+        } else {
+            if (language == LanguageKind.Unknown || "cl".equals(li.compiler)) { // NOI18N
+                String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
+                if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                    if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
+                        language = ItemProperties.LanguageKind.CPP;
+                    }
+                } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                    if (li.getLanguage() != ItemProperties.LanguageKind.C) {
+                        language = ItemProperties.LanguageKind.C;
+                    }
+                }
+            } else if (language == LanguageKind.C && !li.compiler.equals("cc")) { // NOI18N
+                String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
+                if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                    language = ItemProperties.LanguageKind.CPP;
+                }
+            }
+        }
+        return language;
+    }
+
+    class CommandLineSource extends RelocatableImpl implements SourceFileProperties {
 
         private String sourceName;
         private final String compiler;
-        private ItemProperties.LanguageKind language;
+        private final ItemProperties.LanguageKind language;
         private ItemProperties.LanguageStandard standard = LanguageStandard.Unknown;
         private final List<String> systemIncludes = Collections.<String>emptyList();
         private final Map<String, String> userMacros;
@@ -1041,30 +1064,7 @@ public class MakeLogReader {
 
         CommandLineSource(LineInfo li, Artifacts artifacts, String compilePath, String sourcePath,
                 List<String> userIncludes, List<String> userFiles, Map<String, String> userMacros, CompileLineStorage storage) {
-            language = li.getLanguage();
-            if (artifacts.languageArtifacts.contains("c")) { // NOI18N
-                language = ItemProperties.LanguageKind.C;
-            } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
-                language = ItemProperties.LanguageKind.CPP;
-            } else {
-                if (language == LanguageKind.Unknown || "cl".equals(li.compiler)) { // NOI18N
-                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
-                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                        if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
-                            language = ItemProperties.LanguageKind.CPP;
-                        }
-                    } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                        if (li.getLanguage() != ItemProperties.LanguageKind.C) {
-                            language = ItemProperties.LanguageKind.C;
-                        }
-                    }
-                } else if (language == LanguageKind.C && !li.compiler.equals("cc")) { // NOI18N
-                    String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
-                    if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                        language = ItemProperties.LanguageKind.CPP;
-                    }
-                }
-            }
+            language = detectLanguage(li, artifacts, sourcePath);
             standard = artifacts.getLanguageStandard(standard);
             this.compiler = li.compiler;
             this.compilePath =compilePath;
@@ -1075,8 +1075,8 @@ public class MakeLogReader {
             } else {
                 fullName = compilePath+"/"+sourceName; //NOI18N
             }
-            File file = new File(fullName);
-            fullName = CndFileUtils.normalizeFile(file).getAbsolutePath();
+            fullName = convertSymbolicLink(fullName);
+            fullName = CndFileUtils.normalizeAbsolutePath(fileSystem, fullName);
             fullName = PathCache.getString(fullName);
             this.userIncludes = userIncludes;
             this.userFiles = userFiles;
@@ -1259,49 +1259,49 @@ public class MakeLogReader {
         if (subFolders == null){
             subFolders = new HashSet<String>();
             findBase = new HashMap<String,List<String>>();
-            File f = new File(root);
-            gatherSubFolders(f, new LinkedList<String>());
+            FileObject rootFO = fileSystem.findResource(root);
+            gatherSubFolders(rootFO, new LinkedList<String>());
         }
         return subFolders;
     }
     private HashSet<String> subFolders;
     private Map<String,List<String>> findBase;
 
-    private void gatherSubFolders(File d, LinkedList<String> antiLoop){
-        if (d.exists() && d.isDirectory() && d.canRead()){
+    private void gatherSubFolders(FileObject d, LinkedList<String> antiLoop){
+        if (d != null && d.isValid() && d.isFolder() && d.canRead()){
             if (isStoped.cancelled()) {
                 return;
             }
-            if (CndPathUtilities.isIgnoredFolder(d)){
+            if (CndPathUtilities.isIgnoredFolder(d.getNameExt())){
                 return;
             }
             String canPath;
             try {
-                canPath = d.getCanonicalPath();
+                canPath = CndFileUtils.getCanonicalPath(d);
             } catch (IOException ex) {
                 return;
             }
             if (!antiLoop.contains(canPath)){
                 antiLoop.addLast(canPath);
-                subFolders.add(d.getAbsolutePath().replace('\\', '/'));
-                File[] ff = d.listFiles();
+                subFolders.add(d.getPath().replace('\\', '/'));
+                FileObject[] ff = d.getChildren();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (isStoped.cancelled()) {
                             break;
                         }
-                        if (ff[i].isDirectory()) {
+                        if (ff[i].isFolder()) {
                             gatherSubFolders(ff[i], antiLoop);
-                        } else if (ff[i].isFile()) {
-                            if (CndFileVisibilityQuery.getDefault().isIgnored(ff[i].getName())) {
+                        } else if (ff[i].isData()) {
+                            if (CndFileVisibilityQuery.getDefault().isIgnored(ff[i].getNameExt())) {
                                 continue;
                             }
-                            List<String> l = findBase.get(ff[i].getName());
+                            List<String> l = findBase.get(ff[i].getNameExt());
                             if (l==null){
                                 l = new ArrayList<String>();
-                                findBase.put(ff[i].getName(),l);
+                                findBase.put(ff[i].getNameExt(),l);
                             }
-                            l.add(d.getAbsolutePath().replace('\\', '/'));
+                            l.add(d.getPath().replace('\\', '/'));
                         }
                     }
                 }
