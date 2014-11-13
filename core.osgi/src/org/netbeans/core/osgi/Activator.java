@@ -240,9 +240,11 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
                 mi.restored();
             }
         }
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+        final Lookup start = Lookups.metaInfServices(l, "META-INF/namedservices/Modules/Start/");
         // NbStartStop not quite appropriate here; will not properly handle multiple enable/disable cycles
         // (but it does run them in parallel, which may be desirable)
-        for (Runnable r : Lookups.forPath("Modules/Start").lookupAll(Runnable.class)) {
+        for (Runnable r : start.lookupAll(Runnable.class)) {
             if (bundles.contains(FrameworkUtil.getBundle(r.getClass()))) {
                 LOG.log(Level.FINE, "starting {0}", r.getClass().getName());
                 r.run();
@@ -268,7 +270,9 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
             return;
         }
         LOG.log(Level.FINE, "unloading: {0}", bundles);
-        for (Callable<?> r : Lookups.forPath("Modules/Stop").lookupAll(Callable.class)) {
+        ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+        final Lookup stop = Lookups.metaInfServices(l, "META-INF/namedservices/Modules/Stop/");
+        for (Callable<?> r : stop.lookupAll(Callable.class)) {
             if (bundles.contains(FrameworkUtil.getBundle(r.getClass()))) {
                 try {
                     if (!((Boolean) r.call())) {
@@ -279,7 +283,7 @@ public class Activator implements BundleActivator, SynchronousBundleListener {
                 }
             }
         }
-        for (Runnable r : Lookups.forPath("Modules/Stop").lookupAll(Runnable.class)) {
+        for (Runnable r : stop.lookupAll(Runnable.class)) {
             if (bundles.contains(FrameworkUtil.getBundle(r.getClass()))) {
                 r.run();
             }
