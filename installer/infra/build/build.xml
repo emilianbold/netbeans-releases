@@ -376,7 +376,7 @@
         
         <if property="do.build.jdk8">
             <get
-                src="${jdk.builds.host}/${jdk8.builds.path}/latest/bundles/linux-x64/"
+                src="${jdk.builds.host}/${jdk8.builds.path}/fcs/b17/bundles/linux-x64/"
                 dest="${temp.file}"/>
             <jdk-buildnumber file="${temp.file}"/>
 
