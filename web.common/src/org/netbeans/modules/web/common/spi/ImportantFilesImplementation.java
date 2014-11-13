@@ -53,6 +53,7 @@ import org.openide.util.Parameters;
  * <p>
  * Implementations are expected to be found in project's lookup.
  * @since 1.73
+ * @see ImportantFilesSupport
  */
 public interface ImportantFilesImplementation {
 
