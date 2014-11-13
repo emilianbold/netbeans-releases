@@ -111,6 +111,7 @@ import static org.netbeans.modules.cnd.completion.impl.xref.Bundle.*;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.CharSequences;
@@ -269,19 +270,21 @@ public final class ReferencesSupport {
             TokenItem<TokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
         final String oldName = Thread.currentThread().getName();
         try {
-            if (doc instanceof LineDocument) {
-                try {
+            // Add resolve position to the thread name for logging purposes
+            try {
+                String position = "[" + offset + "]"; // NOI18N
+                if (CndUtils.isDebugMode() && doc instanceof LineDocument) {
                     LineDocument lineDoc = (LineDocument) doc;
-                    Thread.currentThread().setName(
-                        oldName + " (find declaration at "  // NOI18N
-                        + csmFile.getAbsolutePath() + "[" // NOI18N
-                        + (LineDocumentUtils.getLineIndex(lineDoc, offset) + 1) + "," // NOI18N
-                        + (offset - LineDocumentUtils.getLineStart(lineDoc, offset) + 1) + "]" // NOI18N
-                        + ", token \"" + tokenUnderOffset.text() + "\")" // NOI18N
-                    );
-                } catch (BadLocationException ex) {
-                    // Just ignore it
+                    position = "[" + (LineDocumentUtils.getLineIndex(lineDoc, offset) + 1) + "," // NOI18N
+                               + (offset - LineDocumentUtils.getLineStart(lineDoc, offset) + 1) + "]"; // NOI18N
                 }
+                Thread.currentThread().setName(
+                    oldName + " (find declaration at "  // NOI18N
+                    + csmFile.getAbsolutePath() + position
+                    + ", token \"" + tokenUnderOffset.text() + "\")" // NOI18N
+                );
+            } catch (BadLocationException ex) {
+                // Just ignore it
             }
             
             // fast check, if possible

@@ -107,11 +107,15 @@ public class ClientSideProjectTest extends NbTestCase {
 
     public void testProjectCreationWithProblems() throws Exception {
         ClientSideProject project = createProject(null, null, null);
+        // Site root must be existing folder in order to set it in the project properties, create a temp folder
+        FileObject tmpSiteRoot = project.getProjectDirectory().createFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
         projectProperties.setSourceFolder(ClientSideProjectConstants.DEFAULT_SOURCE_FOLDER);
         projectProperties.setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
         projectProperties.setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
         projectProperties.save();
+        // Delete temp site root folder to trigger the project problem
+        tmpSiteRoot.delete();
         ProjectProblemsProvider problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
         assertNotNull("project does have ProjectProblemsProvider", problemsProvider);
         assertEquals("project does not have any problems", 3, problemsProvider.getProblems().size());
