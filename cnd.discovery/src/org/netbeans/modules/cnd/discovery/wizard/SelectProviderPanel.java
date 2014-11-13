@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,15 +62,22 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -267,12 +273,13 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
     
     private void rootFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rootFolderButtonActionPerformed
-        JFileChooser fileChooser = new FileChooser(
+        FileObject projectDirectory = wizard.getWizardDescriptor().getProject().getProjectDirectory();
+        ExecutionEnvironment execEnv = FileSystemProvider.getExecutionEnvironment(projectDirectory);
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(execEnv,
                 getString("ROOT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
                 JFileChooser.DIRECTORIES_ONLY,
-                null,
-                getRootText(),
+                null, getRootText(),
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
@@ -361,8 +368,12 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             prividersComboBox.setSelectedItem(def);
         }
         String path = wizardDescriptor.getRootFolder();
-        if (Utilities.isWindows()) {
-            path = path.replace('/', File.separatorChar);
+        try {
+            FileSystem fileSystem = wizard.getWizardDescriptor().getProject().getProjectDirectory().getFileSystem();
+            if (CndFileUtils.isLocalFileSystem(fileSystem) && Utilities.isWindows()) {
+                path = path.replace('/', CndFileUtils.getFileSeparatorChar(fileSystem));
+            }
+        } catch (FileStateInvalidException ex) {
         }
         Preferences preferences;
         if (USE_PROJECT_PROPERTIES) {
@@ -422,10 +433,19 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
   	wizardDescriptor.setMessage(null);
         String path = getRootText();
         if (path == null){
+      	    wizardDescriptor.setMessage(getString("SelectModeRootFolderError", path)); // NOI18N
             return false;
         }
-        File file = new File(path);
-        if (!(file.exists() && file.isDirectory())) {
+        FSPath file;
+        try {
+            file = new FSPath(wizard.getWizardDescriptor().getProject().getProjectDirectory().getFileSystem(), path);
+        } catch (FileStateInvalidException ex) {
+      	    wizardDescriptor.setMessage(getString("SelectModeRootFolderError", path)); // NOI18N
+            return false;
+        }
+        FileObject fo = file.getFileObject();
+        if (fo == null || !fo.isValid() || !fo.isFolder()) {
+      	    wizardDescriptor.setMessage(getString("SelectModeRootFolderError", path)); // NOI18N
             return false;
         }
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
@@ -449,8 +469,8 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
 
 
-    private String getString(String key) {
-        return NbBundle.getMessage(SelectProviderPanel.class, key);
+    private String getString(String key, String ... params) {
+        return NbBundle.getMessage(SelectProviderPanel.class, key, params);
     }
 
     @Override

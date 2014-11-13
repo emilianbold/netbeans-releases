@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,9 +60,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -110,6 +113,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         wizardDescriptor.setProject(project);
         wizardDescriptor.setRootFolder(findSourceRoot(project));
         wizardDescriptor.setBuildResult(findBuildResult(project));
+        wizardDescriptor.setFileSystem(findBuildResultFileSystem(project));
         boolean resolveSymbolic = CommonUtilities.resolveSymbolicLinks();
         if (project != null) {
             ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
@@ -137,7 +141,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         dialog.dispose();
     }
     
-    /*package-local*/ static String findBuildResult(Project project) {
+    private static String findBuildResult(Project project) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp == null || !pdp.gotDescriptor()){
             return null;
@@ -145,31 +149,36 @@ public final class DiscoveryWizardAction extends NodeAction {
         MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
         MakeConfiguration conf = make.getActiveConfiguration();
         if (conf != null){
-            String output = conf.getMakefileConfiguration().getOutput().getValue();
+            String output = conf.getMakefileConfiguration().getAbsOutput();
             if (output == null || output.length()==0){
                 return null;
             }
-            if (new File(output).isAbsolute()) {
-                return output;
-            }
-            String base = getProjectDirectoryPath(project);
-            output = CndFileUtils.normalizeFile(new File(base+'/'+output)).getAbsolutePath();
             return output;
         }
         return null;
     }
     
+    private static FileSystem findBuildResultFileSystem(Project project) {
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (pdp == null || !pdp.gotDescriptor()){
+            return null;
+        }
+        MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
+        MakeConfiguration conf = make.getActiveConfiguration();
+        if (conf != null){
+            ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+            return FileSystemProvider.getFileSystem(env);
+        }
+        return null;
+    }
     
-    /*package-local*/ static String getProjectDirectoryPath(Project project) {
-        String base = project.getProjectDirectory().getPath();
-        if (Utilities.isWindows()){
-            base = base.replace('\\', '/');
+    private static String getProjectDirectoryPath(Project project) {
+        FileObject projectDirectory = project.getProjectDirectory();
+        if (CndFileUtils.isLocalFileSystem(projectDirectory) && Utilities.isWindows()) {
+            return projectDirectory.getPath().replace('\\', '/');
         } else {
-            if (!base.startsWith(File.separator)) {
-                base = File.separator+base;
-            }
-	}
-	return base;
+            return projectDirectory.getPath();
+        }
     }
     
     public static String findSourceRoot(Project project) {
@@ -249,9 +258,9 @@ public final class DiscoveryWizardAction extends NodeAction {
             if( make == null ) {
                 return null;
             }
-            if (!CndFileUtils.isLocalFileSystem(make.getBaseDirFileSystem())) {
-                return null;
-            }
+            //if (!CndFileUtils.isLocalFileSystem(make.getBaseDirFileSystem())) {
+            //    return null;
+            //}
             MakeConfiguration conf = make.getActiveConfiguration();
             if (conf != null && conf.isMakefileConfiguration()){
                 projects.add(project);
@@ -300,7 +309,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         return new DiscoveryWizardIterator(panels,simplepanels);
     }
     
-    /*package-local*/ static void setupComponent(final String[] steps, final String[] advanced, final int i, final Component c) {
+    private void setupComponent(final String[] steps, final String[] advanced, final int i, final Component c) {
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent) c;
             // Sets step number of a component

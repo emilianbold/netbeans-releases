@@ -42,9 +42,8 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,7 +71,6 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -83,7 +81,7 @@ public final class ExecLogReader {
     private static final String CYG_DRIVE = "/cygdrive/"; // NOI18N
 
     private final String root;
-    private final String fileName;
+    private final FileObject logFileObject;
     private List<SourceFileProperties> result;
     private List<String> buildArtifacts;
     private final ProjectProxy project;
@@ -98,8 +96,8 @@ public final class ExecLogReader {
     private final Set<String> LIBREARIES_NAMES;
     private int logType = 0; // 0 - not inited, 1 - exec log, 2 - json file
 
-    public ExecLogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
-        this.fileName = fileName;
+    public ExecLogReader(FileObject logFileObject, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
+        this.logFileObject = logFileObject;
         this.project = project;
         this.pathMapper = getPathMapper(project);
         this.localMapper = relocatablePathMapper;
@@ -119,7 +117,7 @@ public final class ExecLogReader {
             }
         }
         if (root.isEmpty()) {
-            String sourceRoot = PathUtilities.getDirName(fileName);
+            String sourceRoot = PathUtilities.getDirName(logFileObject.getPath());
             if (sourceRoot != null && sourceRoot.length() > 1) {
                 root = sourceRoot;
             }
@@ -142,14 +140,13 @@ public final class ExecLogReader {
         return null;
     }
 
-    static boolean isSupportedLog(String fileName) {
-        File file = new File(fileName);
-        if (!file.exists() || !file.canRead()) {
+    static boolean isSupportedLog(FileObject file) {
+        if (file == null || !file.isValid() || !file.isData() || !file.canRead()) {
             return false;
         }
         BufferedReader in = null;
         try {
-            in = new BufferedReader(new FileReader(file));
+            in = new BufferedReader(new InputStreamReader(file.getInputStream()));            
             while (true) {
                 String line = in.readLine();
                 if (line == null) {
@@ -214,11 +211,10 @@ public final class ExecLogReader {
     private void run(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
         result = new ArrayList<SourceFileProperties>();
         buildArtifacts = new ArrayList<String>();
-        File file = new File(fileName);
-        if (file.exists() && file.canRead()) {
+        if (logFileObject != null && logFileObject.isValid() && logFileObject.canRead()) {
             try {
-                BufferedReader in = new BufferedReader(new FileReader(file));
-                long length = file.length();
+                BufferedReader in = new BufferedReader(new InputStreamReader(logFileObject.getInputStream()));            
+                long length = logFileObject.getSize();
                 long read = 0;
                 int done = 0;
                 if (length <= 0) {
@@ -294,7 +290,7 @@ public final class ExecLogReader {
                                         addSources(directory, command, cu, storage);
                                     } catch (Throwable ex) {
                                         // ExecSource constructor can throw IllegalArgumentException for non source exec
-                                        DwarfSource.LOG.log(Level.INFO, "directory:" + directory + "\ncommand:" + command + "\nfile:" + file, ex); // NOI18N
+                                        DwarfSource.LOG.log(Level.INFO, "directory:" + directory + "\ncommand:" + command + "\nfile:" + logFileObject, ex); // NOI18N
                                     }
                                 }
                                 directory = null;
@@ -323,7 +319,7 @@ public final class ExecLogReader {
                 }
                 in.close();
             } catch (IOException ex) {
-                DwarfSource.LOG.log(Level.INFO, "Cannot read file " + fileName, ex); // NOI18N
+                DwarfSource.LOG.log(Level.INFO, "Cannot read file " + logFileObject, ex); // NOI18N
             }
         }
     }

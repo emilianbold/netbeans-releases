@@ -50,8 +50,11 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
 /**
@@ -70,6 +73,7 @@ public class CompilerSettings {
     private final String cygwinDriveDirectory;
     private final boolean isWindows;
     private final ExecutionEnvironment developmentHostExecutionEnvironment;
+    private final FileSystem soruceFileSystem;
 
     public CompilerSettings(ProjectProxy project) {
         projectBridge = DiscoveryUtils.getProjectBridge(project);
@@ -86,8 +90,10 @@ public class CompilerSettings {
         }
         if (projectBridge != null) {
             developmentHostExecutionEnvironment = projectBridge.getDevelopmentHostExecutionEnvironment();
+            soruceFileSystem = projectBridge.getBaseFolderFileSystem();
         } else {
             developmentHostExecutionEnvironment = null;
+            soruceFileSystem = null;
         }
     }
 
@@ -100,6 +106,13 @@ public class CompilerSettings {
             return false;
         }
         return developmentHostExecutionEnvironment.isRemote();
+    }
+
+    public boolean isLocalFileSystem() {
+        if (soruceFileSystem == null) {
+            return true;
+        }
+        return CndFileUtils.isLocalFileSystem(soruceFileSystem);
     }
     
     public List<String> getSystemIncludePaths(ItemProperties.LanguageKind lang) {

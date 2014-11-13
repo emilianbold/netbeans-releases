@@ -60,15 +60,23 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType.PropertyKind;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -83,6 +91,7 @@ public class ProviderControl<T> {
     private final DiscoveryDescriptor wizardDescriptor;
     private final JPanel panel;
     private final ChangeListener listener;
+    private FileSystem projectFileSystem;
     private JLabel label;
     private EditableComboBox field;
     private JButton button;
@@ -96,6 +105,11 @@ public class ProviderControl<T> {
         this.panel = panel;
         this.listener = listener;
         this.wizardDescriptor = wizardDescriptor;
+        try {
+            projectFileSystem = wizardDescriptor.getProject().getProjectDirectory().getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            projectFileSystem = CndFileSystemProvider.getLocalFileSystem();
+        }
         label = new JLabel();
         Mnemonics.setLocalizedText(label, property.getName());
         switch(property.getPropertyType().kind()) {
@@ -280,37 +294,49 @@ public class ProviderControl<T> {
 
     public boolean valid() {
         String path = getComboBoxText();
-        File file;
+        //ProviderControlFolderError="{0}" is not a folder
+        //ProviderControlFileError=File "{0}" not found
         switch(property.getPropertyType().kind()) {
-            case Folder:
+            case Folder: {
                 if (path.length() == 0) {
+                    wizardDescriptor.setMessage(getString("ProviderControlFolderError", path)); // NOI18N
                     return false;
                 }
-                file = new File(path);
-                if (file.exists() && file.isDirectory()) {
-                    return true;
+                FSPath file = new FSPath(projectFileSystem, path);
+                FileObject fo = file.getFileObject();
+                if (fo == null || !fo.isValid() || !fo.isFolder()) {
+                    wizardDescriptor.setMessage(getString("ProviderControlFolderError", path)); // NOI18N
+                    return false;
                 }
-                break;
+                return true;
+            }
             case MakeLogFile:
-            case BinaryFile:
+            case BinaryFile: {
                 if (path.length() == 0) {
+                    wizardDescriptor.setMessage(getString("ProviderControlFileError", path)); // NOI18N
                     return false;
                 }
-                file = new File(path);
-                if (file.exists() && file.isFile()) {
-                    return true;
+                FSPath file = new FSPath(projectFileSystem, path);
+                FileObject fo = file.getFileObject();
+                if (fo == null || !fo.isValid() || !fo.isData()) {
+                    wizardDescriptor.setMessage(getString("ProviderControlFileError", path)); // NOI18N
+                    return false;
                 }
-                break;
+                return true;
+            }
             case BinaryFiles:
                 String text = getComboBoxText();
                 StringTokenizer st = new StringTokenizer(text,LIST_LIST_DELIMITER); // NOI18N
                 while(st.hasMoreTokens()){
                     path = st.nextToken();
                     if (path.length() == 0) {
+                        wizardDescriptor.setMessage(getString("ProviderControlFileError", path)); // NOI18N
                         return false;
                     }
-                    file = new File(path);
-                    if (!(file.exists() && file.isFile())) {
+                    FSPath file = new FSPath(projectFileSystem, path);
+                    FileObject fo = file.getFileObject();
+                    if (fo == null || !fo.isValid() || !fo.isData()) {
+                        wizardDescriptor.setMessage(getString("ProviderControlFileError", path)); // NOI18N
                         return false;
                     }
                 }
@@ -387,8 +413,8 @@ public class ProviderControl<T> {
                 filters = new FileFilter[]{new LogFileFilter()};
             }
         }
-        
-        JFileChooser fileChooser = new FileChooser(
+        ExecutionEnvironment execEnv = FileSystemProvider.getExecutionEnvironment(projectFileSystem);
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(execEnv,
                 title,
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
                 chooserMode,
@@ -413,17 +439,17 @@ public class ProviderControl<T> {
         if (path == null) {
             initComboBox(""); // NOI18N
         } else {
-            if (Utilities.isWindows()) {
-                path = path.replace('/', File.separatorChar);
+            if (CndFileUtils.isLocalFileSystem(projectFileSystem) && Utilities.isWindows()) {
+                path = path.replace('/', CndFileUtils.getFileSeparatorChar(projectFileSystem));
             }
             initComboBox(path);
         }
     }
     
-    private String getString(String key) {
-        return NbBundle.getMessage(ProviderControl.class, key);
+    private String getString(String key, String ... params) {
+        return NbBundle.getMessage(ProviderControl.class, key, params);
     }
-    
+
     private class LogFileFilter extends javax.swing.filechooser.FileFilter {
         public LogFileFilter() {
         }
@@ -437,7 +463,8 @@ public class ProviderControl<T> {
                 if (f.isDirectory()) {
                     return true;
                 }
-                return f.getName().endsWith(".log"); // NOI18N
+                String name = f.getName();
+                return name.endsWith(".log") || name.endsWith(".json"); // NOI18N
             }
             return false;
         }

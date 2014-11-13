@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -191,6 +190,10 @@ public abstract class BaseProvider implements DiscoveryProvider {
         return CndFileUtils.getLocalFileSystem();
     }
     
+    protected FileSystem getSourceFileSystem() {
+        return fileSystem;
+    }
+    
     protected final RelocatablePathMapper getRelocatablePathMapper() {
         return mapper;
     }
@@ -244,7 +247,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
         }
     }
 
-    private final FileObject resolvePath(ProjectProxy project, String buildArtifact, SourceFileProperties f, String name) {
+    private FileObject resolvePath(ProjectProxy project, String buildArtifact, SourceFileProperties f, String name) {
         FileObject fo = fileSystem.findResource(name);
         if (!(f instanceof Relocatable)) {
             return fo;
@@ -340,11 +343,11 @@ public abstract class BaseProvider implements DiscoveryProvider {
         }
         String restrictSourceRoot = RESTRICT_SOURCE_ROOT_PROPERTY.getValue();
         if (restrictSourceRoot != null && !restrictSourceRoot.isEmpty()) {
-            restrictSourceRoot = CndFileUtils.normalizeFile(new File(restrictSourceRoot)).getAbsolutePath();
+            restrictSourceRoot = CndFileUtils.normalizeAbsolutePath(fileSystem, restrictSourceRoot);
         }
         String restrictCompileRoot = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
         if (restrictCompileRoot != null && !restrictCompileRoot.isEmpty()) {
-            restrictCompileRoot = CndFileUtils.normalizeFile(new File(restrictCompileRoot)).getAbsolutePath();
+            restrictCompileRoot = CndFileUtils.normalizeAbsolutePath(fileSystem, restrictCompileRoot);
         }
         for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls, buildArtifacts, storage)) {
             if (isStoped.get()) {

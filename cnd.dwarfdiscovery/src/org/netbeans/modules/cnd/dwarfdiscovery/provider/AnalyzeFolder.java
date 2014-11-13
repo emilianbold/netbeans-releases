@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
-import java.io.File;
+//import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +56,7 @@ import java.util.Set;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -65,7 +66,11 @@ import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -104,7 +109,8 @@ public class AnalyzeFolder extends BaseDwarfProvider {
             }
         };
         myProperties.put(BINARY_FOLDER_PROPERTY.getPropertyType().key(), BINARY_FOLDER_PROPERTY);
-        
+        // inherited properties
+        myProperties.put(BYNARY_FILESYSTEM_PROPERTY.getPropertyType().key(), BYNARY_FILESYSTEM_PROPERTY);
         myProperties.put(RESTRICT_SOURCE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_SOURCE_ROOT_PROPERTY);
         myProperties.put(RESTRICT_COMPILE_ROOT_PROPERTY.getPropertyType().key(), RESTRICT_COMPILE_ROOT_PROPERTY);
     }
@@ -234,11 +240,16 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                                     progress.increment(path);
                                 }
                             }
-                            File file = new File(path);
-                            //if (CndFileUtils.exists(file)) {
-                            // do not use CndFileUtils. It results in a lot of GC
-                            if (file.exists()) {
-                                unique.add(CndFileUtils.normalizeFile(file).getAbsolutePath());
+                            FileObject file = getSourceFileSystem().findResource(path);
+                            if (file != null && file.isValid()) {
+                                String absolutePath = CndFileUtils.normalizePath(file);
+                                if (project.resolveSymbolicLinks()) {
+                                    String s = DiscoveryUtils.resolveSymbolicLink(getSourceFileSystem(), absolutePath);
+                                    if (s != null) {
+                                        absolutePath = s;
+                                    }
+                                }
+                                unique.add(absolutePath);
                             }
                         }
                         if (progress != null) {
@@ -255,59 +266,64 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     }
     
     private Set<String> getObjectFiles(String root){
+        FileSystem fs = BYNARY_FILESYSTEM_PROPERTY.getValue();
+        if (fs == null) {
+            fs = CndFileUtils.getLocalFileSystem();
+        }
+        FileObject rootFO = fs.findResource(root);
         HashSet<String> map = new HashSet<String>();
-        gatherSubFolders(new File(root), map, new HashSet<String>());
+        gatherSubFolders(rootFO, map, new HashSet<String>());
         return map;
     }
     
-    private boolean isExecutable(File file){
-        String name = file.getName();
-        if (Utilities.isWindows()) {
+    private boolean isExecutable(FileObject file){
+        String name = file.getNameExt();
+        if (CndFileUtils.isLocalFileSystem(file) && Utilities.isWindows()) {
             return name.endsWith(".exe") || name.endsWith(".dll");  // NOI18N
-        } else if (Utilities.isUnix()){
+        } else {
             // FIXUP: There are no way to detect "executable".
             //return name.indexOf('.') < 0;
             try{
                 //Since 1.6
-                return name.indexOf('.') < 0 && file.canExecute();
+                return name.indexOf('.') < 0 && MIMENames.isBinaryExecutable(file.getMIMEType());
             } catch (SecurityException ex) {
             }
         }
         return false;
     }
     
-    private void gatherSubFolders(File d, HashSet<String> map, HashSet<String> antiLoop){
+    private void gatherSubFolders(FileObject d, HashSet<String> map, HashSet<String> antiLoop){
         if (getStopInterrupter().cancelled()) {
             return;
         }
-        if (d.exists() && d.isDirectory() && d.canRead()){
-            if (CndPathUtilities.isIgnoredFolder(d)){
+        if (d != null && d.isValid() && d.isFolder() && d.canRead()){
+            if (CndPathUtilities.isIgnoredFolder(d.getPath())){
                 return;
             }
             String canPath;
             try {
-                canPath = d.getCanonicalPath();
+                canPath = CndFileUtils.getCanonicalPath(d);
             } catch (IOException ex) {
                 return;
             }
             if (!antiLoop.contains(canPath)){
                 antiLoop.add(canPath);
-                File[] ff = d.listFiles();
+                FileObject[] ff = d.getChildren();
                 if (ff != null) {
                     for (int i = 0; i < ff.length; i++) {
                         if (getStopInterrupter().cancelled()) {
                             break;
                         }
-                        if (ff[i].isDirectory()) {
+                        if (ff[i].isFolder()) {
                             gatherSubFolders(ff[i], map, antiLoop);
-                        } else if (ff[i].isFile()) {
-                            String name = ff[i].getName();
+                        } else if (ff[i].isData()) {
+                            String name = ff[i].getNameExt();
                             if (name.endsWith(".o") ||  // NOI18N
                                 name.endsWith(".so") ||  // NOI18N
                                 name.endsWith(".dylib") ||  // NOI18N
                                 name.endsWith(".a") ||  // NOI18N
                                 isExecutable(ff[i])){
-                                String path = ff[i].getAbsolutePath();
+                                String path = ff[i].getPath();
                                 if (Utilities.isWindows()) {
                                     path = path.replace('\\', '/');
                                 }

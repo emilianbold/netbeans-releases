@@ -399,8 +399,8 @@ public class DwarfSourceReaderTest extends NbTestCase {
         List<SourceFile> list = CompileLineService.getSourceFileProperties(getDataDir().getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo");
         assertEquals(1, list.size());
         SourceFile sf = list.get(0);
-        assertEquals(sf.getCompileDir(), "/export1/sside/pomona/java_cp/wsb131/usr/src/cmd/echo");
-        assertEquals(sf.getSource(), "echo.c");
+        assertEquals(sf.getCompilationDir(), "/export1/sside/pomona/java_cp/wsb131/usr/src/cmd/echo");
+        assertEquals(sf.getSourceFileName(), "echo.c");
 //      /export/opt/sunstudio/12ml/SUNWspro/prod/bin/cc -O -xspace -Xa -xildoff -errtags=yes -errwarn=%all -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic -v -D_iBCS2 -DTEXT_DOMAIN='"SUNW_OST_OSCMD"' -D_TS_ERRNO -I/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include -Bdirect -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/common/map.noexstk -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/i386/map.pagealign -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/i386/map.noexdata -L/export1/sside/pomona/java_cp/wsb131/proto/root_i386/lib -L/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/lib -c  echo.c
         //System.err.println(sf.getCompileLine());
         map = new TreeMap<String, String>(sf.getUserMacros());
@@ -410,7 +410,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         //assertEquals(8, list.size());
         int i = 0;
         for(SourceFile file : list){
-            if (!file.getCompileLine().isEmpty()) {
+            if (!file.getCommandLine().isEmpty()) {
                 i++;
             }
         }

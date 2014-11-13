@@ -564,9 +564,13 @@ public class CndPathUtilities {
     public static boolean isIgnoredFolder(File file) {
         if (file.isDirectory()) {
             String name = file.getName();
-            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
+            return isIgnoredFolder(name);
         }
         return false;
+    }
+
+    public static boolean isIgnoredFolder(String name) {
+        return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
     }
         
     /**
