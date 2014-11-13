@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
                 <subpackages>org</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/asm-5.0.1/asm-all-5.0.1.jar</runtime-relative-path>
+                <runtime-relative-path>asm-all-5.0.1.jar</runtime-relative-path>
                 <binary-origin>external/asm-all-5.0.1.jar</binary-origin>
             </class-path-extension>
 <!--            <class-path-extension>
