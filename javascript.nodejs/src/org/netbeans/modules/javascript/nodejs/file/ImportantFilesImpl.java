@@ -42,90 +42,36 @@
 package org.netbeans.modules.javascript.nodejs.file;
 
 import java.util.Collection;
-import java.util.Collections;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
+import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.util.ChangeSupport;
-import org.openide.util.WeakListeners;
 
+@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
-    static final String PACKAGE_JSON = "package.json"; // NOI18N
-
-    private final Project project;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    final PackageJsonListener packageJsonListener = new PackageJsonListener();
+    private final ImportantFilesSupport support;
 
 
-    private ImportantFilesImpl(Project project) {
+    public ImportantFilesImpl(Project project) {
         assert project != null;
-        this.project = project;
-    }
-
-    @ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-    public static ImportantFilesImplementation forHtml5Project(Project project) {
-        ImportantFilesImpl importantFiles = new ImportantFilesImpl(project);
-        FileObject projectDirectory = project.getProjectDirectory();
-        projectDirectory.addFileChangeListener(WeakListeners.create(FileChangeListener.class, importantFiles.packageJsonListener, projectDirectory));
-        return importantFiles;
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), "package.json"); // NOI18N
     }
 
     @Override
-    public Collection<FileInfo> getFiles() {
-        FileObject packageJson = project.getProjectDirectory().getFileObject(PACKAGE_JSON);
-        if (packageJson == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(new FileInfo(packageJson));
+    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
+        return support.getFiles(null);
     }
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+        support.addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    void fireChange() {
-        changeSupport.fireChange();
-    }
-
-    //~ Inner classes
-
-    private final class PackageJsonListener extends FileChangeAdapter {
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            check(fe.getFile().getNameExt());
-            check(fe.getName() + "." + fe.getExt()); // NOI18N
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            check(fe.getFile().getNameExt());
-        }
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            check(fe.getFile().getNameExt());
-        }
-
-        private void check(String filename) {
-            if (PACKAGE_JSON.equals(filename)) {
-                fireChange();
-            }
-        }
-
+        support.removeChangeListener(listener);
     }
 
 }

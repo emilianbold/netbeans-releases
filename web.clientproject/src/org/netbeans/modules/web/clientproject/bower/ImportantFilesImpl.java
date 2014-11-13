@@ -41,106 +41,37 @@
  */
 package org.netbeans.modules.web.clientproject.bower;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
+import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.util.ChangeSupport;
-import org.openide.util.WeakListeners;
 
+@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
-    static final String[] BOWER_FILES = new String[] {
-        "bower.json", // NOI18N
-        ".bowerrc", // NOI18N
-    };
-
-    private final Project project;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    final BowerFilesListener bowerFilesListener = new BowerFilesListener();
+    private final ImportantFilesSupport support;
 
 
-    private ImportantFilesImpl(Project project) {
+    public ImportantFilesImpl(Project project) {
         assert project != null;
-        this.project = project;
-    }
-
-    @ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-    public static ImportantFilesImplementation forHtml5Project(Project project) {
-        ImportantFilesImpl importantFiles = new ImportantFilesImpl(project);
-        FileObject projectDirectory = project.getProjectDirectory();
-        projectDirectory.addFileChangeListener(WeakListeners.create(FileChangeListener.class, importantFiles.bowerFilesListener, projectDirectory));
-        return importantFiles;
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), "bower.json", ".bowerrc"); // NOI18N
     }
 
     @Override
     public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
-        List<FileInfo> files = new ArrayList<>();
-        FileObject projectDirectory = project.getProjectDirectory();
-        for (String bowerFile : BOWER_FILES) {
-            FileObject fo = projectDirectory.getFileObject(bowerFile);
-            if (fo != null) {
-                files.add(new FileInfo(fo));
-            }
-        }
-        if (files.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return files;
+        return support.getFiles(null);
     }
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+        support.addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    void fireChange() {
-        changeSupport.fireChange();
-    }
-
-    //~ Inner classes
-
-    private final class BowerFilesListener extends FileChangeAdapter {
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            check(fe.getFile().getNameExt());
-            check(fe.getName() + "." + fe.getExt()); // NOI18N
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            check(fe.getFile().getNameExt());
-        }
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            check(fe.getFile().getNameExt());
-        }
-
-        private void check(String filename) {
-            for (String bowerFile : BOWER_FILES) {
-                if (bowerFile.equals(filename)) {
-                    fireChange();
-                    return;
-                }
-            }
-        }
-
+        support.removeChangeListener(listener);
     }
 
 }

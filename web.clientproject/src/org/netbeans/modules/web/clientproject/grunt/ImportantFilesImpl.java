@@ -42,90 +42,43 @@
 package org.netbeans.modules.web.clientproject.grunt;
 
 import java.util.Collection;
-import java.util.Collections;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
+import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.util.ChangeSupport;
-import org.openide.util.WeakListeners;
 
+@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
-    static final String GRUNT_FILE = "Gruntfile.js"; // NOI18N
+    private final ImportantFilesSupport support;
+    private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
+        @Override
+        public FileInfo create(FileObject fileObject) {
+            return new FileInfo(fileObject, fileObject.getName(), null);
+        }
+    };
 
-    private final Project project;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    final GruntFileListener gruntFileListener = new GruntFileListener();
 
-
-    private ImportantFilesImpl(Project project) {
+    public ImportantFilesImpl(Project project) {
         assert project != null;
-        this.project = project;
-    }
-
-    @ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-    public static ImportantFilesImplementation forHtml5Project(Project project) {
-        ImportantFilesImpl importantFiles = new ImportantFilesImpl(project);
-        FileObject projectDirectory = project.getProjectDirectory();
-        projectDirectory.addFileChangeListener(WeakListeners.create(FileChangeListener.class, importantFiles.gruntFileListener, projectDirectory));
-        return importantFiles;
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), "Gruntfile.js"); // NOI18N
     }
 
     @Override
     public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
-        FileObject gruntFile = project.getProjectDirectory().getFileObject(GRUNT_FILE);
-        if (gruntFile == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(new ImportantFilesImplementation.FileInfo(gruntFile, gruntFile.getName(), null));
+        return support.getFiles(fileInfoCreator);
     }
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+        support.addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    void fireChange() {
-        changeSupport.fireChange();
-    }
-
-    //~ Inner classes
-
-    private final class GruntFileListener extends FileChangeAdapter {
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            check(fe.getFile().getNameExt());
-            check(fe.getName() + "." + fe.getExt()); // NOI18N
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            check(fe.getFile().getNameExt());
-        }
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            check(fe.getFile().getNameExt());
-        }
-
-        private void check(String filename) {
-            if (GRUNT_FILE.equals(filename)) {
-                fireChange();
-            }
-        }
-
+        support.removeChangeListener(listener);
     }
 
 }
