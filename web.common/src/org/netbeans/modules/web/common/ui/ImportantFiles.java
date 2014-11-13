@@ -44,11 +44,9 @@ package org.netbeans.modules.web.common.ui;
 import java.awt.EventQueue;
 import java.awt.Image;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -104,24 +102,24 @@ public final class ImportantFiles {
     private static final class ImportantFilesNodeList implements NodeList<Node>, LookupListener, ChangeListener {
 
         private final Lookup.Result<ImportantFilesImplementation> lookupResult;
+        private final ImportantFilesChildren importantFilesChildren;
+        private final Node importantFilesNode;
         final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
         ImportantFilesNodeList(Project project) {
             assert project != null;
             lookupResult = project.getLookup().lookupResult(ImportantFilesImplementation.class);
+            importantFilesChildren = new ImportantFilesChildren(lookupResult);
+            importantFilesNode = new ImportantFilesNode(importantFilesChildren);
         }
 
         @Override
         public List<Node> keys() {
-            List<ImportantFilesImplementation.FileInfo> importantFiles = new ArrayList<>();
-            for (ImportantFilesImplementation provider : lookupResult.allInstances()) {
-                importantFiles.addAll(provider.getFiles());
-            }
-            if (importantFiles.isEmpty()) {
+            if (!importantFilesChildren.hasImportantFiles()) {
                 return Collections.<Node>emptyList();
             }
-            return Collections.<Node>singletonList(new ImportantFilesNode(importantFiles));
+            return Collections.<Node>singletonList(importantFilesNode);
         }
 
         @Override
@@ -180,8 +178,8 @@ public final class ImportantFiles {
         private final Node iconDelegate;
 
 
-        ImportantFilesNode(Collection<ImportantFilesImplementation.FileInfo> importantFiles) {
-            super(new ImportantFilesChildren(importantFiles));
+        ImportantFilesNode(Children children) {
+            super(children);
             iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         }
 
@@ -212,14 +210,17 @@ public final class ImportantFiles {
 
         private static final Logger LOGGER = Logger.getLogger(ImportantFilesChildren.class.getName());
 
-        private final List<ImportantFilesImplementation.FileInfo> importantFiles;
+        private final Lookup.Result<ImportantFilesImplementation> lookupResult;
 
 
-        ImportantFilesChildren(Collection<ImportantFilesImplementation.FileInfo> importantFiles) {
-            assert importantFiles != null;
-            List<ImportantFilesImplementation.FileInfo> tmpList = new ArrayList<>(importantFiles);
-            Collections.sort(tmpList, new FileInfoComparator());
-            this.importantFiles = new CopyOnWriteArrayList<>(tmpList);
+        ImportantFilesChildren(Lookup.Result<ImportantFilesImplementation> lookupResult) {
+            assert lookupResult != null;
+            this.lookupResult = lookupResult;
+        }
+
+        public boolean hasImportantFiles() {
+            refreshImportantFiles();
+            return getNodesCount() > 0;
         }
 
         @Override
@@ -235,13 +236,21 @@ public final class ImportantFiles {
 
         @Override
         protected void addNotify() {
-            assert !importantFiles.isEmpty();
-            setKeys(importantFiles);
+            refreshImportantFiles();
         }
 
         @Override
         protected void removeNotify() {
             setKeys(Collections.<ImportantFilesImplementation.FileInfo>emptyList());
+        }
+
+        private void refreshImportantFiles() {
+            List<ImportantFilesImplementation.FileInfo> importantFiles = new ArrayList<>();
+            for (ImportantFilesImplementation provider : lookupResult.allInstances()) {
+                importantFiles.addAll(provider.getFiles());
+            }
+            Collections.sort(importantFiles, new FileInfoComparator());
+            setKeys(importantFiles);
         }
 
     }
@@ -251,7 +260,7 @@ public final class ImportantFiles {
         private final ImportantFilesImplementation.FileInfo fileInfo;
 
 
-        public ImportantFileNode(ImportantFilesImplementation.FileInfo fileInfo) throws DataObjectNotFoundException {
+        ImportantFileNode(ImportantFilesImplementation.FileInfo fileInfo) throws DataObjectNotFoundException {
             super(DataObject.find(fileInfo.getFile()).getNodeDelegate());
             this.fileInfo = fileInfo;
         }
