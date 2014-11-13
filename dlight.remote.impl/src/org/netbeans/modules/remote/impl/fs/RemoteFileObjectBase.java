@@ -658,7 +658,8 @@ public abstract class RemoteFileObjectBase {
             }
             // check there are no other child with such name
             if (p.getOwnerFileObject().getFileObject(newNameExt) != null) {
-                RemoteIOException.createAndThrow("EXC_CannotRename", getNameExt(), getParent().getPath(), newNameExt);// NOI18N
+                RemoteIOException.createAndThrow("EXC_CannotRename_AlreadyExists", getNameExt(), newNameExt, // NOI18N
+                        getParent().getPath(), getExecutionEnvironment().getDisplayName());
             }
             
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {

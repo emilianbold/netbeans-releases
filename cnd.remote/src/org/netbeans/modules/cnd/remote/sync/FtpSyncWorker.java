@@ -233,6 +233,15 @@ import org.openide.util.RequestProcessor;
             uploadPlainFiles();
         }
 
+        time2 = System.currentTimeMillis();
+        out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_CheckExecPerm"));
+        progressHandle.progress(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Progress_CheckExecPerm"));
+        addExecPermissions();
+        RemoteLogger.fine("Checkinrg exec permissions at {0} took {1} ms", executionEnvironment, (System.currentTimeMillis()-time2));
+        if (cancelled) {
+            return;
+        }
+
         out.println(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Message_Done"));
         out.println();
         
@@ -386,6 +395,43 @@ import org.openide.util.RequestProcessor;
             }
             uploadCount += dirsToCreate.size();
             progressHandle.progress(uploadCount);
+        }
+    }
+
+    private void addExecPermissions() throws IOException {
+        final List<String> filesToAdd = new LinkedList<>();
+        for (FileCollector.FileCollectorInfo fileInfo : fileCollector.getFiles()) {
+            if (!fileInfo.file.isDirectory() && fileInfo.file.canExecute()) {
+                String remotePath = mapper.getRemotePath(fileInfo.file.getAbsolutePath(), true);
+                CndUtils.assertNotNull(remotePath, "null remote file for " + fileInfo.file.getAbsolutePath()); //NOI18N
+                if (remotePath != null) {
+                    filesToAdd.add(remotePath);
+                }
+            }
+        }
+        if (cancelled) {
+            return;
+        }
+        if (!filesToAdd.isEmpty()) {
+            Feeder feeder = new Feeder() {
+                @Override
+                public void feed(BufferedWriter requestWriter) throws IOException {
+                    for (String dir : filesToAdd) {
+                        if (cancelled) {
+                            throw new InterruptedIOException();
+                        }
+                        requestWriter.append(dir).append(' ');
+                    }
+                }
+            };
+            try {
+                launchAndFeed(feeder, null, null, "xargs", "chmod", "+x"); // NOI18N
+            } catch (InterruptedIOException ex) {
+                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class, "FTP_Msg_Err_Canceled"));
+            } catch (IOException ex) {
+                throw new IOException(NbBundle.getMessage(FtpSyncWorker.class,
+                        "FTP_Msg_Err_CheckDirs", ex.getMessage() == null ? "" : ex.getMessage()), ex);
+            }
         }
     }
 

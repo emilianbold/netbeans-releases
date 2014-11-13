@@ -112,7 +112,7 @@ import org.openide.util.Utilities;
     private final List<FileCollectorInfo> filesToFeed = new ArrayList<FileCollectorInfo>(512);
     private String timeStampFile;
 
-    private static final RequestProcessor RP = new RequestProcessor("RfsLocalController", 1); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("FileCollector", 1); // NOI18N
 
     public FileCollector(File[] files, List<File> buildResults, RemoteUtil.PrefixedLogger logger, RemotePathMap mapper, SharabilityFilter filter,
             FileData fileData, ExecutionEnvironment execEnv, PrintWriter err) {        
