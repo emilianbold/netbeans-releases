@@ -6578,6 +6578,11 @@ org.netbeans.modules.java.source.ui.OpenProjectFastIndex$Strategy
 org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport$1IOJob
 org.netbeans.modules.masterfs.providers.BaseAnnotationProvider
 org.netbeans.modules.masterfs.ui.Init
+org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem$Factory
+org.netbeans.modules.masterfs.filebasedfs.MasterFileSystemFactory
+org.netbeans.modules.masterfs.ui.FileBasedFSWithUI
+org.netbeans.modules.masterfs.ui.FileBasedFSWithUI$Factory
+org.netbeans.modules.masterfs.ui.FileBasedFSWithUI$UiDecorator
 org.netbeans.modules.masterfs.watcher.nio2.NioNotifier
 org.netbeans.modules.openide.filesystems.FileSystemStatus
 org.netbeans.modules.openide.util.Compact2MutexEventProvider
@@ -6593,7 +6598,24 @@ org.netbeans.modules.parsing.nb.EditorMimeTypesImpl
 org.netbeans.modules.parsing.nb.Installer
 org.netbeans.modules.parsing.nb.indexing.NbActiveDocumentProvider
 org.netbeans.modules.parsing.ui.indexing.errors.ErrorAnnotator
+org.netbeans.modules.parsing.api.Source
+org.netbeans.modules.parsing.api.Source$MySourceAccessor
+org.netbeans.modules.parsing.impl.Schedulers$LkpListener
+org.netbeans.modules.parsing.impl.SourceAccessor
+org.netbeans.modules.parsing.impl.Utilities
+org.netbeans.modules.parsing.implspi.EnvironmentFactory
+org.netbeans.modules.parsing.implspi.TaskProcessorControl
+org.netbeans.modules.parsing.nb.CurrentDocumentScheduler
+org.netbeans.modules.parsing.nb.CurrentEditorTaskScheduler
+org.netbeans.modules.parsing.nb.CursorSensitiveScheduler
+org.netbeans.modules.parsing.nb.DataObjectEnvFactory
+org.netbeans.modules.parsing.nb.SelectedNodesScheduler
+org.netbeans.modules.progress.spi.ProgressEnvironment
+org.netbeans.modules.progress.spi.SwingController
+org.netbeans.modules.progress.ui.ProgressUI
+org.netbeans.modules.progress.ui.ProgressVisualizerProvider
 org.netbeans.modules.progress.spi.UIInternalHandle
+org.netbeans.progress.module.DefaultHandleFactory
 org.netbeans.modules.project.uiapi.BaseUtilities
 org.netbeans.modules.project.uiapi.BaseUtilities$ProjectGroupAccessor
 org.netbeans.modules.project.uiapi.BuildExecutionSupportImplementation
@@ -6629,6 +6651,10 @@ org.openide.util.spi.MutexImplementation
 
 # after #248415 the asm classes get loaded by our classloader
 # and we need to exclude them
+org.netbeans.core.startup.Asm
+org.netbeans.core.startup.Asm$CallParametersWriter
+org.netbeans.core.startup.Asm$CtorDelVisitor
+org.netbeans.core.startup.Asm$NullSignVisitor
 org.objectweb.asm.AnnotationVisitor
 org.objectweb.asm.AnnotationWriter
 org.objectweb.asm.Attribute
