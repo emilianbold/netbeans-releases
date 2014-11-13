@@ -108,7 +108,7 @@ public class ClientSideProjectTest extends NbTestCase {
     public void testProjectCreationWithProblems() throws Exception {
         ClientSideProject project = createProject(null, null, null);
         // Site root must be existing folder in order to set it in the project properties, create a temp folder
-        FileObject tmpSiteRoot = project.getProjectDirectory().createFolder("public_html");
+        FileObject tmpSiteRoot = project.getProjectDirectory().createFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
         projectProperties.setSourceFolder(ClientSideProjectConstants.DEFAULT_SOURCE_FOLDER);
         projectProperties.setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
