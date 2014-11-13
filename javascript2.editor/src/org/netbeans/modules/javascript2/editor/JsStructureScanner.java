@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -55,7 +56,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -66,13 +66,6 @@ import org.openide.util.ImageUtilities;
  * @author Petr Pisl
  */
 public class JsStructureScanner implements StructureScanner {
-
-    //private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
-
-    private static final String FOLD_FUNCTION = "codeblocks"; //NOI18N
-    private static final String FOLD_JSDOC = "comments"; //NOI18N
-    private static final String FOLD_COMMENT = "initial-comment"; //NOI18N
-    private static final String FOLD_OTHER_CODE_BLOCKS = "othercodeblocks"; //NOI18N
 
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
@@ -275,7 +268,7 @@ public class JsStructureScanner implements StructureScanner {
     
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        long start = System.currentTimeMillis();
+        long start = System.currentTimeMillis(); 
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
          
         TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
@@ -296,12 +289,12 @@ public class JsStructureScanner implements StructureScanner {
                     // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
                     int startOffset = ts.offset() + 3;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    appendFold(folds, FOLD_JSDOC,  info.getSnapshot().getOriginalOffset(startOffset),
+                    appendFold(folds, FoldType.DOCUMENTATION.code(),  info.getSnapshot().getOriginalOffset(startOffset),
                             info.getSnapshot().getOriginalOffset(endOffset));
                 } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
                     int startOffset = ts.offset() + 2;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    appendFold(folds, FOLD_COMMENT, info.getSnapshot().getOriginalOffset(startOffset),
+                    appendFold(folds, FoldType.COMMENT.code(), info.getSnapshot().getOriginalOffset(startOffset),
                             info.getSnapshot().getOriginalOffset(endOffset));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
@@ -311,9 +304,9 @@ public class JsStructureScanner implements StructureScanner {
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
                     String kind;
                     if (lastContextId == JsTokenId.KEYWORD_FUNCTION && isNotAnonymousFunction(ts, functionKeywordPosition)) {
-                        kind = FOLD_FUNCTION;
+                        kind = FoldType.MEMBER.code();
                     } else {
-                        kind = FOLD_OTHER_CODE_BLOCKS;
+                        kind = FoldType.CODE_BLOCK.code();
                     }
                     stack.add(new FoldingItem(kind, ts.offset()));
                 } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
