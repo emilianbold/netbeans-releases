@@ -497,4 +497,25 @@ public final class CodeModelDiagnostic {
             }
         }
     }
+    
+    @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
+    public final static class OffsetToPositionProvider implements CndDiagnosticProvider {
+
+        @NbBundle.Messages({"OffsetToPositionProvider.displayName=Offset to Position"})
+        @Override
+        public String getDisplayName() {
+            return OffsetToPositionProvider_displayName();
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+            for (CsmFile csmFile : allFiles) {
+                if (csmFile instanceof FileImpl) {
+                    OffsetToPositionFrame frame = new OffsetToPositionFrame((FileImpl) csmFile);
+                    frame.setVisible(true);
+                }
+            }
+        }
+    }    
 }
