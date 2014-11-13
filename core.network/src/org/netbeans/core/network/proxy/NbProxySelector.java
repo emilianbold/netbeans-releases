@@ -76,7 +76,7 @@ public final class NbProxySelector extends ProxySelector {
     public NbProxySelector() {
         original = ProxySelector.getDefault();
         LOG.log(Level.FINE, "java.net.useSystemProxies has been set to {0}", useSystemProxies());
-        if (original.getClass().getName().equals(DEFAULT_PROXY_SELECTOR_CLASS_NAME) || original == null) {
+        if (original == null || original.getClass().getName().equals(DEFAULT_PROXY_SELECTOR_CLASS_NAME)) {
             NetworkProxyReloader.reloadNetworkProxy();
         }
         ProxySettings.addPreferenceChangeListener(new ProxySettingsListener());
