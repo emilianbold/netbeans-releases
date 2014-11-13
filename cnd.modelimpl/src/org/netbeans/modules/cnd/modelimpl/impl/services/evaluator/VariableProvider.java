@@ -153,12 +153,14 @@ public class VariableProvider {
                 return 0;
             }
             if (decl != null) { // TODO: why this condition?
+                final String scopeQualifiedName = CsmKindUtilities.isQualified(scope) ? 
+                        ((CsmQualifiedNamedElement) scope).getQualifiedName().toString() : 
+                        decl.getQualifiedName().toString();
+                
+                final String fullVariableName = scopeQualifiedName + APTUtils.SCOPE + variableName;   
+                
                 for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entries()) {
                     CsmTemplateParameter param = entry.getKey();
-                    final String scopeQualifiedName = CsmKindUtilities.isQualified(scope) ? 
-                            ((CsmQualifiedNamedElement) scope).getQualifiedName().toString() : 
-                            decl.getQualifiedName().toString();
-                    final String fullVariableName = scopeQualifiedName + APTUtils.SCOPE + variableName;
                     if (variableName.equals(param.getQualifiedName().toString()) || 
                             fullVariableName.equals(param.getQualifiedName().toString())) {
                         CsmSpecializationParameter spec = entry.getValue();
