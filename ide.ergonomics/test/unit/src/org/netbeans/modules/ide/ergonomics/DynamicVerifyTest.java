@@ -135,7 +135,7 @@ public class DynamicVerifyTest extends NbTestCase {
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
 
         iterateRegistrations(sb, ProjectFactory.class, null, all);
-
+        
         if (!all.isEmpty()) {
             fail("Not all IDE projects are registered for ergonomics mode, see the list below.\n" +
                 "This may mean that you are not using @AntBasedProjectRegistration to register\n" +
@@ -175,6 +175,12 @@ public class DynamicVerifyTest extends NbTestCase {
             if (f.getClass().getPackage().getName().equals("org.netbeans.modules.ide.ergonomics.fod")) {
                 continue;
             }
+            // defect #248615: ProjectConvertorFactory is exempt from this test, until
+            // support is provided in the ergonomics
+            if (f.getClass().getName().equals("org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory")) {
+                continue;
+            }
+
             sb.append(f.getClass().getName());
             if (info != null) {
                 Object more = info.invoke(f);
