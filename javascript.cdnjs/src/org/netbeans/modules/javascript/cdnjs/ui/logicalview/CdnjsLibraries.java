@@ -48,8 +48,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import static javax.swing.Action.NAME;
-import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
@@ -98,21 +96,27 @@ public final class CdnjsLibraries {
     private static final class CdnjsLibrariesNodeList implements NodeList<Node>, LibraryListener {
 
         private final Project project;
+        private final CdnjsLibrariesChildren cdnjsLibrariesChildren;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+        // @GuardedBy("thread")
+        private Node cdnjsLibrariesNode;
 
         CdnjsLibrariesNodeList(Project project) {
             assert project != null;
             this.project = project;
+            cdnjsLibrariesChildren = new CdnjsLibrariesChildren(project);
         }
 
         @Override
         public List<Node> keys() {
-            Library.Version[] libraries = LibraryPersistence.getDefault().loadLibraries(project);
-            if (libraries.length == 0) {
+            if (!cdnjsLibrariesChildren.hasLibraries()) {
                 return Collections.<Node>emptyList();
             }
-            return Collections.<Node>singletonList(new CdnjsLibrariesNode(project, libraries));
+            if (cdnjsLibrariesNode == null) {
+                cdnjsLibrariesNode = new CdnjsLibrariesNode(project, cdnjsLibrariesChildren);
+            }
+            return Collections.<Node>singletonList(cdnjsLibrariesNode);
         }
 
         @Override
@@ -162,8 +166,8 @@ public final class CdnjsLibraries {
         private final Node iconDelegate;
 
 
-        CdnjsLibrariesNode(Project project, Library.Version[] libraries) {
-            super(new CdnjsLibrariesChildren(libraries));
+        CdnjsLibrariesNode(Project project, CdnjsLibrariesChildren cdnjsLibrariesChildren) {
+            super(cdnjsLibrariesChildren);
             assert project != null;
             this.project = project;
             iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
@@ -196,12 +200,18 @@ public final class CdnjsLibraries {
 
     private static final class CdnjsLibrariesChildren extends Children.Keys<Library.Version> {
 
-        private final Library.Version[] libraries;
+        private final Project project;
 
 
-        CdnjsLibrariesChildren(Library.Version[] libraries) {
-            assert libraries != null;
-            this.libraries = libraries;
+        CdnjsLibrariesChildren(Project project) {
+            super(true);
+            assert project != null;
+            this.project = project;
+        }
+
+        public boolean hasLibraries() {
+            refreshLibraries();
+            return getNodesCount() > 0;
         }
 
         @Override
@@ -211,13 +221,21 @@ public final class CdnjsLibraries {
 
         @Override
         protected void addNotify() {
-            assert libraries.length > 0;
-            setKeys(Arrays.asList(libraries));
+            refreshLibraries();
         }
 
         @Override
         protected void removeNotify() {
             setKeys(Collections.<Library.Version>emptyList());
+        }
+
+        private void refreshLibraries() {
+            Library.Version[] libraries = LibraryPersistence.getDefault().loadLibraries(project);
+            if (libraries.length == 0) {
+                setKeys(Collections.<Library.Version>emptyList());
+                return;
+            }
+            setKeys(Arrays.asList(libraries));
         }
 
     }
