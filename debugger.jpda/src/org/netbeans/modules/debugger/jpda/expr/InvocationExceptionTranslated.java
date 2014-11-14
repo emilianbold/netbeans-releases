@@ -57,6 +57,7 @@ import com.sun.jdi.VirtualMachine;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -218,11 +219,22 @@ public class InvocationExceptionTranslated extends ApplicationException {
             java.lang.reflect.Field sequenceNumberField = vm.getClass().getDeclaredField("sequenceNumber");
             sequenceNumberField.setAccessible(true);
             Object sn = sequenceNumberField.get(vm);
-            sequenceNumber = sn.toString();
+            sequenceNumber = Objects.toString(sn);
         } catch (Exception ex) {
-            sequenceNumber = "N/A";
+            sequenceNumber = ex.toString();
+            logger.log(Level.INFO, "Retrieving VM's sequenceNumber", ex);
         }
-        return vm.toString() + " #"+sequenceNumber+"["+vm.name()+", "+vm.description()+", "+vm.version()+"]";
+        String target;
+        try {
+            java.lang.reflect.Field targetField = vm.getClass().getDeclaredField("target");
+            targetField.setAccessible(true);
+            Object t = targetField.get(vm);
+            target = Objects.toString(t);
+        } catch (Exception ex) {
+            target = ex.toString();
+            logger.log(Level.INFO, "Retrieving VM's target", ex);
+        }
+        return vm.toString() + " #"+sequenceNumber+"["+vm.name()+", "+vm.description()+", "+vm.version()+"\nTargetVM="+target+"]";
     }
 
     @Override
