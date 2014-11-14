@@ -103,21 +103,25 @@ public final class ImportantFiles {
 
         private final Lookup.Result<ImportantFilesImplementation> lookupResult;
         private final ImportantFilesChildren importantFilesChildren;
-        private final Node importantFilesNode;
         final ChangeSupport changeSupport = new ChangeSupport(this);
+
+        // @GuardedBy("thread")
+        private Node importantFilesNode;
 
 
         ImportantFilesNodeList(Project project) {
             assert project != null;
             lookupResult = project.getLookup().lookupResult(ImportantFilesImplementation.class);
             importantFilesChildren = new ImportantFilesChildren(lookupResult);
-            importantFilesNode = new ImportantFilesNode(importantFilesChildren);
         }
 
         @Override
         public List<Node> keys() {
             if (!importantFilesChildren.hasImportantFiles()) {
                 return Collections.<Node>emptyList();
+            }
+            if (importantFilesNode == null) {
+                importantFilesNode = new ImportantFilesNode(importantFilesChildren);
             }
             return Collections.<Node>singletonList(importantFilesNode);
         }
@@ -214,6 +218,7 @@ public final class ImportantFiles {
 
 
         ImportantFilesChildren(Lookup.Result<ImportantFilesImplementation> lookupResult) {
+            super(true);
             assert lookupResult != null;
             this.lookupResult = lookupResult;
         }
