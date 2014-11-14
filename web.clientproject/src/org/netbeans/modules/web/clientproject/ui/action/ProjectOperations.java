@@ -49,8 +49,8 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.node.ImportantFilesNodeFactory;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
@@ -133,11 +133,9 @@ public class ProjectOperations implements DeleteOperationImplementation, CopyOpe
         // all the sources
         files.addAll(Arrays.asList(ClientSideProjectUtilities.getSourceObjects(project)));
         // important files
-        FileObject projectDir = project.getProjectDirectory();
-        for (String path : ImportantFilesNodeFactory.ImportantFilesChildren.FILES.keySet()) {
-            FileObject file = projectDir.getFileObject(path);
-            if (file != null) {
-                files.add(file);
+        for (ImportantFilesImplementation importantFiles : project.getLookup().lookupAll(ImportantFilesImplementation.class)) {
+            for (ImportantFilesImplementation.FileInfo fileInfo : importantFiles.getFiles()) {
+                files.add(fileInfo.getFile());
             }
         }
         return files;
