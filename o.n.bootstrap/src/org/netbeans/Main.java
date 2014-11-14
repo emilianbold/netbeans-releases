@@ -44,6 +44,7 @@
 
 package org.netbeans;
 
+import java.awt.GraphicsEnvironment;
 import java.util.ResourceBundle;
 import javax.swing.JOptionPane;
 
@@ -65,12 +66,16 @@ public final class Main extends Object {
         try {
             Class.forName("java.lang.ReflectiveOperationException"); // NOI18N
         } catch (ClassNotFoundException ex) {
-            JOptionPane.showMessageDialog(
-                null,
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava7"),
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava7"),
-                JOptionPane.WARNING_MESSAGE
-            );
+            if (GraphicsEnvironment.isHeadless()) {
+                System.err.println(ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava7"));
+            } else {
+                JOptionPane.showMessageDialog(
+                        null,
+                        ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava7"),
+                        ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava7"),
+                        JOptionPane.WARNING_MESSAGE
+                );
+            }
             System.exit(10);
         }
         // end of java6 only code
