@@ -1342,7 +1342,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             fileTreeComponent.getComponent().setPreferredSize(null);
             Dimension dim = activeFileComponent.getComponent().getPreferredSize();
             activeFileComponent.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-            Setup toSelect = activeFileComponent.getNodeAtPosition(0).getSetup();
+            DiffNode node = activeFileComponent.getNodeAtPosition(0);
+            Setup toSelect = node == null ? null : node.getSetup();
             setDiffIndex(toSelect, 0, true);
             boolean buttonsEnabled = revisionRight == Revision.LOCAL && revisionLeft == Revision.HEAD;
             panel.btnCommit.setEnabled(buttonsEnabled);

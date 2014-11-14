@@ -64,6 +64,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.commons.JiraUpdater;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -87,7 +88,7 @@ public class FakeJiraConnector {
                     "fake.jira.connector",                                              // NOI18N
                     NbBundle.getMessage(FakeJiraConnector.class, "LBL_FakeJiraName"),         // NOI18N
                     NbBundle.getMessage(FakeJiraConnector.class, "LBL_FakeJiraNameTooltip"),  // NOI18N
-                    null);
+                    ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/repository.png", true));
         }
         return connector;
     }

@@ -258,6 +258,7 @@
         <copy file="${basedir}/commonfiles/unpack200.sh" todir="${scriptsdir}"/>
         <copy file="${basedir}/commonfiles/postupgrade_generic" tofile="${scriptsdir}/postupgrade" overwrite="false"/>
         <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
+        <copy file="${basedir}/commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall_generic" overwrite="false"/>
 
         <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
         

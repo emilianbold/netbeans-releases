@@ -53,6 +53,10 @@ public class ModuleLifecycleManager extends ModuleInstall {
 
     @Override
     public boolean closing() {
+        if(Accessor.isInitialized()) {
+            // haven't been initialized -> don't bother
+            return true;
+        }    
         try {
             Accessor.getInstance().finishMylyn();
         } catch (Exception ex) {

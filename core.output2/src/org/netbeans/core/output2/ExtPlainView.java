@@ -114,9 +114,13 @@ class ExtPlainView extends PlainView {
             }
             int end = p0 + s.count;
             Lines lines = ((OutputDocument) doc).getLines();
-            int line = lines.getLineAt(p0);
-            int lineOffset = lines.getLineStart(line);
-            LineInfo info = lines.getLineInfo(line);
+            int lineOffset;
+            LineInfo info;
+            synchronized (lines.readLock()) {
+                int line = lines.getLineAt(p0);
+                lineOffset = lines.getLineStart(line);
+                info = lines.getLineInfo(line);
+            }
 
             for (LineInfo.Segment ls : info.getLineSegments()) {
                 if (lineOffset + ls.getEnd() <= p0) {

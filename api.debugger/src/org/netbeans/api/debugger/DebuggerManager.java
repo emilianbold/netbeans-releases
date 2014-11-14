@@ -1002,15 +1002,7 @@ public final class DebuggerManager implements ContextProvider {
                 int i, k = l.size ();
                 for (i = 0; i < k; i++) {
                     DebuggerManagerListener dl = (DebuggerManagerListener) l.elementAt (i);
-                    Breakpoint[] bkpts;
-                    try {
-                        bkpts = dl.initBreakpoints();
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable t) {
-                        Exceptions.printStackTrace(t);
-                        bkpts = null;
-                    }
+                    Breakpoint[] bkpts = getInitialBreakpoints(dl);
                     if (bkpts != null) {
                         createdBreakpoints.addAll (Arrays.asList (bkpts));
                         for (int j = 0; j < bkpts.length; j++) {
@@ -1030,15 +1022,7 @@ public final class DebuggerManager implements ContextProvider {
                     k = l1.size ();
                     for (i = 0; i < k; i++) {
                         DebuggerManagerListener dl = (DebuggerManagerListener) l1.elementAt (i);
-                        Breakpoint[] bkpts;
-                        try {
-                            bkpts = dl.initBreakpoints();
-                        } catch (ThreadDeath td) {
-                            throw td;
-                        } catch (Throwable t) {
-                            Exceptions.printStackTrace(t);
-                            bkpts = null;
-                        }
+                        Breakpoint[] bkpts = getInitialBreakpoints(dl);
                         if (bkpts != null) {
                             createdBreakpoints.addAll (Arrays.asList (bkpts));
                             for (int j = 0; j < bkpts.length; j++) {
@@ -1075,15 +1059,7 @@ public final class DebuggerManager implements ContextProvider {
             breakpointsInitializing = true;
             try {
                 createdBreakpoints = new ArrayList<Breakpoint>();
-                Breakpoint[] bps;
-                try {
-                    bps = dl.initBreakpoints();
-                } catch (ThreadDeath td) {
-                    throw td;
-                } catch (Throwable t) {
-                    Exceptions.printStackTrace(t);
-                    bps = null;
-                }
+                Breakpoint[] bps = getInitialBreakpoints(dl);
                 if (bps != null) {
                     createdBreakpoints.addAll (Arrays.asList(bps));
                     for (int j = 0; j < bps.length; j++) {
@@ -1104,6 +1080,43 @@ public final class DebuggerManager implements ContextProvider {
             registerBreakpoint(bp);
             fireBreakpointCreated (bp, originatingListeners.get(bp));
         }
+    }
+    
+    private static Breakpoint[] getInitialBreakpoints(DebuggerManagerListener dl) {
+        Breakpoint[] bps;
+        try {
+            bps = dl.initBreakpoints();
+        } catch (ThreadDeath td) {
+            throw td;
+        } catch (Throwable t) {
+            Exceptions.printStackTrace(t);
+            bps = null;
+        }
+        if (bps == null) {
+            return null;
+        }
+        int nn = 0;
+        for (int i = 0; i < bps.length; i++) {
+            if (bps[i] == null) { // Should be an exception
+                nn++;
+            }
+        }
+        if (nn > 0) {
+            if (nn == bps.length) {
+                return null;
+            }
+            Breakpoint[] bps2 = new Breakpoint[bps.length - nn];
+            int i = 0, j = 0;
+            while (i < bps.length) {
+                if (bps[i] != null) {
+                    bps2[j] = bps[i];
+                    j++;
+                }
+                i++;
+            }
+            bps = bps2;
+        }
+        return bps;
     }
 
     private void removeBreakpoints(DebuggerManagerListener dl) {
