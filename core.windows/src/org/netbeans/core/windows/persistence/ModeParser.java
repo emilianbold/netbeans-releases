@@ -119,6 +119,8 @@ class ModeParser {
     /** Contains names of all tcRefs placed in local folder <String> */
     private Set maskSet;
     
+    private final Object LOCK = new Object();
+    
     public ModeParser (String name, Set maskSet) {
         this.modeName = name;
         this.maskSet = maskSet;
@@ -126,34 +128,38 @@ class ModeParser {
     
     /** Load mode configuration including all tcrefs. */
     ModeConfig load () throws IOException {
-        //if (DEBUG) Debug.log(ModeParser.class, "load ENTER" + " mo:" + name);
-        ModeConfig mc = new ModeConfig();
-        readProperties(mc);
-        if (mc.kind == Constants.MODE_KIND_SLIDING && mc.side != null && !mc.permanent) {
-            // now we have the 4.0 anonymous mode for the slide bar. replace with the 
-            // predefined ones..
-            mc.permanent = true;
-            // well, the names are defined in core/ui.
-            // shall we at all care about the name? or is making it permanent just fine?
-//            if (mc.side.equals(Constants.BOTTOM)) {
-//                mc.name = "bottomSlidingSide"; //NOI18N
-//            } else if (mc.side.equals(Constants.LEFT)) {
-//                mc.name = "leftSlidingSide"; //NOI18N
-//            } else if (mc.side.equals(Constants.RIGHT)) {
-//                mc.name = "rightSlidingSide"; //NOI18N
-//            }
+        synchronized( LOCK ) {
+            //if (DEBUG) Debug.log(ModeParser.class, "load ENTER" + " mo:" + name);
+            ModeConfig mc = new ModeConfig();
+            readProperties(mc);
+            if (mc.kind == Constants.MODE_KIND_SLIDING && mc.side != null && !mc.permanent) {
+                // now we have the 4.0 anonymous mode for the slide bar. replace with the 
+                // predefined ones..
+                mc.permanent = true;
+                // well, the names are defined in core/ui.
+                // shall we at all care about the name? or is making it permanent just fine?
+    //            if (mc.side.equals(Constants.BOTTOM)) {
+    //                mc.name = "bottomSlidingSide"; //NOI18N
+    //            } else if (mc.side.equals(Constants.LEFT)) {
+    //                mc.name = "leftSlidingSide"; //NOI18N
+    //            } else if (mc.side.equals(Constants.RIGHT)) {
+    //                mc.name = "rightSlidingSide"; //NOI18N
+    //            }
+            }
+            readTCRefs(mc);
+            //if (DEBUG) Debug.log(ModeParser.class, "load LEAVE" + " mo:" + name);
+            return mc;
         }
-        readTCRefs(mc);
-        //if (DEBUG) Debug.log(ModeParser.class, "load LEAVE" + " mo:" + name);
-        return mc;
     }
     
     /** Save mode configuration including all tcrefs. */
     void save (ModeConfig mc) throws IOException {
-        //if (DEBUG) Debug.log(ModeParser.class, "save ENTER" + " mo:" + name);
-        writeProperties(mc);
-        writeTCRefs(mc);
-        //if (DEBUG) Debug.log(ModeParser.class, "save LEAVE" + " mo:" + name);
+        synchronized( LOCK ) {
+            //if (DEBUG) Debug.log(ModeParser.class, "save ENTER" + " mo:" + name);
+            writeProperties(mc);
+            writeTCRefs(mc);
+            //if (DEBUG) Debug.log(ModeParser.class, "save LEAVE" + " mo:" + name);
+        }
     }
     
     private void readProperties (ModeConfig mc) throws IOException {
@@ -662,113 +668,115 @@ class ModeParser {
      * @param tcRefName unique name of tcRef
      */
     TCRefConfig addTCRef (String tcRefName, List<String> tcRefNameList) {
-        if (DEBUG) Debug.log(ModeParser.class, "addTCRef ENTER" + " mo:" + getName()
-        + " tcRef:" + tcRefName);
-        //Check consistency. TCRefParser instance should not exist.
-        TCRefParser tcRefParser = tcRefParserMap.get(tcRefName);
-        if (tcRefParser != null) {
-            PersistenceManager.LOG.log(Level.INFO,
-            "[WinSys.ModeParser.addTCRef]" // NOI18N
-            + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
-            + tcRefName + " exists but it should not."); // NOI18N
-            tcRefParserMap.remove(tcRefName);
-        }
-        tcRefParser = new TCRefParser(tcRefName);
-        FileObject moduleFolder = moduleParentFolder.getFileObject(modeName);
-        tcRefParser.setModuleParentFolder(moduleFolder);
-        tcRefParser.setInModuleFolder(true);
-        tcRefParserMap.put(tcRefName, tcRefParser);
-        TCRefConfig tcRefConfig = null;
-        try {
-            tcRefConfig = tcRefParser.load();
-        } catch (IOException exc) {
-            PersistenceManager.LOG.log(Level.INFO,
-            "[WinSys.ModeParser.addTCRef]" // NOI18N
-            + " Warning: ModeParser " + getName() + ". Cannot load tcRef " +  tcRefName, exc); // NOI18N
-        }
-        
-        // Update order
-        List<TCRefParser> localList = new ArrayList<TCRefParser>(10);
-        Map<String,TCRefParser> localMap = (Map) ((HashMap) tcRefParserMap).clone();
-
-        if( null == tcRefOrder ) {
-            //#232307
-            PersistenceManager.LOG.log(Level.INFO,
-            "[WinSys.ModeParser.addTCRef]" // NOI18N
-            + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
-            + tcRefName + " is missing TC order."); // NOI18N
-            tcRefParserMap.remove(tcRefName);
-            readOrder();
-        }
-        TCRefParser [] tcRefParserArray = new TCRefParser[tcRefOrder.size()];
-        for (Iterator it = tcRefOrder.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry en = (Map.Entry) it.next();
-            String name = (String) en.getKey();
-            int index = ((Integer) en.getValue()).intValue();
-            tcRefParser = (TCRefParser) localMap.remove(name);
-            //Put instances to array according to defined order
-            //Order should be defined from 0 to N-1
-            //log("-- -- ADD [" + index + "]: " + tcRefParser.getName());
-            tcRefParserArray[index] = tcRefParser;
-        }
-        for (int i = 0; i < tcRefParserArray.length; i++) {
-            if(  null != tcRefParserArray[i] ) {
-                //#233078 - when enabling modules that add more than one TC
-                //the file system sends one notification per file however the order
-                //attribute in Modes folder contains all new files already so
-                //the parser is missing for files that were notified yet
-                localList.add(tcRefParserArray[i]);
+        synchronized( LOCK ) {
+            if (DEBUG) Debug.log(ModeParser.class, "addTCRef ENTER" + " mo:" + getName()
+            + " tcRef:" + tcRefName);
+            //Check consistency. TCRefParser instance should not exist.
+            TCRefParser tcRefParser = tcRefParserMap.get(tcRefName);
+            if (tcRefParser != null) {
+                PersistenceManager.LOG.log(Level.INFO,
+                "[WinSys.ModeParser.addTCRef]" // NOI18N
+                + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
+                + tcRefName + " exists but it should not."); // NOI18N
+                tcRefParserMap.remove(tcRefName);
             }
+            tcRefParser = new TCRefParser(tcRefName);
+            FileObject moduleFolder = moduleParentFolder.getFileObject(modeName);
+            tcRefParser.setModuleParentFolder(moduleFolder);
+            tcRefParser.setInModuleFolder(true);
+            tcRefParserMap.put(tcRefName, tcRefParser);
+            TCRefConfig tcRefConfig = null;
+            try {
+                tcRefConfig = tcRefParser.load();
+            } catch (IOException exc) {
+                PersistenceManager.LOG.log(Level.INFO,
+                "[WinSys.ModeParser.addTCRef]" // NOI18N
+                + " Warning: ModeParser " + getName() + ". Cannot load tcRef " +  tcRefName, exc); // NOI18N
+            }
+
+            // Update order
+            List<TCRefParser> localList = new ArrayList<TCRefParser>(10);
+            Map<String,TCRefParser> localMap = (Map) ((HashMap) tcRefParserMap).clone();
+
+            if( null == tcRefOrder ) {
+                //#232307
+                PersistenceManager.LOG.log(Level.INFO,
+                "[WinSys.ModeParser.addTCRef]" // NOI18N
+                + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
+                + tcRefName + " is missing TC order."); // NOI18N
+                tcRefParserMap.remove(tcRefName);
+                readOrder();
+            }
+            TCRefParser [] tcRefParserArray = new TCRefParser[tcRefOrder.size()];
+            for (Iterator it = tcRefOrder.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry en = (Map.Entry) it.next();
+                String name = (String) en.getKey();
+                int index = ((Integer) en.getValue()).intValue();
+                tcRefParser = (TCRefParser) localMap.remove(name);
+                //Put instances to array according to defined order
+                //Order should be defined from 0 to N-1
+                //log("-- -- ADD [" + index + "]: " + tcRefParser.getName());
+                tcRefParserArray[index] = tcRefParser;
+            }
+            for (int i = 0; i < tcRefParserArray.length; i++) {
+                if(  null != tcRefParserArray[i] ) {
+                    //#233078 - when enabling modules that add more than one TC
+                    //the file system sends one notification per file however the order
+                    //attribute in Modes folder contains all new files already so
+                    //the parser is missing for files that were notified yet
+                    localList.add(tcRefParserArray[i]);
+                }
+            }
+            //Append remaining instances if any
+            for (Iterator<String> it = localMap.keySet().iterator(); it.hasNext(); ) {
+                String key = it.next();
+                tcRefParser = localMap.get(key);
+                assert tcRefParser != null : "No parser for " + key;
+                localList.add(tcRefParser);
+            }
+
+            /*if (DEBUG) Debug.log(ModeParser.class, "LIST BEFORE SORT");
+            for (int i = 0; i < localList.size(); i++) {
+                tcRefParser = (TCRefParser) localList.get(i);
+                if (DEBUG) Debug.log(ModeParser.class, "p[" + i + "]: " + tcRefParser.getName());
+            }*/
+
+            localList = carefullySort(localList);
+
+            /*if (DEBUG) Debug.log(ModeParser.class, "LIST AFTER SORT");
+            for (int i = 0; i < localList.size(); i++) {
+                tcRefParser = (TCRefParser) localList.get(i);
+                if (DEBUG) Debug.log(ModeParser.class, "p[" + i + "]: " + tcRefParser.getName());
+            }*/
+
+            //Create updated order
+            if( null == tcRefOrder )
+                tcRefOrder = new HashMap<String,Integer>(19);
+            tcRefOrder.clear();
+            for (int i = 0; i < localList.size(); i++) {
+                tcRefParser = (TCRefParser) localList.get(i);
+                tcRefOrder.put(tcRefParser.getName(), Integer.valueOf(i));
+            }
+            try {
+                writeOrder();
+            } catch (IOException exc) {
+                PersistenceManager.LOG.log(Level.INFO,
+                "[WinSys.ModeParser.addTCRef]" // NOI18N
+                + " Warning: Cannot write order of mode: " + getName(), exc); // NOI18N
+            }
+
+            //Fill output order
+            tcRefNameList.clear();
+            for (int i = 0; i < localList.size(); i++) {
+                tcRefParser = (TCRefParser) localList.get(i);
+                tcRefNameList.add(tcRefParser.getName());
+            }
+
+            if (DEBUG) Debug.log(ModeParser.class, "addTCRef LEAVE" + " mo:" + getName()
+            + " tcRef:" + tcRefName);
+
+            return tcRefConfig;
         }
-        //Append remaining instances if any
-        for (Iterator<String> it = localMap.keySet().iterator(); it.hasNext(); ) {
-            String key = it.next();
-            tcRefParser = localMap.get(key);
-            assert tcRefParser != null : "No parser for " + key;
-            localList.add(tcRefParser);
-        }
-        
-        /*if (DEBUG) Debug.log(ModeParser.class, "LIST BEFORE SORT");
-        for (int i = 0; i < localList.size(); i++) {
-            tcRefParser = (TCRefParser) localList.get(i);
-            if (DEBUG) Debug.log(ModeParser.class, "p[" + i + "]: " + tcRefParser.getName());
-        }*/
-        
-        localList = carefullySort(localList);
-        
-        /*if (DEBUG) Debug.log(ModeParser.class, "LIST AFTER SORT");
-        for (int i = 0; i < localList.size(); i++) {
-            tcRefParser = (TCRefParser) localList.get(i);
-            if (DEBUG) Debug.log(ModeParser.class, "p[" + i + "]: " + tcRefParser.getName());
-        }*/
-        
-        //Create updated order
-        if( null == tcRefOrder )
-            tcRefOrder = new HashMap<String,Integer>(19);
-        tcRefOrder.clear();
-        for (int i = 0; i < localList.size(); i++) {
-            tcRefParser = (TCRefParser) localList.get(i);
-            tcRefOrder.put(tcRefParser.getName(), Integer.valueOf(i));
-        }
-        try {
-            writeOrder();
-        } catch (IOException exc) {
-            PersistenceManager.LOG.log(Level.INFO,
-            "[WinSys.ModeParser.addTCRef]" // NOI18N
-            + " Warning: Cannot write order of mode: " + getName(), exc); // NOI18N
-        }
-        
-        //Fill output order
-        tcRefNameList.clear();
-        for (int i = 0; i < localList.size(); i++) {
-            tcRefParser = (TCRefParser) localList.get(i);
-            tcRefNameList.add(tcRefParser.getName());
-        }
-        
-        if (DEBUG) Debug.log(ModeParser.class, "addTCRef LEAVE" + " mo:" + getName()
-        + " tcRef:" + tcRefName);
-        
-        return tcRefConfig;
     }
     
     /** Adds TCRefParser to ModeParser. Called from import to pass module info
@@ -776,34 +784,36 @@ class ModeParser {
      * @param tcRefName unique name of tcRef
      */
     void addTCRefImport (String tcRefName, InternalConfig internalCfg) {
-        if (DEBUG) Debug.log(ModeParser.class, "addTCRefImport ENTER" + " mo:" + getName()
-        + " tcRef:" + tcRefName);
-        //Check consistency. TCRefParser instance should not exist.
-        TCRefParser tcRefParser = tcRefParserMap.get(tcRefName);
-        if (tcRefParser != null) {
-            PersistenceManager.LOG.log(Level.INFO,
-            "[WinSys.ModeParser.addTCRef]" // NOI18N
-            + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
-            + tcRefName + " exists but it should not."); // NOI18N
-            tcRefParserMap.remove(tcRefName);
+        synchronized( LOCK ) {
+            if (DEBUG) Debug.log(ModeParser.class, "addTCRefImport ENTER" + " mo:" + getName()
+            + " tcRef:" + tcRefName);
+            //Check consistency. TCRefParser instance should not exist.
+            TCRefParser tcRefParser = tcRefParserMap.get(tcRefName);
+            if (tcRefParser != null) {
+                PersistenceManager.LOG.log(Level.INFO,
+                "[WinSys.ModeParser.addTCRef]" // NOI18N
+                + " Warning: ModeParser " + getName() + ". TCRefParser " // NOI18N
+                + tcRefName + " exists but it should not."); // NOI18N
+                tcRefParserMap.remove(tcRefName);
+            }
+            tcRefParser = new TCRefParser(tcRefName);
+            //FileObject moduleFolder = moduleParentFolder.getFileObject(modeName);
+            //tcRefParser.setModuleParentFolder(moduleFolder);
+            //tcRefParser.setInModuleFolder(false);
+            FileObject localFolder = localParentFolder.getFileObject(modeName);
+            tcRefParser.setLocalParentFolder(localFolder);
+            tcRefParser.setInternalConfig(internalCfg);
+
+            //if (DEBUG) Debug.log(ModeParser.class, "CodeNameBase:" + internalCfg.moduleCodeNameBase);
+            //if (DEBUG) Debug.log(ModeParser.class, "CodeNameRelease:" + internalCfg.moduleCodeNameRelease);
+            //if (DEBUG) Debug.log(ModeParser.class, "SpecificationVersion:" + internalCfg.moduleSpecificationVersion);
+            //if (DEBUG) Debug.log(ModeParser.class, "specVersion:" + internalCfg.specVersion);
+
+            tcRefParserMap.put(tcRefName, tcRefParser);
+
+            if (DEBUG) Debug.log(ModeParser.class, "addTCRefImport LEAVE" + " mo:" + getName()
+            + " tcRef:" + tcRefName);
         }
-        tcRefParser = new TCRefParser(tcRefName);
-        //FileObject moduleFolder = moduleParentFolder.getFileObject(modeName);
-        //tcRefParser.setModuleParentFolder(moduleFolder);
-        //tcRefParser.setInModuleFolder(false);
-        FileObject localFolder = localParentFolder.getFileObject(modeName);
-        tcRefParser.setLocalParentFolder(localFolder);
-        tcRefParser.setInternalConfig(internalCfg);
-        
-        //if (DEBUG) Debug.log(ModeParser.class, "CodeNameBase:" + internalCfg.moduleCodeNameBase);
-        //if (DEBUG) Debug.log(ModeParser.class, "CodeNameRelease:" + internalCfg.moduleCodeNameRelease);
-        //if (DEBUG) Debug.log(ModeParser.class, "SpecificationVersion:" + internalCfg.moduleSpecificationVersion);
-        //if (DEBUG) Debug.log(ModeParser.class, "specVersion:" + internalCfg.specVersion);
-        
-        tcRefParserMap.put(tcRefName, tcRefParser);
-        
-        if (DEBUG) Debug.log(ModeParser.class, "addTCRefImport LEAVE" + " mo:" + getName()
-        + " tcRef:" + tcRefName);
     }
     
     /** Finds TCRefParser with given ID. Returns null if such TCRefParser
@@ -811,8 +821,10 @@ class ModeParser {
      * @param tcRefName unique name of tcRef
      */
     TCRefParser findTCRefParser (String tcRefName) {
-        //if (DEBUG) Debug.log(ModeParser.class, "findTCRefParser ENTER" + " tcRef:" + tcRefName);
-        return tcRefParserMap.get(tcRefName);
+        synchronized( LOCK ) {
+            //if (DEBUG) Debug.log(ModeParser.class, "findTCRefParser ENTER" + " tcRef:" + tcRefName);
+            return tcRefParserMap.get(tcRefName);
+        }
     }
     
     /** Getter for internal configuration data.
