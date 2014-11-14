@@ -408,11 +408,20 @@ public abstract class BaseDwarfProvider extends BaseProvider {
         if (ConnectionManager.getInstance().isConnectedTo(ee)) {
             RemoteJavaExecution processor = new RemoteJavaExecution(fs);
             try {
-                for (SourceFile cu : processor.getCompileLines(objFileName)) {
+                for (SourceFile cu : processor.getCompileLines(objFileName, true)) {
                     if (getStopInterrupter().cancelled()) {
                         break;
                     }
                     processUnit(cu, objFileName, storage, map, project, list);
+                }
+                if (dlls != null) {
+                    SharedLibraries pubNames = processor.getDlls(objFileName);
+                    synchronized(dlls) {
+                        for(String dll : pubNames.getDlls()) {
+                            dlls.add(dll);
+                        }
+
+                    }
                 }
             } catch (IOException ex) {
                 DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
