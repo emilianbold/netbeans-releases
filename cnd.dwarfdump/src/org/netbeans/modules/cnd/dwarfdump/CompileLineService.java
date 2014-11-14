@@ -55,7 +55,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 /**
@@ -71,6 +75,7 @@ public class CompileLineService {
     private static final String LANGUAGE = "\"language\": "; //NOI18N
     private static final String MAIN = "\"main\": "; //NOI18N
     private static final String MAIN_LINE = "\"line\": "; //NOI18N
+    private static final String DWARF_DUMP = "\"dwarf\": "; //NOI18N
 
     private CompileLineService() {
     }
@@ -79,18 +84,22 @@ public class CompileLineService {
         if (args.length < 2) {
             System.err.println("Not enough parameters."); // NOI18N
             System.err.println("Usage:"); // NOI18N
-            System.err.println("java -cp org-netbeans-modules-cnd-dwarfdump.jar org.netbeans.modules.cnd.dwarfdump.CompileLineService -file binaryFileName"); // NOI18N
-            System.err.println("java -cp org-netbeans-modules-cnd-dwarfdump.jar org.netbeans.modules.cnd.dwarfdump.CompileLineService -folder folderName"); // NOI18N
+            System.err.println("java -cp org-netbeans-modules-cnd-dwarfdump.jar org.netbeans.modules.cnd.dwarfdump.CompileLineService -file binaryFileName [-dwarf]"); // NOI18N
+            System.err.println("java -cp org-netbeans-modules-cnd-dwarfdump.jar org.netbeans.modules.cnd.dwarfdump.CompileLineService -folder folderName [-dwarf]"); // NOI18N
             return;
         }
         try {
-            dump(args[0], args[1], System.out);
+            if (args.length == 3 &&  "-dwarf".equals(args[2])) { // NOI18N
+                dump(args[0], args[1], true, System.out);
+            } else {
+                dump(args[0], args[1], false, System.out);
+            }
         } catch (Throwable ex) {
-            Dwarf.LOG.log(Level.INFO, "File "+args[1], ex);
+            Dwarf.LOG.log(Level.INFO, "File "+args[1], ex); // NOI18N
         }
     }
 
-    private static void dump(String kind, String objFileName, PrintStream out) throws IOException, Exception {
+    private static void dump(String kind, String objFileName, boolean dwarf, PrintStream out) throws IOException, Exception {
         List<SourceFile> res = null;
         if ("-file".equals(kind)){ // NOI18N
             res = getSourceFileProperties(objFileName);
@@ -115,6 +124,7 @@ public class CompileLineService {
             finished = printLine(out, LANGUAGE, entry.sourceLanguage, finished);
             finished = printLine(out, MAIN, entry.hasMain, finished);
             finished = printLine(out, MAIN_LINE, entry.mainLine, finished);
+            finished = printLine(out, DWARF_DUMP, entry.dwarfDump, finished);
             out.println(""); // NOI18N
             out.print("}"); // NOI18N
             first = false;
@@ -180,6 +190,7 @@ public class CompileLineService {
         String sourceLanguage = null;
         boolean hasMain = false;
         int lineNumber = 0;
+        String dwarf = null;
         while ((line=out.readLine())!= null){
             line = line.trim();
             if (line.startsWith("[")) { // NOI18N
@@ -191,6 +202,7 @@ public class CompileLineService {
                 continue;
             }
             if (line.startsWith("{")) { // NOI18N
+                // start item
                 compileDir = null;
                 sourceFile = null;
                 compileLine = null;
@@ -198,50 +210,66 @@ public class CompileLineService {
                 sourceLanguage = null;
                 hasMain = false;
                 lineNumber = 0;
-                // start item
+                dwarf = null;
                 continue;
             }
             if (line.startsWith("}")) { // NOI18N
-                list.add(new SourceFile(compileDir, sourceFile, compileLine, absolutePath, sourceLanguage, hasMain, lineNumber));
+                final SourceFile src = new SourceFile(compileDir, sourceFile, compileLine, absolutePath, sourceLanguage, hasMain, lineNumber);
+                if (dwarf != null) {
+                    src.dwarfDump = dwarf;
+                }
+                list.add(src);
                 continue;
             }
             if (line.startsWith(COMPILE_DIRECTORY)) {
-                compileDir = removeQuotes(line.substring(COMPILE_DIRECTORY.length()));
+                compileDir = removeQuotesAndComma(line.substring(COMPILE_DIRECTORY.length()));
                 continue;
             }
             if (line.startsWith(SOURCE_FILE)) {
-                sourceFile = removeQuotes(line.substring(SOURCE_FILE.length()));
+                sourceFile = removeQuotesAndComma(line.substring(SOURCE_FILE.length()));
                 continue;
             }
             if (line.startsWith(COMMAND_LINE)) {
-                compileLine = removeQuotes(line.substring(COMMAND_LINE.length()));
+                compileLine = removeQuotesAndComma(line.substring(COMMAND_LINE.length()));
                 continue;
             }
             if (line.startsWith(SOURCE_PATH)) {
-                absolutePath = removeQuotes(line.substring(SOURCE_PATH.length()));
+                absolutePath = removeQuotesAndComma(line.substring(SOURCE_PATH.length()));
                 continue;
             }
             if (line.startsWith(LANGUAGE)) {
-                sourceLanguage = removeQuotes(line.substring(LANGUAGE.length()));
+                sourceLanguage = removeQuotesAndComma(line.substring(LANGUAGE.length()));
                 continue;
             }
             if (line.startsWith(MAIN)) {
-                hasMain = "true".equals(removeQuotes(line.substring(MAIN.length()))); // NOI18N
+                hasMain = "true".equals(removeQuotesAndComma(line.substring(MAIN.length()))); // NOI18N
                 continue;
             }
             if (line.startsWith(MAIN_LINE)) {
-                lineNumber = Integer.parseInt(removeQuotes(line.substring(MAIN_LINE.length())));
+                lineNumber = Integer.parseInt(removeQuotesAndComma(line.substring(MAIN_LINE.length())));
+                continue;
+            }
+            if (line.startsWith(DWARF_DUMP)) {
+                dwarf = removeQuotesAndComma(line.substring(DWARF_DUMP.length()));
                 continue;
             }
         }
         return list;
     }
     
-    private static String removeQuotes(String str) {
+    private static String removeQuotesAndComma(String str) {
         str = str.trim();
         if (str.endsWith(",")) { // NOI18N
             str = str.substring(0, str.length() - 1);
         }
+        if (str.length() >= 2 && (str.charAt(0) == '\'' && str.charAt(str.length() - 1) == '\'' || // NOI18N
+            str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"')) {// NOI18N
+            str = str.substring(1, str.length() - 1); // NOI18N
+        }
+        return str;
+    }
+
+    private static String removeQuotes(String str) {
         if (str.length() >= 2 && (str.charAt(0) == '\'' && str.charAt(str.length() - 1) == '\'' || // NOI18N
             str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"')) {// NOI18N
             str = str.substring(1, str.length() - 1); // NOI18N
@@ -327,7 +355,126 @@ public class CompileLineService {
     }
 
     public static SourceFile createSourceFile(CompilationUnitInterface cu) throws IOException, Exception {
-        return new SourceFile(cu);
+        SourceFile res = new SourceFile(cu);
+        if (res.compileLine.length() == 0 && (cu instanceof CompilationUnit)) {
+            CompilationUnit dcu = (CompilationUnit)cu;
+            StringBuilder buf = new StringBuilder();
+            DwarfStatementList dwarfStatementTable = dcu.getStatementList();
+            List<String> paths = new ArrayList<String>();
+            if (dwarfStatementTable != null) {
+                for (Iterator<String> it = dwarfStatementTable.getIncludeDirectories().iterator(); it.hasNext();) {
+                    addpath(paths, it.next(), false);
+                }
+                for(String file : dwarfStatementTable.getFilePaths()) {
+                    addpath(paths, file, true);
+                }
+            }
+            for(String path : paths) {
+                buf.append(" -I").append("'").append(path).append("'"); // NOI18N
+            }
+            DwarfMacinfoTable dwarfMacroTable = dcu.getMacrosTable();
+            if (dwarfMacroTable != null) {
+                List<DwarfMacinfoEntry> table = dwarfMacroTable.getCommandLineMarcos();
+                for (Iterator<DwarfMacinfoEntry> it = table.iterator(); it.hasNext();) {
+                    DwarfMacinfoEntry entry = it.next();
+                    if ((entry.type == MACINFO.DW_MACINFO_define ||
+                         entry.type == MACINFO.DW_MACRO_define_indirect) &&
+                         entry.definition != null) {
+                        String def = entry.definition;
+                        int i = def.indexOf(' ');
+                        if (i>0){
+                            buf.append(" -D").append(def.substring(0,i)).append("='").append(def.substring(i+1).trim()).append("'"); // NOI18N
+                        } else {
+                            buf.append(" -D").append(def.substring(0,i)); // NOI18N
+                        }
+                    } else if ((entry.type == MACINFO.DW_MACINFO_undef ||
+                         entry.type == MACINFO.DW_MACRO_undef_indirect) &&
+                         entry.definition != null) {
+                        buf.append(" -U").append(entry.definition); // NOI18N
+                    }
+                }
+                if (dwarfStatementTable != null) {
+                    List<Integer> commandLineIncludedFiles = dwarfMacroTable.getCommandLineIncludedFiles();
+                    for(int i : commandLineIncludedFiles) {
+                        String includedSource = dwarfStatementTable.getFilePath(i);
+                        if (includedSource.startsWith("./")) { // NOI18N
+                            includedSource = res.compileDir+includedSource.substring(1);
+                        }
+                        if (!res.absolutePath.equals(includedSource)) {
+                            buf.append(" -include ").append("'").append(includedSource).append("'"); // NOI18N
+                        }
+                    }
+                }
+            }
+            res.dwarfDump = buf.toString().trim();
+        }
+        return res;
+    }
+
+    private static void addpath(List<String> userIncludes, String path, boolean isFile){
+         if (isFile) {
+            int i = path.lastIndexOf('/'); // NOI18N
+            if (i > 0) {
+                path = path.substring(0, i);
+            }
+         }
+         if (!userIncludes.contains(path)) {
+             userIncludes.add(path);
+        }
+    }
+    
+    private static Set<String> getObjectFiles(String root){
+        HashSet<String> map = new HashSet<String>();
+        gatherSubFolders(new File(root), map, new HashSet<String>());
+        return map;
+    }
+
+    private static boolean isExecutable(File file){
+        String name = file.getName();
+        return name.indexOf('.') < 0;
+    }
+
+    private static void gatherSubFolders(File d, HashSet<String> map, HashSet<String> antiLoop){
+        if (d.exists() && d.isDirectory() && d.canRead()){
+            if (ignoreFolder(d)){
+                return;
+            }
+            String canPath;
+            try {
+                canPath = d.getCanonicalPath();
+            } catch (IOException ex) {
+                Dwarf.LOG.log(Level.INFO, "File "+d.getAbsolutePath(), ex);
+                return;
+            }
+            if (!antiLoop.contains(canPath)){
+                antiLoop.add(canPath);
+                File[] ff = d.listFiles();
+                if (ff != null) {
+                    for (int i = 0; i < ff.length; i++) {
+                        if (ff[i].isDirectory()) {
+                            gatherSubFolders(ff[i], map, antiLoop);
+                        } else if (ff[i].isFile()) {
+                            String name = ff[i].getName();
+                            if (name.endsWith(".o") ||  // NOI18N
+                                name.endsWith(".so") || // NOI18N
+                                name.endsWith(".a") ||  // NOI18N
+                                isExecutable(ff[i])){
+                                String path = ff[i].getAbsolutePath();
+                                map.add(path);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean ignoreFolder(File file){
+        if (file.isDirectory()) {
+            String name = file.getName();
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
+        }
+        return false;
     }
 
     public static final class SourceFile implements CompilationUnitInterface {
@@ -335,7 +482,9 @@ public class CompileLineService {
         private final String compileLine;
         private final String compileDir;
         private final String sourceFile;
+        private String dwarfDump;
         private Map<String,String> userMacros;
+        private List<String> userUndefs;
         private List<String> userPaths;
         private List<String> userIncludes;
         private final String absolutePath;
@@ -393,6 +542,13 @@ public class CompileLineService {
                 initMacrosAndPaths();
             }
             return userMacros;
+        }
+
+        public final List<String> getUndefs() {
+            if (userUndefs == null) {
+                initMacrosAndPaths();
+            }
+            return userUndefs;
         }
 
         public final List<String> getUserPaths() {
@@ -464,7 +620,15 @@ public class CompileLineService {
             userPaths = new ArrayList<String>();
             userIncludes = new ArrayList<String>();
             userMacros = new LinkedHashMap<String, String>();
-            Iterator<String> st = splitCommandLine(compileLine).iterator();
+            userUndefs = new ArrayList<String>();
+            Iterator<String> st = null;
+            if (compileLine.length() > 0) {
+                st = splitCommandLine(compileLine).iterator();
+            } else if(dwarfDump != null && dwarfDump.length() > 0) {
+                st = splitCommandLine(dwarfDump).iterator();
+            } else {
+                return;
+            }
             while(st.hasNext()){
                 String option = st.next();
                 if (option.startsWith("--")) { // NOI18N
@@ -489,7 +653,13 @@ public class CompileLineService {
                     if (path.length()==0 && st.hasNext()){
                         path = st.next();
                     }
-                    userPaths.add(path);
+                    userPaths.add(removeQuotes(path));
+                } else if (option.startsWith("-U")){ // NOI18N
+                    String macro = option.substring(2);
+                    if (macro.length()==0 && st.hasNext()){
+                        macro = st.next();
+                    }
+                    userUndefs.add(removeQuotes(macro));
                 } else if (option.startsWith("-Y")){ // NOI18N
                     String defaultSearchPath = option.substring(2);
                     if (defaultSearchPath.length()==0 && st.hasNext()){
@@ -497,26 +667,26 @@ public class CompileLineService {
                     }
                     if (defaultSearchPath.startsWith("I,")){ // NOI18N
                         defaultSearchPath = defaultSearchPath.substring(2);
-                        userPaths.add(defaultSearchPath);
+                        userPaths.add(removeQuotes(defaultSearchPath));
                     }
                 } else if (option.startsWith("-isystem")){ // NOI18N
                     String path = option.substring(8);
                     if (path.length()==0 && st.hasNext()){
                         path = st.next();
                     }
-                    userPaths.add(path);
+                    userPaths.add(removeQuotes(path));
                 } else if (option.startsWith("-include")){ // NOI18N
                     String path = option.substring(8);
                     if (path.length()==0 && st.hasNext()){
                         path = st.next();
                     }
-                    userIncludes.add(path);
+                    userIncludes.add(removeQuotes(path));
                 } else if (option.startsWith("-imacros")){ // NOI18N
                     String path = option.substring(8);
                     if (path.length()==0 && st.hasNext()){
                         path = st.next();
                     }
-                    userIncludes.add(path);
+                    userIncludes.add(removeQuotes(path));
                 }
             }
         }
@@ -572,59 +742,4 @@ public class CompileLineService {
             return res;
         }
     }
-
-    private static Set<String> getObjectFiles(String root){
-        HashSet<String> map = new HashSet<String>();
-        gatherSubFolders(new File(root), map, new HashSet<String>());
-        return map;
-    }
-
-    private static boolean isExecutable(File file){
-        String name = file.getName();
-        return name.indexOf('.') < 0;
-    }
-
-    private static void gatherSubFolders(File d, HashSet<String> map, HashSet<String> antiLoop){
-        if (d.exists() && d.isDirectory() && d.canRead()){
-            if (ignoreFolder(d)){
-                return;
-            }
-            String canPath;
-            try {
-                canPath = d.getCanonicalPath();
-            } catch (IOException ex) {
-                Dwarf.LOG.log(Level.INFO, "File "+d.getAbsolutePath(), ex);
-                return;
-            }
-            if (!antiLoop.contains(canPath)){
-                antiLoop.add(canPath);
-                File[] ff = d.listFiles();
-                if (ff != null) {
-                    for (int i = 0; i < ff.length; i++) {
-                        if (ff[i].isDirectory()) {
-                            gatherSubFolders(ff[i], map, antiLoop);
-                        } else if (ff[i].isFile()) {
-                            String name = ff[i].getName();
-                            if (name.endsWith(".o") ||  // NOI18N
-                                name.endsWith(".so") || // NOI18N
-                                name.endsWith(".a") ||  // NOI18N
-                                isExecutable(ff[i])){
-                                String path = ff[i].getAbsolutePath();
-                                map.add(path);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static boolean ignoreFolder(File file){
-        if (file.isDirectory()) {
-            String name = file.getName();
-            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
-        }
-        return false;
-    }
-
 }

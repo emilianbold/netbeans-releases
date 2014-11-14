@@ -408,7 +408,7 @@ public abstract class BaseDwarfProvider extends BaseProvider {
         if (ConnectionManager.getInstance().isConnectedTo(ee)) {
             RemoteJavaExecution processor = new RemoteJavaExecution(fs);
             try {
-                for (SourceFile cu : processor.getCompileLines(objFileName)) {
+                for (SourceFile cu : processor.getCompileLines(objFileName, true)) {
                     if (getStopInterrupter().cancelled()) {
                         break;
                     }
