@@ -41,6 +41,8 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.Component;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -170,7 +172,13 @@ class TableQuickSearchSupport implements QuickSearch.Callback {
 
     @Override
     public void quickSearchCanceled() {
-        displaySearchResult(quickSearchInitialRow, quickSearchInitialColumn);
+        // Check whether the cancel was explicit or implicit.
+        // Implicit cancel has undefined focus owner
+        // TODO: After switch to JDK 8, we can e.g. add a static method to Callback providing the info.
+        Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if (focusOwner != null) {
+            displaySearchResult(quickSearchInitialRow, quickSearchInitialColumn);
+        }
         quickSearchInitialRow = -1;
         quickSearchInitialColumn = -1;
     }
