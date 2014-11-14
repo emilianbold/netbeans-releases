@@ -52,6 +52,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
@@ -141,11 +142,12 @@ public class HistoryProvider implements VCSHistoryProvider {
     }
 
     private HistoryEntry createHistoryEntry (GitRevisionInfo h, File[] involvedFiles, File repositoryRoot) {
-        String username = h.getCommitter().toString();
-        String author = h.getAuthor().toString();
-        if (author == null || author.trim().isEmpty()) {
-            author = username;
+        GitUser user = h.getAuthor();
+        if (user == null) {
+            user = h.getCommitter();
         }
+        String username = user.getName();
+        String author = user.toString();
         String message = h.getFullMessage();
         assert message != null;
         HistoryEntry e = new HistoryEntry(
