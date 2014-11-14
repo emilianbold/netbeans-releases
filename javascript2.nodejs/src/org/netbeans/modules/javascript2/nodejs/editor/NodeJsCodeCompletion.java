@@ -94,7 +94,11 @@ public class NodeJsCodeCompletion implements CompletionProvider {
             ts.move(eOffset);
 
             if (!ts.movePrevious()) {
-                return Collections.EMPTY_LIST;
+                if (prefix.isEmpty() || NodeJsUtils.REQUIRE_METHOD_NAME.startsWith(prefix)) {
+                    NodeJsElement handle = new NodeJsElement(fo, NodeJsUtils.REQUIRE_METHOD_NAME, NodeJsDataProvider.getDefault(fo).getDocumentationForGlobalObject(NodeJsUtils.REQUIRE_METHOD_NAME), TEMPLATE_REQUIRE, ElementKind.METHOD);
+                    result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));
+                }
+                return result;
             }
 
             Token<? extends JsTokenId> token = null;

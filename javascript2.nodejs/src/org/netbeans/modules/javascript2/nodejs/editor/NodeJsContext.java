@@ -82,28 +82,37 @@ public enum NodeJsContext {
                 }
             } else {
                 if ((tokenId == JsTokenId.EOL || tokenId == JsTokenId.OPERATOR_SEMICOLON || tokenId == JsTokenId.OPERATOR_ASSIGNMENT
-                        || tokenId == JsTokenId.WHITESPACE || tokenId == JsTokenId.IDENTIFIER 
+                        || tokenId == JsTokenId.WHITESPACE || tokenId == JsTokenId.IDENTIFIER
                         || tokenId == JsTokenId.BRACKET_LEFT_CURLY) && ts.movePrevious()) {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
                     tokenId = token.id();
                 }
-                if (tokenId == JsTokenId.IDENTIFIER && NodeJsUtils.REQUIRE_METHOD_NAME.startsWith(token.text().toString()) && ts.movePrevious()) {
+                if (tokenId.isKeyword() && ts.offset() == offset) {
+                    return GLOBAL;
+                }
+                if (!ts.movePrevious()) {
+                    return GLOBAL;
+                }
+                if (tokenId == JsTokenId.IDENTIFIER && NodeJsUtils.REQUIRE_METHOD_NAME.startsWith(token.text().toString())) {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
                     tokenId = token.id();
+                    if (!ts.movePrevious()) {
+                        return GLOBAL;
+                    }
                 }
                 if (tokenId == JsTokenId.OPERATOR_ASSIGNMENT) {
                     // offer require()
                     return AFTER_ASSIGNMENT;
                 }
-                if (tokenId == JsTokenId.OPERATOR_SEMICOLON || tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                if (tokenId == JsTokenId.OPERATOR_SEMICOLON || tokenId == JsTokenId.BRACKET_LEFT_CURLY || tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
                     return GLOBAL;
                 }
-                
+
             }
         }
         return UNKNOWN;
     }
-    
+
     public static String getEventEmiterName(TokenSequence<? extends JsTokenId> ts, final int offset) {
         if (findContext(ts, offset) == ASSIGN_LISTENER) {
             if (ts.movePrevious() && ts.token().id() == JsTokenId.OPERATOR_DOT) {

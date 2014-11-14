@@ -227,7 +227,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
             RemoteJavaExecution processor = new RemoteJavaExecution(fs);
             ElfReader.SharedLibraries libs = processor.getDlls(set);
             if (libs != null) {
-                final List<CompileLineService.SourceFile> compileLines = processor.getCompileLines(set);
+                List<CompileLineService.SourceFile> compileLines = processor.getCompileLines(set, false);
                 if (compileLines != null) {
                     return new ApplicableImpl(true, null, null, 0, false, libs.getDlls(), libs.getPaths(), processor.getSourceRoot(compileLines), null);
                 }
