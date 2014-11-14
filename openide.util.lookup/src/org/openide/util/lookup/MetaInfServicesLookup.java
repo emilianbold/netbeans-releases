@@ -160,8 +160,14 @@ final class MetaInfServicesLookup extends AbstractLookup {
         synchronized (this) {
             if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
-                LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
-                arr.addAll(toAdd);
+                LinkedHashSet<AbstractLookup.Pair<?>> lhs = getPairsAsLHS();
+                List<Item> arr = new ArrayList<Item>();
+                for (Pair<?> lh : lhs) {
+                    arr.add((Item)lh);
+                }
+                for (Pair<?> p : toAdd) {
+                    insertItem((Item) p, arr);
+                }
                 listeners = setPairsAndCollectListeners(arr);
             }
         }
@@ -378,7 +384,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 continue;
             }
 
-            result.add(new Item(item.clazz()));
+            result.add(item);
         }
     }
     private static String clazzToString(Class<?> clazz) {
@@ -399,13 +405,18 @@ final class MetaInfServicesLookup extends AbstractLookup {
     private void insertItem(Item item, List<Item> list) {
         // no position? -> add it to the end
         if (item.position == -1) {
-            list.add(item);
+            if (!list.contains(item)) {
+                list.add(item);
+            }
 
             return;
         }
 
         int index = -1;
         for (Item i : list) {
+            if (i.equals(item)) {
+                return;
+            }
             index++;
 
             if (i.position == -1) {
