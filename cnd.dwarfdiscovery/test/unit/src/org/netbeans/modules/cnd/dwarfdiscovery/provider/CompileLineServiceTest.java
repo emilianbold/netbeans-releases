@@ -164,7 +164,7 @@ public class CompileLineServiceTest extends NativeExecutionBaseTestCase {
     }
 
     private void process(String executable, int size) throws IOException {
-        List<CompileLineService.SourceFile> res1 = CompileLineService.getSourceFileProperties(executable);
+        List<CompileLineService.SourceFile> res1 = CompileLineService.getSourceFileProperties(executable, false);
         assertEquals(size, res1.size());
         for(String java : javaPaths()) {
             ProcessUtils.ExitStatus status = getJavaProcess(java, CompileLineService.class, ExecutionEnvironmentFactory.getLocal(),

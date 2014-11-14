@@ -396,7 +396,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         assertTrue(source.getUserInludePaths().size()==1);
         assertEquals(source.getUserInludePaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
         printInclidePaths(source);
-        List<SourceFile> list = CompileLineService.getSourceFileProperties(getDataDir().getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo");
+        List<SourceFile> list = CompileLineService.getSourceFileProperties(getDataDir().getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo", false);
         assertEquals(1, list.size());
         SourceFile sf = list.get(0);
         assertEquals(sf.getCompilationDir(), "/export1/sside/pomona/java_cp/wsb131/usr/src/cmd/echo");
@@ -406,7 +406,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         map = new TreeMap<String, String>(sf.getUserMacros());
         assertTrue(compareMap(map, golden));
         assertEquals(sf.getUserPaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
-        list = CompileLineService.getSourceFolderProperties(getDataDir().getAbsolutePath());
+        list = CompileLineService.getSourceFolderProperties(getDataDir().getAbsolutePath(), false);
         //assertEquals(8, list.size());
         int i = 0;
         for(SourceFile file : list){
