@@ -102,9 +102,9 @@ public class CompileLineService {
     private static void dump(String kind, String objFileName, boolean dwarf, PrintStream out) throws IOException, Exception {
         List<SourceFile> res = null;
         if ("-file".equals(kind)){ // NOI18N
-            res = getSourceFileProperties(objFileName);
+            res = getSourceFileProperties(objFileName, dwarf);
         } else if ("-folder".equals(kind)){ // NOI18N
-            res = getSourceFolderProperties(objFileName);
+            res = getSourceFolderProperties(objFileName, dwarf);
         } else {
             throw new Exception("Wrong arguments: "+kind+" "+objFileName); // NOI18N
         }
@@ -278,15 +278,15 @@ public class CompileLineService {
     }
 
     // valid on Solaris or Linux
-    public static List<SourceFile> getSourceFolderProperties(String objFolderName) {
+    public static List<SourceFile> getSourceFolderProperties(String objFolderName, boolean dwarf) {
         List<SourceFile> list = new ArrayList<SourceFile>();
         for(String objFileName : getObjectFiles(objFolderName)) {
-            list.addAll(getSourceFileProperties(objFileName));
+            list.addAll(getSourceFileProperties(objFileName, dwarf));
         }
         return list;
     }
 
-    public static List<SourceFile> getSourceFileProperties(String objFileName) {
+    public static List<SourceFile> getSourceFileProperties(String objFileName, boolean dwarf) {
         List<SourceFile> list = new ArrayList<SourceFile>();
         Dwarf dump = null;
         try {
@@ -313,7 +313,7 @@ public class CompileLineService {
                             || LANG.DW_LANG_C99.toString().equals(lang)
                             || LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
                         try {
-                            list.add(createSourceFile(cu));
+                            list.add(createSourceFile(cu, dwarf));
                         } catch (IOException ex){
                             throw ex;
                         } catch (Exception ex){
@@ -354,9 +354,9 @@ public class CompileLineService {
         return new SourceFile(compileDir, sourceFile, compileLine, null, null, false, -1);
     }
 
-    public static SourceFile createSourceFile(CompilationUnitInterface cu) throws IOException, Exception {
+    public static SourceFile createSourceFile(CompilationUnitInterface cu, boolean dwarf) throws IOException, Exception {
         SourceFile res = new SourceFile(cu);
-        if (res.compileLine.length() == 0 && (cu instanceof CompilationUnit)) {
+        if (res.compileLine.length() == 0 && (cu instanceof CompilationUnit) && dwarf) {
             CompilationUnit dcu = (CompilationUnit)cu;
             StringBuilder buf = new StringBuilder();
             DwarfStatementList dwarfStatementTable = dcu.getStatementList();
