@@ -99,22 +99,29 @@ public final class NpmLibraries {
 
         private final Project project;
         private final PackageJson packageJson;
+        private final NpmLibrariesChildren npmLibrariesChildren;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+        // @GuardedBy("thread")
+        private Node npmLibrariesNode;
 
 
         NpmLibrariesNodeList(Project project) {
             assert project != null;
             this.project = project;
             packageJson = new PackageJson(project.getProjectDirectory());
+            npmLibrariesChildren = new NpmLibrariesChildren(packageJson);
         }
 
         @Override
         public List<Node> keys() {
-            NpmDependencies dependencies = getDependencies(packageJson);
-            if (dependencies.isEmpty()) {
+            if (!npmLibrariesChildren.hasDependencies()) {
                 return Collections.<Node>emptyList();
             }
-            return Collections.<Node>singletonList(new NpmLibrariesNode(project, dependencies));
+            if (npmLibrariesNode == null) {
+                npmLibrariesNode = new NpmLibrariesNode(project, npmLibrariesChildren);
+            }
+            return Collections.<Node>singletonList(npmLibrariesNode);
         }
 
         @Override
@@ -156,14 +163,6 @@ public final class NpmLibraries {
             changeSupport.fireChange();
         }
 
-        private static NpmDependencies getDependencies(PackageJson packageJson) {
-            Map<String, String> dependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_DEPENDENCIES);
-            Map<String, String> devDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_DEV_DEPENDENCIES);
-            Map<String, String> peerDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_PEER_DEPENDENCIES);
-            Map<String, String> optionalDependencies = packageJson.getContentValue(Map.class, PackageJson.FIELD_OPTIONAL_DEPENDENCIES);
-            return new NpmDependencies(dependencies, devDependencies, peerDependencies, optionalDependencies);
-        }
-
     }
 
     private static final class NpmLibrariesNode extends AbstractNode {
@@ -175,8 +174,8 @@ public final class NpmLibraries {
         private final Node iconDelegate;
 
 
-        NpmLibrariesNode(Project project, NpmDependencies dependencies) {
-            super(new NpmLibrariesChildren(dependencies));
+        NpmLibrariesNode(Project project, NpmLibrariesChildren npmLibrariesChildren) {
+            super(npmLibrariesChildren);
             assert project != null;
             this.project = project;
             iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
@@ -219,14 +218,21 @@ public final class NpmLibraries {
         private static final String OPTIONAL_BADGE = "org/netbeans/modules/javascript/nodejs/ui/resources/libraries-optional-badge.png"; // NOI18N
 
 
-        private final NpmDependencies dependencies;
+        private final PackageJson packageJson;
         private final java.util.Map<String, Image> icons = new HashMap<>();
 
 
-        NpmLibrariesChildren(NpmDependencies dependencies) {
-            assert dependencies != null;
-            this.dependencies = dependencies;
+        public NpmLibrariesChildren(PackageJson packageJson) {
+            super(true);
+            assert packageJson != null;
+            this.packageJson = packageJson;
         }
+
+        public boolean hasDependencies() {
+            refreshDependencies();
+            return getNodesCount() > 0;
+        }
+
 
         @Override
         protected Node[] createNodes(NpmLibraryInfo key) {
@@ -240,19 +246,34 @@ public final class NpmLibraries {
         })
         @Override
         protected void addNotify() {
-            int count = dependencies.getCount();
-            assert count > 0;
-            List<NpmLibraryInfo> keys = new ArrayList<>(count);
-            keys.addAll(getKeys(dependencies.dependencies, null, null));
-            keys.addAll(getKeys(dependencies.devDependencies, DEV_BADGE, Bundle.NpmLibrariesChildren_library_dev()));
-            keys.addAll(getKeys(dependencies.optionalDependencies, OPTIONAL_BADGE, Bundle.NpmLibrariesChildren_library_optional()));
-            keys.addAll(getKeys(dependencies.peerDependencies, PEER_BADGE, Bundle.NpmLibrariesChildren_library_peer()));
-            setKeys(keys);
+            refreshDependencies();
         }
 
         @Override
         protected void removeNotify() {
             setKeys(Collections.<NpmLibraryInfo>emptyList());
+        }
+
+        private static NpmDependencies getDependencies(PackageJson packageJson) {
+            java.util.Map<String, String> dependencies = packageJson.getContentValue(java.util.Map.class, PackageJson.FIELD_DEPENDENCIES);
+            java.util.Map<String, String> devDependencies = packageJson.getContentValue(java.util.Map.class, PackageJson.FIELD_DEV_DEPENDENCIES);
+            java.util.Map<String, String> peerDependencies = packageJson.getContentValue(java.util.Map.class, PackageJson.FIELD_PEER_DEPENDENCIES);
+            java.util.Map<String, String> optionalDependencies = packageJson.getContentValue(java.util.Map.class, PackageJson.FIELD_OPTIONAL_DEPENDENCIES);
+            return new NpmDependencies(dependencies, devDependencies, peerDependencies, optionalDependencies);
+        }
+
+        private void refreshDependencies() {
+            NpmDependencies dependencies = getDependencies(packageJson);
+            if (dependencies.isEmpty()) {
+                setKeys(Collections.<NpmLibraryInfo>emptyList());
+                return;
+            }
+            List<NpmLibraryInfo> keys = new ArrayList<>(dependencies.getCount());
+            keys.addAll(getKeys(dependencies.dependencies, null, null));
+            keys.addAll(getKeys(dependencies.devDependencies, DEV_BADGE, Bundle.NpmLibrariesChildren_library_dev()));
+            keys.addAll(getKeys(dependencies.optionalDependencies, OPTIONAL_BADGE, Bundle.NpmLibrariesChildren_library_optional()));
+            keys.addAll(getKeys(dependencies.peerDependencies, PEER_BADGE, Bundle.NpmLibrariesChildren_library_peer()));
+            setKeys(keys);
         }
 
         @NbBundle.Messages({
