@@ -169,7 +169,9 @@ public class CreateProjectFromBinary implements PropertyChangeListener {
             if (!execute.isOK()) {
                 DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
-                                NbBundle.getMessage(CreateProjectFromBinary.class, "ERROR_RUN_PROJECT_CREATOR",executionEnvironment.getDisplayName()),
+                                NbBundle.getMessage(CreateProjectFromBinary.class, "ERROR_RUN_PROJECT_CREATOR", 
+                                        executionEnvironment.getDisplayName(),
+                                        execute.output + '\n' + execute.error),
                                 NotifyDescriptor.ERROR_MESSAGE));
                 return null;
             }

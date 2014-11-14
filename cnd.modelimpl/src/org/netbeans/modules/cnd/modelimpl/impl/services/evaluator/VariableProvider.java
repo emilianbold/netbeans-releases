@@ -114,7 +114,7 @@ public class VariableProvider {
     private int variableEndOffset;
     
     // pattern to parse fun calls like __is_class(T)
-    private static final Pattern intrisicOneArgFunCall = Pattern.compile("([\\w_]+)\\(([\\w_]+)\\)");    
+    private static final Pattern intrisicOneArgFunCall = Pattern.compile("([\\w_]+)\\(([\\w_]+)\\)"); // NOI18N
     
     public VariableProvider(int level, CsmScope scope) {
         this.level = level;
