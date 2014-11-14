@@ -46,6 +46,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -171,11 +172,13 @@ public final class ActiveQueue {
                         return;
                     }
                     Reference<?> ref;
-                    synchronized (impl.lock()) {
+                    Object lck = impl.lock();
+                    synchronized (lck) {
                         ref = impl.pollSuper();
                         impl = null;
                         if (ref == null) {
-                            ACTIVE.remove(Integer.MAX_VALUE);
+                            Reference<?> res = removeBetter(ACTIVE, lck);
+                            LOGGER.log(Level.FINE, "Got {0} with {1}", new Object[]{res, res == null ? null : res.get()});
                             continue;
                         }
                     }
@@ -207,5 +210,27 @@ public final class ActiveQueue {
     private static <T extends Throwable> T reportError(T ex) throws IllegalStateException {
         LOGGER.log(Level.WARNING, "Cannot hack ReferenceQueue to fix bug #206621!", ex);
         return ex;
+    }
+    
+    private static Reference<?> removeBetter(ReferenceQueue<?> q, Object lock) {
+        try {
+            Method m = q.getClass().getDeclaredMethod("reallyPoll"); // NOI18N
+            m.setAccessible(true);
+            
+            Reference<?> r = (Reference<?>) m.invoke(q);
+            if (r != null) {
+                return r;
+            }
+            for (;;) {
+                lock.wait();
+                r = (Reference<?>) m.invoke(q);
+                if (r != null) {
+                    return r;
+                }
+                return null;
+            }
+        } catch (Exception ex) {
+            return null;
+        }
     }
 }
