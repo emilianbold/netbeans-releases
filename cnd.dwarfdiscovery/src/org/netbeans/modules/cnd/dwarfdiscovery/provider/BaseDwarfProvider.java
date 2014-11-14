@@ -414,6 +414,15 @@ public abstract class BaseDwarfProvider extends BaseProvider {
                     }
                     processUnit(cu, objFileName, storage, map, project, list);
                 }
+                if (dlls != null) {
+                    SharedLibraries pubNames = processor.getDlls(objFileName);
+                    synchronized(dlls) {
+                        for(String dll : pubNames.getDlls()) {
+                            dlls.add(dll);
+                        }
+
+                    }
+                }
             } catch (IOException ex) {
                 DwarfSource.LOG.log(Level.INFO, "Exception in file " + objFileName, ex);  // NOI18N
             }
