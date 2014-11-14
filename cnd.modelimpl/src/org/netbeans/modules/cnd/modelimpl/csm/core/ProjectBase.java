@@ -119,6 +119,7 @@ import org.netbeans.modules.cnd.modelimpl.content.project.ProjectComponent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
+import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -163,6 +164,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
 import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -3118,42 +3120,42 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /* collection to keep fake ASTs during parse phase */
-    private final Map<CsmUID<CsmFile>, Map<CsmUID<FunctionImplEx<?>>, AST>> fakeASTs = new WeakHashMap<>();
-    /*package*/final void trackFakeFunctionAST(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx<?>> funUID, AST funAST) {
-        synchronized (fakeASTs) {
-            Map<CsmUID<FunctionImplEx<?>>, AST> fileASTs = fakeASTs.get(fileUID);
-            if (fileASTs == null) {
+    private final Map<CsmUID<CsmFile>, Map<CsmUID<FunctionImplEx<?>>, Pair<AST, MutableDeclarationsContainer>>> filesFakeFuncData = new WeakHashMap<>();
+    /*package*/final void trackFakeFunctionData(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx<?>> funUID, Pair<AST, MutableDeclarationsContainer> funData) {
+        synchronized (filesFakeFuncData) {
+            Map<CsmUID<FunctionImplEx<?>>, Pair<AST, MutableDeclarationsContainer>> fileData = filesFakeFuncData.get(fileUID);
+            if (fileData == null) {
                 // create always
-                fileASTs = new HashMap<>();
-                if (funAST != null) {
-                    // remember new only if not null AST
-                    fakeASTs.put(fileUID, fileASTs);
+                fileData = new HashMap<>();
+                if (funData != null) {
+                    // remember new only if not null data
+                    filesFakeFuncData.put(fileUID, fileData);
                 }
             }
-            if (funAST == null) {
-                fileASTs.remove(funUID);
+            if (funData == null) {
+                fileData.remove(funUID);
             } else {
-                fileASTs.put(funUID, funAST);
+                fileData.put(funUID, funData);
             }
         }
     }
 
     /*package*/final void cleanAllFakeFunctionAST(CsmUID<CsmFile> fileUID) {
-        synchronized (fakeASTs) {
-            fakeASTs.remove(fileUID);
+        synchronized (filesFakeFuncData) {
+            filesFakeFuncData.remove(fileUID);
         }
     }
 
     /*package*/final void cleanAllFakeFunctionAST() {
-        synchronized (fakeASTs) {
-            fakeASTs.clear();
+        synchronized (filesFakeFuncData) {
+            filesFakeFuncData.clear();
         }
     }
 
-    /*package*/AST getFakeFunctionAST(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx<?>> fakeUid) {
-        synchronized (fakeASTs) {
-            Map<CsmUID<FunctionImplEx<?>>, AST> fileASTs = fakeASTs.get(fileUID);
-            return fileASTs == null ? null : fileASTs.get(fakeUid);
+    /*package*/Pair<AST, MutableDeclarationsContainer> getFakeFunctionData(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx<?>> fakeUid) {
+        synchronized (filesFakeFuncData) {
+            Map<CsmUID<FunctionImplEx<?>>, Pair<AST, MutableDeclarationsContainer>> fileDatas = filesFakeFuncData.get(fileUID);
+            return fileDatas == null ? null : fileDatas.get(fakeUid);
         }
     }
 

@@ -311,7 +311,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
         //}
         referencesLock.writeLock().lock();
         try {
-            CsmUID<CsmObject> old = storage.put(refImpl, referencedUID);
+            CsmUID<CsmObject> old = storage.get(refImpl);
+            if (old != null) {
+                storage.remove(refImpl); // we have to remove key as well
+            }
+            storage.put(refImpl, referencedUID);
             if (index) {
                 if (!referencedUID.equals(old) && old != null) {
                     Collection<ReferenceImpl> refsToOld = obj2refs.get(old);

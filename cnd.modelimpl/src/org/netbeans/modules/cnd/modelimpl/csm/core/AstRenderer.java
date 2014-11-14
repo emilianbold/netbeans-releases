@@ -45,16 +45,19 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import java.util.*;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
@@ -62,6 +65,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
@@ -383,6 +388,10 @@ public class AstRenderer {
             }
         }
     }
+    
+    public boolean isFuncLikeVariable(AST ast, boolean findRefsForParams) {
+        return isFuncLikeVariable(ast, findRefsForParams, false);
+    }
 
     /**
      * Parser don't use a symbol table, so constructs like
@@ -391,11 +400,15 @@ public class AstRenderer {
      * At the moment of rendering, we check whether this is a variable of a function
      * @return true if it's a variable, otherwise false (it's a function)
      */
-    private boolean isFuncLikeVariable(AST ast, boolean findRefsForParams) {
+    public boolean isFuncLikeVariable(AST ast, boolean findRefsForParams, boolean findWithFullResolve) {
         AST astParmList = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
+        AST qualId = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID, astParmList);
+        if (qualId != null && AstUtil.findChildOfType(qualId, CPPTokenTypes.LITERAL_OPERATOR) != null) {
+            return false; // operator cannot be a variable.
+        }
         if (astParmList != null) {
             for (AST node = astParmList.getFirstChild(); node != null; node = node.getNextSibling()) {
-                if (!isRefToVariableOrFunction(node, findRefsForParams)) {
+                if (!isRefToVariableOrFunction(node, findRefsForParams, findWithFullResolve)) {
                     return false;
                 }
             }
@@ -452,7 +465,7 @@ public class AstRenderer {
      * @param findVariable indicates that we should find param variable or just check that it looks like id
      * @return true if might be just a reference to a variable, otherwise false
      */
-    private boolean isRefToVariableOrFunction(AST node, boolean findVariableOrFunction) {
+    private boolean isRefToVariableOrFunction(AST node, boolean findVariableOrFunction, boolean findWithFullResolve) {
 
         if (node.getType() != CPPTokenTypes.CSM_PARAMETER_DECLARATION) { // paranoja
             return false;
@@ -493,10 +506,10 @@ public class AstRenderer {
             return false;
         }
 
-        return isVariableOrFunctionName(name, findVariableOrFunction);
+        return isVariableOrFunctionName(name, findVariableOrFunction, findWithFullResolve);
     }
 
-    private boolean isVariableOrFunctionName(AST name, boolean findVariableOrFunction) {
+    private boolean isVariableOrFunctionName(AST name, boolean findVariableOrFunction, boolean findWithFullResolve) {
         OffsetableAST csmAST = AstUtil.getFirstOffsetableAST(name);
 
         StringBuilder varName = new StringBuilder(AstUtil.getText(name));
@@ -512,7 +525,23 @@ public class AstRenderer {
         }
 
         if (findVariableOrFunction) {
-            return findVariable(varName, csmAST.getOffset()) || findFunction(varName, csmAST.getOffset());
+            if (findVariable(varName, csmAST.getOffset())) {
+                return true;
+            }
+            if (findFunction(varName, csmAST.getOffset())) {
+                return true;
+            }
+            if (findWithFullResolve) {
+                return findGlobalHard(
+                    varName, 
+                    csmAST.getOffset(), 
+                    CsmDeclaration.Kind.FUNCTION, 
+                    CsmDeclaration.Kind.FUNCTION_FRIEND, 
+                    CsmDeclaration.Kind.VARIABLE,
+                    CsmDeclaration.Kind.VARIABLE_DEFINITION
+                );
+            }
+            return false;
         } else {
             next = name.getNextSibling();
             next = skipTemplateParameters(next);
@@ -572,8 +601,8 @@ public class AstRenderer {
      */
     private boolean findVariable(CharSequence name, int offset) {
         String uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE) +//NOI18N
-                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
-        if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + /*"::" +*/ name; // NOI18N
+        if (findGlobal(file.getProject(), uname, name, false, new ArrayList<CsmProject>())) {
             return true;
         }
         CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.VARIABLE_DEFINITION);
@@ -586,13 +615,13 @@ public class AstRenderer {
      */
     private boolean findFunction(CharSequence name, int offset) {
         String uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) +//NOI18N
-                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
-        if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + /*"::" +*/ name; // NOI18N
+        if (findGlobal(file.getProject(), uname, name, true, new ArrayList<CsmProject>())) {
             return true;
         }
         uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) +//NOI18N
-                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
-        if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + /*"::" +*/ name; // NOI18N
+        if (findGlobal(file.getProject(), uname, name, true, new ArrayList<CsmProject>())) {
             return true;
         }
         CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
@@ -601,23 +630,52 @@ public class AstRenderer {
         return findFunction(name, declarations, offset, filter);
     }
 
-    private boolean findGlobal(CsmProject project, String uname, Collection<CsmProject> processedProjects) {
+    private boolean findGlobal(CsmProject project, String uname, CharSequence qualName, boolean findByPrefix, Collection<CsmProject> processedProjects) {
         if (processedProjects.contains(project)) {
             return false;
         }
         processedProjects.add(project);
-        final CsmDeclaration decl = project.findDeclaration(uname);
+        CsmDeclaration decl = null;
+        if (findByPrefix && project instanceof ProjectBase) {
+            ProjectBase projectBase = (ProjectBase) project;
+            Collection<CsmOffsetableDeclaration> candidates = projectBase.findDeclarationsByPrefix(uname);
+            for (CsmOffsetableDeclaration candidate : candidates) {
+                if (CharSequenceUtilities.equals(qualName, candidate.getQualifiedName())) {
+                    decl = candidate;
+                    break;
+                }
+            }
+        } else {
+            decl = project.findDeclaration(uname);
+        }
         if (decl != null && CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
             return true;
         }
         for (CsmProject lib : project.getLibraries()) {
-            if (findGlobal(lib, uname, processedProjects)) {
+            if (findGlobal(lib, uname, qualName, findByPrefix, processedProjects)) {
                 return true;
             }
         }
-        return false;
+        return false;        
     }
-
+    
+    private boolean findGlobalHard(CharSequence name, int offset, CsmDeclaration.Kind ... kinds) {
+        Collection<CsmObject> resolvedObjects = CsmExpressionResolver.resolveObjects(name, file, offset, null);
+        if (resolvedObjects != null) {
+            for (CsmObject obj : resolvedObjects) {
+                if (CsmKindUtilities.isDeclaration(obj)) {
+                    CsmDeclaration decl = (CsmDeclaration) obj;
+                    for (CsmDeclaration.Kind kind : kinds) {
+                        if (kind.equals(decl.getKind())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }    
+    
     private boolean findVariable(CharSequence name, Iterator<CsmOffsetableDeclaration> it, int offset, CsmFilter filter) {
         while(it.hasNext()) {
             CsmOffsetableDeclaration decl = it.next();
@@ -775,15 +833,13 @@ public class AstRenderer {
                             }
                             return true;
                         } else {
-                            if (isScopedId(next)) {
-                                try {
-                                    FunctionImplEx<?> fi = FunctionImplEx.create(ast, file, fileContent, currentNamespace, false, !isRenderingLocalContext(), objects);
-                                    fileContent.onFakeRegisration(fi, ast);
-                                } catch (AstRendererException e) {
-                                    DiagnosticExceptoins.register(e);
-                                }
-                                return true;
+                            try {
+                                FunctionImplEx<?> fi = FunctionImplEx.create(ast, file, fileContent, currentNamespace, false, !isRenderingLocalContext(), objects);
+                                fileContent.onFakeRegisration(fi, org.openide.util.Pair.of(ast, container));
+                            } catch (AstRendererException e) {
+                                DiagnosticExceptoins.register(e);
                             }
+                            return true;
                         }
                     }
                 }
@@ -2253,8 +2309,8 @@ public class AstRenderer {
             if(nextToType != null && nextToType.getType() != CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
                 AST name = type.getFirstChild();
                 if (name != null) {
-                    if (isVariableOrFunctionName(name, false)) {
-                        if (isVariableOrFunctionName(name, true)) {
+                    if (isVariableOrFunctionName(name, false, false)) {
+                        if (isVariableOrFunctionName(name, true, false)) {
                             return true;
                         }
                         if (isLocalVariableOrFunction(name.getText(), scope)) {

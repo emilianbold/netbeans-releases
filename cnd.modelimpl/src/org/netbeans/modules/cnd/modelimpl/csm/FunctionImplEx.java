@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
@@ -79,8 +80,10 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.Pair;
 
 /**
  * A class that 
@@ -284,9 +287,11 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 //        return out;
 //    }
     
-    public final boolean fixFakeRegistration(FileContent fileContent, boolean projectParsedMode, AST fixFakeRegistrationAst) {
+    public final boolean fixFakeRegistration(FileContent fileContent, boolean projectParsedMode, Pair<AST, MutableDeclarationsContainer> fakeData) {
         boolean fixed = false;
-        if (fixFakeRegistrationAst != null) {
+        if (fakeData != null) {
+            final AST fixFakeRegistrationAst = fakeData.first();
+            final MutableDeclarationsContainer container = fakeData.second();
             CsmObject owner = findOwner();
             if (CsmKindUtilities.isClass(owner)) {
                 CsmClass cls = (CsmClass) owner;
@@ -300,7 +305,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         NameHolder nameHolder = NameHolder.createFunctionName(fixFakeRegistrationAst);
                         VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, _static, _extern);
                         fileContent.addDeclaration(var);
-                        fixFakeRegistrationAst = null;
+                        nameHolder.addReference(fileContent, var); // TODO: move into VariableImpl.create()
                         return true;
                     }
                 }
@@ -320,27 +325,46 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         NameHolder nameHolder = NameHolder.createFunctionName(fixFakeRegistrationAst);
                         VariableDefinitionImpl var = VariableDefinitionImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, _static, _extern);
                         fileContent.addDeclaration(var);
-                        fixFakeRegistrationAst = null;
+                        nameHolder.addReference(fileContent, var); // TODO: move into VariableImpl.create()
                         return true;
                     }
                 }
-            }
+            }            
             if (projectParsedMode) {
-                try {
+                try {                    
                     FileImpl aFile = (FileImpl) getContainingFile();
-                    FunctionImpl<?> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), null, null, this.getScope(),true,null);
-                    fixFakeRegistrationAst = null;
-                    //TODO: it is safer to unregister/remove before FunctionImpl.create
-                    aFile.getProjectImpl(true).unregisterDeclaration(this);
-                    fileContent.removeDeclaration(this);
-                    fi.registerInProject();
-                    fileContent.addDeclaration(fi);
-                    fixed = true;
-                    if (NamespaceImpl.isNamespaceScope(fi)) {
-                        if (CsmKindUtilities.isNamespace(this.getScope())) {
-                            ((NamespaceImpl) this.getScope()).addDeclaration(fi);
-                        }
+                    fileContent.removeDeclaration(this);  
+                    this.dispose();
+                    RepositoryUtils.remove(this.getUID(), this);
+                    CsmOffsetableDeclaration decl;
+                    boolean isInNamespace;
+                    if (new AstRenderer(aFile).isFuncLikeVariable(fixFakeRegistrationAst, true, true)) {
+                        boolean _static = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_static);
+                        boolean _extern = AstUtil.hasChildOfType(fixFakeRegistrationAst, CPPTokenTypes.LITERAL_extern);                        
+                        NameHolder nameHolder = NameHolder.createFunctionName(fixFakeRegistrationAst);
+                        VariableImpl var = VariableImpl.create(fixFakeRegistrationAst, getContainingFile(), getReturnType(), nameHolder, this.getScope(), _static, _extern, true);
+                        nameHolder.addReference(fileContent, var); // TODO: move into VariableImpl.create()
+                        CndUtils.assertTrueInConsole(!CsmKindUtilities.isClass(this.getScope()), "Cannot be class!"); // NOI18N
+                        isInNamespace = NamespaceImpl.isNamespaceScope(var, CsmKindUtilities.isFile(getScope())) && CsmKindUtilities.isNamespace(this.getScope());
+                        decl = var;
+                    } else {
+                        FunctionImpl<T> fi = FunctionImpl.create(fixFakeRegistrationAst, getContainingFile(), fileContent, null, this.getScope(), true, null);
+                        fi.registerInProject();
+                        CndUtils.assertTrueInConsole(!CsmKindUtilities.isClass(this.getScope()), "Cannot be class!"); // NOI18N
+                        isInNamespace = NamespaceImpl.isNamespaceScope(fi) && CsmKindUtilities.isNamespace(this.getScope());
+                        decl = fi;
                     }
+                    if (isInNamespace) {
+                        ((NamespaceImpl) getScope()).addDeclaration(decl);
+                        if (CsmKindUtilities.isNamespaceDefinition(container)) {
+                            container.addDeclaration(decl);
+                        } else if (((NamespaceImpl) getScope()).isGlobal()) {
+                            fileContent.addDeclaration(decl);
+                        }
+                    } else {
+                        fileContent.addDeclaration(decl);
+                    }
+                    fixed = true;
                 } catch (AstRendererException e) {
                     DiagnosticExceptoins.register(e);
                 }

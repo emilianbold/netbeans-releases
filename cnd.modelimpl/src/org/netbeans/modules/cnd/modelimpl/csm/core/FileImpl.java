@@ -117,6 +117,7 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
+import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -153,6 +154,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  * CsmFile implementations
@@ -1551,11 +1553,11 @@ public final class FileImpl implements CsmFile,
     }
 
     private void updateModelAfterParsing(FileContent fileContent, long compUnitCRC) {
-        Map<CsmUID<FunctionImplEx<?>>, AST> fakeASTs = fileContent.getFakeASTs();
+        Map<CsmUID<FunctionImplEx<?>>, Pair<AST, MutableDeclarationsContainer>> fakeASTs = fileContent.getFakeFuncData();
         ProjectBase projectImpl = getProjectImpl(true);
         CsmUID<CsmFile> thisFileUID = getUID();
-        for (Map.Entry<CsmUID<FunctionImplEx<?>>, AST> entry : fakeASTs.entrySet()) {
-            projectImpl.trackFakeFunctionAST(thisFileUID, entry.getKey(), entry.getValue());
+        for (Map.Entry<CsmUID<FunctionImplEx<?>>, Pair<AST, MutableDeclarationsContainer>> entry : fakeASTs.entrySet()) {
+            projectImpl.trackFakeFunctionData(thisFileUID, entry.getKey(), entry.getValue());
         }
         hasBrokenIncludes.set(fileContent.hasBrokenIncludes());
         // handle file content
@@ -1943,14 +1945,14 @@ public final class FileImpl implements CsmFile,
                 if (fakeFunctionRegistrations.size() > 0) {
                     for (int i = 0; i < fakeFunctionRegistrations.size(); i++) {
                         CsmUID<FunctionImplEx<?>> fakeUid = fakeFunctionRegistrations.get(i);
-                        AST fakeAST = getProjectImpl(true).getFakeFunctionAST(getUID(), fakeUid);
+                        Pair<AST, MutableDeclarationsContainer> fakeData = getProjectImpl(true).getFakeFunctionData(getUID(), fakeUid);
                         CsmDeclaration curElem = fakeUid.getObject();
                         if (curElem != null) {
                             if (curElem instanceof FunctionImplEx<?>) {
                                 wereFakes = true;
                                 incParseCount();
-                                if (((FunctionImplEx<?>) curElem).fixFakeRegistration(curContent, projectParsedMode, fakeAST)) {
-                                    getProjectImpl(true).trackFakeFunctionAST(getUID(), fakeUid, null);
+                                if (((FunctionImplEx<?>) curElem).fixFakeRegistration(curContent, projectParsedMode, fakeData)) {
+                                    getProjectImpl(true).trackFakeFunctionData(getUID(), fakeUid, null);
                                 }
                                 incParseCount();
                             } else {
