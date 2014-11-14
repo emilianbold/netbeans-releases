@@ -48,11 +48,13 @@ import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
 import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Roman Svitanic
  */
+@NbBundle.Messages("LBL_CordovaPlugins=Cordova Plugins")
 @ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public class ImportantFilesImpl implements ImportantFilesImplementation {
 
@@ -62,7 +64,7 @@ public class ImportantFilesImpl implements ImportantFilesImplementation {
         public FileInfo create(FileObject fileObject) {
             return new FileInfo(
                     fileObject,
-                    fileObject.getName().equals("plugins") ? "Cordova Plugins" : fileObject.getName(), //NOI18N
+                    fileObject.getName().equals("plugins") ? Bundle.LBL_CordovaPlugins(): fileObject.getName(), //NOI18N
                     null);
         }
     };
