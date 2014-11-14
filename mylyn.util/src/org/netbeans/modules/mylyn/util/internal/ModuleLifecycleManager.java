@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mylyn.util.internal;
 
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -53,6 +54,10 @@ public class ModuleLifecycleManager extends ModuleInstall {
 
     @Override
     public boolean closing() {
+        if(!MylynSupport.hasInstance()) {
+            // haven't been initialized -> don't bother
+            return true;
+        }    
         try {
             Accessor.getInstance().finishMylyn();
         } catch (Exception ex) {
