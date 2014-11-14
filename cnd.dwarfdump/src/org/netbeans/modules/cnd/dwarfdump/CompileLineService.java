@@ -64,6 +64,13 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
  * @author Alexander Simon
  */
 public class CompileLineService {
+    private static final String COMPILE_DIRECTORY = "\"directory\": "; //NOI18N
+    private static final String SOURCE_FILE = "\"file\": "; //NOI18N
+    private static final String COMMAND_LINE = "\"command\": "; //NOI18N
+    private static final String SOURCE_PATH = "\"path\": "; //NOI18N
+    private static final String LANGUAGE = "\"language\": "; //NOI18N
+    private static final String MAIN = "\"main\": "; //NOI18N
+    private static final String MAIN_LINE = "\"line\": "; //NOI18N
 
     private CompileLineService() {
     }
@@ -92,17 +99,73 @@ public class CompileLineService {
         } else {
             throw new Exception("Wrong arguments: "+kind+" "+objFileName); // NOI18N
         }
+        out.println("["); // NOI18N
+        boolean first = true;
         for(SourceFile entry : res) {
-            out.println(entry.compileDir);
-            out.println(entry.sourceFile);
-            out.println(entry.compileLine);
-            out.println(entry.absolutePath);
-            out.println(entry.sourceLanguage);
-            out.println(String.valueOf(entry.hasMain));
-            out.println(String.valueOf(entry.mainLine));
+            if (!first) {
+                out.println(","); // NOI18N
+                
+            }
+            out.println("{"); // NOI18N
+            boolean finished = true;
+            finished = printLine(out, COMPILE_DIRECTORY, entry.compileDir, finished);
+            finished = printLine(out, SOURCE_FILE, entry.sourceFile, finished);
+            finished = printLine(out, COMMAND_LINE, entry.compileLine, finished);
+            finished = printLine(out, SOURCE_PATH, entry.absolutePath, finished);
+            finished = printLine(out, LANGUAGE, entry.sourceLanguage, finished);
+            finished = printLine(out, MAIN, entry.hasMain, finished);
+            finished = printLine(out, MAIN_LINE, entry.mainLine, finished);
+            out.println(""); // NOI18N
+            out.print("}"); // NOI18N
+            first = false;
         }
+        if (!first) {
+            out.println(""); // NOI18N
+        }
+        out.println("]"); // NOI18N
     }
 
+    private static boolean printLine(PrintStream out, String key, String value, boolean finished) {
+        if (value != null && value.length() > 0) {
+            if (!finished) {
+                out.println(","); // NOI18N
+            }
+            out.print(" "); // NOI18N
+            out.print(key);
+            out.print("\""); // NOI18N
+            out.print(value);
+            out.print("\""); // NOI18N
+            finished = false;
+        }
+        return finished;
+    }
+
+    private static boolean printLine(PrintStream out, String key, boolean value, boolean finished) {
+        if (value) {
+            if (!finished) {
+                out.println(","); // NOI18N
+                finished = false;
+            }
+            out.print(" "); // NOI18N
+            out.print(key);
+            out.print("true"); // NOI18N
+        }
+        return finished;
+    }
+
+    private static boolean printLine(PrintStream out, String key, int value, boolean finished) {
+        if (value != 0) {
+            if (!finished) {
+                out.println(","); // NOI18N
+                finished = false;
+            }
+            out.print(" "); // NOI18N
+            out.print(key);
+            out.print(""+value); // NOI18N
+        }
+        return finished;
+    }
+    
     public static List<SourceFile> getSourceProperties(BufferedReader out) throws IOException {
         return readSourceProperties(out);
     }
@@ -116,40 +179,74 @@ public class CompileLineService {
         String absolutePath = null;
         String sourceLanguage = null;
         boolean hasMain = false;
-        int i = 0;
+        int lineNumber = 0;
         while ((line=out.readLine())!= null){
             line = line.trim();
-//            Below condition is commented because extended information can contain empty lines,
-//            like compilation line for GNU.
-//            if (line.length() == 0) {
-//                continue;
-//            }
-            switch (i%7) {
-                case 0:
-                    compileDir = line;
-                    break;
-                case 1:
-                    sourceFile = line;
-                    break;
-                case 2:
-                    compileLine = line;
-                    break;
-                case 3:
-                    absolutePath = line;
-                    break;
-                case 4:
-                    sourceLanguage = line;
-                    break;
-                case 5:
-                    hasMain = Boolean.valueOf(line);
-                    break;
-                case 6:
-                    list.add(new SourceFile(compileDir, sourceFile, compileLine, absolutePath, sourceLanguage, hasMain, Integer.parseInt(line)));
-                    break;
+            if (line.startsWith("[")) { // NOI18N
+                // start output
+                continue;
             }
-            i++;
+            if (line.startsWith("]")) { // NOI18N
+                // end output
+                continue;
+            }
+            if (line.startsWith("{")) { // NOI18N
+                compileDir = null;
+                sourceFile = null;
+                compileLine = null;
+                absolutePath = null;
+                sourceLanguage = null;
+                hasMain = false;
+                lineNumber = 0;
+                // start item
+                continue;
+            }
+            if (line.startsWith("}")) { // NOI18N
+                list.add(new SourceFile(compileDir, sourceFile, compileLine, absolutePath, sourceLanguage, hasMain, lineNumber));
+                continue;
+            }
+            if (line.startsWith(COMPILE_DIRECTORY)) {
+                compileDir = removeQuotes(line.substring(COMPILE_DIRECTORY.length()));
+                continue;
+            }
+            if (line.startsWith(SOURCE_FILE)) {
+                sourceFile = removeQuotes(line.substring(SOURCE_FILE.length()));
+                continue;
+            }
+            if (line.startsWith(COMMAND_LINE)) {
+                compileLine = removeQuotes(line.substring(COMMAND_LINE.length()));
+                continue;
+            }
+            if (line.startsWith(SOURCE_PATH)) {
+                absolutePath = removeQuotes(line.substring(SOURCE_PATH.length()));
+                continue;
+            }
+            if (line.startsWith(LANGUAGE)) {
+                sourceLanguage = removeQuotes(line.substring(LANGUAGE.length()));
+                continue;
+            }
+            if (line.startsWith(MAIN)) {
+                hasMain = "true".equals(removeQuotes(line.substring(MAIN.length()))); // NOI18N
+                continue;
+            }
+            if (line.startsWith(MAIN_LINE)) {
+                lineNumber = Integer.parseInt(removeQuotes(line.substring(MAIN_LINE.length())));
+                continue;
+            }
         }
         return list;
+    }
+    
+    private static String removeQuotes(String str) {
+        str = str.trim();
+        if (str.endsWith(",")) { // NOI18N
+            str = str.substring(0, str.length() - 1);
+        }
+        if (str.length() >= 2 && (str.charAt(0) == '\'' && str.charAt(str.length() - 1) == '\'' || // NOI18N
+            str.charAt(0) == '"' && str.charAt(str.length() - 1) == '"')) {// NOI18N
+            str = str.substring(1, str.length() - 1); // NOI18N
+        }
+        return str;
     }
 
     // valid on Solaris or Linux
@@ -266,7 +363,7 @@ public class CompileLineService {
         }
 
         private SourceFile( String compileDir, String sourceFile, String compileLine, String absolutePath, String sourceLanguage, boolean hasMain, int mainLine) {
-            this.compileLine = compileLine;
+            this.compileLine = compileLine == null ? "" : compileLine;
             this.compileDir = compileDir;
             this.sourceFile = sourceFile;
             this.absolutePath = absolutePath;
