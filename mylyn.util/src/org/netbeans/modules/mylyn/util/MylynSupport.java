@@ -145,10 +145,6 @@ public class MylynSupport {
     private final Map<TaskListener, ITask> taskPerList = new HashMap<TaskListener, ITask>();
     private Lookup.Result<RepositoryConnectorProvider> result;
 
-    public static synchronized boolean hasInstance () {
-        return instance != null;
-    }
-    
     public static synchronized MylynSupport getInstance () {
         if (instance == null) {
             instance = new MylynSupport();

@@ -57,6 +57,10 @@ import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 public abstract class Accessor {
     private static Accessor instance;
 
+    public static boolean isInitialized () {
+        return instance != null;
+    }
+    
     public static Accessor getInstance () {
         MylynSupport.getInstance();
         return instance;
