@@ -708,7 +708,7 @@ class NodeTableModel extends AbstractTableModel {
 
         while (it.hasNext()) {
             boxtext = it.next();
-            int i = sort.get(boxtext).intValue();
+            int i = sort.get(boxtext);
             if(allPropertyColumns[i].getProperty().getName().equals(IssueNode.LABEL_NAME_SEEN)) {
                 continue;
             }
@@ -752,7 +752,7 @@ class NodeTableModel extends AbstractTableModel {
 
             // Don't allow the user to disable ALL columns
             if (changed) {
-                computeVisibleProperties(nv);
+                computeVisibleProperties(nv + 1); // nv + 1 SEEN is always visible
             }
         }
 
