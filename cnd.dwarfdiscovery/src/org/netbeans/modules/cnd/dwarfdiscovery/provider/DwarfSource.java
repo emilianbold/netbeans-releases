@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
-import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
@@ -517,9 +516,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                 gatherMacros((CompilationUnit)cu);
                 gatherIncludes((CompilationUnit)cu);
             } else if (cu instanceof SourceFile) {
-                SourceFile sf = (SourceFile) cu;
-                userIncludes.addAll(sf.getIncludeFiles());
-                userMacros.putAll(sf.getUserMacros());
+                processPseudoDwarf((SourceFile) cu);
             }
             switch(standard) {
                 case C89:
@@ -530,6 +527,23 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                     break;
             }
         }
+    }
+    
+    private void processPseudoDwarf(SourceFile sf) {
+        for(String s : sf.getUserPaths()) {
+            addpath(s);
+        }
+        for(Map.Entry<String,String> entry : sf.getUserMacros().entrySet()) {
+            if (haveSystemMacros && systemMacros.containsKey(entry.getKey())){
+                String sysValue = systemMacros.get(entry.getKey());
+                if (equalValues(sysValue, entry.getValue())) {
+                    continue;
+                }
+            }
+            userMacros.put(entry.getKey(), entry.getValue());
+        }
+        undefinedMacros.addAll(sf.getUndefs());
+        userFiles.addAll(sf.getIncludeFiles());
     }
     
     private void addUserIncludePath(String path){

@@ -19,8 +19,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
@@ -58,15 +56,15 @@ public class RemoteJavaExecution {
         this.fileSystem = fileSystem;
     }
     
-    public List<SourceFile> getCompileLines(String executable) {
-        return getCompileLines(executable, false);
-    }
-
-    private List<SourceFile> getCompileLines(String executable, boolean preferExistingProjectCreator) {
+    public List<SourceFile> getCompileLines(String executable, boolean transferDwarf) {
         NativeProcess process = null;
         Task errorTask = null;
         try {
-            process = getJavaProcess(CompileLineService.class, env, new String[]{"-file", executable}, preferExistingProjectCreator); //NOI18N
+            if (transferDwarf) {
+                process = getJavaProcess(CompileLineService.class, env, new String[]{"-file", executable, "-dwarf"}); //NOI18N
+            } else {
+                process = getJavaProcess(CompileLineService.class, env, new String[]{"-file", executable}); //NOI18N
+            }
             if (process == null) {
                 return null;
             }
@@ -117,14 +115,10 @@ public class RemoteJavaExecution {
     }
     
     public SharedLibraries getDlls(String executable) {
-        return getDlls(executable, false);
-    }
-
-    private SharedLibraries getDlls(String executable, boolean preferExistingProjectCreator) {
         NativeProcess process = null;
         Task errorTask = null;
         try {
-            process = getJavaProcess(LddService.class, env, new String[]{executable}, preferExistingProjectCreator);
+            process = getJavaProcess(LddService.class, env, new String[]{executable});
             if (process == null) {
                 return null;
             }
@@ -174,29 +168,6 @@ public class RemoteJavaExecution {
         return null;
     }
 
-    private FileObject findProjectCreator(boolean preferExisting) {
-        if (preferExisting) {
-            FileObject res = null;
-            CompilerSetManager sets = CompilerSetManager.get(env);
-            for(CompilerSet set : sets.getCompilerSets()) {
-                if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                    String directory = set.getDirectory();
-                    FileObject dwarfDump = fileSystem.findResource(directory+"/../lib/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdump.jar");
-                    if (dwarfDump != null && dwarfDump.isValid()) {
-                        if (sets.isDefaultCompilerSet(set)) {
-                            return dwarfDump;
-                        } else {
-                            res = dwarfDump;
-                        }
-                    }
-                }
-            }
-            if (res != null) {
-                return res;
-            }
-        }
-        return copyJar();
-    }
         
     private FileObject copyJar() {
         try {
@@ -233,8 +204,8 @@ public class RemoteJavaExecution {
     }
 
     
-    private NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments, boolean preferExisting) throws IOException{
-        FileObject dwarfDump = findProjectCreator(preferExisting);
+    private NativeProcess getJavaProcess(Class<?> clazz, ExecutionEnvironment env, String[] arguments) throws IOException{
+        FileObject dwarfDump = copyJar();
         if (dwarfDump == null) {
             return null;
         }
