@@ -255,7 +255,7 @@ abstract public class CsmCompletionQuery {
 
         @Override
         public void perform(Context context) {
-            if (context != null) {
+            if (context != null && context.result != null) {
                 List<? extends CompletionItem> items = context.result.getItems();
                 if (!items.isEmpty()) {
                     objects = new ArrayList<CsmObject>(items.size());
@@ -267,6 +267,11 @@ abstract public class CsmCompletionQuery {
                     }
                 }
             }
+        }
+
+        @Override
+        public boolean isFindTypeTask() {
+            return false;
         }
         
         @Override
@@ -308,6 +313,11 @@ abstract public class CsmCompletionQuery {
         }
 
         @Override
+        public boolean isFindTypeTask() {
+            return true;
+        }
+
+        @Override
         public AntiloopClient getAntiloopKind() {
             return AntiloopClient.query_type;
         }
@@ -328,6 +338,8 @@ abstract public class CsmCompletionQuery {
     static interface QueryTask {
         
         AntiloopClient getAntiloopKind();
+        
+        boolean isFindTypeTask();
         
         void perform(Context context);
         
@@ -379,7 +391,7 @@ abstract public class CsmCompletionQuery {
                 
                 if (CsmKindUtilities.isExpression(expression)) {
                     passedScope = ((CsmExpression) expression).getScope();
-                    tp = processTokensInExpression((CsmExpression) expression);
+                    tp = processTokensInExpression((CsmExpression) expression, task.isFindTypeTask());
                 } else {
                     tp = processTokensInFile(csmFile, startOffset, endOffset, baseDocument, docVersion);
                 }
@@ -400,7 +412,7 @@ abstract public class CsmCompletionQuery {
                                 false, 
                                 isInIncludeDirective(baseDocument, endOffset), 
                                 true, 
-                                true,
+                                task.isFindTypeTask(),
                                 passedScope
                         );
                         
@@ -732,14 +744,14 @@ abstract public class CsmCompletionQuery {
         return tp;
     }
     
-    private CsmCompletionTokenProcessor processTokensInExpression(CsmExpression expression) {
+    private CsmCompletionTokenProcessor processTokensInExpression(CsmExpression expression, boolean keepWholeAst) {
         // TODO: alter token processor to handle situations when we need to 
         // keep ast for the whole expression. For now expression is placed
         // inside parens: (<expression>)
-        String expressionText = 
-                CppTokenId.LPAREN.fixedText() + 
-                    expression.getExpandedText().toString() + 
-                CppTokenId.RPAREN.fixedText();
+        String expressionText = keepWholeAst ?             
+                CppTokenId.LPAREN.fixedText() + expression.getExpandedText().toString() + CppTokenId.RPAREN.fixedText() :
+                expression.getExpandedText().toString();
+        
         int exprStartOffset = expression.getStartOffset();
         int exprEndOffset = exprStartOffset + expressionText.length();
         
@@ -1453,7 +1465,7 @@ abstract public class CsmCompletionQuery {
                 CsmCompletionTokenProcessor tp;
                 
                 if (CsmKindUtilities.isExpression(expression)) {
-                    tp = processTokensInExpression((CsmExpression) expression);
+                    tp = processTokensInExpression((CsmExpression) expression, true);
                 } else {
                     long docVersion = DocumentUtilities.getDocumentVersion(getBaseDocument());
                     tp = processTokensInFile(expression.getContainingFile(), expression.getStartOffset(), expression.getEndOffset(), getBaseDocument(), docVersion);

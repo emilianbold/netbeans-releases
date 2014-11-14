@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Pair;
 import org.openide.util.Union2;
 
 /**
@@ -225,13 +226,13 @@ public final class FileContent implements MutableDeclarationsContainer {
         checkValid();
     }
 
-    public final void onFakeRegisration(FunctionImplEx<?> decl, AST fakeRegistrationAst) {
+    public final void onFakeRegisration(FunctionImplEx<?> decl, Pair<AST, MutableDeclarationsContainer> data) {
         checkValid();
         CsmUID<?> aUid = UIDCsmConverter.declarationToUID(decl);
         @SuppressWarnings("unchecked")
         CsmUID<FunctionImplEx<?>> uidDecl = (CsmUID<FunctionImplEx<?>>) aUid;
         fakeFunctionRegistrations.add(uidDecl);
-        trackFakeFunctionAST(uidDecl, fakeRegistrationAst);
+        trackFakeFunctionData(uidDecl, data);
     }
 
     public final boolean onFakeIncludeRegistration(IncludeImpl include, CsmOffsetableDeclaration container) {
@@ -478,13 +479,13 @@ public final class FileContent implements MutableDeclarationsContainer {
     }
     
     /* collection to keep fake ASTs during parse phase */
-    private final Map<CsmUID<FunctionImplEx<?>>, AST> fileASTs = new HashMap<>();
+    private final Map<CsmUID<FunctionImplEx<?>>, Pair<AST, MutableDeclarationsContainer>> fakeFuncData = new HashMap<>();
 
-    private void trackFakeFunctionAST(CsmUID<FunctionImplEx<?>> funUID, AST funAST) {
-        if (funAST == null) {
-            fileASTs.remove(funUID);
+    private void trackFakeFunctionData(CsmUID<FunctionImplEx<?>> funUID, Pair<AST, MutableDeclarationsContainer> data) {
+        if (data == null) {
+            fakeFuncData.remove(funUID);
         } else {
-            fileASTs.put(funUID, funAST);
+            fakeFuncData.put(funUID, data);
         }
     }
 
@@ -624,8 +625,8 @@ public final class FileContent implements MutableDeclarationsContainer {
         return this.fileImpl;
     }
 
-    public Map<CsmUID<FunctionImplEx<?>>, AST> getFakeASTs() {
-        return this.fileASTs;
+    public Map<CsmUID<FunctionImplEx<?>>, Pair<AST, MutableDeclarationsContainer>> getFakeFuncData() {
+        return this.fakeFuncData;
     }
 
     private static final boolean TRACE = false;
