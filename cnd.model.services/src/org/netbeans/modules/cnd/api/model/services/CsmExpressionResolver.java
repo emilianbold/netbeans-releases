@@ -348,12 +348,19 @@ public final class CsmExpressionResolver {
 
         @Override
         public Collection<CsmObject> resolveObjects(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
-            return getDelegate().resolveObjects(expression, instantiations);
+            CsmExpressionResolverImplementation service = getDelegate();
+            if (service != null) {
+                return getDelegate().resolveObjects(expression, instantiations);
+            }
+            return null;
         }
 
         @Override
         public void resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations, ResolvedTypeHandler task) {
-            getDelegate().resolveType(expression, instantiations, task);
+            CsmExpressionResolverImplementation service = getDelegate();
+            if (service != null) {
+                service.resolveType(expression, instantiations, task);
+            }
         }
     }
 //</editor-fold>    
