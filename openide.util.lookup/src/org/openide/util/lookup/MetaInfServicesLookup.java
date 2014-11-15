@@ -160,8 +160,14 @@ final class MetaInfServicesLookup extends AbstractLookup {
         synchronized (this) {
             if (classes.put(c, "") == null) { // NOI18N
                 // Added new class, search for it.
-                LinkedHashSet<AbstractLookup.Pair<?>> arr = getPairsAsLHS();
-                arr.addAll(toAdd);
+                LinkedHashSet<AbstractLookup.Pair<?>> lhs = getPairsAsLHS();
+                List<Item> arr = new ArrayList<Item>();
+                for (Pair<?> lh : lhs) {
+                    arr.add((Item)lh);
+                }
+                for (Pair<?> p : toAdd) {
+                    insertItem((Item) p, arr);
+                }
                 listeners = setPairsAndCollectListeners(arr);
             }
         }
@@ -349,8 +355,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                             // create new item here, but do not put it into
                             // foundClasses array yet because following line
                             // might specify its position
-                            currentItem = new Item();
-                            currentItem.clazz = inst;
+                            currentItem = new Item(inst);
                         }
                     }
 
@@ -375,11 +380,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
          */
 
         for (Item item : foundClasses) {
-            if (removeClasses.contains(item.clazz)) {
+            if (removeClasses.contains(item.clazz())) {
                 continue;
             }
 
-            result.add(new P(item.clazz));
+            result.add(item);
         }
     }
     private static String clazzToString(Class<?> clazz) {
@@ -400,13 +405,18 @@ final class MetaInfServicesLookup extends AbstractLookup {
     private void insertItem(Item item, List<Item> list) {
         // no position? -> add it to the end
         if (item.position == -1) {
-            list.add(item);
+            if (!list.contains(item)) {
+                list.add(item);
+            }
 
             return;
         }
 
         int index = -1;
         for (Item i : list) {
+            if (i.equals(item)) {
+                return;
+            }
             index++;
 
             if (i.position == -1) {
@@ -425,33 +435,30 @@ final class MetaInfServicesLookup extends AbstractLookup {
         list.add(item);
     }
 
-    private static class Item {
-        private Class<?> clazz;
-        private int position = -1;
-        @Override
-        public String toString() {
-            return "MetaInfServicesLookup.Item[" + clazz.getName() + "]"; // NOI18N
-        }
-    }
-    
-    static P createPair(Class<?> clazz) {
-        return new P(clazz);
+    static Item createPair(Class<?> clazz) {
+        return new Item(clazz);
     }
 
     /** Pair that holds name of a class and maybe the instance.
      */
-    private static final class P extends AbstractLookup.Pair<Object> {
+    private static final class Item extends AbstractLookup.Pair<Object> {
         /** May be one of three things:
          * 1. The implementation class which was named in the services file.
          * 2. An instance of it.
          * 3. Null, if creation of the instance resulted in an error.
          */
         private Object object;
+        private int position = -1;
 
-        public P(Class<?> clazz) {
+        public Item(Class<?> clazz) {
             this.object = clazz;
         }
 
+        @Override
+        public String toString() {
+            return "MetaInfServicesLookup.Item[" + clazz().getName() + "]"; // NOI18N
+        }
+        
         /** Finds the class.
          */
         private Class<? extends Object> clazz() {
@@ -471,8 +478,8 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
         @Override
         public boolean equals(Object o) {
-            if (o instanceof P) {
-                return ((P) o).clazz().equals(clazz());
+            if (o instanceof Item) {
+                return ((Item) o).clazz().equals(clazz());
             }
 
             return false;

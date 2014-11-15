@@ -261,6 +261,9 @@ public class MultiDataObjectTest extends NbTestCase {
             return new FileEntry(obj, primaryFile);
         }
         protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+            assertFalse(
+                "Don't call registerEntry under lock", Thread.holdsLock(DataObjectPool.getPOOL())
+            );
             return new FileEntry(obj, secondaryFile);
         }
 
