@@ -154,6 +154,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private FileMapper fmap = FileMapper.getDefault();
     
+    private String currentThreadId;
+    
     public static final String MI_BKPT = "bkpt";     //NOI18N
     public static final String MI_WPT = "wpt";       //NOI18N
     public static final String MI_EXP = "exp";       //NOI18N
@@ -767,7 +769,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public final void stepInto() {
-        sendResumptive("-exec-step"); // NOI18N
+        sendResumptive("-exec-step --thread " + currentThreadId); // NOI18N
     }
     
     private static final String STEP_INTO_ID = "STEP_INTO"; //NOI18N
@@ -780,7 +782,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public final void stepOver() {
-        sendResumptive("-exec-next"); // NOI18N
+        sendResumptive("-exec-next --thread " + currentThreadId); // NOI18N
     }
 
     @Override
@@ -1879,12 +1881,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         MITList threadresults = threadframe.results();
 
-        String tid_no = threadresults.getConstValue("new-thread-id"); // NOI18N
+        currentThreadId = threadresults.getConstValue("new-thread-id"); // NOI18N
 
         MIValue frame = threadresults.valueOf("frame");// frame entry // NOI18N
         if (Log.Variable.mi_threads) {
             System.out.println("threadframe " + threadresults.toString()); // NOI18N
-            System.out.println("tid_no " + tid_no); // NOI18N
+            System.out.println("tid_no " + currentThreadId); // NOI18N
             System.out.println("frame " + frame.toString()); // NOI18N
         }
         GdbFrame f = new GdbFrame(this, frame, null, null);
@@ -1905,7 +1907,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 getFullPath(f);
             }
             for (int tx = 0; tx < threads.length; tx++) {
-                if (threads[tx].getId().equals(tid_no)) {
+                if (threads[tx].getId().equals(currentThreadId)) {
                     threads[tx].setCurrent(true);
                 } else {
                     threads[tx].setCurrent(false);
@@ -1965,7 +1967,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 protected void onDone(MIRecord record) {
                     List<GdbThread> res = new ArrayList<GdbThread>();
                     MITList results = record.results();
-                    String currentThreadId = results.getConstValue("current-thread-id"); //NOI18N
+                    currentThreadId = results.getConstValue("current-thread-id"); //NOI18N
                     for (MITListItem thr : results.valueOf("threads").asList()) { //NOI18N
                         MITList thrList = (MITList) thr;
                         String id = thrList.getConstValue("id"); //NOI18N
@@ -2000,7 +2002,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 List<GdbThread> res = new ArrayList<GdbThread>();
                                 String msg = record2.command().getConsoleStream();
                                 System.out.println(msg);
-                                String currentThreadId = msg.substring(msg.indexOf(" ") + 1, msg.indexOf(" ", msg.indexOf(" ") + 1));  // NOI18N
+                                currentThreadId = msg.substring(msg.indexOf(" ") + 1, msg.indexOf(" ", msg.indexOf(" ") + 1));  // NOI18N
 
                                 MITList results = record.results();
                                 int i = 0;
@@ -3816,6 +3818,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
             }
         }
+        MIValue threadIdValue = results.valueOf("thread-id");
+        if (threadIdValue != null) {    // exited case should be omitted
+            currentThreadId = threadIdValue.asConst().value();
+        }
 
 	requestStack(stopRecord);
         
@@ -5339,13 +5345,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     // interface NativeDebugger
     @Override
     public void stepOverInst() {
-        sendResumptive("-exec-next-instruction"); // NOI18N
+        sendResumptive("-exec-next-instruction --thread " + currentThreadId); // NOI18N
     }
 
     // interface NativeDebugger
     @Override
     public void stepInst() {
-        sendResumptive("-exec-step-instruction"); // NOI18N
+        sendResumptive("-exec-step-instruction --thread " + currentThreadId); // NOI18N
     }
 
     // interface NativeDebugger
