@@ -581,8 +581,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.selenium.php</friend>
+                <friend>org.netbeans.modules.selenium2.php</friend>
                 <package>org.netbeans.modules.php.project.api</package>
-                <package>org.netbeans.modules.php.project.spi</package>
             </friend-packages>
         </data>
     </configuration>

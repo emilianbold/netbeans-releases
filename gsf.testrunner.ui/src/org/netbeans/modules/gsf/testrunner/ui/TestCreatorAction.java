@@ -65,7 +65,7 @@ import org.openide.util.actions.NodeAction;
 @ActionID(id = "org.netbeans.modules.gsf.testrunner.ui.TestCreatorAction", category = "UnitTests")
 @ActionRegistration(displayName = "#LBL_CreateCommonTestAction")
 @ActionReferences(value = {
-    @ActionReference(path = "UI/ToolActions/Java")})
+    @ActionReference(path = "UI/ToolActions")})
 @NbBundle.Messages({"LBL_CreateCommonTestAction=Create/Update Tests"})
 public class TestCreatorAction extends NodeAction {
     

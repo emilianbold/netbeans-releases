@@ -61,6 +61,16 @@ public abstract class TestNGSupportImplementation {
     public abstract boolean isActionSupported(Action action, Project p);
 
     /**
+     * Check whether this implementation supports given FileObjects. Default implementation return false.
+     *
+     * @param activatedFOs FileoBjects to check
+     * @return true if this instance supports given FileObjects, false otherwise
+     */
+    public boolean isSupportEnabled(FileObject[] activatedFOs) {
+        return false;
+    }
+
+    /**
      * Configure project owning given FileObject
      *
      * @param createdFile FileObject for which the project should be configured

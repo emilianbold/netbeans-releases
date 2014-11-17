@@ -60,6 +60,7 @@ import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.customizer.SeleniumTestDirectoriesPathSupport;
 import org.netbeans.modules.php.project.ui.customizer.TestDirectoriesPathSupport;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
@@ -159,7 +160,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     void checkTestDirs(Collection<ProjectProblem> currentProblems) {
         TestDirectoriesPathSupport testDirectoriesPathSupport = new TestDirectoriesPathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
                 project.getRefHelper(), project.getHelper());
-        Enumeration<BasePathSupport.Item> items = new PhpProjectProperties(project, null, null, testDirectoriesPathSupport)
+        Enumeration<BasePathSupport.Item> items = new PhpProjectProperties(project, null, null, testDirectoriesPathSupport, null)
                 .getTestDirectoriesListModel()
                 .elements();
         int i = 0;
@@ -188,14 +189,26 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         "ProjectPropertiesProblemProvider.invalidSeleniumDir.dialog.title=Select Selenium Test Files for {0}"
     })
     void checkSeleniumDir(Collection<ProjectProblem> currentProblems) {
-        File invalidDirectory = getInvalidDirectory(ProjectPropertiesSupport.getSeleniumDirectory(project, false), PhpProjectProperties.SELENIUM_SRC_DIR);
-        if (invalidDirectory != null) {
+        SeleniumTestDirectoriesPathSupport seleniumTestDirectoriesPathSupport = new SeleniumTestDirectoriesPathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getRefHelper(), project.getHelper());
+        Enumeration<BasePathSupport.Item> items = new PhpProjectProperties(project, null, null, null, seleniumTestDirectoriesPathSupport)
+                .getSeleniumTestDirectoriesListModel()
+                .elements();
+        int i = 0;
+        while (items.hasMoreElements()) {
+            BasePathSupport.Item item = items.nextElement();
+            ValidationResult result = new SeleniumTestDirectoriesPathSupport.Validator()
+                    .validatePath(project, item)
+                    .getResult();
+            if (!result.hasErrors()) {
+                continue;
+            }
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_title(),
-                    Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_description(invalidDirectory.getAbsolutePath()),
-                    new DirectoryProblemResolver(project, PhpProjectProperties.SELENIUM_SRC_DIR,
-                            Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_dialog_title(project.getName())));
+                    Bundle.ProjectPropertiesProblemProvider_invalidSeleniumDir_description(item.getAbsoluteFilePath(project.getProjectDirectory())),
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.TESTING_SELENIUM, PhpProjectProperties.SELENIUM_SRC_DIR + i));
             currentProblems.add(problem);
+            i++;
         }
     }
 

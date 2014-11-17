@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -100,6 +101,24 @@ public final class TestNGSupport {
     public static final boolean isActionSupported(Action action, Project p) {
         for (TestNGSupportImplementation s: getInstances()) {
             if (s.isActionSupported(action, p)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if at least one of TestNGSupportImplementation instances
+     * registered in the default lookup supports given project
+     *
+     * @param activatedFOs
+     *
+     * @return true if at least one instance of TestNGSupportImplementation
+     *      supporting given project is found, false otherwise
+     */
+    public static final boolean isSupportEnabled(FileObject[] activatedFOs) {
+        for (TestNGSupportImplementation s: getInstances()) {
+            if (s.isSupportEnabled(activatedFOs)) {
                 return true;
             }
         }

@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.php.project.api;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -66,4 +70,29 @@ public interface PhpSeleniumProvider {
      * Does nothing in case that {@link #getSeleniumTestDirectory(boolean)} returns <code>null</code>.
      */
     void runAllTests();
+    
+    /**
+     * Check whether this implementation supports given FileObjects.
+     *
+     * @param activatedFOs FileObjects to check
+     * @return {@code true} if this instance supports given FileObjects, {@code false} otherwise
+     */
+    boolean isSupportEnabled(FileObject[] activatedFOs);
+    
+    /**
+     * Finds <code>SourceGroup</code>s where a test for the given class
+     * can be created (so that it can be found by the projects infrastructure
+     * when a test for the class is to be opened or run).
+     *
+     * @param createdSourceRoots
+     * @param  fileObject  <code>FileObject</code> to find target
+     *                     <code>SourceGroup</code>(s) for
+     * @return  a list of objects - each of them can be either
+     *          a <code>SourceGroup</code> for a possible target folder
+     *          or simply a <code>FileObject</code> representing a possible
+     *          target folder (if <code>SourceGroup</code>) for the folder
+     *          was not found);
+     *          the returned list may be empty but not <code>null</code>
+     */
+    List<Object> getTestSourceRoots(Collection<SourceGroup> createdSourceRoots, FileObject refFileObject);
 }

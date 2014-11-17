@@ -53,16 +53,23 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
+import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
+import org.netbeans.modules.java.testrunner.providers.JavaRootsProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**
@@ -87,6 +94,153 @@ public final class JavaUtils {
      */
     public JavaUtils(Project project) {
         this.project = project;
+    }
+    
+    /**
+     * Check whether this implementation supports given FileObjects.
+     *
+     * @param activatedFOs FileObjects to check
+     * @return {@code true} if this instance supports given FileObjects, {@code false} otherwise
+     */
+    public static boolean isSupportEnabled(Class lookupClass, FileObject[] activatedFOs) {
+        if (activatedFOs.length == 0) {
+            return false;
+        }
+
+        final FileObject firstFile = activatedFOs[0];
+        Project p = FileOwnerQuery.getOwner(firstFile);
+        if (p == null) {
+            return false;
+        }
+        if(p.getLookup().lookup(lookupClass) == null) {
+            return false;
+        }
+        
+        final SourceGroup sourceGroup = findSourceGroup(firstFile);
+        if (sourceGroup == null) {
+            return false;
+        }
+        final FileObject rootFolder = sourceGroup.getRootFolder();
+        if (UnitTestForSourceQuery.findUnitTests(rootFolder).length == 0) {
+            return false;
+        }
+
+        /*
+         * Now we know that source folder of the first file has a corresponding
+         * test folder (possible non-existent).
+         */
+        if (activatedFOs.length == 1) {
+            /* ... if there is just one file selected, it is all we need: */
+            return true;
+        }
+
+        /*
+         * ...for multiple files, we just check that all the selected files
+         * have the same root folder:
+         */
+        for (int i = 1; i < activatedFOs.length; i++) {
+            FileObject fileObj = activatedFOs[i];
+            if (!FileUtil.isParentOf(rootFolder, fileObj)
+                    || !sourceGroup.contains(fileObj)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Finds a Java source group the given file belongs to.
+     * 
+     * @param  file  {@literal FileObject} to find a {@literal SourceGroup} for
+     * @return  the found {@literal SourceGroup}, or {@literal null} if the given
+     *          file does not belong to any Java source group
+     */
+    private static SourceGroup findSourceGroup(FileObject file) {
+        final Project project = FileOwnerQuery.getOwner(file);
+        if (project == null) {
+            return null;
+        }
+
+        Sources src = ProjectUtils.getSources(project);
+        SourceGroup[] srcGrps = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup srcGrp : srcGrps) {
+            FileObject rootFolder = srcGrp.getRootFolder();
+            if (((file == rootFolder) || FileUtil.isParentOf(rootFolder, file)) 
+                    && srcGrp.contains(file)) {
+                return srcGrp;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Finds <code>SourceGroup</code>s where a test for the given class
+     * can be created (so that it can be found by the projects infrastructure
+     * when a test for the class is to be opened or run).
+     *
+     * @param fo <code>FileObject</code> to find Source and Test filenames for
+     * @param isTestNG {@code true} if user wants to create TestNG test, {@code false} otherwise
+     * @param isSelenium {@code true} if user wants to create Selenium test, {@code false} otherwise
+     * @return  an array of Strings - the first one being the source class name
+     *          and the second being the test class name.
+     *          the returned array may be empty but not <code>null</code>
+     */
+    public static String[] getSourceAndTestClassNames(FileObject fo, boolean isTestNG, boolean isSelenium) {
+        String[] result = {"", ""};
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp != null) {
+            result[0] = cp.getResourceName(fo, '.', false);
+            String suffix = "";
+            if(isTestNG) {
+                suffix = TestCreatorProvider.TESTNG_TEST_CLASS_SUFFIX;
+            }
+            if(isSelenium) {
+                suffix = TestCreatorProvider.INTEGRATION_TEST_CLASS_SUFFIX;
+            } else {
+                suffix = suffix.concat(TestCreatorProvider.TEST_CLASS_SUFFIX);
+            }
+            result[1] = result[0].concat(suffix);
+        }
+        return result;
+    }
+
+    /**
+     * Finds <code>SourceGroup</code>s where a test for the given class
+     * can be created (so that it can be found by the projects infrastructure
+     * when a test for the class is to be opened or run).
+     *
+     * @param createdSourceRoots
+     * @param  fileObject  <code>FileObject</code> to find target
+     *                     <code>SourceGroup</code>(s) for
+     * @return  an array of objects - each of them can be either
+     *          a <code>SourceGroup</code> for a possible target folder
+     *          or simply a <code>FileObject</code> representing a possible
+     *          target folder (if <code>SourceGroup</code>) for the folder
+     *          was not found);
+     *          the returned array may be empty but not <code>null</code>
+     */
+    public static Object[] getTestSourceRoots(Collection<SourceGroup> createdSourceRoots, FileObject fileObject) {
+        Object[] targetFolders = CommonTestUtil.getTestTargets(fileObject);
+        if (targetFolders == null || targetFolders.length == 0) {
+            Project owner = FileOwnerQuery.getOwner(fileObject);
+            if (owner != null) {
+                String type = "";
+                String hint = "";
+                Collection<? extends RootsProvider> rootProviders = Lookup.getDefault().lookupAll(RootsProvider.class);
+                for (RootsProvider rootProvider : rootProviders) {
+                    if(rootProvider instanceof JavaRootsProvider) {
+                        type = rootProvider.getSourceRootType();
+                        hint = rootProvider.getProjectTestsHint();
+                    }
+                }
+                final SourceGroup grp = SourceGroupModifier.createSourceGroup(owner, type, hint);
+                if (grp != null) {
+                    createdSourceRoots.add(grp);
+                    targetFolders = CommonTestUtil.getTestTargets(fileObject);
+                }
+            }
+        }
+        return targetFolders;
     }
     
     /** <!-- PENDING --> */

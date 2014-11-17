@@ -605,6 +605,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.samples</friend>
                 <friend>org.netbeans.modules.maven.spring</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
+                <friend>org.netbeans.modules.selenium2.maven</friend>
                 <friend>org.netbeans.modules.ko4j.debugging</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
                 <!-- radim kubacki -->

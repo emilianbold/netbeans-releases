@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -74,20 +75,19 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.NodeAction;
 
 /**
  * Action for creating new PHP Unit tests.
  * @author Tomas Mysik
  */
-public final class CreateTestsAction extends NodeAction {
+@TestCreatorProvider.Registration(displayName=TestCreatorProvider.FRAMEWORK_PHPUNIT)
+public final class PhpUnitTestCreatorProvider extends TestCreatorProvider {
 
     private static final long serialVersionUID = -468532132435473111L;
 
-    private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PhpUnitTestCreatorProvider.class.getName());
 
     private static final RequestProcessor RP = new RequestProcessor("Generate PHP unit tests", 1); // NOI18N
     static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<>();
@@ -102,24 +102,16 @@ public final class CreateTestsAction extends NodeAction {
         }
     }, true);
 
-    public CreateTestsAction() {
-        putValue("noIconInMenu", true); // NOI18N
-    }
-
     @Override
-    public boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    protected void performAction(final Node[] activatedNodes) {
-        if (activatedNodes.length == 0) {
+    public void createTests(TestCreatorProvider.Context context) {
+        final FileObject[] activatedFOs = context.getActivatedFOs();
+        if (activatedFOs.length == 0) {
             return;
         }
 
         // ensure that test sources directory exists
-        final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
-        assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
+        final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedFOs[0]);
+        assert phpProject != null : "PHP project must be found for " + activatedFOs[0];
 
         if (ProjectPropertiesSupport.getTestDirectories(phpProject, true).isEmpty()) {
             return;
@@ -137,11 +129,11 @@ public final class CreateTestsAction extends NodeAction {
         RUNNABLES.add(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateTestsAction.class, "LBL_CreatingTests"));
+                ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(PhpUnitTestCreatorProvider.class, "LBL_CreatingTests"));
                 handle.start();
                 try {
                     LifecycleManager.getDefault().saveAll();
-                    generateTests(activatedNodes, phpProject, testingProvider);
+                    generateTests(activatedFOs, phpProject, testingProvider);
                 } finally {
                     handle.finish();
                 }
@@ -151,14 +143,13 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 0) {
+    public boolean enable(FileObject[] activatedFOs) {
+        if (activatedFOs.length == 0) {
             return false;
         }
 
         PhpProject onlyOneProjectAllowed = null;
-        for (Node node : activatedNodes) {
-            FileObject fileObj = CommandUtils.getFileObject(node);
+        for (FileObject fileObj : activatedFOs) {
             if (fileObj == null) {
                 return false;
             }
@@ -184,28 +175,19 @@ public final class CreateTestsAction extends NodeAction {
             }
 
             if (!CommandUtils.isUnderSources(phpProject, fileObj)
-                    || CommandUtils.isUnderTests(phpProject, fileObj, false)) {
+                    || CommandUtils.isUnderTests(phpProject, fileObj, false)
+                    || CommandUtils.isUnderSelenium(phpProject, fileObj, false)) {
                 return false;
             }
         }
         return true;
     }
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(CreateTestsAction.class, "LBL_CreateTests");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    void generateTests(final Node[] activatedNodes, final PhpProject phpProject, final PhpTestingProvider testingProvider) {
+    void generateTests(final FileObject[] activatedFOs, final PhpProject phpProject, final PhpTestingProvider testingProvider) {
         assert phpProject != null;
         assert !EventQueue.isDispatchThread();
 
-        List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
+        List<FileObject> files = Arrays.asList(activatedFOs);
         assert !files.isEmpty() : "No files for tests?!";
         final List<FileObject> sanitizedFiles = new ArrayList<>(files.size() * 2);
         sanitizeFiles(sanitizedFiles, files, phpProject, PhpVisibilityQuery.forProject(phpProject));
@@ -257,7 +239,7 @@ public final class CreateTestsAction extends NodeAction {
             sb.append("\n"); // NOI18N
         }
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                NbBundle.getMessage(CreateTestsAction.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
+                NbBundle.getMessage(PhpUnitTestCreatorProvider.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
     }
 
     private void reformat(Set<FileObject> files) {

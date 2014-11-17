@@ -189,6 +189,7 @@
                 <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
+                <friend>org.netbeans.modules.selenium2.maven</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
                 <!-- danis@netbeans.org -->
                 <friend>org.vaadin.netbeans.maven</friend>

@@ -74,9 +74,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
@@ -85,6 +87,7 @@ import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
@@ -286,7 +289,7 @@ public final class PhpProject implements Project {
                 .setTests(true)
                 .build();
         seleniumRoots = SourceRoots.Builder.create(updateHelper, eval, Bundle.PhpProject_sourceRoots_selenium())
-                .setProperties(PhpProjectProperties.SELENIUM_SRC_DIR)
+                .setPropertyNumericPrefix(PhpProjectProperties.SELENIUM_SRC_DIR)
                 .setTests(true)
                 .build();
 
@@ -412,6 +415,13 @@ public final class PhpProject implements Project {
      */
     FileObject[] getTestsDirectories() {
         return testRoots.getRoots();
+    }
+
+    /**
+     * @return selenium tests directory or <code>null</code>
+     */
+    FileObject[] getSeleniumDirectories() {
+        return seleniumRoots.getRoots();
     }
 
     /**
@@ -965,6 +975,75 @@ public final class PhpProject implements Project {
         @Override
         public void runAllTests() {
             ConfigAction.get(ConfigAction.Type.SELENIUM, PhpProject.this).runProject();
+        }
+
+        @Override
+        public boolean isSupportEnabled(FileObject[] activatedFOs) {
+            if (activatedFOs.length == 0) {
+                return false;
+            }
+
+            PhpProject onlyOneProjectAllowed = null;
+            for (FileObject fileObj : activatedFOs) {
+                if (fileObj == null) {
+                    return false;
+                }
+
+                // only php files or folders allowed
+                if (fileObj.isData() && !FileUtils.isPhpFile(fileObj)) {
+                    return false;
+                }
+
+                PhpProject phpProject = PhpProjectUtils.getPhpProject(fileObj);
+                if (phpProject == null) {
+                    return false;
+                }
+                if (PhpProjectValidator.isFatallyBroken(phpProject)) {
+                    return false;
+                }
+                if (onlyOneProjectAllowed == null) {
+                    onlyOneProjectAllowed = phpProject;
+                } else {
+                    if (!onlyOneProjectAllowed.equals(phpProject)) {
+                        // tests can be generated only for one project at one time
+                        return false;
+                    }
+                }
+                
+                if (fileObj == phpProject.getProjectDirectory()) { // "Run Selenium Tests" action should be active for the project node
+                    return true;
+                }
+                
+                FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+                if (sources == null || sources.equals(fileObj)) {
+                    return false;
+                }
+
+                if (!CommandUtils.isUnderSources(phpProject, fileObj)
+                        || CommandUtils.isUnderTests(phpProject, fileObj, false)
+                        || CommandUtils.isUnderSelenium(phpProject, fileObj, false)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public List<Object> getTestSourceRoots(Collection<SourceGroup> createdSourceRoots, FileObject refFileObject) {
+            ArrayList<Object> folders = new ArrayList<>();
+            Project p = FileOwnerQuery.getOwner(refFileObject);
+            if (p != null && (p instanceof PhpProject)) {
+                List<FileObject> seleniumDirectories = ProjectPropertiesSupport.getSeleniumDirectories((PhpProject) p, true);
+                SourceGroup[] sourceGroups = PhpProjectUtils.getSourceGroups((PhpProject) p);
+                for (SourceGroup sg : sourceGroups) {
+                    if (!sg.contains(refFileObject)) {
+                        if (seleniumDirectories.contains(sg.getRootFolder())) {
+                            folders.add(sg);
+                        }
+                    }
+                }
+            }
+            return folders;
         }
     }
 
