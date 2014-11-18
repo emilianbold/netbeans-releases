@@ -44,7 +44,6 @@ package org.netbeans.modules.selenium2.php;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -83,16 +82,6 @@ public class Selenium2PhpTestWizardIterator implements WizardDescriptor.Instanti
 
     @Override
     public Set instantiate() throws IOException {
-//        FileObject createdFile = null;
-//        FileObject targetFolder = Templates.getTargetFolder(wiz);
-//        Selenium2SupportImpl selenium2Support = Selenium2Support.findSelenium2Support(FileOwnerQuery.getOwner(targetFolder));
-//        if(selenium2Support == null) {
-//            return Collections.singleton(createdFile);
-//        }
-//        selenium2Support.configureProject(targetFolder);
-//        createdFile = selenium2Support.createFileFromTemplate(wiz);
-//
-//        return Collections.singleton(createdFile);
         FileObject createdFile = null;
         FileObject targetFolder = Templates.getTargetFolder(wiz);
         Selenium2SupportImpl selenium2Support = Selenium2Support.findSelenium2Support(FileOwnerQuery.getOwner(targetFolder));
