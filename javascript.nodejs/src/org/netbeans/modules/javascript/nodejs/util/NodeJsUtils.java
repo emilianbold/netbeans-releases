@@ -56,6 +56,8 @@ import org.openide.util.Utilities;
 
 public final class NodeJsUtils {
 
+    public static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.nodejs"; // NOI18N
+
     public static final String START_FILE_NODE_PREFIX = "node "; // NOI18N
 
 

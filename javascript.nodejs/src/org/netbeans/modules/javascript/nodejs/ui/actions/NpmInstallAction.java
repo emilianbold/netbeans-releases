@@ -48,6 +48,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -75,6 +77,11 @@ public final class NpmInstallAction extends AbstractAction implements ContextAwa
 
     private static final RequestProcessor RP = new RequestProcessor(NpmInstallAction.class);
 
+    private static final UsageLogger USAGE_LOGGER = new UsageLogger.Builder(NodeJsUtils.USAGE_LOGGER_NAME)
+            .message(NpmInstallAction.class, "USG_NPM_INSTALL") // NOI18N
+            .unrepeated(true)
+            .create();
+
     private final Project project;
 
 
@@ -99,6 +106,7 @@ public final class NpmInstallAction extends AbstractAction implements ContextAwa
         RP.post(new Runnable() {
             @Override
             public void run() {
+                USAGE_LOGGER.log();
                 npm.install();
             }
         });
