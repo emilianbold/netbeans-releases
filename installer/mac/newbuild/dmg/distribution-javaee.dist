@@ -110,12 +110,12 @@ function checkSystemversion() {
 </script>
 
     <choices-outline>
-        <line choice="netbeans">
-            <line choice="baseide"></line>
+        <line choice="netbeans">            
             <line choice="javase"></line>
             <line choice="webcommon"/>
             <line choice="extide"/>
             <line choice="javaee"></line>
+            <line choice="baseide"></line>
         </line>       
         <line choice="glassfish"></line>
         <line choice="tomcat"></line>      
