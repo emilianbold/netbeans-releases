@@ -49,14 +49,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
+
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
@@ -254,16 +253,9 @@ public final class NpmLibraries {
             setKeys(Collections.<NpmLibraryInfo>emptyList());
         }
 
-        private static NpmDependencies getDependencies(PackageJson packageJson) {
-            java.util.Map<String, String> dependencies = packageJson.getContentValue(java.util.Map.class, PackageJson.FIELD_DEPENDENCIES);
-            java.util.Map<String, String> devDependencies = packageJson.getContentValue(java.util.Map.class, PackageJson.FIELD_DEV_DEPENDENCIES);
-            java.util.Map<String, String> peerDependencies = packageJson.getContentValue(java.util.Map.class, PackageJson.FIELD_PEER_DEPENDENCIES);
-            java.util.Map<String, String> optionalDependencies = packageJson.getContentValue(java.util.Map.class, PackageJson.FIELD_OPTIONAL_DEPENDENCIES);
-            return new NpmDependencies(dependencies, devDependencies, peerDependencies, optionalDependencies);
-        }
 
         private void refreshDependencies() {
-            NpmDependencies dependencies = getDependencies(packageJson);
+            PackageJson.NpmDependencies dependencies = packageJson.getDependencies();
             if (dependencies.isEmpty()) {
                 setKeys(Collections.<NpmLibraryInfo>emptyList());
                 return;
@@ -345,44 +337,6 @@ public final class NpmLibraries {
         @Override
         public Image getOpenedIcon(int type) {
             return libraryInfo.icon;
-        }
-
-    }
-
-    private static final class NpmDependencies {
-
-        final Map<String, String> dependencies = new ConcurrentHashMap<>();
-        final Map<String, String> devDependencies = new ConcurrentHashMap<>();
-        final Map<String, String> peerDependencies = new ConcurrentHashMap<>();
-        final Map<String, String> optionalDependencies = new ConcurrentHashMap<>();
-
-
-        NpmDependencies(@NullAllowed Map<String, String> dependencies, @NullAllowed Map<String, String> devDependencies,
-                @NullAllowed Map<String, String> peerDependencies, @NullAllowed Map<String, String> optionalDependencies) {
-            if (dependencies != null) {
-                this.dependencies.putAll(dependencies);
-            }
-            if (devDependencies != null) {
-                this.devDependencies.putAll(devDependencies);
-            }
-            if (peerDependencies != null) {
-                this.peerDependencies.putAll(peerDependencies);
-            }
-            if (optionalDependencies != null) {
-                this.optionalDependencies.putAll(optionalDependencies);
-            }
-        }
-
-        public boolean isEmpty() {
-            return dependencies.isEmpty()
-                    && devDependencies.isEmpty()
-                    && peerDependencies.isEmpty()
-                    && optionalDependencies.isEmpty();
-        }
-
-        public int getCount() {
-            return dependencies.size() + devDependencies.size()
-                    + peerDependencies.size() + optionalDependencies.size();
         }
 
     }
