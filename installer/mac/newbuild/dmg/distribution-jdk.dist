@@ -144,10 +144,10 @@ function pm_choice1_enabled() {
     <choices-outline>
         <line choice="netbeans">
             <line choice="choice0"/>
-            <line choice="choice1"/>
-            <line choice="baseide"/>
+            <line choice="choice1"/>            
             <line choice="javase"/>
             <line choice="extide"/>
+            <line choice="baseide"/>
         </line>       
       
     </choices-outline>
