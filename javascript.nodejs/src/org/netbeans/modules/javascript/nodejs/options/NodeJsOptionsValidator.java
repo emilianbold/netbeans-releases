@@ -51,11 +51,25 @@ public class NodeJsOptionsValidator {
 
 
     public NodeJsOptionsValidator validate() {
-        return validate(NodeJsOptions.getInstance().getNode());
+        validateNode(NodeJsOptions.getInstance().getNode());
+        return validateNpm(NodeJsOptions.getInstance().getNpm());
     }
 
-    public NodeJsOptionsValidator validate(String node) {
+    public NodeJsOptionsValidator validateNode() {
+        return validateNode(NodeJsOptions.getInstance().getNode());
+    }
+
+    public NodeJsOptionsValidator validateNode(String node) {
         ValidationUtils.validateNode(result, node);
+        return this;
+    }
+
+    public NodeJsOptionsValidator validateNpm() {
+        return validateNpm(NodeJsOptions.getInstance().getNpm());
+    }
+
+    public NodeJsOptionsValidator validateNpm(String npm) {
+        ValidationUtils.validateNpm(result, npm);
         return this;
     }
 

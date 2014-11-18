@@ -132,7 +132,7 @@ public class NodeExecutable {
     @CheckForNull
     public static NodeExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
         ValidationResult result = new NodeJsOptionsValidator()
-                .validate()
+                .validateNode()
                 .getResult();
         if (validateResult(result) != null) {
             if (showOptions) {
