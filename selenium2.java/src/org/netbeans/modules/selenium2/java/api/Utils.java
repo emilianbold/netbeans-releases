@@ -42,7 +42,6 @@
 package org.netbeans.modules.selenium2.java.api;
 
 import java.util.Collection;
-import java.util.Enumeration;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -51,7 +50,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
-import org.netbeans.modules.java.testrunner.CommonTestUtil;
 import org.netbeans.modules.java.testrunner.JavaUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
