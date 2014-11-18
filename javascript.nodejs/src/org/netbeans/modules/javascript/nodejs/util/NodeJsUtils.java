@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
@@ -56,12 +57,20 @@ import org.openide.util.Utilities;
 
 public final class NodeJsUtils {
 
-    public static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.nodejs"; // NOI18N
-
     public static final String START_FILE_NODE_PREFIX = "node "; // NOI18N
+
+    private static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.nodejs"; // NOI18N
+    private static final UsageLogger NPM_INSTALL_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
+            .message(NodeJsUtils.class, "USG_NPM_INSTALL") // NOI18N
+            .unrepeated(true)
+            .create();
 
 
     private NodeJsUtils() {
+    }
+
+    public static void logUsageNpmInstall() {
+        NPM_INSTALL_USAGE_LOGGER.log();
     }
 
     public static String getProjectDisplayName(Project project) {
