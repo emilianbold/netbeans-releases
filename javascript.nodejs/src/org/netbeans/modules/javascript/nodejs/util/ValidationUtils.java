@@ -60,7 +60,7 @@ public final class ValidationUtils {
         }
     }
 
-    @NbBundle.Messages("ValidationUtils.npm.name=NPM")
+    @NbBundle.Messages("ValidationUtils.npm.name=npm")
     public static void validateNpm(ValidationResult result, String npm) {
         String warning = ExternalExecutableValidator.validateCommand(npm, Bundle.ValidationUtils_npm_name());
         if (warning != null) {

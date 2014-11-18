@@ -180,7 +180,7 @@ public final class NpmLibraries {
             iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         }
 
-        @NbBundle.Messages("NpmLibrariesNode.name=NPM Libraries")
+        @NbBundle.Messages("NpmLibrariesNode.name=npm Libraries")
         @Override
         public String getDisplayName() {
             return Bundle.NpmLibrariesNode_name();
