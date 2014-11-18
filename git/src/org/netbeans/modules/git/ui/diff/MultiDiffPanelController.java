@@ -779,7 +779,12 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 @Override
                 public void mouseClicked (MouseEvent e) {
                     final Map.Entry<File, File[]> actionRoots = getSelectedActionRoots();
-                    if (actionRoots != null && p == diffView) {
+                    if (p == diffView) {
+                        if (actionRoots == null) {
+                            diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoDiff")); //NOI18N
+                            displayDiffView();
+                            return;
+                        }
                         GitProgressSupport supp = new GitProgressSupport() {
 
                             @Override
@@ -899,7 +904,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         for (File f : files) {
             Setup s = setups.get(f);
             if (s != null && (!isLocal()
-                    || s.getNode().getFileNode().getDefaultCommitOption(true) != VCSCommitOptions.EXCLUDE)) {
+                    || s.getNode().getFileNode().getCommitOptions() != VCSCommitOptions.EXCLUDE)) {
                 filtered.add(f);
             }
         }
