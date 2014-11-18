@@ -142,6 +142,7 @@ import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.common.FileViewComponent;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -886,12 +887,23 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         if (comp != null) {
             selectedFiles = comp.getSelectedFiles();
         }
-        if (selectedFiles.length > 0) {
-            ctx = GitUtils.getContextForFiles(selectedFiles);
-        } else if (ctx == null) {
-            ctx = GitUtils.getContextForFiles(setups.keySet().toArray(new File[setups.keySet().size()]));
+        if (selectedFiles.length == 0) {
+            selectedFiles = setups.keySet().toArray(new File[setups.keySet().size()]);
         }
+        ctx = GitUtils.getContextForFiles(filterExcluded(selectedFiles));
         return GitUtils.getActionRoots(ctx);
+    }
+    
+    private File[] filterExcluded (File[] files) {
+        List<File> filtered = new ArrayList<>(files.length);
+        for (File f : files) {
+            Setup s = setups.get(f);
+            if (s != null && (!isLocal()
+                    || s.getNode().getFileNode().getDefaultCommitOption(true) != VCSCommitOptions.EXCLUDE)) {
+                filtered.add(f);
+            }
+        }
+        return filtered.toArray(new File[filtered.size()]);
     }
     
     private boolean showingFileComponent() {
