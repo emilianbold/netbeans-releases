@@ -68,6 +68,12 @@ public abstract class SanitizingParser extends Parser {
     private static final long MAX_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.file.size", 1024 * 1024); //NOI18N
     private static final long MAX_MINIMIZE_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.minimize.file.size", (1024 * 1024) / 3); //NOI18N
 
+   /**
+     * This is count of closing curly brackets that follows at the end of a json file. 
+     * If the file has sequence of MAX_RICHT_CURLY_BRACKETS, then it's not parse due stack overflow.
+     */
+    private static final int MAX_RIGHT_CURLY_BRACKETS = 30;
+
     private final Language<JsTokenId> language;
 
     private JsParserResult lastResult = null;
@@ -146,7 +152,7 @@ public abstract class SanitizingParser extends Parser {
                 return false;
             }
 
-            if (size > MAX_MINIMIZE_FILE_SIZE_TO_PARSE) {
+            if (size > MAX_MINIMIZE_FILE_SIZE_TO_PARSE && !snapshot.getMimeType().equals(JsTokenId.JSON_MIME_TYPE)) {
                 // try to find only for the file that has size bigger then 1/3 of the max size
                 boolean isMinified = false;
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(snapshot, 0, language);
@@ -167,6 +173,23 @@ public abstract class SanitizingParser extends Parser {
                         }
                         return false;
                     }
+                }
+            } else if (size > MAX_MINIMIZE_FILE_SIZE_TO_PARSE && snapshot.getMimeType().equals(JsTokenId.JSON_MIME_TYPE)) {
+                int index = text.length() - 1;
+                char ch = text.charAt(index);
+                while (index > 0 && ch != '}') {
+                    index--;
+                    ch = text.charAt(index);
+                }
+                int count = 0;
+                while (index > 0 && ch == '}' && count <= MAX_RIGHT_CURLY_BRACKETS) {
+                    index--;
+                    count++;
+                    ch = text.charAt(index);
+                    
+                }
+                if (count >= MAX_RIGHT_CURLY_BRACKETS) {   // See issue 247274
+                    return false;
                 }
             }
         }
