@@ -106,8 +106,6 @@ public class NodeExecutable {
     private static final String DEBUG_COMMAND = "--debug-brk=%d"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
 
-    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
-
     // versions of node executables
     private static final ConcurrentMap<String, Version> VERSIONS = new ConcurrentHashMap<>();
     private static final Version UNKNOWN_VERSION = Version.fromDottedNotationWithFallback("0.0"); // NOI18N
@@ -346,7 +344,7 @@ public class NodeExecutable {
 
     private File getWorkDir() {
         if (project == null) {
-            return TMP_DIR;
+            return FileUtils.TMP_DIR;
         }
         PackageJson packageJson = NodeJsSupport.forProject(project).getPackageJson();
         if (packageJson.exists()) {
