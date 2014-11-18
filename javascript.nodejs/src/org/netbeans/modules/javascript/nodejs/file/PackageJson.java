@@ -86,6 +86,7 @@ public final class PackageJson {
 
     private static final Logger LOGGER = Logger.getLogger(PackageJson.class.getName());
 
+    public static final String FILE_NAME = "package.json"; // NOI18N
     public static final String PROP_NAME = "NAME"; // NOI18N
     public static final String PROP_SCRIPTS_START = "SCRIPTS_START"; // NOI18N
     public static final String PROP_DEPENDENCIES = "DEPENDENCIES"; // NOI18N
@@ -103,7 +104,6 @@ public final class PackageJson {
     public static final String FIELD_PEER_DEPENDENCIES = "peerDependencies"; // NOI18N
     public static final String FIELD_OPTIONAL_DEPENDENCIES = "optionalDependencies"; // NOI18N
 
-    static final String FILENAME = "package.json"; // NOI18N
 
     private static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory() {
 
@@ -471,7 +471,7 @@ public final class PackageJson {
 
     private synchronized File getPackageJson() {
         if (packageJson == null) {
-            packageJson = new File(FileUtil.toFile(directory), FILENAME);
+            packageJson = new File(FileUtil.toFile(directory), FILE_NAME);
             try {
                 FileUtil.addFileChangeListener(packageJsonListener, packageJson);
                 LOGGER.log(Level.FINE, "Started listening to {0}", packageJson);
