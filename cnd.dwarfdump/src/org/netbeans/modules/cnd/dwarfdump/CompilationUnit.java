@@ -375,8 +375,17 @@ public class CompilationUnit implements CompilationUnitInterface{
 
     private void readCompilationUnitHeader() throws IOException {
         reader.seek(debugInfoSectionOffset + unit_offset);
-        
-        unit_length         = reader.readDWlen();
+        // offset size is detected from readDWlen
+        // if first int is -1 when it is 64 bit section
+        //unit_length = reader.readDWlen();
+        int aLegth = reader.readInt();
+        if (aLegth == -1) {
+            unit_length = reader.readLong();
+            reader.setFileClass(ElfConstants.ELFCLASS64);
+        } else {
+            unit_length = aLegth;
+            reader.setFileClass(ElfConstants.ELFCLASS32)            ;
+        }
         // The total length of this CU is unit_lenght + sizeof(unit_lenght field).
         
         long pos = reader.getFilePointer();
@@ -385,16 +394,6 @@ public class CompilationUnit implements CompilationUnitInterface{
         version             = reader.readShort();
         debug_abbrev_offset = reader.read3264();
         address_size        = (byte)(0xff & reader.readByte());
-        
-        // GNU writes debug info using 32-bit mode even in elf64
-        // It's a hack. Check if we have a meaningful address_size. 
-        // If not and we are in 64-bit mode => try to fallback into 32-bit mode.
-        if (address_size != 4 && address_size != 8 && reader.is64Bit()) {
-            reader.setFileClass(ElfConstants.ELFCLASS32);
-            reader.seek(reader.getFilePointer() - 9);
-            debug_abbrev_offset = reader.read3264();
-            address_size        = (byte)(0xff & reader.readByte());
-        }
         
         debugInfoOffset = reader.getFilePointer();
 
