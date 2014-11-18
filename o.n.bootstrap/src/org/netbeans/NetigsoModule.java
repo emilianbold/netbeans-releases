@@ -260,7 +260,7 @@ final class NetigsoModule extends Module {
             try {
                 return delegate().doLoadClass(pkg, name);
             } catch (IllegalStateException ex) {
-                LOG.log(Level.SEVERE, "Can't load " + name + " in package " + pkg, ex);
+                LOG.log(Level.INFO, "Can't load " + name + " in package " + pkg, ex);
                 return null;
             }
         }
