@@ -167,6 +167,12 @@ public final class CsmRefactoringUtils {
         return prjs;
     }
 
+    public static void waitParsedAllProjects() {
+        for (CsmProject prj : CsmModelAccessor.getModel().projects()) {
+            prj.waitParse();
+        }
+    }
+
     public static Collection<CsmProject> getRelatedCsmProjects(CsmObject origObject, CsmProject p) {
         Collection<CsmProject> out = Collections.<CsmProject>emptyList();
         if (p != null) {

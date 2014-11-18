@@ -52,6 +52,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -183,6 +185,18 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
+    protected void addModifiedFile(FileImpl file) {
+        if (!isDisposing()) {
+            modifiedFiles.put(file, Boolean.TRUE);
+        }
+    }
+
+    @Override
+    protected void removeModifiedFile(FileImpl file) {
+        modifiedFiles.remove(file);
+    }
+
+    @Override
     public void onFileImplRemoved(Collection<FileImpl> physicallyRemoved, Collection<FileImpl> excluded) {
         try {
             synchronized (editedFiles) {
@@ -204,12 +218,21 @@ public final class ProjectImpl extends ProjectBase {
 
     @Override
     protected void ensureChangedFilesEnqueued() {
-        List<FileImpl> addToParse = new ArrayList<>();
+        Set<FileImpl> addToParse = new HashSet<>();
         synchronized (editedFiles) {
             super.ensureChangedFilesEnqueued();
             for (Iterator<CsmFile> iter = editedFiles.keySet().iterator(); iter.hasNext();) {
                 FileImpl file = (FileImpl) iter.next();
                 if (!file.isParsingOrParsed()) {
+                    addToParse.add(file);
+                }
+            }
+            for (Iterator<CsmFile> iter = modifiedFiles.keySet().iterator(); iter.hasNext();) {
+                FileImpl file = (FileImpl) iter.next();
+                if (!file.isParsingOrParsed()) {
+                    if (WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+                        WAIT_PARSE_LOGGER.fine("### Added modified file " + file);
+                    }
                     addToParse.add(file);
                 }
             }
@@ -305,6 +328,7 @@ public final class ProjectImpl extends ProjectBase {
 
     // remove as soon as TraceFlags.USE_PARSER_API becomes always true
     private final Map<CsmFile, EditingTask> editedFiles = new HashMap<>();
+    private final ConcurrentHashMap<CsmFile, Boolean> modifiedFiles = new ConcurrentHashMap<>();
 
     public 
     @Override
@@ -347,6 +371,7 @@ public final class ProjectImpl extends ProjectBase {
     protected void onDispose() {
         nativeFiles.clear();
         editedFiles.clear();
+        modifiedFiles.clear();
         projectRoots.clear();
     }
     

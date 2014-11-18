@@ -154,7 +154,9 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     @Override
     public Problem preCheck() {
         Problem preCheckProblem = null;
-        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
+        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 5);
+        CsmRefactoringUtils.waitParsedAllProjects();
+        fireProgressListenerStep();
         // check if resolved element
         Collection<EncapsulateFieldInfo> fieldsInfo = refactoring.getRefactorFields();
         CsmObject refactoredElement = getRefactoredCsmElement();

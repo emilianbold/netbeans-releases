@@ -138,7 +138,9 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
     
     @Override
     public Problem preCheck() {
-        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 2);
+        fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 3);
+        CsmRefactoringUtils.waitParsedAllProjects();
+        fireProgressListenerStep();
         try {
             CsmField field = refactoring.getSourceField();
             Problem result = checkIfModificationPossible(null, field);

@@ -42,6 +42,11 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.text.MessageFormat;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
@@ -50,7 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
  */
 public class SmartParseHeaderTest extends TraceModelTestBase {
 
-    
+
     public SmartParseHeaderTest(String testName) {
         super(testName);
     }
@@ -67,6 +72,11 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
 //        System.setProperty("cnd.parser.queue.trace","true");
 //        System.setProperty("cnd.parser.queue.trace.poll","true");
         ParseStatistics.getInstance().setEnabled(true);
+        if (false) {
+            Logger logger = ProjectBase.WAIT_PARSE_LOGGER;
+            logger.setLevel(Level.ALL);
+            TestLogHandler.attach(logger);
+        }
         super.setUp();
     }
 

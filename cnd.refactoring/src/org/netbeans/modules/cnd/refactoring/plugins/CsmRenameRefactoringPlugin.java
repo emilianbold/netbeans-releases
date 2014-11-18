@@ -129,7 +129,9 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     @Override
     public Problem preCheck() {
         Problem preCheckProblem = null;
-        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 5);
+        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 6);
+        CsmRefactoringUtils.waitParsedAllProjects();
+        fireProgressListenerStep();
         if (this.referencedObjects == null) {
             initReferencedObjects();
             fireProgressListenerStep();
@@ -151,7 +153,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
 
     private void initReferencedObjects() {
         CsmObject primaryObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
-        if (primaryObject != null) {
+        if (primaryObject != null) {            
             Collection<CsmObject> objects = new HashSet<CsmObject>();
             objects.add(primaryObject);
             for (CsmRenameExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmRenameExtraObjectsProvider.class)) {
