@@ -64,8 +64,8 @@ import org.openide.util.RequestProcessor;
 @ActionID(id = "org.netbeans.modules.javascript.nodejs.ui.actions.NpmInstallAction", category = "Build")
 @ActionRegistration(displayName = "#NpmInstallAction.name", lazy = false)
 @ActionReferences({
-    @ActionReference(position = 906, path = "Editors/text/package+x-json/Popup"),
-    @ActionReference(position = 156, path = "Loaders/text/package+x-json/Actions"),
+    @ActionReference(path = "Editors/text/package+x-json/Popup", position = 906),
+    @ActionReference(path = "Loaders/text/package+x-json/Actions", position = 156),
     @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 170),
     @ActionReference(path = "Projects/org-netbeans-modules-php-phpproject/Actions", position = 650),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 650),
