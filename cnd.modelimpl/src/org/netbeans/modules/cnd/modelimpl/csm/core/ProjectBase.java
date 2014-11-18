@@ -65,6 +65,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -736,24 +737,43 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         getDeclarationsSorage().removeDeclaration(decl);
     }
 
+    static final Logger WAIT_PARSE_LOGGER = Logger.getLogger("cnd.wait.parse");
+
     private static void traceRegistration(String text) {
         assert TraceFlags.TRACE_REGISTRATION : "TraceFlags.TRACE_REGISTRATION should be checked *before* call !"; //NOI18N
         System.err.printf("registration: %s\n", text);
     }
 
+    /** to be overridden */
+    protected void addModifiedFile(FileImpl file) {
+    }
+
+    /** to be overridden */
+    protected void removeModifiedFile(FileImpl file) {
+    }
+
     @Override
     public final void waitParse() {
-        boolean insideParser = ParserThreadManager.instance().isParserThread();
-        if (insideParser) {
-            new Throwable("project.waitParse should NEVER be called in parser thread !!!").printStackTrace(System.err); // NOI18N
+        if (WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+            WAIT_PARSE_LOGGER.fine(String.format("##> waitParse %s %d", getName(), System.currentTimeMillis()));
         }
-        if (insideParser) {
-            return;
+        try {
+            boolean insideParser = ParserThreadManager.instance().isParserThread();
+            if (insideParser) {
+                new Throwable("project.waitParse should NEVER be called in parser thread !!!").printStackTrace(System.err); // NOI18N
+            }
+            if (insideParser) {
+                return;
+            }
+            ensureFilesCreated();
+            ensureChangedFilesEnqueued();
+            model.waitModelTasks();
+            waitParseImpl();
+        } finally {
+            if (WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+                WAIT_PARSE_LOGGER.fine(String.format("##< waitParse %d", System.currentTimeMillis()));
+            }
         }
-        ensureFilesCreated();
-        ensureChangedFilesEnqueued();
-        model.waitModelTasks();
-        waitParseImpl();
     }
 
     private void waitParseImpl() {

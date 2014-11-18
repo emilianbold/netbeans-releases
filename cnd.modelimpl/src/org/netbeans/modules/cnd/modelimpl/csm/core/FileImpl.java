@@ -275,6 +275,7 @@ public final class FileImpl implements CsmFile,
     
     /*tests-only*/void debugInvalidate() {
         this.state = State.INITIAL;
+        addRemoveModifiedFile(true);
     }
 
     void attachToProject(final ProjectBase project) {
@@ -563,8 +564,23 @@ public final class FileImpl implements CsmFile,
                 if (reportParse || logState || TraceFlags.DEBUG || TraceFlags.TRACE_191307_BUG) {
                     System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                 }
+                if (ProjectBase.WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+                    ProjectBase.WAIT_PARSE_LOGGER.log(Level.FINE, String.format("##> MODIFIED %s %d", this, System.currentTimeMillis()), new Exception());
+                }
                 state = State.MODIFIED;
+                addRemoveModifiedFile(true);
                 postMarkedAsModified();
+            }
+        }
+    }
+
+    private void addRemoveModifiedFile(boolean add) {
+        ProjectBase projectImpl = getProjectImpl(false);
+        if (projectImpl != null) {
+            if (add) {
+                projectImpl.addModifiedFile(this);
+            } else {
+                projectImpl.removeModifiedFile(this);
             }
         }
     }
@@ -589,6 +605,20 @@ public final class FileImpl implements CsmFile,
     // Parser Queue ensures that the same file can be parsed at the same time
     // only by one thread.
     /*package*/ void ensureParsed(Collection<APTPreprocHandler> handlers) {
+        if (ProjectBase.WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+            ProjectBase.WAIT_PARSE_LOGGER.fine(String.format("##> ensureParsed %s %d", this, System.currentTimeMillis()));
+        }
+        try {
+            ensureParsedImpl(handlers);
+        } finally {
+            if (ProjectBase.WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+                ProjectBase.WAIT_PARSE_LOGGER.fine(String.format("##< ensureParsed %s %d", this, System.currentTimeMillis()));
+            }
+        }
+    }
+
+    private void ensureParsedImpl(Collection<APTPreprocHandler> handlers) {
+
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES && this.isHeaderFile()) {
             System.err.printf("HEADERS_WITH_SOURCES: ensureParsed: %s\n", this.getAbsolutePath());
         }
@@ -603,6 +633,7 @@ public final class FileImpl implements CsmFile,
                 }                
                 synchronized (changeStateLock) {
                     state = State.INITIAL;
+                    addRemoveModifiedFile(false);
                 }         
                 return;
             }
@@ -679,6 +710,7 @@ public final class FileImpl implements CsmFile,
                                 synchronized (changeStateLock) {
                                     if (parsingState == ParsingState.BEING_PARSED) {
                                         state = State.PARSED;
+                                        addRemoveModifiedFile(false);
                                     }  // if not, someone marked it with new state
                                 }
                                 postParseNotify();
@@ -735,6 +767,7 @@ public final class FileImpl implements CsmFile,
                                 synchronized (changeStateLock) {
                                     if (parsingState == ParsingState.BEING_PARSED) {
                                         state = State.PARSED;
+                                        addRemoveModifiedFile(false);
                                     } // if not, someone marked it with new state
                                 }
                                 postParseNotify();
@@ -764,6 +797,7 @@ public final class FileImpl implements CsmFile,
                             // For now we have to mark file as parsed, otherwise 
                             // scheduleParsing(true) never finishes while(!isParsed()) loop
                             state = State.PARSED;
+                            addRemoveModifiedFile(false);
                         }
                     }
                 }
@@ -776,6 +810,7 @@ public final class FileImpl implements CsmFile,
                 }
                 synchronized (changeStateLock) {
                     state = State.INITIAL;
+                    addRemoveModifiedFile(false);
                 }
             } else {
                 // if was request for partial reparse and file state was not modified during parse
@@ -847,6 +882,9 @@ public final class FileImpl implements CsmFile,
                         if (reportParse || logState || TraceFlags.DEBUG) {
                             System.err.printf("#validate changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                         }
+                        if (ProjectBase.WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+                            ProjectBase.WAIT_PARSE_LOGGER.log(Level.FINE, String.format("##> MODIFIED %s %d", this, System.currentTimeMillis()), new Exception());
+                        }
                         state = State.MODIFIED;
                         postMarkedAsModified();
                         return false;
@@ -869,6 +907,9 @@ public final class FileImpl implements CsmFile,
                 }// NOI18N
             }
             if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
+                if (ProjectBase.WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+                    ProjectBase.WAIT_PARSE_LOGGER.log(Level.FINE, String.format("##> MODIFIED %s %d", this, System.currentTimeMillis()), new Exception());
+                }
                 state = State.MODIFIED;
                 postMarkedAsModified();
             }
@@ -1599,6 +1640,7 @@ public final class FileImpl implements CsmFile,
                 }
                 synchronized (fileImplIncluded.changeStateLock) {
                     fileImplIncluded.state = State.PARSED;
+                    addRemoveModifiedFile(false);
                 }
                 RepositoryUtils.put(fileImplIncluded);
             }
@@ -1828,6 +1870,7 @@ public final class FileImpl implements CsmFile,
         synchronized (changeStateLock) {
              state = State.PARSED;
              postParse();
+             addRemoveModifiedFile(false);
         }
         RepositoryUtils.put(this);
     }

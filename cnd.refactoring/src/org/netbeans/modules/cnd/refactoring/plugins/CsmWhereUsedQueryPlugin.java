@@ -194,6 +194,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
 
     @Override
     public Problem preCheck() {
+        CsmRefactoringUtils.waitParsedAllProjects();
         CsmUID uid = refactoring.getRefactoringSource().lookup(CsmUID.class);    
         Problem invalidContext = new Problem(true, NbBundle.getMessage(CsmWhereUsedQueryPlugin.class, "MSG_InvalidObjectNothingToFind")); // NOI18N;
         if (uid == null) {

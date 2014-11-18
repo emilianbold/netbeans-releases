@@ -420,6 +420,20 @@ public final class ParserQueue {
      */
     public boolean add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
             boolean clearPrevState, FileAction fileAction) {
+        if (ProjectBase.WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+            ProjectBase.WAIT_PARSE_LOGGER.log(Level.FINE, String.format("##> ParserQueue.add %s %d", file, System.currentTimeMillis()), new Exception());
+        }
+        try {
+            return addImpl(file, ppStates, position, clearPrevState, fileAction);
+        } finally {
+            if (ProjectBase.WAIT_PARSE_LOGGER.isLoggable(Level.FINE)) {
+                ProjectBase.WAIT_PARSE_LOGGER.fine(String.format("##< ParserQueue.add %s %d", file.getAbsolutePath(), System.currentTimeMillis()));
+            }
+        }
+    }
+
+    private boolean addImpl(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position,
+            boolean clearPrevState, FileAction fileAction) {
         if (TraceFlags.TRACE_182342_BUG) {
             new Exception("ParserQueue: add for " + file).printStackTrace(System.err);  // NOI18N
             int i = 0;
@@ -432,6 +446,9 @@ public final class ParserQueue {
             if (pi != null && !pi.isDisposing()) {
                 Utils.LOG.log(Level.SEVERE, "Adding a file {0} with an emty preprocessor state set", file.getAbsolutePath()); //NOI18N
             } else {
+                if (pi != null) {
+                    pi.removeModifiedFile(file);
+                }
                 return false;
             }
         }
@@ -454,6 +471,10 @@ public final class ParserQueue {
                 case MARK_REPARSE_AND_INVALIDATE:
                     file.markReparseNeeded(true);
                     break;
+            }
+            ProjectBase pi = file.getProjectImpl(false);
+            if (pi != null) {
+                pi.removeModifiedFile(file);
             }
             if (!needEnqueue(file)) {
                 if (TraceFlags.TRACE_PARSER_QUEUE) {
