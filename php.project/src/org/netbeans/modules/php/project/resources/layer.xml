@@ -60,19 +60,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.project.ui.actions.RunFrameworkCommandAction.getInstance"/>
             </file>
         </folder>
-        <folder name="Tools">
-            <file name="org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.instance"/>
         </folder>
-    </folder>
-    <folder name="UI">
-        <folder name="ToolActions">
-            <folder name="PHP">
-                <file name="org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-php-project-ui-actions-tests-CreateTestsAction.instance"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 
     <folder name="Shortcuts">
         <file name="AS-X.shadow">

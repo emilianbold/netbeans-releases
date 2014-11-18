@@ -73,7 +73,7 @@ public class TestNGTestCreatorProvider extends TestCreatorProvider {
         }
         if (activatedFOs[0] != null && activatedFOs[0].isValid()) {
             Project p = FileOwnerQuery.getOwner(activatedFOs[0]);
-            return TestNGSupport.isActionSupported(TestNGSupport.Action.CREATE_TEST, p);
+            return TestNGSupport.isActionSupported(TestNGSupport.Action.CREATE_TEST, p) || TestNGSupport.isSupportEnabled(activatedFOs);
         }
         return false;
     }

@@ -199,8 +199,11 @@
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.testrunner</friend>
                 <friend>org.netbeans.modules.ruby.testrunner</friend>
+                <friend>org.netbeans.modules.selenium2</friend>
+                <friend>org.netbeans.modules.selenium2.java</friend>
                 <friend>org.netbeans.modules.testng.ui</friend>
                 <package>org.netbeans.modules.gsf.testrunner.ui.api</package>
+                <package>org.netbeans.modules.gsf.testrunner.ui.spi</package>
             </friend-packages>
         </data>
     </configuration>

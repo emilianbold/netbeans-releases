@@ -179,6 +179,37 @@ public final class ProjectPropertiesSupport {
         return testsDirectory;
     }
 
+    
+
+    @NbBundle.Messages({
+        "ProjectPropertiesSupport.browse.selenium.test=Select a directory with project selenium test files.",
+    })
+    public static List<FileObject> getSeleniumDirectories(final PhpProject project, boolean showFileChooser) {
+        List<FileObject> testDirs = filterValid(project.getSeleniumDirectories());
+        if (!testDirs.isEmpty()) {
+            return testDirs;
+        }
+        if (!showFileChooser) {
+            return Collections.emptyList();
+        }
+        // show ui
+        BrowseTestSources panel = Mutex.EVENT.readAccess(new Mutex.Action<BrowseTestSources>() {
+            @Override
+            public BrowseTestSources run() {
+                return new BrowseTestSources(project, Bundle.ProjectPropertiesSupport_browse_tests(),
+                        Bundle.ProjectPropertiesSupport_browse_tests_info());
+            }
+        });
+        if (!panel.open()) {
+            return Collections.emptyList();
+        }
+        File tests = new File(panel.getTestSources());
+        assert tests.isDirectory();
+        FileObject testsDirectory = FileUtil.toFileObject(tests);
+        saveTestSources(project, PhpProjectProperties.SELENIUM_SRC_DIR, tests);
+        return Collections.singletonList(testsDirectory);
+    }
+
     /**
      * @return selenium test sources directory or <code>null</code> (if not set up yet e.g.)
      */

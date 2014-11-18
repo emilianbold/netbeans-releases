@@ -52,6 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.java.testrunner.JavaUtils;
 import org.netbeans.modules.testng.api.TestNGSupport.Action;
 import org.netbeans.modules.testng.spi.TestConfig;
 import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
@@ -81,6 +82,11 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
 //        s.add(Action.DEBUG_TESTMETHOD);
         s.add(Action.DEBUG_TESTSUITE);
         SUPPORTED_ACTIONS = Collections.unmodifiableSet(s);
+    }
+
+    @Override
+    public boolean isSupportEnabled(FileObject[] activatedFOs) {
+        return JavaUtils.isSupportEnabled(AntArtifactProvider.class, activatedFOs);
     }
 
     @Override

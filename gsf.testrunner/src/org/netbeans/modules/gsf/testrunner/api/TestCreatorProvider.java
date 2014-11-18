@@ -61,6 +61,17 @@ import org.openide.util.Lookup;
  */
 public abstract class TestCreatorProvider {
     
+    public static final String FRAMEWORK_JUNIT = "JUnit";
+    public static final String FRAMEWORK_TESTNG = "TestNG";
+    public static final String FRAMEWORK_SELENIUM = "Selenium";
+    public static final String FRAMEWORK_PHPUNIT = "PHPUnit";
+    /** suffix of test classes */
+    public static final String TEST_CLASS_SUFFIX = "Test"; //NOI18N
+    /** suffix of integration test classes */
+    public static final String INTEGRATION_TEST_CLASS_SUFFIX = "IT"; //NOI18N
+    /** suffix of TestNG classes */
+    public static final String TESTNG_TEST_CLASS_SUFFIX = "NG"; //NOI18N
+    
     /**
      * Registers a {@link TestCreatorProvider}.
      */

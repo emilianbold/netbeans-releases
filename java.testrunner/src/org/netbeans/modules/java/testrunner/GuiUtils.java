@@ -62,6 +62,7 @@ import javax.swing.border.Border;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.testrunner.api.NamedObject;
 import org.netbeans.modules.gsf.testrunner.api.SizeRestrictedPanel;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,8 +79,8 @@ public final class GuiUtils {
     public static final String TEMPLATES_DIR = "Templates/JUnit";       //NOI18N
     
     
-    public static final String JUNIT_TEST_FRAMEWORK = "JUnit";             //NOI18N
-    public static final String TESTNG_TEST_FRAMEWORK = "TestNG";             //NOI18N
+    public static final String JUNIT_TEST_FRAMEWORK = TestCreatorProvider.FRAMEWORK_JUNIT;
+    public static final String TESTNG_TEST_FRAMEWORK = TestCreatorProvider.FRAMEWORK_TESTNG;
     
     public static final String CHK_INTEGRATION_TESTS = "IntegrationTests";                   //NOI18N
     

@@ -91,6 +91,11 @@ public class TestNGImpl extends TestNGSupportImplementation {
         return te;
     }
 
+    @Override
+    public boolean isSupportEnabled(FileObject[] activatedFOs) {
+        return true;
+    }
+
     public static class TestExecutorImpl implements TestExecutor {
 
         private boolean hasFailed = false;

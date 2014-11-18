@@ -94,8 +94,10 @@ public final class TestCreatorPanelDisplayer {
 	Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
         if (!isJ2MEProject) {
             for (Lookup.Item<TestCreatorProvider> provider : providers) {
+                if(provider.getInstance().enable(activatedFOs)) {
                 testingFrameworks.add(provider.getDisplayName());
             }
+        }
         }
 	cfg.addTestingFrameworks(testingFrameworks);
 	cfg.setPreselectedLocation(location);

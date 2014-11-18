@@ -52,6 +52,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.testrunner.JavaUtils;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -91,6 +92,11 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
         s.add(Action.RUN_TESTSUITE);
         s.add(Action.DEBUG_TESTSUITE);
         SUPPORTED_ACTIONS = Collections.unmodifiableSet(s);
+    }
+
+    @Override
+    public boolean isSupportEnabled(FileObject[] activatedFOs) {
+        return JavaUtils.isSupportEnabled(NbMavenProject.class, activatedFOs);
     }
 
     public boolean isActionSupported(Action action,Project p) {

@@ -90,6 +90,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
     public static final String FRAMEWORKS = "Frameworks"; // NOI18N
     public static final String TESTING = PhpTesting.CUSTOMIZER_IDENT;
+    public static final String TESTING_SELENIUM = "SeleniumTesting"; // NOI18N
     public static final String LICENSE = "License"; // NOI18N
 
     private final String name;
@@ -113,6 +114,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @NbBundle.Messages({
         "CompositePanelProviderImpl.category.testing.title=Testing",
+        "CompositePanelProviderImpl.category.selenium.testing.title=Selenium Testing",
         "CompositePanelProviderImpl.category.browser.title=Browser",
         "CompositePanelProviderImpl.category.licenceHeaders.title=License Headers",
     })
@@ -174,6 +176,10 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     Bundle.CompositePanelProviderImpl_category_testing_title(),
                     null,
                     subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
+        } else if (TESTING_SELENIUM.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(TESTING_SELENIUM,
+                    Bundle.CompositePanelProviderImpl_category_selenium_testing_title(),
+                    null, null);
         } else if (LICENSE.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     LICENSE,
@@ -202,6 +208,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new JPanel();
         } else if (TESTING.equals(nm)) {
             return new CustomizerTesting(category, uiProps, creatingTestingPanels());
+        } else if (TESTING_SELENIUM.equals(nm)) {
+            return new CustomizerSeleniumTesting(category, uiProps);
         } else if (LICENSE.equals(nm)) {
             CustomizerUtilities.LicensePanelContentHandler handler = new CustomizerUtilities.LicensePanelContentHandler() {
                 @Override
@@ -339,6 +347,14 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     )
     public static CompositePanelProviderImpl createTesting() {
         return new CompositePanelProviderImpl(TESTING);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = UiUtils.CUSTOMIZER_PATH,
+        position = 352
+    )
+    public static CompositePanelProviderImpl createSeleniumTesting() {
+        return new CompositePanelProviderImpl(TESTING_SELENIUM);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

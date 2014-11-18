@@ -24,6 +24,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.java.classpath</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.46</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.libs.javacapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -159,11 +168,12 @@
                 <friend>org.netbeans.modules.junit.ant</friend>
                 <friend>org.netbeans.modules.junit.ant.ui</friend>
                 <friend>org.netbeans.modules.junit.ui</friend>
+                <friend>org.netbeans.modules.selenium2.java</friend>
                 <friend>org.netbeans.modules.testng</friend>
                 <friend>org.netbeans.modules.testng.ant</friend>
+                <friend>org.netbeans.modules.testng.maven</friend>
                 <friend>org.netbeans.modules.testng.ui</friend>
                 <package>org.netbeans.modules.java.testrunner</package>
-                <package>org.netbeans.modules.java.testrunner.antutils</package>
             </friend-packages>
         </data>
     </configuration>

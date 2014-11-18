@@ -227,6 +227,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private final IncludePathSupport includePathSupport;
     private final IgnorePathSupport ignorePathSupport;
     private final TestDirectoriesPathSupport testDirectoriesPathSupport;
+    private final SeleniumTestDirectoriesPathSupport seleniumTestDirectoriesPathSupport;
 
     // all these fields don't have to be volatile - this ensures request processor
     // CustomizerSources
@@ -264,6 +265,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     // Testing
     private DefaultListModel<BasePathSupport.Item> testDirectoriesListModel = null;
     private ListCellRenderer<BasePathSupport.Item> testDirectoriesListRenderer = null;
+    // Selenium Testing
+    private DefaultListModel<BasePathSupport.Item> seleniumTestDirectoriesListModel = null;
+    private ListCellRenderer<BasePathSupport.Item> seleniumTestDirectoriesListRenderer = null;
 
     // license
     private String licenseNameValue;
@@ -274,17 +278,18 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
 
     public PhpProjectProperties(PhpProject project) {
-        this(project, null, null, null);
+        this(project, null, null, null, null);
     }
 
     public PhpProjectProperties(PhpProject project, IncludePathSupport includePathSupport, IgnorePathSupport ignorePathSupport,
-            TestDirectoriesPathSupport testDirectoriesPathSupport) {
+            TestDirectoriesPathSupport testDirectoriesPathSupport, SeleniumTestDirectoriesPathSupport seleniumTestDirectoriesPathSupport) {
         assert project != null;
 
         this.project = project;
         this.includePathSupport = includePathSupport;
         this.ignorePathSupport = ignorePathSupport;
         this.testDirectoriesPathSupport = testDirectoriesPathSupport;
+        this.seleniumTestDirectoriesPathSupport = seleniumTestDirectoriesPathSupport;
 
         runConfigs = readRunConfigs();
         String currentConfig = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty("config"); // NOI18N
@@ -510,6 +515,27 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return testDirectoriesListRenderer;
     }
 
+    public DefaultListModel<BasePathSupport.Item> getSeleniumTestDirectoriesListModel() {
+        if (seleniumTestDirectoriesListModel == null) {
+            List<String> values = new ArrayList<>();
+            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            for (String property : project.getSeleniumRoots().getRootProperties()) {
+                values.add(properties.getProperty(property));
+            }
+            seleniumTestDirectoriesListModel = PathUiSupport.createListModel(seleniumTestDirectoriesPathSupport.itemsIterator(
+                    values.toArray(new String[values.size()])));
+        }
+        return seleniumTestDirectoriesListModel;
+    }
+
+    public ListCellRenderer<BasePathSupport.Item> getSeleniumTestDirectoriesListRenderer() {
+        if (seleniumTestDirectoriesListRenderer == null) {
+            seleniumTestDirectoriesListRenderer = new PathUiSupport.ClassPathListCellRenderer(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getProjectDirectory());
+        }
+        return seleniumTestDirectoriesListRenderer;
+    }
+
     public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
         if (customizerExtenders == null) {
             customizerExtenders = new HashSet<>();
@@ -649,6 +675,12 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             testDirs = testDirectoriesPathSupport.encodeToStrings(PathUiSupport.getIterator(testDirectoriesListModel), true, false);
         }
 
+        // selenium testing
+        String[] seleniumTestDirs = null;
+        if (seleniumTestDirectoriesListModel != null) {
+            seleniumTestDirs = seleniumTestDirectoriesPathSupport.encodeToStrings(PathUiSupport.getIterator(seleniumTestDirectoriesListModel), true, false);
+        }
+
         // get properties
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
@@ -716,6 +748,24 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                     propertyName += i;
                 }
                 projectProperties.setProperty(propertyName, testDir);
+                i++;
+            }
+        }
+        // selenium testing
+        if (testDirs != null) {
+            // first, remove all current test dirs
+            for (String property : project.getSeleniumRoots().getRootProperties()) {
+                projectProperties.remove(property);
+            }
+            // set new ones
+            int i = 1;
+            for (String seleniumTestDir : seleniumTestDirs) {
+                String propertyName = SELENIUM_SRC_DIR;
+                if (i > 1) {
+                    // backward compatibility
+                    propertyName += i;
+                }
+                projectProperties.setProperty(propertyName, seleniumTestDir);
                 i++;
             }
         }

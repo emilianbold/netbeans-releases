@@ -73,6 +73,18 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="TestCreatorProvider_constants">
+        <api name="CommonTestrunnerAPI"/>
+        <summary>Introducing various constants.</summary>
+        <version major="2" minor="1"/>
+        <date day="17" month="11" year="2014"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Introduced various constants useful during test creation.
+        </description>
+        <class package="org.netbeans.modules.gsf.testrunner.api" name="TestCreatorProvider"/>
+    </change>
     <change id="UnitTestsUsage">
         <api name="CommonTestrunnerAPI"/>
         <summary>API to log unit test's library usage.</summary>
