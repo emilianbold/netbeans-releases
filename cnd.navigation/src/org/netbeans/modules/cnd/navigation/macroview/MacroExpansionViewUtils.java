@@ -107,7 +107,10 @@ public final class MacroExpansionViewUtils {
             return;
         }
 
-        final MacroExpansionTopComponent view = MacroExpansionTopComponent.findInstance();
+        final MacroExpansionTopComponent view = MacroExpansionTopComponent.getInstance();
+        if (view == null) {
+            return;
+        }        
         final Document expandedContextDoc = view.getExpandedContextDoc();
         if (expandedContextDoc == null) {
             return;
