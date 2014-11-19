@@ -237,16 +237,15 @@ public abstract class MultiFileLoader extends DataLoader {
         if (willLog) {
             ERR.log(Level.FINE, "{0} register entry: {1}", new Object[]{getClass().getName(), fo}); // NOI18N
         }
-        boolean tryAgain = false;
-        org.openide.loaders.MultiDataObject.Entry e = null;
+        boolean tryAgain;
         synchronized (DataObjectPool.getPOOL()) {
-            if (originalItem != obj.item() || !originalItem.isValid() || !fo.isValid()) {
-                tryAgain = true;
-            } else {
-                e = obj.registerEntry (fo);
-            }
+            tryAgain = originalItem != obj.item()
+                    || !originalItem.isValid() || !fo.isValid();
         }
-        if (tryAgain) {
+        org.openide.loaders.MultiDataObject.Entry e;
+        if (!tryAgain) {
+            e = obj.registerEntry(fo);
+        } else {
             return handleFindDataObject(fo, recognized);
         }
         if (willLog) {

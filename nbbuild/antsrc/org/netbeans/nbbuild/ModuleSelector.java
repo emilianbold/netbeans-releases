@@ -111,6 +111,10 @@ public final class ModuleSelector extends BaseExtendSelector {
                     module = m.getMainAttributes().getValue("OpenIDE-Module"); // NOI18N
                     if (module == null && !isExt(file)) {
                         module = m.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+                        int semicolon = module == null ? -1 : module.indexOf(';');
+                        if (semicolon >= 0) {
+                            module = module.substring(0, semicolon);
+                        }
                     }
                 }
                 jar.close();
