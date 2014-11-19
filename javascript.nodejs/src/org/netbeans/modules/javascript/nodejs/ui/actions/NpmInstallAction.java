@@ -55,14 +55,12 @@ import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-@MIMEResolver.Registration(displayName = "package.json", resource = "../../resources/npm-resolver.xml", position = 127)
 @ActionID(id = "org.netbeans.modules.javascript.nodejs.ui.actions.NpmInstallAction", category = "Build")
 @ActionRegistration(displayName = "#NpmInstallAction.name", lazy = false)
 @ActionReferences({

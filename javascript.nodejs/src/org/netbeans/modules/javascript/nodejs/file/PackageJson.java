@@ -76,12 +76,14 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 
 /**
  * Class representing project's <tt>package.json</tt> file.
  */
+@MIMEResolver.Registration(displayName = "package.json", resource = "../resources/npm-resolver.xml", position = 127)
 public final class PackageJson {
 
     private static final Logger LOGGER = Logger.getLogger(PackageJson.class.getName());
