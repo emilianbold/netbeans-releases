@@ -76,7 +76,6 @@ import org.openide.modules.PatchedPublic;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class PatchedPublicProcessor extends AbstractProcessor {
     
     private static final Set<String> ANNOTATIONS = new HashSet<String>(
@@ -234,4 +233,8 @@ public class PatchedPublicProcessor extends AbstractProcessor {
         return true;
     }
 
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
+    }
 }
