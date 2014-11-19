@@ -42,14 +42,14 @@
 
 
 @TemplateRegistration(folder = "ClientSide",
-        content = "package.json",
+        content = "../resources/package.json",
         scriptEngine = "freemarker",
         position = 580,
         displayName = "#Templates.package.json",
-        description = "packagedescription.html",
+        description = "../resources/PackageJsonDescription.html",
         targetName = "package",
         category = "html5")
 
-package org.netbeans.modules.web.clientproject.node;
+package org.netbeans.modules.javascript.nodejs.ui.wizard;
 
 import org.netbeans.api.templates.TemplateRegistration;

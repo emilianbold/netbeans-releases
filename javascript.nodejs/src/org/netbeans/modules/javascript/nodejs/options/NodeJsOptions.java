@@ -46,12 +46,14 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.openide.util.NbPreferences;
 
 public final class NodeJsOptions {
 
     public static final String NODE_PATH = "node.path"; // NOI18N
+    private static final String NPM_PATH = "npm.path"; // NOI18N
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
@@ -62,6 +64,7 @@ public final class NodeJsOptions {
     private final Preferences preferences;
 
     private volatile boolean nodeSearched = false;
+    private volatile boolean npmSearched = false;
 
 
     private NodeJsOptions() {
@@ -96,6 +99,25 @@ public final class NodeJsOptions {
 
     public void setNode(String node) {
         preferences.put(NODE_PATH, node);
+    }
+
+    @CheckForNull
+    public String getNpm() {
+        String path = preferences.get(NPM_PATH, null);
+        if (path == null
+                && !npmSearched) {
+            npmSearched = true;
+            List<String> files = FileUtils.findFileOnUsersPath(NpmExecutable.NPM_NAME);
+            if (!files.isEmpty()) {
+                path = files.get(0);
+                setNpm(path);
+            }
+        }
+        return path;
+    }
+
+    public void setNpm(String npm) {
+        preferences.put(NPM_PATH, npm);
     }
 
 }
