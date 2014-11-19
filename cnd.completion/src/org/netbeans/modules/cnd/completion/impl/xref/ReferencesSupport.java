@@ -271,20 +271,22 @@ public final class ReferencesSupport {
         final String oldName = Thread.currentThread().getName();
         try {
             // Add resolve position to the thread name for logging purposes
-            try {
-                String position = "[" + offset + "]"; // NOI18N
-                if (CndUtils.isDebugMode() && doc instanceof LineDocument) {
-                    LineDocument lineDoc = (LineDocument) doc;
-                    position = "[" + (LineDocumentUtils.getLineIndex(lineDoc, offset) + 1) + "," // NOI18N
-                               + (offset - LineDocumentUtils.getLineStart(lineDoc, offset) + 1) + "]"; // NOI18N
+            if (csmFile != null) {
+                try {
+                    String position = "[" + offset + "]"; // NOI18N
+                    if (CndUtils.isDebugMode() && doc instanceof LineDocument) {
+                        LineDocument lineDoc = (LineDocument) doc;
+                        position = "[" + (LineDocumentUtils.getLineIndex(lineDoc, offset) + 1) + "," // NOI18N
+                                   + (offset - LineDocumentUtils.getLineStart(lineDoc, offset) + 1) + "]"; // NOI18N
+                    }
+                    Thread.currentThread().setName(
+                        oldName + " (find declaration at "  // NOI18N
+                        + csmFile.getAbsolutePath() + position
+                        + ", token \"" + (tokenUnderOffset != null ? tokenUnderOffset.text() : "<unknown>") + "\")" // NOI18N
+                    );
+                } catch (BadLocationException ex) {
+                    // Just ignore it
                 }
-                Thread.currentThread().setName(
-                    oldName + " (find declaration at "  // NOI18N
-                    + csmFile.getAbsolutePath() + position
-                    + ", token \"" + tokenUnderOffset.text() + "\")" // NOI18N
-                );
-            } catch (BadLocationException ex) {
-                // Just ignore it
             }
             
             // fast check, if possible

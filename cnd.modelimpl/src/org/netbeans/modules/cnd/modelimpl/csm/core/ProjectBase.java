@@ -737,7 +737,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         getDeclarationsSorage().removeDeclaration(decl);
     }
 
-    static final Logger WAIT_PARSE_LOGGER = Logger.getLogger("cnd.wait.parse");
+    static final Logger WAIT_PARSE_LOGGER = Logger.getLogger("cnd.wait.parse"); // NOI18N
 
     private static void traceRegistration(String text) {
         assert TraceFlags.TRACE_REGISTRATION : "TraceFlags.TRACE_REGISTRATION should be checked *before* call !"; //NOI18N

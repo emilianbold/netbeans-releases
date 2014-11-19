@@ -159,14 +159,16 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
     
     public Collection<CsmMember> _getMembers() {
         Collection<CsmMember> members = new ArrayList<>();
-        members.addAll(super.getMembers());
-        ClassImpl base = findBaseClassImplInProject();
-        if(base != null && base != this) {
-            CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
-            if(p instanceof InstantiationProviderImpl) {
-                CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), false);
-                if(CsmKindUtilities.isClass(baseInst)) {
-                    members.addAll(((CsmClass)baseInst).getMembers());
+        members.addAll(super.getMembers());        
+        if (isValid()) {
+            ClassImpl base = findBaseClassImplInProject();
+            if(base != null && base != this) {
+                CsmInstantiationProvider p = CsmInstantiationProvider.getDefault();
+                if(p instanceof InstantiationProviderImpl) {
+                    CsmObject baseInst = ((InstantiationProviderImpl)p).instantiate(base, this.getSpecializationParameters(), false);
+                    if(CsmKindUtilities.isClass(baseInst)) {
+                        members.addAll(((CsmClass)baseInst).getMembers());
+                    }
                 }
             }
         }

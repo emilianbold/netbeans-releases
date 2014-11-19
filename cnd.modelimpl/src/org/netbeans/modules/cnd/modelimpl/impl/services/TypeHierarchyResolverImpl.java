@@ -149,16 +149,18 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             CsmFile file = referencedClass.getContainingFile();
             CsmProject project = file.getProject();
             processProjectInheritances(project, referencedClass, referencedClassUID, res);
+            Set<CsmProject> tracked = new HashSet<>();
+            tracked.add(project);
             if (project instanceof ProjectBase) {
                 for(CsmProject dependent : ((ProjectBase)project).getDependentProjects()){
                     processProjectInheritances(dependent, referencedClass, referencedClassUID, res);
+                    tracked.add(dependent);
                 }
             }
             for (CsmProject prj : CsmModelAccessor.getModel().projects()) {
-                if (project.equals(prj)) {
-                    continue;
+                if (tracked.add(prj)) {
+                    processProjectInheritances(prj, referencedClass, referencedClassUID, res);
                 }
-                processProjectInheritances(prj, referencedClass, referencedClassUID, res);
             }
         }
         map.put(referencedClassUID, res);
