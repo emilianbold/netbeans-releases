@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.dwarfdump;
-
-import java.io.IOException;
+package org.netbeans.modules.cnd.dwarfdump.source;
 
 /**
  *
- * @author alsimon
+ * @author Alexander Simon
  */
-public interface CompilationUnitInterface {
-    String getCompilationDir() throws IOException;
-    String getSourceFileName() throws IOException;
-    String getCommandLine() throws IOException;
-    String getSourceFileAbsolutePath() throws IOException;
-    String getSourceLanguage() throws IOException;
-    boolean hasMain() throws IOException;
-    int getMainLine() throws IOException;
+public enum CompileLineOrigin {
+    BuildLog, DwarfCompileLine, ExecLog
+    
 }

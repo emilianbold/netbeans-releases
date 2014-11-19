@@ -64,12 +64,14 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
+import org.netbeans.modules.cnd.discovery.api.DriverFactory;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.dwarfdump.source.Artifacts;
+import org.netbeans.modules.cnd.dwarfdump.source.CompileLineOrigin;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -860,9 +862,8 @@ public class MakeLogReader {
 
     private void gatherLine(LineInfo li, CompileLineStorage storage) {
         String line = li.compileLine;
-        Artifacts artifacts = new Artifacts();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, compilerSettings.getProjectBridge(), li.compilerType == CompilerType.CPP);
-        for(String what : sourcesList) {
+        Artifacts artifacts = compilerSettings.getDriver().gatherCompilerLine(line, CompileLineOrigin.BuildLog, li.compilerType == CompilerType.CPP);
+        for(String what : artifacts.getInput()) {
             if (what == null){
                 continue;
             }
@@ -880,17 +881,17 @@ public class MakeLogReader {
             } else {
                 file = workingDir+"/"+what;  //NOI18N
             }
-            List<String> userIncludesCached = new ArrayList<String>(artifacts.userIncludes.size());
-            for(String s : artifacts.userIncludes){
+            List<String> userIncludesCached = new ArrayList<String>(artifacts.getUserIncludes().size());
+            for(String s : artifacts.getUserIncludes()){
                 s = convertWindowsRelativePath(s);
                 userIncludesCached.add(PathCache.getString(s));
             }
-            List<String> userFilesCached = new ArrayList<String>(artifacts.userFiles.size());
-            for(String s : artifacts.userFiles){
+            List<String> userFilesCached = new ArrayList<String>(artifacts.getUserFiles().size());
+            for(String s : artifacts.getUserFiles()){
                 userFilesCached.add(PathCache.getString(s));
             }
-            Map<String, String> userMacrosCached = new HashMap<String, String>(artifacts.userMacros.size());
-            for(Map.Entry<String,String> e : artifacts.userMacros.entrySet()){
+            Map<String, String> userMacrosCached = new HashMap<String, String>(artifacts.getUserMacros().size());
+            for(Map.Entry<String,String> e : artifacts.getUserMacros().entrySet()){
                 if (e.getValue() == null) {
                     userMacrosCached.put(PathCache.getString(e.getKey()), null);
                 } else {
@@ -931,7 +932,7 @@ public class MakeLogReader {
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 DwarfSource.LOG.log(Level.FINE, "**** Not found {0}", file); //NOI18N
             }
-            if (!what.startsWith("/") && artifacts.userIncludes.size()+artifacts.userMacros.size() > 0){  //NOI18N
+            if (!what.startsWith("/") && artifacts.getUserIncludes().size()+artifacts.getUserMacros().size() > 0){  //NOI18N
                 List<String> res = findFiles(what);
                 if (res == null || res.isEmpty()) {
                     if (DwarfSource.LOG.isLoggable(Level.FINE)) {
@@ -957,8 +958,8 @@ public class MakeLogReader {
                 }
             }
         }
-        if (artifacts.output != null) {
-            String what = artifacts.output;
+        if (artifacts.getOutput() != null) {
+            String what = artifacts.getOutput();
             String baseName = CndPathUtilities.getBaseName(what);
             if (!(baseName.endsWith(".exe") || !baseName.contains("."))) { //NOI18N
                 return;
@@ -1022,9 +1023,9 @@ public class MakeLogReader {
 
     static ItemProperties.LanguageKind detectLanguage(LineInfo li, Artifacts artifacts, String sourcePath) {
         ItemProperties.LanguageKind language = li.getLanguage();
-        if (artifacts.languageArtifacts.contains("c")) { // NOI18N
+        if (artifacts.getLanguageArtifacts().contains("c")) { // NOI18N
             language = ItemProperties.LanguageKind.C;
-        } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
+        } else if (artifacts.getLanguageArtifacts().contains("c++")) { // NOI18N
             language = ItemProperties.LanguageKind.CPP;
         } else {
             if (language == LanguageKind.Unknown || "cl".equals(li.compiler)) { // NOI18N
@@ -1065,7 +1066,7 @@ public class MakeLogReader {
         CommandLineSource(LineInfo li, Artifacts artifacts, String compilePath, String sourcePath,
                 List<String> userIncludes, List<String> userFiles, Map<String, String> userMacros, CompileLineStorage storage) {
             language = detectLanguage(li, artifacts, sourcePath);
-            standard = artifacts.getLanguageStandard(standard);
+            standard = DriverFactory.getLanguageStandard(standard, artifacts);
             this.compiler = li.compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
@@ -1081,12 +1082,12 @@ public class MakeLogReader {
             this.userIncludes = userIncludes;
             this.userFiles = userFiles;
             this.userMacros = userMacros;
-            this.undefinedMacros = artifacts.undefinedMacros;
+            this.undefinedMacros = artifacts.getUserUndefinedMacros();
             this.storage = storage;
             if (storage != null) {
                 handler = storage.putCompileLine(li.compileLine);
             }
-            this.importantFlags = artifacts.getImportantFlags();
+            this.importantFlags = DriverFactory.importantFlagsToString(artifacts);;
         }
 
         @Override

@@ -56,9 +56,12 @@ import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DriverFactory;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
+import org.netbeans.modules.cnd.dwarfdump.source.Artifacts;
+import org.netbeans.modules.cnd.dwarfdump.source.CompileLineOrigin;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
@@ -167,18 +170,18 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
-                DiscoveryUtils.Artifacts artifacts = new DiscoveryUtils.Artifacts();
-                DiscoveryUtils.gatherCompilerLine("gcc "+options, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false); //NOI18N
-                ItemProperties.LanguageStandard languageStandard = artifacts.getLanguageStandard(ItemProperties.LanguageStandard.Unknown);
+                Driver driver = DriverFactory.getDriver(null);
+                Artifacts artifacts = driver.gatherCompilerLine("gcc "+options, CompileLineOrigin.BuildLog, false); //NOI18N
+                ItemProperties.LanguageStandard languageStandard = DriverFactory.getLanguageStandard(ItemProperties.LanguageStandard.Unknown, artifacts);
                 switch (languageStandard) {
                     case C89: return LanguageFlavor.C89;
                     case C99: return LanguageFlavor.C99;
                     case C11: return LanguageFlavor.C11;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
-                DiscoveryUtils.Artifacts artifacts = new DiscoveryUtils.Artifacts();
-                DiscoveryUtils.gatherCompilerLine("g++ "+options, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, true); //NOI18N
-                ItemProperties.LanguageStandard languageStandard = artifacts.getLanguageStandard(ItemProperties.LanguageStandard.Unknown);
+                Driver driver = DriverFactory.getDriver(null);
+                Artifacts artifacts = driver.gatherCompilerLine("g++ "+options, CompileLineOrigin.BuildLog, true); //NOI18N
+                ItemProperties.LanguageStandard languageStandard = DriverFactory.getLanguageStandard(ItemProperties.LanguageStandard.Unknown, artifacts);
                 switch (languageStandard) {
                     case CPP11: return LanguageFlavor.CPP11;
                     case CPP14: return LanguageFlavor.CPP14;

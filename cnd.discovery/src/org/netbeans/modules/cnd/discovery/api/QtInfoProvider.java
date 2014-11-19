@@ -61,8 +61,10 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
+import org.netbeans.modules.cnd.dwarfdump.source.Artifacts;
+import org.netbeans.modules.cnd.dwarfdump.source.CompileLineOrigin;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -124,10 +126,11 @@ public abstract class QtInfoProvider {
                                     String key = lines[0].trim();
                                     vars.put(lines[0].trim(), lines[1].trim());
                                     if (key.equals(CXXFLAGS)) {
-                                        Artifacts artifacts = new Artifacts();
-                                        DiscoveryUtils.gatherCompilerLine(getActualVarValue(vars, CXXFLAGS), DiscoveryUtils.LogOrigin.BuildLog, artifacts, new ProjectBridge(project), true);
-                                        List<String> result = new ArrayList<>(artifacts.userMacros.size());
-                                        for (Map.Entry<String, String> pair : artifacts.userMacros.entrySet()) {
+                                        ProjectBridge projectBridge = new ProjectBridge(project);
+                                        Driver driver = DriverFactory.getDriver(projectBridge.getCompilerSet());
+                                        Artifacts artifacts = driver.gatherCompilerLine(getActualVarValue(vars, CXXFLAGS), CompileLineOrigin.BuildLog, true);
+                                        List<String> result = new ArrayList<>(artifacts.getUserMacros().size());
+                                        for (Map.Entry<String, String> pair : artifacts.getUserMacros().entrySet()) {
                                             if (pair.getValue() == null) {
                                                 result.add(pair.getKey());
                                             } else {

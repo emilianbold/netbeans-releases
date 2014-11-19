@@ -51,7 +51,12 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities.Predicate;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionResolverImplementation;
+import org.netbeans.modules.cnd.utils.Antiloop;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.Lookup;
 
 /**
@@ -182,6 +187,40 @@ public final class CsmExpressionResolver {
     public static void resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations, ResolvedTypeHandler task) {
         DEFAULT.resolveType(expression, instantiations, task);
     }       
+    
+    /**
+     * Can resolve type which comes from macros.
+     * 
+     * NB! Use with caution!
+     * If type is comes from macros it can fail to resolve it's classifier,
+     * because it won't determine context appropriately. This method
+     * resolves it within passed scope.
+     * 
+     * @param typeFromMacro
+     * @param scope
+     * @param instantiations 
+     * @param handler - handler for resolved types chain
+     * 
+     * @return resolved type
+     */
+    public static CsmType resolveMacroType(CsmType typeFromMacro, CsmScope scope, List<CsmInstantiation> instantiations, ResolvedTypeHandler handler) {
+        CsmType type = typeFromMacro;
+        int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
+        CompositeResolvedTypeHandler compositeHandler = new CompositeResolvedTypeHandler(new SimpleResolvedTypeHandler(), handler);
+        while (type != null && !CsmBaseUtilities.isValid(type.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(type.getClassifierText()) && counter > 0) {
+            CsmExpressionResolver.resolveType(
+                    type.getClassifierText(), 
+                    type.getContainingFile(), 
+                    type.getStartOffset(), 
+                    scope, 
+                    instantiations,
+                    compositeHandler
+            );
+            type = ((SimpleResolvedTypeHandler) compositeHandler.first).resolved;
+            counter--;
+        }        
+        return type;
+    }
     
 //<editor-fold defaultstate="collapsed" desc="impl">
     
@@ -317,6 +356,28 @@ public final class CsmExpressionResolver {
         @Override
         public void process(CsmType resolvedType) {
             this.resolved = resolvedType;
+        }
+    }
+    
+    private static class CompositeResolvedTypeHandler implements ResolvedTypeHandler {
+        
+        public final ResolvedTypeHandler first;
+        
+        public final ResolvedTypeHandler second;
+
+        public CompositeResolvedTypeHandler(ResolvedTypeHandler first, ResolvedTypeHandler second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        @Override
+        public void process(CsmType resolvedType) {
+            if (first != null) {
+                first.process(resolvedType);
+            }
+            if (second != null) {
+                second.process(resolvedType);
+            }
         }
     }
     

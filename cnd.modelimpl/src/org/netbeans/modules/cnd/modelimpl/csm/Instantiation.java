@@ -1535,6 +1535,27 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         return result;
     }        
+    
+    public static boolean isInstantiatedType(CsmType type) {
+        return type instanceof Type;
+    }
+
+    public static List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type) {
+        if (isInstantiatedType(type)) {
+            List<CsmInstantiation> insts = new ArrayList<>();
+            while (type instanceof Type) {
+                insts.add(0, ((Type) type).getInstantiation());
+                type = ((Type) type).originalType;
+            }        
+            return insts;
+        }
+        return null;
+    }    
+    
+    public static boolean isNestedType(CsmType type) {
+        return type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType ||
+               type instanceof NestedType; 
+    }    
    
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {
         public TemplateParameterType(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
@@ -1684,6 +1705,9 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public CharSequence getClassifierText() {
+            if (isInstantiatedType(instantiatedType)) {
+                return instantiatedType.getClassifierText();
+            }
             return CharSequenceUtils.concatenate(instantiatedType.getClassifierText(), TypeImpl.getInstantiationText(this));
         }
 
@@ -2307,8 +2331,8 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                         CsmClassifier parentClassifier;
                         if(parentType instanceof TypeImpl) {
                             parentClassifier = ((TypeImpl)parentType).getClassifier(instantiations, false);
-                        } else if(parentType instanceof Type) {
-                            parentClassifier = ((Type)parentType).getClassifier(instantiations, false);
+//                        } else if(parentType instanceof Type) {
+//                            parentClassifier = ((Type)parentType).getClassifier(instantiations, false);
                         } else {
                             parentClassifier = parentType.getClassifier();                        
                         }
@@ -2470,12 +2494,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
     private static CsmClassifier getNestedClassifier(MemberResolverImpl memberResolver, CsmClassifier parentClassifier, CharSequence ownText) {
         return org.netbeans.modules.cnd.modelimpl.csm.NestedType.getNestedClassifier(memberResolver, parentClassifier, ownText);
-    }
-    
-    private static boolean isNestedType(CsmType type) {
-        return type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType ||
-               type instanceof NestedType; 
-    }
+    }    
 
     public final static class InstantiationSelfUID implements CsmUID<CsmInstantiation>, SelfPersistent {
         private final Instantiation ref;

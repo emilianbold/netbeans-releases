@@ -123,6 +123,9 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.iterateTypeChain;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.howMany;
+import static org.netbeans.modules.cnd.modelutil.CsmUtilities.Qualificator;
 
 /**
  *
@@ -344,8 +347,18 @@ public final class CompletionSupport implements DocumentListener {
         // pos = doc2context(pos);
         return false;
     }
-
+    
     public static boolean isAssignable(CsmType from, CsmType to) {
+        return isAssignable(null, from, to);
+    }
+
+    public static boolean isAssignable(Context ctx, CsmType origFrom, CsmType origTo) {
+        TypeInfoCollector fromInfo = new TypeInfoCollector();
+        CsmType from = iterateTypeChain(origFrom, fromInfo);
+        
+        TypeInfoCollector toInfo = new TypeInfoCollector();
+        CsmType to = iterateTypeChain(origTo, toInfo);
+        
         CsmClassifier fromCls = from.getClassifier();
         CsmClassifier toCls = to.getClassifier();
 
@@ -354,28 +367,52 @@ public final class CompletionSupport implements DocumentListener {
         }
 
         if (toCls == null || CsmBaseUtilities.isUnresolved(toCls)) {
-            return false;
+            if (ctx != null && ctx.getContextScope() != null) {
+                List<CsmInstantiation> instantiations = CsmInstantiationProvider.getDefault().getInstantiatedTypeInstantiations(to);
+                // TODO: run this check only if resolving was started from macros and we should use context scope
+                to = CsmExpressionResolver.resolveMacroType(to, ctx.getContextScope(), instantiations, new ResolvedTypeInfoCollector(toInfo));
+                
+                if (to == null || CsmBaseUtilities.isUnresolved(to.getClassifier())) {
+                    return false;
+                }
+                
+                toCls = to.getClassifier();
+            } else {
+                return false;
+            }
         }
+        
+        if (CsmKindUtilities.isInstantiation(toCls)) {
+            if (!CsmInstantiationProvider.getDefault().isViableInstantiation((CsmInstantiation) toCls, true)) {
+                return false;
+            }
+        }        
+        
+        final int fromArrayDepth = howMany(fromInfo, Qualificator.ARRAY);
+        final int toArrayDepth = howMany(toInfo, Qualificator.ARRAY);
+        final int fromPointerDepth = howMany(fromInfo, Qualificator.POINTER);
+        final int toPointerDepth = howMany(toInfo, Qualificator.POINTER);        
 
         // XXX review!
         if (fromCls.equals(CsmCompletion.NULL_CLASS)) {
-            return to.getArrayDepth() > 0 || !CsmCompletion.isPrimitiveClass(toCls);
+            return toArrayDepth > 0 || !CsmCompletion.isPrimitiveClass(toCls);
         }
 
-        if (toCls.equals(CsmCompletion.OBJECT_CLASS)) { // everything is object
-            return (from.getArrayDepth() > to.getArrayDepth()) || (from.getArrayDepth() == to.getArrayDepth() && !CsmCompletion.isPrimitiveClass(fromCls));
+        if (toCls.equals(CsmCompletion.OBJECT_CLASS)) { 
+            // everything is object
+            return (fromArrayDepth > toArrayDepth) || (fromArrayDepth == toArrayDepth && !CsmCompletion.isPrimitiveClass(fromCls));
         }
         
-        if (canBePointer(from) && CsmBaseUtilities.isPointer(to)) {
+        if (canBePointer(from) && toPointerDepth > 0) {
             return true;
         }
         
-        if (CsmBaseUtilities.isPointer(from) && canBePointer(to)) {
+        if (fromPointerDepth > 0 && canBePointer(to)) {
             return true;
         }        
 
-        if (from.getArrayDepth() != to.getArrayDepth() ||
-                from.getPointerDepth() != to.getPointerDepth()) {
+        if (fromArrayDepth != toArrayDepth ||
+                fromPointerDepth != toPointerDepth) {
             return false;
         }
 
@@ -383,26 +420,12 @@ public final class CompletionSupport implements DocumentListener {
             return true; // equal classes
         }
         
-        String tfrom = from.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
-        String tto = to.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
+        String tfrom = origFrom.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
+        String tto =origTo.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
 
         if (tfrom.equals(tto)) {
             return true;
         }
-        
-        if (CsmKindUtilities.isTypedefOrTypeAlias(toCls)) {
-            CsmType lastType = CsmUtilities.iterateTypeChain(to, new CsmUtilities.ConstantPredicate<CsmType>(false));
-            toCls = (lastType != null) ? lastType.getClassifier() : toCls;
-        }
-        
-        if (CsmKindUtilities.isTypedefOrTypeAlias(fromCls)) {
-            CsmType lastType = CsmUtilities.iterateTypeChain(from, new CsmUtilities.ConstantPredicate<CsmType>(false));
-            fromCls = (lastType != null) ? lastType.getClassifier() : fromCls;
-        }        
-
-        if (fromCls.equals(toCls)) {
-            return true; // equal classes
-        }           
         
         if (CsmCompletion.isPrimitiveClass(fromCls) && CsmCompletion.isPrimitiveClass(toCls)) {
             return true;
@@ -518,10 +541,10 @@ public final class CompletionSupport implements DocumentListener {
                                                                           boolean acceptMoreParameters, 
                                                                           boolean acceptIfSameNumberParams)         
     {
-        Collection<T> result = filterMethods(methodList, paramsPerMethod, acceptMoreParameters, acceptIfSameNumberParams, false);
+        Collection<T> result = filterMethods(ctx, methodList, paramsPerMethod, acceptMoreParameters, acceptIfSameNumberParams, false);
         if (result.size() > 1) {
             // it seems that this call couldn't filter anything
-            result = filterMethods(result, paramsPerMethod, acceptMoreParameters, acceptIfSameNumberParams, true);
+            result = filterMethods(ctx, result, paramsPerMethod, acceptMoreParameters, acceptIfSameNumberParams, true);
             
             // perform more accurate filtering if it is a strict request (for navigation probably)
             if (!acceptMoreParameters && acceptIfSameNumberParams) {
@@ -531,7 +554,7 @@ public final class CompletionSupport implements DocumentListener {
         return result;
     }
     
-    private static <T extends CsmFunctional> Collection<T> filterMethods(Collection<T> methodList, Map<T, List<CsmType>> paramTypesPerMethod,
+    private static <T extends CsmFunctional> Collection<T> filterMethods(Context ctx, Collection<T> methodList, Map<T, List<CsmType>> paramTypesPerMethod,
             boolean acceptMoreParameters, boolean acceptIfSameNumberParams, boolean ignoreConstAndRef) {
         assert (methodList != null);
         if (paramTypesPerMethod == null) {
@@ -566,7 +589,7 @@ public final class CompletionSupport implements DocumentListener {
                     if (t != null) {
                         if (!methodParms[j].isVarArgs() && !equalTypes(t, mpt, ignoreConstAndRef)) {
                             bestMatch = false;
-                            if (!isAssignable(t, mpt)) {
+                            if (!isAssignable(ctx, t, mpt)) {
                                 if (CsmKindUtilities.isTemplateParameterType(mpt)) {
                                     if (mpt.getArrayDepth() + mpt.getPointerDepth() <= t.getArrayDepth() + t.getPointerDepth()) {
                                         matched++;
@@ -658,7 +681,7 @@ public final class CompletionSupport implements DocumentListener {
                     CsmType methodParamType = methodParams[j].getType();
                     CsmType paramType = (CsmType) paramTypes.get(j);
                     if (paramType != null && methodParamType != null) {
-                        conversions.add(new Conversion(paramType, methodParamType));
+                        conversions.add(new Conversion(ctx, paramType, methodParamType));
                     } else if (paramType != null && methodParamType == null) {
                         conversions.add(new Conversion(paramType, methodParamType, ConversionCategory.VarArgConversion));
                     }
@@ -712,18 +735,9 @@ public final class CompletionSupport implements DocumentListener {
                             instantiations.add(inst);
                         }
                     }
+                    
                     // TODO: run this check only if resolving was started from macros and we should use context scope
-                    int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
-                    while (retType != null && !CsmBaseUtilities.isValid(retType.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(retType.getClassifierText()) && counter > 0) {
-                        retType = CsmExpressionResolver.resolveType(
-                                retType.getClassifierText(), 
-                                retType.getContainingFile(), 
-                                retType.getStartOffset(), 
-                                ctx.getContextScope(), 
-                                instantiations
-                        );
-                        counter--;
-                    }
+                    retType = CsmExpressionResolver.resolveMacroType(retType, ctx.getContextScope(), instantiations, null);
                     
                     validCandidate = retType != null ? CsmBaseUtilities.isValid(retType.getClassifier()) : false;
                 }
@@ -779,10 +793,10 @@ public final class CompletionSupport implements DocumentListener {
         
         public final int templateScore;
 
-        public Conversion(CsmType from, CsmType to) {
+        public Conversion(Context ctx, CsmType from, CsmType to) {
             this.from = from;
             this.to = to;
-            this.category = ConversionCategory.getWorstConversion(from, to);
+            this.category = ConversionCategory.getWorstConversion(ctx, from, to);
             this.templateScore = calcTemplateScore(from, to, category);
         }
         
@@ -844,7 +858,7 @@ public final class CompletionSupport implements DocumentListener {
             return rank;
         }        
         
-        public static ConversionCategory getWorstConversion(CsmType from, CsmType to) {
+        public static ConversionCategory getWorstConversion(Context ctx, CsmType from, CsmType to) {
             if (CsmUtilities.checkTypesEqual(from, from.getContainingFile(), to, to.getContainingFile(), new CsmUtilities.ExactMatchQualsEqualizer())) {
                 return ConversionCategory.Identity;
             } else if (CsmUtilities.checkTypesEqual(from, from.getContainingFile(), to, to.getContainingFile(), new CsmUtilities.AssignableQualsEqualizer())) {
@@ -853,7 +867,7 @@ public final class CompletionSupport implements DocumentListener {
                 return ConversionCategory.Template;
             }
             
-            if (isAssignable(from, to)) {
+            if (isAssignable(ctx, from, to)) {
                 CsmClassifier fromCls = from.getClassifier();
                 CsmClassifier toCls = to.getClassifier();                
                 
@@ -1765,5 +1779,21 @@ public final class CompletionSupport implements DocumentListener {
                 return instance;
             }            
         }        
+    }
+    
+    private static class ResolvedTypeInfoCollector implements CsmExpressionResolver.ResolvedTypeHandler {
+        
+        private final TypeInfoCollector collector;
+
+        public ResolvedTypeInfoCollector(TypeInfoCollector collector) {
+            this.collector = collector;
+        }
+
+        @Override
+        public void process(CsmType resolvedType) {
+            if (resolvedType != null) {
+                collector.check(resolvedType);
+            }
+        }
     }
 }
