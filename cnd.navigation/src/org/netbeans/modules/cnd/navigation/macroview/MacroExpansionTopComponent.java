@@ -180,7 +180,14 @@ public final class MacroExpansionTopComponent extends TopComponent {
         }
         return instance;
     }
-
+    
+    /**
+     * Gets instance. Return null if top component is not opened yet.
+     */
+    static synchronized MacroExpansionTopComponent getInstance() {
+        return instance;
+    }
+    
     /**
      * Obtain the MacroExpansionTopComponent instance. Never call {@link #getDefault} directly!
      */
