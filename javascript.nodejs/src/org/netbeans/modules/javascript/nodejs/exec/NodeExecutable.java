@@ -71,7 +71,6 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
@@ -107,8 +106,6 @@ public class NodeExecutable {
     private static final String DEBUG_COMMAND = "--debug-brk=%d"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
 
-    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
-
     // versions of node executables
     private static final ConcurrentMap<String, Version> VERSIONS = new ConcurrentHashMap<>();
     private static final Version UNKNOWN_VERSION = Version.fromDottedNotationWithFallback("0.0"); // NOI18N
@@ -135,7 +132,7 @@ public class NodeExecutable {
     @CheckForNull
     public static NodeExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
         ValidationResult result = new NodeJsOptionsValidator()
-                .validate()
+                .validateNode()
                 .getResult();
         if (validateResult(result) != null) {
             if (showOptions) {
@@ -143,11 +140,7 @@ public class NodeExecutable {
             }
             return null;
         }
-        String node = NodeJsOptions.getInstance().getNode();
-        if (Utilities.isMac()) {
-            return new MacNodeExecutable(node, project);
-        }
-        return new NodeExecutable(node, project);
+        return createExecutable(NodeJsOptions.getInstance().getNode(), project);
     }
 
     @CheckForNull
@@ -163,10 +156,7 @@ public class NodeExecutable {
         if (validateResult(result) != null) {
             return null;
         }
-        if (Utilities.isMac()) {
-            return new MacNodeExecutable(path, null);
-        }
-        return new NodeExecutable(path, null);
+        return createExecutable(path, null);
     }
 
     @CheckForNull
@@ -189,6 +179,10 @@ public class NodeExecutable {
             return null;
         }
         assert node != null;
+        return createExecutable(node, project);
+    }
+
+    private static NodeExecutable createExecutable(String node, Project project) {
         if (Utilities.isMac()) {
             return new MacNodeExecutable(node, project);
         }
@@ -350,7 +344,7 @@ public class NodeExecutable {
 
     private File getWorkDir() {
         if (project == null) {
-            return TMP_DIR;
+            return FileUtils.TMP_DIR;
         }
         PackageJson packageJson = NodeJsSupport.forProject(project).getPackageJson();
         if (packageJson.exists()) {

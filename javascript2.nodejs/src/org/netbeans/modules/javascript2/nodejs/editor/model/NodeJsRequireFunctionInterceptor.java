@@ -86,6 +86,10 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
             if (theFirst.getKind() == FunctionArgument.Kind.STRING) {
                 String module = (String)theFirst.getValue();
                 Source source = Source.create(fo);
+                if (source == null) {
+                    // file doesn't exists yet
+                    return Collections.emptyList();
+                }
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(source.createSnapshot().getTokenHierarchy(), theFirst.getOffset());
                 if (ts == null) {
                     return Collections.emptyList();

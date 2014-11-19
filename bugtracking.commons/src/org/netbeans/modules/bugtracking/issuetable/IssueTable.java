@@ -623,8 +623,11 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
                         }
                     }
                     if(isSaved) {
-                        int w = UIUtils.getColumnWidthInPixels(25, table);
-                        setColumnWidth(getRecentChangesColumnIdx(), w);
+                        int idx = getRecentChangesColumnIdx();
+                        if(idx > -1) {
+                            int w = UIUtils.getColumnWidthInPixels(25, table);
+                            setColumnWidth(getRecentChangesColumnIdx(), w);
+                        }
                     }
                 }
 

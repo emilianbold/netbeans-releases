@@ -195,7 +195,7 @@ public class RevisionInfoPanelController {
                 revisionInfo = client.log(revision, monitor);
                 if (!monitor.isCanceled() && mergingInto != null) {
                     GitRevisionInfo commonAncestor = client.getCommonAncestor(new String[] { mergingInto, revisionInfo.getRevision() }, monitor);
-                    mergedStatus = commonAncestor.getRevision().equals(revisionInfo.getRevision());
+                    mergedStatus = commonAncestor != null && commonAncestor.getRevision().equals(revisionInfo.getRevision());
                 }
             } catch (GitException ex) {
                 if (!(ex instanceof GitException.MissingObjectException)) {
