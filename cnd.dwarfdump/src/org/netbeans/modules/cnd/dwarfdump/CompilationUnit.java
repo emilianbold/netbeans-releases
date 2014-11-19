@@ -126,7 +126,10 @@ public class CompilationUnit implements CompilationUnitInterface{
     }
     
     public String getSourceFileName() throws IOException {
-        return (String)root.getAttributeValue(ATTR.DW_AT_name);
+        if (root != null) {
+            return (String)root.getAttributeValue(ATTR.DW_AT_name);
+        }
+        return null;
     }
     
     public String getCommandLine() throws IOException {

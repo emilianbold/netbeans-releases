@@ -45,7 +45,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 
 /**
@@ -151,10 +150,6 @@ public class CompilationUnitStab implements CompilationUnitInterface {
             case 9: /* C99 */
                 return LANG.DW_LANG_C99.toString();
         }
-        return null;
-    }
-
-    public DwarfEntry getRoot() {
         return null;
     }
 

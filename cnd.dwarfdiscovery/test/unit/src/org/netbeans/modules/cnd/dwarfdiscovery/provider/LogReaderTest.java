@@ -48,10 +48,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
+import org.netbeans.modules.cnd.discovery.api.DriverFactory;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
-import org.netbeans.modules.cnd.dwarfdiscovery.provider.MakeLogReader.CommandLineSource;
+import org.netbeans.modules.cnd.dwarfdump.source.Artifacts;
+import org.netbeans.modules.cnd.dwarfdump.source.CompileLineOrigin;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 
 /**
  *
@@ -146,11 +147,11 @@ public class LogReaderTest extends TestCase {
                       "BB5=\"3\"\n"+
                       "QUOTE(name, extension)=<name.extension>\n"+
                       "Paths:";
-        String result = processLine(build, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(build, CompileLineOrigin.BuildLog);
         assertDocumentText(build, expResult, result);
-        result = processLine(compile, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        result = processLine(compile, CompileLineOrigin.DwarfCompileLine);
         assertDocumentText(compile, expResult, result);
-        result = processLine(exec, DiscoveryUtils.LogOrigin.ExecLog);
+        result = processLine(exec, CompileLineOrigin.ExecLog);
         StringBuilder buf = new StringBuilder();
         for(int i = 0; i< exec.length; i++) {
             if (i>0) {
@@ -242,7 +243,7 @@ public class LogReaderTest extends TestCase {
                         "/usr/include/c++/4.6/algorithm\n" +
                         "/usr/include/c++/4.6/string\n" +
                         "/usr/include/c++/4.6/cstddef";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
     
@@ -275,7 +276,7 @@ public class LogReaderTest extends TestCase {
                       "arch/x86/include/asm/mach-default\n"+
                       "Files:\n" +
                       "include/linux/autoconf.h";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
     
@@ -297,7 +298,7 @@ public class LogReaderTest extends TestCase {
                       "SOFTOKEN_SHLIB_VERSION=\"3\"\n"+
                       "USE_UTIL_DIRECTLY\n"+
                       "Paths:";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -341,7 +342,7 @@ public class LogReaderTest extends TestCase {
                       "Files:\n"+
                       "/mozilla-1.9.1/config/gcc_hidden.h\n"+
                       "../../../mozilla-config.h";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -402,7 +403,7 @@ public class LogReaderTest extends TestCase {
                       "/tools/taiga/platform/modules/mcbstm32f200/inc\n"+
                       "/tools/taiga/cldc/src/anilib/share\n"+
                       "/tools/taiga/platform/modules/usbd/inc";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -432,7 +433,7 @@ public class LogReaderTest extends TestCase {
                       "/tools/taiga/platform/modules/mcbstm32f200/inc\n"+
                       "/tools/taiga/cldc/src/anilib/share\n"+
                       "/tools/taiga/platform/modules/usbd/inc";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -442,7 +443,7 @@ public class LogReaderTest extends TestCase {
     public void testScanCommandLine() {
         String line = "/set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.";
         String expResult = "Source:main.cc\nMacros:\nHELLO=75\nPaths:\ndist";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        String result = processLine(line, CompileLineOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
 
@@ -472,7 +473,7 @@ public class LogReaderTest extends TestCase {
                 "/export/opensolaris/testws77/usr/src/common\n" +
                 "../../intel" +
                 "\n../../common";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        String result = processLine(line, CompileLineOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
 
@@ -485,7 +486,7 @@ public class LogReaderTest extends TestCase {
         String expResult = "Source:file.cc\n" +
                 "Macros:\n" +
                 "Paths:";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        String result = processLine(line, CompileLineOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
     
@@ -498,7 +499,7 @@ public class LogReaderTest extends TestCase {
                 "Macros:\n" +
                 "A\n" +
                 "Paths:";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        String result = processLine(line, CompileLineOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
     
@@ -511,7 +512,7 @@ public class LogReaderTest extends TestCase {
                 "Macros:\n" +
                 "A\n" +
                 "Paths:";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        String result = processLine(line, CompileLineOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
 
@@ -524,7 +525,7 @@ public class LogReaderTest extends TestCase {
                 "Macros:\n" +
                 "A\n" +
                 "Paths:";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        String result = processLine(line, CompileLineOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
 
@@ -538,7 +539,7 @@ public class LogReaderTest extends TestCase {
                 "Undefs:\n" +
                 "A\n" +
                 "Paths:";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+        String result = processLine(line, CompileLineOrigin.DwarfCompileLine);
         assertDocumentText(line, expResult, result);
     }
     
@@ -599,7 +600,7 @@ public class LogReaderTest extends TestCase {
                 "src/cmd/ksh93\n" +
                 "../common/include\n" +
                 "/export/home/thp/opensolaris/proto/root_i386/usr/include/ast";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -642,7 +643,7 @@ public class LogReaderTest extends TestCase {
                 "../../../libjava/../libffi/include\n" +
                 "../libffi/include\n" +
                 "/usr/openwin/include";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -665,7 +666,7 @@ public class LogReaderTest extends TestCase {
                 "Paths:\n" +
                 ".\n" +
                 "../include";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
     }
 
@@ -885,7 +886,7 @@ public class LogReaderTest extends TestCase {
                 "/ws/cheetah/midp/src/links/include\n"+
                 "/ws/cheetah/jsr135/src/cldc_application/native/common\n"+
                 "/ws/cheetah/jsr135/src/share/components/direct-player/native";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
         MakeLogReader reader = new MakeLogReader(null, "", null, null, null);
         MakeLogReader.LineInfo li = reader.testCompilerInvocation(line);
@@ -916,7 +917,7 @@ public class LogReaderTest extends TestCase {
                 "-DBNRMAJVSN_STR=\\\"12\\\" -DBNRMAJVSNLETTER_STR=\\\"12c\\\" -DBNRMINVSN_STR=\\\"1\\\" -DBNRMIDTVSN_STR=\\\"0\\\" -DBNRPMAJVSN_STR=\\\"0\\\" "+
                 "DBNRPMINVSN_STR=\\\"2\\\" -DBNRVERSION_STR=\\\"12.1.0.0.2\\\" -DBNRSTATUS_STR=\\\"Beta\\\" -DBNRSTATUS_MAC=BNRBETA -DBNRCURRYEAR=2012 "+
                 "-DBNRCURRYEAR_STR=\\\"2012\\\" -DPLSQLNCG_SUPPORTED=1  -DNTEV_USE_POLL -DNTEV_USE_QUEUE -DNTEV_USE_GENERIC -DNTEV_USE_EPOLL";
-        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        String result = processLine(line, CompileLineOrigin.BuildLog);
         assertTrue(result.startsWith("Source:xsolmod.cpp"));
         //assertDocumentText(line, expResult, result);
         MakeLogReader reader = new MakeLogReader(null, "", null, null, null);
@@ -924,13 +925,14 @@ public class LogReaderTest extends TestCase {
         assertEquals(MakeLogReader.CompilerType.CPP, li.compilerType);
     }
 
-    private String processLine(String[] line, DiscoveryUtils.LogOrigin isScriptOutput) {
-        Artifacts artifacts = new Artifacts();
-        String what = DiscoveryUtils.gatherCompilerLine(Arrays.asList(line).listIterator(), isScriptOutput, artifacts, null, false).get(0);
+    private String processLine(String[] line, CompileLineOrigin isScriptOutput) {
+        Driver driver = DriverFactory.getDriver(null);
+        Artifacts artifacts = driver.gatherCompilerLine(Arrays.asList(line).listIterator(), isScriptOutput, false);
+        String what = artifacts.getInput().get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
-        for (Map.Entry<String, String> entry : new TreeMap<String,String>(artifacts.userMacros).entrySet()) {
+        for (Map.Entry<String, String> entry : new TreeMap<String,String>(artifacts.getUserMacros()).entrySet()) {
             res.append("\n");
             res.append(entry.getKey());
             if (entry.getValue() != null) {
@@ -938,31 +940,32 @@ public class LogReaderTest extends TestCase {
                 res.append(entry.getValue());
             }
         }
-        if (!artifacts.undefinedMacros.isEmpty()) {
+        if (!artifacts.getUserUndefinedMacros().isEmpty()) {
             res.append("\nUndefs:");
-            for (String undef : artifacts.undefinedMacros) {
+            for (String undef : artifacts.getUserUndefinedMacros()) {
                 res.append("\n");
                 res.append(undef);
             }
         }
         res.append("\nPaths:");
-        for (String path : artifacts.userIncludes) {
+        for (String path : artifacts.getUserIncludes()) {
             res.append("\n");
             res.append(path);
         }
         return res.toString();
     }
     
-    private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
+    private String processLine(String line, CompileLineOrigin isScriptOutput) {
         line = MakeLogReader.trimBackApostropheCalls(line, null);
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         String[] cmds = pattern.split(line);
-        Artifacts artifacts = new Artifacts();
-        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, artifacts, null, false).get(0);
+        Driver driver = DriverFactory.getDriver(null);
+        Artifacts artifacts = driver.gatherCompilerLine(cmds[0], isScriptOutput, false);
+        String what = artifacts.getInput().get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
-        for (Map.Entry<String, String> entry : new TreeMap<String,String>(artifacts.userMacros).entrySet()) {
+        for (Map.Entry<String, String> entry : new TreeMap<String,String>(artifacts.getUserMacros()).entrySet()) {
             res.append("\n");
             res.append(entry.getKey());
             if (entry.getValue() != null) {
@@ -970,21 +973,21 @@ public class LogReaderTest extends TestCase {
                 res.append(entry.getValue());
             }
         }
-        if (!artifacts.undefinedMacros.isEmpty()) {
+        if (!artifacts.getUserUndefinedMacros().isEmpty()) {
             res.append("\nUndefs:");
-            for (String undef : artifacts.undefinedMacros) {
+            for (String undef : artifacts.getUserUndefinedMacros()) {
                 res.append("\n");
                 res.append(undef);
             }
         }
         res.append("\nPaths:");
-        for (String path : artifacts.userIncludes) {
+        for (String path : artifacts.getUserIncludes()) {
             res.append("\n");
             res.append(path);
         }
-        if (!artifacts.userFiles.isEmpty()) {
+        if (!artifacts.getUserFiles().isEmpty()) {
             res.append("\nFiles:");
-            for (String file : artifacts.userFiles) {
+            for (String file : artifacts.getUserFiles()) {
                 res.append("\n");
                 res.append(file);
             }
@@ -1039,18 +1042,18 @@ public class LogReaderTest extends TestCase {
         } else {
             assertNotSame(ItemProperties.LanguageKind.Unknown, li.getLanguage());
         }
-        Artifacts artifacts = new Artifacts();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false);
-        assertTrue(sourcesList.size() == size);
-        for(String what :sourcesList) {
+        Driver driver = DriverFactory.getDriver(null);
+        Artifacts artifacts = driver.gatherCompilerLine(line, CompileLineOrigin.BuildLog, false);
+        assertTrue( artifacts.getInput().size() == size);
+        for(String what : artifacts.getInput()) {
             ItemProperties.LanguageKind detectLanguage = MakeLogReader.detectLanguage(li, artifacts, what);
             assertEquals(ct, detectLanguage);
         }
     }
 
     private void testLanguageArtifact(String artifact, String line) {
-        Artifacts artifacts = new Artifacts();
-        DiscoveryUtils.gatherCompilerLine(line, DiscoveryUtils.LogOrigin.BuildLog, artifacts, null, false);
-        assert artifacts.languageArtifacts.contains(artifact);
+        Driver driver = DriverFactory.getDriver(null);
+        Artifacts artifacts = driver.gatherCompilerLine(line, CompileLineOrigin.BuildLog, false);
+        assert artifacts.getLanguageArtifacts().contains(artifact);
     }
 }

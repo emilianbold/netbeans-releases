@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
-import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
+import org.netbeans.modules.cnd.dwarfdump.source.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
