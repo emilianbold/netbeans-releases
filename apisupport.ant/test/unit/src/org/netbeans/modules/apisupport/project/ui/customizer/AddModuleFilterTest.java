@@ -114,7 +114,7 @@ public class AddModuleFilterTest extends TestBase {
             matches.add(dep.getModuleEntry().getCodeNameBase());
         }
         assertEquals(Arrays.asList(
-            "org.openide.util", // etc.SystemAction: matchLevel=0
+            "org.openide.util.ui", // etc.SystemAction: matchLevel=0
             "org.netbeans.modules.editor", // etc.NbEditorUI.SystemActionPerformer: matchLevel=1
             "org.openide.loaders" // etc.FileSystemAction: matchLevel=2
         ), matches);
