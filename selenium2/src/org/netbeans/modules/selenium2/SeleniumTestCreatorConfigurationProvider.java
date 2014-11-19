@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.selenium2;
 
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.JLabel;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;

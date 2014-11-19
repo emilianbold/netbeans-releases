@@ -42,9 +42,7 @@
 package org.netbeans.modules.selenium2.server;
 
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -53,7 +51,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 

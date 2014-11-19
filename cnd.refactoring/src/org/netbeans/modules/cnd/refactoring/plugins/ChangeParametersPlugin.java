@@ -200,7 +200,9 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     @Override
     public Problem preCheck() {
         Problem preCheckProblem = null;
-        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 4);
+        fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 5);
+        CsmRefactoringUtils.waitParsedAllProjects();
+        fireProgressListenerStep();
         // check if resolved element
         CsmObject refactoredCsmElement = getRefactoredCsmElement();
         preCheckProblem = isResovledElement(refactoredCsmElement);

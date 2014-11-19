@@ -41,13 +41,9 @@
  */
 package org.netbeans.modules.selenium2.php;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -57,7 +53,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.selenium2.api.Selenium2Support;
 import org.netbeans.modules.selenium2.server.api.Selenium2Server;
 import org.netbeans.modules.selenium2.spi.Selenium2SupportImpl;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -65,10 +60,6 @@ import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -99,68 +90,6 @@ public class Selenium2PhpSupportImpl extends Selenium2SupportImpl {
         SourceGroup seleniumSourceGroup = getSeleniumSourceGroup(project);
         return Templates.buildSimpleTargetChooser(project, new SourceGroup[]{seleniumSourceGroup}).create();
     }
-
-//    @Override
-//    public FileObject createFileFromTemplate(WizardDescriptor wiz) {
-//        FileObject createdFile = null;
-//        try {
-//            FileObject dir = Templates.getTargetFolder(wiz);
-//            String targetName = Templates.getTargetName(wiz);
-//            
-//            DataFolder df = DataFolder.findFolder(dir);
-//            FileObject template = Templates.getTemplate(wiz);
-//            
-//            DataObject dTemplate = DataObject.find(template);
-//            
-////        Project project = Templates.getProject(wiz);
-////        PhpSeleniumProvider lookup = project.getLookup().lookup(PhpSeleniumProvider.class);
-//
-////      TODO server ULR & server port
-////        Object serverPort = null;
-////        if (serverPort == null){
-////            serverPort = DEFAULT_SERVER_PORT;
-////        }
-//            Map<String, Object> params = new HashMap<String, Object>();
-////        params.put("server_port", serverPort);   //NOI18N
-//            
-//            DataObject dobj = dTemplate.createFromTemplate(df, targetName, params);
-//            createdFile = dobj.getPrimaryFile();
-//        } catch (DataObjectNotFoundException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        return createdFile;
-//    }
-
-//    @Override
-//    public FileObject[] createTests(TestCreatorProvider.Context context) {
-//        FileObject createdFile = null;
-//        try {
-//            FileObject dir = context.getTargetFolder();//Templates.getTargetFolder(wiz);
-//            String targetName = context.getTestClassName();//Templates.getTargetName(wiz);
-//            
-//            DataFolder df = DataFolder.findFolder(dir);
-////            FileObject template = Templates.getTemplate(wiz);
-//            
-//            DataObject dTemplate = Selenium2Support.loadTestTemplate("Templates/SeleniumTests/SeleneseTest.php");//DataObject.find(template);
-//            Object serverPort = null;//getServerPort(wiz);
-//            if (serverPort == null){
-//                serverPort = DEFAULT_SERVER_PORT;
-//            }
-//            Map<String, Object> params = new HashMap<String, Object>();
-//            params.put("server_port", serverPort);   //NOI18N
-//            params.put("selenium_server_port", DEFAULT_SELENIUM_SERVER_PORT);
-//            
-//            DataObject dobj = dTemplate.createFromTemplate(df, targetName, params);
-//            createdFile = dobj.getPrimaryFile();
-//        } catch (DataObjectNotFoundException ex) {
-//            Exceptions.printStackTrace(ex);
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        return new FileObject[] {createdFile};
-//    }
 
     @Override
     public String getTemplateID() {

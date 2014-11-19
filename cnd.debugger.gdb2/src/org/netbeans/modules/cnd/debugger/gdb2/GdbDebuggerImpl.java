@@ -3818,7 +3818,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
             }
         }
-        MIValue threadIdValue = results.valueOf("thread-id");
+        MIValue threadIdValue = results.valueOf("thread-id"); // NOI18N
         if (threadIdValue != null) {    // exited case should be omitted
             currentThreadId = threadIdValue.asConst().value();
         }
