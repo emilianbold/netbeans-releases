@@ -58,6 +58,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -86,9 +87,11 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.spi.utils.FileObjectRedirector;
+import org.netbeans.modules.cnd.utils.Antiloop;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -1192,6 +1195,20 @@ public class CsmUtilities {
         return dob;
     }
     
+    public static <T> int howMany(List<T> list, T elem) {
+        int counter = 0;
+        for (T lsitElem : list) {
+            if (Objects.equals(elem, lsitElem)) {
+                ++counter;
+            }
+        }
+        return counter;
+    }        
+    
+    public static int howMany(TypeInfoCollector collector, Qualificator qual) {
+        return howMany(collector.qualificators, qual);
+    }    
+    
     public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2) {
         return checkTypesEqual(type1, contextFile1, type2, contextFile2, new AlwaysEqualQualsEqualizer());
     }
@@ -1230,7 +1247,7 @@ public class CsmUtilities {
             cls = CsmBaseUtilities.getOriginalClassifier(cls, contextFile);
         }
         return cls;
-    }        
+    }            
     
     /**
      * Iterates type chain until end is reached or stopFilter returned true
