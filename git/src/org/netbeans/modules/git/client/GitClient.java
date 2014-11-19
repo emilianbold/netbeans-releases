@@ -183,6 +183,7 @@ public final class GitClient {
             "fetch", //NOI18N - changes available remote heads or tags
             "merge", //NOI18N // creates a new head
             "pull", //NOI18N // creates a new head
+            "push", //NOI18N // usually updates remote branches
             "rebase", //NOI18N // creates new head and branches
             "remove", //NOI18N // may change state, e.g. MERGING->MERGED
             "reset", //NOI18N
