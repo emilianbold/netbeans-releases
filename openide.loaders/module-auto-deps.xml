@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
         </transformation>
     </transformationgroup>
     <transformationgroup>
-        <description>No need for separate templates API. Merged into org.openide.loaders</description>
+        <description>Templates API has been separated into its own module.</description>
         <transformation>
             <trigger-dependency type="older">
                 <module-dependency codenamebase="org.openide.loaders" spec="7.61"/>
