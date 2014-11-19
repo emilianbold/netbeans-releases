@@ -161,6 +161,31 @@ public abstract class CsmInstantiationProvider {
      * @return parameter type
      */
     public abstract CsmType instantiate(CsmTemplateParameter templateParam, List<CsmInstantiation> instantiations);
+    
+    /**
+     * Returns true if type is instantiation of type.
+     * 
+     * @param type
+     * @return true if type is instantiation
+     */
+    public abstract boolean isInstantiatedType(CsmType type);
+    
+    /**
+     * Returns list of instantiations with which type is instantiated
+     * 
+     * @param type
+     * @return list of instantiations or null
+     */
+    public abstract List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type);
+    
+    /**
+     * Return true if instantiation is viable (e.g. it's instantiation parameters are resolved)
+     * 
+     * @param instantiation
+     * @param acceptTemplateParams - whether to accept not binded template params in instantiations
+     * @return true if instantiation is viable
+     */
+    public abstract boolean isViableInstantiation(CsmInstantiation instantiation, boolean acceptTemplateParams);
 
     /**
      * Creates specialization parameter based on type.
@@ -213,7 +238,7 @@ public abstract class CsmInstantiationProvider {
      * returns signature of template parameters
      */
     public abstract CharSequence getTemplateSignature(CsmTemplate template);
-
+    
     /**
      * Returns class specializations
      *
@@ -303,6 +328,21 @@ public abstract class CsmInstantiationProvider {
         @Override
         public CsmType instantiate(CsmTemplateParameter templateParam, List<CsmInstantiation> instantiations) {
             return null;
+        }
+
+        @Override
+        public boolean isInstantiatedType(CsmType type) {
+            return false;
+        }
+
+        @Override
+        public List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type) {
+            return null;
+        }
+
+        @Override
+        public boolean isViableInstantiation(CsmInstantiation instantiation, boolean acceptTemplateParams) {
+            return false;
         }
 
         @Override

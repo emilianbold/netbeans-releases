@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
@@ -207,6 +208,34 @@ public class TemplateParameterTypeImpl implements CsmType, CsmTemplateParameterT
     public String toString() {
         return "TEMPLATE PARAMETER TYPE " + getText()  + "[" + getStartOffset() + "-" + getEndOffset() + "]"; // NOI18N;
     }    
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + Objects.hashCode(this.type);
+        hash = 67 * hash + Objects.hashCode(this.parameter);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TemplateParameterTypeImpl other = (TemplateParameterTypeImpl) obj;
+        if (!Objects.equals(this.type, other.type)) {
+            return false;
+        }
+        if (!Objects.equals(this.parameter, other.parameter)) {
+            return false;
+        }
+        return true;
+    }
+    
+    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

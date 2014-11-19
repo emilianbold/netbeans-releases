@@ -19,13 +19,15 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
+import org.netbeans.modules.cnd.discovery.api.DriverFactory;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
-import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
+import org.netbeans.modules.cnd.dwarfdump.source.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.LddService;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
+import org.netbeans.modules.cnd.dwarfdump.source.Artifacts;
+import org.netbeans.modules.cnd.dwarfdump.source.CompileLineOrigin;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -223,11 +225,11 @@ public class RemoteJavaExecution {
 
     public String getSourceRoot(List<SourceFile> compileLines) {
         TreeMap<String,AtomicInteger> realRoots = new TreeMap<String,AtomicInteger>();
+        Driver driver = DriverFactory.getDriver(null);
         for(SourceFile file : compileLines) {
             if (file.getCommandLine().length() > 0) {
-                Artifacts artifacts = new Artifacts();
-                List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(file.getCommandLine(), DiscoveryUtils.LogOrigin.DwarfCompileLine, artifacts, null, true);
-                for(String what : sourcesList) {
+                Artifacts artifacts = driver.gatherCompilerLine(file.getCommandLine(), CompileLineOrigin.DwarfCompileLine, true); //NOI18N
+                for(String what : artifacts.getInput()) {
                     if (what == null){
                         continue;
                     }

@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
 /**
  *
@@ -101,7 +103,7 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             if (clsObj != null) {
                 res.add(CsmReferenceSupport.createObjectReference(clsObj));
             }
-        }
+        }        
         return res;
     }
 
@@ -146,27 +148,41 @@ public final class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         if (CsmBaseUtilities.isValid(referencedClass)) {
             CsmFile file = referencedClass.getContainingFile();
             CsmProject project = file.getProject();
-            for (CsmInheritance inh : project.findInheritances(referencedClass.getName())){
-                CsmClassifier classifier = inh.getClassifier();
-                if (classifier != null) {
-                    if (CsmKindUtilities.isInstantiation(classifier)) {
-                        CsmOffsetableDeclaration template = ((CsmInstantiation)classifier).getTemplateDeclaration();
-                        if (CsmKindUtilities.isClassifier(template)) {
-                            classifier = (CsmClassifier) template;
-                        }
-                    }
-                    CsmUID<CsmClassifier> classifierUID = UIDs.get(classifier);
-                    if (referencedClassUID.equals(classifierUID)) {
-                        CsmScope scope = inh.getScope();
-                        if (CsmKindUtilities.isClass(scope)) {
-                            res.add(UIDs.get((CsmClass)scope));
-                        }
-                    }
+            processProjectInheritances(project, referencedClass, referencedClassUID, res);
+            if (project instanceof ProjectBase) {
+                for(CsmProject dependent : ((ProjectBase)project).getDependentProjects()){
+                    processProjectInheritances(dependent, referencedClass, referencedClassUID, res);
                 }
+            }
+            for (CsmProject prj : CsmModelAccessor.getModel().projects()) {
+                if (project.equals(prj)) {
+                    continue;
+                }
+                processProjectInheritances(prj, referencedClass, referencedClassUID, res);
             }
         }
         map.put(referencedClassUID, res);
         return res;
+    }
+
+    private void processProjectInheritances(CsmProject project, CsmClass referencedClass, CsmUID<CsmClass> referencedClassUID, Set<CsmUID<CsmClass>> res) {
+        for (CsmInheritance inh : project.findInheritances(referencedClass.getName())){
+            CsmClassifier classifier = inh.getClassifier();
+            if (classifier != null) {
+                if (CsmKindUtilities.isInstantiation(classifier)) {
+                    CsmOffsetableDeclaration template = ((CsmInstantiation)classifier).getTemplateDeclaration();
+                    if (CsmKindUtilities.isClassifier(template)) {
+                        classifier = (CsmClassifier) template;
+                    }
+                }
+                if (CsmReferenceSupport.sameDeclaration(referencedClass, classifier)) {
+                    CsmScope scope = inh.getScope();
+                    if (CsmKindUtilities.isClass(scope)) {
+                        res.add(UIDs.get((CsmClass)scope));
+                    }
+                }
+            }
+        }
     }
 
     private synchronized Map<CsmUID<CsmClass>, Set<CsmUID<CsmClass>>> getOrCreateFullMap(CsmProject project, long version) {

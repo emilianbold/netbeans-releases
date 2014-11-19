@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
-import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
+import org.netbeans.modules.cnd.dwarfdump.source.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -227,7 +227,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
             RemoteJavaExecution processor = new RemoteJavaExecution(fs);
             ElfReader.SharedLibraries libs = processor.getDlls(set);
             if (libs != null) {
-                List<CompileLineService.SourceFile> compileLines = processor.getCompileLines(set, false);
+                List<SourceFile> compileLines = processor.getCompileLines(set, false);
                 if (compileLines != null) {
                     return new ApplicableImpl(true, null, null, 0, false, libs.getDlls(), libs.getPaths(), processor.getSourceRoot(compileLines), null);
                 }
