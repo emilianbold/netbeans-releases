@@ -1065,7 +1065,7 @@ public class NbModuleSuite {
         }
         private static final Set<String> pseudoModules = new HashSet<String>(Arrays.asList(
                 "org.openide.util",
-                "org.openide.util.base",
+                "org.openide.util.ui",
                 "org.openide.util.lookup",
                 "org.openide.modules",
                 "org.netbeans.bootstrap",
