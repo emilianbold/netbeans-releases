@@ -294,41 +294,6 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
     }
 
-    private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread,StackTraceElement[]> data) {
-        sb.append(indent).append("Thread ").append(t.getName()).append('\n');
-        indent = indent.concat("  ");
-        StackTraceElement[] stack = data.get(t);
-        if (stack != null) {
-        for (StackTraceElement e : stack) {
-            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
-                    .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
-        }
-        }
-    }
-    
-    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, Map<Thread,StackTraceElement[]> data) {
-        sb.append(indent).append("Group ").append(tg.getName()).append('\n');
-        indent = indent.concat("  ");
-
-        int groups = tg.activeGroupCount();
-        ThreadGroup[] chg = new ThreadGroup[groups];
-        tg.enumerate(chg, false);
-        for (ThreadGroup inner : chg) {
-            if (inner != null) {
-                appendGroup(sb, indent, inner, data);
-            }
-        }
-
-        int threads = tg.activeCount();
-        Thread[] cht= new Thread[threads];
-        tg.enumerate(cht, false);
-        for (Thread t : cht) {
-            if (t != null) {
-                appendThread(sb, indent, t, data);
-            }
-        }
-    }
-    
     private static StringBuilder printThreadInfo(ThreadInfo ti, StringBuilder sb) {
         // print thread information
         printThread(ti, sb);
