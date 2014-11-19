@@ -70,7 +70,8 @@ public class BasicAggregateProgressFactory {
      */
     public static AggregateProgressHandle createHandle(String displayName, ProgressContributor[] contributors, 
                                                        Cancellable allowToCancel) {
-        return doCreateHandle(displayName, contributors, allowToCancel, false);
+        return doCreateHandle(displayName, contributors, allowToCancel, false, 
+                ProgressHandle.createHandle(displayName, allowToCancel));
     }
     
     public static ProgressContributor createProgressContributor(String trackingId) {
@@ -78,12 +79,9 @@ public class BasicAggregateProgressFactory {
     }
     
     protected static AggregateProgressHandle doCreateHandle(String displayName, ProgressContributor[] contributors, 
-                                                       Cancellable allowToCancel, boolean systemHandle) {
+                                                       Cancellable allowToCancel, boolean systemHandle, ProgressHandle h) {
         return new AggregateProgressHandle(displayName, contributors, allowToCancel, systemHandle,
-                systemHandle ? 
-                        ProgressHandle.createSystemHandle(displayName, allowToCancel) :
-                        ProgressHandle.createHandle(displayName, allowToCancel)
-                );
+                h);
     }
     
     protected static ProgressHandle getProgressHandle(AggregateProgressHandle ah) {

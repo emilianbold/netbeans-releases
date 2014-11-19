@@ -4,4 +4,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/indent/Bundle.prop
 OpenIDE-Module-Layer: org/netbeans/modules/editor/indent/resources/layer.xml
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Recommends: org.netbeans.modules.editor.indent.spi.CodeStylePreferences.Provider
-OpenIDE-Module-Specification-Version: 1.39
+OpenIDE-Module-Provides: org.netbeans.templates.IndentEngine
+OpenIDE-Module-Specification-Version: 1.41

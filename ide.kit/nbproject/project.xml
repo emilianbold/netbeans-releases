@@ -298,7 +298,7 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
+                        <code-name-base>org.openide.util.ui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

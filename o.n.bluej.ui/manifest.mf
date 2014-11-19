@@ -3,6 +3,6 @@ OpenIDE-Module: org.netbeans.bluej.ui
 OpenIDE-Module-Install: org/netbeans/bluej/ui/Installer.class
 OpenIDE-Module-Layer: org/netbeans/bluej/ui/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/bluej/ui/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.5
+OpenIDE-Module-Specification-Version: 1.6
 AutoUpdate-Show-In-Client: false
 

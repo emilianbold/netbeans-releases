@@ -166,9 +166,9 @@ made subject to such option by the copyright holder.
             <li><api name="ModulesAPI" type="import" category="official" 
             url="@org-openide-modules@/overview-summary.html" group="java"/></li>
             <li><api name="UtilitiesAPI" type="import" category="official" 
-            url="@org-openide-util@/overview-summary.html" group="java"/></li>
+            url="@org-openide-util-ui@/overview-summary.html" group="java"/></li>
             <li><api name="ServicesAPI" type="import" category="official" 
-            url="@org-openide-util@/org/openide/util/doc-files/api.html#service-lookup" group="java"/></li>
+            url="@org-openide-util-ui@/org/openide/util/doc-files/api.html#service-lookup" group="java"/></li>
             <li><api name="NodesAPI" type="import" category="official" 
             url="@org-openide-nodes@/overview-summary.html" group="java"/></li>
             <li><api name="WindowSystemAPI" type="import" category="official" 
