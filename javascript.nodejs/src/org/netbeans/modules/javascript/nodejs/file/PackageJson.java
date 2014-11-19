@@ -56,6 +56,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -75,16 +76,19 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 
 /**
  * Class representing project's <tt>package.json</tt> file.
  */
+@MIMEResolver.Registration(displayName = "package.json", resource = "../resources/npm-resolver.xml", position = 127)
 public final class PackageJson {
 
     private static final Logger LOGGER = Logger.getLogger(PackageJson.class.getName());
 
+    public static final String FILE_NAME = "package.json"; // NOI18N
     public static final String PROP_NAME = "NAME"; // NOI18N
     public static final String PROP_SCRIPTS_START = "SCRIPTS_START"; // NOI18N
     public static final String PROP_DEPENDENCIES = "DEPENDENCIES"; // NOI18N
@@ -102,7 +106,6 @@ public final class PackageJson {
     public static final String FIELD_PEER_DEPENDENCIES = "peerDependencies"; // NOI18N
     public static final String FIELD_OPTIONAL_DEPENDENCIES = "optionalDependencies"; // NOI18N
 
-    static final String FILENAME = "package.json"; // NOI18N
 
     private static final ContainerFactory CONTAINER_FACTORY = new ContainerFactory() {
 
@@ -197,6 +200,14 @@ public final class PackageJson {
     @CheckForNull
     public <T> T getContentValue(Class<T> valueType, String... fieldHierarchy) {
         return getContentValue(getContent(), valueType, fieldHierarchy);
+    }
+
+    public NpmDependencies getDependencies() {
+        Map<String, String> dependencies = getContentValue(Map.class, PackageJson.FIELD_DEPENDENCIES);
+        Map<String, String> devDependencies = getContentValue(Map.class, PackageJson.FIELD_DEV_DEPENDENCIES);
+        Map<String, String> peerDependencies = getContentValue(Map.class, PackageJson.FIELD_PEER_DEPENDENCIES);
+        Map<String, String> optionalDependencies = getContentValue(Map.class, PackageJson.FIELD_OPTIONAL_DEPENDENCIES);
+        return new NpmDependencies(dependencies, devDependencies, peerDependencies, optionalDependencies);
     }
 
     private <T> T getContentValue(Map<String, Object> content, Class<T> valueType, String... fieldHierarchy) {
@@ -462,7 +473,7 @@ public final class PackageJson {
 
     private synchronized File getPackageJson() {
         if (packageJson == null) {
-            packageJson = new File(FileUtil.toFile(directory), FILENAME);
+            packageJson = new File(FileUtil.toFile(directory), FILE_NAME);
             try {
                 FileUtil.addFileChangeListener(packageJsonListener, packageJson);
                 LOGGER.log(Level.FINE, "Started listening to {0}", packageJson);
@@ -543,6 +554,44 @@ public final class PackageJson {
     }
 
     //~ Inner classes
+
+    public static final class NpmDependencies {
+
+        public final Map<String, String> dependencies = new ConcurrentHashMap<>();
+        public final Map<String, String> devDependencies = new ConcurrentHashMap<>();
+        public final Map<String, String> peerDependencies = new ConcurrentHashMap<>();
+        public final Map<String, String> optionalDependencies = new ConcurrentHashMap<>();
+
+
+        NpmDependencies(@NullAllowed Map<String, String> dependencies, @NullAllowed Map<String, String> devDependencies,
+                @NullAllowed Map<String, String> peerDependencies, @NullAllowed Map<String, String> optionalDependencies) {
+            if (dependencies != null) {
+                this.dependencies.putAll(dependencies);
+            }
+            if (devDependencies != null) {
+                this.devDependencies.putAll(devDependencies);
+            }
+            if (peerDependencies != null) {
+                this.peerDependencies.putAll(peerDependencies);
+            }
+            if (optionalDependencies != null) {
+                this.optionalDependencies.putAll(optionalDependencies);
+            }
+        }
+
+        public boolean isEmpty() {
+            return dependencies.isEmpty()
+                    && devDependencies.isEmpty()
+                    && peerDependencies.isEmpty()
+                    && optionalDependencies.isEmpty();
+        }
+
+        public int getCount() {
+            return dependencies.size() + devDependencies.size()
+                    + peerDependencies.size() + optionalDependencies.size();
+        }
+
+    }
 
     private final class DirectoryListener extends FileChangeAdapter {
 

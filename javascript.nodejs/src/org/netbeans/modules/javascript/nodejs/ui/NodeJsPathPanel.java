@@ -54,7 +54,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -100,7 +99,6 @@ public final class NodeJsPathPanel extends JPanel {
         "NodeJsPathPanel.node.hint2=Full path of node file (typically {0} or {1}).",
     })
     private void init() {
-        errorLabel.setText(" "); // NOI18N
         nodeVersionLabel.setText(" "); // NOI18N
         String[] nodes = NodeExecutable.NODE_NAMES;
         if (nodes.length > 1) {
@@ -119,18 +117,6 @@ public final class NodeJsPathPanel extends JPanel {
 
     public void setNode(String node) {
         nodeTextField.setText(node);
-    }
-
-    public void setError(String message) {
-        errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
-        errorLabel.setText(message);
-    }
-
-    public void setWarning(String message) {
-        errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
-        errorLabel.setText(message);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -257,7 +243,6 @@ public final class NodeJsPathPanel extends JPanel {
         nodeVersionLabel = new JLabel();
         downloadSourcesButton = new JButton();
         versionInfoLabel = new JLabel();
-        errorLabel = new JLabel();
 
         Mnemonics.setLocalizedText(nodeLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.nodeLabel.text")); // NOI18N
 
@@ -291,24 +276,19 @@ public final class NodeJsPathPanel extends JPanel {
 
         Mnemonics.setLocalizedText(versionInfoLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.versionInfoLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
-
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(errorLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(nodeLabel)
-                    .addComponent(versionLabel))
+                .addComponent(nodeLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(versionInfoLabel)
-                        .addGap(0, 10, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(versionLabel)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nodeVersionLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(downloadSourcesButton))
@@ -337,9 +317,7 @@ public final class NodeJsPathPanel extends JPanel {
                     .addComponent(nodeVersionLabel)
                     .addComponent(downloadSourcesButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(versionInfoLabel)
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(errorLabel))
+                .addComponent(versionInfoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -373,7 +351,6 @@ public final class NodeJsPathPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton downloadSourcesButton;
-    private JLabel errorLabel;
     private JButton nodeBrowseButton;
     private JLabel nodeHintLabel;
     private JLabel nodeLabel;

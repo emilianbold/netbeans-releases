@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.options;
 
-import org.netbeans.modules.javascript.nodejs.ui.NodeJsPathPanel;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -72,7 +71,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // @GuardedBy("EDT")
-    private NodeJsPathPanel nodeJsOptionsPanel;
+    private NodeJsOptionsPanel nodeJsOptionsPanel;
     private volatile boolean changed = false;
     private boolean firstOpening = true;
 
@@ -83,6 +82,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         if (firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
             firstOpening = false;
             getPanel().setNode(getNodeJsOptions().getNode());
+            getPanel().setNpm(getNodeJsOptions().getNpm());
         }
         changed = false;
     }
@@ -93,6 +93,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             @Override
             public void run() {
                 getNodeJsOptions().setNode(getPanel().getNode());
+                getNodeJsOptions().setNpm(getPanel().getNpm());
                 changed = false;
             }
         });
@@ -102,15 +103,17 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     public void cancel() {
         if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
             getPanel().setNode(getNodeJsOptions().getNode());
+            getPanel().setNpm(getNodeJsOptions().getNpm());
         }
     }
 
     @Override
     public boolean isValid() {
         assert EventQueue.isDispatchThread();
-        NodeJsPathPanel panel = getPanel();
+        NodeJsOptionsPanel panel = getPanel();
         ValidationResult result = new NodeJsOptionsValidator()
-                .validate(panel.getNode())
+                .validateNode(panel.getNode())
+                .validateNpm(panel.getNpm())
                 .getResult();
         // errors
         if (result.hasErrors()) {
@@ -131,6 +134,11 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     public boolean isChanged() {
         String saved = getNodeJsOptions().getNode();
         String current = getPanel().getNode().trim();
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getNodeJsOptions().getNpm();
+        current = getPanel().getNpm().trim();
         return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
@@ -164,10 +172,10 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
-    private NodeJsPathPanel getPanel() {
+    private NodeJsOptionsPanel getPanel() {
         assert EventQueue.isDispatchThread();
         if (nodeJsOptionsPanel == null) {
-            nodeJsOptionsPanel = new NodeJsPathPanel();
+            nodeJsOptionsPanel = NodeJsOptionsPanel.create();
             nodeJsOptionsPanel.addChangeListener(this);
         }
         return nodeJsOptionsPanel;

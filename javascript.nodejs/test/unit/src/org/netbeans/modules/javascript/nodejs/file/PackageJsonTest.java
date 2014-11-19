@@ -411,7 +411,7 @@ public class PackageJsonTest extends NbTestCase {
     }
 
     private File getFile() {
-        return new File(FileUtil.toFile(directory), PackageJson.FILENAME);
+        return new File(FileUtil.toFile(directory), PackageJson.FILE_NAME);
     }
 
     private Map<String, Object> getData(boolean name, boolean startFile) {

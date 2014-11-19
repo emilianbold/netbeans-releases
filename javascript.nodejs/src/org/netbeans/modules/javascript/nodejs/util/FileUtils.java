@@ -86,6 +86,8 @@ public final class FileUtils {
 
     static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
 
+    public static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+
     private static final boolean IS_WINDOWS = Utilities.isWindows();
     private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
     private static final String NODEJS_DIR_NAME = "nodejs"; // NOI18N
