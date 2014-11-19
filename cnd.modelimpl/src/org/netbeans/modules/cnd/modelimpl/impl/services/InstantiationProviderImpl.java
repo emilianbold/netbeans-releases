@@ -139,6 +139,7 @@ import org.openide.util.Pair;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isPointer;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.isReference;
 import static org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities.tryGetFunctionPointerType;
+import org.netbeans.modules.cnd.utils.Antiloop;
 
 /**
  * Service that provides template instantiations
@@ -152,6 +153,16 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     private static final char LT = '<'; // NOI18N
     
     private static final char GT = '>'; // NOI18N    
+    
+    private static final ThreadLocal<Antiloop<CsmClassifier>> threadLocalSpecializeAntiloop = new ThreadLocal<Antiloop<CsmClassifier>>() {
+
+        @Override
+        protected Antiloop<CsmClassifier> initialValue() {
+            return new Antiloop<>();
+        }
+        
+    };    
+    
 
     @Override
     public CsmType[] calcTemplateType(CsmTemplateParameter templateParam, CsmType patternType, CsmType actualType, CalcTemplateTypeStrategy strategy) {
@@ -407,6 +418,48 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }    
 
     @Override
+    public boolean isInstantiatedType(CsmType type) {
+        return Instantiation.isInstantiatedType(type);
+    }
+
+    @Override
+    public List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type) {
+        return Instantiation.getInstantiatedTypeInstantiations(type);
+    }
+
+    @Override
+    public boolean isViableInstantiation(CsmInstantiation instantiation, boolean acceptTemplateParams) {
+        List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params = getInstantiationParams(instantiation);
+        InstantiationParametersInfo paramsInfo = new InstantiationParametersInfoImpl(instantiation, params);
+        return isViableInstantiation(paramsInfo, acceptTemplateParams);
+    }    
+    
+    private boolean isViableInstantiation(InstantiationParametersInfo paramsInfo, boolean acceptTemplateParams) {
+        for (CsmType paramType : paramsInfo.getParamsTypes()) {
+            if (paramType != null) {
+                if (acceptTemplateParams) {
+                    paramType = CsmUtilities.iterateTypeChain(paramType, new UnfoldWhileNestedPredicate());
+                    CsmClassifier paramCls = (paramType != null) ? paramType.getClassifier() : null;
+                    if (paramCls == null || CsmBaseUtilities.isUnresolved(paramCls)) {
+                        return false;
+                    }
+                } else {
+                    CsmType lastType = CsmUtilities.iterateTypeChain(paramType, new CsmUtilities.ConstantPredicate<CsmType>(false));
+                    if (CsmKindUtilities.isTemplateParameterType(lastType)) {
+                        return false;
+                    } else if (lastType != null) {
+                        CsmClassifier paramCls = paramType.getClassifier();
+                        if (paramCls == null || CsmBaseUtilities.isUnresolved(paramCls)) {
+                            return false;
+                        }                        
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
     public CharSequence getInstantiatedText(CsmType type) {
         long time = System.currentTimeMillis();
         try {
@@ -617,95 +670,115 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
     }
     
-    private CsmClassifier specialize(CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
-        List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params = getInstantiationParams(classifier);
-        InstantiationParametersInfo paramsInfo = new InstantiationParametersInfoImpl(classifier, params);
+    private CsmClassifier specialize(final CsmClassifier classifier, CsmFile contextFile, int contextOffset) {
+        long time = System.currentTimeMillis();
         CsmClassifier specialization = null;
-        if (CsmKindUtilities.isTemplate(classifier) && !CsmKindUtilities.isSpecialization(classifier)) {
-            List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();
-            List<ProjectBase> projects = null;
-            List<CsmOffsetableDeclaration> visibleSpecs = null;
-            if (params.size() == templateParams.size() && CsmKindUtilities.isClass(classifier)) {
-                projects = collectProjects(contextFile);
-                if (!projects.isEmpty()) {
-                    // try to find full specialization of class
-                    CsmClass cls = (CsmClass) classifier;
-                    List<CsmSpecializationParameter> plainParams = getPlainParams(params);
-                    
-                    if (checkAllowFastSearchFullSpecializations(plainParams)) {
-                        StringBuilder fqn = new StringBuilder(cls.getUniqueName());
-                        fqn.append(Instantiation.getInstantiationCanonicalText(plainParams));
+        if (threadLocalSpecializeAntiloop.get().enter(classifier)) {
+            try {
+                List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> params = getInstantiationParams(classifier);
+                InstantiationParametersInfo paramsInfo = new InstantiationParametersInfoImpl(classifier, params);
+                CsmCacheMap cache = getSpecializeCache();
+                SpecializeRequest request = new SpecializeRequest(classifier, paramsInfo);
+                CsmClassifier result = (CsmClassifier) CsmCacheMap.getFromCache(cache, request, null);
+                if (result == null) {
+                    if (CsmKindUtilities.isTemplate(classifier) && !CsmKindUtilities.isSpecialization(classifier)) {
+                        List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();
+                        List<ProjectBase> projects = null;
+                        List<CsmOffsetableDeclaration> visibleSpecs = null;
+                        if (params.size() == templateParams.size() && CsmKindUtilities.isClass(classifier)) {
+                            projects = collectProjects(contextFile);
+                            if (!projects.isEmpty()) {
+                                // try to find full specialization of class
+                                CsmClass cls = (CsmClass) classifier;
+                                List<CsmSpecializationParameter> plainParams = getPlainParams(params);
 
-                        for (CsmProject proj : projects) {
-                            CsmDeclaration decl = proj.findDeclaration(fqn.toString());
-                            if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
-                                specialization = (CsmClassifier) decl;
-                                break;
+                                if (checkAllowFastSearchFullSpecializations(plainParams)) {
+                                    StringBuilder fqn = new StringBuilder(cls.getUniqueName());
+                                    fqn.append(Instantiation.getInstantiationCanonicalText(plainParams));
+
+                                    for (CsmProject proj : projects) {
+                                        CsmDeclaration decl = proj.findDeclaration(fqn.toString());
+                                        if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
+                                            specialization = (CsmClassifier) decl;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                // try to find partial specialization of class
+                                if (specialization == null) {
+                                    visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
+                                    specialization = findBestSpecialization(visibleSpecs, paramsInfo, cls);
+                                }
+                            }
+                        }
+                        if (specialization == null && isClassForward(classifier)) {
+                            // try to find specialization of class forward
+                            CsmClass cls = (CsmClass) classifier;
+                            if (projects == null) {
+                                projects = collectProjects(contextFile);
+                            }
+                            if (visibleSpecs == null) {
+                                visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
+                            }
+                            for (CsmOffsetableDeclaration decl : visibleSpecs) {
+                                if (decl instanceof ClassImplSpecialization) {
+                                    ClassImplSpecialization spec = (ClassImplSpecialization) decl;
+                                    specialization = spec;
+                                    break;
+                                }
                             }
                         }
                     }
-                    
-                    // try to find partial specialization of class
-                    if (specialization == null) {
-                        visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
-                        specialization = findBestSpecialization(visibleSpecs, paramsInfo, cls);
+                    if(specialization instanceof ClassImplSpecialization && !classifier.equals(specialization) &&
+                            CsmKindUtilities.isTemplate(specialization) && CsmKindUtilities.isInstantiation(classifier)) {
+                        // inherit mapping
+                        List<CsmTemplateParameter> specTemplateParams = ((CsmTemplate)specialization).getTemplateParameters();
+
+                        MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping((CsmInstantiation) classifier);            
+                        Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();            
+
+                        for (CsmTemplateParameter specTemplateParam : specTemplateParams) {
+                            CsmSpecializationParameter deducedParam = deduceSpecializationParam(
+                                    specTemplateParam, 
+                                    (ClassImplSpecialization) specialization,
+                                    paramsInfo
+                            );
+                            if (deducedParam != null) {
+                                newMapping.put(specTemplateParam, deducedParam);
+                            }
+                        }
+
+                        mapping.pop();
+                        mapping.push(newMapping);
+
+                        CsmObject obj = specialization;
+                        List<Map<CsmTemplateParameter, CsmSpecializationParameter>> maps = mapping.getMaps(new MapHierarchy.NonEmptyFilter());            
+                        for (int i = maps.size() - 1; i >= 0; i--) {
+                            obj = instantiate((CsmTemplate) obj, contextFile, contextOffset, maps.get(i), false);
+                        }
+
+                        if(CsmKindUtilities.isClassifier(obj)) {
+                            specialization = (CsmClassifier) obj ;
+                        }
                     }
-                }
-            }
-            if (specialization == null && isClassForward(classifier)) {
-                // try to find specialization of class forward
-                CsmClass cls = (CsmClass) classifier;
-                if (projects == null) {
-                    projects = collectProjects(contextFile);
-                }
-                if (visibleSpecs == null) {
-                    visibleSpecs = collectVisibleSpecializations(cls, projects, contextFile);
-                }
-                for (CsmOffsetableDeclaration decl : visibleSpecs) {
-                    if (decl instanceof ClassImplSpecialization) {
-                        ClassImplSpecialization spec = (ClassImplSpecialization) decl;
-                        specialization = spec;
-                        break;
+                    time = System.currentTimeMillis() - time;
+                    if (cache != null) {
+                        cache.put(request, CsmCacheMap.toValue(specialization != null ? specialization : classifier, time));
+                    }                    
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
                     }
+                } else {
+                    time = System.currentTimeMillis() - time;
                 }
-            }
-        }
-        if(specialization instanceof ClassImplSpecialization && !classifier.equals(specialization) &&
-                CsmKindUtilities.isTemplate(specialization) && CsmKindUtilities.isInstantiation(classifier)) {
-            // inherit mapping
-            List<CsmTemplateParameter> specTemplateParams = ((CsmTemplate)specialization).getTemplateParameters();
-
-            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping((CsmInstantiation) classifier);            
-            Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();            
-            
-            for (CsmTemplateParameter specTemplateParam : specTemplateParams) {
-                CsmSpecializationParameter deducedParam = deduceSpecializationParam(
-                        specTemplateParam, 
-                        (ClassImplSpecialization) specialization,
-                        paramsInfo
-                );
-                if (deducedParam != null) {
-                    newMapping.put(specTemplateParam, deducedParam);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "specialize took {0}ms ({1})\n", new Object[]{time, result != null ? "CACHE HIT" : "calculated"}); // NOI18N
                 }
-            }
-            
-            mapping.pop();
-            mapping.push(newMapping);
-            
-            CsmObject obj = specialization;
-            List<Map<CsmTemplateParameter, CsmSpecializationParameter>> maps = mapping.getMaps(new MapHierarchy.NonEmptyFilter());            
-            for (int i = maps.size() - 1; i >= 0; i--) {
-                obj = instantiate((CsmTemplate) obj, contextFile, contextOffset, maps.get(i), false);
-            }
-
-            if(CsmKindUtilities.isClassifier(obj)) {
-                specialization = (CsmClassifier) obj ;
+            } finally {
+                threadLocalSpecializeAntiloop.get().exit(classifier);
             }
         }
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
-        }
-
         return specialization != null ? specialization : classifier;
     }
     
@@ -1293,7 +1366,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     
     public static final class InstantiationParametersInfoImpl implements InstantiationParametersInfo {
         
-        private final CsmClassifier classifier;
+        private final CsmObject obj;
         
         private final List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> originalParams;
         
@@ -1307,11 +1380,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         
         private List<String> paramsText;        
 
-        public InstantiationParametersInfoImpl(CsmClassifier classifier, List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> originalParams) {
-            this.classifier = classifier;
+        public InstantiationParametersInfoImpl(CsmObject obj, List<Pair<CsmSpecializationParameter, List<CsmInstantiation>>> originalParams) {
+            this.obj = obj;
             this.originalParams = originalParams;
-            if (CsmKindUtilities.isTemplate(classifier)) {
-                List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();
+            if (CsmKindUtilities.isTemplate(obj)) {
+                List<CsmTemplateParameter> templateParams = ((CsmTemplate) obj).getTemplateParameters();
                 if (!templateParams.isEmpty() && templateParams.get(templateParams.size() - 1).isVarArgs()) {
                     this.variadic = true;
                 } else {
@@ -1370,7 +1443,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
                         CsmType paramType = ((CsmTypeBasedSpecializationParameter) param).getType();
 
-                        if (CsmKindUtilities.isInstantiation(classifier)) {
+                        if (CsmKindUtilities.isInstantiation(obj)) {
                             paramType = Instantiation.createType(paramType, pair.second());
                         }
 
@@ -1555,6 +1628,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         if (true) return null;
         return CsmCacheManager.getClientCache(new TemplateCacheKey(template, specialize), new TemplateCacheInitializer(template));
     }
+    
+    private static CsmCacheMap getSpecializeCache() {
+        if (true) return null;
+        return CsmCacheManager.getClientCache(SpecializeRequest.class, SPECIALIZE_INITIALIZER);
+    }    
     
     private static <T> int howMany(Collection<T> collection, T elem) {
         int counter = 0;
@@ -2130,8 +2208,97 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 return false;
             }
             return Objects.equals(this.decl, other.decl);
+        }   
+    }
+    
+    private static final Callable<CsmCacheMap> SPECIALIZE_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("SPECIALIZE Cache", 1); // NOI18N
         }
 
+    };        
+    
+    /**
+     * Tries to compare two classifiers using only unique name and 
+     * parameters which are really used by classifier
+     */
+    private static class SpecializeRequest {
         
+        private final CsmClassifier classifier;
+        
+        private final InstantiationParametersInfo paramsInfo;
+
+        public SpecializeRequest(CsmClassifier classifier, InstantiationParametersInfo paramsInfo) {
+            this.classifier = classifier;
+            this.paramsInfo = paramsInfo;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            if (CsmKindUtilities.isOffsetableDeclaration(classifier)) {
+                CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) classifier;
+                hash = 31 * hash + decl.getStartOffset();
+                hash = 31 * hash + Objects.hashCode(decl.getContainingFile());
+            }
+            hash = 31 * hash + Objects.hashCode(classifier.getUniqueName());
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SpecializeRequest other = (SpecializeRequest) obj;
+            boolean ourOffsetable = CsmKindUtilities.isOffsetableDeclaration(classifier);
+            boolean otherOffsetable = CsmKindUtilities.isOffsetableDeclaration(other.classifier);
+            if (ourOffsetable != otherOffsetable) {
+                return false;
+            }
+            if (ourOffsetable && otherOffsetable) {
+                CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) classifier;
+                CsmOffsetableDeclaration otherDecl = (CsmOffsetableDeclaration) other.classifier;
+                if (!decl.getContainingFile().equals(otherDecl.getContainingFile())) {
+                    return false;
+                }
+                if (decl.getStartOffset() != otherDecl.getStartOffset()) {
+                    return false;
+                }
+            }
+            if (!Objects.equals(this.classifier.getUniqueName(), other.classifier.getUniqueName())) {
+                return false;
+            }
+            if (paramsInfo.getParamsTypes().size() != other.paramsInfo.getParamsTypes().size()) {
+                return false;
+            }
+            boolean hasNullTypes = false;
+            Iterator<CsmType> types = paramsInfo.getParamsTypes().iterator();
+            Iterator<CsmType> otherTypes = other.paramsInfo.getParamsTypes().iterator();
+            while (types.hasNext() && otherTypes.hasNext()) {
+                CsmType type = types.next();
+                CsmType otherType = otherTypes.next();
+                if (type == null && otherType == null) {
+                    hasNullTypes = true;
+                    break;
+                }
+                if (!Objects.equals(type, otherType)) {
+                    return false;
+                }
+            }
+            return hasNullTypes ? classifier.equals(other.classifier) : true;
+        }
+    }
+    
+    private static class UnfoldWhileNestedPredicate implements CsmUtilities.Predicate<CsmType> {        
+        @Override
+        public boolean check(CsmType value) {
+            return !Instantiation.isNestedType(value);
+        }
     }
 }

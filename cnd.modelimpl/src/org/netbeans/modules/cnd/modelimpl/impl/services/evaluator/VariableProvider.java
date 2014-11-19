@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -195,40 +196,42 @@ public class VariableProvider {
                         }
                     }
                 }
-                if(CsmKindUtilities.isClass(decl)) {
-                    String varName = variableName.replaceAll(".*::(.*)", "$1"); // NOI18N
-                    final CsmClass clazz = (CsmClass) decl;
-                    MemberResolverImpl r = new MemberResolverImpl();
-                    final CsmMember member = r.getDeclaration(clazz, varName);
-                    if (member != null) {
-                        if(member.isStatic() && CsmKindUtilities.isField(member) && member.getName().toString().equals(varName)) {
-                            CsmExpression expr = ((CsmField)member).getInitialValue();
-                            if(CsmKindUtilities.isInstantiation(member)) {
-                                Object eval = new ExpressionEvaluator(level+1).eval(
-                                        expr.getExpandedText().toString(), 
-                                        member.getContainingClass(), 
-                                        member.getScope(),
-                                        expr.getContainingFile(),
-                                        expr.getStartOffset(),
-                                        expr.getEndOffset(),
-                                        getMapping((CsmInstantiation) member)
-                                );
-                                if (eval instanceof Integer) {
-                                    return (Integer) eval;
+                if (CsmKindUtilities.isClass(decl)) {
+                    if (CharSequenceUtilities.equals(scopeQualifiedName, decl.getQualifiedName())) {
+                        String varName = variableName.replaceAll(".*::(.*)", "$1"); // NOI18N
+                        final CsmClass clazz = (CsmClass) decl;
+                        MemberResolverImpl r = new MemberResolverImpl();
+                        final CsmMember member = r.getDeclaration(clazz, varName);
+                        if (member != null) {
+                            if(member.isStatic() && CsmKindUtilities.isField(member) && member.getName().toString().equals(varName)) {
+                                CsmExpression expr = ((CsmField)member).getInitialValue();
+                                if(CsmKindUtilities.isInstantiation(member)) {
+                                    Object eval = new ExpressionEvaluator(level+1).eval(
+                                            expr.getExpandedText().toString(), 
+                                            member.getContainingClass(), 
+                                            member.getScope(),
+                                            expr.getContainingFile(),
+                                            expr.getStartOffset(),
+                                            expr.getEndOffset(),
+                                            getMapping((CsmInstantiation) member)
+                                    );
+                                    if (eval instanceof Integer) {
+                                        return (Integer) eval;
+                                    }
+                                } else if (expr != null) {
+                                    Object eval = new ExpressionEvaluator(level+1).eval(
+                                            expr.getExpandedText().toString(), 
+                                            member.getContainingClass(), 
+                                            member.getScope(),
+                                            expr.getContainingFile(),
+                                            expr.getStartOffset(),
+                                            expr.getEndOffset(),
+                                            Collections.<CsmTemplateParameter, CsmSpecializationParameter>emptyMap()
+                                    );
+                                    if (eval instanceof Integer) {
+                                        return (Integer) eval;
+                                    }                            
                                 }
-                            } else if (expr != null) {
-                                Object eval = new ExpressionEvaluator(level+1).eval(
-                                        expr.getExpandedText().toString(), 
-                                        member.getContainingClass(), 
-                                        member.getScope(),
-                                        expr.getContainingFile(),
-                                        expr.getStartOffset(),
-                                        expr.getEndOffset(),
-                                        Collections.<CsmTemplateParameter, CsmSpecializationParameter>emptyMap()
-                                );
-                                if (eval instanceof Integer) {
-                                    return (Integer) eval;
-                                }                            
                             }
                         }
                     }
@@ -374,7 +377,7 @@ public class VariableProvider {
     }
     
     public int getSizeOfValue(String obj) {
-        if (true) {
+        if (false) {
             return Integer.MAX_VALUE; // Not supported yet
         }
         
@@ -404,22 +407,15 @@ public class VariableProvider {
             }
         }
         
-        CsmScope objScope = CsmKindUtilities.isScope(decl) ? (CsmScope) decl : null;
+        CsmScope objScope = scope;
+        if (objScope == null && CsmKindUtilities.isScope(decl)) {
+            objScope = (CsmScope) decl;
+        }
         
         CsmType objType = CsmExpressionResolver.resolveType(obj, variableFile, variableEndOffset, objScope, instantiations);
         
         // This is necessary to resolve classifiers defined in macroses
-        int counter = Antiloop.MAGIC_PLAIN_TYPE_RESOLVING_CONST;
-        while (objType != null && !CsmBaseUtilities.isValid(objType.getClassifier()) && !CharSequenceUtils.isNullOrEmpty(objType.getClassifierText()) && counter > 0) {
-            objType = CsmExpressionResolver.resolveType(
-                objType.getClassifierText(), 
-                variableFile, 
-                variableEndOffset, 
-                objScope, 
-                instantiations
-            );
-            counter--;
-        }
+        objType = CsmExpressionResolver.resolveMacroType(objType, objScope, instantiations, null);
         
         return Utils.getSizeOfType(objType, variableFile);
     }
