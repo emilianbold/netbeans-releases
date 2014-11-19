@@ -59,10 +59,14 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DriverFactory;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.dwarfdump.source.Artifacts;
+import org.netbeans.modules.cnd.dwarfdump.source.CompileLineOrigin;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -457,7 +461,7 @@ public final class ExecLogReader {
                         lines = fo.asLines();
                         if (lines != null && lines.size() > 0) {
                             next = lines.get(0).trim();
-                            List<String> additional = DiscoveryUtils.scanCommandLine(next, DiscoveryUtils.LogOrigin.DwarfCompileLine);
+                            List<String> additional = compilerSettings.getDriver().splitCommandLine(next, CompileLineOrigin.DwarfCompileLine);
                             for (String option : additional) {
                                 if (option.startsWith("'") && option.endsWith("'") || // NOI18N
                                 option.startsWith("\"") && option.endsWith("\"")) { // NOI18N
@@ -475,13 +479,12 @@ public final class ExecLogReader {
             }
             args.add(next);
         }
-        DiscoveryUtils.Artifacts artifacts = new DiscoveryUtils.Artifacts();
-        List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(args.listIterator(), DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == ItemProperties.LanguageKind.CPP);
+        Artifacts artifacts = compilerSettings.getDriver().gatherCompilerLine(args.listIterator(), CompileLineOrigin.ExecLog, language == ItemProperties.LanguageKind.CPP);
         if (cu != null) {
-            sourcesList.clear();
-            sourcesList.add(cu);
+            artifacts.getInput().clear();
+            artifacts.getInput().add(cu);
         }
-        for (String what : sourcesList) {
+        for (String what : artifacts.getInput()) {
             if (what == null) {
                 continue;
             }
@@ -492,8 +495,8 @@ public final class ExecLogReader {
             }
             String fullName;
             String sourceName;
-            List<String> userIncludes = new ArrayList<String>(artifacts.userIncludes.size());
-            for (String s : artifacts.userIncludes) {
+            List<String> userIncludes = new ArrayList<String>(artifacts.getUserIncludes().size());
+            for (String s : artifacts.getUserIncludes()) {
                 if (CndPathUtilities.isPathAbsolute(s) && pathMapper != null) {
                     // NOI18N
                     String mapped = pathMapper.getLocalPath(s);
@@ -507,10 +510,10 @@ public final class ExecLogReader {
                 s = convertCygwinPath(s);
                 userIncludes.add(PathCache.getString(s));
             }
-            List<String> userFiles = new ArrayList<String>(artifacts.userFiles.size());
-            userFiles.addAll(artifacts.userFiles);
-            Map<String, String> userMacros = new HashMap<String, String>(artifacts.userMacros.size());
-            for (Map.Entry<String, String> e : artifacts.userMacros.entrySet()) {
+            List<String> userFiles = new ArrayList<String>(artifacts.getUserFiles().size());
+            userFiles.addAll(artifacts.getUserFiles());
+            Map<String, String> userMacros = new HashMap<String, String>(artifacts.getUserMacros().size());
+            for (Map.Entry<String, String> e : artifacts.getUserMacros().entrySet()) {
                 if (e.getValue() == null) {
                     userMacros.put(PathCache.getString(e.getKey()), null);
                 } else {
@@ -538,9 +541,9 @@ public final class ExecLogReader {
             //FileObject f = fileSystem.findResource(fullName);
             //if (f != null && f.isValid() && f.isData()) {
             fullName = PathCache.getString(fullName);
-            if (artifacts.languageArtifacts.contains("c")) { // NOI18N
+            if (artifacts.getLanguageArtifacts().contains("c")) { // NOI18N
                 language = ItemProperties.LanguageKind.C;
-            } else if (artifacts.languageArtifacts.contains("c++")) { // NOI18N
+            } else if (artifacts.getLanguageArtifacts().contains("c++")) { // NOI18N
                 language = ItemProperties.LanguageKind.CPP;
             } else {
                 if (language == ItemProperties.LanguageKind.Unknown) {
@@ -576,9 +579,9 @@ public final class ExecLogReader {
             res.userIncludes = userIncludes;
             res.userFiles = userFiles;
             res.userMacros = userMacros;
-            res.undefinedMacros = artifacts.undefinedMacros;
-            res.importantFlags = artifacts.getImportantFlags();
-            res.standard = artifacts.getLanguageStandard(res.standard);
+            res.undefinedMacros = artifacts.getUserUndefinedMacros();
+            res.importantFlags = DriverFactory.importantFlagsToString(artifacts);
+            res.standard = DriverFactory.getLanguageStandard(res.standard, artifacts);
             if (storage != null) {
                 StringBuilder buf = new StringBuilder();
                 for (String s : args) {

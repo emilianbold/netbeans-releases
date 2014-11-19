@@ -41,18 +41,25 @@
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.DriverFactory;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
@@ -71,35 +78,47 @@ public class CompilerSettings {
     private final CompilerFlavor compileFlavor;
     private final String cygwinDriveDirectory;
     private final boolean isWindows;
+    private final boolean isLicalFileSystem;
     private final ExecutionEnvironment developmentHostExecutionEnvironment;
     private final FileSystem soruceFileSystem;
+    private final CompilerSet compilerSet;
+    private final Driver driver;
 
     public CompilerSettings(ProjectProxy project) {
         projectBridge = DiscoveryUtils.getProjectBridge(project);
-        systemIncludePathsCpp = DiscoveryUtils.getSystemIncludePaths(projectBridge, true);
-        systemIncludePathsC = DiscoveryUtils.getSystemIncludePaths(projectBridge, false);
-        systemMacroDefinitionsCpp = DiscoveryUtils.getSystemMacroDefinitions(projectBridge, true);
-        systemMacroDefinitionsC = DiscoveryUtils.getSystemMacroDefinitions(projectBridge, false);
-        compileFlavor = DiscoveryUtils.getCompilerFlavor(projectBridge);
+        systemIncludePathsCpp = getSystemIncludePaths(projectBridge, true);
+        systemIncludePathsC = getSystemIncludePaths(projectBridge, false);
+        systemMacroDefinitionsCpp = getSystemMacroDefinitions(projectBridge, true);
+        systemMacroDefinitionsC = getSystemMacroDefinitions(projectBridge, false);
+        compileFlavor = getCompilerFlavor(projectBridge);
         isWindows = Utilities.isWindows();
         if (isWindows) {
-            cygwinDriveDirectory = DiscoveryUtils.getCygwinDrive(projectBridge);
+            cygwinDriveDirectory = getCygwinDrive(projectBridge);
         } else {
             cygwinDriveDirectory = null;
         }
         if (projectBridge != null) {
             developmentHostExecutionEnvironment = projectBridge.getDevelopmentHostExecutionEnvironment();
             soruceFileSystem = projectBridge.getBaseFolderFileSystem();
+            compilerSet = projectBridge.getCompilerSet();
+            isLicalFileSystem = CndFileUtils.isLocalFileSystem(soruceFileSystem);
         } else {
-            developmentHostExecutionEnvironment = null;
-            soruceFileSystem = null;
+            developmentHostExecutionEnvironment = ExecutionEnvironmentFactory.getLocal();
+            soruceFileSystem = FileSystemProvider.getFileSystem(developmentHostExecutionEnvironment);
+            compilerSet = null;
+            isLicalFileSystem =true;
         }
+        driver = DriverFactory.getDriver(compilerSet);
     }
 
     public ProjectBridge getProjectBridge() {
         return projectBridge;
     }
 
+    public Driver getDriver() {
+        return driver;
+    }
+    
     public boolean isRemoteDevelopmentHost() {
         if (developmentHostExecutionEnvironment == null) {
             return false;
@@ -108,10 +127,11 @@ public class CompilerSettings {
     }
 
     public boolean isLocalFileSystem() {
-        if (soruceFileSystem == null) {
-            return true;
-        }
-        return CndFileUtils.isLocalFileSystem(soruceFileSystem);
+        return isLicalFileSystem;
+    }
+    
+    public FileSystem getFileSystem() {
+        return soruceFileSystem;
     }
     
     public List<String> getSystemIncludePaths(ItemProperties.LanguageKind lang) {
@@ -176,5 +196,33 @@ public class CompilerSettings {
         systemMacroDefinitionsCpp.clear();
         normalizedPaths.clear();
         normalizedPaths = new ConcurrentHashMap<String, String>();
+    }
+    
+    private String getCygwinDrive(ProjectBridge bridge){
+        if (bridge != null) {
+            return bridge.getCygwinDrive();
+        }
+        return null;
+    }
+
+    private Map<String,String> getSystemMacroDefinitions(ProjectBridge bridge, boolean isCPP) {
+        if (bridge != null) {
+            return bridge.getSystemMacroDefinitions(isCPP);
+        }
+        return new HashMap<String,String>();
+    }
+
+    private CompilerFlavor getCompilerFlavor(ProjectBridge bridge){
+        if (bridge != null) {
+            return bridge.getCompilerFlavor();
+        }
+        return null;
+    }
+    
+    private List<String> getSystemIncludePaths(ProjectBridge bridge, boolean isCPP) {
+        if (bridge != null) {
+            return bridge.getSystemIncludePaths(isCPP);
+        }
+        return new ArrayList<String>();
     }
 }

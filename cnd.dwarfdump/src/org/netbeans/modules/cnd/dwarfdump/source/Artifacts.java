@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.dwarfdump;
+package org.netbeans.modules.cnd.dwarfdump.source;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  *
- * @author alsimon
+ * @author Alexander Simon
  */
-public interface CompilationUnitInterface {
-    String getCompilationDir() throws IOException;
-    String getSourceFileName() throws IOException;
-    String getCommandLine() throws IOException;
-    String getSourceFileAbsolutePath() throws IOException;
-    String getSourceLanguage() throws IOException;
-    boolean hasMain() throws IOException;
-    int getMainLine() throws IOException;
+public interface Artifacts {
+
+    List<String> getInput();
+
+    List<String> getUserIncludes();
+
+    List<String> getUserFiles();
+
+    Map<String, String> getUserMacros();
+
+    List<String> getUserUndefinedMacros();
+
+    Set<String> getLibraries();
+
+    List<String> getLanguageArtifacts();
+
+    List<String> getImportantFlags();
+
+    String getOutput();
+    
 }

@@ -58,6 +58,7 @@ import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.support.RemoteJarServiceProvider;
 import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
+import org.netbeans.modules.cnd.dwarfdump.source.SourceFile;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -164,7 +165,7 @@ public class CompileLineServiceTest extends NativeExecutionBaseTestCase {
     }
 
     private void process(String executable, int size) throws IOException {
-        List<CompileLineService.SourceFile> res1 = CompileLineService.getSourceFileProperties(executable, false);
+        List<SourceFile> res1 = CompileLineService.getSourceFileProperties(executable, false);
         assertEquals(size, res1.size());
         for(String java : javaPaths()) {
             ProcessUtils.ExitStatus status = getJavaProcess(java, CompileLineService.class, ExecutionEnvironmentFactory.getLocal(),
@@ -172,11 +173,11 @@ public class CompileLineServiceTest extends NativeExecutionBaseTestCase {
             assertNotNull(status);
             assertTrue("Cannot execute "+java, status.isOK());
             BufferedReader br = new BufferedReader(new StringReader(status.output));
-            List<CompileLineService.SourceFile> res2 = CompileLineService.getSourceProperties(br);
+            List<SourceFile> res2 = CompileLineService.getSourceProperties(br);
             assertEquals(res1.size(), res2.size());
             for(int i = 0; i < res1.size(); i++) {
-                CompileLineService.SourceFile src1 = res1.get(i);
-                CompileLineService.SourceFile src2 = res2.get(i);
+                SourceFile src1 = res1.get(i);
+                SourceFile src2 = res2.get(i);
                 assert src1.equals(src2);
             }
         }

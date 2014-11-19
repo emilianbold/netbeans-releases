@@ -26,6 +26,7 @@
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>org.netbeans.modules.cnd</friend>
+                <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>
@@ -40,6 +41,7 @@
                 <package>org.netbeans.modules.cnd.dwarfdump.exception</package>
                 <package>org.netbeans.modules.cnd.dwarfdump.reader</package>
                 <package>org.netbeans.modules.cnd.dwarfdump.section</package>
+                <package>org.netbeans.modules.cnd.dwarfdump.source</package>
             </friend-packages>
         </data>
     </configuration>
