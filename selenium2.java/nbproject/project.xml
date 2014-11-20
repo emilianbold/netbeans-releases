@@ -15,6 +15,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.templates</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.gsf.testrunner</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -111,7 +119,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.58</specification-version>
+                        <specification-version>7.61</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -119,15 +127,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.40</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.util.base</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.1</specification-version>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -136,6 +136,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.26</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
