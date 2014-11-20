@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  * @author Roman Svitanic
  */
 @NbBundle.Messages("LBL_Angular=AngularJS")
-@ModelInterceptor.Registration(priority = 200)
+@ModelInterceptor.Registration(priority = 300)
 public class AngularModelInterceptor implements ModelInterceptor {
 
     private static final Logger LOGGER = Logger.getLogger(AngularModelInterceptor.class.getName());
