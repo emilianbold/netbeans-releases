@@ -100,6 +100,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private static final RequestProcessor   rp = new RequestProcessor("MercurialView", 1, true);  // NOI18N
     
     private final NoContentPanel noContentComponent = new NoContentPanel();
+    private boolean focused;
     
     /**
      * Creates a new Synchronize Panel managed by the given versioning system.
@@ -295,12 +296,16 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                     if (nodes.length > 0) {
                         syncTable.setColumns(tableColumns);
                         setVersioningComponent(syncTable.getComponent());
-                        syncTable.focus();
+                        if (focused) {
+                            syncTable.focus();
+                        }
                     } else {
                         /* #126311: Optimize UI for Large repos
                         parentTopComponent.setBranchTitle(branchTitle); */
                         setVersioningComponent(noContentComponent);
-                        noContentComponent.requestFocusInWindow();
+                        if (focused) {
+                            noContentComponent.requestFocusInWindow();
+                        }
                     }
                     syncTable.setTableModel(nodes);
                     btnCommit.setEnabled(nodes.length > 0);
@@ -474,9 +479,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
     }
     
-    void focus() {
-        requestFocusInWindow();
-        syncTable.focus();
+    void focus (boolean focused) {
+        this.focused = focused;
+        if (focused) {
+            requestFocusInWindow();
+            syncTable.focus();
+        }
     }
     
     /**

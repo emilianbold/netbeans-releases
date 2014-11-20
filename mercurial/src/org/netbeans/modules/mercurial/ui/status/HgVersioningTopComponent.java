@@ -64,7 +64,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.AbstractNode;
@@ -113,7 +112,12 @@ public class HgVersioningTopComponent extends TopComponent implements Externaliz
     @Override
     protected void componentActivated() {
         updateTitle();
-        syncPanel.focus();
+        syncPanel.focus(true);
+    }
+
+    @Override
+    protected void componentDeactivated () {
+        syncPanel.focus(false);
     }
 
     @Override
