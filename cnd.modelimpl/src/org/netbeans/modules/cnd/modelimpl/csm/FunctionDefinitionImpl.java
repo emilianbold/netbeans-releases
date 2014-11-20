@@ -192,8 +192,11 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     private void _setDeclaration(CsmFunction decl) {
-        this.declarationUID = UIDCsmConverter.declarationToUID(decl);
-        assert this.declarationUID != null || decl == null;
+        CsmUID<CsmFunction> uid = UIDCsmConverter.declarationToUID(decl);
+        this.declarationUID = uid;
+        // check local variable in assert
+        // field can be already cleared by another _setDeclaration(null)
+        assert uid != null || decl == null : "unexpected " + uid + " for " + decl;
     }
 
     // method try to find declaration in case class have exactly one cast operator with desired name
