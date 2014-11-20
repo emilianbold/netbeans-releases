@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -76,8 +77,8 @@ import org.openide.util.Exceptions;
  */
 public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
 
-    private Collection<TreePath> usages = new ArrayList<TreePath>();
-    private List<WhereUsedElement> elements = new ArrayList<WhereUsedElement>();
+    private Collection<TreePath> usages = new ArrayList<>();
+    private List<WhereUsedElement> elements = new ArrayList<>();
     protected CompilationController workingCopy;
     private boolean findInComments = false;
     private final boolean isSearchOverloadedMethods;
@@ -106,7 +107,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         this.fromTestRoot = fromTestRoot;
         this.inImport = inImport;
         this.isCancelled = isCancelled;
-        this.methods = new LinkedList<ExecutableElement>();
+        this.methods = new LinkedList<>();
     }
 
     //<editor-fold defaultstate="collapsed" desc="Find in Comments">
@@ -218,50 +219,21 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         } else if (el.equals(elementToFind)) {
             final ElementKind kind = elementToFind.getKind();
             if(kind.isField() || kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.RESOURCE_VARIABLE || kind == ElementKind.PARAMETER) {
-                JavaWhereUsedFilters.ReadWrite access = JavaWhereUsedFilters.ReadWrite.READ;
-                TreePath parentPath = path.getParentPath();
-                Tree parentTree = parentPath.getLeaf();
-                Kind parentKind = parentTree.getKind();
-                
-                switch(parentKind) {
-                    case ARRAY_ACCESS:
-                    case MEMBER_SELECT:
-                        // TODO: Check usages of arrays for writing
-                        break;
-
-                    case POSTFIX_INCREMENT:
-                    case POSTFIX_DECREMENT:
-                    case PREFIX_INCREMENT:
-                    case PREFIX_DECREMENT:
-                        access = JavaWhereUsedFilters.ReadWrite.READ_WRITE;
-                        break;
-
-                    case ASSIGNMENT: {
-                        AssignmentTree assignmentTree = (AssignmentTree) parentTree;
-                        ExpressionTree left = assignmentTree.getVariable();
-                        if (left.equals(tree)) {
-                            access = JavaWhereUsedFilters.ReadWrite.WRITE;
-                        }
-                        break;
-                    }
-                    case MULTIPLY_ASSIGNMENT:
-                    case DIVIDE_ASSIGNMENT:
-                    case REMAINDER_ASSIGNMENT:
-                    case PLUS_ASSIGNMENT:
-                    case MINUS_ASSIGNMENT:
-                    case LEFT_SHIFT_ASSIGNMENT:
-                    case RIGHT_SHIFT_ASSIGNMENT:
-                    case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
-                    case AND_ASSIGNMENT:
-                    case XOR_ASSIGNMENT:
-                    case OR_ASSIGNMENT: {
-                        CompoundAssignmentTree compoundAssignmentTree = (CompoundAssignmentTree) parentTree;
-                        ExpressionTree left = compoundAssignmentTree.getVariable();
-                        if (left.equals(tree)) {
-                            access = JavaWhereUsedFilters.ReadWrite.READ_WRITE;
-                        }
-                        break;
-                    }
+                JavaWhereUsedFilters.ReadWrite access;
+                Element collectionElement = workingCopy.getElementUtilities().findElement("java.util.Collection"); //NOI18N
+                Element mapElement = workingCopy.getElementUtilities().findElement("java.util.Map"); //NOI18N
+                if(collectionElement != null &&
+                        workingCopy.getTypes().isSubtype(
+                                workingCopy.getTypes().erasure(el.asType()),
+                                workingCopy.getTypes().erasure(collectionElement.asType()))) {
+                    access = analyzeCollectionAccess(path);
+                } else if(mapElement != null &&
+                        workingCopy.getTypes().isSubtype(
+                                workingCopy.getTypes().erasure(el.asType()),
+                                workingCopy.getTypes().erasure(mapElement.asType()))) {
+                    access = analyzeCollectionAccess(path);
+                } else {
+                    access = analyzeVarAccess(path, elementToFind, tree);
                 }
                 addUsage(path, access);
             } else {
@@ -269,7 +241,92 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
             }
         }
     }
+    
+    private Set<String> writeMethods = new HashSet<>(Arrays.asList(
+            "add", "addAll", "putAll", "remove", "removeAll", "retainAll",
+            "removeIf", "clear"));
+    private Set<String> readMethods = new HashSet<>(Arrays.asList(
+            "get", "getOrDefault", "first", "last", "firstKey", "lastKey",
+            "contains", "containsKey", "containsValue", "containsAll", "size",
+            "isEmpty", "indexOf"));
+    private Set<String> readWriteMethods = new HashSet<>(Arrays.asList(
+            "sort", "set", "put", "putIfAbsent", "replace"));
+    private JavaWhereUsedFilters.ReadWrite analyzeCollectionAccess(TreePath path) {
+        JavaWhereUsedFilters.ReadWrite result = null;
+        TreePath parentPath = path.getParentPath();
+        Tree parentTree = parentPath.getLeaf();
+        Kind parentKind = parentTree.getKind();
+        if(parentKind == Kind.MEMBER_SELECT) {
+            Element member = workingCopy.getTrees().getElement(parentPath);
+            if(member.getKind() == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) member;
+                if (writeMethods.contains(method.getSimpleName().toString())) {
+                    result = JavaWhereUsedFilters.ReadWrite.WRITE;
+                } else if (readMethods.contains(method.getSimpleName().toString())) {
+                    result = JavaWhereUsedFilters.ReadWrite.READ;
+                } else if (readWriteMethods.contains(method.getSimpleName().toString())) {
+                    result = JavaWhereUsedFilters.ReadWrite.READ_WRITE;
+                }
+            }
+        }
+        return result;
+    }
 
+    private JavaWhereUsedFilters.ReadWrite analyzeVarAccess(TreePath path, Element elementToFind, Tree tree) {
+        JavaWhereUsedFilters.ReadWrite access = JavaWhereUsedFilters.ReadWrite.READ;
+        TreePath parentPath = path.getParentPath();
+        Tree parentTree = parentPath.getLeaf();
+        Kind parentKind = parentTree.getKind();
+        if(elementToFind.asType().getKind() == TypeKind.ARRAY &&
+                parentKind == Kind.ARRAY_ACCESS) {
+            tree = parentPath.getLeaf();
+            parentPath = parentPath.getParentPath();
+            parentTree = parentPath.getLeaf();
+            parentKind = parentTree.getKind();
+        }
+        switch(parentKind) {
+            case ARRAY_ACCESS:
+            case MEMBER_SELECT:
+                // TODO: Check usages of arrays for writing
+                break;
+                
+            case POSTFIX_INCREMENT:
+            case POSTFIX_DECREMENT:
+            case PREFIX_INCREMENT:
+            case PREFIX_DECREMENT:
+                access = JavaWhereUsedFilters.ReadWrite.READ_WRITE;
+                break;
+                
+            case ASSIGNMENT: {
+                AssignmentTree assignmentTree = (AssignmentTree) parentTree;
+                ExpressionTree left = assignmentTree.getVariable();
+                if (left.equals(tree)) {
+                    access = JavaWhereUsedFilters.ReadWrite.WRITE;
+                }
+                break;
+            }
+            case MULTIPLY_ASSIGNMENT:
+            case DIVIDE_ASSIGNMENT:
+            case REMAINDER_ASSIGNMENT:
+            case PLUS_ASSIGNMENT:
+            case MINUS_ASSIGNMENT:
+            case LEFT_SHIFT_ASSIGNMENT:
+            case RIGHT_SHIFT_ASSIGNMENT:
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+            case AND_ASSIGNMENT:
+            case XOR_ASSIGNMENT:
+            case OR_ASSIGNMENT: {
+                CompoundAssignmentTree compoundAssignmentTree = (CompoundAssignmentTree) parentTree;
+                ExpressionTree left = compoundAssignmentTree.getVariable();
+                if (left.equals(tree)) {
+                    access = JavaWhereUsedFilters.ReadWrite.READ_WRITE;
+                }
+                break;
+            }
+        }
+        return access;
+    }
+    
     /**
      *
      * @param workingCopy
