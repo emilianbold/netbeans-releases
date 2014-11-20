@@ -321,7 +321,7 @@ public class FixDependencies extends Task {
                     sb.append (m.codeNameBase);
                     String a = remove.substring (aft);
                     if (specVersionMissing) {
-                        int rd = a.indexOf("<run-dependency>");
+                        int rd = a.indexOf("<run-dependency");
                         StringBuilder rep = new StringBuilder("<run-dependency>");
                         if (m.releaseVersion != null) {
                             rep.append("<release-version>").append(m.releaseVersion).append("</release-version>");
@@ -331,7 +331,16 @@ public class FixDependencies extends Task {
                         }
                         if (rd != -1) {
                             int end = a.indexOf("</run-dependency>");
-                            a = a.substring(0, rd) + rep.toString() + a.substring(end);
+                            String newA = a.substring(0, rd) + rep.toString();
+                            if (end != -1) {
+                                newA = newA + a.substring(end);
+                            } else {
+                                end = a.indexOf("<run-dependency/>");
+                                if (end != -1) {
+                                    newA = newA + "</run-dependency>" + a.substring(end + 17);
+                                }
+                            }
+                            a = newA;
                         } else {
                             rep.append("</run-dependency>");
                             a = a + rep.toString();

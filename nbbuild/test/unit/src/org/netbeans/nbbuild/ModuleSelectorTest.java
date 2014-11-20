@@ -93,6 +93,18 @@ public class ModuleSelectorTest extends TestBase {
         File aModule = generateJar(new String[0], m);
         assertFalse("Refused", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
     }
+
+    public void testCanExcludeOSGiWithAttributes() throws Exception {
+        Parameter p = new Parameter();
+        p.setName("excludeModules");
+        p.setValue("org.eclipse.core.jobs");
+        selector.setParameters(new Parameter[] { p });
+        
+        Manifest m = createManifest ();
+        m.getMainAttributes().putValue("Bundle-SymbolicName", "org.eclipse.core.jobs; singleton:=true");
+        File aModule = generateJar(new String[0], m);
+        assertFalse("Refused", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
+    }
     
     public void testCanShowOnlyExcludedModules() throws Exception {
         Parameter p = new Parameter();

@@ -73,14 +73,14 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.StandardLocation;
+import org.openide.util.BaseUtilities;
 import org.openide.util.EditableProperties;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class NbBundleProcessor extends AbstractProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {
@@ -339,11 +339,11 @@ public class NbBundleProcessor extends AbstractProcessor {
     }
 
     private String toIdentifier(String key) {
-        if (Utilities.isJavaIdentifier(key)) {
+        if (BaseUtilities.isJavaIdentifier(key)) {
             return key;
         } else {
             String i = key.replaceAll("[^\\p{javaJavaIdentifierPart}]+", "_");
-            if (Utilities.isJavaIdentifier(i)) {
+            if (BaseUtilities.isJavaIdentifier(i)) {
                 return i;
             } else {
                 return "_" + i;

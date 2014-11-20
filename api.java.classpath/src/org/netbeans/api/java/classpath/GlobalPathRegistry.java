@@ -46,10 +46,11 @@ package org.netbeans.api.java.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -57,13 +58,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.java.classpath.SPIAccessor;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.GlobalPathRegistryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
  * Maintains a global registry of "interesting" classpaths of various kinds.
@@ -113,19 +120,43 @@ import org.openide.filesystems.FileObject;
 public final class GlobalPathRegistry {
 
     private static final Logger LOG = Logger.getLogger(GlobalPathRegistry.class.getName());
-    
-    private static GlobalPathRegistry DEFAULT = new GlobalPathRegistry();
+
+    //@GuardedBy("instances");
+    private static final Map<GlobalPathRegistryImplementation,Reference<GlobalPathRegistry>> instances =
+            new WeakHashMap<>();
     
     /**
      * Get the singleton instance of the registry.
+     * <div class="nonnormative">
+     * <p>
+     * In environments with scoped global lookup don't cache
+     * an instance of the {@link GlobalPathRegistry} but rather
+     * call the {@link GlobalPathRegistry#getDefault} when the
+     * instance is needed.
+     * </p>
+     * </div>
      * @return the default instance
      */
+    @NonNull
     public static GlobalPathRegistry getDefault() {
-        return DEFAULT;
+        final GlobalPathRegistryImplementation spi = Lookup.getDefault().lookup(GlobalPathRegistryImplementation.class);
+        if (spi == null) {
+            throw new IllegalStateException("No GlobalPathRegistryImplementation found in the lookup"); //NOI18N
+        }
+        synchronized (instances) {
+            final Reference<GlobalPathRegistry> apiRef = instances.get(spi);
+            GlobalPathRegistry api;
+            if (apiRef == null || (api = apiRef.get()) == null) {
+                api = new GlobalPathRegistry(spi);
+                SPIAccessor.getInstance().attachAPI(spi, api);
+                instances.put(spi, new WeakReference<>(api));
+            }
+            return api;
+        }
     }
-    
+
+    private final GlobalPathRegistryImplementation spi;
     private int resetCount;
-    private final Map<String,List<ClassPath>> paths = new HashMap<String,List<ClassPath>>();
     private final List<GlobalPathRegistryListener> listeners = new ArrayList<GlobalPathRegistryListener>();
     private Set<FileObject> sourceRoots = null;
     private Set<SourceForBinaryQuery.Result> results = new HashSet<SourceForBinaryQuery.Result>();
@@ -142,11 +173,14 @@ public final class GlobalPathRegistry {
         }
     };
     
-    private GlobalPathRegistry() {}
+    private GlobalPathRegistry(@NonNull GlobalPathRegistryImplementation spi) {
+        Parameters.notNull("spi", spi); //NOI18N
+        this.spi = spi;
+    }
     
     /** for use from unit test */
     void clear() {
-        paths.clear();
+        SPIAccessor.getInstance().clear(spi);
         listeners.clear();
         sourceRoots = null;
     }
@@ -156,62 +190,42 @@ public final class GlobalPathRegistry {
      * @param id a classpath type, e.g. {@link ClassPath#SOURCE}
      * @return an immutable set of all registered {@link ClassPath}s of that type (may be empty but not null)
      */
-    public synchronized Set<ClassPath> getPaths(String id) {
-        if (id == null) {
-            throw new NullPointerException();
-        }
-        List<ClassPath> l = paths.get(id);
-        if (l != null && !l.isEmpty()) {
-            return Collections.unmodifiableSet(new HashSet<ClassPath>(l));
-        } else {
-            return Collections.<ClassPath>emptySet();
-        }
+    @NonNull
+    public Set<ClassPath> getPaths(@NonNull final String id) {
+        Parameters.notNull("id", id);   //NOI18N
+        return SPIAccessor.getInstance().getPaths(spi, id);
     }
-    
+
     /**
      * Register some classpaths of a certain type.
      * @param id a classpath type, e.g. {@link ClassPath#SOURCE}
      * @param paths a list of classpaths to add to the registry
      */
-    public void register(String id, ClassPath[] paths) {
-        if (id == null || paths == null) {
-            throw new NullPointerException();
-        }
+    public void register(@NonNull final String id, @NonNull final ClassPath[] paths) {
+        Parameters.notNull("id", id);       //NOI18N
+        Parameters.notNull("paths", paths); //NOI18N
         // Do not log just when firing an event, since there may no listeners.
         LOG.log(Level.FINE, "registering paths {0} of type {1}", new Object[] {Arrays.asList(paths), id});
-        GlobalPathRegistryEvent evt = null;
+        Set<ClassPath> added;
         GlobalPathRegistryListener[] _listeners = null;
         synchronized (this) {
-            List<ClassPath> l = this.paths.get(id);
-            if (l == null) {
-                l = new ArrayList<ClassPath>();
-                this.paths.put(id, l);
-            }
-            Set<ClassPath> added = listeners.isEmpty() ? null : new HashSet<ClassPath>();
-            for (ClassPath path : paths) {
-                if (path == null) {
-                    throw new NullPointerException("Null path encountered in " + Arrays.asList(paths) + " of type " + id); // NOI18N
-                }
-                if (added != null && !added.contains(path) && !l.contains(path)) {
-                    added.add(path);
-                }
-                if (!l.contains(path)) {
-                    path.addPropertyChangeListener(classpathListener);
-                }
-                l.add(path);
-            }
-            LOG.log(Level.FINER, "now have {0} paths of type {1}", new Object[] {l.size(), id});
-            if (added != null && !added.isEmpty()) {
-                _listeners = listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
-                evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(added));
+            added = SPIAccessor.getInstance().register(spi,id, paths);
+            for (ClassPath path : added) {
+                path.addPropertyChangeListener(classpathListener);
             }
             // Invalidate cache for getSourceRoots and findResource:
             resetSourceRootsCache ();
+            if (LOG.isLoggable(Level.FINER)) {
+                final Set<ClassPath> l = SPIAccessor.getInstance().getPaths(spi, id);
+                LOG.log(Level.FINER, "now have {0} paths of type {1}", new Object[] {l.size(), id});
+            }
+            if (!listeners.isEmpty() && !added.isEmpty()) {
+                _listeners = listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
+            }
         }
         if (_listeners != null) {
-            assert evt != null;
             for (GlobalPathRegistryListener listener : _listeners) {
-                listener.pathsAdded(evt);
+                listener.pathsAdded(new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(added)));
             }
         }
     }
@@ -222,47 +236,29 @@ public final class GlobalPathRegistry {
      * @param paths a list of classpaths to remove from the registry
      * @throws IllegalArgumentException if they had not been registered before
      */
-    public void unregister(String id, ClassPath[] paths) throws IllegalArgumentException {
+    public void unregister(@NonNull final String id, @NonNull final ClassPath[] paths) throws IllegalArgumentException {
+        Parameters.notNull("id", id);   //NOI18N
+        Parameters.notNull("paths", paths); //NOI18N
         LOG.log(Level.FINE, "unregistering paths {0} of type {1}", new Object[] {Arrays.asList(paths), id});
-        if (id == null || paths == null) {
-            throw new NullPointerException();
-        }
-        GlobalPathRegistryEvent evt = null;
+        Set<ClassPath> removed;
         GlobalPathRegistryListener[] _listeners = null;
         synchronized (this) {
-            List<ClassPath> l = this.paths.get(id);
-            if (l == null) {
-                l = new ArrayList<ClassPath>();
-            }
-            List<ClassPath> l2 = new ArrayList<ClassPath>(l); // in case IAE thrown below
-            Set<ClassPath> removed = listeners.isEmpty() ? null : new HashSet<ClassPath>();
-            for (ClassPath path : paths) {
-                if (path == null) {
-                    throw new NullPointerException();
-                }
-                if (!l2.remove(path)) {
-                    throw new IllegalArgumentException("Attempt to remove nonexistent path [" + path + 
-                            "] from list of registered paths ["+l2+"] for id "+id+". All paths: "+this.paths); // NOI18N
-                }
-                if (removed != null && !removed.contains(path) && !l2.contains(path)) {
-                    removed.add(path);
-                }
-                if (!l2.contains(path)) {
-                    path.removePropertyChangeListener(classpathListener);
-                }
-            }
-            this.paths.put(id, l2);
-            LOG.log(Level.FINER, "now have {0} paths of type {1}", new Object[] {l2.size(), id});
-            if (removed != null && !removed.isEmpty()) {
-                _listeners = listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
-                evt = new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(removed));
+            removed = SPIAccessor.getInstance().unregister(spi,id, paths);
+            for (ClassPath path : removed) {
+                path.removePropertyChangeListener(classpathListener);
             }
             resetSourceRootsCache ();
+            if (LOG.isLoggable(Level.FINER)) {
+                final Set<ClassPath> l = SPIAccessor.getInstance().getPaths(spi, id);
+                LOG.log(Level.FINER, "now have {0} paths of type {1}", new Object[] {l.size(), id});
+            }
+            if (!listeners.isEmpty() && !removed.isEmpty()) {
+                _listeners = listeners.toArray(new GlobalPathRegistryListener[listeners.size()]);
+            }
         }
         if (_listeners != null) {
-            assert evt != null;
             for (GlobalPathRegistryListener listener : _listeners) {
-                listener.pathsRemoved(evt);
+                listener.pathsRemoved(new GlobalPathRegistryEvent(this, id, Collections.unmodifiableSet(removed)));
             }
         }
     }

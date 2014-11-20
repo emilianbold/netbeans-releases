@@ -311,7 +311,7 @@ public class NbModuleSuiteTest extends NbTestCase {
         s.remove("org.netbeans.modules.nbjunit");
         assertEquals("Four modules left: " + s, 5, s.size());
 
-        assertTrue("Util: " + s, s.contains("org.openide.util.base"));
+        assertTrue("Util: " + s, s.contains("org.openide.util.ui"));
         assertTrue("Util: " + s, s.contains("org.openide.util"));
         assertTrue("Lookup: " + s, s.contains("org.openide.util.lookup"));
         assertTrue("junit: " + s, s.contains("org.netbeans.libs.junit4"));
@@ -323,7 +323,7 @@ public class NbModuleSuiteTest extends NbTestCase {
         s.remove("org.netbeans.modules.nbjunit");
         assertEquals("Four modules left: " + s, 5, s.size());
 
-        assertTrue("Util: " + s, s.contains("org.openide.util.base"));
+        assertTrue("Util: " + s, s.contains("org.openide.util.ui"));
         assertTrue("Util: " + s, s.contains("org.openide.util"));
         assertTrue("Lookup: " + s, s.contains("org.openide.util.lookup"));
         assertTrue("JUnit: " + s, s.contains("org.netbeans.libs.junit4"));

@@ -64,8 +64,8 @@ public final class JavaFxDefaultJavadocImpl implements J2SEPlatformDefaultJavado
     private static final Map<SpecificationVersion,String> OFFICIAL_JAVADOC;
     static {
         final Map<SpecificationVersion,String> jdocs = new HashMap<>();
-        jdocs.put(new SpecificationVersion("1.7"), "http://docs.oracle.com/javafx/2/api/"); //NOI18N
-        jdocs.put(new SpecificationVersion("1.8"), "http://docs.oracle.com/javase/8/javafx/api/"); //NOI18N
+        jdocs.put(new SpecificationVersion("1.7"), "https://docs.oracle.com/javafx/2/api/"); //NOI18N
+        jdocs.put(new SpecificationVersion("1.8"), "https://docs.oracle.com/javase/8/javafx/api/"); //NOI18N
         OFFICIAL_JAVADOC = Collections.unmodifiableMap(jdocs);
     }
 

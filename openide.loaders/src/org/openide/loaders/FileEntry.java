@@ -45,8 +45,9 @@
 package org.openide.loaders;
 
 import java.io.*;
+import java.util.List;
+import org.netbeans.api.templates.FileBuilder;
 import org.openide.filesystems.*;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** Entry that works with plain files. Copies, moves,
@@ -149,32 +150,11 @@ public class FileEntry extends MultiDataObject.Entry {
     * @param f the folder to create instance in
     * @param name name of the file or null if it should be choosen automaticly
     */
+    @Override
     public FileObject createFromTemplate (FileObject f, String name) throws IOException {
-        if (name == null) {
-            name = FileUtil.findFreeFileName(
-                       f,
-                       getFile ().getName (), getFile ().getExt ()
-                   );
-        }
-        
-        
-        FileObject fo = null;
-        for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
-            if (h.accept(getFile())) {
-                fo = h.createFromTemplate(getFile(), f, name,
-                    DataObject.CreateAction.enhanceParameters(
-                        DataObject.CreateAction.findParameters(name),
-                        name, getFile().getExt()));
-                assert fo != null;
-                break;
-            }
-        }
-        
-        if (fo == null) {
-            fo = getFile().copy (f, name, getFile().getExt ());
-        }
-        
-        
+        FileObject fo = FileBuilder.createFromTemplate(getFile(), f, name, 
+                DataObject.CreateAction.getCallParameters(name), 
+                FileBuilder.Mode.COPY);
         // unmark template state
         DataObject.setTemplate (fo, false);
 
@@ -204,65 +184,21 @@ public class FileEntry extends MultiDataObject.Entry {
         * @param f the folder to create instance in
         * @param name name of the file or null if it should be choosen automaticly
         */
+        @Override
+        @SuppressWarnings("AssignmentToMethodParameter")
         public FileObject createFromTemplate (FileObject f, String name) throws IOException {
             String ext = getFile ().getExt ();
-
             if (name == null) {
                 name = FileUtil.findFreeFileName(
                            f,
                            getFile ().getName (), ext
                        );
             }
-            
-            FileObject fo = null;
-            for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
-                if (h.accept(getFile())) {
-                    fo = h.createFromTemplate(
-                        getFile(), f, name,
-                        DataObject.CreateAction.enhanceParameters(
-                            DataObject.CreateAction.findParameters(name),
-                            name, getFile().getExt()));
-                    assert fo != null;
-                    break;
-                }
-            }
-
-            if (fo != null) {
-                // unmark template state
-                DataObject.setTemplate (fo, false);
-                return fo;
-            }
-            
-            fo = f.createData (name, ext);
-
             java.text.Format frm = createFormat (f, name, ext);
-
-            BufferedReader r = new BufferedReader (new InputStreamReader (getFile ().getInputStream ()));
-            try {
-                FileLock lock = fo.lock ();
-                try {
-                    BufferedWriter w = new BufferedWriter (new OutputStreamWriter (fo.getOutputStream (lock)));
-
-                    try {
-                        String current;
-                        while ((current = r.readLine ()) != null) {
-                            w.write (frm.format (current));
-                            // Cf. #7061.
-                            w.newLine ();
-                        }
-                    } finally {
-                        w.close ();
-                    }
-                } finally {
-                    lock.releaseLock ();
-                }
-            } finally {
-                r.close ();
-            }
-
-            // copy attributes
-            FileUtil.copyAttributes (getFile (), fo);
-
+            List<FileObject> fos = new FileBuilder(getFile(), f).name(name).
+                    withParameters(DataObject.CreateAction.getCallParameters(name)).
+                    useFormat(frm).build();
+            FileObject fo = fos.get(0);
             // unmark template state
             DataObject.setTemplate (fo, false);
 

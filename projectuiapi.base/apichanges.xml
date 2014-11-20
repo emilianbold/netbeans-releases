@@ -107,7 +107,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+         <change id="ProjectConvertor">
+            <api name="BaseProjectUIAPI"/>
+            <summary>Added <code>ProjectConvertor</code> adding an ability to convert a folder into a project.</summary>
+            <version major="1" minor="79"/>
+            <date day="31" month="10" year="2014"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added an ability to convert a folder into a project.
+                    For a folder accepted by the <code>ProjectConvertor</code> an artifical in memory
+                    project is created causing the folder looks like a regular <code>Project</code> in the UI.
+                    The folder is converted into a regular <code>Project</code> when the artificial <code>Project</code>
+                    is opened.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui" name="ProjectConvertor"/>
+            <issue number="246846"/>
+        </change>
          <change id="server.is.free">
             <api name="BaseProjectUIAPI"/>
             <summary>Split the api into a desktop (swing, awt) and NetBeans dependent and independent part.</summary>
