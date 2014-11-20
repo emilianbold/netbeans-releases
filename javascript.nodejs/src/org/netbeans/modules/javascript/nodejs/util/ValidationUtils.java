@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.nodejs.util;
 
+import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.openide.util.NbBundle;
 
 public final class ValidationUtils {

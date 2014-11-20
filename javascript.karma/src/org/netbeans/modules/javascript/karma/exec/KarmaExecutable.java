@@ -66,11 +66,11 @@ import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidat
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.javascript.karma.run.TestRunner;
 import org.netbeans.modules.javascript.karma.ui.KarmaErrorsDialog;
-import org.netbeans.modules.javascript.karma.util.ExternalExecutable;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;

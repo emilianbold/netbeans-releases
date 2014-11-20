@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.karma.util;
+package org.netbeans.modules.web.common.api;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -64,7 +64,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
@@ -78,16 +77,16 @@ import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
-// XXX copied & adjusted from PHP
 /**
  * Class usable for running any external executable (program or script).
+ * @since 1.74
  */
 public final class ExternalExecutable {
 
     private static final Logger LOGGER = Logger.getLogger(ExternalExecutable.class.getName());
 
     /**
-     * Get the {@link ExecutionDescriptor execution descriptor}. This descriptor is:
+     * The default {@link ExecutionDescriptor execution descriptor}. This descriptor is:
      * <ul>
      *   <li>{@link ExecutionDescriptor#isControllable() controllable}</li>
      *   <li>{@link ExecutionDescriptor#isFrontWindow() displays the Output window}</li>
@@ -95,7 +94,6 @@ public final class ExternalExecutable {
      *   <li>{@link ExecutionDescriptor#isInputVisible() has visible user input}</li>
      *   <li>{@link ExecutionDescriptor#showProgress() shows progress}</li>
      * </ul>
-     * @return the default {@link ExecutionDescriptor execution descriptor}.
      */
     public static final ExecutionDescriptor DEFAULT_EXECUTION_DESCRIPTOR = new ExecutionDescriptor()
             .controllable(true)
@@ -204,7 +202,7 @@ public final class ExternalExecutable {
      * Set error stream redirection.
      * <p>
      * The default value is {@code true} (it means that the error stream is redirected to the standard output).
-     * @param viaAutodetection {@code true} if error stream should be redirected, {@code false} otherwise
+     * @param redirectErrorStream {@code true} if error stream should be redirected, {@code false} otherwise
      * @return the external executable instance itself
      */
     public ExternalExecutable redirectErrorStream(boolean redirectErrorStream) {
@@ -251,10 +249,10 @@ public final class ExternalExecutable {
     }
 
     /**
-     * Set addition parameters for {@link #run() running}.
+     * Set environment variables for {@link #run() running}.
      * <p>
-     * The default value is empty list (it means no additional parameters).
-     * @param additionalParameters addition parameters for {@link #run() running}.
+     * The default value is empty list (it means no environment variables).
+     * @param environmentVariables addition parameters for {@link #run() running}.
      * @return the external executable instance itself
      */
     public ExternalExecutable environmentVariables(Map<String, String> environmentVariables) {
@@ -292,6 +290,13 @@ public final class ExternalExecutable {
         return this;
     }
 
+    /**
+     * Set no output. If Output window is used, no output is printed.
+     * <p>
+     * The default value is {@code false} (it means print output of this executable).
+     * @param noOutput {@code true} if no output should be printed
+     * @return the external executable instance itself
+     */
     public ExternalExecutable noOutput(boolean noOutput) {
         this.noOutput = noOutput;
         return this;
@@ -315,6 +320,7 @@ public final class ExternalExecutable {
      * <p>
      * <b>WARNING:</b> If any {@link InputProcessorFactory output processor factory} should be used, use
      * {@link ExternalExecutable#run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)} instead.
+     * @param executionDescriptor execution descriptor
      * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
      * or {@code null} if the executable cannot be run
      * @see #run()
@@ -647,7 +653,7 @@ public final class ExternalExecutable {
             for (String command : fullCommand) {
                 escapedCommand.add("\"" + command.replace("\"", "\\\"") + "\""); // NOI18N
             }
-            return StringUtils.implode(escapedCommand, " "); // NOI18N
+            return implode(escapedCommand, " "); // NOI18N
         }
 
         private static String colorize(String msg) {
@@ -656,6 +662,23 @@ public final class ExternalExecutable {
 
         private static boolean isNewLine(char ch) {
             return ch == '\n' || ch == '\r' || ch == '\u0000'; // NOI18N
+        }
+
+        private static String implode(List<String> items, String delimiter) {
+            if (items.isEmpty()) {
+                return ""; // NOI18N
+            }
+
+            StringBuilder buffer = new StringBuilder(200);
+            boolean first = true;
+            for (String s : items) {
+                if (!first) {
+                    buffer.append(delimiter);
+                }
+                buffer.append(s);
+                first = false;
+            }
+            return buffer.toString();
         }
 
     }
