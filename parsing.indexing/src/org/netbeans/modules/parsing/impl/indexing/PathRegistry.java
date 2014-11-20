@@ -105,6 +105,7 @@ public final class PathRegistry implements Runnable {
     private final RequestProcessor.Task firerTask;
     private final RequestProcessor.Task openProjectChangeTask;
     private final GlobalPathRegistry regs;
+    private final OpenProjects openProjects;
     private final List<PathRegistryEvent.Change> changes = new LinkedList<>();
 
     private Map<ClassPath,byte[]> activeCps;
@@ -157,7 +158,7 @@ public final class PathRegistry implements Runnable {
         this.translatedRoots = new HashMap<>();
         this.listeners = new CopyOnWriteArrayList<>();
         this.regs.addGlobalPathRegistryListener (WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.regs));
-        final OpenProjects openProjects = OpenProjects.getDefault();
+        openProjects = OpenProjects.getDefault();
         openProjects.addPropertyChangeListener(WeakListeners.propertyChange(listener, openProjects));
     }
 
@@ -1067,11 +1068,11 @@ public final class PathRegistry implements Runnable {
     }
 
     @SuppressWarnings("UseSpecificCatch")
-    private static void awaitProjectsOpen() {
+    private void awaitProjectsOpen() {
         final long now = System.currentTimeMillis();
         try {
             LOGGER.log(Level.FINE, "resetCacheAndFire waiting for projects"); // NOI18N
-            OpenProjects.getDefault().openProjects().get();
+            openProjects.openProjects().get();
             LOGGER.log(Level.FINE, "resetCacheAndFire blocked for {0} ms", System.currentTimeMillis() - now); // NOI18N
         } catch (Exception ex) {
             LOGGER.log(Level.FINE, "resetCacheAndFire timeout", ex); // NOI18N
@@ -1289,7 +1290,7 @@ public final class PathRegistry implements Runnable {
             @Override
             public void run() {
                 try {
-                    final int len = OpenProjects.getDefault().openProjects().get().length;
+                    final int len = openProjects.openProjects().get().length;
                     if (!firstProjectOpened && len > 0) {
                         firstProjectOpened = true;
                         fire(

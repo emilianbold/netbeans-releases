@@ -91,6 +91,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -197,7 +198,7 @@ public class ParsinApiInteractionTest extends IndexingTestBase {
         });
         t.start();
         taskRunning.await();
-        RunWhenScanFinishedSupport.performScan(scan);
+        RunWhenScanFinishedSupport.performScan(scan, Lookup.getDefault());
         t.join();
         assertTrue(notCalledInConcurrent.get());
     }

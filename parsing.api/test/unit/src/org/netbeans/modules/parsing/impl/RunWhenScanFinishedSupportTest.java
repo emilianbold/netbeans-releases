@@ -63,6 +63,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Pair;
 import org.openide.util.test.MockLookup;
@@ -119,7 +120,7 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
         final Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                RunWhenScanFinishedSupport.performScan(scan);
+                RunWhenScanFinishedSupport.performScan(scan, Lookup.getDefault());
             }
         });
         t.start();
