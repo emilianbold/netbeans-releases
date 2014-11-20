@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.common.api;
 
+import java.awt.EventQueue;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -68,6 +69,7 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -109,6 +111,7 @@ public final class ExternalExecutable {
 
     private String executableName = null;
     private String displayName = null;
+    private String optionsPath = null;
     private boolean redirectErrorStream = true;
     private File workDir = null;
     private boolean warnUser = true;
@@ -195,6 +198,18 @@ public final class ExternalExecutable {
     public ExternalExecutable displayName(String displayName) {
         Parameters.notEmpty("displayName", displayName); // NOI18N
         this.displayName = displayName;
+        return this;
+    }
+
+    /**
+     * Set IDE Options path which is used if executable is {@link ExternalExecutableValidator#validateCommand(java.lang.String, java.lang.String) invalid}.
+     * Please notice that IDE Options are opened only if {@link #warnUser(boolean) is set}.
+     * @param optionsPath IDE Options path used in case of invalid executable
+     * @return the external executable instance itself
+     */
+    public ExternalExecutable optionsPath(String optionsPath) {
+        Parameters.notEmpty("optionsPath", optionsPath); // NOI18N
+        this.optionsPath = optionsPath;
         return this;
     }
 
@@ -431,10 +446,18 @@ public final class ExternalExecutable {
     @CheckForNull
     private Future<Integer> runInternal(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
         Parameters.notNull("executionDescriptor", executionDescriptor); // NOI18N
-        String error = ExternalExecutableValidator.validateCommand(executable, executableName);
+        final String error = ExternalExecutableValidator.validateCommand(executable, executableName);
         if (error != null) {
             if (warnUser) {
-                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(error, NotifyDescriptor.ERROR_MESSAGE));
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(error, NotifyDescriptor.ERROR_MESSAGE));
+                        if (optionsPath != null) {
+                            OptionsDisplayer.getDefault().open(optionsPath);
+                        }
+                    }
+                });
             }
             return null;
         }

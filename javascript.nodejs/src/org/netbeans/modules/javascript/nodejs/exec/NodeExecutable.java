@@ -314,6 +314,7 @@ public class NodeExecutable {
         return new ExternalExecutable(getCommand())
                 .workDir(getWorkDir())
                 .displayName(title)
+                .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .noOutput(false);
     }
 

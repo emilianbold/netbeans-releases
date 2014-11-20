@@ -58,6 +58,7 @@ import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.StringUtils;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.Version;
@@ -194,7 +195,8 @@ public class LessExecutable {
     private ExternalExecutable getExecutable(String title, File workDir) {
         return new ExternalExecutable(getCommand())
                 .workDir(workDir)
-                .displayName(title);
+                .displayName(title)
+                .optionsPath(CssPreprocessors.OPTIONS_PATH);
     }
 
     private ExecutionDescriptor getDescriptor(Runnable postTask) {

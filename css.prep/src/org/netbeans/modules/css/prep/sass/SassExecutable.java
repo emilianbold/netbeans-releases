@@ -57,6 +57,7 @@ import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.Version;
@@ -186,7 +187,8 @@ public final class SassExecutable {
     private ExternalExecutable getExecutable(String title, File workDir) {
         return new ExternalExecutable(sassPath)
                 .workDir(workDir)
-                .displayName(title);
+                .displayName(title)
+                .optionsPath(CssPreprocessors.OPTIONS_PATH);
     }
 
     private ExecutionDescriptor getDescriptor(Runnable postTask) {

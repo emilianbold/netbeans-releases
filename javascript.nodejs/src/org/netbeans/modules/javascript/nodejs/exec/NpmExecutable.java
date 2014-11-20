@@ -136,6 +136,7 @@ public class NpmExecutable {
         return new ExternalExecutable(getCommand())
                 .workDir(getWorkDir())
                 .displayName(title)
+                .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .noOutput(false);
     }
 
