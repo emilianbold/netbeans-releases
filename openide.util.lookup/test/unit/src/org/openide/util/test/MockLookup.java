@@ -70,6 +70,9 @@ public class MockLookup extends ProxyLookup {
                 Field defaultLookup = Lookup.class.getDeclaredField("defaultLookup");
                 defaultLookup.setAccessible(true);
                 defaultLookup.set(null, null);
+                Field defaultLookupProvider = Lookup.class.getDeclaredField("defaultLookupProvider");
+                defaultLookupProvider.setAccessible(true);
+                defaultLookupProvider.set(null, null);
             }
             assertEquals(MockLookup.class, Lookup.getDefault().getClass());
         } catch (Exception x) {

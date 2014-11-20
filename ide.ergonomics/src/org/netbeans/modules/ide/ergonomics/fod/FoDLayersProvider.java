@@ -158,6 +158,9 @@ implements LookupListener, Runnable {
             if (pf.getClass().getName().startsWith("org.netbeans.modules.ide.ergonomics")) { // NOI18N
                 continue;
             }
+            if (pf.getClass().getName().startsWith("org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory")) { // NOI18N
+                continue;
+            }
             return false;
         }
         return ants.allItems().isEmpty();

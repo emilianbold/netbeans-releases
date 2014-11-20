@@ -54,6 +54,8 @@ import java.util.Collection;
 import javax.swing.Action;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.spi.io.InputOutputProvider;
+import org.openide.io.BridgingIOProvider;
 import org.openide.util.Lookup;
 
 /** A factory for IO tabs shown in the output window.  To create a new tab to
@@ -78,7 +80,13 @@ public abstract class IOProvider {
     public static IOProvider getDefault() {
         IOProvider iop = Lookup.getDefault().lookup(IOProvider.class);
         if (iop == null) {
-            iop = new Trivial();
+            InputOutputProvider<?, ?, ?, ?> newSpiDef
+                    = Lookup.getDefault().lookup(InputOutputProvider.class);
+            if (newSpiDef != null) {
+                iop = BridgingIOProvider.create(newSpiDef);
+            } else {
+                iop = new Trivial();
+            }
         }
         return iop;
     }
@@ -89,11 +97,19 @@ public abstract class IOProvider {
      * @return the instance corresponding to provided name or default instance if not found
      * @since 1.15
      */
+    @SuppressWarnings("rawtypes")
     public static IOProvider get(String name) {
         Collection<? extends IOProvider> res = Lookup.getDefault().lookupAll(IOProvider.class);
         for (IOProvider iop : res) {
             if (iop.getName().equals(name)) {
                 return iop;
+            }
+        }
+        Collection<? extends InputOutputProvider> newSpiImpls
+                = Lookup.getDefault().lookupAll(InputOutputProvider.class);
+        for (InputOutputProvider<?,?,?,?> impl: newSpiImpls) {
+            if (impl.getId().equals(name)) {
+                return BridgingIOProvider.create(impl);
             }
         }
         return getDefault();

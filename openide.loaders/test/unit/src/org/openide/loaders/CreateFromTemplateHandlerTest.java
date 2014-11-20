@@ -205,12 +205,12 @@ public class CreateFromTemplateHandlerTest extends NbTestCase {
         public static String name;
         public static Map<String, Object> parameters;
     
-        protected boolean accept(FileObject fo) {
+        public boolean accept(FileObject fo) {
             acceptObject.add(fo);
             return true;
         }
 
-        protected FileObject createFromTemplate(
+        public FileObject createFromTemplate(
             FileObject orig, FileObject f, String n,
             Map<String, Object> p
         ) throws IOException {

@@ -445,7 +445,7 @@ org.my.netbeans.extramodule.ExtraTip
     </li>
     
     <li><api name="LookupSharedClassObject" category="devel" group="lookup" type="export">
-    singleton subclasses of <a href="@org-openide-util@/org/openide/util/SharedClassObject.html">SharedClassObject</a>
+    singleton subclasses of <a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html">SharedClassObject</a>
     are searched for using Lookup.
     </api>.</li>
             

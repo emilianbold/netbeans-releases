@@ -176,6 +176,11 @@ public class VerifyFullIDETest extends NbTestCase {
             if (f.getClass().getPackage().getName().equals("org.netbeans.modules.ide.ergonomics.fod")) {
                 continue;
             }
+            // defect #248615: ProjectConvertorFactory is exempt from this test, until
+            // support is provided in the ergonomics
+            if (f.getClass().getName().equals("org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory")) {
+                continue;
+            }
             sb.append(f.getClass().getName());
             if (info != null) {
                 Object more = info.invoke(f);

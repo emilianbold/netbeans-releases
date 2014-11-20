@@ -62,7 +62,7 @@ types to data.
 
 provides a design pattern for attachable behaviors for data objects and nodes.
 
-<li><a href="@org-openide-util@/org/openide/util/datatransfer/package-summary.html"><code>org.openide.util.datatransfer</code></a>
+<li><a href="@org-openide-util-ui@/org/openide/util/datatransfer/package-summary.html"><code>org.openide.util.datatransfer</code></a>
 
 implements some extensions to the clipboard.
 
@@ -532,7 +532,7 @@ href="../FileEntry.Format.html#createFormat(org.openide.filesystems.FileObject,%
 
 will be implemented to return an instance of
 
-<a href="@org-openide-util-base@/org/openide/util/MapFormat.html"><code>MapFormat</code></a>
+<a href="@org-openide-util@/org/openide/util/MapFormat.html"><code>MapFormat</code></a>
 
 containing substitution keys and values according to the name and package of the file object;
 constants used by the module; values of associated system options; the current time and
@@ -545,7 +545,7 @@ system option, defaulted from the Java system property).
 
 Data loaders all implicitly extend
 
-<a href="@org-openide-util@/org/openide/util/SharedClassObject.html"><code>SharedClassObject</code></a>,
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html"><code>SharedClassObject</code></a>,
 
 which means that there is only intended to be a single instance of the loader
 per class, and all associated configuration and properties are stored in a shared
@@ -556,11 +556,11 @@ wish to associate any properties with a data loader, you should:
 
 <li> Implement getter and setter methods to call
 
-<a href="@org-openide-util@/org/openide/util/SharedClassObject.html#getProperty(java.lang.Object)"><code>SharedClassObject.getProperty(key)</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#getProperty(java.lang.Object)"><code>SharedClassObject.getProperty(key)</code></a>
 
 and
 
-<a href="@org-openide-util@/org/openide/util/SharedClassObject.html#putProperty(java.lang.String,%20java.lang.Object,%20boolean)"><code>SharedClassObject.putProperty(key, value, true)</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#putProperty(java.lang.String,%20java.lang.Object,%20boolean)"><code>SharedClassObject.putProperty(key, value, true)</code></a>
 
 (the latter will automatically fire property changes and synchronize for you).
 
@@ -571,7 +571,7 @@ your property values from the stream. Please always first call the super methods
 
 <p>You should use the method
 
-<a href="@org-openide-util@/org/openide/util/SharedClassObject.html#initialize()"><code>SharedClassObject.initialize()</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#initialize()"><code>SharedClassObject.initialize()</code></a>
 
 to set up the shared instance, including both your own properties, and standard ones such as
 
@@ -629,7 +629,7 @@ later, and to more easily examine its contents.
 
 <p>You may attach some
 
-<a href="@org-openide-util@/org/openide/util/actions/SystemAction.html">actions</a>
+<a href="@org-openide-util-ui@/org/openide/util/actions/SystemAction.html">actions</a>
 
 to the nodes <a href="#create-delegate">associated</a> with your data
 objects. The easiest way to do this is to call
@@ -638,7 +638,7 @@ objects. The easiest way to do this is to call
 
 in your loader's
 
-<a href="@org-openide-util@/org/openide/util/SharedClassObject.html#initialize()"><code>SharedClassObject.initialize()</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/SharedClassObject.html#initialize()"><code>SharedClassObject.initialize()</code></a>
 
 method, which lets you provide a set of
 actions appropriate to all data objects created by this
@@ -1135,7 +1135,7 @@ provided in the
 
 package. This implementation is to be found in
 
-<a href="@org-openide-util@/org/openide/util/datatransfer/package-summary.html"><code>org.openide.util.datatransfer</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/package-summary.html"><code>org.openide.util.datatransfer</code></a>.
 
 <p>Enabling complex customizations on both sides of a cut/copy-paste
 can be confusing; the
@@ -1149,7 +1149,7 @@ nodes, which may be helpful.
 
 The extended clipboard,
 
-<a href="@org-openide-util@/org/openide/util/datatransfer/ExClipboard.html"><code>ExClipboard</code></a>,
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/ExClipboard.html"><code>ExClipboard</code></a>,
 
 provides the ability for a prebuilt transferable to support additional
 data flavors that it was not originally designed for; then the
@@ -1157,13 +1157,13 @@ convertor supplies the implementation of these conversions.
 
 <p>To write a convertor, just implement
 
-<a href="@org-openide-util@/org/openide/util/datatransfer/ExClipboard.Convertor.html"><code>ExClipboard.Convertor</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/ExClipboard.Convertor.html"><code>ExClipboard.Convertor</code></a>.
 
 The Javadoc should provide sufficient information on its sole
 method. Installing the convertor is easy; you can just add an instance
 of it to
 
-<a href="@org-openide-util@/org/openide/util/doc-files/api.html#instance-folders">lookup</a>.
+<a href="@org-openide-util-ui@/org/openide/util/doc-files/api.html#instance-folders">lookup</a>.
 
 <h3><a name="clipboard-ev">Event notification</a></h3>
 
@@ -1171,23 +1171,23 @@ The extended clipboard supports Java Event-based notification of
 changes in the contents of the clipboard. Just register your listener
 with
 
-<a href="@org-openide-util@/org/openide/util/datatransfer/ExClipboard.html#addClipboardListener(org.openide.util.datatransfer.ClipboardListener)"><code>ExClipboard.addClipboardListener(...)</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/ExClipboard.html#addClipboardListener(org.openide.util.datatransfer.ClipboardListener)"><code>ExClipboard.addClipboardListener(...)</code></a>.
 
 <h3><a name="multi-transfer">Multi-transfers</a></h3>
 
-<a href="@org-openide-util@/org/openide/util/datatransfer/ExTransferable.Multi.html"><code>ExTransferable.Multi</code></a>
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/ExTransferable.Multi.html"><code>ExTransferable.Multi</code></a>
 
 is a special transferable type used to transfer multiple objects (not
 necessarily of the same type) at once. It only supports one, virtual
 data flavor,
 
-<a href="@org-openide-util@/org/openide/util/datatransfer/ExTransferable.html#multiFlavor"><code>ExTransferable.multiFlavor</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/ExTransferable.html#multiFlavor"><code>ExTransferable.multiFlavor</code></a>.
 
 <p>The data associated with <code>multiFlavor</code> in the
 <code>ExTransferable.Multi</code> will always be a special container
 object,
 
-<a href="@org-openide-util@/org/openide/util/datatransfer/MultiTransferObject.html"><code>MultiTransferObject</code></a>.
+<a href="@org-openide-util-ui@/org/openide/util/datatransfer/MultiTransferObject.html"><code>MultiTransferObject</code></a>.
 
 It is designed to permit access to its constituent real
 <code>Transferable</code>s.</p>

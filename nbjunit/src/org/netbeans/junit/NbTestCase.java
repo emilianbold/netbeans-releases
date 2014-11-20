@@ -56,8 +56,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
+import java.lang.management.PlatformLoggingMXBean;
 import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.lang.ref.Reference;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
@@ -289,50 +294,92 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
     }
 
-    private static void appendThread(StringBuffer sb, String indent, Thread t, Map<Thread,StackTraceElement[]> data) {
-        sb.append(indent).append("Thread ").append(t.getName()).append('\n');
-        indent = indent.concat("  ");
-        StackTraceElement[] stack = data.get(t);
-        if (stack != null) {
-        for (StackTraceElement e : stack) {
-            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
-                    .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
-        }
-        }
-    }
-    
-    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, Map<Thread,StackTraceElement[]> data) {
-        sb.append(indent).append("Group ").append(tg.getName()).append('\n');
-        indent = indent.concat("  ");
+    private static StringBuilder printThreadInfo(ThreadInfo ti, StringBuilder sb) {
+        // print thread information
+        printThread(ti, sb);
 
-        int groups = tg.activeGroupCount();
-        ThreadGroup[] chg = new ThreadGroup[groups];
-        tg.enumerate(chg, false);
-        for (ThreadGroup inner : chg) {
-            if (inner != null) {
-                appendGroup(sb, indent, inner, data);
+        // print stack trace with locks
+        StackTraceElement[] stacktrace = ti.getStackTrace();
+        MonitorInfo[] monitors = ti.getLockedMonitors();
+        for (int i = 0; i < stacktrace.length; i++) {
+            StackTraceElement ste = stacktrace[i];
+            sb.append("\t at " + ste.toString()).append("\n");
+            for (MonitorInfo mi : monitors) {
+                if (mi.getLockedStackDepth() == i) {
+                    sb.append("\t  - locked " + mi).append("\n");
+                }
             }
         }
+        sb.append("\n");
+        return sb;
+    }
 
-        int threads = tg.activeCount();
-        Thread[] cht= new Thread[threads];
-        tg.enumerate(cht, false);
-        for (Thread t : cht) {
-            if (t != null) {
-                appendThread(sb, indent, t, data);
-            }
+    private static StringBuilder printThread(ThreadInfo ti, StringBuilder sb) {
+        sb.append("\"" + ti.getThreadName() + "\"" + " Id="
+                + ti.getThreadId() + " in " + ti.getThreadState());
+        if (ti.getLockName() != null) {
+            sb.append(" waiting on lock=" + ti.getLockName());
+        }
+        if (ti.isSuspended()) {
+            sb.append(" (suspended)");
+        }
+        if (ti.isInNative()) {
+            sb.append(" (running in native)");
+        }
+        sb.append("\n");
+        if (ti.getLockOwnerName() != null) {
+            sb.append("\t owned by " + ti.getLockOwnerName() + " Id="
+                    + ti.getLockOwnerId()).append("\n");
+        }
+        return sb;
+    }
+
+    private static void printMonitorInfo(ThreadInfo ti, MonitorInfo[] monitors, StringBuilder sb) {
+        sb.append("\tLocked monitors: count = " + monitors.length).append("\n");
+        for (MonitorInfo mi : monitors) {
+            sb.append("\t  - " + mi + " locked at ").append("\n");
+            sb.append("\t      " + mi.getLockedStackDepth() + " "
+                    + mi.getLockedStackFrame()).append("\n");
         }
     }
-    
+
+    private static void printLockInfo(LockInfo[] locks, StringBuilder sb) {
+        sb.append("\tLocked synchronizers: count = " + locks.length).append("\n");
+        for (LockInfo li : locks) {
+            sb.append("\t  - " + li).append("\n");
+        }
+        sb.append("\n");
+    }
+
     private static String threadDump() {
-        Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
-        ThreadGroup root = Thread.currentThread().getThreadGroup();
-        while (root.getParent() != null) {
-            root = root.getParent();
-        }
+        ThreadMXBean tmx = ManagementFactory.getPlatformMXBean(ThreadMXBean.class);
 
-        StringBuffer sb = new StringBuffer();
-        appendGroup(sb, "", root, all);
+        ThreadInfo[] threads = tmx.dumpAllThreads(tmx.isSynchronizerUsageSupported(), tmx.isObjectMonitorUsageSupported());
+        StringBuilder sb = new StringBuilder();
+
+        for (ThreadInfo ti : threads) {
+            printThreadInfo(ti, sb);
+        }
+        
+        long[] lockedThreads = tmx.isSynchronizerUsageSupported() ? tmx.findDeadlockedThreads() : null;
+        long[] monitorLockedThreads = tmx.findMonitorDeadlockedThreads();
+
+        if (lockedThreads != null) {
+            sb.append("\n================\nDead-locked threads:\n");
+            ThreadInfo[] infos = tmx.getThreadInfo(lockedThreads, true, tmx.isObjectMonitorUsageSupported());
+            for (ThreadInfo ti : infos) {
+                printThreadInfo(ti, sb);
+                printLockInfo(ti.getLockedSynchronizers(), sb);
+                sb.append("\n");
+            }
+        } else if (monitorLockedThreads != null) {
+            ThreadInfo[] infos = tmx.getThreadInfo(monitorLockedThreads, Integer.MAX_VALUE);
+            for (ThreadInfo ti : infos) {
+                // print thread information
+                printThread(ti, sb);
+                printMonitorInfo(ti, ti.getLockedMonitors(), sb);
+            }
+        }
         return sb.toString();
     }
 

@@ -65,6 +65,7 @@ import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.BaseUtilities;
@@ -239,10 +240,20 @@ public class OutputFileManager extends CachingFileManager {
             return null;
         }
         try {
+            final String siblingProto = sibling.getProtocol();
             for (ClassPath.Entry entry : entries) {
-                URL rootUrl = entry.getURL();
-                if (FileObjects.isParentOf(rootUrl, sibling)) {
-                    return getClassFolder(rootUrl);
+                final URL rootUrl = entry.getURL();
+                final String rootProto = rootUrl.getProtocol();
+                final FileObject rootFo;
+                if (siblingProto.equals(rootProto)) {
+                    if (FileObjects.isParentOf(rootUrl, sibling)) {
+                        return getClassFolder(rootUrl);
+                    }
+                } else if ((rootFo = entry.getRoot()) != null) {
+                    final FileObject siblingFo;
+                    if ((siblingFo = URLMapper.findFileObject(sibling)) != null && FileUtil.isParentOf(rootFo, siblingFo)) {
+                        return getClassFolder(rootFo.toURL());
+                    }
                 }
             }
         } catch (IllegalArgumentException e) {

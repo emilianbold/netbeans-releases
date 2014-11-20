@@ -38,8 +38,6 @@
 
 package org.netbeans.modules.templates;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,6 +56,14 @@ import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
+/**
+ * The processor was split into two parts. The part which defines how the template
+ * annotation fields will be translated into the XML layer is defined in {@code openide.filesystems.templates}
+ * module. This Processor implementation binds the template to a Wizard Iterator, if the annotation is on
+ * an executable method.
+ * 
+ * @author sdedic
+ */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class TemplateProcessor extends LayerGeneratingProcessor {
@@ -86,7 +92,7 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
                 process(e, t);
             }
         }
-        return true;
+        return false;
     }
 
     private void process(Element e, TemplateRegistration t) throws LayerGenerationException {
@@ -110,45 +116,8 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
         }
         String folder = "Templates/" + t.folder() + '/';
         LayerBuilder.File f = builder.file(folder + basename);
-        f.boolvalue("template", true);
-        f.position(t.position());
-        if (!t.displayName().isEmpty()) {
-            f.bundlevalue("displayName", t.displayName());
-        }
-        if (!t.iconBase().isEmpty()) {
-            builder.validateResource(t.iconBase(), e, t, "iconBase", true);
-            f.stringvalue("iconBase", t.iconBase());
-        } else if (t.content().length == 0) {
-            throw new LayerGenerationException("Must specify iconBase if content is not specified", e, processingEnv, t);
-        }
-        if (!t.description().isEmpty()) {
-            f.urlvalue("instantiatingWizardURL", contentURI(e, t.description(), builder, t, "description"));
-        }
         if (e.getKind() != ElementKind.PACKAGE) {
             f.instanceAttribute("instantiatingIterator", InstantiatingIterator.class);
-        }
-        if (t.content().length > 0) {
-            f.url(contentURI(e, t.content()[0], builder, t, "content").toString());
-            for (int i = 1; i < t.content().length; i++) {
-                builder.file(folder + basename(t.content()[i])).url(contentURI(e, t.content()[i], builder, t, "content").toString()).position(0).write();
-            }
-        }
-        if (!t.scriptEngine().isEmpty()) {
-            f.stringvalue(ScriptingCreateFromTemplateHandler.SCRIPT_ENGINE_ATTR, t.scriptEngine());
-        }
-        if (t.category().length > 0) {
-            StringBuilder sb = new StringBuilder();
-            for (String c : t.category()) {
-                if (sb.length() > 0) {
-                    sb.append(',');
-                }
-                sb.append(c);
-            }
-            f.stringvalue("templateCategory", sb.toString());
-        }
-        f.boolvalue("requireProject", t.requireProject());
-        if (!t.targetName().trim().isEmpty()) {
-            f.bundlevalue("targetName", t.targetName());                //NOI18N
         }
         f.write();
     }
@@ -156,15 +125,4 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
     private static String basename(String relativeResource) {
         return relativeResource.replaceFirst(".+/", "").replaceFirst("[.]template$", "");
     }
-
-    private URI contentURI(Element e, String relativePath, LayerBuilder builder, TemplateRegistration t, String annotationMethod) throws LayerGenerationException {
-        String path = LayerBuilder.absolutizeResource(e, relativePath);
-        builder.validateResource(path, e, t, annotationMethod, false);
-        try {
-            return new URI("nbresloc", "/" + path, null).normalize();
-        } catch (URISyntaxException x) {
-            throw new LayerGenerationException("could not translate " + path, e, processingEnv, t);
-        }
-    }
-
 }

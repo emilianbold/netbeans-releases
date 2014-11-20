@@ -214,7 +214,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>5.9.22</specification-version>
+                        <specification-version>7.61</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -234,19 +234,19 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>9.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.util.base</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.0</specification-version>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -391,7 +391,7 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.util</code-name-base>
+                        <code-name-base>org.openide.util.ui</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

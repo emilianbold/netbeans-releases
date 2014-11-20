@@ -51,6 +51,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -91,10 +92,14 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+
 import static org.openide.util.ImageUtilities.assignToolTipToImage;
 import static org.openide.util.ImageUtilities.loadImage;
+
 import org.openide.util.Lookup;
+
 import static org.openide.util.NbBundle.getMessage;
+
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -409,7 +414,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
         public final void run() {
             String res = null;
             final FileObject file = node.getDataObject().getPrimaryFile();
-            if (file != null) {
+            if (file != null && file.isValid()) {
                 if (node.computedIconListener.get() == null) {
                     final FileChangeListener l = new FCL(node);
                     if (node.computedIconListener.compareAndSet(null, l)) {
@@ -517,7 +522,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
             @Override
             @CheckForNull
             String computeIcon(@NonNull final FileObject file) {
-                String res = null;
+                String res = CLASS_ICON_BASE;
                 try {
                     try (InputStream in = file.getInputStream()) {
                         final ClassFile cf = new ClassFile(in, false);
@@ -533,6 +538,9 @@ public final class JavaNode extends DataNode implements ChangeListener {
                                 CLASS_ICON_BASE;
                         }
                     }
+                } catch (FileNotFoundException ex) {
+                    // may happen in the file is just being cleaned up; should not log.
+                    
                 } catch (IOException e) {
                     Exceptions.printStackTrace(e);
                 }
