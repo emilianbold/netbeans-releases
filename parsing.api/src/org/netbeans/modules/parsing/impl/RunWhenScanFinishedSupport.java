@@ -51,7 +51,9 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -74,25 +76,34 @@ public class RunWhenScanFinishedSupport {
             _todo = todo.toArray(new DeferredTask[todo.size()]);
             todo.clear();
         }
-        for (DeferredTask rq : _todo) {
-            try {
-                TaskProcessor.runUserTask(rq.task, rq.sources);
-            } catch (ParseException e) {
-                Exceptions.printStackTrace(e);
-            } finally {
-                rq.sync.taskFinished();
-            }
+        for (final DeferredTask rq : _todo) {
+            Lookups.executeWith(
+                rq.context,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            TaskProcessor.runUserTask(rq.task, rq.sources);
+                        } catch (ParseException e) {
+                            Exceptions.printStackTrace(e);
+                        } finally {
+                            rq.sync.taskFinished();
+                        }
+                    }
+                });
         }
     }
 
-    public static void performScan (@NonNull final Runnable runnable) {
+    public static void performScan (
+            @NonNull final Runnable runnable,
+            @NonNull final Lookup context) {
         lock.writeLock().lock();
         try {
             LOG.log(
                     Level.FINE,
                     "performScan:entry",    //NOI18N
                     runnable);
-            runnable.run();
+            Lookups.executeWith(context, runnable);
             LOG.log(
                     Level.FINE,
                     "performScan:exit",     //NOI18N
@@ -113,7 +124,7 @@ public class RunWhenScanFinishedSupport {
         assert task != null;
         assert sources != null;
         final ScanSync sync = new ScanSync (task);
-        final DeferredTask r = new DeferredTask (sources,task,sync);
+        final DeferredTask r = new DeferredTask (sources, task, sync, Lookup.getDefault());
         //0) Add speculatively task to be performed at the end of background scan
         todo.add (r);
         boolean indexing = TaskProcessor.getIndexerBridge().isIndexing();
@@ -152,17 +163,22 @@ public class RunWhenScanFinishedSupport {
         final Collection<Source> sources;
         final Mutex.ExceptionAction<Void> task;
         final ScanSync sync;
+        final Lookup context;
 
-        public DeferredTask (final Collection<Source> sources,
-                final Mutex.ExceptionAction<Void> task,
-                final ScanSync sync) {
+        public DeferredTask (
+                @NonNull final Collection<Source> sources,
+                @NonNull final Mutex.ExceptionAction<Void> task,
+                @NonNull final ScanSync sync,
+                @NonNull final Lookup context) {
             assert sources != null;
             assert task != null;
             assert sync != null;
+            assert context != null;
 
             this.sources = sources;
             this.task = task;
             this.sync = sync;
+            this.context = context;
         }
     }
 
