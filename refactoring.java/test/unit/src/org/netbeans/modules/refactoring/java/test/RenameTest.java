@@ -72,7 +72,7 @@ public class RenameTest extends RefactoringTestBase {
     
     public void test238268() throws Exception {
         String source;
-        writeFilesAndWaitForScan(src, new File("t/A.java", source = "pacakge t;\n"
+        writeFilesAndWaitForScan(src, new File("t/A.java", source = "package t;\n"
                 + "public class Calculator {\n"
                 + "\n"
                 + "    interface IntegerMath {\n"
@@ -96,7 +96,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
         performRename(src.getFileObject("t/A.java"), source.indexOf('x') + 1, "a", null, true);
-        verifyContent(src, new File("t/A.java", "pacakge t;\n"
+        verifyContent(src, new File("t/A.java", "package t;\n"
                 + "public class Calculator {\n"
                 + "\n"
                 + "    interface IntegerMath {\n"

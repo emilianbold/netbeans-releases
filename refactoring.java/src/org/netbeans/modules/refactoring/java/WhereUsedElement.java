@@ -81,24 +81,26 @@ import static org.netbeans.modules.refactoring.java.Bundle.*;
 @NbBundle.Messages({"WARN_ElementNotFound=The destination was not found."})
 public class WhereUsedElement extends SimpleRefactoringElementImplementation implements FiltersManager.Filterable {
     private PositionBounds bounds;
-    private String displayText;
+    private String htmlText;
+    private String elementText;
     private FileObject parentFile;
     private final JavaWhereUsedFilters.ReadWrite access;
     private final boolean inComment;
     private final boolean inImport;
     private final boolean inTestclass;
 
-//    public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, TreePath tp, CompilationInfo info) {
-//        this(bounds, displayText, parentFile, tp, info, null, false, true);
+//    public WhereUsedElement(PositionBounds bounds, String htmlText, FileObject parentFile, TreePath tp, CompilationInfo info) {
+//        this(bounds, htmlText, parentFile, tp, info, null, false, true);
 //    }
 //    
-//    public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, TreePath tp, CompilationInfo info, JavaWhereUsedFilters.ReadWrite access) {
-//        this(bounds, displayText, parentFile, tp, info, access, false, false);
+//    public WhereUsedElement(PositionBounds bounds, String htmlText, FileObject parentFile, TreePath tp, CompilationInfo info, JavaWhereUsedFilters.ReadWrite access) {
+//        this(bounds, htmlText, parentFile, tp, info, access, false, false);
 //    }
     
-    public WhereUsedElement(PositionBounds bounds, String displayText, FileObject parentFile, TreePath tp, CompilationInfo info, ReadWrite access, boolean inTestclass, boolean inComment, boolean inImport) {
+    public WhereUsedElement(PositionBounds bounds, String htmlText, String elementText, FileObject parentFile, TreePath tp, CompilationInfo info, ReadWrite access, boolean inTestclass, boolean inComment, boolean inImport) {
         this.bounds = bounds;
-        this.displayText = displayText;
+        this.htmlText = htmlText;
+        this.elementText = elementText;
         this.parentFile = parentFile;
         if (tp != null) {
             ElementGripFactory.getDefault().put(parentFile, tp, info);
@@ -112,7 +114,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
 
     @Override
     public String getDisplayText() {
-        return displayText;
+        return htmlText;
     }
 
     @Override
@@ -150,7 +152,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
 
     @Override
     public String getText() {
-        return displayText;
+        return elementText;
     }
 
     @Override
@@ -339,6 +341,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
         return new WhereUsedElement(
                 bounds,
                 start==end && anonClassNameBug128074 ? NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"):sb.toString().trim(),
+                start==end && anonClassNameBug128074 ? NbBundle.getMessage(WhereUsedPanel.class, "LBL_AnonymousClass"):content.subSequence((int)sta, (int)en).toString().trim(),
                 compiler.getFileObject(),
                 tr,
                 compiler, access, inTest, false, elementInImport);
@@ -392,7 +395,9 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
         PositionRef ref1 = ces.createPositionRef(start, Bias.Forward);
         PositionRef ref2 = ces.createPositionRef(end, Bias.Forward);
         PositionBounds bounds = new PositionBounds(ref1, ref2);
-        return new WhereUsedElement(bounds, sb.toString().trim(), compiler.getFileObject(), null, compiler, null, inTest, true, false);
+        return new WhereUsedElement(bounds, sb.toString().trim(),
+                content.subSequence((int)sta, (int)en).toString(),
+                compiler.getFileObject(), null, compiler, null, inTest, true, false);
     }
     
     private static TreePath getEnclosingImportTree(TreePath tp) {

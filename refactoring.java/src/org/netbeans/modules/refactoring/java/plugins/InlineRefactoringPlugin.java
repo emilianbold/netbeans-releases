@@ -53,15 +53,12 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.support.CancellableTreeScanner;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.InlineRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -200,6 +197,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     protected Problem checkParameters(CompilationController javac) throws IOException {
+        javac.toPhase(JavaSource.Phase.RESOLVED);
         Problem problem = isElementAvail(treePathHandle, javac);
         return problem;
     }
