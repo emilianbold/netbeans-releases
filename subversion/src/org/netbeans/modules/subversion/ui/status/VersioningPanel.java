@@ -99,6 +99,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private final NoContentPanel noContentComponent = new NoContentPanel();
     private final ModeKeeper modeKeeper;
     private boolean remoteStatusCalled;
+    private boolean focused;
 
     /**
      * Creates a new Synchronize Panel managed by the given versioning system.
@@ -328,10 +329,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                                 syncTable.setColumns(tableColumns);
                                 parentTopComponent.setBranchTitle(branchTitle);
                                 setVersioningComponent(syncTable.getComponent());
-                                syncTable.focus();
+                                if (focused) {
+                                    syncTable.focus();
+                                }
                             } else {
                                 setVersioningComponent(noContentComponent);
-                                noContentComponent.requestFocusInWindow();
+                                if (focused) {
+                                    noContentComponent.requestFocusInWindow();
+                                }
                             }
                             syncTable.setTableModel(nodes);
                             // finally section, it's enqueued after this request
@@ -558,9 +563,12 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
     }
 
-    void focus() {
-        requestFocusInWindow();
-        syncTable.focus();
+    void focus (boolean focused) {
+        this.focused = focused;
+        if (focused) {
+            requestFocusInWindow();
+            syncTable.focus();
+        }
     }
 
     /**
