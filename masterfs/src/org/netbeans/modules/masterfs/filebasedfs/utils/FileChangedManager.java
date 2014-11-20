@@ -230,6 +230,7 @@ public class FileChangedManager extends SecurityManager {
     }
 
     public static void waitIOLoadLowerThan(int load) throws InterruptedException {
+        boolean checkClassLoading = true;
         for (;;) {
             AtomicBoolean goOn = IDLE_ON.get();
             if (goOn != null && !goOn.get()) {
@@ -241,10 +242,13 @@ public class FileChangedManager extends SecurityManager {
             if (l < load && priorityIO.get() == 0) {
                 return;
             }
-            if (ChildrenSupport.isLock() || Thread.holdsLock(NamingFactory.class)) {
-                return;
+            if (checkClassLoading) { // Check class loading only once.
+                checkClassLoading = false;
+                if (isClassLoading()) {
+                    return;
+                }
             }
-            if (isClassLoading()) {
+            if (ChildrenSupport.isLock() || Thread.holdsLock(NamingFactory.class)) {
                 return;
             }
             Runnable goingToSleep = IDLE_CALL.get();

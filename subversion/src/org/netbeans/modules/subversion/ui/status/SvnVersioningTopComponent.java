@@ -93,7 +93,12 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
 
     protected void componentActivated() {
         updateTitle();
-        syncPanel.focus();
+        syncPanel.focus(true);
+    }
+
+    @Override
+    protected void componentDeactivated () {
+        syncPanel.focus(false);
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
