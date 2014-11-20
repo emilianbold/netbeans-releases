@@ -361,6 +361,7 @@ public abstract class FileSystemCompat {
             Method m = null;
             try {
                 m = decorator.getClass().getMethod("annotateIcon", Image.class, Integer.TYPE, Set.class);
+                m.setAccessible(true);
             } catch (NoSuchMethodException ex) {
             } catch (SecurityException ex) {
                 Exceptions.printStackTrace(ex);
