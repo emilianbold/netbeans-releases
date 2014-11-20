@@ -287,6 +287,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "fetch",
                 "merge",
                 "pull",
+                "push",
                 "rebase",
                 "reset",
                 "removeRemote",
