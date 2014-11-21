@@ -49,8 +49,8 @@ import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.options.CssPrepOptionsValidator;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
-import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.NbBundle;
 

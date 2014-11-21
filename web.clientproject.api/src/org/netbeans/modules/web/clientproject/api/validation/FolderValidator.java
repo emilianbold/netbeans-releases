@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.api.validation;
 
 import java.io.File;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
 
 /**

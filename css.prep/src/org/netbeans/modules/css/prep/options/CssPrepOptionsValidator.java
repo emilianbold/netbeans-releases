@@ -44,7 +44,7 @@ package org.netbeans.modules.css.prep.options;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.StringUtils;
-import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 
 public final class CssPrepOptionsValidator {
 

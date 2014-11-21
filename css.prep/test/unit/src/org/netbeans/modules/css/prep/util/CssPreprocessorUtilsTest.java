@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 

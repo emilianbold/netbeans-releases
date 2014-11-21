@@ -44,7 +44,7 @@ package org.netbeans.modules.css.prep.preferences;
 import java.util.List;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 

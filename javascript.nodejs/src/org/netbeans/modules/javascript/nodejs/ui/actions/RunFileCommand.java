@@ -45,7 +45,7 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
