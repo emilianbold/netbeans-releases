@@ -219,7 +219,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         } else {
             qualName = qualifiedNamePostfix;
         }
-        // substituting of qual name have to be atomic, because this instance can
+        // substitution of qual name has to be atomic, because this instance can
         // already be registered and be in repository. Field qualifiedName always
         // must be compact string because only such strings are allowed in repository
         this.qualifiedName = QualifiedNameCache.getManager().getString(qualName);
