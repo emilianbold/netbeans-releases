@@ -45,7 +45,7 @@ package org.netbeans.modules.javascript.jstestdriver.preferences;
 import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.jstestdriver.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
 
 public final class JsTestDriverPreferencesValidator {

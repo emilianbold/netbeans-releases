@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.util;
+package org.netbeans.modules.javascript.bower.options;
 
-import org.netbeans.api.annotations.common.NullAllowed;
+import java.util.List;
+import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.javascript.bower.exec.BowerExecutable;
+import org.netbeans.modules.javascript.bower.util.FileUtils;
+import org.openide.util.NbPreferences;
 
-// XXX copied from PHP
-public final class ExternalExecutableValidator {
+public final class BowerOptions {
 
-    private ExternalExecutableValidator() {
+    private static final String BOWER_PATH = "bower.path"; // NOI18N
+
+    // Do not change arbitrary - consult with layer's folder OptionsExport
+    // Path to Preferences node for storing these preferences
+    private static final String PREFERENCES_PATH = "bower"; // NOI18N
+
+    private static final BowerOptions INSTANCE = new BowerOptions();
+
+    private final Preferences preferences;
+
+    private volatile boolean bowerSearched = false;
+
+    private BowerOptions() {
+        preferences = NbPreferences.forModule(BowerOptions.class).node(PREFERENCES_PATH);
     }
 
-    /**
-     * Return {@code true} if the given command is {@link #validateCommand(String, String) valid}.
-     * @param command command to be validated, can be {@code null}
-     * @return {@code true} if the given command is {@link #validateCommand(String, String) valid}, {@code false} otherwise
-     */
-    public static boolean isValidCommand(@NullAllowed String command) {
-        return validateCommand(command, (String) null) == null;
+    public static BowerOptions getInstance() {
+        return INSTANCE;
     }
 
-    /**
-     * Validate the given command and return error if it is not valid, {@code null} otherwise.
-     * @param command command to be validated, can be {@code null}
-     * @param executableName the name of the executable (e.g. "Doctrine script"), can be {@code null} (in such case, "File" is used)
-     * @return error if it is not valid, {@code null} otherwise
-     */
-    public static String validateCommand(@NullAllowed String command, @NullAllowed String executableName) {
-        String executable = null;
-        if (command != null) {
-            executable = ExternalExecutable.parseCommand(command).first();
+    @CheckForNull
+    public String getBower() {
+        String path = preferences.get(BOWER_PATH, null);
+        if (path == null
+                && !bowerSearched) {
+            bowerSearched = true;
+            List<String> files = FileUtils.findFileOnUsersPath(BowerExecutable.BOWER_NAME);
+            if (!files.isEmpty()) {
+                path = files.get(0);
+                setBower(path);
+            }
         }
-        if (executableName == null) {
-            return FileUtils.validateFile(executable, false);
-        }
-        return FileUtils.validateFile(executableName, executable, false);
+        return path;
+    }
+
+    public void setBower(String bower) {
+        preferences.put(BOWER_PATH, bower);
     }
 
 }

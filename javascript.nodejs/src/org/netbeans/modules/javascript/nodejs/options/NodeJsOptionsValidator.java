@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.javascript.nodejs.options;
 
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
+import org.netbeans.modules.web.common.api.ValidationResult;
 
 
 public class NodeJsOptionsValidator {

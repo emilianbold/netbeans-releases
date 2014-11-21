@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.karma.util;
+package org.netbeans.modules.javascript.bower.options;
 
-import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
+import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.util.NbBundle;
 
-// XXX copied from PHP
-public final class ExternalExecutableValidator {
+public final class BowerOptionsValidator {
 
-    private ExternalExecutableValidator() {
+    public static final String BOWER_PATH = "bower.path"; // NOI18N
+
+    private final ValidationResult result = new ValidationResult();
+
+
+    public BowerOptionsValidator validate() {
+        return validateBower();
     }
 
-    /**
-     * Return {@code true} if the given command is {@link #validateCommand(String, String) valid}.
-     * @param command command to be validated, can be {@code null}
-     * @return {@code true} if the given command is {@link #validateCommand(String, String) valid}, {@code false} otherwise
-     */
-    public static boolean isValidCommand(@NullAllowed String command) {
-        return validateCommand(command, (String) null) == null;
+    public BowerOptionsValidator validateBower() {
+        return validateBower(BowerOptions.getInstance().getBower());
     }
 
-    /**
-     * Validate the given command and return error if it is not valid, {@code null} otherwise.
-     * @param command command to be validated, can be {@code null}
-     * @param executableName the name of the executable (e.g. "Doctrine script"), can be {@code null} (in such case, "File" is used)
-     * @return error if it is not valid, {@code null} otherwise
-     */
-    public static String validateCommand(@NullAllowed String command, @NullAllowed String executableName) {
-        String executable = null;
-        if (command != null) {
-            executable = ExternalExecutable.parseCommand(command).first();
+    @NbBundle.Messages("BowerOptionsValidator.bower.name=Bower")
+    public BowerOptionsValidator validateBower(String bower) {
+        String warning = ExternalExecutableValidator.validateCommand(bower, Bundle.BowerOptionsValidator_bower_name());
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message(BOWER_PATH, warning));
         }
-        if (executableName == null) {
-            return FileUtils.validateFile(executable, false);
-        }
-        return FileUtils.validateFile(executableName, executable, false);
+        return this;
+    }
+
+    public ValidationResult getResult() {
+        return result;
     }
 
 }

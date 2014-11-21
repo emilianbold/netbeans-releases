@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -121,6 +120,7 @@ public class ImportExecutable implements PropertyChangeListener {
     private List<String> dependencies;
     private CsmModel model;
     private IteratorExtension extension;
+    private FileSystem sourceFileSystem;
 
     public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, ProjectKind projectKind) {
         this.map = map;
@@ -173,16 +173,20 @@ public class ImportExecutable implements PropertyChangeListener {
             }
             binaryPath = firstBinary;
         }
+        ExecutionEnvironment fullRemoteEnv = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.fromMap(map);
+        FileSystem fullRemotefileSystem = null;
+        if (fullRemoteEnv != null) {
+            fullRemotefileSystem = FileSystemProvider.getFileSystem(fullRemoteEnv);
+        }
         sourcesPath = WizardConstants.PROPERTY_SOURCE_FOLDER_PATH.fromMap(map);
         FSPath projectFolder = WizardConstants.PROPERTY_PROJECT_FOLDER.fromMap(map);
         String projectName = WizardConstants.PROPERTY_NAME.fromMap(map);
         dependencies = WizardConstants.PROPERTY_DEPENDENCIES.fromMap(map);
         String baseDir;
-        FileSystem fileSystem;
         if (projectFolder != null) {
             projectFolder = new FSPath(projectFolder.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(projectFolder.getPath(), FileSystemProvider.getExecutionEnvironment(projectFolder.getFileSystem())));
             baseDir = projectFolder.getPath();
-            fileSystem = projectFolder.getFileSystem();
+            sourceFileSystem = projectFolder.getFileSystem();
             if (projectName == null) {
                 projectName = CndPathUtilities.getBaseName(baseDir);
             }
@@ -192,25 +196,35 @@ public class ImportExecutable implements PropertyChangeListener {
                 projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(binaryPath));
             }
             ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
-            baseDir = projectParentFolder + File.separator + projectName;
-            fileSystem = FileSystemProvider.getFileSystem(ee);
-            projectFolder = new FSPath(fileSystem, RemoteFileUtil.normalizeAbsolutePath(baseDir, ee));
+            sourceFileSystem = FileSystemProvider.getFileSystem(ee);
+            baseDir = projectParentFolder + CndFileUtils.getFileSeparatorChar(sourceFileSystem) + projectName;
+            projectFolder = new FSPath(sourceFileSystem, RemoteFileUtil.normalizeAbsolutePath(baseDir, ee));
         }
         String hostUID = WizardConstants.PROPERTY_HOST_UID.fromMap(map);
         CompilerSet toolchain = WizardConstants.PROPERTY_TOOLCHAIN.fromMap(map);
         boolean defaultToolchain = Boolean.TRUE.equals(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT.fromMap(map));
         MakeConfiguration conf = MakeConfiguration.createMakefileConfiguration(projectFolder, "Default",  hostUID, toolchain, defaultToolchain); // NOI18N
-        String workingDirRel = ProjectSupport.toProperPath(new FSPath(fileSystem, baseDir),  sourcesPath, MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
-        workingDirRel = CndPathUtilities.naturalizeSlashes(fileSystem, workingDirRel);
+        String workingDirRel = ProjectSupport.toProperPath(new FSPath(sourceFileSystem, baseDir),  sourcesPath, MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
+        workingDirRel = CndPathUtilities.naturalizeSlashes(sourceFileSystem, workingDirRel);
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         // Executable
         String exe = binaryPath;
-        exe = CndPathUtilities.toRelativePath(CndPathUtilities.naturalizeSlashes(baseDir), exe);
-        exe = CndPathUtilities.normalizeSlashes(exe);
+        if (fullRemotefileSystem != null) {
+            exe = CndPathUtilities.toRelativePath(CndPathUtilities.naturalizeSlashes(fullRemotefileSystem, baseDir), exe);
+            exe = CndPathUtilities.normalizeSlashes(exe);
+        } else {
+            exe = CndPathUtilities.toRelativePath(CndPathUtilities.naturalizeSlashes(baseDir), exe);
+            exe = CndPathUtilities.normalizeSlashes(exe);
+        }
         conf.getMakefileConfiguration().getOutput().setValue(exe);
-        String exePath = new File(binaryPath).getParentFile().getAbsolutePath();
-        exePath = CndPathUtilities.toRelativePath(CndPathUtilities.naturalizeSlashes(baseDir), exePath);
-        exePath = CndPathUtilities.normalizeSlashes(exePath);
+        String exePath = CndPathUtilities.getDirName(binaryPath);
+        if (fullRemotefileSystem != null) {
+            exePath = CndPathUtilities.toRelativePath(CndPathUtilities.naturalizeSlashes(fullRemotefileSystem, baseDir), exePath);
+            exePath = CndPathUtilities.normalizeSlashes(exePath);
+        } else {
+            exePath = CndPathUtilities.toRelativePath(CndPathUtilities.naturalizeSlashes(baseDir), exePath);
+            exePath = CndPathUtilities.normalizeSlashes(exePath);
+        }
         conf.getProfile().setRunDirectory(exePath);
         conf.getProfile().setBuildFirst(false);
 
@@ -219,7 +233,7 @@ public class ImportExecutable implements PropertyChangeListener {
         importantBinaries.addAll(libs);
         {
             String launcher = projectFolder.getPath()+"/nbproject/private/launcher.properties"; //NOI18N
-            launcher = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(launcher), MakeProjectOptions.getPathMode());
+            launcher = ProjectSupport.toProperPath(projectFolder, CndPathUtilities.naturalizeSlashes(sourceFileSystem, launcher), MakeProjectOptions.getPathMode());
             launcher = CndPathUtilities.normalizeSlashes(launcher);
             importantBinaries.add(launcher);
         }
@@ -258,6 +272,9 @@ public class ImportExecutable implements PropertyChangeListener {
             lastSelectedProject = ProjectGenerator.createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
             DiscoveryWizardDescriptor.BUILD_RESULT.toMap(map, binaryPath);
+            if (fullRemotefileSystem != null) {
+                DiscoveryWizardDescriptor.FILE_SYSTEM.toMap(map, fullRemotefileSystem);
+            }
             DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
             if (sourcesPath != null && sourcesPath.length()>1) {
                 DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
@@ -354,7 +371,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                                     if (projectKind == ProjectKind.CreateDependencies) {
-                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
+                                        cd = new CreateDependencies(lastSelectedProject, sourceFileSystem, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
                                                 DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     }
                                 } catch (IOException ex) {
@@ -398,7 +415,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 }
                             }
                         }
-                        FileObject toFileObject = CndFileUtils.toFileObject(mainFilePath); // should it be normalized?
+                        FileObject toFileObject = CndFileUtils.toFileObject(sourceFileSystem, mainFilePath); // should it be normalized?
                         if (toFileObject != null && toFileObject.isValid()) {
                             if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
                                 open = false;
@@ -437,7 +454,7 @@ public class ImportExecutable implements PropertyChangeListener {
         return len;
     }
 
-    private static void discoverScripts(Project project, String binary) {
+    private void discoverScripts(Project project, String binary) {
         ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (provider == null) {
             return;
@@ -454,10 +471,13 @@ public class ImportExecutable implements PropertyChangeListener {
         if (root == null) {
             return;
         }
-        File rootFile = new File(root);
+        FileObject rootFile = sourceFileSystem.findResource(root);
+        if (rootFile == null || !rootFile.isValid()) {
+            return;
+        }
         DiscoveredConfigure configure = scanFolder(rootFile);
         if (configure.script == null || configure.makefile == null) {
-            File parentFile = rootFile.getParentFile();
+            FileObject parentFile = rootFile.getParent();
             DiscoveredConfigure parentConfigure = scanFolder(parentFile);
             if (parentConfigure.script != null && parentConfigure.makefile != null) {
                 if (configure.scriptWeight < parentConfigure.scriptWeight) {
@@ -470,16 +490,16 @@ public class ImportExecutable implements PropertyChangeListener {
             if (binaryName.indexOf('.') > 0 ) {
                 binaryName = binaryName.substring(0, binaryName.lastIndexOf('.'));
             }
-            File[] listFiles = rootFile.listFiles();
+            FileObject[] listFiles = rootFile.getChildren();
             if (listFiles != null) {
-                for(File file : listFiles) {
-                    if (file.isDirectory()) {
+                for(FileObject file : listFiles) {
+                    if (file != null && file.isValid() && file.isFolder()) {
                         DiscoveredConfigure childConfigure = scanFolder(file);
                         if (childConfigure.script != null && childConfigure.makefile != null) {
                             if (configure.scriptWeight < childConfigure.scriptWeight) {
                                 configure = childConfigure;
                             }
-                        } else if (childConfigure.makefile != null && configure.makefile == null && binaryName.equals(file.getName())) {
+                        } else if (childConfigure.makefile != null && configure.makefile == null && binaryName.equals(file.getNameExt())) {
                             configure.setMakefile(childConfigure.makefile, childConfigure.makefileWeight);
                         }
                     }
@@ -487,7 +507,7 @@ public class ImportExecutable implements PropertyChangeListener {
             }
         }
         if (configure.makefile != null) {
-            activeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(configure.makefile.getParentFile().getAbsolutePath());
+            activeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(configure.makefile.getParent().getPath());
             activeConfiguration.getMakefileConfiguration().getBuildCommand().setValue("${MAKE} -f "+configure.makefile.getName()); // NOI18N
             activeConfiguration.getMakefileConfiguration().getCleanCommand().setValue("${MAKE} -f "+configure.makefile.getName()+" clean"); // NOI18N
             Folder externalItemFolder = configurationDescriptor.getExternalItemFolder();
@@ -497,35 +517,37 @@ public class ImportExecutable implements PropertyChangeListener {
                     break;
                 }
             }
-            externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.makefile.getAbsolutePath()));
+            externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.makefile.getPath()));
             if (configure.script != null) {
-                externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.script.getAbsolutePath()));
+                externalItemFolder.addItem(Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(), configure.script.getPath()));
             }
         }
     }
 
 
-    private static DiscoveredConfigure scanFolder(File rootFile) {
+    private static DiscoveredConfigure scanFolder(FileObject rootFile) {
         DiscoveredConfigure configure = new DiscoveredConfigure();
-        File[] listFiles = rootFile.listFiles();
-        if (listFiles != null) {
-            for(File file : listFiles) {
-                if (file.isFile()) {
-                    String name = file.getName();
-                    if ("CMakeLists.txt".equals(name)) { // NOI18N
-                        configure.setScript(file, 3);
-                    } else if (name.endsWith(".pro")) { // NOI18N
-                        configure.setScript(file, 4);
-                    } else if ("configure".equals(name) || "configure.exe".equals(name)) { // NOI18N
-                        configure.setScript(file, 5);
-                    } else if ("Makefile".equals(name)) { // NOI18N
-                        configure.setMakefile(file, 5);
-                    } else if ("makefile".equals(name)) { // NOI18N
-                        configure.setMakefile(file, 4);
-                    } else if ("GNUmakefile".equals(name)) { // NOI18N
-                        configure.setMakefile(file, 3);
-                    } else if (name.endsWith(".mk")) { // NOI18N
-                        configure.setMakefile(file, 2);
+        if (rootFile != null && rootFile.isValid()) {
+            FileObject[] listFiles = rootFile.getChildren();
+            if (listFiles != null) {
+                for(FileObject file : listFiles) {
+                    if (file != null && file.isValid() && file.isData()) {
+                        String name = file.getName();
+                        if ("CMakeLists.txt".equals(name)) { // NOI18N
+                            configure.setScript(file, 3);
+                        } else if (name.endsWith(".pro")) { // NOI18N
+                            configure.setScript(file, 4);
+                        } else if ("configure".equals(name) || "configure.exe".equals(name)) { // NOI18N
+                            configure.setScript(file, 5);
+                        } else if ("Makefile".equals(name)) { // NOI18N
+                            configure.setMakefile(file, 5);
+                        } else if ("makefile".equals(name)) { // NOI18N
+                            configure.setMakefile(file, 4);
+                        } else if ("GNUmakefile".equals(name)) { // NOI18N
+                            configure.setMakefile(file, 3);
+                        } else if (name.endsWith(".mk")) { // NOI18N
+                            configure.setMakefile(file, 2);
+                        }
                     }
                 }
             }
@@ -534,17 +556,17 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     private static final class DiscoveredConfigure {
-        private File script;
+        private FileObject script;
         private int scriptWeight;
-        private File makefile;
+        private FileObject makefile;
         private int makefileWeight;
-        private void setScript(File script, int weight) {
+        private void setScript(FileObject script, int weight) {
             if (this.script == null || scriptWeight < weight) {
                 this.script = script;
                 scriptWeight = weight;
             }
         }
-        private void setMakefile(File makefile, int weight) {
+        private void setMakefile(FileObject makefile, int weight) {
             if (this.makefile == null || makefileWeight < weight) {
                 this.makefile = makefile;
                 makefileWeight = weight;
@@ -577,7 +599,7 @@ public class ImportExecutable implements PropertyChangeListener {
                 String ldLibPath = CommonUtilities.getLdLibraryPath(activeConfiguration);
                 ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, applicable.getSearchPaths(), binary);
                 for(String dll : applicable.getDependencies()) {
-                    dllPaths.put(dll, findLocation(dll, ldLibPath));
+                    dllPaths.put(dll, findLocation(sourceFileSystem, dll, ldLibPath));
                 }
                 while(true) {
                     List<String> secondary = new ArrayList<>();
@@ -602,7 +624,7 @@ public class ImportExecutable implements PropertyChangeListener {
                         }
                     }
                     for(String so : secondary) {
-                        dllPaths.put(so, findLocation(so, ldLibPath));
+                        dllPaths.put(so, findLocation(sourceFileSystem, so, ldLibPath));
                     }
                     int search = 0;
                     for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
@@ -611,7 +633,10 @@ public class ImportExecutable implements PropertyChangeListener {
                         }
                     }
                     if (search > 0 && root.length() > 1) {
-                        gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
+                        FileObject rootFO = sourceFileSystem.findResource(root);
+                        if (rootFO != null && rootFO.isValid()) {
+                            gatherSubFolders(rootFO, new HashSet<String>(), dllPaths);
+                        }
                     }
                     int newSearch = 0;
                     for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
@@ -768,16 +793,16 @@ public class ImportExecutable implements PropertyChangeListener {
         return false;
     }
 
-    static String findLocation(String dll, String ldPath){
+    static String findLocation(FileSystem fs, String dll, String ldPath){
         if (ldPath != null) {
             String separator = ":";  // NOI18N
             if (ldPath.indexOf(';') > 0) {
                 separator = ";";  // NOI18N
             }
             for(String search : ldPath.split(separator)) {  // NOI18N
-                File file = new File(search, dll);
-                if (file.isFile() && file.exists()) {
-                    String path = file.getAbsolutePath();
+                FileObject file = fs.findResource(search+"/"+dll);
+                if (file != null && file.isValid()) {
+                    String path = file.getPath();
                     return path.replace('\\', '/');
                 }
             }
@@ -785,36 +810,36 @@ public class ImportExecutable implements PropertyChangeListener {
         return null;
     }
 
-    static void gatherSubFolders(File startFolder, HashSet<String> set, Map<String,String> result){
+    static void gatherSubFolders(FileObject startFolder, HashSet<String> set, Map<String,String> result){
         if (!DLL_FILE_SEARCH) {
             return;
         }
-        List<File> down = new ArrayList<>();
+        List<FileObject> down = new ArrayList<>();
         down.add(startFolder);
         while(!down.isEmpty()) {
-            ArrayList<File> next = new ArrayList<>();
-            for (File file : down) {
-                if (CndPathUtilities.isIgnoredFolder(file)){
+            ArrayList<FileObject> next = new ArrayList<>();
+            for (FileObject file : down) {
+                if (CndPathUtilities.isIgnoredFolder(file.getNameExt())){
                     continue;
                 }
-                if (file.exists() && file.isDirectory() && file.canRead()){
+                if (file.isValid() && file.isFolder() && file.canRead()){
                     String canPath;
                     try {
-                        canPath = file.getCanonicalPath();
+                        canPath = CndFileUtils.getCanonicalPath(file);
                     } catch (IOException ex) {
                         continue;
                     }
                     if (!set.contains(canPath)){
                         set.add(canPath);
-                        File[] fileList = file.listFiles();
+                        FileObject[] fileList = file.getChildren();
                         if (fileList != null) {
                             for (int i = 0; i < fileList.length; i++) {
-                                if (fileList[i].isDirectory()) {
+                                if (fileList[i].isFolder()) {
                                     next.add(fileList[i]);
                                 } else {
                                     String name = fileList[i].getName();
                                     if (result.containsKey(name)) {
-                                       result.put(name, fileList[i].getAbsolutePath());
+                                       result.put(name, fileList[i].getPath());
                                        boolean finished = true;
                                        for(String path : result.values()) {
                                            if (path == null || path.isEmpty()) {

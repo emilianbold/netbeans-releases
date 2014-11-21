@@ -78,9 +78,10 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
 
     public static final String IDENT = "node.js"; // NOI18N
 
+    static final RequestProcessor RP = new RequestProcessor(NodeJsPlatformProvider.class);
+
     @StaticResource
     private static final String ICON_PATH = "org/netbeans/modules/javascript/nodejs/ui/resources/nodejs-badge.png"; // NOI18N
-    private static final RequestProcessor RP = new RequestProcessor(NodeJsPlatformProvider.class);
 
     private final BadgeIcon badgeIcon;
     private final PlatformProviderImplementationListener.Support listenerSupport = new PlatformProviderImplementationListener.Support();
@@ -155,13 +156,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         if (PROP_ENABLED.equals(propertyName)) {
             NodeJsSupport.forProject(project).getPreferences().setEnabled((boolean) event.getNewValue());
         } else if (PROP_PROJECT_NAME.equals(propertyName)) {
-            // #248485
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    projectNameChanged(project, (String) event.getNewValue());
-                }
-            }, 500);
+            projectNameChanged(project, (String) event.getNewValue());
         } else if (PROP_RUN_CONFIGURATION.equals(propertyName)) {
             runConfigurationChanged(project, event.getNewValue());
         }
@@ -207,17 +202,10 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
         }
     }
 
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "NodeJsPlatformProvider.sync.title=Node.js ({0})",
-        "NodeJsPlatformProvider.sync.error=Cannot write changed project name to package.json.",
-        "# {0} - project name",
-        "NodeJsPlatformProvider.sync.done=Project name {0} synced to package.json.",
-    })
-    void projectNameChanged(Project project, String newName) {
-        String projectDir = project.getProjectDirectory().getNameExt();
+    void projectNameChanged(Project project, final String newName) {
+        final String projectDir = project.getProjectDirectory().getNameExt();
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
-        NodeJsPreferences preferences = nodeJsSupport.getPreferences();
+        final NodeJsPreferences preferences = nodeJsSupport.getPreferences();
         if (!preferences.isEnabled()) {
             LOGGER.log(Level.FINE, "Project name change ignored in project {0}, node.js not enabled", projectDir);
             return;
@@ -226,7 +214,7 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             LOGGER.log(Level.FINE, "Project name change ignored in project {0}, sync not enabled", projectDir);
             return;
         }
-        PackageJson packageJson = nodeJsSupport.getPackageJson();
+        final PackageJson packageJson = nodeJsSupport.getPackageJson();
         if (!packageJson.exists()) {
             LOGGER.log(Level.FINE, "Project name change ignored in project {0}, package.json not exist", projectDir);
             return;
@@ -246,14 +234,38 @@ public final class NodeJsPlatformProvider implements PlatformProviderImplementat
             LOGGER.log(Level.FINE, "Project name change ignored in project {0}, new name same as current name in package.json", projectDir);
             return;
         }
-        String projectName = NodeJsUtils.getProjectDisplayName(project);
+        final String projectName = NodeJsUtils.getProjectDisplayName(project);
         if (preferences.isAskSyncEnabled()) {
-            if (!Notifications.askSyncChanges(project)) {
-                preferences.setSyncEnabled(false);
-                LOGGER.log(Level.FINE, "Project name change ignored in project {0}, cancelled by user", projectDir);
-                return;
-            }
+            Notifications.askSyncChanges(project, new Runnable() {
+                @Override
+                public void run() {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            changeProjectName(packageJson, newName, projectName, projectDir);
+                        }
+                    });
+                }
+            }, new Runnable() {
+                @Override
+                public void run() {
+                    preferences.setSyncEnabled(false);
+                    LOGGER.log(Level.FINE, "Project name change ignored in project {0}, cancelled by user", projectDir);
+                }
+            });
+        } else {
+            changeProjectName(packageJson, newName, projectName, projectDir);
         }
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "NodeJsPlatformProvider.sync.title=Node.js ({0})",
+        "NodeJsPlatformProvider.sync.error=Cannot write changed project name to package.json.",
+        "# {0} - project name",
+        "NodeJsPlatformProvider.sync.done=Project name {0} synced to package.json.",
+    })
+    void changeProjectName(PackageJson packageJson, String newName, String projectName, String projectDir) {
         try {
             packageJson.setContent(Collections.singletonList(PackageJson.FIELD_NAME), newName);
         } catch (IOException ex) {

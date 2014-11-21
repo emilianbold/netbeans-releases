@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.options;
+package org.netbeans.modules.javascript.bower.util;
 
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
-import org.netbeans.modules.css.prep.util.StringUtils;
-import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 
-public final class CssPrepOptionsValidator {
+public final class BowerUtils {
 
-    private final ValidationResult result = new ValidationResult();
-
-
-    public ValidationResult getResult() {
-        return result;
+    private BowerUtils() {
     }
 
-    public CssPrepOptionsValidator validateSassPath(String sassPath, boolean allowEmpty) {
-        if (allowEmpty
-                && !StringUtils.hasText(sassPath)) {
-            // no warning in dialog, project problems will catch it
-            return this;
-        }
-        String warning = SassExecutable.validate(sassPath);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("sass.path", warning)); // NOI18N
-        }
-        return this;
-    }
-
-    public CssPrepOptionsValidator validateLessPath(String lessPath, boolean allowEmpty) {
-        if (allowEmpty
-                && !StringUtils.hasText(lessPath)) {
-            // no warning in dialog, project problems will catch it
-            return this;
-        }
-        String warning = LessExecutable.validate(lessPath);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("less.path", warning)); // NOI18N
-        }
-        return this;
+    public static String getProjectDisplayName(Project project) {
+        return ProjectUtils.getInformation(project).getDisplayName();
     }
 
 }

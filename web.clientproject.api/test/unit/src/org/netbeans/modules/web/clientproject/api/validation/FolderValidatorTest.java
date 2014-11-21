@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.api.validation;
 
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.common.api.ValidationResult;
 
 public class FolderValidatorTest extends NbTestCase {
 

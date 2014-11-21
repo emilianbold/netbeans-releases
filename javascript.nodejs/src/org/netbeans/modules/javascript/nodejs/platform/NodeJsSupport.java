@@ -77,11 +77,14 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 public final class NodeJsSupport {
 
     static final Logger LOGGER = Logger.getLogger(NodeJsSupport.class.getName());
+
+    static final RequestProcessor RP = new RequestProcessor(NodeJsSupport.class);
 
     final Project project;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -242,8 +245,8 @@ public final class NodeJsSupport {
             "PreferencesListener.sync.error=Cannot write changed start file/arguments to package.json.",
             "PreferencesListener.sync.done=Start file/arguments synced to package.json.",
         })
-        private void startScriptChanged(String newStartFile, String newStartArgs) {
-            String projectDir = project.getProjectDirectory().getNameExt();
+        private void startScriptChanged(String newStartFile, final String newStartArgs) {
+            final String projectDir = project.getProjectDirectory().getNameExt();
             if (!preferences.isEnabled()) {
                 LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, node.js not enabled in project {0}", projectDir);
                 return;
@@ -285,14 +288,32 @@ public final class NodeJsSupport {
                 LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, file and args same as in package.json", projectDir);
                 return;
             }
-            String projectName = NodeJsUtils.getProjectDisplayName(project);
+            final String projectName = NodeJsUtils.getProjectDisplayName(project);
             if (preferences.isAskSyncEnabled()) {
-                if (!Notifications.askSyncChanges(project)) {
-                    preferences.setSyncEnabled(false);
-                    LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, cancelled by user", projectDir);
-                    return;
-                }
+                final String relNewStartFileRef = relNewStartFile;
+                Notifications.askSyncChanges(project, new Runnable() {
+                    @Override
+                    public void run() {
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                changeStartScript(relNewStartFileRef, newStartArgs, projectName, projectDir);
+                            }
+                        });
+                    }
+                }, new Runnable() {
+                    @Override
+                    public void run() {
+                        preferences.setSyncEnabled(false);
+                        LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, cancelled by user", projectDir);
+                    }
+                });
+            } else {
+                changeStartScript(relNewStartFile, newStartArgs, projectName, projectDir);
             }
+        }
+
+        void changeStartScript(String relNewStartFile, String newStartArgs, String projectName, String projectDir) {
             StringBuilder sb = new StringBuilder();
             sb.append(NodeJsUtils.START_FILE_NODE_PREFIX);
             sb.append(relNewStartFile);
@@ -335,20 +356,33 @@ public final class NodeJsSupport {
             }
         }
 
-        private void projectNameChanged(Object oldName, Object newName) {
+        private void projectNameChanged(final Object oldName, final Object newName) {
             if (!(newName instanceof String)) {
                 LOGGER.log(Level.FINE, "Project name change ignored, not a string: {0}", newName);
                 // ignore
                 return;
             }
             if (preferences.isAskSyncEnabled()) {
-                if (!Notifications.askSyncChanges(project)) {
-                    preferences.setSyncEnabled(false);
-                    LOGGER.log(Level.FINE, "Project name change ignored in project {0}, cancelled by user", project.getProjectDirectory().getNameExt());
-                    return;
-                }
+                Notifications.askSyncChanges(project, new Runnable() {
+                    @Override
+                    public void run() {
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, oldName, newName);
+                            }
+                        });
+                    }
+                }, new Runnable() {
+                    @Override
+                    public void run() {
+                        preferences.setSyncEnabled(false);
+                        LOGGER.log(Level.FINE, "Project name change ignored in project {0}, cancelled by user", project.getProjectDirectory().getNameExt());
+                    }
+                });
+            } else {
+                firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, oldName, newName);
             }
-            firePropertyChanged(NodeJsPlatformProvider.PROP_PROJECT_NAME, oldName, newName);
         }
 
         @NbBundle.Messages({
@@ -357,37 +391,53 @@ public final class NodeJsSupport {
             "PackageJsonListener.sync.done=Start file/arguments synced to Project Properties.",
         })
         private void startScriptChanged(String newStartScript) {
-            String projectDir = project.getProjectDirectory().getNameExt();
+            final String projectDir = project.getProjectDirectory().getNameExt();
             if (!StringUtils.hasText(newStartScript)) {
                 LOGGER.log(Level.FINE, "Start script change ignored in project {0}, it has no text", projectDir);
                 return;
             }
             Pair<String, String> newStartInfo = NodeJsUtils.parseStartFile(newStartScript);
-            String newStartFile = newStartInfo.first();
-            if (newStartFile == null) {
+            if (newStartInfo.first() == null) {
                 LOGGER.log(Level.FINE, "Start script change ignored in project {0}, no 'file' found", projectDir);
                 return;
 
             }
-            newStartFile = new File(FileUtil.toFile(project.getProjectDirectory()), newStartFile).getAbsolutePath();
+            final String newStartFile = new File(FileUtil.toFile(project.getProjectDirectory()), newStartInfo.first()).getAbsolutePath();
             String startFile = preferences.getStartFile();
-            boolean syncFile = !Objects.equals(startFile, newStartFile);
+            final boolean syncFile = !Objects.equals(startFile, newStartFile);
             String startArgs = preferences.getStartArgs();
-            String newStartArgs = newStartInfo.second();
-            boolean syncArgs = !Objects.equals(startArgs, newStartArgs);
+            final String newStartArgs = newStartInfo.second();
+            final boolean syncArgs = !Objects.equals(startArgs, newStartArgs);
             if (!syncFile
                     && !syncArgs) {
                 LOGGER.log(Level.FINE, "Start script change ignored in project {0}, same values already set", projectDir);
                 return;
             }
-            String projectName = NodeJsUtils.getProjectDisplayName(project);
+            final String projectName = NodeJsUtils.getProjectDisplayName(project);
             if (preferences.isAskSyncEnabled()) {
-                if (!Notifications.askSyncChanges(project)) {
-                    preferences.setSyncEnabled(false);
-                    LOGGER.log(Level.FINE, "Start script change ignored in project {0}, cancelled by user", projectDir);
-                    return;
-                }
+                Notifications.askSyncChanges(project, new Runnable() {
+                    @Override
+                    public void run() {
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                changeStartScript(syncFile, newStartFile, syncArgs, newStartArgs, projectName, projectDir);
+                            }
+                        });
+                    }
+                }, new Runnable() {
+                    @Override
+                    public void run() {
+                        preferences.setSyncEnabled(false);
+                        LOGGER.log(Level.FINE, "Start script change ignored in project {0}, cancelled by user", projectDir);
+                    }
+                });
+            } else {
+                changeStartScript(syncFile, newStartFile, syncArgs, newStartArgs, projectName, projectDir);
             }
+        }
+
+        void changeStartScript(boolean syncFile, String newStartFile, boolean syncArgs, String newStartArgs, String projectName, String projectDir) {
             if (syncFile) {
                 preferences.setStartFile(newStartFile);
             }

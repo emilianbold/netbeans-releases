@@ -64,7 +64,7 @@ import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.css.prep.ui.customizer.OptionsPanel;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
-import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;

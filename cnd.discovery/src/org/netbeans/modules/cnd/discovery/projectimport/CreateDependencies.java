@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,6 +70,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGen
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.ProjectItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -79,7 +79,10 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -100,13 +103,15 @@ public class CreateDependencies implements PropertyChangeListener {
     private MakeConfigurationDescriptor mainConfigurationDescriptor;
     private final CsmModel model = CsmModelAccessor.getModel();
     private final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+    private final FileSystem sourceFileSystem;
 
-    public CreateDependencies(Project mainProject, List<String> dependencies, List<String> paths, List<String> searchPaths, String binary) {
+    public CreateDependencies(Project mainProject, FileSystem sourceFileSystem, List<String> dependencies, List<String> paths, List<String> searchPaths, String binary) {
         this.mainProject = mainProject;
         this.dependencies = dependencies;
         this.paths = paths;
         this.searchPaths = searchPaths;
         this.binary = binary;
+        this.sourceFileSystem = sourceFileSystem;
     }
 
     public void create() {
@@ -128,7 +133,7 @@ public class CreateDependencies implements PropertyChangeListener {
                 String ldLibPath = CommonUtilities.getLdLibraryPath(activeConfiguration);
                 ldLibPath = CommonUtilities.addSearchPaths(ldLibPath, searchPaths, binary);
                 for(String dll : dependencies) {
-                    dllPaths.put(dll, ImportExecutable.findLocation(dll, ldLibPath));
+                    dllPaths.put(dll, ImportExecutable.findLocation(sourceFileSystem, dll, ldLibPath));
                 }
                 while(true) {
                     List<String> secondary = new ArrayList<>();
@@ -154,7 +159,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         }
                     }
                     for(String so : secondary) {
-                        dllPaths.put(so, ImportExecutable.findLocation(so, ldLibPath));
+                        dllPaths.put(so, ImportExecutable.findLocation(sourceFileSystem, so, ldLibPath));
                     }
                     int search = 0;
                     for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
@@ -163,7 +168,10 @@ public class CreateDependencies implements PropertyChangeListener {
                         }
                     }
                     if (search > 0 && root.length() > 1) {
-                        ImportExecutable.gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
+                        FileObject rootFO = sourceFileSystem.findResource(root);
+                        if (rootFO != null && rootFO.isValid()) {
+                            ImportExecutable.gatherSubFolders(rootFO, new HashSet<String>(), dllPaths);
+                        }
                     }
                     int newSearch = 0;
                     for(Map.Entry<String,String> entry : dllPaths.entrySet()) {
@@ -274,6 +282,12 @@ public class CreateDependencies implements PropertyChangeListener {
                 try {
                     ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                     MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor();
+                    for(Folder folder : configurationDescriptor.getLogicalFolders().getFolders()) {
+                        if (MakeConfigurationDescriptor.HEADER_FILES_FOLDER.equals(folder.getName()) ||
+                            MakeConfigurationDescriptor.RESOURCE_FILES_FOLDER.equals(folder.getName())) {
+                            configurationDescriptor.getLogicalFolders().removeFolderAction(folder);
+                        }
+                    }
                     Applicable applicable = extension.isApplicable(map, lastSelectedProject, false);
                     if (applicable.isApplicable()) {
                         ImportExecutable.resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
@@ -319,14 +333,14 @@ public class CreateDependencies implements PropertyChangeListener {
         }
     }
     
-    private static Project createProject(String executablePath, String arguments, String dir, String envText) throws IOException {
+    private Project createProject(String executablePath, String arguments, String dir, String envText) throws IOException {
         Project project;
         String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
-        String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(executablePath).getName());
-        String baseDir = projectParentFolder + File.separator + projectName;
+        String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(executablePath));
+        String baseDir = projectParentFolder + CndFileUtils.getFileSeparatorChar(sourceFileSystem) + projectName;
         MakeConfiguration conf =  MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir, "Default"); // NOI18N
         // Working dir
-        String wd = new File(executablePath).getParentFile().getPath();
+        String wd = CndPathUtilities.getDirName(executablePath);
         wd = CndPathUtilities.toRelativePath(baseDir, wd);
         wd = CndPathUtilities.normalizeSlashes(wd);
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
@@ -336,7 +350,8 @@ public class CreateDependencies implements PropertyChangeListener {
         exe = CndPathUtilities.normalizeSlashes(exe);
         conf.getMakefileConfiguration().getOutput().setValue(exe);
         updateRunProfile(baseDir, conf.getProfile(), arguments, dir, envText);
-        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, CndFileUtils.createLocalFile(projectParentFolder, projectName));
+        FSPath projectFolder = new FSPath(sourceFileSystem, projectParentFolder+CndFileUtils.getFileSeparatorChar(sourceFileSystem)+projectName);
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
         prjParams.setOpenFlag(false).setConfiguration(conf).setImportantFiles(Collections.<String>singletonList(exe).iterator());
         project = ProjectGenerator.createBlankProject(prjParams);
         return project;

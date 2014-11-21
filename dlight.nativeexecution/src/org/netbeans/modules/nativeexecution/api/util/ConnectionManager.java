@@ -372,7 +372,16 @@ public final class ConnectionManager {
         }
 
         if (!UNIT_TEST_MODE) {
-            initiateConnection(env, jsch);
+            try {
+                initiateConnection(env, jsch);
+            } catch (IOException e) {
+                if (MiscUtils.isJSCHTooLongException(e)) {
+                    MiscUtils.showJSCHTooLongNotification(env.getDisplayName());
+                }
+                if (!(e.getCause() instanceof JSchException)) {
+                    throw e;
+                }
+            }
         } else {
             // Attempt to workaround "Auth fail" in tests, see IZ 190458
             // We try to reconnect up to 10 times if "Auth fail" exception happens

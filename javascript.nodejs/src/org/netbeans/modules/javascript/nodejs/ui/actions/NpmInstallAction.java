@@ -60,6 +60,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 @ActionID(id = "org.netbeans.modules.javascript.nodejs.ui.actions.NpmInstallAction", category = "Build")
 @ActionRegistration(displayName = "#NpmInstallAction.name", lazy = false)
@@ -109,34 +110,33 @@ public final class NpmInstallAction extends AbstractAction implements ContextAwa
     @Override
     public Action createContextAwareInstance(Lookup context) {
         Project contextProject = context.lookup(Project.class);
-        FileObject dir;
+        PackageJson packageJson = null;
         if (contextProject != null) {
             // project action
-            dir = contextProject.getProjectDirectory();
+            packageJson = new PackageJson(contextProject.getProjectDirectory());
         } else {
             // package.json directly
-            dir = context.lookup(FileObject.class);
-            if (dir != null) {
-                dir = dir.getParent();
-            } else {
+            FileObject file = context.lookup(FileObject.class);
+            if (file == null) {
                 DataObject dataObject = context.lookup(DataObject.class);
                 if (dataObject != null) {
-                    dir = dataObject.getPrimaryFile().getParent();
+                    file = dataObject.getPrimaryFile();
                 }
             }
+            if (file != null) {
+                packageJson = new PackageJson(file.getParent());
+            }
         }
-        if (dir == null) {
+        if (packageJson == null) {
             return this;
         }
-        assert dir.getFileObject("package.json") != null : dir;
-        PackageJson packageJson = new PackageJson(dir);
         if (!packageJson.exists()) {
             return this;
         }
         if (packageJson.getDependencies().isEmpty()) {
             return this;
         }
-        return new NpmInstallAction(contextProject != null ? contextProject : FileOwnerQuery.getOwner(dir));
+        return new NpmInstallAction(contextProject != null ? contextProject : FileOwnerQuery.getOwner(Utilities.toURI(packageJson.getFile())));
     }
 
 }
