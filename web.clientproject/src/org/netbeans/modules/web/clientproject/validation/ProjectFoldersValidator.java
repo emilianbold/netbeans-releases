@@ -43,7 +43,7 @@ package org.netbeans.modules.web.clientproject.validation;
 
 import java.io.File;
 import org.netbeans.modules.web.clientproject.api.validation.FolderValidator;
-import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
 
 /**

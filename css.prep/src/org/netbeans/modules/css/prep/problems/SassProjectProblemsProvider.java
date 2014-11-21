@@ -48,7 +48,7 @@ import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
 
 public final class SassProjectProblemsProvider extends BaseProjectProblemsProvider {

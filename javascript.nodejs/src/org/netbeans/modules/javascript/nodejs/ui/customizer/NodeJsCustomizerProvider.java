@@ -44,7 +44,7 @@ package org.netbeans.modules.javascript.nodejs.ui.customizer;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;

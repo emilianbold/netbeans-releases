@@ -278,48 +278,27 @@ public final class DiscoveryWizardAction extends NodeAction {
     private InstantiatingIterator getPanels() {
         @SuppressWarnings("unchecked")
         WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
-            new SelectModeWizard()
-            ,new SelectProviderWizard()
+            new SelectProviderWizard()
             ,new SelectObjectFilesWizard()
             ,new SelectConfigurationWizard()
         };
-        @SuppressWarnings("unchecked")
-        WizardDescriptor.Panel<WizardDescriptor>[] simplepanels = new WizardDescriptor.Panel[] {
-            panels[0]
-            ,new SimpleConfigurationWizard()
-        };
         String[] steps = new String[panels.length];
-        String[] simple = new String[simplepanels.length];
-        String[] advanced = new String[2];
-        advanced[0] = panels[0].getComponent().getName();
-        advanced[1] = "..."; // NOI18N
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             steps[i] = c.getName();
-            setupComponent(steps, advanced, i, c);
-            if (i < simple.length){
-                c = simplepanels[i].getComponent();
-                simple[i] = c.getName();
-                if (i > 0 && i < simple.length){
-                    setupComponent(simple, null, i, c);
-                }
-            }
+            setupComponent(steps, i, c);
         }
         
-        return new DiscoveryWizardIterator(panels,simplepanels);
+        return new DiscoveryWizardIterator(panels);
     }
     
-    private void setupComponent(final String[] steps, final String[] advanced, final int i, final Component c) {
+    private void setupComponent(final String[] steps, final int i, final Component c) {
         if (c instanceof JComponent) { // assume Swing components
             JComponent jc = (JComponent) c;
             // Sets step number of a component
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i); // NOI18N
             // Sets steps names for a panel
-            if (i == 0) {
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, advanced); // NOI18N
-            } else {
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
-            }
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             // Turn on subtitle creation on each step
             jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
             // Show steps on the left side with the image on the background

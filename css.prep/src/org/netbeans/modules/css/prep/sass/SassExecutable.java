@@ -53,12 +53,13 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
-import org.netbeans.modules.css.prep.util.ExternalExecutable;
-import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.ExternalExecutable;
+import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
@@ -186,7 +187,8 @@ public final class SassExecutable {
     private ExternalExecutable getExecutable(String title, File workDir) {
         return new ExternalExecutable(sassPath)
                 .workDir(workDir)
-                .displayName(title);
+                .displayName(title)
+                .optionsPath(CssPreprocessors.OPTIONS_PATH);
     }
 
     private ExecutionDescriptor getDescriptor(Runnable postTask) {

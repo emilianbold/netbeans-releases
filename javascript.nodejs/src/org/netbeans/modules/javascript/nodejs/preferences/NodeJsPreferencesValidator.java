@@ -48,9 +48,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
 
 public final class NodeJsPreferencesValidator {

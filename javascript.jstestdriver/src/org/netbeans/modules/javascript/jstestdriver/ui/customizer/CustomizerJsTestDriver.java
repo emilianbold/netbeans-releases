@@ -58,7 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferences;
 import org.netbeans.modules.javascript.jstestdriver.preferences.JsTestDriverPreferencesValidator;
 import org.netbeans.modules.javascript.jstestdriver.util.JsTestDriverUtils;
-import org.netbeans.modules.javascript.jstestdriver.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;

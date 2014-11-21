@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.karma.util;
+package org.netbeans.modules.parsing.impl.indexing.implspi;
 
-import org.netbeans.api.annotations.common.NullAllowed;
+import java.net.URL;
+import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
-// XXX copied from PHP
-public final class ExternalExecutableValidator {
+/**
+ *
+ * @author Tomas Zezula
+ */
+public abstract class ContextProvider {
 
-    private ExternalExecutableValidator() {
-    }
+    private static final AtomicReference<ContextProvider> instance = new AtomicReference<>();
 
-    /**
-     * Return {@code true} if the given command is {@link #validateCommand(String, String) valid}.
-     * @param command command to be validated, can be {@code null}
-     * @return {@code true} if the given command is {@link #validateCommand(String, String) valid}, {@code false} otherwise
-     */
-    public static boolean isValidCommand(@NullAllowed String command) {
-        return validateCommand(command, (String) null) == null;
-    }
+    @CheckForNull
+    public abstract Lookup getContext(@NonNull FileObject file);
 
-    /**
-     * Validate the given command and return error if it is not valid, {@code null} otherwise.
-     * @param command command to be validated, can be {@code null}
-     * @param executableName the name of the executable (e.g. "Doctrine script"), can be {@code null} (in such case, "File" is used)
-     * @return error if it is not valid, {@code null} otherwise
-     */
-    public static String validateCommand(@NullAllowed String command, @NullAllowed String executableName) {
-        String executable = null;
-        if (command != null) {
-            executable = ExternalExecutable.parseCommand(command).first();
+    @CheckForNull
+    public abstract Lookup getContext(@NonNull URL url);
+
+    @NonNull
+    public static ContextProvider getDefault() {
+        ContextProvider res = instance.get();
+        if (res == null) {
+            res = Lookup.getDefault().lookup(ContextProvider.class);
+            if (res == null) {
+                res = new DefaultContextProvider();
+            }
+            if (!instance.compareAndSet(null, res)) {
+                res = instance.get();
+            }
         }
-        if (executableName == null) {
-            return FileUtils.validateFile(executable, false);
-        }
-        return FileUtils.validateFile(executableName, executable, false);
+        assert res != null;
+        return res;
     }
 
+    private static final class DefaultContextProvider extends ContextProvider {
+
+        @Override
+        public Lookup getContext(@NonNull final FileObject file) {
+            return Lookup.getDefault();
+        }
+
+        @Override
+        public Lookup getContext(@NonNull final URL url) {
+            return Lookup.getDefault();
+        }
+    }
 }

@@ -41,9 +41,10 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.api.annotations.common.CheckReturnValue;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
@@ -54,7 +55,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 public final class Notifications {
@@ -149,21 +149,25 @@ public final class Notifications {
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message));
     }
 
-    @CheckReturnValue
-    public static boolean ask(final String title, final String question) {
-        return Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
+    public static void ask(final String title, final String question, @NullAllowed final Runnable yesTask, @NullAllowed final Runnable noTask) {
+        EventQueue.invokeLater(new Runnable() {
             @Override
-            public Boolean run() {
+            public void run() {
                 NotifyDescriptor confirmation = new NotifyDescriptor.Confirmation(question, title, NotifyDescriptor.YES_NO_OPTION);
-                return DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION;
+                if (DialogDisplayer.getDefault().notify(confirmation) == NotifyDescriptor.YES_OPTION) {
+                    if (yesTask != null) {
+                        yesTask.run();
+                    }
+                } else if (noTask != null) {
+                    noTask.run();
+                }
             }
         });
     }
 
     @NbBundle.Messages("Notifications.ask.sync=Sync changes between project and package.json?")
-    @CheckReturnValue
-    public static boolean askSyncChanges(Project project) {
-        return ask(NodeJsUtils.getProjectDisplayName(project), Bundle.Notifications_ask_sync());
+    public static void askSyncChanges(Project project, @NullAllowed Runnable yesTask, @NullAllowed Runnable noTask) {
+        ask(NodeJsUtils.getProjectDisplayName(project), Bundle.Notifications_ask_sync(), yesTask, noTask);
     }
 
 }

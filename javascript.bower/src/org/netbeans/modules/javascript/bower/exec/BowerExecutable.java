@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.exec;
+package org.netbeans.modules.javascript.bower.exec;
 
 import java.awt.EventQueue;
 import java.io.File;
@@ -48,86 +48,76 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.file.PackageJson;
-import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
-import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
-import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
-import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
-import org.netbeans.modules.javascript.nodejs.util.StringUtils;
+import org.netbeans.modules.javascript.bower.options.BowerOptions;
+import org.netbeans.modules.javascript.bower.options.BowerOptionsValidator;
+import org.netbeans.modules.javascript.bower.util.BowerUtils;
+import org.netbeans.modules.javascript.bower.util.FileUtils;
+import org.netbeans.modules.javascript.bower.util.StringUtils;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+public class BowerExecutable {
 
-public class NpmExecutable {
-
-    private static final Logger LOGGER = Logger.getLogger(NpmExecutable.class.getName());
-
-    public static final String NPM_NAME = "npm"; // NOI18N
-
-    public static final String SAVE_PARAM = "--save"; // NOI18N
-    public static final String SAVE_DEV_PARAM = "--save-dev"; // NOI18N
-    public static final String SAVE_OPTIONAL_PARAM = "--save-optional"; // NOI18N
+    public static final String BOWER_NAME = "bower"; // NOI18N
 
     private static final String INSTALL_PARAM = "install"; // NOI18N
 
     protected final Project project;
-    protected final String npmPath;
+    protected final String bowerPath;
 
 
-    NpmExecutable(String npmPath, @NullAllowed Project project) {
-        assert npmPath != null;
-        this.npmPath = npmPath;
+    BowerExecutable(String bowerPath, @NullAllowed Project project) {
+        assert bowerPath != null;
+        this.bowerPath = bowerPath;
         this.project = project;
     }
 
     @CheckForNull
-    public static NpmExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
-        ValidationResult result = new NodeJsOptionsValidator()
-                .validateNpm()
+    public static BowerExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
+        ValidationResult result = new BowerOptionsValidator()
+                .validateBower()
                 .getResult();
         if (validateResult(result) != null) {
             if (showOptions) {
-                OptionsDisplayer.getDefault().open(NodeJsOptionsPanelController.OPTIONS_PATH);
+                // XXX
+                // OptionsDisplayer.getDefault().open(BowerOptionsPanelController.OPTIONS_PATH);
             }
             return null;
         }
-        return createExecutable(NodeJsOptions.getInstance().getNpm(), project);
+        return createExecutable(BowerOptions.getInstance().getBower(), project);
     }
 
-    private static NpmExecutable createExecutable(String npm, Project project) {
+    private static BowerExecutable createExecutable(String bower, Project project) {
         if (Utilities.isMac()) {
-            return new MacNpmExecutable(npm, project);
+            return new MacBowerExecutable(bower, project);
         }
-        return new NpmExecutable(npm, project);
+        return new BowerExecutable(bower, project);
     }
 
     String getCommand() {
-        return npmPath;
+        return bowerPath;
     }
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "NpmExecutable.install=npm ({0})",
+        "BowerExecutable.install=Bower ({0})",
     })
     @CheckForNull
     public Future<Integer> install(String... args) {
         assert !EventQueue.isDispatchThread();
         assert project != null;
-        String projectName = NodeJsUtils.getProjectDisplayName(project);
-        Future<Integer> task = getExecutable(Bundle.NpmExecutable_install(projectName))
+        String projectName = BowerUtils.getProjectDisplayName(project);
+        Future<Integer> task = getExecutable(Bundle.BowerExecutable_install(projectName))
                 .additionalParameters(getInstallParams(args))
                 .run(getDescriptor());
-        assert task != null : npmPath;
+        assert task != null : bowerPath;
         return task;
     }
 
@@ -136,7 +126,8 @@ public class NpmExecutable {
         return new ExternalExecutable(getCommand())
                 .workDir(getWorkDir())
                 .displayName(title)
-                .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
+                // XXX
+                //.optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
                 .noOutput(false);
     }
 
@@ -146,7 +137,8 @@ public class NpmExecutable {
                 .frontWindow(true)
                 .frontWindowOnError(false)
                 .controllable(true)
-                .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
+                // XXX
+                //.optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
     }
@@ -155,14 +147,7 @@ public class NpmExecutable {
         if (project == null) {
             return FileUtils.TMP_DIR;
         }
-        PackageJson packageJson = new PackageJson(project.getProjectDirectory());
-        if (packageJson.exists()) {
-            return new File(packageJson.getPath()).getParentFile();
-        }
-        File sourceRoot = NodeJsUtils.getSourceRoot(project);
-        if (sourceRoot != null) {
-            return sourceRoot;
-        }
+        // XXX check bower.json
         File workDir = FileUtil.toFile(project.getProjectDirectory());
         assert workDir != null : project.getProjectDirectory();
         return workDir;
@@ -190,20 +175,20 @@ public class NpmExecutable {
             return null;
         }
         if (result.hasErrors()) {
-            return result.getErrors().get(0).getMessage();
+            return result.getFirstErrorMessage();
         }
-        return result.getWarnings().get(0).getMessage();
+        return result.getFirstWarningMessage();
     }
 
     //~ Inner classes
 
-    private static final class MacNpmExecutable extends NpmExecutable {
+    private static final class MacBowerExecutable extends BowerExecutable {
 
         private static final String BASH_COMMAND = "/bin/bash -lc"; // NOI18N
 
 
-        MacNpmExecutable(String npmPath, Project project) {
-            super(npmPath, project);
+        MacBowerExecutable(String bowerPath, Project project) {
+            super(bowerPath, project);
         }
 
         @Override
@@ -215,7 +200,7 @@ public class NpmExecutable {
         List<String> getParams(List<String> params) {
             StringBuilder sb = new StringBuilder(200);
             sb.append("\""); // NOI18N
-            sb.append(npmPath);
+            sb.append(bowerPath);
             sb.append("\" \""); // NOI18N
             sb.append(StringUtils.implode(super.getParams(params), "\" \"")); // NOI18N
             sb.append("\""); // NOI18N

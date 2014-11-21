@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.options;
+package org.netbeans.modules.html.angular.model;
 
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.sass.SassExecutable;
-import org.netbeans.modules.css.prep.util.StringUtils;
-import org.netbeans.modules.web.common.api.ValidationResult;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
-public final class CssPrepOptionsValidator {
+/**
+ *
+ * @author Roman Svitanic
+ */
+@NbBundle.Messages("LBL_Angular=AngularJS")
+@ModelInterceptor.Registration(priority = 300)
+public class AngularModelInterceptor implements ModelInterceptor {
 
-    private final ValidationResult result = new ValidationResult();
+    private static final Logger LOGGER = Logger.getLogger(AngularModelInterceptor.class.getName());
 
+    // for unit testing
+    @SuppressWarnings("PackageVisibleField")
+    static boolean disabled = false;
 
-    public ValidationResult getResult() {
-        return result;
-    }
-
-    public CssPrepOptionsValidator validateSassPath(String sassPath, boolean allowEmpty) {
-        if (allowEmpty
-                && !StringUtils.hasText(sassPath)) {
-            // no warning in dialog, project problems will catch it
-            return this;
+    @Override
+    public Collection<JsObject> interceptGlobal(ModelElementFactory factory, FileObject fo) {
+        if (disabled) {
+            return Collections.emptySet();
         }
-        String warning = SassExecutable.validate(sassPath);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("sass.path", warning)); // NOI18N
+        InputStream is = getClass().getClassLoader().getResourceAsStream(
+                "org/netbeans/modules/html/angular/model/resources/angular-1.3.3.model"); // NOI18N
+        try {
+            return Collections.singleton(factory.loadGlobalObject(is, Bundle.LBL_Angular(),
+                    new URL("https://docs.angularjs.org/api/ng"))); // NOI18N
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            return Collections.emptySet();
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
         }
-        return this;
-    }
-
-    public CssPrepOptionsValidator validateLessPath(String lessPath, boolean allowEmpty) {
-        if (allowEmpty
-                && !StringUtils.hasText(lessPath)) {
-            // no warning in dialog, project problems will catch it
-            return this;
-        }
-        String warning = LessExecutable.validate(lessPath);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("less.path", warning)); // NOI18N
-        }
-        return this;
     }
 
 }

@@ -53,13 +53,14 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
-import org.netbeans.modules.css.prep.util.ExternalExecutable;
-import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.StringUtils;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.VersionOutputProcessorFactory;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.ExternalExecutable;
+import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -194,7 +195,8 @@ public class LessExecutable {
     private ExternalExecutable getExecutable(String title, File workDir) {
         return new ExternalExecutable(getCommand())
                 .workDir(workDir)
-                .displayName(title);
+                .displayName(title)
+                .optionsPath(CssPreprocessors.OPTIONS_PATH);
     }
 
     private ExecutionDescriptor getDescriptor(Runnable postTask) {
