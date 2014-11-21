@@ -169,8 +169,9 @@ public final class Util {
      * @param description the description text
      * @since 1.85
      */
-    public static void createIssue(Repository repository, String summary, String description) {
-        repository.getImpl().createNewIssue(summary, description);
+    public static void createIssue(Repository repository, String summary, String description) {        
+        IssueImpl issue = repository.getImpl().createNewIssue(summary, description);
+        issue.open();
     }
     
     /**

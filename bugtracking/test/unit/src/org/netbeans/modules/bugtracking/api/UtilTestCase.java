@@ -99,7 +99,7 @@ public class UtilTestCase extends NbTestCase {
         Repository repo = getRepo();
         APITestRepository apiRepo = getApiRepo();
         
-        assertNull(apiRepo.newIssue);
+        apiRepo.newIssue = null;
         Util.createNewIssue(repo);
         
         long t = System.currentTimeMillis();
@@ -125,6 +125,44 @@ public class UtilTestCase extends NbTestCase {
         if(openedTC == null) {
             fail("TopComponent with new issue wasn't opened");
         }
+        openedTC.close();
+    }
+    
+    public void testCreateIssue() {
+        Repository repo = getRepo();
+        APITestRepository apiRepo = getApiRepo();
+        
+        apiRepo.newIssue = null;
+        String summary = "summary";
+        String desc = "desc";
+        Util.createIssue(repo, summary, desc);
+        
+        long t = System.currentTimeMillis();
+        TopComponent openedTC = null;
+        while(openedTC == null) {
+            Set<TopComponent> openedTCs = WindowManager.getDefault().getRegistry().getOpened();
+            for (TopComponent tc : openedTCs) {
+                if(tc instanceof IssueTopComponent) {
+                    IssueTopComponent itc = (IssueTopComponent)tc;
+                    IssueImpl issueImpl = itc.getIssue();
+                    if(issueImpl != null && issueImpl.isData(apiRepo.newIssue)) {
+                        openedTC = tc;
+                        break;
+                    }
+                }
+            }
+            if(System.currentTimeMillis() - t > 5000) {
+                break;
+            }
+        }
+        
+        assertNotNull(apiRepo.newIssue);
+        if(openedTC == null) {
+            fail("TopComponent with new issue wasn't opened");
+        }
+        assertEquals(summary, apiRepo.newIssue.getSummary());
+        assertEquals(desc, apiRepo.newIssue.getDescription());
+        
         openedTC.close();
     }
     
