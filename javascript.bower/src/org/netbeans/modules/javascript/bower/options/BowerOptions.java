@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.bower.options;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.javascript.bower.exec.BowerExecutable;
 import org.netbeans.modules.javascript.bower.util.FileUtils;
 import org.openide.util.NbPreferences;
 
@@ -75,8 +76,7 @@ public final class BowerOptions {
         if (path == null
                 && !bowerSearched) {
             bowerSearched = true;
-            // XXX
-            List<String> files = FileUtils.findFileOnUsersPath("bower");
+            List<String> files = FileUtils.findFileOnUsersPath(BowerExecutable.BOWER_NAME);
             if (!files.isEmpty()) {
                 path = files.get(0);
                 setBower(path);
