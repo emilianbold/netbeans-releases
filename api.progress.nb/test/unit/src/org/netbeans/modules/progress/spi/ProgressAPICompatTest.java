@@ -135,10 +135,13 @@ public class ProgressAPICompatTest extends NbTestCase {
         
         InternalHandle ih = new InternalHandle("foo", null, true);
         final JLabel jl = (JLabel)m.invoke(ih);
-        ProgressHandle ph = ih.createProgressHandle();
+        final ProgressHandle ph = ih.createProgressHandle();
         ph.start(1);
         ph.progress("bar", 1);
+        // the progress is not updated immediately; wait a little (no suitable event listener);
         // label gets initialized in AWT, wait for the pending EDT queue items
+
+        Thread.sleep(1000);
         SwingUtilities.invokeAndWait(new Runnable() { public void run() {
             assertEquals("bar", jl.getText());
         }});

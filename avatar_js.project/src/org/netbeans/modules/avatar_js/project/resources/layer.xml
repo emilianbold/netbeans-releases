@@ -90,7 +90,7 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                     <attr name="position" intvalue="500"/>
                 </file>
                 <file name="org-netbeans-modules-web-clientproject-grunt-NpmInstallAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-web-clientproject-grunt-NpmInstallAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-javascript-nodejs-ui-actions-NpmInstallAction.instance"/>
                     <attr name="position" intvalue="600"/>
                 </file>
                 <file name="sep-2.instance">
