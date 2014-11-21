@@ -253,8 +253,13 @@ public abstract class BasicAbstractResultsPanel
 
     private void toggleExpandNodeChildren(boolean expand) {
         Node resultsNode = resultsOutlineSupport.getResultsNode();
-        for (Node n : resultsNode.getChildren().getNodes()) {
-            toggleExpand(n, expand);
+        enableExpandListener(false);
+        try {
+            for (Node n : resultsNode.getChildren().getNodes()) {
+                toggleExpand(n, expand);
+            }
+        } finally {
+            enableExpandListener(true);
         }
     }
 
@@ -355,6 +360,10 @@ public abstract class BasicAbstractResultsPanel
         }
     }
 
+    private void enableExpandListener(boolean enable) {
+        resultsOutlineSupport.setExpansionListenerEnabled(enable);
+    }
+
     private void initResultNodeAdditionListener() {
         resultsNodeAdditionListener = new NodeAdapter() {
             @Override
@@ -365,7 +374,12 @@ public abstract class BasicAbstractResultsPanel
                             EventQueue.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    toggleExpand(n, true);
+                                    enableExpandListener(false);
+                                    try {
+                                        toggleExpand(n, true);
+                                    } finally {
+                                        enableExpandListener(true);
+                                    }
                                 }
                             });
                         }
