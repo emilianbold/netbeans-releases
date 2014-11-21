@@ -244,20 +244,14 @@ public class IndexingSupportACIDTest extends IndexingTestBase {
                     }
                     if (cancelScanning) {
                         try {
-                            final Method gwm = RepositoryUpdater.class.getDeclaredMethod("getWorker");  //NOI18N
+                            final Field gwm = RepositoryUpdater.class.getDeclaredField("worker");  //NOI18N
                             gwm.setAccessible(true);
-                            final Object task = gwm.invoke(RepositoryUpdater.getDefault());
+                            final Object task = gwm.get(RepositoryUpdater.getDefault());
                             final Field wipf = task.getClass().getDeclaredField("workInProgress");  //NOI18N
                             wipf.setAccessible(true);
                             RepositoryUpdater.Work work = (RepositoryUpdater.Work) wipf.get(task);
                             work.setCancelled(true);
-                        } catch (NoSuchMethodException e) {
-                            throw new RuntimeException(e);
-                        } catch (NoSuchFieldException e) {
-                            throw new RuntimeException(e);
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException(e);
-                        } catch (InvocationTargetException e) {
+                        } catch (ReflectiveOperationException e) {
                             throw new RuntimeException(e);
                         }
                     }
