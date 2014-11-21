@@ -45,7 +45,7 @@ import java.util.Objects;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
-import org.netbeans.modules.javascript.nodejs.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 

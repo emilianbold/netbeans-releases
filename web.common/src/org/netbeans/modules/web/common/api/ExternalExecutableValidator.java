@@ -39,11 +39,17 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.util;
+package org.netbeans.modules.web.common.api;
 
+import java.io.File;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.util.NbBundle;
 
-// XXX copied from PHP
+/**
+ *
+ * @since 1.74
+ */
 public final class ExternalExecutableValidator {
 
     private ExternalExecutableValidator() {
@@ -70,9 +76,47 @@ public final class ExternalExecutableValidator {
             executable = ExternalExecutable.parseCommand(command).first();
         }
         if (executableName == null) {
-            return FileUtils.validateFile(executable, false);
+            return validateFile(executable, false);
         }
-        return FileUtils.validateFile(executableName, executable, false);
+        return validateFile(executableName, executable, false);
+    }
+
+    @NbBundle.Messages("ExternalExecutableValidator.validateFile.file=File")
+    @CheckForNull
+    private static String validateFile(String filePath, boolean writable) {
+        return validateFile(Bundle.ExternalExecutableValidator_validateFile_file(), filePath, writable);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - source",
+        "ExternalExecutableValidator.validateFile.missing={0} must be selected.",
+        "# {0} - source",
+        "ExternalExecutableValidator.validateFile.notAbsolute={0} must be an absolute path.",
+        "# {0} - source",
+        "ExternalExecutableValidator.validateFile.notFile={0} must be a valid file.",
+        "# {0} - source",
+        "ExternalExecutableValidator.validateFile.notReadable={0} is not readable.",
+        "# {0} - source",
+        "ExternalExecutableValidator.validateFile.notWritable={0} is not writable."
+    })
+    @CheckForNull
+    private static String validateFile(String source, String filePath, boolean writable) {
+        if (filePath == null
+                || filePath.trim().isEmpty()) {
+            return Bundle.ExternalExecutableValidator_validateFile_missing(source);
+        }
+
+        File file = new File(filePath);
+        if (!file.isAbsolute()) {
+            return Bundle.ExternalExecutableValidator_validateFile_notAbsolute(source);
+        } else if (!file.isFile()) {
+            return Bundle.ExternalExecutableValidator_validateFile_notFile(source);
+        } else if (!file.canRead()) {
+            return Bundle.ExternalExecutableValidator_validateFile_notReadable(source);
+        } else if (writable && !file.canWrite()) {
+            return Bundle.ExternalExecutableValidator_validateFile_notWritable(source);
+        }
+        return null;
     }
 
 }

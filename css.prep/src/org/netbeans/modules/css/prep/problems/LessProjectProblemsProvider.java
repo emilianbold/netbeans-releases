@@ -48,7 +48,7 @@ import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
 
 public final class LessProjectProblemsProvider extends BaseProjectProblemsProvider {
