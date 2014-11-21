@@ -199,19 +199,6 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         controller.getWizardStorage().validate();
     }
 
-    private FileObject findProjectCreator() {
-        for(CompilerSet set : CompilerSetManager.get(env).getCompilerSets()) {
-            if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                String directory = set.getDirectory();
-                FileObject creator = fileSystem.findResource(directory+"/../lib/ide_project/bin/ide_project");
-                if (creator != null && creator.isValid()) {
-                    return creator;
-                }
-            }
-        }
-        return null;
-    }
-
     private void updateRoot(){
         sourcesField.setEnabled(false);
         sourcesButton.setEnabled(false);
@@ -219,9 +206,10 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         viewComboBox.setEnabled(false);
         table.setModel(new DefaultTableModel(0, 0));
         if (validBinary()) {
-            if (env.isRemote() && findProjectCreator() == null) {
-                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("ERROR_FIND_PROJECT_CREATOR", env.getDisplayName()));  // NOI18N
-                return;
+            if (env.isRemote()) {
+                // TODO check java on remote host
+                //controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("ERROR_FIND_PROJECT_CREATOR", env.getDisplayName()));  // NOI18N
+                //return;
             }
             controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
             checking.incrementAndGet();
