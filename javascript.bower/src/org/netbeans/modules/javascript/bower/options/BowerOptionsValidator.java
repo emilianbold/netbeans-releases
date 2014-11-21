@@ -53,6 +53,10 @@ public final class BowerOptionsValidator {
 
 
     public BowerOptionsValidator validate() {
+        return validateBower();
+    }
+
+    public BowerOptionsValidator validateBower() {
         return validateBower(BowerOptions.getInstance().getBower());
     }
 
