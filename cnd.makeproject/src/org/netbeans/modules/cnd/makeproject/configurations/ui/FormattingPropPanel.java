@@ -159,6 +159,12 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
         String styles = null;
         StringBuilder def = new StringBuilder();
+        //the problem here if provider is not found (f.E. module is not loaded, see bz#247485)
+        //the list of predefined styles still used, which is incorrect
+        //just return empty TreeMap here
+        if (myProvider == null) {
+            return new TreeMap<>();
+        }
         for(String s: PREDEFINED_STYLES){
             if (def.length() > 0){
                 def.append(SEPARATOR);
@@ -194,6 +200,9 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
                 myProvider = p;
                 pref = p.forDocument(null, mimeType);
             }
+        }
+        if (myProvider == null) {
+            return styleId;
         }
         return getStyleDisplayName(pref, myProvider, styleId);
     }
