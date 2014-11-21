@@ -3845,7 +3845,7 @@ public class Reformatter implements ReformatTask {
                                 start = tokens.offset();
                             }
                             tokens.moveNext();
-                            while (!diffs.isEmpty() && (d = diffs.getFirst()) != null && d.getStartOffset() >= start)
+                            while (!diffs.isEmpty() && (d = diffs.getFirst()) != null && d.getStartOffset() >= start && (d.text == null || d.text.indexOf('}') < 0))
                                 diffs.removeFirst();
                             addDiff(new Diff(start, tokens.offset(), null));
                             return false;
