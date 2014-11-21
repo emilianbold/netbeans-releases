@@ -61,7 +61,6 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport.BrowserComboBoxModel;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.ui.BrowseFolders;
@@ -69,6 +68,7 @@ import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectPro
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
 import org.netbeans.modules.web.clientproject.validation.RunProjectValidator;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.filesystems.FileObject;

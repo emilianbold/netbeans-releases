@@ -44,7 +44,7 @@ package org.netbeans.modules.web.clientproject.validation;
 import java.io.File;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
+import org.netbeans.modules.web.common.api.ValidationResult;
 
 public class ProjectFoldersValidatorTest extends NbTestCase {
 

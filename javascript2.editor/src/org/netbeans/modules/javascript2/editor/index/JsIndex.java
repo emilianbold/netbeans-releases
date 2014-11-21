@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.index;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -61,13 +63,21 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -134,8 +144,6 @@ public class JsIndex {
         }
     };
 
-    private static final AtomicBoolean INDEX_CHANGED = new AtomicBoolean(true);
-
     private static final Map<StatsKey, StatsValue> QUERY_STATS = new HashMap<StatsKey, StatsValue>();
 
     /* GuardedBy(QUERY_STATS) */
@@ -160,7 +168,15 @@ public class JsIndex {
     }
 
     public static void changeInIndex() {
-        INDEX_CHANGED.set(true);
+        WRITE_LOCK.lock();
+        try {
+            CACHE_INDEX_RESULT_SMALL.clear();
+            CACHE_INDEX_RESULT_LARGE.clear();
+            INDEX_CACHE.clear();
+            LOG.log(Level.FINEST, "Cache cleared");
+        } finally {
+            WRITE_LOCK.unlock();
+        }
     }
 
     public static JsIndex get(FileObject fo) {
@@ -181,18 +197,7 @@ public class JsIndex {
         }
 
         try {
-            if (INDEX_CHANGED.get()) {
-                WRITE_LOCK.lock();
-                try {
-                    CACHE_INDEX_RESULT_SMALL.clear();
-                    CACHE_INDEX_RESULT_LARGE.clear();
-                    LOG.log(Level.FINEST, "Cache cleared");
-                } finally {
-                    WRITE_LOCK.unlock();
-                }
-                INDEX_CHANGED.set(false);
-            }
-
+            
             CacheKey key = new CacheKey(this, fieldName, fieldValue, kind);
             CacheValue value = getCachedValue(key, fieldsToLoad);
 

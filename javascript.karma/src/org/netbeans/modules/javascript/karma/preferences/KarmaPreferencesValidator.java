@@ -43,9 +43,9 @@
 package org.netbeans.modules.javascript.karma.preferences;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.karma.util.ExternalExecutableValidator;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
-import org.netbeans.modules.javascript.karma.util.ValidationResult;
+import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
 
 public final class KarmaPreferencesValidator {
