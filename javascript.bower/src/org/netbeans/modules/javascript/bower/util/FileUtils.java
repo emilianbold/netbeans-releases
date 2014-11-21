@@ -59,6 +59,8 @@ public final class FileUtils {
 
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
 
+    public static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+
 
     private FileUtils() {
     }
