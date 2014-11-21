@@ -235,7 +235,7 @@ public final class ModificationResult {
                 if (provider != null) {
                     for (Document activeDocument : provider.getActiveDocuments()) {
                         FileObject fileObject = Utilities.getFileObject(activeDocument);
-                        if (!alreadyRefreshed.contains(fileObject)) {
+                        if (fileObject != null && !alreadyRefreshed.contains(fileObject)) {
                             Source source = Source.create(fileObject);
                             if (source != null) {
                                 Utilities.revalidate(source);
