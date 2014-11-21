@@ -97,6 +97,10 @@ public class MercurialInterceptor extends VCSInterceptor {
     private final CommandUsageLogger commandLogger;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
     private final Mercurial hg;
+    private static final int STATUS_VCS_MODIFIED_ATTRIBUTE =
+            FileInformation.STATUS_VERSIONED_CONFLICT | 
+            FileInformation.STATUS_VERSIONED_MERGE |
+            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
     MercurialInterceptor(Mercurial hg, FileStatusCache cache) {
         this.cache = cache;
@@ -405,6 +409,15 @@ public class MercurialInterceptor extends VCSInterceptor {
             };
         } else if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
             return new HgSearchHistorySupport(file);
+        } else if ("ProvidedExtensions.VCSIsModified".equals(attrName)) {
+            File repoRoot = Mercurial.getInstance().getRepositoryRoot(file);
+            Boolean modified = null;
+            if (repoRoot != null) {
+                Set<File> coll = Collections.singleton(file);
+                cache.refreshAllRoots(Collections.<File, Set<File>>singletonMap(repoRoot, coll));
+                modified = cache.containsFileOfStatus(coll, STATUS_VCS_MODIFIED_ATTRIBUTE, true);
+            }
+            return modified;
         } else {
             return super.getAttribute(file, attrName);
         }

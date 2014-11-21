@@ -72,6 +72,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -667,7 +668,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 modifiedField.setText(modifiedTxt);
                 fixPrefSize(modifiedField);
                 
-                privateNotesField.setText(issue.getPrivateNotes());
+                String privateNotes = issue.getPrivateNotes();                
+                setPrivateSectionLabel(privateNotes);
+                
                 dueDatePicker.setDate(issue.getDueDate());
                 NbDateRange scheduleDate = issue.getScheduleDate();
                 scheduleDatePicker.setScheduleDate(scheduleDate == null ? null : scheduleDate.toSchedulingInfo());
@@ -778,6 +781,18 @@ public class IssuePanel extends javax.swing.JPanel {
         cancelButton.setEnabled(issue.hasLocalEdits() || !unsavedFields.isEmpty());
         reloading = false;
         repaint();
+    }
+
+    protected void setPrivateSectionLabel(String privateNotes) throws MissingResourceException {
+        if(privateNotes != null && !privateNotes.isEmpty() ) {
+            privateSection.setLabel("<html>" + // NOI18N
+                    org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateAttributesSection.text") + // NOI18N
+                    " (<i><b>" +  // NOI18N
+                    org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateAttributesSection.containsNotes") +  // NOI18N
+                    "</b></i>)</html>"); // NOI18N
+        } else {
+            privateSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateAttributesSection.text")); // NOI18N
+        }
     }
 
     private void reloadCustomFields(boolean force) {
@@ -3904,7 +3919,9 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskPrivateNotes(privateNotesField.getText());
+                String txt = privateNotesField.getText();
+                issue.setTaskPrivateNotes(txt);
+                setPrivateSectionLabel(txt);
                 return true;
             }
         });
