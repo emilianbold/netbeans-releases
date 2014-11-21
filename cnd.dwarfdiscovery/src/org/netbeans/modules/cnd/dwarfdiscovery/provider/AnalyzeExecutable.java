@@ -225,11 +225,31 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "CannotAnalyzeExecutable",set)));
             }
             RemoteJavaExecution processor = new RemoteJavaExecution(fs);
-            ElfReader.SharedLibraries libs = processor.getDlls(set);
-            if (libs != null) {
-                List<SourceFile> compileLines = processor.getCompileLines(set, false);
-                if (compileLines != null) {
-                    return new ApplicableImpl(true, null, null, 0, false, libs.getDlls(), libs.getPaths(), processor.getSourceRoot(compileLines), null);
+            List<SourceFile> compileLines = processor.getCompileLines(set, false);
+            if (compileLines != null) {
+                DiscoveryExtensionInterface.Position main = null;
+                for(final SourceFile source : compileLines) {
+                    if (source.hasMain()) {
+                        main = new DiscoveryExtensionInterface.Position() {
+
+                            @Override
+                            public String getFilePath() {
+                                return source.getSourceFileAbsolutePath();
+                            }
+
+                            @Override
+                            public int getLine() {
+                                return source.getMainLine();
+                            }
+                        };
+                        break;
+                    }
+                }
+                ElfReader.SharedLibraries libs = processor.getDlls(set);
+                if (libs == null) {
+                    return new ApplicableImpl(true, null, null, 0, false, Collections.<String>emptyList(), Collections.<String>emptyList(), processor.getSourceRoot(compileLines), main);
+                } else {
+                    return new ApplicableImpl(true, null, null, 0, false, libs.getDlls(), libs.getPaths(), processor.getSourceRoot(compileLines), main);
                 }
             }
         }

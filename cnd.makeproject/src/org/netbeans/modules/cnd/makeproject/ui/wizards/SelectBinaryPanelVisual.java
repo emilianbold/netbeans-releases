@@ -331,7 +331,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         List<FSPath> validBinaryPath = getValidBinaryPath();
                         sourcesField.setEnabled(validBinary);
                         sourcesButton.setEnabled(validBinary);
-                        dependeciesComboBox.setEnabled(false);
+                        dependeciesComboBox.setEnabled(true);
                         viewComboBox.setEnabled(validBinary);
                         if (validBinary && validBinaryPath != null) {
                             String binaryRoot = CndPathUtilities.getDirName(validBinaryPath.get(0).getPath());

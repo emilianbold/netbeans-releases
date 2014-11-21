@@ -76,9 +76,12 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -388,28 +391,37 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 resultSet.addAll(extension.createProject(wiz));
             }
         } else if (wizardtype == TYPE_BINARY) {
-            String binary = WizardConstants.PROPERTY_BUILD_RESULT.get(wiz);
-            boolean trueSourceRoot = WizardConstants.PROPERTY_TRUE_SOURCE_ROOT.get(wiz);
-            List<String> dlls = WizardConstants.PROPERTY_DEPENDENCIES.get(wiz);
-            String libraries = null;
-            if (dlls != null && !dlls.isEmpty()) {
-                StringBuilder buf = new StringBuilder();
-                for(String s : dlls) {
-                    if (!s.isEmpty()) {
-                        if (buf.length()>0) {
-                            buf.append(':');
-                        }
-                        buf.append(s);
-                    }
+            IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            if (extension != null) {
+                IteratorExtension.ProjectKind kind = WizardConstants.PROPERTY_DEPENDENCY_KIND.get(wiz);
+                if (kind == null) {
+                    kind = IteratorExtension.ProjectKind.IncludeDependencies;
                 }
-                libraries = buf.toString();
+                extension.discoverProject(wiz.getProperties(), null, kind);
+                //resultSet.addAll(extension.createProject(wiz));
             }
-
-            CreateProjectFromBinary creator = new CreateProjectFromBinary(dirF.getFileSystem(), dirF.getPath(), binary, !trueSourceRoot, libraries, ProjectKind.IncludeDependencies);
-            Project createRemoteProject = creator.createRemoteProject();
-            if (createRemoteProject != null) {
-                //resultSet.add(createRemoteProject);
-            }
+//            String binary = WizardConstants.PROPERTY_BUILD_RESULT.get(wiz);
+//            boolean trueSourceRoot = WizardConstants.PROPERTY_TRUE_SOURCE_ROOT.get(wiz);
+//            List<String> dlls = WizardConstants.PROPERTY_DEPENDENCIES.get(wiz);
+//            String libraries = null;
+//            if (dlls != null && !dlls.isEmpty()) {
+//                StringBuilder buf = new StringBuilder();
+//                for(String s : dlls) {
+//                    if (!s.isEmpty()) {
+//                        if (buf.length()>0) {
+//                            buf.append(':');
+//                        }
+//                        buf.append(s);
+//                    }
+//                }
+//                libraries = buf.toString();
+//            }
+//
+//            CreateProjectFromBinary creator = new CreateProjectFromBinary(dirF.getFileSystem(), dirF.getPath(), binary, !trueSourceRoot, libraries, ProjectKind.IncludeDependencies);
+//            Project createRemoteProject = creator.createRemoteProject();
+//            if (createRemoteProject != null) {
+//                //resultSet.add(createRemoteProject);
+//            }
         } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB || wizardtype == TYPE_DB_APPLICATION) {
             int conftype = -1;
             String customizerId = null;
