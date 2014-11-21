@@ -242,15 +242,22 @@ key:TabbedPane:TabbedPaneTab[Selected].backgroundPainter
             g.setClip(x+1, y, width-1, height);
         }
 
+        final boolean attention = isAttention(index);
         Object o = null;
         if (isSelected(index)) {
+            String mouseOver = "TabbedPane:TabbedPaneTab[MouseOver+Selected].backgroundPainter";
+            String selected = "TabbedPane:TabbedPaneTab[Selected].backgroundPainter";
             if (isActive()) {
-                o = UIManager.get("TabbedPane:TabbedPaneTab[MouseOver+Selected].backgroundPainter");
+                o = UIManager.get( attention ? selected : mouseOver);
             } else {
-                o = UIManager.get("TabbedPane:TabbedPaneTab[Selected].backgroundPainter");
+                o = UIManager.get( attention ? mouseOver: selected);
             }
         } else {
-            o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
+            if( attention ) {
+                o = UIManager.get("TabbedPane:TabbedPaneTab[Disabled].backgroundPainter");
+            } else {
+                o = UIManager.get("TabbedPane:TabbedPaneTab[Enabled].backgroundPainter");
+            }
         }
 
         if ((o != null) && (o instanceof javax.swing.Painter)) {
