@@ -47,6 +47,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -65,6 +67,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -81,12 +84,17 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.ChangedCharSetException;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -174,8 +182,26 @@ public class JavadocHelper {
                     return size() > REMOTE_FILE_CONTENT_CACHE_SIZE;
                 }
             });
+        private static final Map<URI,Integer> jdocCache = new ConcurrentHashMap<>();
+        private static final Set<String> docLet1 = Collections.unmodifiableSet(new HashSet<>(
+            Arrays.asList(new String[]{
+                "constructor_summary",  //NOI18N
+                "method_summary",       //NOI18N
+                "field_detail",         //NOI18N
+                "constructor_detail",   //NOI18N
+                "method_detail"         //NOI18N
+            })));
+        private static final Set<String> docLet2 = Collections.unmodifiableSet(new HashSet<>(
+            Arrays.asList(new String[]{
+                "constructor.summary",  //NOI18N
+                "method.summary",       //NOI18N
+                "field.detail",         //NOI18N
+                "constructor.detail",   //NOI18N
+                "method.detail"         //NOI18N
+            })));
         private final List<? extends URL> urls;
         private final AtomicReference<InputStream> stream = new AtomicReference<InputStream>();
+        private URI jdocRoot = null;
         private byte[] cache;
         /**
          * Creates a text stream from a given URL with no preopened stream.
@@ -199,8 +225,12 @@ public class JavadocHelper {
             this.urls = Collections.unmodifiableList(tmpUrls);
         }
 
-        TextStream(@NonNull final Collection<? extends URL> urls, InputStream stream) {
+        TextStream(@NonNull final Collection<? extends URL> urls, @NonNull final URL root, InputStream stream) {
             this(urls);
+            try {
+                this.jdocRoot = root.toURI();
+            } catch (URISyntaxException ex) {
+            }
             this.stream.set(stream);
         }
         /**
@@ -209,7 +239,62 @@ public class JavadocHelper {
          */
         @CheckForNull
         public URL getLocation() {
-            return urls.iterator().next();
+            if (urls.size() == 1) {
+                return urls.get(0);
+            } else {
+                Integer index = jdocRoot == null ? null : jdocCache.get(jdocRoot);
+                if (index == null || index >= urls.size()) {
+                    try {
+                        String charset = null;
+                        for (;;) {
+                            try (Reader reader = charset == null?
+                                    new InputStreamReader(this.openStream()) :
+                                    new InputStreamReader(this.openStream(), charset)){
+                                final HTMLEditorKit.Parser parser = new ParserDelegator();
+                                final int[] state = {-1};
+                                try {
+                                    parser.parse(
+                                        reader,
+                                        new HTMLEditorKit.ParserCallback() {
+                                            @Override
+                                            public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
+                                                if (state[0] == -1) {
+                                                    if (t == HTML.Tag.A) {
+                                                        final String attrName = (String)a.getAttribute(HTML.Attribute.NAME);
+                                                        if (attrName != null) {
+                                                            if (docLet1.contains(attrName)) {
+                                                                state[0] = 0;
+                                                            } else if (docLet2.contains(attrName)) {
+                                                                state[0] = 1;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        charset != null);
+                                    index = state[0] == -1 ? 0 : state[0];
+                                    if (jdocRoot != null) {
+                                        jdocCache.put(jdocRoot,index);
+                                    }
+                                    break;
+                                } catch (ChangedCharSetException e) {
+                                    if (charset == null) {
+                                        charset = JavadocHelper.getCharSet(e);
+                                        //restart with valid charset
+                                    } else {
+                                        throw new IOException(e);
+                                    }
+                                }                            
+                            }
+                        }
+                    } catch (IOException e) {
+                        return null;
+                    }
+                }
+                assert index != null && index != -1;
+                return urls.get(index);
+            }
         }
 
         @NonNull
@@ -237,7 +322,7 @@ public class JavadocHelper {
          */
         public synchronized InputStream openStream() throws IOException {
             if (cache != null) {
-                LOG.log(Level.FINE, "loaded cached content for {0}", getLocation());
+                LOG.log(Level.FINE, "loaded cached content for {0}", getFirstLocation());
                 return new ByteArrayInputStream(cache);
             }
             assert !isRemote() || !EventQueue.isDispatchThread();
@@ -248,7 +333,7 @@ public class JavadocHelper {
                     byte[] data = fileURI == null ? null : remoteFileContentCache.get(fileURI);
                     if (data == null) {
                         if (uncached == null) {
-                            uncached = JavadocHelper.openStream(getLocation());
+                            uncached = JavadocHelper.openStream(getFirstLocation());
                         }
                         ByteArrayOutputStream baos = new ByteArrayOutputStream(20 * 1024); // typical size for Javadoc page?
                         FileUtil.copy(uncached, baos);
@@ -263,11 +348,11 @@ public class JavadocHelper {
                         uncached.close();
                     }
                 }
-                LOG.log(Level.FINE, "cached content for {0} ({1}k)", new Object[] {getLocation(), cache.length / 1024});
+                LOG.log(Level.FINE, "cached content for {0} ({1}k)", new Object[] {getFirstLocation(), cache.length / 1024});
                 return new ByteArrayInputStream(cache);
             } else {
                 if (uncached == null) {
-                    uncached = JavadocHelper.openStream(getLocation());
+                    uncached = JavadocHelper.openStream(getFirstLocation());
                 }
                 return uncached;
             }
@@ -276,12 +361,16 @@ public class JavadocHelper {
          * @return true if this looks to be a web location
          */
         public boolean isRemote() {
-            return JavadocHelper.isRemote(getLocation());
+            return JavadocHelper.isRemote(getFirstLocation());
+        }
+
+        public URL getFirstLocation() {
+            return urls.iterator().next();
         }
 
         @CheckForNull
         private URI getFileURI() {
-            final URL location = getLocation();
+            final URL location = getFirstLocation();
             final String surl = location.toString();
             final int index = surl.lastIndexOf('#');    //NOI18N
             try {
@@ -651,7 +740,7 @@ binRoots:   for (URL binary : binaries) {
                                     replace("+", "%20"); // NOI18N
                                 urls.add(new URI(url.toExternalForm() + '#' + encodedfragment).toURL());
                             }
-                            resList.add(new TextStream(urls, is));
+                            resList.add(new TextStream(urls, root, is));
                             if (!speculative) {
                                 break binRoots;
                             }
@@ -663,7 +752,7 @@ binRoots:   for (URL binary : binaries) {
                             LOG.log(Level.INFO, null, x);
                         }
                     } else {
-                        resList.add(new TextStream(Collections.<URL>singleton(url), is));
+                        resList.add(new TextStream(Collections.<URL>singleton(url), root, is));
                     }
                     if (!speculative) {
                         break binRoots;
