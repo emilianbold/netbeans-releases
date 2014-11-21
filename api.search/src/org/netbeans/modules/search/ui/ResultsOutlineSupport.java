@@ -124,6 +124,7 @@ public class ResultsOutlineSupport {
     private ETableColumnModel columnModel;
     private List<MatchingObjectNode> matchingObjectNodes;
     private boolean closed = false;
+    private volatile boolean expansionListenerEnabled = true;
 
     public ResultsOutlineSupport(boolean replacing, boolean details,
             ResultModel resultModel, BasicComposition basicComposition,
@@ -338,11 +339,22 @@ public class ResultsOutlineSupport {
         resultsNode.update();
     }
 
+    /**
+     * ExpandingTreeExpansionListener should be enabled only when the nodes are
+     * expanded manually. See bug 248558.
+     */
+    void setExpansionListenerEnabled(boolean enabled) {
+        this.expansionListenerEnabled = enabled;
+    }
+
     private class ExpandingTreeExpansionListener
             implements TreeExpansionListener {
 
         @Override
         public void treeExpanded(TreeExpansionEvent event) {
+            if (!expansionListenerEnabled) {
+                return;
+            }
             Object lpc = event.getPath().getLastPathComponent();
             Node node = Visualizer.findNode(lpc);
             if (node != null) {
