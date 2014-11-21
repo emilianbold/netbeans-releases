@@ -207,18 +207,22 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     /** Initializes qualified name */
     protected final void initQualifiedName(CsmScope scope) {
         CharSequence qualifiedNamePostfix = getQualifiedNamePostfix();
+        CharSequence qualName;
         if (CsmKindUtilities.isNamespace(scope)) {
-            qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);
+            qualName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);
         } else if (CsmKindUtilities.isClass(scope)) {
             int last = CharSequenceUtils.lastIndexOf(qualifiedNamePostfix, "::"); // NOI18N
             if (last >= 0) { // NOI18N
                 qualifiedNamePostfix = qualifiedNamePostfix.toString().substring(last + 2); // NOI18N
             }
-            qualifiedName = CharSequenceUtils.concatenate(((CsmClass) scope).getQualifiedName(), "::", qualifiedNamePostfix); // NOI18N
+            qualName = CharSequenceUtils.concatenate(((CsmClass) scope).getQualifiedName(), "::", qualifiedNamePostfix); // NOI18N
         } else {
-            qualifiedName = qualifiedNamePostfix;
+            qualName = qualifiedNamePostfix;
         }
-        qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
+        // substituting of qual name have to be atomic, because this instance can
+        // already be registered and be in repository. Field qualifiedName always
+        // must be compact string because only such strings are allowed in repository
+        this.qualifiedName = QualifiedNameCache.getManager().getString(qualName);
         // can't register here, because descendant class' constructor hasn't yet finished!
         // so registering is a descendant class' responsibility
     }
