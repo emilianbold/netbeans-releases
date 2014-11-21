@@ -1257,7 +1257,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     }
     public void windowClosing(final java.awt.event.WindowEvent p1) {
         // #81938: special handling WizardDescriptor to avoid close wizard during instantiate
-        if (! (descriptor instanceof WizardDescriptor)) {
+        if (!descriptor.isNoDefaultClose() ) {
             descriptor.setValue(NotifyDescriptor.CLOSED_OPTION);
         }
     }
