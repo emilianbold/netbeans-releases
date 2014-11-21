@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -111,6 +112,12 @@ class FilesystemInterceptor extends VCSInterceptor {
     private static final String HEAD_FILE_NAME = "HEAD"; //NOI18N
     private static final String REFS_FILE_NAME = "refs"; //NOI18N
     private static final Logger LOG = Logger.getLogger(FilesystemInterceptor.class.getName());
+    private static final EnumSet<Status> STATUS_VCS_MODIFIED_ATTRIBUTE = EnumSet.of(
+            Status.IN_CONFLICT,
+            Status.MODIFIED_HEAD_INDEX,
+            Status.MODIFIED_HEAD_WORKING_TREE,
+            Status.MODIFIED_INDEX_WORKING_TREE
+    );
 
     public FilesystemInterceptor () {
         cache = Git.getInstance().getFileStatusCache();
@@ -438,6 +445,15 @@ class FilesystemInterceptor extends VCSInterceptor {
                 sb.deleteCharAt(sb.length() - 1);
             }
             return sb.toString();
+        } else if ("ProvidedExtensions.VCSIsModified".equals(attrName)) {
+            File repoRoot = Git.getInstance().getRepositoryRoot(file);
+            Boolean modified = null;
+            if (repoRoot != null) {
+                Set<File> coll = Collections.singleton(file);
+                cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repoRoot, coll));
+                modified = cache.containsFiles(coll, STATUS_VCS_MODIFIED_ATTRIBUTE, true);
+            }
+            return modified;
         } else {
             return super.getAttribute(file, attrName);
         }

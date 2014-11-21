@@ -655,7 +655,18 @@ public class FileStatusCache {
      * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
      */
     public boolean containsFileOfStatus(VCSContext context, int includeStatus, boolean checkCommitExclusions){
-        Set<File> roots = context.getRootFiles();
+        return containsFileOfStatus(context.getRootFiles(), includeStatus, checkCommitExclusions);
+    }
+
+    /**
+     * Check if any file from the roots has at least one file with the passed in status
+     * @param roots root files to recursively check 
+     * @param includeStatus file status to check for
+     * @param checkCommitExclusions if set to true then files excluded from commit will not be tested
+     * @param cached if set to <code>true</code>, only cached values will be checked otherwise it may call I/O operations
+     * @return boolean true if this context contains at least one file with the includeStatus, false otherwise
+     */
+    public boolean containsFileOfStatus(Collection<File> roots, int includeStatus, boolean checkCommitExclusions) {
         for (File root : roots) {
             if (hasStatus(root, includeStatus, checkCommitExclusions)
                     || containsFileOfStatus(root, includeStatus, checkCommitExclusions, !VersioningSupport.isFlat(root))) {

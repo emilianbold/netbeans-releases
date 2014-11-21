@@ -3207,6 +3207,38 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(fromFile).containsStatus(FileInformation.Status.UPTODATE));
         assertTrue(getCache().getStatus(toFile).containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
     }
+    
+    public void testIsModifiedAttributeFile () throws Exception {
+        // file is outside of versioned space, attribute should be unknown
+        File file = new File(getWorkDir(), "file");
+        file.createNewFile();
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        String attributeModified = "ProvidedExtensions.VCSIsModified";
+        
+        Object attrValue = fo.getAttribute(attributeModified);
+        assertNull(attrValue);
+        
+        // file inside a git repo
+        file = new File(repositoryLocation, "file");
+        write(file, "init");
+        fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        add();
+        commit();
+        
+        // unmodified file, returns FALSE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.FALSE, attrValue);
+        
+        write(file, "modification");
+        // modified file, returns TRUE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.TRUE, attrValue);
+        
+        write(file, "init");
+        // back to up to date
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.FALSE, attrValue);
+    }
 
     private void renameDO(File from, File to) throws DataObjectNotFoundException, IOException {
         DataObject daoFrom = DataObject.find(FileUtil.toFileObject(from));

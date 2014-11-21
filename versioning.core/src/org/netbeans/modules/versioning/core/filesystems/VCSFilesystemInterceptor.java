@@ -84,6 +84,11 @@ public final class VCSFilesystemInterceptor {
      */
     private static final String ATTRIBUTE_SEARCH_HISTORY = "ProvidedExtensions.SearchHistorySupport";
 
+    /**
+     * A Boolean specifying if a VCS marks the file as modified or up to date.
+     */
+    private static final String ATTRIBUTE_IS_MODIFIED = "ProvidedExtensions.VCSIsModified";
+
     private VCSFilesystemInterceptor() {
     }
     
@@ -219,6 +224,7 @@ public final class VCSFilesystemInterceptor {
         LOG.log(Level.FINE, "getAttribute {0}, {1}", new Object[] {file, attrName});
         if (ATTRIBUTE_REMOTE_LOCATION.equals(attrName)
                 || ATTRIBUTE_REFRESH.equals(attrName)
+                || ATTRIBUTE_IS_MODIFIED.equals(attrName)
                 || ATTRIBUTE_SEARCH_HISTORY.equals(attrName)) {
             return getInterceptor(file, file.isDirectory(), "getAttribute").getAttribute(attrName); // NOI18N
         } else {
