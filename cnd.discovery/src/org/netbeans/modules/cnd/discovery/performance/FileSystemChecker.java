@@ -266,7 +266,7 @@ public class FileSystemChecker {
                 if (Files.isSymbolicLink(file)) {
                     Path to = Files.readSymbolicLink(file);
                     if (!to.isAbsolute()) {
-                        to = file.getParent().resolve(Files.readSymbolicLink(file)).normalize();
+                        to = file.getParent().resolve(to).normalize();
                     }
                     if (checkLinks) {
                         if (!to.startsWith(root)) {
