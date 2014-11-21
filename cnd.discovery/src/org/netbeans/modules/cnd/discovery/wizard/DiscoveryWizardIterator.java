@@ -61,13 +61,11 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     private static final RequestProcessor RP = new RequestProcessor(DiscoveryWizardIterator.class.getName(), 1);
     private DiscoveryWizardDescriptor wizard;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels ;
-    private WizardDescriptor.Panel<WizardDescriptor>[] simple ;
     private int index = 0;
     private boolean doClean = true;
     /** Creates a new instance of DiscoveryWizardIterator */
-    public DiscoveryWizardIterator(WizardDescriptor.Panel<WizardDescriptor>[] panels, WizardDescriptor.Panel<WizardDescriptor>[] simple) {
+    public DiscoveryWizardIterator(WizardDescriptor.Panel<WizardDescriptor>[] panels) {
         this.panels = panels;
-        this.simple = simple;
     }
     
     @Override
@@ -90,7 +88,6 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
                     wizard.clean();
                     wizard = null;
                     panels = null;
-                    simple = null;
                 } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -111,17 +108,13 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
             wiz.clean();
             this.wizard = null;
             panels = null;
-            simple = null;
         }
     }
     
     @Override
     public synchronized WizardDescriptor.Panel<WizardDescriptor> current() {
-        if (wizard.isSimpleMode()){
-            return simple[index];
-        } else {
-            return panels[index];
-        }
+        return panels[index];
+
     }
     
     @Override
@@ -131,11 +124,7 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     
     @Override
     public synchronized boolean hasNext() {
-        if (wizard.isSimpleMode()){
-            return index < (simple.length - 1);
-        } else {
-            return index < (panels.length - 1);
-        }
+        return index < (panels.length - 1);
     }
     
     @Override
@@ -145,14 +134,8 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
     
     @Override
     public synchronized void nextPanel() {
-        if (wizard.isSimpleMode()){
-            if ((index + 1) == simple.length) {
-                throw new NoSuchElementException();
-            }
-        } else {
-            if ((index + 1) == panels.length) {
-                throw new NoSuchElementException();
-            }
+        if ((index + 1) == panels.length) {
+            throw new NoSuchElementException();
         }
         index++;
     }
