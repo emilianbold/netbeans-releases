@@ -98,7 +98,7 @@ public class DiscoveryUtils {
                             if (Files.isSymbolicLink(file)) {
                                 Path to = Files.readSymbolicLink(file);
                                 if (!to.isAbsolute()) {
-                                    to = file.getParent().resolve(Files.readSymbolicLink(file)).normalize();
+                                    to = file.getParent().resolve(to).normalize();
                                 }
                                 if (Files.isRegularFile(to)) {
                                     return to.toString();
