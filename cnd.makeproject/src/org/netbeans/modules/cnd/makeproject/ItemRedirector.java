@@ -89,10 +89,22 @@ public class ItemRedirector implements FileObjectRedirector {
         } catch (FileStateInvalidException ex) {
             return null;
         }
-        if (!env.isLocal()) {
-            return null;
+        if (env.isLocal()) {
+            return resolveSymbolicLink(fo);
+        } else {
+            try {
+                if (FileSystemProvider.isLink(fo)) {
+                   String path = FileSystemProvider.resolveLink(fo);
+                   if (path != null) {
+                       return fo.getFileSystem().findResource(path);
+                   }
+                }
+                return null;
+            } catch (Exception ex) {
+                CndUtils.printStackTraceOnce(ex);
+                return null;
+            }
         }
-        return resolveSymbolicLink(fo);
     }
     
     
