@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.openide.loaders;
+package org.netbeans.modules.templates;
 
+import org.openide.loaders.*;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,6 +49,7 @@ import java.util.Map;
 import org.netbeans.api.templates.CreateDescriptor;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.templates.CreateFromTemplateAttributes;
+import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -60,10 +62,10 @@ import org.openide.util.lookup.ServiceProvider;
  * @author sdedic
  */
 @ServiceProvider(service = CreateFromTemplateAttributes.class, position = Integer.MIN_VALUE)
-public class FileTemplateHandlerBridge implements CreateFromTemplateAttributes {
+public class AttributeHandlerBridge implements CreateFromTemplateAttributes {
     private Lookup.Result<CreateFromTemplateAttributesProvider> providers;
 
-    public FileTemplateHandlerBridge() {
+    public AttributeHandlerBridge() {
         providers = Lookup.getDefault().lookupResult(CreateFromTemplateAttributesProvider.class);
     }
     
@@ -90,7 +92,7 @@ public class FileTemplateHandlerBridge implements CreateFromTemplateAttributes {
         for (CreateFromTemplateAttributesProvider p : c) {
             // must use getName, since some features may rely on that null propagates to the Provider 
             // if the initiator does not specify a name.
-            Map<String, ? extends Object> map = p.attributesFor(d, fld, DataObject.CreateAction.getOrigName());
+            Map<String, ? extends Object> map = p.attributesFor(d, fld, DataObjectAccessor.DEFAULT.getOrigName());
             if (map != null) {
                 for (Map.Entry<String,? extends Object> e : map.entrySet()) {
                     all.put(e.getKey(), e.getValue());
@@ -100,5 +102,4 @@ public class FileTemplateHandlerBridge implements CreateFromTemplateAttributes {
         
         return all;
     }
-
 }

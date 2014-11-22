@@ -75,4 +75,9 @@ final class DataObjectAccessorImpl extends DataObjectAccessor {
     public void precreateInstances(FolderInstance fi) {
         fi.precreateInstances();
     }
+
+    @Override
+    public String getOrigName() {
+        return DataObject.CreateAction.getOrigName();
+    }
 }

@@ -97,8 +97,8 @@ final class CreateFromTemplateImpl {
         try {
             FileObject f = desc.getTemplate();
             FileObject folder = desc.getTarget();
-            FileBuilder.Mode defaultMode = null;
-            Format frm = null;
+            FileBuilder.Mode defaultMode = builder.defaultMode;
+            Format frm = builder.format;
             Parameters.notNull("f", f);
             Parameters.notNull("folder", folder);
             assert defaultMode != FileBuilder.Mode.FORMAT || frm != null : "Format must be provided for Mode.FORMAT";
@@ -118,10 +118,10 @@ final class CreateFromTemplateImpl {
                     break;
                 }
             }
-            if (pf != null) {
+            // side effects from findTemplateParameters still in effect...
+            if (pf != null || defaultMode == FileBuilder.Mode.FAIL) {
                 return pf;
             }
-            // side effects from findTemplateParameters still in effect...
             return Collections.singletonList(defaultCreate());
         } finally {
             // bring back the parameters
@@ -213,9 +213,6 @@ final class CreateFromTemplateImpl {
      * @throws IOException 
      */
     private FileObject defaultCreate() throws IOException {
-//        if (pf != null || defaultMode == TemplateUtils.Mode.FAIL) {
-//            return pf;
-//        }
         Map<String, ?> params = desc.getParameters();
         FileBuilder.Mode defaultMode = builder.defaultMode;
         Format frm = builder.format;
@@ -223,11 +220,18 @@ final class CreateFromTemplateImpl {
         if (defaultMode != FileBuilder.Mode.COPY && frm instanceof MapFormat) {
             MapFormat mf = (MapFormat)frm;
             Map m = mf.getMap();
+            Map x = null;
             for (String s: params.keySet()) {
                 if (m.containsKey(s)) {
                     continue;
                 }
-                m.put(s, params.get(s));
+                if (x == null) {
+                    x = new HashMap<>(m);
+                }
+                x.put(s, params.get(s));
+            }
+            if (x != null) {
+                mf.setMap(x);
             }
         }
         FileObject f = desc.getTemplate();
