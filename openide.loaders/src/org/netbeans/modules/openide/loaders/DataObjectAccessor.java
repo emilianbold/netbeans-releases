@@ -79,4 +79,6 @@ public abstract class DataObjectAccessor {
     public abstract boolean isInstancesThread();
 
     public abstract void precreateInstances(FolderInstance fi);
+    
+    public abstract String getOrigName();
 }
