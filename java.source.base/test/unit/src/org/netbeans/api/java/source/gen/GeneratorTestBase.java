@@ -132,7 +132,7 @@ public abstract class GeneratorTestBase extends ClassIndexTestCase {
         
         SourceUtilsTestUtil.prepareTest(
                 new String[] {
-                    "org/netbeans/modules/java/project/layer.xml", 
+                    "org/netbeans/modules/java/project/ui/layer.xml", 
                     "org/netbeans/modules/project/ui/resources/layer.xml"
                 },
                 new Object[] {loader, cpp}
