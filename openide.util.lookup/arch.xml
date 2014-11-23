@@ -130,7 +130,7 @@ In general there are three ways to achieve this.
     as described at 
     <a href="@org-openide-util@/org/openide/util/doc-files/api.html#ido-methodvalue">services
     </a> documentation and in your factory method either return the instance 
-    your want or <code>null</code> depending on result of <a href="@org-openide-util@/org/openide/util/Utilities.html#isWindows()">
+    your want or <code>null</code> depending on result of <a href="@org-openide-util@/org/openide/util/BaseUtilities.html#isWindows()">
     Utilities.isWindows()</a> call.</p>
     </li>
                 <li>

@@ -145,7 +145,7 @@ is the proper place.
                   the file name will be preinitialized.
               </p>
           </description>
-          <class package="org.netbeans.api.templates" name="TemplateRegistration"/>
+          <class package="org.netbeans.api.templates" name="TemplateRegistration" link="no"/>
           <issue number="239028"/>
       </change>
       <change id="org.openide.loaders.DataFolder.SortMode.EXTENSIONS">
@@ -199,7 +199,7 @@ is the proper place.
               even when no project is open in the IDE.
               </p>
           </description>
-          <class package="org.netbeans.api.templates" name="TemplateRegistration"/>
+          <class package="org.netbeans.api.templates" name="TemplateRegistration" link="no"/>
           <issue number="186943"/>
       </change>
       <change id="lazymenu.properties">

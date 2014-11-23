@@ -80,6 +80,39 @@ made subject to such option by the copyright holder.
     A lot of usecases is described <a href="@TOP@/org/openide/loaders/doc-files/api.html" >in the javadoc</a>. Here 
     is the list of some faqs:
   
+    <usecase id="script" name="Using Scripting and Templating Languages" >
+        <p>
+        Often many people require ability to create a "clever" template - e.g.
+        write piece of simple text and at the time of its 
+        <a href="@TOP@/org/openide/loaders/DataObject.html#createFromTemplate(org.openide.loaders.DataFolder,%20java.lang.String,%20java.util.Map)">
+            processing
+        </a>
+        do some advanced changes to it using either 
+        <a name="script">scripting or templating</a> languages.
+        </p>
+        
+        <p>
+        This traditionally used to be a bit complicated task, however since 
+        version 6.1 there are new interfaces 
+        <api name="org.openide.loaders.CreateFromTemplateHandler" category="deprecated" group="lookup" type="export"
+        url="@TOP@/org/openide/loaders/CreateFromTemplateHandler.html">
+            can be registered as a services in a lookup and it is reponsible
+            for handling the whole copy of the template file(s) to the destination
+            folder.
+        </api> and 
+        <api name="org.openide.loaders.CreateFromTemplateAttributesProvider" category="deprecated" group="lookup" type="export"
+        url="@TOP@/org/openide/loaders/CreateFromTemplateAttributesProvider.html">
+            can be registered as a services in a lookup and it is reponsible
+            for providing "hints" - e.g. map mapping strings to various objects.
+        </api> and these interfaces allow anyone to extend the behaviour during
+        creation of new files without writing new 
+        <a href="@TOP@/org/openide/loaders/DataLoader.html">DataLoader</a> and co.
+        </p>
+        <p>
+            The support was moved to a new module; please see <a href="@org-netbeans-api-templates@/architecture-summary.html">api.templates</a>
+            module for more information.
+        </p>
+    </usecase>
     <usecase id="add-action-to-folder" name="How to add action to folder's popup menu?" >
     <api name="Loaders-folder-any-Actions" category="stable" group="layer" type="export" >
     The actions that the default folder loader shows in its popup menu are read from
