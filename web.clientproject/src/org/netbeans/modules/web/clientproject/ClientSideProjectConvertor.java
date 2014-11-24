@@ -138,7 +138,8 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
                     .setProjectDir(projectDirectory)
                     .setProjectName(displayName)
                     .setSourceFolder("") // NOI18N
-                    .setSiteRootFolder(detectSiteRoot()));
+                    .setSiteRootFolder(detectSiteRoot())
+                    .setAutoconfigured(true));
         }
 
         private String detectSiteRoot() {

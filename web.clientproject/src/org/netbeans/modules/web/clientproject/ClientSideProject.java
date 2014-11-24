@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -100,6 +102,7 @@ import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
 import org.netbeans.modules.web.clientproject.ui.action.ClientSideProjectActionProvider;
 import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
+import org.netbeans.modules.web.clientproject.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
@@ -641,6 +644,8 @@ public class ClientSideProject implements Project {
             PlatformProviders.getDefault().addPlatformProvidersListener(project.platformProvidersListener);
             PlatformProviders.getDefault().projectOpened(project);
             FileObject projectDirectory = project.getProjectDirectory();
+            // autoconfigured?
+            checkAutoconfigured();
             // usage logging
             FileObject testsFolder = project.getTestsFolder(false);
 
@@ -715,6 +720,30 @@ public class ClientSideProject implements Project {
                     removeSiteRootListener();
                     addSiteRootListener();
                 }
+            }
+        }
+
+        @NbBundle.Messages({
+            "OpenHookImpl.notification.autoconfigured.title=Project automatically configured",
+            "OpenHookImpl.notification.autoconfigured.details=Review and correct important project settings detected by the IDE.",
+        })
+        private void checkAutoconfigured() {
+            ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+            if (projectProperties.isAutoconfigured()) {
+                NotificationDisplayer.getDefault().notify(
+                        Bundle.OpenHookImpl_notification_autoconfigured_title(),
+                        NotificationDisplayer.Priority.LOW.getIcon(),
+                        Bundle.OpenHookImpl_notification_autoconfigured_details(),
+                        new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                project.getLookup().lookup(CustomizerProviderImpl.class)
+                                        .showCustomizer(CompositePanelProviderImpl.SOURCES);
+                            }
+                        },
+                        NotificationDisplayer.Priority.LOW);
+                projectProperties.setAutoconfigured(false);
+                projectProperties.save();
             }
         }
 

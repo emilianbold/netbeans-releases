@@ -47,6 +47,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.util.Parameters;
 
@@ -97,6 +98,12 @@ public final class ClientSideProjectGenerator {
         String platformProvider = properties.getPlatformProvider();
         if (platformProvider != null) {
             ClientSideProjectUtilities.setPlatformProvider(project, platformProvider);
+        }
+        // autoconfigured?
+        if (properties.isAutoconfigured()) {
+            ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(clientSideProject);
+            projectProperties.setAutoconfigured(true);
+            projectProperties.save();
         }
         return project;
     }

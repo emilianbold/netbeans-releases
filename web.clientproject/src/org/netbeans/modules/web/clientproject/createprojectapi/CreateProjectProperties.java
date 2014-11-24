@@ -76,6 +76,7 @@ public final class CreateProjectProperties {
     private String testFolder;
     private String jsTestingProvider;
     private String platformProvider;
+    private boolean autoconfigured = false;
 
 
     /**
@@ -239,6 +240,30 @@ public final class CreateProjectProperties {
      */
     public CreateProjectProperties setPlatformProvider(@NullAllowed String platformProvider) {
         this.platformProvider = platformProvider;
+        return this;
+    }
+
+    /**
+     * Return {@code true} if this project was automatically configured.
+     * <p>
+     * Such project shows notification on its first open.
+     * @return {@code true} if this project was automatically configured
+     * @since 1.72
+     */
+    public boolean isAutoconfigured() {
+        return autoconfigured;
+    }
+
+    /**
+     * Set {@code true} if the project is automatically configured.
+     * <p>
+     * Such project shows notification on its first open.
+     * @param autoconfigured {@code true} if the project is automatically configured
+     * @return itself
+     * @since 1.72
+     */
+    public CreateProjectProperties setAutoconfigured(boolean autoconfigured) {
+        this.autoconfigured = autoconfigured;
         return this;
     }
 
