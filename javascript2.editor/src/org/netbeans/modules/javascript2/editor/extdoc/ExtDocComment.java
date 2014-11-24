@@ -213,4 +213,13 @@ public class ExtDocComment extends JsComment {
         return list;
     }
 
+    @Override
+    public List<DocParameter> getProperties() {
+        List<DocParameter> properties = new LinkedList<DocParameter>();
+        for (ExtDocElement extDocElement : getTagsForType(ExtDocElementType.PROPERTY)) {
+            properties.add((DocParameter) extDocElement);
+        }
+        return properties;
+    }
+
 }
