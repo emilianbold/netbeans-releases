@@ -437,7 +437,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         assert rootUrl != null;
         assert PathRegistry.noHostPart(rootUrl) : rootUrl;
 
-        FileObject root = URLMapper.findFileObject(rootUrl);
+        FileObject root = URLCache.getInstance().findFileObject(rootUrl, true);
         if (root == null) {
             LOGGER.log(Level.INFO, "{0} can''t be translated to FileObject", rootUrl); //NOI18N
             return null;
@@ -1746,7 +1746,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         if (ctx.newRoots2Deps.containsKey(rootURL)) {
             return true;
         }
-        final FileObject rootFo = URLMapper.findFileObject(rootURL);
+        final FileObject rootFo = URLCache.getInstance().findFileObject(rootURL, true);
         if (rootFo == null) {
             ctx.newRoots2Deps.put(rootURL, NONEXISTENT_ROOT);
             return true;
@@ -3221,7 +3221,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 @NonNull final Collection<FileObject> files,
                 final boolean forceRefresh,
                 final boolean sourceForBinaryRoot) {
-            final FileObject rootFo = URLMapper.findFileObject(root);
+            final FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
             if (rootFo != null) {
                 final LogContext lctx = getLogContext();
                 try {
@@ -4020,7 +4020,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 this.updateProgress(root, true);
                 try {
                     if (!incompleteSeenRoots.contains(root)) {
-                        final FileObject rootFo = URLMapper.findFileObject(root);
+                        final FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                         if (rootFo != null) {
                             final Callable<Boolean> action = new Callable<Boolean>() {
                                 @Override
@@ -4223,7 +4223,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 this.updateProgress(root, true);
                 try {
                     if (!incompleteSeenRoots.contains(root)) {
-                        final FileObject rootFo = URLMapper.findFileObject(root);
+                        final FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                         if (rootFo != null) {
                             final Callable<Boolean> action = new Callable<Boolean>() {
                                 @Override
@@ -5239,7 +5239,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         }
                         try {
                             createBinaryContexts(root, binaryIndexers, contexts);
-                            final FileObject rootFo = URLMapper.findFileObject(root);
+                            final FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                             final FileObject file = rootFo == null ? null : FileUtil.getArchiveFile(rootFo);
                             final boolean upToDate;
                             final long currentLastModified;
@@ -5330,7 +5330,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final boolean sourceForBinaryRoot = ctx.sourcesForBinaryRoots.contains(source);
                         if (ctx.newIncompleteSeenRoots.contains(source)) {
                             long st = System.currentTimeMillis();
-                            final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(URLMapper.findFileObject(source));
+                            final ClassPath.Entry entry = sourceForBinaryRoot ?
+                                null :
+                                getClassPathEntry(URLCache.getInstance().findFileObject(source, false));
                             RepositoryUpdater.getDefault().rootsListeners.add(source, true, entry);
                             recursiveListenersTime[0] = System.currentTimeMillis() - st;
                             ctx.scannedRoots.add(source);
