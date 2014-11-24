@@ -635,6 +635,15 @@ made subject to such option by the copyright holder.
                     attempt of duplicate loading is logged instead of throwing <code>DuplicateException</code>.
                 </api>
             </li>
+            <li>
+                <api type="export" group="systemproperty" name="org.netbeans.PatchByteCode.disable" category="friend">
+                    For backward compatibility, the NetBeans startup code performs bytecode manipulation such as 
+                    making marked methods <i>public</i> or injecting code that was deprecated and removed from
+                    the NetBeans codebase. For debugging, or simply in order to disable preprocessing, patching
+                    may be disabled. Note that older modules, which were not recompiled against the released version's sources may
+                    become broken, if bytecode patching is disabled.
+                </api>
+            </li>
         </ul>
         <p>
             There are also some options passed to the launcher (interpreted
