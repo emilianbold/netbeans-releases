@@ -148,5 +148,11 @@ public abstract class JsComment {
     public abstract Set<JsModifier> getModifiers();
 
     public abstract boolean isClass();
-
+    
+    /**
+     * Gets all defined properties in the comment
+     * @return  list of properties, never {@code null}
+     */
+    public abstract List<DocParameter> getProperties();
+    
 }
