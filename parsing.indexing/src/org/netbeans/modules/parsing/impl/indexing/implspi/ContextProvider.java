@@ -47,46 +47,96 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
- *
+ * Indexing context provider.
+ * Finds a user context for source root or source files indexing.
+ * @since 9.2
  * @author Tomas Zezula
  */
 public abstract class ContextProvider {
 
-    private static final AtomicReference<ContextProvider> instance = new AtomicReference<>();
+    private static final AtomicReference<Lookup.Result<ContextProvider>> impls = new AtomicReference<>();
 
-    @CheckForNull
-    public abstract Lookup getContext(@NonNull FileObject file);
-
-    @CheckForNull
-    public abstract Lookup getContext(@NonNull URL url);
-
+    /**
+     * Returns the context for given {@link FileObject} indexing.
+     * @param file the {@link FileObject} to get indexing context for
+     * @return the context represented by {@link Lookup}
+     */
     @NonNull
-    public static ContextProvider getDefault() {
-        ContextProvider res = instance.get();
-        if (res == null) {
-            res = Lookup.getDefault().lookup(ContextProvider.class);
-            if (res == null) {
-                res = new DefaultContextProvider();
-            }
-            if (!instance.compareAndSet(null, res)) {
-                res = instance.get();
+    public static Lookup getContext(@NonNull FileObject file) {
+        Parameters.notNull("file", file);   //NOI18N
+        for (ContextProvider cp : getImpls()) {
+            final Lookup res = cp.findContext(file);
+            if (res != null) {
+                return res;
             }
         }
-        assert res != null;
-        return res;
+        throw new IllegalStateException("Missing DefaultContextProvider");  //NOI18N
+    }
+
+    /**
+     * Returns the context for given {@link URL} indexing.
+     * @param url the {@link URL} to get indexing context for
+     * @return the context represented by {@link Lookup}
+     */
+    @NonNull
+    public static Lookup getContext(@NonNull URL url) {
+        Parameters.notNull("url", url); //NOI18N
+        for (ContextProvider cp : getImpls()) {
+            final Lookup res = cp.findContext(url);
+            if (res != null) {
+                return res;
+            }
+        }
+        throw new IllegalStateException("Missing DefaultContextProvider");  //NOI18N
+    }
+
+    /**
+     * Finds the context for given {@link FileObject} indexing.
+     * @param file the {@link FileObject} to find indexing context for
+     * @return the context represented by {@link Lookup} or null
+     */
+    @CheckForNull
+    protected abstract Lookup findContext(@NonNull FileObject file);
+
+    /**
+     * Finds the context for given {@link URL} indexing.
+     * @param url the {@link URL} to find indexing context for
+     * @return the context represented by {@link Lookup} or null
+     */
+    @CheckForNull
+    protected abstract Lookup findContext(@NonNull URL url);
+
+    @NonNull
+    private static Iterable<? extends ContextProvider> getImpls() {
+        Lookup.Result<ContextProvider> res = impls.get();
+        if (res == null) {
+            final Lookup lkp = new ProxyLookup(
+                Lookup.getDefault(),
+                Lookups.singleton(new DefaultContextProvider()));
+            res = lkp.lookupResult(ContextProvider.class);
+            if (!impls.compareAndSet(null, res)) {
+                res = impls.get();
+            }
+        }
+        return res.allInstances();
     }
 
     private static final class DefaultContextProvider extends ContextProvider {
 
         @Override
-        public Lookup getContext(@NonNull final FileObject file) {
+        @CheckForNull
+        protected Lookup findContext(@NonNull final FileObject file) {
             return Lookup.getDefault();
         }
 
         @Override
-        public Lookup getContext(@NonNull final URL url) {
+        @CheckForNull
+        protected Lookup findContext(@NonNull final URL url) {
             return Lookup.getDefault();
         }
     }
