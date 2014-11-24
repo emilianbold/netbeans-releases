@@ -144,12 +144,12 @@ function pm_choice1_enabled() {
     <choices-outline>
         <line choice="netbeans">
             <line choice="choice0"/>
-            <line choice="choice1"/>            
+            <line choice="choice1"/>
+            <line choice="baseide"/>            
             <line choice="javase"/>
             <line choice="extide"/>
-            <line choice="baseide"/>
         </line>       
-      
+        <line choice="postinstallscripts"></line>
     </choices-outline>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
     <choice id="choice0" title="JDK_VERSION">
@@ -166,6 +166,9 @@ function pm_choice1_enabled() {
     </choice> 
     <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.extide.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.extide"/>
+    </choice>
+    <choice id="postinstallscripts" title="postinstallscripts-title" description="postinstallscripts-description" start_selected="true" start_enabled="true" start_visible="false" selected="true" enabled="true" visible="false">
+        <pkg-ref id="ident.pkg.postinstallscripts"></pkg-ref>
     </choice>
     <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@" installKBytes="317316" version="1.1" auth="Root">jdk.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@">
@@ -191,6 +194,7 @@ function pm_choice1_enabled() {
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">javase-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.extide" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">extide-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.postinstallscripts" version="0.0.0.0.1" auth="Root" onConclusion="None">postinstallscripts.pkg</pkg-ref>
     <locator>
         <search id="pkmktoken6-1" type="component">
             <bundle CFBundleIdentifier="com.oracle.jmc" path="/Library/Java/JavaVirtualMachines/jdk1.@JDK_VERSION_NUMBER@.0.jdk/Contents/Home/lib/missioncontrol/Java Mission Control.app"/>

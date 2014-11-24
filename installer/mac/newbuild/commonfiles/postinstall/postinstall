@@ -42,20 +42,36 @@
 
 set -e
 
-script_dir=`dirname "$0"`
-source_dir=$1
-target_dir=$2
+dirname=`dirname "$0"`
 
-jdk_home=`"$script_dir"/get_current_jdk.sh`
+jdk_home=`"$dirname"/get_current_jdk.sh`
 
-. "$script_dir"/env.sh
+. "$dirname"/env.sh
 
-if [ -n "$GLASSFISH_INSTALL_DIR" ]; then
-   sh "$script_dir"/unpack200.sh "$GLASSFISH_INSTALL_DIR" "$jdk_home"
+"$dirname"/add_gf.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_INSTALL_DIR"
+
+"$dirname"/add_javadb.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_INSTALL_DIR/javadb"
+
+"$dirname"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$TOMCAT_INSTALL_DIR"
+
+if [ -f "$dirname"/set_jdk_home.sh ]; then
+    "$dirname"/set_jdk_home.sh "$NETBEANS_INSTALL_DIR" "$DEFAULT_JDK_HOME"
 fi
 
+"$dirname"/populate_caches.sh "$NETBEANS_INSTALL_DIR"
+exit_code=$?
+echo Result of populate_caches.sh : $exit_code
 
-#add Product ID
-"$script_dir"/addproduct_id.sh "GFMOD"
+#fix for 114656
+cd "$NETBEANS_INSTALL_DIR"
+cd Contents/Resources/NetBeans*/${NB_CLUSTER_DIR}
+mkdir -p var
+touch var/license_accepted
 
-"$script_dir"/perm.sh "$target_dir"
+#fix for 151681
+"$dirname"/perm.sh "$NETBEANS_INSTALL_DIR"
+
+#Fix for 151681
+#Go to the /Application/NetBeans folder to change its permissions and ownership
+chmod g+w "$NETBEANS_INSTALL_DIR"/..
+chown root:wheel "$NETBEANS_INSTALL_DIR"/..
