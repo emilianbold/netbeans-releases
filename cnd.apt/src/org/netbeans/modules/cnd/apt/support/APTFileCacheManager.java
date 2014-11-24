@@ -176,15 +176,20 @@ public final class APTFileCacheManager {
                     }
                 }
             } else {
+                if (Boolean.TRUE.equals(createExclusiveIfAbsent)) {
+                    out = APTFileCacheEntry.toReadOnly(out);
+                }
                 if (APTTraceFlags.TRACE_APT_CACHE) {
                     System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", file, cache.size(), "", "");
                 }
             }
+        } else if (out != null) {
+            out = APTFileCacheEntry.toReadOnly(out);
         }
         assert createExclusiveIfAbsent == null || out != null;
         return out;
     }
-
+    
     public void setAPTCacheEntry(CharSequence absPath, APTPreprocHandler.State ppState, APTFileCacheEntry entry, boolean cleanOthers) {
         if (entry != null) {
             ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(absPath, cleanOthers ? Boolean.TRUE : Boolean.FALSE);
