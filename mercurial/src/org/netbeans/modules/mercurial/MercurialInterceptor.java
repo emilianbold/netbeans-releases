@@ -98,6 +98,8 @@ public class MercurialInterceptor extends VCSInterceptor {
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
     private final Mercurial hg;
     private static final int STATUS_VCS_MODIFIED_ATTRIBUTE =
+            FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
+            FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
             FileInformation.STATUS_VERSIONED_CONFLICT | 
             FileInformation.STATUS_VERSIONED_MERGE |
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;

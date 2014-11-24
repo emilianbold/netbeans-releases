@@ -820,6 +820,14 @@ public class InterceptorTest extends AbstractHgTestCase {
         file = new File(getWorkTreeDir(), "file");
         write(file, "init");
         fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        // new file, returns TRUE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.TRUE, attrValue);
+        
+        HgCommand.doAdd(getWorkTreeDir(), file, NULL_LOGGER);
+        // added file, returns TRUE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.TRUE, attrValue);
         commit(file);
         
         // unmodified file, returns FALSE

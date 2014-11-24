@@ -3222,7 +3222,14 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         file = new File(repositoryLocation, "file");
         write(file, "init");
         fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        // new file, returns TRUE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.TRUE, attrValue);
+        
         add();
+        // added file, returns TRUE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.TRUE, attrValue);
         commit();
         
         // unmodified file, returns FALSE
