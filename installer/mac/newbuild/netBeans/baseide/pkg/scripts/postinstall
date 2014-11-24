@@ -25,37 +25,5 @@ if [ -f "$dirname"/postinstall_generic ]; then
     "$dirname"/postinstall_generic $1 $2
 fi
 
-jdk_home=`"$dirname"/get_current_jdk.sh`
-
-. "$dirname"/env.sh
-
-"$dirname"/add_gf.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_INSTALL_DIR"
-
-"$dirname"/add_javadb.sh "$NETBEANS_INSTALL_DIR" "$GLASSFISH_INSTALL_DIR/javadb"
-
-"$dirname"/add_tc.sh "$NETBEANS_INSTALL_DIR" "$TOMCAT_INSTALL_DIR"
-
-if [ -f "$dirname"/set_jdk_home.sh ]; then
-    "$dirname"/set_jdk_home.sh "$NETBEANS_INSTALL_DIR" "$DEFAULT_JDK_HOME"
-fi
-
-"$dirname"/populate_caches.sh "$NETBEANS_INSTALL_DIR"
-exit_code=$?
-echo Result of populate_caches.sh : $exit_code
-
-#fix for 114656
-cd "$NETBEANS_INSTALL_DIR"
-cd Contents/Resources/NetBeans*/${NB_CLUSTER_DIR}
-mkdir -p var
-touch var/license_accepted
-
-#fix for 151681
-"$dirname"/perm.sh "$NETBEANS_INSTALL_DIR"
-
-#Fix for 151681
-#Go to the /Application/NetBeans folder to change its permissions and ownership
-chmod g+w "$NETBEANS_INSTALL_DIR"/..
-chown root:wheel "$NETBEANS_INSTALL_DIR"/..
-
 #add Product ID
 "$dirname"/addproduct_id.sh "NB"
