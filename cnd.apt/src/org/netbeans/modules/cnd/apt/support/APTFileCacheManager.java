@@ -189,7 +189,7 @@ public final class APTFileCacheManager {
         if (entry != null) {
             ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(absPath, cleanOthers ? Boolean.TRUE : Boolean.FALSE);
             APTIncludeHandler.State key = getKey(ppState);
-            cache.put(key, APTFileCacheEntry.toSerial(entry));
+            cache.put(key, APTFileCacheEntry.toCachable(entry));
         }
     }
 
