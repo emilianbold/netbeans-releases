@@ -178,6 +178,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public static NamespaceImpl create(ProjectBase project, NamespaceImpl parent, CharSequence name, CharSequence qualifiedName) {
+        assert project.holdsNamespaceLock() : "Logical namespace can be created only via ProjectBase!";
         NamespaceImpl namespaceImpl = new NamespaceImpl(project, parent, name, qualifiedName);
         project.registerNamespace(namespaceImpl);
         if( parent != null ) {
@@ -595,7 +596,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
     }
     
-    private synchronized void addRemoveInParentNamespace(boolean add){
+    private void addRemoveInParentNamespace(boolean add){
+        assert ((ProjectBase) getProject()).holdsNamespaceLock() : "Logical namespace can be modified only via ProjectBase!";
         if (add){
             // add this namespace in the parent namespace
             NamespaceImpl parent = (NamespaceImpl) _getParentNamespace();
