@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -210,7 +211,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /*package*/final void initFields() {
-        NamespaceImpl ns = NamespaceImpl.create(this, false);
+        NamespaceImpl ns;
+        synchronized (namespaceLock) {
+            ns = NamespaceImpl.create(this, false);
+        }
         assert ns != null;
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
         DeclarationContainerProject declarationContainer = new DeclarationContainerProject(this);
@@ -583,6 +587,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return sb;
     }
 
+    /**
+     * Use addNamespaceDefinition instead! 
+     * 
+     * @param parent
+     * @param name
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public final NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
         synchronized (namespaceLock) {
             CharSequence qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
@@ -592,13 +605,40 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             return nsp;
         }
+    }    
+    
+    public final CsmUID<CsmNamespace> addNamespaceDefinition(NamespaceImpl parent, CsmNamespaceDefinition nsDefinition) {
+        synchronized (namespaceLock) {
+            CharSequence qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(nsDefinition.getName(), parent, true);
+            NamespaceImpl nsp = _getNamespace(qualifiedName);
+            if (nsp == null) {
+                nsp = NamespaceImpl.create(this, parent, nsDefinition.getName(), qualifiedName);
+            }
+            nsp.addNamespaceDefinition(nsDefinition);
+            return UIDCsmConverter.namespaceToUID(nsp);
+        }
+    }
+    
+    public final void removeNamespaceDefinition(CsmNamespaceDefinition nsDefinition) {
+        synchronized (namespaceLock) {
+            NamespaceImpl nsp = (NamespaceImpl) nsDefinition.getNamespace();
+            if (nsp != null) {
+                nsp.removeNamespaceDefinition(nsDefinition);
+            }
+        }
+    }    
+    
+    public final boolean holdsNamespaceLock() {
+        return Thread.holdsLock(namespaceLock);
     }
 
     public final void registerNamespace(NamespaceImpl namespace) {
+        assert holdsNamespaceLock() : "Modifications of namespace can be performed only under namespaceLock!";
         _registerNamespace(namespace);
     }
 
     public final void unregisterNamesace(NamespaceImpl namespace) {
+        assert holdsNamespaceLock() : "Modifications of namespace can be performed only under namespaceLock!";
         _unregisterNamespace(namespace);
     }
 
@@ -3017,7 +3057,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert CharSequences.isCompact(key);
         CsmUID<CsmNamespace> nsUID = RepositoryUtils.<CsmNamespace>put(ns);
         assert nsUID != null;
-        namespaces.put(key, nsUID);
+        CsmUID<CsmNamespace> prev = namespaces.put(key, nsUID);
+        CndUtils.assertTrueInConsole(prev == null || prev == nsUID, "Why replacing " + prev + " by " + nsUID + "?");
     }
 
     private void _unregisterNamespace(NamespaceImpl ns) {
