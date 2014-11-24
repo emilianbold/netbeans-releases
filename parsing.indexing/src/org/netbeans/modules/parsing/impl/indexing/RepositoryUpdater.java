@@ -2092,10 +2092,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static <T> T runInContext(
             @NonNull final FileObject file,
             @NonNull final Callable<T> action) throws IOException {
-        Lookup context = ContextProvider.getDefault().getContext(file);
-        if (context == null) {
-            context = RepositoryUpdater.getDefault().worker.getGlobalContext();
-        }
+        final Lookup context = ContextProvider.getContext(file);
         return runInContext(context, action);
     }
 
@@ -2103,10 +2100,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private static <T> T runInContext(
             @NonNull final URL url,
             @NonNull final Callable<T> action) throws IOException {
-        Lookup context = ContextProvider.getDefault().getContext(url);
-        if (context == null) {
-            context = RepositoryUpdater.getDefault().worker.getGlobalContext();
-        }
+        final Lookup context = ContextProvider.getContext(url);
         return runInContext(context, action);
     }
 
