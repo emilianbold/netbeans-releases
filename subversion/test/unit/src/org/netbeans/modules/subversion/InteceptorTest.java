@@ -43,6 +43,7 @@
 package org.netbeans.modules.subversion;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -3675,6 +3676,45 @@ public class InteceptorTest extends NbTestCase {
 
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));
+    }
+    
+    public void testIsModifiedAttributeFile () throws Exception {
+        // file is outside of versioned space, attribute should be unknown
+        File file = File.createTempFile("testIsModifiedAttributeFile", "txt");
+        file.deleteOnExit();
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        String attributeModified = "ProvidedExtensions.VCSIsModified";
+        
+        Object attrValue = fo.getAttribute(attributeModified);
+        assertNull(attrValue);
+        
+        // file inside a svn repo
+        file = new File(wc, "file");
+        TestKit.write(file, "init");
+        fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        // new file, returns TRUE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.TRUE, attrValue);
+        
+        getClient().addFile(file);
+        // added file, returns TRUE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.TRUE, attrValue);
+        commit(file);
+        
+        // unmodified file, returns FALSE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.FALSE, attrValue);
+        
+        TestKit.write(file, "modification");
+        // modified file, returns TRUE
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.TRUE, attrValue);
+        
+        TestKit.write(file, "init");
+        // back to up to date
+        attrValue = fo.getAttribute(attributeModified);
+        assertEquals(Boolean.FALSE, attrValue);
     }
     
     public void renameVersionedFolder_FO() throws Exception {

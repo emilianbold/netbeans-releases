@@ -97,7 +97,12 @@ class FilesystemHandler extends VCSInterceptor {
      * Stores .svn folders that should be deleted ASAP.
      */
     private final Set<File> invalidMetadata = new HashSet<File>(5);
-
+    private static final int STATUS_VCS_MODIFIED_ATTRIBUTE
+            = FileInformation.STATUS_VERSIONED_CONFLICT
+            | FileInformation.STATUS_VERSIONED_MERGE
+            | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
+            | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY
+            | FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
     public FilesystemHandler(Subversion svn) {
         cache = svn.getStatusCache();
     }
@@ -634,6 +639,31 @@ class FilesystemHandler extends VCSInterceptor {
             };
         } else if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
             return new SvnSearchHistorySupport(file);
+        } else if ("ProvidedExtensions.VCSIsModified".equals(attrName)) {
+
+            if (file == null) {
+                return null;
+            }
+
+            if (!SvnClientFactory.isClientAvailable()) {
+                Subversion.LOG.fine(" skipping ProvidedExtensions.VCSIsModified due to missing client"); //NOI18N
+                return null;
+            }
+            if (!SvnUtils.isManaged(file)) {
+                return null;
+            }
+            try {
+                SvnClient client = Subversion.getInstance().getClient(file);
+                if (client != null) {
+                    Context ctx = new Context(file);
+                    Subversion.getInstance().getStatusCache().refreshCached(ctx);
+                    StatusAction.executeStatus(file, client, null, false); // no need to contact server
+                    return cache.containsFiles(ctx, STATUS_VCS_MODIFIED_ATTRIBUTE, true);
+                }
+            } catch (SVNClientException ex) {
+                SvnClientExceptionHandler.notifyException(ex, false, false);
+            }
+            return null;
         } else {
             return super.getAttribute(file, attrName);
         }
