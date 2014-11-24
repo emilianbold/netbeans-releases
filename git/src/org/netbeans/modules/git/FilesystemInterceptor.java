@@ -113,6 +113,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     private static final String REFS_FILE_NAME = "refs"; //NOI18N
     private static final Logger LOG = Logger.getLogger(FilesystemInterceptor.class.getName());
     private static final EnumSet<Status> STATUS_VCS_MODIFIED_ATTRIBUTE = EnumSet.of(
+            Status.NEW_HEAD_WORKING_TREE,
             Status.IN_CONFLICT,
             Status.MODIFIED_HEAD_INDEX,
             Status.MODIFIED_HEAD_WORKING_TREE,
