@@ -574,7 +574,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
     }
 
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 250)
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 600)
     public static NodeFactory createRemoteFiles() {
         return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
     }
