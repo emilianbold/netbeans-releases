@@ -1536,6 +1536,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                         el = controller.getTypes().boxedClass((PrimitiveType) type);
                                     } else if (type.getKind() == TypeKind.VOID) {
                                         el = controller.getElements().getTypeElement("java.lang.Void"); //NOI18N
+                                    }
+                                }
                             }
                             addMembers(env, type, el, kinds, baseType, inImport, insideNew, false);
                         }
