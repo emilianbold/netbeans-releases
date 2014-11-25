@@ -1374,4 +1374,17 @@ public class Css3ParserTest extends CssTestBase {
 //                + "     margin-top: expression(0 - parseInt(this.offsetHeight / 2) + (TBWindowMargin = document.documentElement && document.documentElement.scrollTop || document.body.scrollTop) + 'px');\n"
 //                + "}");
 //    }
+
+    public void testMediaBodyMinimized() {
+        String source = "@media (min-width: 940px){.demo-appheader-appname-block{margin-top:1px}.demo-appheader-classic .demo-appheader-logo{margin-top:37px}.demo-appheader-classic .demo-appheader-toolbar{height:34px}.demo-appheader-classic .demo-appheader-nav{height:50px}html:not([dir=\"rtl\"]){}}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+
+    public void testCombinatorWithoutSpaces() {
+        String source = "a.oj>.oj {}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+
 }

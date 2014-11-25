@@ -1428,7 +1428,7 @@ public class Css3ParserScssTest extends CssTestBase {
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227484#c19
     public void testAmpInSelector() throws ParseException, BadLocationException {
         assertParses("&.primary, input[type=\"submit\"] & { }\n");
-        assertParses("&.primary, input[type=\"submit\"]& { }\n");
+        //assertParses("&.primary, input[type=\"submit\"]& { }\n"); //this is not possible in scss
         assertParses("&.primary, & { }\n");
     }
 
@@ -1654,5 +1654,45 @@ public class Css3ParserScssTest extends CssTestBase {
         String source = ".test {background-image: $var;}";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);   
+    }
+
+    public void testInterpolationInSelector() {
+        String source = ".#{$selectorPrefix}-odd-cols-#{$i} > .oj-row > .oj-col:nth-child(even) {}";
+
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+
+        source = ".table-odd-cols-#{$i} > .oj-row > .oj-col:nth-child(even) {}";
+        result = TestUtil.parse(source);        
+        assertResultOK(result);  
+        
+        source = ".table-odd-cols-#{$i}-test:nth-child(even) {}";
+        result = TestUtil.parse(source);        
+        assertResultOK(result);
+    }
+    
+    public void testMapWithStrings() {
+        String source = "$map: (\n" +
+            "    '1':       'one',\n" +
+            ");";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testMapDeclarationWithDefault() {
+        String source = "$modules: () !default;";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testIfWithoutSpace() {
+        String source = "@if($allowTagSelectors)\n" +
+            "  {\n" +
+            "    #{$tagSelectors} {\n" +
+            "      color: red;\n" +
+            "    }\n" +
+            "  }";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
     }
 }

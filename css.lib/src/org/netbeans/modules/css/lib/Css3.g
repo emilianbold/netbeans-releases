@@ -392,6 +392,7 @@ mediaBody
          ( mediaBodyItem ((ws? SEMI)=>ws? SEMI)? ws? )
          |
          ( SEMI ws? )
+         | ({isScssSource()}? sass_extend (ws | (SEMI)))
     )+
     ;
 
@@ -402,8 +403,6 @@ mediaBodyItem
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     |( ~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI )=>propertyDeclaration
-    |( sass_declaration_interpolation_expression COLON ~(SEMI|LBRACE|RBRACE)+ SEMI )=>propertyDeclaration
-    | {isScssSource()}? sass_extend
     | {isScssSource()}? sass_debug
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_content
@@ -607,7 +606,7 @@ property
 
     //parse as scss_declaration_interpolation_expression only if it really contains some #{} content
     //(the IE allows also just ident as its content)
-    (~(HASH_SYMBOL|COLON)* HASH_SYMBOL LBRACE)=>sass_declaration_interpolation_expression
+    {isScssSource()}? sass_selector_interpolation_exp
     | IDENT
     | GEN
     | {isCssPreprocessorSource()}? cp_variable
@@ -622,7 +621,7 @@ sass_map
     sass_map_name COLON ws? LPAREN ws? syncToFollow
         //what can be in the map? --- just properties? 
         sass_map_pairs?
-    RPAREN
+    RPAREN ((ws? SASS_DEFAULT) | (ws? SASS_GLOBAL))*
     ;
 
 sass_map_name
@@ -641,7 +640,7 @@ sass_map_pairs
 
 sass_map_pair
     :
-        property ws? COLON ws? cp_expression (ws? prio)?
+        (property|STRING) ws? COLON ws? cp_expression (ws? prio)?
     ;
 
 rule
@@ -659,11 +658,8 @@ rule
 
 declarations
     :
-    (
-         ( declaration ((ws? SEMI)=>ws? SEMI)? ws? )
-         |
-         ( SEMI ws? )
-    )+
+       (SEMI ws?)*  declaration (((ws? (SEMI ws?)+)|ws) declaration)* ((ws? (SEMI ws?)+)|ws)?
+    |  (SEMI ws?)+ 
     ;
 
 declaration
@@ -695,14 +691,11 @@ declaration
 
 selectorsGroup
     :
-        // looking for #{, lookeahead exited by { (rule beginning)
-        ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_selector_interpolation_expression
-	|
         selector (ws? COMMA ws? selector)*
     ;
 
 selector
-    :  (combinator ws?)? simpleSelectorSequence ( ((ws? combinator ws?)|ws?) simpleSelectorSequence)*
+    :  (combinator ws?)? simpleSelectorSequence ( ((ws? combinator ws?)|ws) simpleSelectorSequence)*
     ;
 
 combinator
@@ -712,9 +705,8 @@ combinator
 
 simpleSelectorSequence
 	:
-	( typeSelector ((ws? esPred)=>ws? elementSubsequent)* )
-	|
-	elementSubsequent ((ws? esPred)=>ws? elementSubsequent)*
+        (elementSubsequent| {isScssSource()}? sass_selector_interpolation_exp) ((ws? esPred)=>((ws? elementSubsequent) |(ws sass_selector_interpolation_exp)))*
+	| (typeSelector)=>typeSelector ((ws? esPred)=>((ws? elementSubsequent) | {isScssSource()}? ws sass_selector_interpolation_exp))* 
 	;
 	catch[ RecognitionException rce] {
             reportError(rce);
@@ -750,7 +742,7 @@ elementSubsequent
 
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH
+    : HASH ({isScssSource()}? sass_selector_interpolation_exp)?
       |
         ( HASH_SYMBOL
             ( NAME
@@ -766,7 +758,8 @@ cssId
 cssClass
     : DOT
         (
-            IDENT
+             {isScssSource()}?  sass_selector_interpolation_exp
+            | IDENT
             | NOT
             | GEN
             | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
@@ -779,7 +772,7 @@ cssClass
 
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : IDENT | GEN | LESS_AND | STAR
+    : IDENT | GEN | (LESS_AND IDENT?) | STAR
     ;
 
 slAttribute
@@ -1204,45 +1197,9 @@ less_selector_interpolation
     AT_SIGN LBRACE ws? IDENT ws? RBRACE
     ;
 
-//SCSS interpolation expression, e.g. #{$vert}
-
-//why there're two almost same selector_interpolation_expression-s?
-//the problem is that the one for selector can contain COLON inside the expression
-//whereas the later cann't.
-sass_selector_interpolation_expression
-    :
-        (
-            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
-            |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER | LBRACKET | RBRACKET )
-        )
-        (
-            ws?
-            (
-                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
-                |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER | LBRACKET | RBRACKET)
-            )
-        )*
-
-    ;
-
-sass_declaration_interpolation_expression
-    :
-        (
-            (sass_interpolation_expression_var)=>sass_interpolation_expression_var
-            |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
-        )
-        (
-            ws?
-            (
-                (sass_interpolation_expression_var)=>sass_interpolation_expression_var
-                |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH)
-            )
-        )*
-
+//SCSS interpolation expression
+sass_selector_interpolation_exp :
+    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | IDENT | MINUS)?
     ;
 
 sass_interpolation_expression_var
@@ -1275,7 +1232,7 @@ sass_nested_properties
 
 sass_extend
     :
-    SASS_EXTEND ws simpleSelectorSequence (ws? SASS_OPTIONAL)?
+    SASS_EXTEND ws simpleSelectorSequence (ws SASS_OPTIONAL)?
     ;
 
 sass_extend_only_selector
@@ -1295,7 +1252,7 @@ sass_control
 
 sass_if
     :
-    SASS_IF ws sass_control_expression ws? sass_control_block (ws? sass_else)?
+    SASS_IF ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
 
 sass_else
