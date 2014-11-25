@@ -209,6 +209,15 @@ public final class NodeJsSupport {
 
     private final class PreferencesListener implements PreferenceChangeListener {
 
+        // #248870 - 2 events fired in a row (one for 'file', second for 'args')
+        private final RequestProcessor.Task startScriptSyncTask = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                startScriptChanged(preferences.getStartFile(), preferences.getStartArgs());
+            }
+        });
+
+
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String projectName = project.getProjectDirectory().getNameExt();
@@ -235,7 +244,7 @@ public final class NodeJsSupport {
                 fireSourceRootsChanged();
             } else if (NodeJsPreferences.START_FILE.equals(key)
                     || NodeJsPreferences.START_ARGS.equals(key)) {
-                startScriptChanged(preferences.getStartFile(), preferences.getStartArgs());
+                startScriptSyncTask.schedule(100);
             }
         }
 
@@ -245,7 +254,7 @@ public final class NodeJsSupport {
             "PreferencesListener.sync.error=Cannot write changed start file/arguments to package.json.",
             "PreferencesListener.sync.done=Start file/arguments synced to package.json.",
         })
-        private void startScriptChanged(String newStartFile, final String newStartArgs) {
+        void startScriptChanged(String newStartFile, final String newStartArgs) {
             final String projectDir = project.getProjectDirectory().getNameExt();
             if (!preferences.isEnabled()) {
                 LOGGER.log(Level.FINE, "Start file/args change ignored in project {0}, node.js not enabled in project {0}", projectDir);
