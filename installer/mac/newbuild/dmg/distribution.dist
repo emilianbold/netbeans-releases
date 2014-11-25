@@ -110,7 +110,8 @@ function checkSystemversion() {
 </script>
 
 <choices-outline>
-        <line choice="netbeans">            
+        <line choice="netbeans">
+            <line choice="baseide"></line>            
             <line choice="javase"></line>
             <line choice="webcommon"/>
             <line choice="extide"/>
@@ -119,11 +120,11 @@ function checkSystemversion() {
             <line choice="cpp"></line>
             <line choice="groovy"></line>
             <line choice="php"></line>
-            <line choice="ergonomics"></line>
-            <line choice="baseide"></line>
+            <line choice="ergonomics"></line>            
         </line>
         <line choice="glassfish"></line>
         <line choice="tomcat"></line>
+        <line choice="postinstallscripts"></line>
     </choices-outline>
     <choice id="glassfish" title="glassfish-title" description="glassfish-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.glassfish"></pkg-ref>
@@ -162,6 +163,9 @@ function checkSystemversion() {
     <choice id="ergonomics" title="ergonomics-title" description="ergonomics-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.ergonomics.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.ergonomics"></pkg-ref>
     </choice>
+    <choice id="postinstallscripts" title="postinstallscripts-title" description="postinstallscripts-description" start_selected="true" start_enabled="true" start_visible="false" selected="true" enabled="true" visible="false">
+        <pkg-ref id="ident.pkg.postinstallscripts"></pkg-ref>
+    </choice>
 
     <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">glassfish-@GLASSFISH_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">tomcat-@TOMCAT_ID@.pkg</pkg-ref>
@@ -175,4 +179,5 @@ function checkSystemversion() {
     <pkg-ref id="ident.pkg.groovy" version="0.0.0.0.1" installKBytes="@SIZE_GROOVY@" auth="Root" onConclusion="None">groovy-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.php" version="0.0.0.0.1" installKBytes="@SIZE_PHP@" auth="Root" onConclusion="None">php-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.ergonomics" version="0.0.0.0.1" installKBytes="@SIZE_ERGONOMICS@" auth="Root" onConclusion="None">ergonomics-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.postinstallscripts" version="0.0.0.0.1" auth="Root" onConclusion="None">postinstallscripts.pkg</pkg-ref>
 </installer-gui-script>

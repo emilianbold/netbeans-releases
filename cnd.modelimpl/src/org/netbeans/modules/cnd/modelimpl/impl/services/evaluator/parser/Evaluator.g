@@ -169,6 +169,10 @@ balance_lparen_rparen returns [String s = ""]
         (
             (LPAREN)=> inner = balance_lparen_rparen {s += $inner.s;}
         |
+            // TODO: Evaluator doesn't support operators "<<" and ">>", so 
+            // add space after "> " without condition
+            (GREATERTHAN)=> GREATERTHAN {s += "> ";}
+        |
             other = (~RPAREN) {s += $other.text;}
         )*
         RPAREN {s += ")";}

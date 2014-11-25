@@ -2,7 +2,7 @@
 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+# Copyright 2013 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -38,24 +38,14 @@
 #
 # Contributor(s):
 #
-# Portions Copyrighted 2014 Sun Microsystems, Inc.
+# Portions Copyrighted 2013 Sun Microsystems, Inc.
 
-set -e
+changedir=$1
 
-script_dir=`dirname "$0"`
-source_dir=$1
-target_dir=$2
+#Fix for 177872 (alternative: change Auth="None" for GF, but problem with existing root:admin dirs)
+ownership=`ls -nlda ~ | awk ' { print $3 ":admin" } ' 2>/dev/null`
 
-jdk_home=`"$script_dir"/get_current_jdk.sh`
+echo Changing ownership for $changedir to $ownership
 
-. "$script_dir"/env.sh
-
-if [ -n "$GLASSFISH_INSTALL_DIR" ]; then
-   sh "$script_dir"/unpack200.sh "$GLASSFISH_INSTALL_DIR" "$jdk_home"
-fi
-
-
-#add Product ID
-"$script_dir"/addproduct_id.sh "GFMOD"
-
-"$script_dir"/perm.sh "$target_dir"
+chown -R "$ownership" "$changedir"
+chmod -R ug+w "$changedir"

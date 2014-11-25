@@ -62,8 +62,8 @@ rm -rf expanded flatten"/>
         <echo message="sizeof.jdk=${size}${line.separator}" file="${basedir}/../build/sizes.pro" append="true"/>
         <echo message="Getting size of JDK - ${size}"/>
         
-        <copy file="${basedir}/pkg/scripts/set_jdk_home.sh" tofile="${basedir}/../netBeans/baseide/build/scripts/set_jdk_home.sh" verbose="yes" />
-        <chmod file="${basedir}/../netBeans/baseide/build/scripts/set_jdk_home.sh" perm="ugo+x"/>
+        <copy file="${basedir}/pkg/scripts/set_jdk_home.sh" todir="${basedir}/build/postinstallscripts" verbose="yes" />
+        <chmod file="${basedir}/build/postinstallscripts/set_jdk_home.sh" perm="ugo+x"/>
     </target>
     
 </project>
