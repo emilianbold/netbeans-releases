@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 
-@ProjectConvertor.Registration(requiredPattern = "(bower|package)\\.json", position = 1000)
+@ProjectConvertor.Registration(requiredPattern = "(bower|package)\\.json"/*, position = 1000*/) // XXX failing test
 public final class ClientSideProjectConvertor implements ProjectConvertor {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectConvertor.class.getName());
