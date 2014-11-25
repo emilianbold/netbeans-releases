@@ -59,16 +59,41 @@ public final class APTFileCacheEntry {
     private final Map<Integer, Boolean> evalData;
     private final CharSequence filePath;
     private final boolean serial;
-    private APTFileCacheEntry(CharSequence filePath, boolean concurrent, Map<Integer, PostIncludeData> storage, Map<Integer, Boolean> eval) {
+    private final boolean readOnly;
+    private APTFileCacheEntry(CharSequence filePath, boolean concurrent, boolean readOnly, Map<Integer, PostIncludeData> storage, Map<Integer, Boolean> eval) {
         assert (filePath != null);
         this.filePath = filePath;
         this.serial = concurrent;
+        this.readOnly = readOnly;
         this.cache = storage;
         this.evalData = eval;
     }
 
-    /*package*/static APTFileCacheEntry toSerial(APTFileCacheEntry entry) {
-        return new APTFileCacheEntry(entry.filePath, true, new HashMap<Integer, PostIncludeData>(entry.cache), new HashMap<Integer, Boolean>(entry.evalData));
+    /**
+     * convert to frozen entry to be used for keeping in caches.
+     * @param entry
+     * @return 
+     */
+    /*package*/static APTFileCacheEntry toCachable(APTFileCacheEntry entry) {
+        if (entry.serial && entry.readOnly) {
+            // already from cache
+            return entry;
+        }
+        assert !entry.readOnly || entry.serial;
+        return new APTFileCacheEntry(entry.filePath, true, true, new HashMap<Integer, PostIncludeData>(entry.cache), new HashMap<Integer, Boolean>(entry.evalData));
+    }
+
+    /**
+     * convert to entry which does not modify, but only returns what exists.
+     * @param entry
+     * @return 
+     */
+    /*package*/static APTFileCacheEntry toReadOnly(APTFileCacheEntry entry) {
+        if (entry.readOnly) {
+            return entry;
+        }
+        assert !entry.isSerial() : "only concurrent is exected here (or readonly above)";
+        return new APTFileCacheEntry(entry.filePath, !entry.isSerial(), true, entry.cache, entry.evalData);
     }
 
     /*package*/static APTFileCacheEntry createConcurrentEntry(CharSequence filePath) {
@@ -80,7 +105,7 @@ public final class APTFileCacheEntry {
     }
 
     private static APTFileCacheEntry create(CharSequence filePath, boolean serial) {
-        return new APTFileCacheEntry(filePath, serial, serial ? new HashMap<Integer, PostIncludeData>() : new ConcurrentHashMap<Integer, PostIncludeData>(), serial ? new HashMap<Integer, Boolean>() : new ConcurrentHashMap<Integer, Boolean>());
+        return new APTFileCacheEntry(filePath, serial, false, serial ? new HashMap<Integer, PostIncludeData>() : new ConcurrentHashMap<Integer, PostIncludeData>(), serial ? new HashMap<Integer, Boolean>() : new ConcurrentHashMap<Integer, Boolean>());
     }
 
     public boolean isSerial() {
@@ -103,6 +128,12 @@ public final class APTFileCacheEntry {
     }
 
     /*package*/ Object getIncludeLock(APTInclude node) {
+        if (readOnly) {
+            // lock is unique object which is not shared with anyone else,
+            // because we use only this cache for read only
+            return new Object();
+        }
+        
         return getIncludeData(node);
     }
 
@@ -117,6 +148,10 @@ public final class APTFileCacheEntry {
     }
 
     /*package*/ void setEvalResult(APT node, boolean result) {
+        if (readOnly) {
+            return;
+        }
+        
         evalData.put(node.getOffset(), Boolean.valueOf(result));
     }
 
@@ -126,9 +161,11 @@ public final class APTFileCacheEntry {
         if (data == null) {
             // create empty object
             data = new PostIncludeData();
-            PostIncludeData prev = serial ? cache.put(key, data) : ((ConcurrentMap<Integer, PostIncludeData>)cache).putIfAbsent(key, data);
-            if (prev != null) {
-                data = prev;
+            if (!readOnly) {
+                PostIncludeData prev = serial ? cache.put(key, data) : ((ConcurrentMap<Integer, PostIncludeData>)cache).putIfAbsent(key, data);
+                if (prev != null) {
+                    data = prev;
+                }
             }
         }
         return data;
@@ -136,6 +173,9 @@ public final class APTFileCacheEntry {
 
     /** must be called under lock or must be serial */
     /*package*/ void setIncludeData(APTInclude node, PostIncludeData newData) {
+        if (readOnly) {
+            return;
+        }
         Integer key = Integer.valueOf(node.getOffset());
         PostIncludeData old = cache.get(key);
         assert old != null;
@@ -154,7 +194,7 @@ public final class APTFileCacheEntry {
 
     @Override
     public String toString() {
-        return "APT cache " + (isSerial() ? "Serial" : "Shared") + " with " + cache.size() + " entries for " + filePath; // NOI18N
+        return "APT cache " + (isSerial() ? "Serial" : "Shared") + (readOnly ? " ReadOnly" : "") + " with " + cache.size() + " entries for " + filePath; // NOI18N
     }
 
     private boolean needTraceValue(int val) {
