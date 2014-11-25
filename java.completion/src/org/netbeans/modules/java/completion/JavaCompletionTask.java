@@ -1532,7 +1532,11 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                         el = ((DeclaredType) tm).asElement();
                                     }
                                 } else if (exp.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
-                                    el = controller.getTypes().boxedClass((PrimitiveType) type);
+                                    if (type.getKind().isPrimitive()) {
+                                        el = controller.getTypes().boxedClass((PrimitiveType) type);
+                                    } else if (type.getKind() == TypeKind.VOID) {
+                                        el = controller.getElements().getTypeElement("java.lang.Void"); //NOI18N
+                                    }
                                 }
                             }
                             addMembers(env, type, el, kinds, baseType, inImport, insideNew, false);
