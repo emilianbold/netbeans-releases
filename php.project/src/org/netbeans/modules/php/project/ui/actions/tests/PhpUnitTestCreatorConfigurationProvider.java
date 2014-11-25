@@ -41,28 +41,21 @@
  */
 package org.netbeans.modules.php.project.ui.actions.tests;
 
-import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.JLabel;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
-import org.netbeans.modules.gsf.testrunner.plugin.CommonTestUtilProvider;
-import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
 import org.netbeans.modules.gsf.testrunner.ui.spi.TestCreatorConfigurationProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,8 +64,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=TestCreatorConfigurationProvider.class, position=20)
 public class PhpUnitTestCreatorConfigurationProvider extends TestCreatorConfigurationProvider {
-    
-    private String selectedFramework = "";
 
     /**
      *
@@ -81,7 +72,6 @@ public class PhpUnitTestCreatorConfigurationProvider extends TestCreatorConfigur
      */
     @Override
     public boolean canHandleProject(String framework) {
-        selectedFramework = framework;
         return framework.equals(TestCreatorProvider.FRAMEWORK_PHPUNIT);
     }
 
@@ -111,7 +101,6 @@ public class PhpUnitTestCreatorConfigurationProvider extends TestCreatorConfigur
     @Override
     public Object[] getTestSourceRoots(Collection<SourceGroup> createdSourceRoots, FileObject fo) {
         ArrayList<Object> folders = new ArrayList<>();
-        Object[] targetFolders = new Object[1];
         Project p = FileOwnerQuery.getOwner(fo);
         if (p != null && (p instanceof PhpProject)) {
             List<FileObject> testDirectories = ProjectPropertiesSupport.getTestDirectories((PhpProject)p, true);
@@ -124,7 +113,7 @@ public class PhpUnitTestCreatorConfigurationProvider extends TestCreatorConfigur
                 }
             }
         }
-        return folders.toArray();//targetFolders;
+        return folders.toArray();
     }
     
 }
