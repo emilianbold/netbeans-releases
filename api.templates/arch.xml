@@ -71,7 +71,7 @@
                 processing
             </a> 
             do some advanced changes to it using either 
-            <a name="script">scripting or templating</a> languages.
+            <a name="scripting">scripting or templating</a> languages.
         </p>
         <p>
             This traditionally used to be a bit complicated task (hacking into DataObject implementation), however since 
