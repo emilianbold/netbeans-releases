@@ -25,9 +25,5 @@ if [ -f "$dirname"/postinstall_generic ]; then
     "$dirname"/postinstall_generic $1 $2
 fi
 
-. "$dirname"/env.sh
-
 #add Product ID
 "$dirname"/addproduct_id.sh "JAVA"
-
-
