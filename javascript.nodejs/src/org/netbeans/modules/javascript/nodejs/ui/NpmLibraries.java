@@ -78,6 +78,21 @@ public final class NpmLibraries {
         return new NpmLibrariesNodeFactory();
     }
 
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 400)
+    public static NodeFactory forPhpProject() {
+        return new NpmLibrariesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-project", position = 310)
+    public static NodeFactory forWebProject() {
+        return new NpmLibrariesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 610)
+    public static NodeFactory forMavenProject() {
+        return new NpmLibrariesNodeFactory();
+    }
+
     //~ Inner classes
 
     private static final class NpmLibrariesNodeFactory implements NodeFactory {
