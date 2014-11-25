@@ -39,40 +39,79 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-
 /**
- * npm libraries customizer.
- * 
+ * npm package/library.
+ *
  * @author Jan Stola
  */
-class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
-    private static final String CATEGORY_NAME = "NpmLibraries"; // NOI18N
+public class Library {
+    /** Name of the library. */
+    private final String name;
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org.netbeans.modules.web.clientproject",
-            position = 205)
-    public static ProjectCustomizer.CompositeCategoryProvider createNpmLibraries() {
-        return new LibraryCustomizer();
+    /**
+     * Creates a new {@code Library} with the given name.
+     * 
+     * @param name name of the library.
+     */
+    Library(String name) {
+        this.name = name;
     }
 
-    @Override
-    @NbBundle.Messages("LibraryCustomizer.displayName=npm Libraries")
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                CATEGORY_NAME, Bundle.LibraryCustomizer_displayName(), null);
+    /**
+     * Returns the name of this library.
+     * 
+     * @return name of this library.
+     */
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        Project project = context.lookup(Project.class);
-        return new LibrariesPanel(project);
+    // PENDING
+    public Library.Version getLatestVersion() {
+        return null;
+    }
+
+    /**
+     * Version of a npm package/library.
+     */
+    public static class Version {
+        /** Owning library. */
+        private final Library library;
+        /** Name/number of the version. */
+        private final String name;
+
+        /**
+         * Creates a new {@code Version}.
+         * 
+         * @param library owning library.
+         * @param name version name/number.
+         */
+        Version(Library library, String name) {
+            this.library = library;
+            this.name = name;
+        }
+
+        /**
+         * Returns the owning library.
+         * 
+         * @return owning library.
+         */
+        public Library getLibrary() {
+            return library;
+        }
+
+        /**
+         * Returns name/number of the version.
+         * 
+         * @return name/number of the version.
+         */
+        public String getName() {
+            return name;
+        }
+
     }
 
 }
