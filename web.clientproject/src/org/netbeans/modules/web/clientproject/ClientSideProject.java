@@ -724,14 +724,15 @@ public class ClientSideProject implements Project {
         }
 
         @NbBundle.Messages({
-            "OpenHookImpl.notification.autoconfigured.title=Project automatically configured",
+            "# {0} - project name",
+            "OpenHookImpl.notification.autoconfigured.title=Project {0} automatically configured",
             "OpenHookImpl.notification.autoconfigured.details=Review and correct important project settings detected by the IDE.",
         })
         private void checkAutoconfigured() {
             ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
             if (projectProperties.isAutoconfigured()) {
                 NotificationDisplayer.getDefault().notify(
-                        Bundle.OpenHookImpl_notification_autoconfigured_title(),
+                        Bundle.OpenHookImpl_notification_autoconfigured_title(ProjectUtils.getInformation(project).getDisplayName()),
                         NotificationDisplayer.Priority.LOW.getIcon(),
                         Bundle.OpenHookImpl_notification_autoconfigured_details(),
                         new ActionListener() {
