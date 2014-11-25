@@ -1129,8 +1129,9 @@ public class ETable extends JTable {
         ListSelectionModel rsm = getSelectionModel();
         sr.anchorInView = rsm.getAnchorSelectionIndex();
         sr.leadInView = rsm.getLeadSelectionIndex();
-        sr.anchorInModel = convertRowIndexToModel(sr.anchorInView);
-        sr.leadInModel = convertRowIndexToModel(sr.leadInView);
+        int rc = getRowCount();
+        sr.anchorInModel = (sr.anchorInView < rc) ? convertRowIndexToModel(sr.anchorInView) : -1;
+        sr.leadInModel = (sr.leadInView < rc) ? convertRowIndexToModel(sr.leadInView) : -1;
         return sr;
     }
     
