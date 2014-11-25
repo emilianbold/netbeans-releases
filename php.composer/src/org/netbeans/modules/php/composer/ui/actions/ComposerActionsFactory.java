@@ -56,7 +56,7 @@ import org.openide.util.actions.Presenter;
  */
 @ActionID(id="org.netbeans.modules.php.composer.ui.actions.ComposerActionsFactory", category="Project")
 @ActionRegistration(displayName="#ActionsFactory.name", lazy=false)
-@ActionReference(position=1050, path="Projects/org-netbeans-modules-php-phpproject/Actions")
+@ActionReference(position=1050, path="Projects/org-netbeans-modules-php-project/Actions")
 public final class ComposerActionsFactory extends AbstractAction implements Presenter.Popup {
 
     private static final long serialVersionUID = 54786435246576574L;

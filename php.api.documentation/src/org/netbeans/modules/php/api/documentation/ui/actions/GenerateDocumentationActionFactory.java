@@ -70,7 +70,7 @@ import org.openide.util.actions.Presenter;
 @NbBundle.Messages("GenerateDocumentationActionFactory.title=Generate Documentation")
 @ActionID(id = "org.netbeans.modules.php.api.documentation.ui.actions.GenerateDocumentationActionFactory", category = "Project")
 @ActionRegistration(displayName = "#GenerateDocumentationActionFactory.title", lazy = false)
-@ActionReference(position = 800, path = "Projects/org-netbeans-modules-php-phpproject/Actions")
+@ActionReference(position = 800, path = "Projects/org-netbeans-modules-php-project/Actions")
 public final class GenerateDocumentationActionFactory extends AbstractAction implements ContextAwareAction {
 
     private static final long serialVersionUID = 5687856454545L;
