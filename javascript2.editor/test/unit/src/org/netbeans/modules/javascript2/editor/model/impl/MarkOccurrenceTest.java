@@ -1159,6 +1159,22 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue245445.js", "var myL^ib = new MyLib();", true); 
     }
     
+    public void testIssue190645_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue190645.js", "config.defaults.treasure.g^old = 1;", true); 
+    }
+    
+    public void testIssue190645_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue190645.js", "config.defaults.trea^sure.gold = 1;", true); 
+    }
+    
+    public void testIssue190645_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue190645.js", "config.def^aults.treasure.gold = 1;", true); 
+    }
+    
+    public void testIssue190645_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue190645.js", "conf^ig.defaults.treasure.gold = 1;", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

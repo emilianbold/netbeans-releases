@@ -81,6 +81,21 @@ public final class CdnjsLibraries {
         return new CdnjsLibrariesNodeFactory();
     }
 
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 450)
+    public static NodeFactory forPhpProject() {
+        return new CdnjsLibrariesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-project", position = 330)
+    public static NodeFactory forWebProject() {
+        return new CdnjsLibrariesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 620)
+    public static NodeFactory forMavenProject() {
+        return new CdnjsLibrariesNodeFactory();
+    }
+
     //~ Inner classes
 
     private static final class CdnjsLibrariesNodeFactory implements NodeFactory {
@@ -101,6 +116,7 @@ public final class CdnjsLibraries {
 
         // @GuardedBy("thread")
         private Node cdnjsLibrariesNode;
+
 
         CdnjsLibrariesNodeList(Project project) {
             assert project != null;

@@ -92,6 +92,7 @@ public final class ClientSideProjectProperties {
     private volatile String projectUrl = null;
     private volatile ProjectServer projectServer = null;
     private volatile ClientProjectEnhancedBrowserImplementation enhancedBrowserSettings = null;
+    private volatile Boolean autoconfigured = null;
 
     //customizer license headers
     private Licenses licenseSupport;
@@ -186,6 +187,13 @@ public final class ClientSideProjectProperties {
         putProperty(privateProperties, ClientSideProjectConstants.PROJECT_PROJECT_URL, projectUrl);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_WEB_ROOT, webRoot);
         getLicenseSupport().updateProperties(projectProperties);
+        if (autoconfigured != null) {
+            if (autoconfigured) {
+                privateProperties.put(ClientSideProjectConstants.PROJECT_AUTOCONFIGURED, Boolean.TRUE.toString());
+            } else {
+                privateProperties.remove(ClientSideProjectConstants.PROJECT_AUTOCONFIGURED);
+            }
+        }
         project.getProjectHelper().putProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         project.getProjectHelper().putProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
     }
@@ -213,6 +221,17 @@ public final class ClientSideProjectProperties {
 
     public ClientSideProject getProject() {
         return project;
+    }
+
+    public boolean isAutoconfigured() {
+        if (autoconfigured == null) {
+            autoconfigured = Boolean.parseBoolean(getProjectProperty(ClientSideProjectConstants.PROJECT_AUTOCONFIGURED, Boolean.FALSE.toString()));
+        }
+        return autoconfigured;
+    }
+
+    public void setAutoconfigured(boolean autoconfigured) {
+        this.autoconfigured = autoconfigured;
     }
 
     public AtomicReference<String> getSourceFolder() {

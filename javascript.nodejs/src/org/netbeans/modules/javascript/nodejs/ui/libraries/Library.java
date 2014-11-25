@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,70 +37,79 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.composer.ui.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
+package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
 /**
- * Factory for Composer actions.
+ * npm package/library.
+ *
+ * @author Jan Stola
  */
-@ActionID(id="org.netbeans.modules.php.composer.ui.actions.ComposerActionsFactory", category="Project")
-@ActionRegistration(displayName="#ActionsFactory.name", lazy=false)
-@ActionReference(position=1050, path="Projects/org-netbeans-modules-php-project/Actions")
-public final class ComposerActionsFactory extends AbstractAction implements Presenter.Popup {
+public class Library {
+    /** Name of the library. */
+    private final String name;
 
-    private static final long serialVersionUID = 54786435246576574L;
-
-    private JMenu composerActions = null;
-
-
-    public ComposerActionsFactory() {
-        super();
+    /**
+     * Creates a new {@code Library} with the given name.
+     * 
+     * @param name name of the library.
+     */
+    Library(String name) {
+        this.name = name;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        assert false;
+    /**
+     * Returns the name of this library.
+     * 
+     * @return name of this library.
+     */
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public JMenuItem getPopupPresenter() {
-        if (composerActions == null) {
-            composerActions = new ComposerActions();
+    // PENDING
+    public Library.Version getLatestVersion() {
+        return null;
+    }
+
+    /**
+     * Version of a npm package/library.
+     */
+    public static class Version {
+        /** Owning library. */
+        private final Library library;
+        /** Name/number of the version. */
+        private final String name;
+
+        /**
+         * Creates a new {@code Version}.
+         * 
+         * @param library owning library.
+         * @param name version name/number.
+         */
+        Version(Library library, String name) {
+            this.library = library;
+            this.name = name;
         }
-        return composerActions;
-    }
 
-    //~ Inner classes
+        /**
+         * Returns the owning library.
+         * 
+         * @return owning library.
+         */
+        public Library getLibrary() {
+            return library;
+        }
 
-    private static final class ComposerActions extends JMenu {
-
-        private static final long serialVersionUID = -877135786765411L;
-
-
-        @NbBundle.Messages("ComposerActionsFactory.name=Composer")
-        public ComposerActions() {
-            super(Bundle.ComposerActionsFactory_name());
-            add(new AddDependencyAction());
-            addSeparator();
-            add(new InitAction());
-            add(new InstallDevAction());
-            add(new InstallNoDevAction());
-            add(new UpdateDevAction());
-            add(new UpdateNoDevAction());
-            add(new ValidateAction());
-            addSeparator();
-            add(new SelfUpdateAction());
+        /**
+         * Returns name/number of the version.
+         * 
+         * @return name/number of the version.
+         */
+        public String getName() {
+            return name;
         }
 
     }

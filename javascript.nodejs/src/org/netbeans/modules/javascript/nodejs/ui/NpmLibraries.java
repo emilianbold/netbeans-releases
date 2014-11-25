@@ -51,10 +51,6 @@ import java.util.HashMap;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-
-import static javax.swing.Action.NAME;
-import static javax.swing.Action.SHORT_DESCRIPTION;
-
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
@@ -79,6 +75,21 @@ public final class NpmLibraries {
 
     @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 600)
     public static NodeFactory forHtml5Project() {
+        return new NpmLibrariesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 400)
+    public static NodeFactory forPhpProject() {
+        return new NpmLibrariesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-project", position = 310)
+    public static NodeFactory forWebProject() {
+        return new NpmLibrariesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 610)
+    public static NodeFactory forMavenProject() {
         return new NpmLibrariesNodeFactory();
     }
 

@@ -53,6 +53,7 @@ package org.netbeans.modules.css.lib;
 //import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
@@ -2646,7 +2647,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + "  p { background: lime; }"
                 + "  [*=test] { background: red; }"
                 + "";
-        assertResult(TestUtil.parse(code), 2);
+        assertResult(TestUtil.parse(code), 1);
     }
 
     public void tests_css3_modsel_158_xml() throws BadLocationException, ParseException {
@@ -2904,7 +2905,7 @@ public class W3CSelectorsTest extends CssTestBase {
                 + " p { color: green; }"
                 + " .\13 { color: red; }"
                 + "";
-        assertResult(TestUtil.parse(code), 3);
+        assertResult(TestUtil.parse(code), 2);
     }
 
     public void tests_css3_modsel_175c_xml() throws BadLocationException, ParseException {

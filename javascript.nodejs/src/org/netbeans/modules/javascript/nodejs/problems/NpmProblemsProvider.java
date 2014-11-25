@@ -93,7 +93,7 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
         return create(project);
     }
 
-    @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-php-phpproject") // NOI18N
+    @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-php-project") // NOI18N
     public static ProjectProblemsProvider forPhpProject(Project project) {
         return create(project);
     }

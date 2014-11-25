@@ -64,7 +64,7 @@ import org.openide.util.actions.NodeAction;
     @ActionReference(path = "Projects/org-netbeans-modules-j2ee-ejbjarproject/Actions", position = 1101),
     @ActionReference(path = "Projects/org-netbeans-modules-java-j2seproject/Actions", position = 1101),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 1201),
-    @ActionReference(path = "Projects/org-netbeans-modules-php-phpproject/Actions", position = 501),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 501),
     @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 721),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 1101),
     @ActionReference(path = "Projects/package/Actions", position = 99)

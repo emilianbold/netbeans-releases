@@ -109,7 +109,7 @@ import org.openide.xml.XMLUtil;
     @ActionReference(
         id=@ActionID(id="org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory", category="Project"),
         position=1950,
-        path="Projects/org-netbeans-modules-php-phpproject/Actions")
+        path="Projects/org-netbeans-modules-php-project/Actions")
 })
 public class PhpLogicalViewProvider implements LogicalViewProvider {
 
@@ -372,7 +372,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
-            List<Action> actions = new LinkedList<>(Arrays.asList(CommonProjectActions.forType("org-netbeans-modules-php-phpproject"))); // NOI18N
+            List<Action> actions = new LinkedList<>(Arrays.asList(CommonProjectActions.forType("org-netbeans-modules-php-project"))); // NOI18N
             // XXX code coverage cannot be added since it already is ContextAwareAction (but the Factory needs to be ContextAwareAction as well)
             addCodeCoverageAction(actions);
             // XXX similarly for frameworks - they are directly in the context menu, not in any submenu
@@ -574,7 +574,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
     }
 
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 250)
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 600)
     public static NodeFactory createRemoteFiles() {
         return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
     }

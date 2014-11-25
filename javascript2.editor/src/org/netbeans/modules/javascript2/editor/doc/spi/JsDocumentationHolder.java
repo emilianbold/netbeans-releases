@@ -145,6 +145,19 @@ public abstract class JsDocumentationHolder {
         }
         return Collections.<DocParameter>emptyList();
     }
+    
+    /**
+     * Gets properties of the object from comment.
+     * @param node of the javaScript code
+     * @return list of properties defined in the comment, never {@code null}
+     */
+    public List<DocParameter> getProperties(Node node) {
+        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
+        if (comment != null) {
+            return comment.getProperties();
+        }
+        return Collections.<DocParameter>emptyList();
+    }
 
     /**
      * Gets documentation for given Node.

@@ -234,6 +234,9 @@ public class CPCssEditorModule extends CssEditorModule {
                         proposals.addAll(getMixinsCompletionProposals(context, model));
                     }
                     break;
+                case DOT:
+                    proposals.addAll(getMixinsCompletionProposals(context, model));
+                break;
             }
                 break;
             case cp_mixin_call:

@@ -61,6 +61,7 @@ public class ClientSideProjectConstants {
     public static final String PROJECT_SELECTED_BROWSER = "browser"; //NOI18N
     public static final String PROJECT_RUN_BROWSER = "browser.run"; //NOI18N
     public static final String PROJECT_RUN_AS = "run.as"; //NOI18N
+    public static final String PROJECT_AUTOCONFIGURED = "autoconfigured"; //NOI18N
 
     // default paths:
     public static final String DEFAULT_SOURCE_FOLDER = "src"; //NOI18N

@@ -53,8 +53,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.project.ui.ProjectConvertor;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -85,6 +83,7 @@ public class ProjectConvertorProcessor extends LayerGeneratingProcessor {
             final TypeElement projectConvertor = elements.getTypeElement(ProjectConvertor.class.getName());
             if (types.isSubtype(((TypeElement)e).asType(), projectConvertor.asType())) {
                 final LayerBuilder.File f = layer(e).instanceFile("Services", null, null);    //NOI18N
+                f.stringvalue("instanceOf", ProjectConvertorAcceptor.class.getName());   //NOI18N
                 f.stringvalue("instanceClass", ProjectConvertorAcceptor.class.getName());   //NOI18N
                 f.methodvalue("instanceCreate", ProjectConvertor.Result.class.getName(), "create");    //NOI18N
                 final int position = reg.position();

@@ -362,8 +362,6 @@ public enum NodeType {
     cp_mixin_call_args,
     cp_mixin_name,
     
-    sass_selector_interpolation_expression,
-    sass_declaration_interpolation_expression,
     
     sass_interpolation_expression_var,
     
@@ -473,6 +471,8 @@ public enum NodeType {
     , key_and
     , key_or
     , key_only
+    
+    , sass_selector_interpolation_exp
     ;
     
     

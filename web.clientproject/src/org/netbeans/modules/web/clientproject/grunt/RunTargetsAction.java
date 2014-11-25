@@ -89,7 +89,7 @@ import org.openide.util.actions.SystemAction;
     @ActionReference(position = 900, path = "Editors/text/grunt+javascript/Popup"),
     @ActionReference(position = 150, path = "Loaders/text/grunt+javascript/Actions"),
     @ActionReference(path="Projects/org-netbeans-modules-web-clientproject/Actions", position = 180),
-    @ActionReference(path="Projects/org-netbeans-modules-php-phpproject/Actions", position = 670),
+    @ActionReference(path="Projects/org-netbeans-modules-php-project/Actions", position = 670),
     @ActionReference(path="Projects/org-netbeans-modules-web-project/Actions", position = 670),
     @ActionReference(path="Projects/org-netbeans-modules-maven/Actions", position = 770)
 })

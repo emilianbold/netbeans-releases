@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,72 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.composer.ui.actions;
+package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
 /**
- * Factory for Composer actions.
+ * npm libraries customizer.
+ * 
+ * @author Jan Stola
  */
-@ActionID(id="org.netbeans.modules.php.composer.ui.actions.ComposerActionsFactory", category="Project")
-@ActionRegistration(displayName="#ActionsFactory.name", lazy=false)
-@ActionReference(position=1050, path="Projects/org-netbeans-modules-php-project/Actions")
-public final class ComposerActionsFactory extends AbstractAction implements Presenter.Popup {
+class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+    private static final String CATEGORY_NAME = "NpmLibraries"; // NOI18N
 
-    private static final long serialVersionUID = 54786435246576574L;
-
-    private JMenu composerActions = null;
-
-
-    public ComposerActionsFactory() {
-        super();
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org.netbeans.modules.web.clientproject",
+            position = 205)
+    public static ProjectCustomizer.CompositeCategoryProvider createNpmLibraries() {
+        return new LibraryCustomizer();
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        assert false;
+    @NbBundle.Messages("LibraryCustomizer.displayName=npm Libraries")
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                CATEGORY_NAME, Bundle.LibraryCustomizer_displayName(), null);
     }
 
     @Override
-    public JMenuItem getPopupPresenter() {
-        if (composerActions == null) {
-            composerActions = new ComposerActions();
-        }
-        return composerActions;
-    }
-
-    //~ Inner classes
-
-    private static final class ComposerActions extends JMenu {
-
-        private static final long serialVersionUID = -877135786765411L;
-
-
-        @NbBundle.Messages("ComposerActionsFactory.name=Composer")
-        public ComposerActions() {
-            super(Bundle.ComposerActionsFactory_name());
-            add(new AddDependencyAction());
-            addSeparator();
-            add(new InitAction());
-            add(new InstallDevAction());
-            add(new InstallNoDevAction());
-            add(new UpdateDevAction());
-            add(new UpdateNoDevAction());
-            add(new ValidateAction());
-            addSeparator();
-            add(new SelfUpdateAction());
-        }
-
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project project = context.lookup(Project.class);
+        return new LibrariesPanel(project);
     }
 
 }

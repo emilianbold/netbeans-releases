@@ -72,8 +72,10 @@ import java.util.Stack;
 import jdk.nashorn.internal.ir.ExecuteNode;
 import jdk.nashorn.internal.ir.ForNode;
 import jdk.nashorn.internal.ir.WithNode;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -1433,6 +1435,42 @@ public class ModelVisitor extends PathNodeVisitor {
         if (!(varNode.getInit() instanceof ReferenceNode || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)
                 // XXX can we avoid creation of object ?
                 && ModelElementFactory.create(parserResult, varNode.getName()) != null) {
+            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+            List<DocParameter> properties = docHolder.getProperties(varNode);
+            for (DocParameter docProperty : properties) {
+                String propertyName = docProperty.getParamName().getName();
+                String names[];
+                int delta = 0;
+                if (propertyName.indexOf('.') > 0) {
+                    names = propertyName.split("\\.");
+                } else {
+                    names = new String[]{propertyName};
+                }
+                JsObject parent = modelBuilder.getCurrentObject();
+                for (int i = 0; i < names.length; i++) {
+                    String name = names[i];
+                    JsObject property = parent.getProperty(name);
+                    int startOffset = docProperty.getParamName().getOffsetRange().getStart() + delta;
+                    int endOffset = startOffset + name.length();
+                    OffsetRange offsetRange = new OffsetRange(startOffset, endOffset);
+                    if (property == null) {
+                        IdentifierImpl iden = new IdentifierImpl(name, offsetRange);
+                        property = new JsObjectImpl(parent, iden, offsetRange, true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                        parent.addProperty(name, property);
+                    }
+                    property.addOccurrence(offsetRange);
+                     if (i == names.length - 1) {
+                        for (Type type : docProperty.getParamTypes()) {
+                            property.addAssignment(new TypeUsageImpl(type.getType(), endOffset), endOffset);
+                        }
+                    }
+                    delta = delta + name.length() + 1;
+                    parent = property;
+                    
+                }
+                
+
+            }
             modelBuilder.reset();
         }
         return super.leave(varNode);
