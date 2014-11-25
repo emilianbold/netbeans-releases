@@ -37,16 +37,19 @@ package org.netbeans.freemarker.templates;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -60,7 +63,6 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
-import org.openide.text.IndentEngine;
 import org.openide.util.Enumerations;
 
 /**
@@ -80,7 +82,8 @@ public class IndentEngineIntTest extends NbTestCase {
 
     @SuppressWarnings("deprecation")
     protected void setUp() throws Exception {
-        MockServices.setServices(DD.class, Pool.class, IEImpl.class);
+        MockServices.setServices(DD.class, Pool.class);
+        MockMimeLookup.setInstances(MimePath.get("text/jarda"), new IEImpl2());
         FileUtil.setMIMEType("txt", "text/jarda");
     }
 
@@ -192,44 +195,39 @@ public class IndentEngineIntTest extends NbTestCase {
         }
     }
 
-    public static final class IEImpl extends IndentEngine {
-        
-        
-        public int indentLine(Document doc, int offset) {
-            throw new UnsupportedOperationException("Not supported yet.");
+    public static final class IEImpl2 implements ReformatTask, ReformatTask.Factory {
+        private Context context;
+
+        public IEImpl2(Context context) {
+            this.context = context;
         }
 
-        public int indentNewLine(Document doc, int offset) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public IEImpl2() {
         }
 
         @Override
-        protected boolean acceptMimeType(String mime) {
-            return "text/jarda".equals(mime); // NOI18N
+        public void reformat() throws BadLocationException {
+            int from = context.startOffset();
+            int to = context.endOffset();
+            int len = to - from;
+            String s = context.document().getText(from, len);
+            StringBuilder sb = new StringBuilder(s.length());
+            for (int i = s.length() - 1; i >= 0; i--) {
+                sb.append(s.charAt(i));
+            }
+            context.document().insertString(from, sb.toString(), null);
+            context.document().remove(from + len, len);
         }
 
-        public Writer createWriter(Document doc, int offset, final Writer writer) {
-            class Rotate extends StringWriter {
-                @Override
-                public void close() throws IOException {
-                    super.close();
-                    
-                    String s = toString();
-                    StringBuilder sb = new StringBuilder(s.length());
-                    for (int i = s.length() - 1; i >= 0; i--) {
-                        sb.append(s.charAt(i));
-                    }
-                    
-                    writer.write(sb.toString());
-                    writer.close();
-                }
-            }
-            
-            assertNotNull("There is some document", doc);
-            assertEquals("Its length is 0", 0, doc.getLength());
-            assertEquals("Offset is 0", 0, offset);
-            
-            return new Rotate();
+        @Override
+        public ExtraLock reformatLock() {
+            return null;
         }
-}
+
+        @Override
+        public ReformatTask createTask(Context context) {
+            return new IEImpl2(context);
+        }
+    }
+
 }
