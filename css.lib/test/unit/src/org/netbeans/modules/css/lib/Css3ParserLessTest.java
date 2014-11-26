@@ -750,4 +750,18 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
     
+    public void testParentInheritingWithNumbers() {
+        String source = ".author {\n"
+                + "  &-name {  }\n"
+                + "  &-picture { }\n"
+                + "}\n"
+                + "\n"
+                + ".author {\n"
+                + "  &-1 { }\n"
+                + "  &-2 {  }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
 }

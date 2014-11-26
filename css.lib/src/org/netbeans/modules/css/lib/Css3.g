@@ -772,7 +772,7 @@ cssClass
 
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : IDENT | GEN | (LESS_AND IDENT?) | STAR
+    : IDENT | GEN | (LESS_AND (IDENT | MINUS | NUMBER)*) | STAR
     ;
 
 slAttribute
