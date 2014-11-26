@@ -89,7 +89,6 @@ import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvidersListener;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
-import org.netbeans.modules.web.clientproject.bower.BowerProblemProvider;
 import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
 import org.netbeans.modules.web.clientproject.env.Env;
 import org.netbeans.modules.web.clientproject.env.Values;
@@ -515,7 +514,6 @@ public class ClientSideProject implements Project {
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
-               BowerProblemProvider.create(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                new TemplateAttributesProviderImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,

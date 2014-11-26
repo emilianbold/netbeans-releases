@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.node;
+package org.netbeans.modules.web.clientproject.grunt;
 
 
 import java.io.BufferedInputStream;
