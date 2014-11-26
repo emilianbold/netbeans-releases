@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -186,7 +187,7 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            String oldName = fe.getName() + (fe.getExt() != null ? "." + fe.getExt() : ""); // NOI18N
+            String oldName = fe.getName() + (StringUtils.hasText(fe.getExt()) ? "." + fe.getExt() : ""); // NOI18N
             processFileChange(fe.getFile().getNameExt());
             processFileChange(oldName);
             processFolderChange(fe.getFile().getNameExt());
