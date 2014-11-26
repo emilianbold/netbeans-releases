@@ -691,7 +691,7 @@ declaration
 
 selectorsGroup
     :
-        selector (ws? COMMA ws? selector)*
+        selector (ws? COMMA ws? selector)* ({isCssPreprocessorSource()}? COMMA)?
     ;
 
 selector

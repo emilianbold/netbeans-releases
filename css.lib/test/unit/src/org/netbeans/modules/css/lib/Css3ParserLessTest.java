@@ -737,4 +737,17 @@ public class Css3ParserLessTest extends CssTestBase {
         assertEquals("wrong", error.image().toString());
     }
     
+    public void testAdditionalCommaInTheEndOfSelector() {
+        String source = ".ui-convex,\n"
+                + ".ui-convex-hover,\n"
+                + "{\n"
+                + "    width: 10em;\n"
+                + "    height: 2em;\n"
+                + "    \n"
+                + "    margin: 1em auto;\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
 }

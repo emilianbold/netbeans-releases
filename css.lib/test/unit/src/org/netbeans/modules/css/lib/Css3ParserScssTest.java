@@ -1719,4 +1719,17 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testAdditionalCommaInTheEndOfSelector() {
+        String source = ".ui-convex,\n"
+                + ".ui-convex-hover,\n"
+                + "{\n"
+                + "    width: 10em;\n"
+                + "    height: 2em;\n"
+                + "    \n"
+                + "    margin: 1em auto;\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }
