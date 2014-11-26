@@ -186,8 +186,11 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
+            String oldName = fe.getName() + (fe.getExt() != null ? "." + fe.getExt() : ""); // NOI18N
             processFileChange(fe.getFile().getNameExt());
-            processFolderChange(fe.getName() + "." + fe.getExt()); // NOI18N
+            processFileChange(oldName);
+            processFolderChange(fe.getFile().getNameExt());
+            processFolderChange(oldName);
         }
 
         private void processFileChange(String fileName) {
