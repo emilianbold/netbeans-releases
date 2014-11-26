@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.bower;
+package org.netbeans.modules.javascript.bower.file;
 
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
@@ -56,7 +56,7 @@ public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
     public ImportantFilesImpl(Project project) {
         assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), "bower.json", ".bowerrc"); // NOI18N
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), BowerJson.FILE_NAME, ".bowerrc"); // NOI18N
     }
 
     @Override
