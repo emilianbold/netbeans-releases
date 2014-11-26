@@ -1298,7 +1298,7 @@ sass_function_declaration
     //but so far haven't found any such example so I put the declarations rule inside
     //and added the sass_function_return into the declarations rule itself (not fully correct)
     //as the return should be allowed only from the sass function declaration
-    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? declarations? RBRACE
+    SASS_FUNCTION ws sass_function_name ws? LPAREN ws? cp_args_list? RPAREN ws? LBRACE ws? declarations? RBRACE
     ;
 
 sass_function_name
