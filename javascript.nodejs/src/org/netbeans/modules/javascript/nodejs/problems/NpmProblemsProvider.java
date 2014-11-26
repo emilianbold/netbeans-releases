@@ -140,7 +140,7 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
             ProjectProblem problem = ProjectProblem.createWarning(
                     Bundle.NpmProblemsProvider_dependencies_none_title(),
                     Bundle.NpmProblemsProvider_dependencies_none_description(NodeJsUtils.getProjectDisplayName(project)),
-                    new ProjectProblemResolverImpl("npmInstall", new NpmInstallResult()));
+                    new ProjectProblemResolverImpl("npmInstall", new NpmInstallResult())); // NOI18N
             currentProblems.add(problem);
         }
     }
