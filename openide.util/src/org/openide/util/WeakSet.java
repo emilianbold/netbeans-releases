@@ -207,7 +207,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
      *         passed object <tt>e</tt> if there were not entry in set.
      * @since 8.11
      */
-    public E putIfAbsent(E e) { return m.putIfAbsent(e, null); }
+    public E putIfAbsent(E e) { return m.putIfAbsent(e, (boolean[]) null); }
 
     private static final long serialVersionUID = 2454657854757543876L;
 
@@ -222,7 +222,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
         Object[] arr = (Object[]) stream.readObject();
         m = new SharedKeyWeakHashMap<E, Boolean>(arr.length, loadFactor);
         for (Object object : arr) {
-            m.putIfAbsent((E)object, null);
+            m.putIfAbsent((E)object, (boolean[]) null);
         }
         s = m.keySet();
     }
@@ -640,7 +640,7 @@ public class WeakSet <E> extends AbstractSet<E> implements Cloneable, Serializab
             }
 
             for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
-                putIfAbsent(e.getKey(), null);
+                putIfAbsent(e.getKey(), (boolean[]) null);
             }
         }
 

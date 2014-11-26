@@ -44,6 +44,7 @@
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.jaxwsmodelapi</package>
                 <package>org.netbeans.modules.websvc.jaxwsmodelapi.java</package>
                 <package>org.netbeans.modules.websvc.jaxwsmodelapi.wsdlmodel</package>
