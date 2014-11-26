@@ -68,9 +68,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
-import static javax.swing.Action.NAME;
-import static javax.swing.Action.SHORT_DESCRIPTION;
-
 public final class BowerLibraries {
 
     private BowerLibraries() {
