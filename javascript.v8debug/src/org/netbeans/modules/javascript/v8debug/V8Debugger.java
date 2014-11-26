@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript.v8debug;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,6 +78,7 @@ import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.lib.v8debug.client.ClientConnection;
 import org.netbeans.lib.v8debug.client.IOListener;
 import org.netbeans.lib.v8debug.commands.Backtrace;
+import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
 import org.netbeans.lib.v8debug.commands.Frame;
 import org.netbeans.lib.v8debug.commands.Scripts;
 import org.netbeans.lib.v8debug.commands.SetBreakpoint;
@@ -94,6 +96,9 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -134,6 +139,9 @@ public final class V8Debugger {
     private CallStack currentCallStack;
     private final Object currentFrameRetrieveLock = new Object();
     private final Object currentCallStackRetrieveLock = new Object();
+    
+    private long runToBreakpointId = -1;
+    private CommandResponseCallback runToCallBack;
     
     public static DebuggerEngine startSession(Connector.Properties properties,
                                               @NullAllowed Runnable finishCallback) throws IOException {
@@ -576,6 +584,16 @@ public final class V8Debugger {
                 BreakEventBody beb = (BreakEventBody) event.getBody();
                 long[] breakpoints = beb.getBreakpoints();
                 if (breakpoints != null && breakpoints.length > 0) {
+                    if (runToBreakpointId > 0) {
+                        for (long b : breakpoints) {
+                            if (b == runToBreakpointId) {
+                                clearRunTo();
+                                if (breakpoints.length == 1) {
+                                    return ;
+                                }
+                            }
+                        }
+                    }
                     breakpointsHandler.event(beb);
                 }
                 //System.out.println("stopped at "+beb.getScript().getName()+", line = "+(beb.getSourceLine()+1)+" : "+beb.getSourceColumn()+"\ntext = "+beb.getSourceLineText());
@@ -658,6 +676,57 @@ public final class V8Debugger {
                 }
             }
         });
+    }
+    
+    private void clearRunTo() {
+        if (runToBreakpointId > 0) {
+            ClearBreakpoint.Arguments cbargs = new ClearBreakpoint.Arguments(runToBreakpointId);
+            V8Request request = sendCommandRequest(V8Command.Clearbreakpoint, cbargs);
+            runToBreakpointId = -1;
+        }
+    }
+    
+    public void runTo(Line currentLine) {
+        clearRunTo();
+        FileObject fo = currentLine.getLookup().lookup(FileObject.class);
+        if (fo == null) {
+            return ;
+        }
+        File file = FileUtil.toFile(fo);
+        if (file == null) {
+            return ;
+        }
+        String localPath = file.getAbsolutePath();
+        String serverPath;
+        try {
+            serverPath = scriptsHandler.getServerPath(localPath);
+        } catch (ScriptsHandler.OutOfScope oos) {
+            return ;
+        }
+        SetBreakpoint.Arguments args = new SetBreakpoint.Arguments(
+                V8Breakpoint.Type.scriptName,
+                serverPath,
+                (long) currentLine.getLineNumber(), null, true,
+                null, null, null);
+        if (runToCallBack == null) {
+            runToCallBack = new RunToResponseCallback();
+        }
+        V8Request request = sendCommandRequest(V8Command.Setbreakpoint, args,
+                                               runToCallBack);
+    }
+    
+    private final class RunToResponseCallback implements CommandResponseCallback {
+
+        @Override
+        public void notifyResponse(V8Request request, V8Response response) {
+            if (response != null) {
+                SetBreakpoint.ResponseBody sbrb = (SetBreakpoint.ResponseBody) response.getBody();
+                long id = sbrb.getBreakpoint();
+                runToBreakpointId = id;
+                resume();
+            }
+        }
+        
     }
 
     @NbBundle.Messages("V8DebugProtocolPane=V8 Debug Protocol")
