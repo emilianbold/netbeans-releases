@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.problems;
+package org.netbeans.modules.javascript.bower.problems;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -50,11 +50,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
-import org.netbeans.modules.javascript.nodejs.file.PackageJson;
-import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
-import org.netbeans.modules.javascript.nodejs.util.StringUtils;
+import org.netbeans.modules.javascript.bower.exec.BowerExecutable;
+import org.netbeans.modules.javascript.bower.file.BowerJson;
+import org.netbeans.modules.javascript.bower.file.BowerrcJson;
+import org.netbeans.modules.javascript.bower.util.BowerUtils;
+import org.netbeans.modules.javascript.bower.util.StringUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -63,30 +66,35 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
-public final class NpmProblemsProvider implements ProjectProblemsProvider {
+public final class BowerProblemsProvider implements ProjectProblemsProvider {
 
-    static final String NODE_MODULES = "node_modules"; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(BowerProblemsProvider.class.getName());
 
     final FileChangeListener fileChangeListener = new FileChangeListener();
     final Project project;
     private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
-    private final PackageJson packageJson;
+    private final BowerJson bowerJson;
+    private final BowerrcJson bowerrcJson;
 
 
-    private NpmProblemsProvider(Project project) {
+    private BowerProblemsProvider(Project project) {
         this.project = project;
-        packageJson = new PackageJson(project.getProjectDirectory());
+        FileObject projectDirectory = project.getProjectDirectory();
+        bowerJson = new BowerJson(projectDirectory);
+        bowerrcJson = new BowerrcJson(projectDirectory);
     }
 
-    private static NpmProblemsProvider create(Project project) {
-        NpmProblemsProvider npmProblemsProvider = new NpmProblemsProvider(project);
+    private static BowerProblemsProvider create(Project project) {
+        BowerProblemsProvider bowerProblemsProvider = new BowerProblemsProvider(project);
         FileObject projectDirectory = project.getProjectDirectory();
         projectDirectory.addFileChangeListener(WeakListeners.create(
-                org.openide.filesystems.FileChangeListener.class, npmProblemsProvider.fileChangeListener, projectDirectory));
-        return npmProblemsProvider;
+                org.openide.filesystems.FileChangeListener.class, bowerProblemsProvider.fileChangeListener, projectDirectory));
+        bowerProblemsProvider.listenOnBowerComponentsDir();
+        return bowerProblemsProvider;
     }
 
     @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
@@ -132,29 +140,51 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
     }
 
     @NbBundle.Messages({
-        "NpmProblemsProvider.dependencies.none.title=Missing npm modules",
+        "BowerProblemsProvider.dependencies.none.title=Missing Bower modules",
         "# {0} - project name",
-        "NpmProblemsProvider.dependencies.none.description=Project {0} uses npm modules but they are not installed.",
+        "BowerProblemsProvider.dependencies.none.description=Project {0} uses Bower modules but they are not installed.",
     })
     void checkDependencies(Collection<ProjectProblem> currentProblems) {
-        if (npmInstallRequired()) {
+        if (bowerInstallRequired()) {
             ProjectProblem problem = ProjectProblem.createWarning(
-                    Bundle.NpmProblemsProvider_dependencies_none_title(),
-                    Bundle.NpmProblemsProvider_dependencies_none_description(NodeJsUtils.getProjectDisplayName(project)),
-                    new ProjectProblemResolverImpl("npmInstall", new NpmInstallResult())); // NOI18N
+                    Bundle.BowerProblemsProvider_dependencies_none_title(),
+                    Bundle.BowerProblemsProvider_dependencies_none_description(BowerUtils.getProjectDisplayName(project)),
+                    new ProjectProblemResolverImpl("bowerInstall", new BowerInstallResult())); // NOI18N
             currentProblems.add(problem);
         }
     }
 
-    boolean npmInstallRequired() {
-        if (!packageJson.exists()) {
+    boolean bowerInstallRequired() {
+        if (!bowerJson.exists()) {
             return false;
         }
-        File nodeModules = new File(packageJson.getFile().getParentFile(), NODE_MODULES);
-        if (nodeModules.isDirectory()) {
+        if (getBowerComponentsDir().isDirectory()) {
             return false;
         }
-        return !packageJson.getDependencies().isEmpty();
+        return !bowerJson.getDependencies().isEmpty();
+    }
+
+    File getBowerComponentsDir() {
+        String directory = bowerrcJson.getContentValue(String.class, BowerrcJson.FIELD_DIRECTORY);
+        if (directory == null) {
+            directory = "bower_components"; // NOI18N
+        }
+        return new File(bowerrcJson.getFile().getParentFile(), directory);
+    }
+
+    void listenOnBowerComponentsDir() {
+        File projectDir = bowerJson.getFile().getParentFile();
+        File bowerComponents = getBowerComponentsDir();
+        if (bowerComponents.getParentFile().equals(projectDir)) {
+            // we already listen on project directory
+            return;
+        }
+        try {
+            FileUtil.addFileChangeListener(fileChangeListener, bowerComponents.getParentFile());
+        } catch (IllegalArgumentException exc) {
+            // already listening
+            LOGGER.log(Level.FINE, null, exc);
+        }
     }
 
     void fireProblemsChanged() {
@@ -195,13 +225,15 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
         }
 
         private void processFileChange(String fileName) {
-            if (PackageJson.FILE_NAME.equals(fileName)) {
+            if (BowerJson.FILE_NAME.equals(fileName)
+                    || BowerrcJson.FILE_NAME.equals(fileName)) {
                 fireProblemsChanged();
             }
         }
 
         private void processFolderChange(String folderName) {
-            if (NODE_MODULES.equals(folderName)) {
+            if (getBowerComponentsDir().getName().equals(folderName)) {
+                listenOnBowerComponentsDir();
                 fireProblemsChanged();
             }
         }
@@ -250,7 +282,7 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
 
     }
 
-    private final class NpmInstallResult implements Future<Result> {
+    private final class BowerInstallResult implements Future<Result> {
 
         // @GuardedBy("this")
         private Future<Integer> task;
@@ -283,7 +315,7 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
         @Override
         public Result get() throws InterruptedException, ExecutionException {
             getTask().get();
-            if (npmInstallRequired()) {
+            if (bowerInstallRequired()) {
                 synchronized (this) {
                     task = null;
                 }
@@ -300,10 +332,10 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
 
         public synchronized Future<Integer> getTask() {
             if (task == null) {
-                NpmExecutable npm = NpmExecutable.getDefault(project, true);
-                if (npm != null) {
-                    NodeJsUtils.logUsageNpmInstall();
-                    task = npm.install();
+                BowerExecutable bower = BowerExecutable.getDefault(project, true);
+                if (bower != null) {
+                    BowerUtils.logUsageBowerInstall();
+                    task = bower.install();
                 } else {
                     task = new DummyTask();
                 }

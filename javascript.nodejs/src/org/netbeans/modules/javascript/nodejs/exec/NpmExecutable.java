@@ -72,7 +72,7 @@ public class NpmExecutable {
 
     private static final Logger LOGGER = Logger.getLogger(NpmExecutable.class.getName());
 
-    public static final String NPM_NAME = "npm"; // NOI18N
+    public static final String NPM_NAME;
 
     public static final String SAVE_PARAM = "--save"; // NOI18N
     public static final String SAVE_DEV_PARAM = "--save-dev"; // NOI18N
@@ -83,6 +83,14 @@ public class NpmExecutable {
     protected final Project project;
     protected final String npmPath;
 
+
+    static {
+        if (Utilities.isWindows()) {
+            NPM_NAME = "npm.cmd"; // NOI18N
+        } else {
+            NPM_NAME = "npm"; // NOI18N
+        }
+    }
 
     NpmExecutable(String npmPath, @NullAllowed Project project) {
         assert npmPath != null;

@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.spi.debugger.ui.DebuggingView;
 
@@ -138,6 +139,10 @@ public class JSThread implements DebuggingView.DVThread {
             pchs.firePropertyChange(DebuggingView.DVThread.PROP_SUSPENDED, null, suspended);
         }
 
+        @Override
+        public void notifyCurrentFrame(CallFrame cf) {
+        }
+        
         @Override
         public void notifyFinished() {
         }

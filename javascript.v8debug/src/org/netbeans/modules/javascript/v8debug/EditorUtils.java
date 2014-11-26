@@ -44,6 +44,9 @@ package org.netbeans.modules.javascript.v8debug;
 
 import java.awt.EventQueue;
 import java.util.List;
+import org.netbeans.lib.v8debug.V8Frame;
+import org.netbeans.lib.v8debug.V8Script;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
@@ -90,6 +93,20 @@ public final class EditorUtils {
 
     public static void showLine(final Line line) {
         showLine(line, false);
+    }
+    
+    public static void showFrameLine(V8Debugger dbg, CallFrame frame, boolean toFront) {
+        V8Frame f = frame.getFrame();
+        V8Script script = frame.getScript();
+        if (script == null) {
+            return ;
+        }
+        ScriptsHandler scriptsHandler = dbg.getScriptsHandler();
+        FileObject fo = scriptsHandler.getFile(script);
+        Line line = EditorUtils.getLine(fo, (int) f.getLine());
+        if (line != null) {
+            EditorUtils.showLine(line, toFront);
+        }
     }
 
 }

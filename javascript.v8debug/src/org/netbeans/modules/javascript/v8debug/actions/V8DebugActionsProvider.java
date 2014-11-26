@@ -53,6 +53,7 @@ import org.netbeans.lib.v8debug.V8StepAction;
 import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.V8DebuggerSessionProvider;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -151,6 +152,10 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
         setEnabled(ACTION_EVALUATE, suspended);
     }
 
+    @Override
+    public void notifyCurrentFrame(CallFrame cf) {
+    }
+    
     @Override
     public void notifyFinished() {
         

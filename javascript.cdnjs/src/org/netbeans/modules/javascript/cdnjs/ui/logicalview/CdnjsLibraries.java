@@ -91,7 +91,7 @@ public final class CdnjsLibraries {
         return new CdnjsLibrariesNodeFactory();
     }
 
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 620)
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 630)
     public static NodeFactory forMavenProject() {
         return new CdnjsLibrariesNodeFactory();
     }
@@ -297,6 +297,11 @@ public final class CdnjsLibraries {
 
         private Image getIcon() {
             return ImageUtilities.loadImage(LIBRARIES_ICON, false);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
 
     }

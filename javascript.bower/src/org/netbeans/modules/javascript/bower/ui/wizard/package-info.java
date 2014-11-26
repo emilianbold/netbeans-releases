@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.bower;
-
-import java.util.Collection;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
-import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
-import org.netbeans.spi.project.ProjectServiceProvider;
-
-@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-public final class ImportantFilesImpl implements ImportantFilesImplementation {
-
-    private final ImportantFilesSupport support;
 
 
-    public ImportantFilesImpl(Project project) {
-        assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), "bower.json", ".bowerrc"); // NOI18N
-    }
+@TemplateRegistration(folder = "ClientSide",
+        content = "../resources/bower.json",
+        scriptEngine = "freemarker",
+        position = 700,
+        displayName = "#Templates.bower.json",
+        description = "../resources/BowerJsonDescription.html",
+        targetName = "bower",
+        category = "html5")
 
-    @Override
-    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
-        return support.getFiles(null);
-    }
+package org.netbeans.modules.javascript.bower.ui.wizard;
 
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        support.addChangeListener(listener);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        support.removeChangeListener(listener);
-    }
-
-}
+import org.netbeans.api.templates.TemplateRegistration;

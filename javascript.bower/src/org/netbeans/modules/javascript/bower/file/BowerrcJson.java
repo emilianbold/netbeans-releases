@@ -39,80 +39,30 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.bower.file;
 
-package org.netbeans.modules.javascript.v8debug.vars.tooltip;
+import java.util.Collections;
+import java.util.List;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.util.Pair;
 
-import java.io.Closeable;
-import java.io.IOException;
-import org.netbeans.modules.javascript.v8debug.V8Debugger;
-import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
+@MIMEResolver.Registration(displayName = "bowerrc", resource = "../resources/bowerrc-resolver.xml", position = 129)
+public final class BowerrcJson extends JsonFile {
 
-/**
- *
- * @author Martin Entlicher
- */
-public class V8DebuggerTooltipSupport implements DebuggerTooltipSupport {
-    
-    private final V8Debugger debugger;
-    private final CallFrame currentFrame;
-    private V8Debugger.Listener closeableListener;
+    public static final String FILE_NAME = ".bowerrc"; // NOI18N
+    public static final String PROP_DIRECTORY = "DIRECTORY"; // NOI18N
+    // file content
+    public static final String FIELD_DIRECTORY = "directory"; // NOI18N
 
-    V8DebuggerTooltipSupport(V8Debugger debugger, CallFrame currentFrame) {
-        this.debugger = debugger;
-        this.currentFrame = currentFrame;
-    }
 
-    public V8Debugger getDebugger() {
-        return debugger;
-    }
-
-    public CallFrame getCurrentFrame() {
-        return currentFrame;
+    public BowerrcJson(FileObject directory) {
+        super(FILE_NAME, directory);
     }
 
     @Override
-    public void addCloseable(Closeable closeable) {
-        closeableListener = new TooltipCloseableListener(closeable);
-        debugger.addListener(closeableListener);
+    List<Pair<String, String[]>> watchedFields() {
+        return Collections.singletonList(Pair.of(PROP_DIRECTORY, new String[] {FIELD_DIRECTORY}));
     }
 
-    @Override
-    public void removeCloseable(Closeable closeable) {
-        debugger.removeListener(closeableListener);
-    }
-    
-    private static final class TooltipCloseableListener implements V8Debugger.Listener {
-        
-        private final Closeable closeable;
-        
-        public TooltipCloseableListener(Closeable closeable) {
-            this.closeable = closeable;
-        }
-
-        @Override
-        public void notifySuspended(boolean suspended) {
-            if (!suspended) {
-                doClose();
-            }
-        }
-
-        @Override
-        public void notifyCurrentFrame(CallFrame cf) {
-            doClose();
-        }
-        
-        @Override
-        public void notifyFinished() {
-            doClose();
-        }
-
-        private void doClose() {
-            try {
-                closeable.close();
-            } catch (IOException ex) {}
-        }
-        
-    }
-    
 }

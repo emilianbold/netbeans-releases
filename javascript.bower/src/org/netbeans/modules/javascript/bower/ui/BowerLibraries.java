@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui;
+package org.netbeans.modules.javascript.bower.ui;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -54,8 +54,7 @@ import javax.swing.Action;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.file.PackageJson;
-import org.netbeans.modules.javascript.nodejs.ui.libraries.LibraryCustomizer;
+import org.netbeans.modules.javascript.bower.file.BowerJson;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -69,70 +68,70 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
-public final class NpmLibraries {
+public final class BowerLibraries {
 
-    private NpmLibraries() {
+    private BowerLibraries() {
     }
 
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 600)
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 610)
     public static NodeFactory forHtml5Project() {
-        return new NpmLibrariesNodeFactory();
+        return new BowerLibrariesNodeFactory();
     }
 
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 400)
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 410)
     public static NodeFactory forPhpProject() {
-        return new NpmLibrariesNodeFactory();
+        return new BowerLibrariesNodeFactory();
     }
 
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-project", position = 310)
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-web-project", position = 320)
     public static NodeFactory forWebProject() {
-        return new NpmLibrariesNodeFactory();
+        return new BowerLibrariesNodeFactory();
     }
 
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 610)
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 620)
     public static NodeFactory forMavenProject() {
-        return new NpmLibrariesNodeFactory();
+        return new BowerLibrariesNodeFactory();
     }
 
     //~ Inner classes
 
-    private static final class NpmLibrariesNodeFactory implements NodeFactory {
+    private static final class BowerLibrariesNodeFactory implements NodeFactory {
 
         @Override
         public NodeList<?> createNodes(Project project) {
             assert project != null;
-            return new NpmLibrariesNodeList(project);
+            return new BowerLibrariesNodeList(project);
         }
 
     }
 
-    private static final class NpmLibrariesNodeList implements NodeList<Node>, PropertyChangeListener {
+    private static final class BowerLibrariesNodeList implements NodeList<Node>, PropertyChangeListener {
 
         private final Project project;
-        private final PackageJson packageJson;
-        private final NpmLibrariesChildren npmLibrariesChildren;
+        private final BowerJson bowerJson;
+        private final BowerLibrariesChildren bowerLibrariesChildren;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         // @GuardedBy("thread")
-        private Node npmLibrariesNode;
+        private Node bowerLibrariesNode;
 
 
-        NpmLibrariesNodeList(Project project) {
+        BowerLibrariesNodeList(Project project) {
             assert project != null;
             this.project = project;
-            packageJson = new PackageJson(project.getProjectDirectory());
-            npmLibrariesChildren = new NpmLibrariesChildren(packageJson);
+            bowerJson = new BowerJson(project.getProjectDirectory());
+            bowerLibrariesChildren = new BowerLibrariesChildren(bowerJson);
         }
 
         @Override
         public List<Node> keys() {
-            if (!npmLibrariesChildren.hasDependencies()) {
+            if (!bowerLibrariesChildren.hasDependencies()) {
                 return Collections.<Node>emptyList();
             }
-            if (npmLibrariesNode == null) {
-                npmLibrariesNode = new NpmLibrariesNode(project, npmLibrariesChildren);
+            if (bowerLibrariesNode == null) {
+                bowerLibrariesNode = new BowerLibrariesNode(project, bowerLibrariesChildren);
             }
-            return Collections.<Node>singletonList(npmLibrariesNode);
+            return Collections.<Node>singletonList(bowerLibrariesNode);
         }
 
         @Override
@@ -152,7 +151,7 @@ public final class NpmLibraries {
 
         @Override
         public void addNotify() {
-            packageJson.addPropertyChangeListener(WeakListeners.propertyChange(this, packageJson));
+            bowerJson.addPropertyChangeListener(WeakListeners.propertyChange(this, bowerJson));
         }
 
         @Override
@@ -162,10 +161,8 @@ public final class NpmLibraries {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
-            if (PackageJson.PROP_DEPENDENCIES.equals(propertyName)
-                    || PackageJson.PROP_DEV_DEPENDENCIES.equals(propertyName)
-                    || PackageJson.PROP_PEER_DEPENDENCIES.equals(propertyName)
-                    || PackageJson.PROP_OPTIONAL_DEPENDENCIES.equals(propertyName)) {
+            if (BowerJson.PROP_DEPENDENCIES.equals(propertyName)
+                    || BowerJson.PROP_DEV_DEPENDENCIES.equals(propertyName)) {
                 fireChange();
             }
         }
@@ -176,26 +173,26 @@ public final class NpmLibraries {
 
     }
 
-    private static final class NpmLibrariesNode extends AbstractNode {
+    private static final class BowerLibrariesNode extends AbstractNode {
 
         @StaticResource
-        private static final String LIBRARIES_BADGE = "org/netbeans/modules/javascript/nodejs/ui/resources/libraries-badge.png"; // NOI18N
+        private static final String LIBRARIES_BADGE = "org/netbeans/modules/javascript/bower/ui/resources/libraries-badge.png"; // NOI18N
 
         private final Project project;
         private final Node iconDelegate;
 
 
-        NpmLibrariesNode(Project project, NpmLibrariesChildren npmLibrariesChildren) {
-            super(npmLibrariesChildren);
+        BowerLibrariesNode(Project project, BowerLibrariesChildren bowerLibrariesChildren) {
+            super(bowerLibrariesChildren);
             assert project != null;
             this.project = project;
             iconDelegate = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
         }
 
-        @NbBundle.Messages("NpmLibrariesNode.name=npm Libraries")
+        @NbBundle.Messages("BowerLibrariesNode.name=Bower Libraries")
         @Override
         public String getDisplayName() {
-            return Bundle.NpmLibrariesNode_name();
+            return Bundle.BowerLibrariesNode_name();
         }
 
         @Override
@@ -217,26 +214,22 @@ public final class NpmLibraries {
 
     }
 
-    private static final class NpmLibrariesChildren extends Children.Keys<NpmLibraryInfo> {
+    private static final class BowerLibrariesChildren extends Children.Keys<BowerLibraryInfo> {
 
         @StaticResource
-        private static final String LIBRARIES_ICON = "org/netbeans/modules/javascript/nodejs/ui/resources/libraries.gif"; // NOI18N
+        private static final String LIBRARIES_ICON = "org/netbeans/modules/javascript/bower/ui/resources/libraries.gif"; // NOI18N
         @StaticResource
-        private static final String DEV_BADGE = "org/netbeans/modules/javascript/nodejs/ui/resources/libraries-dev-badge.gif"; // NOI18N
-        @StaticResource
-        private static final String PEER_BADGE = "org/netbeans/modules/javascript/nodejs/ui/resources/libraries-peer-badge.png"; // NOI18N
-        @StaticResource
-        private static final String OPTIONAL_BADGE = "org/netbeans/modules/javascript/nodejs/ui/resources/libraries-optional-badge.png"; // NOI18N
+        private static final String DEV_BADGE = "org/netbeans/modules/javascript/bower/ui/resources/libraries-dev-badge.gif"; // NOI18N
 
 
-        private final PackageJson packageJson;
+        private final BowerJson bowerJson;
         private final java.util.Map<String, Image> icons = new HashMap<>();
 
 
-        public NpmLibrariesChildren(PackageJson packageJson) {
+        public BowerLibrariesChildren(BowerJson bowerJson) {
             super(true);
-            assert packageJson != null;
-            this.packageJson = packageJson;
+            assert bowerJson != null;
+            this.bowerJson = bowerJson;
         }
 
         public boolean hasDependencies() {
@@ -246,15 +239,11 @@ public final class NpmLibraries {
 
 
         @Override
-        protected Node[] createNodes(NpmLibraryInfo key) {
-            return new Node[] {new NpmLibraryNode(key)};
+        protected Node[] createNodes(BowerLibraryInfo key) {
+            return new Node[] {new BowerLibraryNode(key)};
         }
 
-        @NbBundle.Messages({
-            "NpmLibrariesChildren.library.dev=dev",
-            "NpmLibrariesChildren.library.optional=optional",
-            "NpmLibrariesChildren.library.peer=peer",
-        })
+        @NbBundle.Messages("BowerLibrariesChildren.library.dev=dev")
         @Override
         protected void addNotify() {
             refreshDependencies();
@@ -262,46 +251,44 @@ public final class NpmLibraries {
 
         @Override
         protected void removeNotify() {
-            setKeys(Collections.<NpmLibraryInfo>emptyList());
+            setKeys(Collections.<BowerLibraryInfo>emptyList());
         }
 
 
         private void refreshDependencies() {
-            PackageJson.NpmDependencies dependencies = packageJson.getDependencies();
+            BowerJson.BowerDependencies dependencies = bowerJson.getDependencies();
             if (dependencies.isEmpty()) {
-                setKeys(Collections.<NpmLibraryInfo>emptyList());
+                setKeys(Collections.<BowerLibraryInfo>emptyList());
                 return;
             }
-            List<NpmLibraryInfo> keys = new ArrayList<>(dependencies.getCount());
+            List<BowerLibraryInfo> keys = new ArrayList<>(dependencies.getCount());
             keys.addAll(getKeys(dependencies.dependencies, null, null));
-            keys.addAll(getKeys(dependencies.devDependencies, DEV_BADGE, Bundle.NpmLibrariesChildren_library_dev()));
-            keys.addAll(getKeys(dependencies.optionalDependencies, OPTIONAL_BADGE, Bundle.NpmLibrariesChildren_library_optional()));
-            keys.addAll(getKeys(dependencies.peerDependencies, PEER_BADGE, Bundle.NpmLibrariesChildren_library_peer()));
+            keys.addAll(getKeys(dependencies.devDependencies, DEV_BADGE, Bundle.BowerLibrariesChildren_library_dev()));
             setKeys(keys);
         }
 
         @NbBundle.Messages({
             "# {0} - library name",
             "# {1} - library version",
-            "NpmLibrariesChildren.description.short={0}: {1}",
+            "BowerLibrariesChildren.description.short={0}: {1}",
             "# {0} - library name",
             "# {1} - library version",
             "# {2} - library type",
-            "NpmLibrariesChildren.description.long={0}: {1} ({2})",
+            "BowerLibrariesChildren.description.long={0}: {1} ({2})",
         })
-        private List<NpmLibraryInfo> getKeys(java.util.Map<String, String> dependencies, String badge, String libraryType) {
+        private List<BowerLibraryInfo> getKeys(java.util.Map<String, String> dependencies, String badge, String libraryType) {
             if (dependencies.isEmpty()) {
                 return Collections.emptyList();
             }
-            List<NpmLibraryInfo> keys = new ArrayList<>(dependencies.size());
+            List<BowerLibraryInfo> keys = new ArrayList<>(dependencies.size());
             for (java.util.Map.Entry<String, String> entry : dependencies.entrySet()) {
                 String description;
                 if (libraryType != null) {
-                    description = Bundle.NpmLibrariesChildren_description_long(entry.getKey(), entry.getValue(), libraryType);
+                    description = Bundle.BowerLibrariesChildren_description_long(entry.getKey(), entry.getValue(), libraryType);
                 } else {
-                    description = Bundle.NpmLibrariesChildren_description_short(entry.getKey(), entry.getValue());
+                    description = Bundle.BowerLibrariesChildren_description_short(entry.getKey(), entry.getValue());
                 }
-                keys.add(new NpmLibraryInfo(geIcon(badge), entry.getKey(), description));
+                keys.add(new BowerLibraryInfo(geIcon(badge), entry.getKey(), description));
             }
             Collections.sort(keys);
             return keys;
@@ -321,12 +308,12 @@ public final class NpmLibraries {
 
     }
 
-    private static final class NpmLibraryNode extends AbstractNode {
+    private static final class BowerLibraryNode extends AbstractNode {
 
-        private final NpmLibraryInfo libraryInfo;
+        private final BowerLibraryInfo libraryInfo;
 
 
-        NpmLibraryNode(NpmLibraryInfo libraryInfo) {
+        BowerLibraryNode(BowerLibraryInfo libraryInfo) {
             super(Children.LEAF);
             this.libraryInfo = libraryInfo;
         }
@@ -358,21 +345,21 @@ public final class NpmLibraries {
 
     }
 
-    private static final class NpmLibraryInfo implements Comparable<NpmLibraryInfo> {
+    private static final class BowerLibraryInfo implements Comparable<BowerLibraryInfo> {
 
         final Image icon;
         final String name;
         final String description;
 
 
-        NpmLibraryInfo(Image icon, String name, String descrition) {
+        BowerLibraryInfo(Image icon, String name, String descrition) {
             this.icon = icon;
             this.name = name;
             this.description = descrition;
         }
 
         @Override
-        public int compareTo(NpmLibraryInfo other) {
+        public int compareTo(BowerLibraryInfo other) {
             return name.compareToIgnoreCase(other.name);
         }
 
@@ -396,7 +383,8 @@ public final class NpmLibraries {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(LibraryCustomizer.CATEGORY_NAME, null);
+            // XXX
+            project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("BOWER_LIBRARIES", null); // NOI18N
         }
 
     }

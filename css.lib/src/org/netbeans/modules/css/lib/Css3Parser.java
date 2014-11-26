@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2014-11-25 19:47:06
+// $ANTLR 3.5.2 /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2014-11-26 11:51:04
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -73,13 +73,13 @@ public class Css3Parser extends DebugParser {
 		"PAGE_SYM", "PERCENTAGE", "PERCENTAGE_SYMBOL", "PIPE", "PLUS", "Q", "R", 
 		"RBRACE", "RBRACKET", "REM", "RESOLUTION", "RIGHTBOTTOM_SYM", "RIGHTMIDDLE_SYM", 
 		"RIGHTTOP_SYM", "RPAREN", "S", "SASS_AT_ROOT", "SASS_CONTENT", "SASS_DEBUG", 
-		"SASS_DEFAULT", "SASS_EACH", "SASS_ELSE", "SASS_EXTEND", "SASS_EXTEND_ONLY_SELECTOR", 
-		"SASS_FOR", "SASS_FUNCTION", "SASS_GLOBAL", "SASS_IF", "SASS_INCLUDE", 
-		"SASS_MIXIN", "SASS_OPTIONAL", "SASS_RETURN", "SASS_VAR", "SASS_WARN", 
-		"SASS_WHILE", "SEMI", "SOLIDUS", "STAR", "STRING", "T", "TILDE", "TIME", 
-		"TOPCENTER_SYM", "TOPLEFTCORNER_SYM", "TOPLEFT_SYM", "TOPRIGHTCORNER_SYM", 
-		"TOPRIGHT_SYM", "U", "UNICODE", "URI", "URL", "V", "W", "WEBKIT_KEYFRAMES_SYM", 
-		"WS", "X", "Y", "Z"
+		"SASS_DEFAULT", "SASS_EACH", "SASS_ELSE", "SASS_ELSEIF", "SASS_EXTEND", 
+		"SASS_EXTEND_ONLY_SELECTOR", "SASS_FOR", "SASS_FUNCTION", "SASS_GLOBAL", 
+		"SASS_IF", "SASS_INCLUDE", "SASS_MIXIN", "SASS_OPTIONAL", "SASS_RETURN", 
+		"SASS_VAR", "SASS_WARN", "SASS_WHILE", "SEMI", "SOLIDUS", "STAR", "STRING", 
+		"T", "TILDE", "TIME", "TOPCENTER_SYM", "TOPLEFTCORNER_SYM", "TOPLEFT_SYM", 
+		"TOPRIGHTCORNER_SYM", "TOPRIGHT_SYM", "U", "UNICODE", "URI", "URL", "V", 
+		"W", "WEBKIT_KEYFRAMES_SYM", "WS", "X", "Y", "Z"
 	};
 	public static final int EOF=-1;
 	public static final int A=4;
@@ -190,42 +190,43 @@ public class Css3Parser extends DebugParser {
 	public static final int SASS_DEFAULT=109;
 	public static final int SASS_EACH=110;
 	public static final int SASS_ELSE=111;
-	public static final int SASS_EXTEND=112;
-	public static final int SASS_EXTEND_ONLY_SELECTOR=113;
-	public static final int SASS_FOR=114;
-	public static final int SASS_FUNCTION=115;
-	public static final int SASS_GLOBAL=116;
-	public static final int SASS_IF=117;
-	public static final int SASS_INCLUDE=118;
-	public static final int SASS_MIXIN=119;
-	public static final int SASS_OPTIONAL=120;
-	public static final int SASS_RETURN=121;
-	public static final int SASS_VAR=122;
-	public static final int SASS_WARN=123;
-	public static final int SASS_WHILE=124;
-	public static final int SEMI=125;
-	public static final int SOLIDUS=126;
-	public static final int STAR=127;
-	public static final int STRING=128;
-	public static final int T=129;
-	public static final int TILDE=130;
-	public static final int TIME=131;
-	public static final int TOPCENTER_SYM=132;
-	public static final int TOPLEFTCORNER_SYM=133;
-	public static final int TOPLEFT_SYM=134;
-	public static final int TOPRIGHTCORNER_SYM=135;
-	public static final int TOPRIGHT_SYM=136;
-	public static final int U=137;
-	public static final int UNICODE=138;
-	public static final int URI=139;
-	public static final int URL=140;
-	public static final int V=141;
-	public static final int W=142;
-	public static final int WEBKIT_KEYFRAMES_SYM=143;
-	public static final int WS=144;
-	public static final int X=145;
-	public static final int Y=146;
-	public static final int Z=147;
+	public static final int SASS_ELSEIF=112;
+	public static final int SASS_EXTEND=113;
+	public static final int SASS_EXTEND_ONLY_SELECTOR=114;
+	public static final int SASS_FOR=115;
+	public static final int SASS_FUNCTION=116;
+	public static final int SASS_GLOBAL=117;
+	public static final int SASS_IF=118;
+	public static final int SASS_INCLUDE=119;
+	public static final int SASS_MIXIN=120;
+	public static final int SASS_OPTIONAL=121;
+	public static final int SASS_RETURN=122;
+	public static final int SASS_VAR=123;
+	public static final int SASS_WARN=124;
+	public static final int SASS_WHILE=125;
+	public static final int SEMI=126;
+	public static final int SOLIDUS=127;
+	public static final int STAR=128;
+	public static final int STRING=129;
+	public static final int T=130;
+	public static final int TILDE=131;
+	public static final int TIME=132;
+	public static final int TOPCENTER_SYM=133;
+	public static final int TOPLEFTCORNER_SYM=134;
+	public static final int TOPLEFT_SYM=135;
+	public static final int TOPRIGHTCORNER_SYM=136;
+	public static final int TOPRIGHT_SYM=137;
+	public static final int U=138;
+	public static final int UNICODE=139;
+	public static final int URI=140;
+	public static final int URL=141;
+	public static final int V=142;
+	public static final int W=143;
+	public static final int WEBKIT_KEYFRAMES_SYM=144;
+	public static final int WS=145;
+	public static final int X=146;
+	public static final int Y=147;
+	public static final int Z=148;
 
 	// delegates
 	public Parser[] getDelegates() {
@@ -236,43 +237,44 @@ public class Css3Parser extends DebugParser {
 
 
 	public static final String[] ruleNames = new String[] {
-		"invalidRule", "synpred9_Css3", "fnAttributeName", "sass_control", "syncTo_RBRACE", 
-		"fontFace", "webkitKeyframesBlock", "synpred10_Css3", "key_or", "page", 
-		"synpred36_Css3", "less_selector_interpolation", "synpred37_Css3", "synpred4_Css3", 
-		"sass_while", "sass_interpolation_expression_var", "styleSheet", "synpred7_Css3", 
-		"synpred38_Css3", "cp_mixin_declaration", "sass_selector_interpolation_exp", 
-		"synpred8_Css3", "less_mixin_guarded", "sass_map_name", "sass_nested_properties", 
-		"synpred35_Css3", "body", "synpred22_Css3", "sass_else", "typeSelector", 
-		"synpred34_Css3", "sass_if", "synpred5_Css3", "synpred40_Css3", "mediaFeatureValue", 
-		"cp_variable_declaration", "sass_function_name", "mediaExpression", "esPred", 
-		"prio", "function", "synpred26_Css3", "namespace", "elementName", "selector", 
-		"cssClass", "cp_expression_atom", "expression", "sass_function_declaration", 
-		"term", "margin_sym", "property", "synpred28_Css3", "synpred17_Css3", 
-		"synpred12_Css3", "cp_variable", "less_import_types", "mediaType", "atRuleId", 
-		"synpred18_Css3", "sass_map_pairs", "synpred39_Css3", "less_fn_name", 
-		"charSet", "sass_each", "margin", "cp_term_symbol", "unaryOperator", "cp_math_expressions", 
-		"fnAttributes", "synpred13_Css3", "sass_extend_only_selector", "elementSubsequent", 
-		"rule", "syncToFollow", "slAttribute", "propertyDeclaration", "key_only", 
-		"key_and", "sass_control_expression", "bodyItem", "cp_expression", "operator", 
-		"sass_each_variables", "declaration", "namespaces", "synpred16_Css3", 
-		"cp_math_expression", "less_condition_operator", "mediaFeature", "synpred6_Css3", 
-		"synpred24_Css3", "pseudo", "hexColor", "cp_mixin_name", "at_rule", "generic_at_rule", 
-		"synpred2_Css3", "cp_args_list", "webkitKeyframes", "sass_content", "sass_map", 
-		"mediaBodyItem", "mediaQueryOperator", "cp_expression_list", "charSetValue", 
-		"simpleSelectorSequence", "imports", "slAttributeName", "less_function_in_condition", 
-		"syncTo_SEMI", "ws", "moz_document", "slAttributeValue", "synpred15_Css3", 
-		"expressionPredicate", "sass_for", "cssId", "counterStyle", "namespacePrefixName", 
-		"cp_expression_operator", "synpred23_Css3", "sass_function_return", "less_when", 
-		"syncToDeclarationsRule", "synpred29_Css3", "media", "fnAttribute", "cp_propertyValue", 
-		"resourceIdentifier", "mediaQueryList", "cp_math_expression_atom", "moz_document_function", 
-		"synpred1_Css3", "less_condition", "cp_mixin_call_args", "vendorAtRule", 
-		"synpred19_Css3", "fnAttributeValue", "synpred11_Css3", "cp_arg", "synpred33_Css3", 
-		"synpred20_Css3", "mediaBody", "selectorsGroup", "synpred25_Css3", "synpred3_Css3", 
-		"synpred32_Css3", "synpred30_Css3", "sass_debug", "sass_map_pair", "synpred27_Css3", 
-		"sass_extend", "namespacePrefix", "sass_control_block", "mediaQuery", 
-		"propertyValue", "pseudoPage", "webkitKeyframeSelectors", "synpred31_Css3", 
-		"functionName", "combinator", "cp_mixin_call_arg", "cp_mixin_call", "synpred21_Css3", 
-		"cp_mixin_block", "synpred14_Css3", "importItem", "declarations"
+		"invalidRule", "key_or", "cp_variable", "synpred27_Css3", "syncTo_SEMI", 
+		"cp_expression_atom", "synpred5_Css3", "key_and", "atRuleId", "slAttributeName", 
+		"synpred25_Css3", "synpred12_Css3", "hexColor", "property", "selector", 
+		"sass_map_pair", "mediaBodyItem", "key_only", "synpred22_Css3", "sass_each", 
+		"sass_extend_only_selector", "imports", "less_fn_name", "synpred18_Css3", 
+		"slAttribute", "cp_mixin_name", "moz_document_function", "synpred33_Css3", 
+		"sass_function_return", "ws", "simpleSelectorSequence", "cssClass", "esPred", 
+		"syncToDeclarationsRule", "mediaBody", "mediaFeature", "synpred1_Css3", 
+		"cp_mixin_call", "synpred35_Css3", "charSetValue", "sass_interpolation_expression_var", 
+		"term", "function", "synpred3_Css3", "less_import_types", "elementName", 
+		"cp_propertyValue", "less_selector_interpolation", "synpred26_Css3", "synpred13_Css3", 
+		"importItem", "body", "mediaFeatureValue", "resourceIdentifier", "declaration", 
+		"combinator", "mediaExpression", "cp_math_expressions", "mediaQuery", 
+		"synpred28_Css3", "synpred16_Css3", "cp_math_expression", "mediaQueryList", 
+		"mediaType", "propertyDeclaration", "counterStyle", "webkitKeyframesBlock", 
+		"cp_mixin_call_args", "synpred2_Css3", "functionName", "sass_each_variables", 
+		"sass_else", "declarations", "margin", "propertyValue", "syncToFollow", 
+		"sass_map_name", "cp_math_expression_atom", "synpred21_Css3", "expressionPredicate", 
+		"rule", "cp_expression_operator", "less_function_in_condition", "unaryOperator", 
+		"namespaces", "charSet", "prio", "synpred7_Css3", "sass_control", "sass_map_pairs", 
+		"moz_document", "synpred4_Css3", "bodyItem", "webkitKeyframes", "synpred11_Css3", 
+		"cp_mixin_declaration", "synpred10_Css3", "typeSelector", "cssId", "synpred37_Css3", 
+		"less_when", "synpred8_Css3", "fnAttributes", "fnAttribute", "synpred19_Css3", 
+		"synpred14_Css3", "generic_at_rule", "cp_args_list", "synpred29_Css3", 
+		"sass_content", "cp_mixin_block", "sass_control_block", "synpred32_Css3", 
+		"synpred9_Css3", "at_rule", "sass_control_expression", "less_mixin_guarded", 
+		"synpred38_Css3", "synpred40_Css3", "synpred20_Css3", "synpred23_Css3", 
+		"elementSubsequent", "synpred15_Css3", "synpred30_Css3", "sass_function_declaration", 
+		"synpred24_Css3", "sass_nested_properties", "fnAttributeValue", "namespacePrefix", 
+		"synpred31_Css3", "styleSheet", "pseudoPage", "sass_for", "less_condition_operator", 
+		"webkitKeyframeSelectors", "less_condition", "syncTo_RBRACE", "fnAttributeName", 
+		"sass_selector_interpolation_exp", "cp_expression_list", "sass_function_name", 
+		"cp_expression", "synpred17_Css3", "pseudo", "operator", "media", "slAttributeValue", 
+		"synpred36_Css3", "cp_arg", "synpred39_Css3", "sass_debug", "page", "margin_sym", 
+		"vendorAtRule", "namespacePrefixName", "cp_term_symbol", "cp_mixin_call_arg", 
+		"selectorsGroup", "mediaQueryOperator", "sass_map", "synpred34_Css3", 
+		"sass_while", "fontFace", "namespace", "expression", "cp_variable_declaration", 
+		"synpred6_Css3", "sass_if", "sass_extend"
 	};
 
 	public static final boolean[] decisionCanBacktrack = new boolean[] {
@@ -318,7 +320,8 @@ public class Css3Parser extends DebugParser {
 		    false, false, false, false, false, false, false, false, false, false, 
 		    false, false, false, false, false, false, false, false, false, false, 
 		    false, false, false, false, false, false, false, false, false, false, 
-		    false, false, false, false, false, false, false, false, false, false
+		    false, false, false, false, false, false, false, false, false, false, 
+		    false
 	};
 
  
@@ -684,7 +687,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(6, decisionCanBacktrack[6]);
 
 			int LA6_0 = input.LA(1);
-			if ( ((LA6_0 >= AT_IDENT && LA6_0 <= AT_SIGN)||(LA6_0 >= BOTTOMCENTER_SYM && LA6_0 <= BOTTOMRIGHT_SYM)||(LA6_0 >= CHARSET_SYM && LA6_0 <= COLON)||LA6_0==COUNTER_STYLE_SYM||LA6_0==DCOLON||LA6_0==DOT||LA6_0==FONT_FACE_SYM||(LA6_0 >= GEN && LA6_0 <= GREATER)||(LA6_0 >= HASH && LA6_0 <= HASH_SYMBOL)||LA6_0==IDENT||LA6_0==IMPORT_SYM||(LA6_0 >= LBRACKET && LA6_0 <= LEFTTOP_SYM)||LA6_0==LESS_AND||(LA6_0 >= MEDIA_SYM && LA6_0 <= MOZ_DOCUMENT_SYM)||LA6_0==NAMESPACE_SYM||LA6_0==PAGE_SYM||(LA6_0 >= PIPE && LA6_0 <= PLUS)||(LA6_0 >= RIGHTBOTTOM_SYM && LA6_0 <= RIGHTTOP_SYM)||(LA6_0 >= SASS_AT_ROOT && LA6_0 <= SASS_DEBUG)||(LA6_0 >= SASS_EACH && LA6_0 <= SASS_FUNCTION)||(LA6_0 >= SASS_IF && LA6_0 <= SASS_MIXIN)||(LA6_0 >= SASS_RETURN && LA6_0 <= SEMI)||LA6_0==STAR||LA6_0==TILDE||(LA6_0 >= TOPCENTER_SYM && LA6_0 <= TOPRIGHT_SYM)||LA6_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA6_0 >= AT_IDENT && LA6_0 <= AT_SIGN)||(LA6_0 >= BOTTOMCENTER_SYM && LA6_0 <= BOTTOMRIGHT_SYM)||(LA6_0 >= CHARSET_SYM && LA6_0 <= COLON)||LA6_0==COUNTER_STYLE_SYM||LA6_0==DCOLON||LA6_0==DOT||LA6_0==FONT_FACE_SYM||(LA6_0 >= GEN && LA6_0 <= GREATER)||(LA6_0 >= HASH && LA6_0 <= HASH_SYMBOL)||LA6_0==IDENT||LA6_0==IMPORT_SYM||(LA6_0 >= LBRACKET && LA6_0 <= LEFTTOP_SYM)||LA6_0==LESS_AND||(LA6_0 >= MEDIA_SYM && LA6_0 <= MOZ_DOCUMENT_SYM)||LA6_0==NAMESPACE_SYM||LA6_0==PAGE_SYM||(LA6_0 >= PIPE && LA6_0 <= PLUS)||(LA6_0 >= RIGHTBOTTOM_SYM && LA6_0 <= RIGHTTOP_SYM)||(LA6_0 >= SASS_AT_ROOT && LA6_0 <= SASS_DEBUG)||(LA6_0 >= SASS_EACH && LA6_0 <= SASS_ELSE)||(LA6_0 >= SASS_EXTEND && LA6_0 <= SASS_FUNCTION)||(LA6_0 >= SASS_IF && LA6_0 <= SASS_MIXIN)||(LA6_0 >= SASS_RETURN && LA6_0 <= SEMI)||LA6_0==STAR||LA6_0==TILDE||(LA6_0 >= TOPCENTER_SYM && LA6_0 <= TOPRIGHT_SYM)||LA6_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt6=1;
 			}
 			} finally {dbg.exitDecision(6);}
@@ -2455,7 +2458,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(36, decisionCanBacktrack[36]);
 
 			int LA36_0 = input.LA(1);
-			if ( ((LA36_0 >= AT_IDENT && LA36_0 <= AT_SIGN)||(LA36_0 >= BOTTOMCENTER_SYM && LA36_0 <= BOTTOMRIGHT_SYM)||(LA36_0 >= CHARSET_SYM && LA36_0 <= COLON)||LA36_0==COUNTER_STYLE_SYM||LA36_0==DCOLON||LA36_0==DOT||LA36_0==FONT_FACE_SYM||(LA36_0 >= GEN && LA36_0 <= GREATER)||(LA36_0 >= HASH && LA36_0 <= HASH_SYMBOL)||LA36_0==IDENT||LA36_0==IMPORT_SYM||(LA36_0 >= LBRACKET && LA36_0 <= LEFTTOP_SYM)||LA36_0==LESS_AND||(LA36_0 >= MEDIA_SYM && LA36_0 <= MOZ_DOCUMENT_SYM)||LA36_0==NAMESPACE_SYM||LA36_0==PAGE_SYM||(LA36_0 >= PIPE && LA36_0 <= PLUS)||(LA36_0 >= RIGHTBOTTOM_SYM && LA36_0 <= RIGHTTOP_SYM)||(LA36_0 >= SASS_AT_ROOT && LA36_0 <= SASS_DEBUG)||(LA36_0 >= SASS_EACH && LA36_0 <= SASS_FUNCTION)||(LA36_0 >= SASS_IF && LA36_0 <= SASS_MIXIN)||(LA36_0 >= SASS_RETURN && LA36_0 <= SEMI)||LA36_0==STAR||LA36_0==TILDE||(LA36_0 >= TOPCENTER_SYM && LA36_0 <= TOPRIGHT_SYM)||LA36_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA36_0 >= AT_IDENT && LA36_0 <= AT_SIGN)||(LA36_0 >= BOTTOMCENTER_SYM && LA36_0 <= BOTTOMRIGHT_SYM)||(LA36_0 >= CHARSET_SYM && LA36_0 <= COLON)||LA36_0==COUNTER_STYLE_SYM||LA36_0==DCOLON||LA36_0==DOT||LA36_0==FONT_FACE_SYM||(LA36_0 >= GEN && LA36_0 <= GREATER)||(LA36_0 >= HASH && LA36_0 <= HASH_SYMBOL)||LA36_0==IDENT||LA36_0==IMPORT_SYM||(LA36_0 >= LBRACKET && LA36_0 <= LEFTTOP_SYM)||LA36_0==LESS_AND||(LA36_0 >= MEDIA_SYM && LA36_0 <= MOZ_DOCUMENT_SYM)||LA36_0==NAMESPACE_SYM||LA36_0==PAGE_SYM||(LA36_0 >= PIPE && LA36_0 <= PLUS)||(LA36_0 >= RIGHTBOTTOM_SYM && LA36_0 <= RIGHTTOP_SYM)||(LA36_0 >= SASS_AT_ROOT && LA36_0 <= SASS_DEBUG)||(LA36_0 >= SASS_EACH && LA36_0 <= SASS_ELSE)||(LA36_0 >= SASS_EXTEND && LA36_0 <= SASS_FUNCTION)||(LA36_0 >= SASS_IF && LA36_0 <= SASS_MIXIN)||(LA36_0 >= SASS_RETURN && LA36_0 <= SEMI)||LA36_0==STAR||LA36_0==TILDE||(LA36_0 >= TOPCENTER_SYM && LA36_0 <= TOPRIGHT_SYM)||LA36_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt36=1;
 			}
 			} finally {dbg.exitDecision(36);}
@@ -3266,7 +3269,7 @@ public class Css3Parser extends DebugParser {
 				}
 
 			}
-			else if ( ((LA47_0 >= BOTTOMCENTER_SYM && LA47_0 <= BOTTOMRIGHT_SYM)||LA47_0==CHARSET_SYM||LA47_0==COUNTER_STYLE_SYM||(LA47_0 >= LEFTBOTTOM_SYM && LA47_0 <= LEFTTOP_SYM)||LA47_0==NAMESPACE_SYM||(LA47_0 >= RIGHTBOTTOM_SYM && LA47_0 <= RIGHTTOP_SYM)||(LA47_0 >= SASS_ELSE && LA47_0 <= SASS_EXTEND)||LA47_0==SASS_FUNCTION||LA47_0==SASS_RETURN||(LA47_0 >= TOPCENTER_SYM && LA47_0 <= TOPRIGHT_SYM)) && (synpred8_Css3())) {
+			else if ( ((LA47_0 >= BOTTOMCENTER_SYM && LA47_0 <= BOTTOMRIGHT_SYM)||LA47_0==CHARSET_SYM||LA47_0==COUNTER_STYLE_SYM||(LA47_0 >= LEFTBOTTOM_SYM && LA47_0 <= LEFTTOP_SYM)||LA47_0==NAMESPACE_SYM||(LA47_0 >= RIGHTBOTTOM_SYM && LA47_0 <= RIGHTTOP_SYM)||LA47_0==SASS_ELSE||LA47_0==SASS_EXTEND||LA47_0==SASS_FUNCTION||LA47_0==SASS_RETURN||(LA47_0 >= TOPCENTER_SYM && LA47_0 <= TOPRIGHT_SYM)) && (synpred8_Css3())) {
 				alt47=4;
 			}
 
@@ -5077,7 +5080,7 @@ public class Css3Parser extends DebugParser {
 					try { dbg.enterDecision(68, decisionCanBacktrack[68]);
 
 					int LA68_0 = input.LA(1);
-					if ( (LA68_0==AT_IDENT||(LA68_0 >= BOTTOMCENTER_SYM && LA68_0 <= BOTTOMRIGHT_SYM)||LA68_0==CHARSET_SYM||LA68_0==COUNTER_STYLE_SYM||LA68_0==FONT_FACE_SYM||LA68_0==IMPORT_SYM||(LA68_0 >= LEFTBOTTOM_SYM && LA68_0 <= LEFTTOP_SYM)||LA68_0==MEDIA_SYM||LA68_0==MOZ_DOCUMENT_SYM||LA68_0==NAMESPACE_SYM||LA68_0==PAGE_SYM||(LA68_0 >= RIGHTBOTTOM_SYM && LA68_0 <= RIGHTTOP_SYM)||(LA68_0 >= SASS_AT_ROOT && LA68_0 <= SASS_DEBUG)||(LA68_0 >= SASS_EACH && LA68_0 <= SASS_EXTEND)||(LA68_0 >= SASS_FOR && LA68_0 <= SASS_FUNCTION)||(LA68_0 >= SASS_IF && LA68_0 <= SASS_MIXIN)||(LA68_0 >= SASS_RETURN && LA68_0 <= SASS_WHILE)||(LA68_0 >= TOPCENTER_SYM && LA68_0 <= TOPRIGHT_SYM)||LA68_0==WEBKIT_KEYFRAMES_SYM) ) {
+					if ( (LA68_0==AT_IDENT||(LA68_0 >= BOTTOMCENTER_SYM && LA68_0 <= BOTTOMRIGHT_SYM)||LA68_0==CHARSET_SYM||LA68_0==COUNTER_STYLE_SYM||LA68_0==FONT_FACE_SYM||LA68_0==IMPORT_SYM||(LA68_0 >= LEFTBOTTOM_SYM && LA68_0 <= LEFTTOP_SYM)||LA68_0==MEDIA_SYM||LA68_0==MOZ_DOCUMENT_SYM||LA68_0==NAMESPACE_SYM||LA68_0==PAGE_SYM||(LA68_0 >= RIGHTBOTTOM_SYM && LA68_0 <= RIGHTTOP_SYM)||(LA68_0 >= SASS_AT_ROOT && LA68_0 <= SASS_DEBUG)||(LA68_0 >= SASS_EACH && LA68_0 <= SASS_ELSE)||LA68_0==SASS_EXTEND||(LA68_0 >= SASS_FOR && LA68_0 <= SASS_FUNCTION)||(LA68_0 >= SASS_IF && LA68_0 <= SASS_MIXIN)||(LA68_0 >= SASS_RETURN && LA68_0 <= SASS_WHILE)||(LA68_0 >= TOPCENTER_SYM && LA68_0 <= TOPRIGHT_SYM)||LA68_0==WEBKIT_KEYFRAMES_SYM) ) {
 						alt68=1;
 					}
 					else if ( (LA68_0==HASH_SYMBOL) ) {
@@ -5174,7 +5177,7 @@ public class Css3Parser extends DebugParser {
 				try { dbg.enterDecision(74, decisionCanBacktrack[74]);
 
 				int LA74_0 = input.LA(1);
-				if ( ((LA74_0 >= AT_IDENT && LA74_0 <= AT_SIGN)||(LA74_0 >= BOTTOMCENTER_SYM && LA74_0 <= BOTTOMRIGHT_SYM)||(LA74_0 >= CHARSET_SYM && LA74_0 <= COLON)||LA74_0==COUNTER_STYLE_SYM||LA74_0==DCOLON||LA74_0==DOT||LA74_0==FONT_FACE_SYM||(LA74_0 >= GEN && LA74_0 <= GREATER)||(LA74_0 >= HASH && LA74_0 <= HASH_SYMBOL)||LA74_0==IDENT||LA74_0==IMPORT_SYM||(LA74_0 >= LBRACKET && LA74_0 <= LEFTTOP_SYM)||LA74_0==LESS_AND||(LA74_0 >= MEDIA_SYM && LA74_0 <= MOZ_DOCUMENT_SYM)||LA74_0==NAMESPACE_SYM||LA74_0==PAGE_SYM||(LA74_0 >= PIPE && LA74_0 <= PLUS)||(LA74_0 >= RIGHTBOTTOM_SYM && LA74_0 <= RIGHTTOP_SYM)||(LA74_0 >= SASS_AT_ROOT && LA74_0 <= SASS_DEBUG)||(LA74_0 >= SASS_EACH && LA74_0 <= SASS_FUNCTION)||(LA74_0 >= SASS_IF && LA74_0 <= SASS_MIXIN)||(LA74_0 >= SASS_RETURN && LA74_0 <= SASS_WHILE)||LA74_0==STAR||LA74_0==TILDE||(LA74_0 >= TOPCENTER_SYM && LA74_0 <= TOPRIGHT_SYM)||LA74_0==WEBKIT_KEYFRAMES_SYM) ) {
+				if ( ((LA74_0 >= AT_IDENT && LA74_0 <= AT_SIGN)||(LA74_0 >= BOTTOMCENTER_SYM && LA74_0 <= BOTTOMRIGHT_SYM)||(LA74_0 >= CHARSET_SYM && LA74_0 <= COLON)||LA74_0==COUNTER_STYLE_SYM||LA74_0==DCOLON||LA74_0==DOT||LA74_0==FONT_FACE_SYM||(LA74_0 >= GEN && LA74_0 <= GREATER)||(LA74_0 >= HASH && LA74_0 <= HASH_SYMBOL)||LA74_0==IDENT||LA74_0==IMPORT_SYM||(LA74_0 >= LBRACKET && LA74_0 <= LEFTTOP_SYM)||LA74_0==LESS_AND||(LA74_0 >= MEDIA_SYM && LA74_0 <= MOZ_DOCUMENT_SYM)||LA74_0==NAMESPACE_SYM||LA74_0==PAGE_SYM||(LA74_0 >= PIPE && LA74_0 <= PLUS)||(LA74_0 >= RIGHTBOTTOM_SYM && LA74_0 <= RIGHTTOP_SYM)||(LA74_0 >= SASS_AT_ROOT && LA74_0 <= SASS_DEBUG)||(LA74_0 >= SASS_EACH && LA74_0 <= SASS_ELSE)||(LA74_0 >= SASS_EXTEND && LA74_0 <= SASS_FUNCTION)||(LA74_0 >= SASS_IF && LA74_0 <= SASS_MIXIN)||(LA74_0 >= SASS_RETURN && LA74_0 <= SASS_WHILE)||LA74_0==STAR||LA74_0==TILDE||(LA74_0 >= TOPCENTER_SYM && LA74_0 <= TOPRIGHT_SYM)||LA74_0==WEBKIT_KEYFRAMES_SYM) ) {
 					alt74=1;
 				}
 				else if ( (LA74_0==SEMI) ) {
@@ -6713,7 +6716,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(87, decisionCanBacktrack[87]);
 
 			int LA87_0 = input.LA(1);
-			if ( ((LA87_0 >= AT_IDENT && LA87_0 <= AT_SIGN)||(LA87_0 >= BOTTOMCENTER_SYM && LA87_0 <= BOTTOMRIGHT_SYM)||(LA87_0 >= CHARSET_SYM && LA87_0 <= COLON)||LA87_0==COUNTER_STYLE_SYM||LA87_0==DCOLON||LA87_0==DOT||LA87_0==FONT_FACE_SYM||(LA87_0 >= GEN && LA87_0 <= GREATER)||(LA87_0 >= HASH && LA87_0 <= HASH_SYMBOL)||LA87_0==IDENT||LA87_0==IMPORT_SYM||(LA87_0 >= LBRACKET && LA87_0 <= LEFTTOP_SYM)||LA87_0==LESS_AND||(LA87_0 >= MEDIA_SYM && LA87_0 <= MOZ_DOCUMENT_SYM)||LA87_0==NAMESPACE_SYM||LA87_0==PAGE_SYM||(LA87_0 >= PIPE && LA87_0 <= PLUS)||(LA87_0 >= RIGHTBOTTOM_SYM && LA87_0 <= RIGHTTOP_SYM)||(LA87_0 >= SASS_AT_ROOT && LA87_0 <= SASS_DEBUG)||(LA87_0 >= SASS_EACH && LA87_0 <= SASS_FUNCTION)||(LA87_0 >= SASS_IF && LA87_0 <= SASS_MIXIN)||(LA87_0 >= SASS_RETURN && LA87_0 <= SEMI)||LA87_0==STAR||LA87_0==TILDE||(LA87_0 >= TOPCENTER_SYM && LA87_0 <= TOPRIGHT_SYM)||LA87_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA87_0 >= AT_IDENT && LA87_0 <= AT_SIGN)||(LA87_0 >= BOTTOMCENTER_SYM && LA87_0 <= BOTTOMRIGHT_SYM)||(LA87_0 >= CHARSET_SYM && LA87_0 <= COLON)||LA87_0==COUNTER_STYLE_SYM||LA87_0==DCOLON||LA87_0==DOT||LA87_0==FONT_FACE_SYM||(LA87_0 >= GEN && LA87_0 <= GREATER)||(LA87_0 >= HASH && LA87_0 <= HASH_SYMBOL)||LA87_0==IDENT||LA87_0==IMPORT_SYM||(LA87_0 >= LBRACKET && LA87_0 <= LEFTTOP_SYM)||LA87_0==LESS_AND||(LA87_0 >= MEDIA_SYM && LA87_0 <= MOZ_DOCUMENT_SYM)||LA87_0==NAMESPACE_SYM||LA87_0==PAGE_SYM||(LA87_0 >= PIPE && LA87_0 <= PLUS)||(LA87_0 >= RIGHTBOTTOM_SYM && LA87_0 <= RIGHTTOP_SYM)||(LA87_0 >= SASS_AT_ROOT && LA87_0 <= SASS_DEBUG)||(LA87_0 >= SASS_EACH && LA87_0 <= SASS_ELSE)||(LA87_0 >= SASS_EXTEND && LA87_0 <= SASS_FUNCTION)||(LA87_0 >= SASS_IF && LA87_0 <= SASS_MIXIN)||(LA87_0 >= SASS_RETURN && LA87_0 <= SEMI)||LA87_0==STAR||LA87_0==TILDE||(LA87_0 >= TOPCENTER_SYM && LA87_0 <= TOPRIGHT_SYM)||LA87_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt87=1;
 			}
 			} finally {dbg.exitDecision(87);}
@@ -7089,7 +7092,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(95, decisionCanBacktrack[95]);
 
 			int LA95_0 = input.LA(1);
-			if ( ((LA95_0 >= AT_IDENT && LA95_0 <= AT_SIGN)||(LA95_0 >= BOTTOMCENTER_SYM && LA95_0 <= BOTTOMRIGHT_SYM)||(LA95_0 >= CHARSET_SYM && LA95_0 <= COLON)||LA95_0==COUNTER_STYLE_SYM||LA95_0==DCOLON||LA95_0==DOT||LA95_0==FONT_FACE_SYM||(LA95_0 >= GEN && LA95_0 <= GREATER)||(LA95_0 >= HASH && LA95_0 <= HASH_SYMBOL)||LA95_0==IDENT||LA95_0==IMPORT_SYM||(LA95_0 >= LBRACKET && LA95_0 <= LEFTTOP_SYM)||LA95_0==LESS_AND||(LA95_0 >= MEDIA_SYM && LA95_0 <= MOZ_DOCUMENT_SYM)||LA95_0==NAMESPACE_SYM||LA95_0==PAGE_SYM||(LA95_0 >= PIPE && LA95_0 <= PLUS)||(LA95_0 >= RIGHTBOTTOM_SYM && LA95_0 <= RIGHTTOP_SYM)||(LA95_0 >= SASS_AT_ROOT && LA95_0 <= SASS_DEBUG)||(LA95_0 >= SASS_EACH && LA95_0 <= SASS_FUNCTION)||(LA95_0 >= SASS_IF && LA95_0 <= SASS_MIXIN)||(LA95_0 >= SASS_RETURN && LA95_0 <= SEMI)||LA95_0==STAR||LA95_0==TILDE||(LA95_0 >= TOPCENTER_SYM && LA95_0 <= TOPRIGHT_SYM)||LA95_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA95_0 >= AT_IDENT && LA95_0 <= AT_SIGN)||(LA95_0 >= BOTTOMCENTER_SYM && LA95_0 <= BOTTOMRIGHT_SYM)||(LA95_0 >= CHARSET_SYM && LA95_0 <= COLON)||LA95_0==COUNTER_STYLE_SYM||LA95_0==DCOLON||LA95_0==DOT||LA95_0==FONT_FACE_SYM||(LA95_0 >= GEN && LA95_0 <= GREATER)||(LA95_0 >= HASH && LA95_0 <= HASH_SYMBOL)||LA95_0==IDENT||LA95_0==IMPORT_SYM||(LA95_0 >= LBRACKET && LA95_0 <= LEFTTOP_SYM)||LA95_0==LESS_AND||(LA95_0 >= MEDIA_SYM && LA95_0 <= MOZ_DOCUMENT_SYM)||LA95_0==NAMESPACE_SYM||LA95_0==PAGE_SYM||(LA95_0 >= PIPE && LA95_0 <= PLUS)||(LA95_0 >= RIGHTBOTTOM_SYM && LA95_0 <= RIGHTTOP_SYM)||(LA95_0 >= SASS_AT_ROOT && LA95_0 <= SASS_DEBUG)||(LA95_0 >= SASS_EACH && LA95_0 <= SASS_ELSE)||(LA95_0 >= SASS_EXTEND && LA95_0 <= SASS_FUNCTION)||(LA95_0 >= SASS_IF && LA95_0 <= SASS_MIXIN)||(LA95_0 >= SASS_RETURN && LA95_0 <= SEMI)||LA95_0==STAR||LA95_0==TILDE||(LA95_0 >= TOPCENTER_SYM && LA95_0 <= TOPRIGHT_SYM)||LA95_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt95=1;
 			}
 			} finally {dbg.exitDecision(95);}
@@ -7476,7 +7479,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(107, decisionCanBacktrack[107]);
 
 			int LA107_0 = input.LA(1);
-			if ( (LA107_0==AT_IDENT||(LA107_0 >= BOTTOMCENTER_SYM && LA107_0 <= BOTTOMRIGHT_SYM)||LA107_0==CHARSET_SYM||LA107_0==COUNTER_STYLE_SYM||LA107_0==FONT_FACE_SYM||LA107_0==GEN||LA107_0==HASH_SYMBOL||LA107_0==IDENT||LA107_0==IMPORT_SYM||(LA107_0 >= LEFTBOTTOM_SYM && LA107_0 <= LEFTTOP_SYM)||(LA107_0 >= MEDIA_SYM && LA107_0 <= MOZ_DOCUMENT_SYM)||LA107_0==NAMESPACE_SYM||LA107_0==PAGE_SYM||(LA107_0 >= RIGHTBOTTOM_SYM && LA107_0 <= RIGHTTOP_SYM)||(LA107_0 >= SASS_AT_ROOT && LA107_0 <= SASS_DEBUG)||(LA107_0 >= SASS_EACH && LA107_0 <= SASS_EXTEND)||(LA107_0 >= SASS_FOR && LA107_0 <= SASS_FUNCTION)||(LA107_0 >= SASS_IF && LA107_0 <= SASS_MIXIN)||(LA107_0 >= SASS_RETURN && LA107_0 <= SASS_WHILE)||LA107_0==STAR||(LA107_0 >= TOPCENTER_SYM && LA107_0 <= TOPRIGHT_SYM)||LA107_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA107_0==AT_IDENT||(LA107_0 >= BOTTOMCENTER_SYM && LA107_0 <= BOTTOMRIGHT_SYM)||LA107_0==CHARSET_SYM||LA107_0==COUNTER_STYLE_SYM||LA107_0==FONT_FACE_SYM||LA107_0==GEN||LA107_0==HASH_SYMBOL||LA107_0==IDENT||LA107_0==IMPORT_SYM||(LA107_0 >= LEFTBOTTOM_SYM && LA107_0 <= LEFTTOP_SYM)||(LA107_0 >= MEDIA_SYM && LA107_0 <= MOZ_DOCUMENT_SYM)||LA107_0==NAMESPACE_SYM||LA107_0==PAGE_SYM||(LA107_0 >= RIGHTBOTTOM_SYM && LA107_0 <= RIGHTTOP_SYM)||(LA107_0 >= SASS_AT_ROOT && LA107_0 <= SASS_DEBUG)||(LA107_0 >= SASS_EACH && LA107_0 <= SASS_ELSE)||LA107_0==SASS_EXTEND||(LA107_0 >= SASS_FOR && LA107_0 <= SASS_FUNCTION)||(LA107_0 >= SASS_IF && LA107_0 <= SASS_MIXIN)||(LA107_0 >= SASS_RETURN && LA107_0 <= SASS_WHILE)||LA107_0==STAR||(LA107_0 >= TOPCENTER_SYM && LA107_0 <= TOPRIGHT_SYM)||LA107_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt107=1;
 			}
 			} finally {dbg.exitDecision(107);}
@@ -7623,7 +7626,7 @@ public class Css3Parser extends DebugParser {
 					try { dbg.enterDecision(111, decisionCanBacktrack[111]);
 
 					int LA111_0 = input.LA(1);
-					if ( (LA111_0==AT_IDENT||(LA111_0 >= BOTTOMCENTER_SYM && LA111_0 <= BOTTOMRIGHT_SYM)||LA111_0==CHARSET_SYM||LA111_0==COUNTER_STYLE_SYM||LA111_0==FONT_FACE_SYM||LA111_0==GEN||LA111_0==HASH_SYMBOL||LA111_0==IDENT||LA111_0==IMPORT_SYM||(LA111_0 >= LEFTBOTTOM_SYM && LA111_0 <= LEFTTOP_SYM)||(LA111_0 >= MEDIA_SYM && LA111_0 <= MOZ_DOCUMENT_SYM)||LA111_0==NAMESPACE_SYM||LA111_0==PAGE_SYM||(LA111_0 >= RIGHTBOTTOM_SYM && LA111_0 <= RIGHTTOP_SYM)||(LA111_0 >= SASS_AT_ROOT && LA111_0 <= SASS_DEBUG)||(LA111_0 >= SASS_EACH && LA111_0 <= SASS_EXTEND)||(LA111_0 >= SASS_FOR && LA111_0 <= SASS_FUNCTION)||(LA111_0 >= SASS_IF && LA111_0 <= SASS_MIXIN)||(LA111_0 >= SASS_RETURN && LA111_0 <= SASS_WHILE)||LA111_0==STAR||(LA111_0 >= TOPCENTER_SYM && LA111_0 <= TOPRIGHT_SYM)||LA111_0==WEBKIT_KEYFRAMES_SYM) ) {
+					if ( (LA111_0==AT_IDENT||(LA111_0 >= BOTTOMCENTER_SYM && LA111_0 <= BOTTOMRIGHT_SYM)||LA111_0==CHARSET_SYM||LA111_0==COUNTER_STYLE_SYM||LA111_0==FONT_FACE_SYM||LA111_0==GEN||LA111_0==HASH_SYMBOL||LA111_0==IDENT||LA111_0==IMPORT_SYM||(LA111_0 >= LEFTBOTTOM_SYM && LA111_0 <= LEFTTOP_SYM)||(LA111_0 >= MEDIA_SYM && LA111_0 <= MOZ_DOCUMENT_SYM)||LA111_0==NAMESPACE_SYM||LA111_0==PAGE_SYM||(LA111_0 >= RIGHTBOTTOM_SYM && LA111_0 <= RIGHTTOP_SYM)||(LA111_0 >= SASS_AT_ROOT && LA111_0 <= SASS_DEBUG)||(LA111_0 >= SASS_EACH && LA111_0 <= SASS_ELSE)||LA111_0==SASS_EXTEND||(LA111_0 >= SASS_FOR && LA111_0 <= SASS_FUNCTION)||(LA111_0 >= SASS_IF && LA111_0 <= SASS_MIXIN)||(LA111_0 >= SASS_RETURN && LA111_0 <= SASS_WHILE)||LA111_0==STAR||(LA111_0 >= TOPCENTER_SYM && LA111_0 <= TOPRIGHT_SYM)||LA111_0==WEBKIT_KEYFRAMES_SYM) ) {
 						alt111=1;
 					}
 					} finally {dbg.exitDecision(111);}
@@ -7859,7 +7862,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(116, decisionCanBacktrack[116]);
 
 			int LA116_0 = input.LA(1);
-			if ( ((LA116_0 >= AT_IDENT && LA116_0 <= AT_SIGN)||(LA116_0 >= BOTTOMCENTER_SYM && LA116_0 <= BOTTOMRIGHT_SYM)||(LA116_0 >= CHARSET_SYM && LA116_0 <= COLON)||LA116_0==COUNTER_STYLE_SYM||LA116_0==DCOLON||LA116_0==DOT||LA116_0==FONT_FACE_SYM||(LA116_0 >= GEN && LA116_0 <= GREATER)||(LA116_0 >= HASH && LA116_0 <= HASH_SYMBOL)||LA116_0==IDENT||LA116_0==IMPORT_SYM||(LA116_0 >= LBRACKET && LA116_0 <= LEFTTOP_SYM)||LA116_0==LESS_AND||(LA116_0 >= MEDIA_SYM && LA116_0 <= MOZ_DOCUMENT_SYM)||LA116_0==NAMESPACE_SYM||LA116_0==PAGE_SYM||(LA116_0 >= PIPE && LA116_0 <= PLUS)||(LA116_0 >= RIGHTBOTTOM_SYM && LA116_0 <= RIGHTTOP_SYM)||(LA116_0 >= SASS_AT_ROOT && LA116_0 <= SASS_DEBUG)||(LA116_0 >= SASS_EACH && LA116_0 <= SASS_FUNCTION)||(LA116_0 >= SASS_IF && LA116_0 <= SASS_MIXIN)||(LA116_0 >= SASS_RETURN && LA116_0 <= SEMI)||LA116_0==STAR||LA116_0==TILDE||(LA116_0 >= TOPCENTER_SYM && LA116_0 <= TOPRIGHT_SYM)||LA116_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA116_0 >= AT_IDENT && LA116_0 <= AT_SIGN)||(LA116_0 >= BOTTOMCENTER_SYM && LA116_0 <= BOTTOMRIGHT_SYM)||(LA116_0 >= CHARSET_SYM && LA116_0 <= COLON)||LA116_0==COUNTER_STYLE_SYM||LA116_0==DCOLON||LA116_0==DOT||LA116_0==FONT_FACE_SYM||(LA116_0 >= GEN && LA116_0 <= GREATER)||(LA116_0 >= HASH && LA116_0 <= HASH_SYMBOL)||LA116_0==IDENT||LA116_0==IMPORT_SYM||(LA116_0 >= LBRACKET && LA116_0 <= LEFTTOP_SYM)||LA116_0==LESS_AND||(LA116_0 >= MEDIA_SYM && LA116_0 <= MOZ_DOCUMENT_SYM)||LA116_0==NAMESPACE_SYM||LA116_0==PAGE_SYM||(LA116_0 >= PIPE && LA116_0 <= PLUS)||(LA116_0 >= RIGHTBOTTOM_SYM && LA116_0 <= RIGHTTOP_SYM)||(LA116_0 >= SASS_AT_ROOT && LA116_0 <= SASS_DEBUG)||(LA116_0 >= SASS_EACH && LA116_0 <= SASS_ELSE)||(LA116_0 >= SASS_EXTEND && LA116_0 <= SASS_FUNCTION)||(LA116_0 >= SASS_IF && LA116_0 <= SASS_MIXIN)||(LA116_0 >= SASS_RETURN && LA116_0 <= SEMI)||LA116_0==STAR||LA116_0==TILDE||(LA116_0 >= TOPCENTER_SYM && LA116_0 <= TOPRIGHT_SYM)||LA116_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt116=1;
 			}
 			} finally {dbg.exitDecision(116);}
@@ -7989,7 +7992,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(119, decisionCanBacktrack[119]);
 
 			int LA119_0 = input.LA(1);
-			if ( ((LA119_0 >= AT_IDENT && LA119_0 <= AT_SIGN)||(LA119_0 >= BOTTOMCENTER_SYM && LA119_0 <= BOTTOMRIGHT_SYM)||(LA119_0 >= CHARSET_SYM && LA119_0 <= COLON)||LA119_0==COUNTER_STYLE_SYM||LA119_0==DCOLON||LA119_0==DOT||LA119_0==FONT_FACE_SYM||(LA119_0 >= GEN && LA119_0 <= GREATER)||(LA119_0 >= HASH && LA119_0 <= HASH_SYMBOL)||LA119_0==IDENT||LA119_0==IMPORT_SYM||(LA119_0 >= LBRACKET && LA119_0 <= LEFTTOP_SYM)||LA119_0==LESS_AND||(LA119_0 >= MEDIA_SYM && LA119_0 <= MOZ_DOCUMENT_SYM)||LA119_0==NAMESPACE_SYM||LA119_0==PAGE_SYM||(LA119_0 >= PIPE && LA119_0 <= PLUS)||(LA119_0 >= RIGHTBOTTOM_SYM && LA119_0 <= RIGHTTOP_SYM)||(LA119_0 >= SASS_AT_ROOT && LA119_0 <= SASS_DEBUG)||(LA119_0 >= SASS_EACH && LA119_0 <= SASS_FUNCTION)||(LA119_0 >= SASS_IF && LA119_0 <= SASS_MIXIN)||(LA119_0 >= SASS_RETURN && LA119_0 <= SEMI)||LA119_0==STAR||LA119_0==TILDE||(LA119_0 >= TOPCENTER_SYM && LA119_0 <= TOPRIGHT_SYM)||LA119_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA119_0 >= AT_IDENT && LA119_0 <= AT_SIGN)||(LA119_0 >= BOTTOMCENTER_SYM && LA119_0 <= BOTTOMRIGHT_SYM)||(LA119_0 >= CHARSET_SYM && LA119_0 <= COLON)||LA119_0==COUNTER_STYLE_SYM||LA119_0==DCOLON||LA119_0==DOT||LA119_0==FONT_FACE_SYM||(LA119_0 >= GEN && LA119_0 <= GREATER)||(LA119_0 >= HASH && LA119_0 <= HASH_SYMBOL)||LA119_0==IDENT||LA119_0==IMPORT_SYM||(LA119_0 >= LBRACKET && LA119_0 <= LEFTTOP_SYM)||LA119_0==LESS_AND||(LA119_0 >= MEDIA_SYM && LA119_0 <= MOZ_DOCUMENT_SYM)||LA119_0==NAMESPACE_SYM||LA119_0==PAGE_SYM||(LA119_0 >= PIPE && LA119_0 <= PLUS)||(LA119_0 >= RIGHTBOTTOM_SYM && LA119_0 <= RIGHTTOP_SYM)||(LA119_0 >= SASS_AT_ROOT && LA119_0 <= SASS_DEBUG)||(LA119_0 >= SASS_EACH && LA119_0 <= SASS_ELSE)||(LA119_0 >= SASS_EXTEND && LA119_0 <= SASS_FUNCTION)||(LA119_0 >= SASS_IF && LA119_0 <= SASS_MIXIN)||(LA119_0 >= SASS_RETURN && LA119_0 <= SEMI)||LA119_0==STAR||LA119_0==TILDE||(LA119_0 >= TOPCENTER_SYM && LA119_0 <= TOPRIGHT_SYM)||LA119_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt119=1;
 			}
 			} finally {dbg.exitDecision(119);}
@@ -8122,7 +8125,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(122, decisionCanBacktrack[122]);
 
 			int LA122_0 = input.LA(1);
-			if ( ((LA122_0 >= AT_IDENT && LA122_0 <= AT_SIGN)||(LA122_0 >= BOTTOMCENTER_SYM && LA122_0 <= BOTTOMRIGHT_SYM)||(LA122_0 >= CHARSET_SYM && LA122_0 <= COLON)||LA122_0==COUNTER_STYLE_SYM||LA122_0==DCOLON||LA122_0==DOT||LA122_0==FONT_FACE_SYM||(LA122_0 >= GEN && LA122_0 <= GREATER)||(LA122_0 >= HASH && LA122_0 <= HASH_SYMBOL)||LA122_0==IDENT||LA122_0==IMPORT_SYM||(LA122_0 >= LBRACKET && LA122_0 <= LEFTTOP_SYM)||LA122_0==LESS_AND||(LA122_0 >= MEDIA_SYM && LA122_0 <= MOZ_DOCUMENT_SYM)||LA122_0==NAMESPACE_SYM||LA122_0==PAGE_SYM||(LA122_0 >= PIPE && LA122_0 <= PLUS)||(LA122_0 >= RIGHTBOTTOM_SYM && LA122_0 <= RIGHTTOP_SYM)||(LA122_0 >= SASS_AT_ROOT && LA122_0 <= SASS_DEBUG)||(LA122_0 >= SASS_EACH && LA122_0 <= SASS_FUNCTION)||(LA122_0 >= SASS_IF && LA122_0 <= SASS_MIXIN)||(LA122_0 >= SASS_RETURN && LA122_0 <= SEMI)||LA122_0==STAR||LA122_0==TILDE||(LA122_0 >= TOPCENTER_SYM && LA122_0 <= TOPRIGHT_SYM)||LA122_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA122_0 >= AT_IDENT && LA122_0 <= AT_SIGN)||(LA122_0 >= BOTTOMCENTER_SYM && LA122_0 <= BOTTOMRIGHT_SYM)||(LA122_0 >= CHARSET_SYM && LA122_0 <= COLON)||LA122_0==COUNTER_STYLE_SYM||LA122_0==DCOLON||LA122_0==DOT||LA122_0==FONT_FACE_SYM||(LA122_0 >= GEN && LA122_0 <= GREATER)||(LA122_0 >= HASH && LA122_0 <= HASH_SYMBOL)||LA122_0==IDENT||LA122_0==IMPORT_SYM||(LA122_0 >= LBRACKET && LA122_0 <= LEFTTOP_SYM)||LA122_0==LESS_AND||(LA122_0 >= MEDIA_SYM && LA122_0 <= MOZ_DOCUMENT_SYM)||LA122_0==NAMESPACE_SYM||LA122_0==PAGE_SYM||(LA122_0 >= PIPE && LA122_0 <= PLUS)||(LA122_0 >= RIGHTBOTTOM_SYM && LA122_0 <= RIGHTTOP_SYM)||(LA122_0 >= SASS_AT_ROOT && LA122_0 <= SASS_DEBUG)||(LA122_0 >= SASS_EACH && LA122_0 <= SASS_ELSE)||(LA122_0 >= SASS_EXTEND && LA122_0 <= SASS_FUNCTION)||(LA122_0 >= SASS_IF && LA122_0 <= SASS_MIXIN)||(LA122_0 >= SASS_RETURN && LA122_0 <= SEMI)||LA122_0==STAR||LA122_0==TILDE||(LA122_0 >= TOPCENTER_SYM && LA122_0 <= TOPRIGHT_SYM)||LA122_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt122=1;
 			}
 			} finally {dbg.exitDecision(122);}
@@ -8630,7 +8633,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(126, decisionCanBacktrack[126]);
 
 			int LA126_0 = input.LA(1);
-			if ( (LA126_0==AT_IDENT||(LA126_0 >= BOTTOMCENTER_SYM && LA126_0 <= BOTTOMRIGHT_SYM)||LA126_0==CHARSET_SYM||LA126_0==COMMA||LA126_0==COUNTER_STYLE_SYM||LA126_0==FONT_FACE_SYM||LA126_0==GEN||LA126_0==HASH_SYMBOL||LA126_0==IDENT||LA126_0==IMPORT_SYM||(LA126_0 >= LEFTBOTTOM_SYM && LA126_0 <= LEFTTOP_SYM)||(LA126_0 >= MEDIA_SYM && LA126_0 <= MOZ_DOCUMENT_SYM)||LA126_0==NAMESPACE_SYM||LA126_0==PAGE_SYM||(LA126_0 >= RIGHTBOTTOM_SYM && LA126_0 <= RIGHTTOP_SYM)||(LA126_0 >= SASS_AT_ROOT && LA126_0 <= SASS_DEBUG)||(LA126_0 >= SASS_EACH && LA126_0 <= SASS_EXTEND)||(LA126_0 >= SASS_FOR && LA126_0 <= SASS_FUNCTION)||(LA126_0 >= SASS_IF && LA126_0 <= SASS_MIXIN)||(LA126_0 >= SASS_RETURN && LA126_0 <= SASS_WHILE)||LA126_0==STRING||(LA126_0 >= TOPCENTER_SYM && LA126_0 <= TOPRIGHT_SYM)||LA126_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA126_0==AT_IDENT||(LA126_0 >= BOTTOMCENTER_SYM && LA126_0 <= BOTTOMRIGHT_SYM)||LA126_0==CHARSET_SYM||LA126_0==COMMA||LA126_0==COUNTER_STYLE_SYM||LA126_0==FONT_FACE_SYM||LA126_0==GEN||LA126_0==HASH_SYMBOL||LA126_0==IDENT||LA126_0==IMPORT_SYM||(LA126_0 >= LEFTBOTTOM_SYM && LA126_0 <= LEFTTOP_SYM)||(LA126_0 >= MEDIA_SYM && LA126_0 <= MOZ_DOCUMENT_SYM)||LA126_0==NAMESPACE_SYM||LA126_0==PAGE_SYM||(LA126_0 >= RIGHTBOTTOM_SYM && LA126_0 <= RIGHTTOP_SYM)||(LA126_0 >= SASS_AT_ROOT && LA126_0 <= SASS_DEBUG)||(LA126_0 >= SASS_EACH && LA126_0 <= SASS_ELSE)||LA126_0==SASS_EXTEND||(LA126_0 >= SASS_FOR && LA126_0 <= SASS_FUNCTION)||(LA126_0 >= SASS_IF && LA126_0 <= SASS_MIXIN)||(LA126_0 >= SASS_RETURN && LA126_0 <= SASS_WHILE)||LA126_0==STRING||(LA126_0 >= TOPCENTER_SYM && LA126_0 <= TOPRIGHT_SYM)||LA126_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt126=1;
 			}
 			} finally {dbg.exitDecision(126);}
@@ -8861,7 +8864,7 @@ public class Css3Parser extends DebugParser {
 				try { dbg.enterDecision(134, decisionCanBacktrack[134]);
 
 				int LA134_0 = input.LA(1);
-				if ( (LA134_0==AT_IDENT||(LA134_0 >= BOTTOMCENTER_SYM && LA134_0 <= BOTTOMRIGHT_SYM)||LA134_0==CHARSET_SYM||LA134_0==COUNTER_STYLE_SYM||LA134_0==FONT_FACE_SYM||LA134_0==GEN||LA134_0==HASH_SYMBOL||LA134_0==IDENT||LA134_0==IMPORT_SYM||(LA134_0 >= LEFTBOTTOM_SYM && LA134_0 <= LEFTTOP_SYM)||(LA134_0 >= MEDIA_SYM && LA134_0 <= MOZ_DOCUMENT_SYM)||LA134_0==NAMESPACE_SYM||LA134_0==PAGE_SYM||(LA134_0 >= RIGHTBOTTOM_SYM && LA134_0 <= RIGHTTOP_SYM)||(LA134_0 >= SASS_AT_ROOT && LA134_0 <= SASS_DEBUG)||(LA134_0 >= SASS_EACH && LA134_0 <= SASS_EXTEND)||(LA134_0 >= SASS_FOR && LA134_0 <= SASS_FUNCTION)||(LA134_0 >= SASS_IF && LA134_0 <= SASS_MIXIN)||(LA134_0 >= SASS_RETURN && LA134_0 <= SASS_WHILE)||LA134_0==STRING||(LA134_0 >= TOPCENTER_SYM && LA134_0 <= TOPRIGHT_SYM)||LA134_0==WEBKIT_KEYFRAMES_SYM) ) {
+				if ( (LA134_0==AT_IDENT||(LA134_0 >= BOTTOMCENTER_SYM && LA134_0 <= BOTTOMRIGHT_SYM)||LA134_0==CHARSET_SYM||LA134_0==COUNTER_STYLE_SYM||LA134_0==FONT_FACE_SYM||LA134_0==GEN||LA134_0==HASH_SYMBOL||LA134_0==IDENT||LA134_0==IMPORT_SYM||(LA134_0 >= LEFTBOTTOM_SYM && LA134_0 <= LEFTTOP_SYM)||(LA134_0 >= MEDIA_SYM && LA134_0 <= MOZ_DOCUMENT_SYM)||LA134_0==NAMESPACE_SYM||LA134_0==PAGE_SYM||(LA134_0 >= RIGHTBOTTOM_SYM && LA134_0 <= RIGHTTOP_SYM)||(LA134_0 >= SASS_AT_ROOT && LA134_0 <= SASS_DEBUG)||(LA134_0 >= SASS_EACH && LA134_0 <= SASS_ELSE)||LA134_0==SASS_EXTEND||(LA134_0 >= SASS_FOR && LA134_0 <= SASS_FUNCTION)||(LA134_0 >= SASS_IF && LA134_0 <= SASS_MIXIN)||(LA134_0 >= SASS_RETURN && LA134_0 <= SASS_WHILE)||LA134_0==STRING||(LA134_0 >= TOPCENTER_SYM && LA134_0 <= TOPRIGHT_SYM)||LA134_0==WEBKIT_KEYFRAMES_SYM) ) {
 					alt134=1;
 				}
 				else if ( (LA134_0==COMMA) ) {
@@ -9079,7 +9082,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(135, decisionCanBacktrack[135]);
 
 			int LA135_0 = input.LA(1);
-			if ( (LA135_0==AT_IDENT||(LA135_0 >= BOTTOMCENTER_SYM && LA135_0 <= BOTTOMRIGHT_SYM)||LA135_0==CHARSET_SYM||LA135_0==COUNTER_STYLE_SYM||LA135_0==FONT_FACE_SYM||LA135_0==GEN||LA135_0==HASH_SYMBOL||LA135_0==IDENT||LA135_0==IMPORT_SYM||(LA135_0 >= LEFTBOTTOM_SYM && LA135_0 <= LEFTTOP_SYM)||(LA135_0 >= MEDIA_SYM && LA135_0 <= MOZ_DOCUMENT_SYM)||LA135_0==NAMESPACE_SYM||LA135_0==PAGE_SYM||(LA135_0 >= RIGHTBOTTOM_SYM && LA135_0 <= RIGHTTOP_SYM)||(LA135_0 >= SASS_AT_ROOT && LA135_0 <= SASS_DEBUG)||(LA135_0 >= SASS_EACH && LA135_0 <= SASS_EXTEND)||(LA135_0 >= SASS_FOR && LA135_0 <= SASS_FUNCTION)||(LA135_0 >= SASS_IF && LA135_0 <= SASS_MIXIN)||(LA135_0 >= SASS_RETURN && LA135_0 <= SASS_WHILE)||(LA135_0 >= TOPCENTER_SYM && LA135_0 <= TOPRIGHT_SYM)||LA135_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA135_0==AT_IDENT||(LA135_0 >= BOTTOMCENTER_SYM && LA135_0 <= BOTTOMRIGHT_SYM)||LA135_0==CHARSET_SYM||LA135_0==COUNTER_STYLE_SYM||LA135_0==FONT_FACE_SYM||LA135_0==GEN||LA135_0==HASH_SYMBOL||LA135_0==IDENT||LA135_0==IMPORT_SYM||(LA135_0 >= LEFTBOTTOM_SYM && LA135_0 <= LEFTTOP_SYM)||(LA135_0 >= MEDIA_SYM && LA135_0 <= MOZ_DOCUMENT_SYM)||LA135_0==NAMESPACE_SYM||LA135_0==PAGE_SYM||(LA135_0 >= RIGHTBOTTOM_SYM && LA135_0 <= RIGHTTOP_SYM)||(LA135_0 >= SASS_AT_ROOT && LA135_0 <= SASS_DEBUG)||(LA135_0 >= SASS_EACH && LA135_0 <= SASS_ELSE)||LA135_0==SASS_EXTEND||(LA135_0 >= SASS_FOR && LA135_0 <= SASS_FUNCTION)||(LA135_0 >= SASS_IF && LA135_0 <= SASS_MIXIN)||(LA135_0 >= SASS_RETURN && LA135_0 <= SASS_WHILE)||(LA135_0 >= TOPCENTER_SYM && LA135_0 <= TOPRIGHT_SYM)||LA135_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt135=1;
 			}
 			else if ( (LA135_0==STRING) ) {
@@ -9442,7 +9445,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(144, decisionCanBacktrack[144]);
 
 			int LA144_0 = input.LA(1);
-			if ( ((LA144_0 >= AT_IDENT && LA144_0 <= AT_SIGN)||(LA144_0 >= BOTTOMCENTER_SYM && LA144_0 <= BOTTOMRIGHT_SYM)||(LA144_0 >= CHARSET_SYM && LA144_0 <= COLON)||LA144_0==COUNTER_STYLE_SYM||LA144_0==DCOLON||LA144_0==DOT||LA144_0==FONT_FACE_SYM||(LA144_0 >= GEN && LA144_0 <= GREATER)||(LA144_0 >= HASH && LA144_0 <= HASH_SYMBOL)||LA144_0==IDENT||LA144_0==IMPORT_SYM||(LA144_0 >= LBRACKET && LA144_0 <= LEFTTOP_SYM)||LA144_0==LESS_AND||(LA144_0 >= MEDIA_SYM && LA144_0 <= MOZ_DOCUMENT_SYM)||LA144_0==NAMESPACE_SYM||LA144_0==PAGE_SYM||(LA144_0 >= PIPE && LA144_0 <= PLUS)||(LA144_0 >= RIGHTBOTTOM_SYM && LA144_0 <= RIGHTTOP_SYM)||(LA144_0 >= SASS_AT_ROOT && LA144_0 <= SASS_DEBUG)||(LA144_0 >= SASS_EACH && LA144_0 <= SASS_FUNCTION)||(LA144_0 >= SASS_IF && LA144_0 <= SASS_MIXIN)||(LA144_0 >= SASS_RETURN && LA144_0 <= SEMI)||LA144_0==STAR||LA144_0==TILDE||(LA144_0 >= TOPCENTER_SYM && LA144_0 <= TOPRIGHT_SYM)||LA144_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA144_0 >= AT_IDENT && LA144_0 <= AT_SIGN)||(LA144_0 >= BOTTOMCENTER_SYM && LA144_0 <= BOTTOMRIGHT_SYM)||(LA144_0 >= CHARSET_SYM && LA144_0 <= COLON)||LA144_0==COUNTER_STYLE_SYM||LA144_0==DCOLON||LA144_0==DOT||LA144_0==FONT_FACE_SYM||(LA144_0 >= GEN && LA144_0 <= GREATER)||(LA144_0 >= HASH && LA144_0 <= HASH_SYMBOL)||LA144_0==IDENT||LA144_0==IMPORT_SYM||(LA144_0 >= LBRACKET && LA144_0 <= LEFTTOP_SYM)||LA144_0==LESS_AND||(LA144_0 >= MEDIA_SYM && LA144_0 <= MOZ_DOCUMENT_SYM)||LA144_0==NAMESPACE_SYM||LA144_0==PAGE_SYM||(LA144_0 >= PIPE && LA144_0 <= PLUS)||(LA144_0 >= RIGHTBOTTOM_SYM && LA144_0 <= RIGHTTOP_SYM)||(LA144_0 >= SASS_AT_ROOT && LA144_0 <= SASS_DEBUG)||(LA144_0 >= SASS_EACH && LA144_0 <= SASS_ELSE)||(LA144_0 >= SASS_EXTEND && LA144_0 <= SASS_FUNCTION)||(LA144_0 >= SASS_IF && LA144_0 <= SASS_MIXIN)||(LA144_0 >= SASS_RETURN && LA144_0 <= SEMI)||LA144_0==STAR||LA144_0==TILDE||(LA144_0 >= TOPCENTER_SYM && LA144_0 <= TOPRIGHT_SYM)||LA144_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt144=1;
 			}
 			} finally {dbg.exitDecision(144);}
@@ -13684,7 +13687,7 @@ public class Css3Parser extends DebugParser {
 							try { dbg.enterDecision(199, decisionCanBacktrack[199]);
 
 							int LA199_0 = input.LA(1);
-							if ( ((LA199_0 >= ANGLE && LA199_0 <= AT_IDENT)||(LA199_0 >= BOTTOMCENTER_SYM && LA199_0 <= BOTTOMRIGHT_SYM)||LA199_0==CHARSET_SYM||LA199_0==COUNTER_STYLE_SYM||LA199_0==DIMENSION||LA199_0==EMS||LA199_0==EXS||(LA199_0 >= FONT_FACE_SYM && LA199_0 <= FREQ)||LA199_0==GEN||(LA199_0 >= HASH && LA199_0 <= HASH_SYMBOL)||LA199_0==IDENT||LA199_0==IMPORT_SYM||(LA199_0 >= LEFTBOTTOM_SYM && LA199_0 <= LENGTH)||LA199_0==LESS_JS_STRING||(LA199_0 >= MEDIA_SYM && LA199_0 <= MOZ_DOCUMENT_SYM)||LA199_0==NAMESPACE_SYM||LA199_0==NUMBER||(LA199_0 >= PAGE_SYM && LA199_0 <= PERCENTAGE_SYMBOL)||LA199_0==PLUS||(LA199_0 >= REM && LA199_0 <= RIGHTTOP_SYM)||(LA199_0 >= SASS_AT_ROOT && LA199_0 <= SASS_DEBUG)||(LA199_0 >= SASS_EACH && LA199_0 <= SASS_EXTEND)||(LA199_0 >= SASS_FOR && LA199_0 <= SASS_FUNCTION)||(LA199_0 >= SASS_IF && LA199_0 <= SASS_MIXIN)||(LA199_0 >= SASS_RETURN && LA199_0 <= SASS_WHILE)||LA199_0==STRING||(LA199_0 >= TILDE && LA199_0 <= TOPRIGHT_SYM)||LA199_0==URI||LA199_0==WEBKIT_KEYFRAMES_SYM) ) {
+							if ( ((LA199_0 >= ANGLE && LA199_0 <= AT_IDENT)||(LA199_0 >= BOTTOMCENTER_SYM && LA199_0 <= BOTTOMRIGHT_SYM)||LA199_0==CHARSET_SYM||LA199_0==COUNTER_STYLE_SYM||LA199_0==DIMENSION||LA199_0==EMS||LA199_0==EXS||(LA199_0 >= FONT_FACE_SYM && LA199_0 <= FREQ)||LA199_0==GEN||(LA199_0 >= HASH && LA199_0 <= HASH_SYMBOL)||LA199_0==IDENT||LA199_0==IMPORT_SYM||(LA199_0 >= LEFTBOTTOM_SYM && LA199_0 <= LENGTH)||LA199_0==LESS_JS_STRING||(LA199_0 >= MEDIA_SYM && LA199_0 <= MOZ_DOCUMENT_SYM)||LA199_0==NAMESPACE_SYM||LA199_0==NUMBER||(LA199_0 >= PAGE_SYM && LA199_0 <= PERCENTAGE_SYMBOL)||LA199_0==PLUS||(LA199_0 >= REM && LA199_0 <= RIGHTTOP_SYM)||(LA199_0 >= SASS_AT_ROOT && LA199_0 <= SASS_DEBUG)||(LA199_0 >= SASS_EACH && LA199_0 <= SASS_ELSE)||LA199_0==SASS_EXTEND||(LA199_0 >= SASS_FOR && LA199_0 <= SASS_FUNCTION)||(LA199_0 >= SASS_IF && LA199_0 <= SASS_MIXIN)||(LA199_0 >= SASS_RETURN && LA199_0 <= SASS_WHILE)||LA199_0==STRING||(LA199_0 >= TILDE && LA199_0 <= TOPRIGHT_SYM)||LA199_0==URI||LA199_0==WEBKIT_KEYFRAMES_SYM) ) {
 								alt199=1;
 							}
 							else if ( (LA199_0==STAR) ) {
@@ -16043,7 +16046,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(225, decisionCanBacktrack[225]);
 
 			int LA225_0 = input.LA(1);
-			if ( ((LA225_0 >= ANGLE && LA225_0 <= AT_IDENT)||(LA225_0 >= BOTTOMCENTER_SYM && LA225_0 <= BOTTOMRIGHT_SYM)||LA225_0==CHARSET_SYM||LA225_0==COUNTER_STYLE_SYM||LA225_0==DIMENSION||LA225_0==EMS||LA225_0==EXS||(LA225_0 >= FONT_FACE_SYM && LA225_0 <= FREQ)||LA225_0==GEN||(LA225_0 >= HASH && LA225_0 <= HASH_SYMBOL)||(LA225_0 >= IDENT && LA225_0 <= IMPORT_SYM)||(LA225_0 >= LEFTBOTTOM_SYM && LA225_0 <= LENGTH)||LA225_0==LESS_JS_STRING||LA225_0==LPAREN||(LA225_0 >= MEDIA_SYM && LA225_0 <= MOZ_DOCUMENT_SYM)||LA225_0==NAMESPACE_SYM||(LA225_0 >= NOT && LA225_0 <= NUMBER)||(LA225_0 >= PAGE_SYM && LA225_0 <= PERCENTAGE_SYMBOL)||LA225_0==PLUS||(LA225_0 >= REM && LA225_0 <= RIGHTTOP_SYM)||(LA225_0 >= SASS_AT_ROOT && LA225_0 <= SASS_DEBUG)||(LA225_0 >= SASS_EACH && LA225_0 <= SASS_EXTEND)||(LA225_0 >= SASS_FOR && LA225_0 <= SASS_FUNCTION)||(LA225_0 >= SASS_IF && LA225_0 <= SASS_MIXIN)||(LA225_0 >= SASS_RETURN && LA225_0 <= SASS_WHILE)||LA225_0==STRING||(LA225_0 >= TILDE && LA225_0 <= TOPRIGHT_SYM)||LA225_0==URI||LA225_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA225_0 >= ANGLE && LA225_0 <= AT_IDENT)||(LA225_0 >= BOTTOMCENTER_SYM && LA225_0 <= BOTTOMRIGHT_SYM)||LA225_0==CHARSET_SYM||LA225_0==COUNTER_STYLE_SYM||LA225_0==DIMENSION||LA225_0==EMS||LA225_0==EXS||(LA225_0 >= FONT_FACE_SYM && LA225_0 <= FREQ)||LA225_0==GEN||(LA225_0 >= HASH && LA225_0 <= HASH_SYMBOL)||(LA225_0 >= IDENT && LA225_0 <= IMPORT_SYM)||(LA225_0 >= LEFTBOTTOM_SYM && LA225_0 <= LENGTH)||LA225_0==LESS_JS_STRING||LA225_0==LPAREN||(LA225_0 >= MEDIA_SYM && LA225_0 <= MOZ_DOCUMENT_SYM)||LA225_0==NAMESPACE_SYM||(LA225_0 >= NOT && LA225_0 <= NUMBER)||(LA225_0 >= PAGE_SYM && LA225_0 <= PERCENTAGE_SYMBOL)||LA225_0==PLUS||(LA225_0 >= REM && LA225_0 <= RIGHTTOP_SYM)||(LA225_0 >= SASS_AT_ROOT && LA225_0 <= SASS_DEBUG)||(LA225_0 >= SASS_EACH && LA225_0 <= SASS_ELSE)||LA225_0==SASS_EXTEND||(LA225_0 >= SASS_FOR && LA225_0 <= SASS_FUNCTION)||(LA225_0 >= SASS_IF && LA225_0 <= SASS_MIXIN)||(LA225_0 >= SASS_RETURN && LA225_0 <= SASS_WHILE)||LA225_0==STRING||(LA225_0 >= TILDE && LA225_0 <= TOPRIGHT_SYM)||LA225_0==URI||LA225_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt225=1;
 			}
 			else if ( (LA225_0==RPAREN) ) {
@@ -16407,7 +16410,7 @@ public class Css3Parser extends DebugParser {
 				}
 
 			}
-			else if ( (LA234_0==AT_IDENT||(LA234_0 >= BOTTOMCENTER_SYM && LA234_0 <= BOTTOMRIGHT_SYM)||LA234_0==CHARSET_SYM||LA234_0==COUNTER_STYLE_SYM||LA234_0==FONT_FACE_SYM||LA234_0==IMPORT_SYM||(LA234_0 >= LEFTBOTTOM_SYM && LA234_0 <= LEFTTOP_SYM)||LA234_0==MEDIA_SYM||LA234_0==MOZ_DOCUMENT_SYM||LA234_0==NAMESPACE_SYM||LA234_0==PAGE_SYM||(LA234_0 >= RIGHTBOTTOM_SYM && LA234_0 <= RIGHTTOP_SYM)||(LA234_0 >= SASS_AT_ROOT && LA234_0 <= SASS_DEBUG)||(LA234_0 >= SASS_EACH && LA234_0 <= SASS_EXTEND)||(LA234_0 >= SASS_FOR && LA234_0 <= SASS_FUNCTION)||(LA234_0 >= SASS_IF && LA234_0 <= SASS_MIXIN)||LA234_0==SASS_RETURN||(LA234_0 >= SASS_WARN && LA234_0 <= SASS_WHILE)||(LA234_0 >= TOPCENTER_SYM && LA234_0 <= TOPRIGHT_SYM)||LA234_0==WEBKIT_KEYFRAMES_SYM) ) {
+			else if ( (LA234_0==AT_IDENT||(LA234_0 >= BOTTOMCENTER_SYM && LA234_0 <= BOTTOMRIGHT_SYM)||LA234_0==CHARSET_SYM||LA234_0==COUNTER_STYLE_SYM||LA234_0==FONT_FACE_SYM||LA234_0==IMPORT_SYM||(LA234_0 >= LEFTBOTTOM_SYM && LA234_0 <= LEFTTOP_SYM)||LA234_0==MEDIA_SYM||LA234_0==MOZ_DOCUMENT_SYM||LA234_0==NAMESPACE_SYM||LA234_0==PAGE_SYM||(LA234_0 >= RIGHTBOTTOM_SYM && LA234_0 <= RIGHTTOP_SYM)||(LA234_0 >= SASS_AT_ROOT && LA234_0 <= SASS_DEBUG)||(LA234_0 >= SASS_EACH && LA234_0 <= SASS_ELSE)||LA234_0==SASS_EXTEND||(LA234_0 >= SASS_FOR && LA234_0 <= SASS_FUNCTION)||(LA234_0 >= SASS_IF && LA234_0 <= SASS_MIXIN)||LA234_0==SASS_RETURN||(LA234_0 >= SASS_WARN && LA234_0 <= SASS_WHILE)||(LA234_0 >= TOPCENTER_SYM && LA234_0 <= TOPRIGHT_SYM)||LA234_0==WEBKIT_KEYFRAMES_SYM) ) {
 				int LA234_2 = input.LA(2);
 				if ( (((evalPredicate(isCssPreprocessorSource(),"isCssPreprocessorSource()")&&synpred32_Css3())&&evalPredicate(isLessSource(),"isLessSource()"))) ) {
 					alt234=1;
@@ -16850,7 +16853,7 @@ public class Css3Parser extends DebugParser {
 			if ( (LA236_0==IDENT) ) {
 				alt236=1;
 			}
-			else if ( (LA236_0==AT_IDENT||(LA236_0 >= BOTTOMCENTER_SYM && LA236_0 <= BOTTOMRIGHT_SYM)||LA236_0==CHARSET_SYM||LA236_0==COUNTER_STYLE_SYM||LA236_0==FONT_FACE_SYM||LA236_0==IMPORT_SYM||(LA236_0 >= LEFTBOTTOM_SYM && LA236_0 <= LEFTTOP_SYM)||LA236_0==MEDIA_SYM||LA236_0==MOZ_DOCUMENT_SYM||LA236_0==NAMESPACE_SYM||LA236_0==PAGE_SYM||(LA236_0 >= RIGHTBOTTOM_SYM && LA236_0 <= RIGHTTOP_SYM)||(LA236_0 >= SASS_AT_ROOT && LA236_0 <= SASS_DEBUG)||(LA236_0 >= SASS_EACH && LA236_0 <= SASS_EXTEND)||(LA236_0 >= SASS_FOR && LA236_0 <= SASS_FUNCTION)||(LA236_0 >= SASS_IF && LA236_0 <= SASS_MIXIN)||(LA236_0 >= SASS_RETURN && LA236_0 <= SASS_WHILE)||(LA236_0 >= TOPCENTER_SYM && LA236_0 <= TOPRIGHT_SYM)||LA236_0==WEBKIT_KEYFRAMES_SYM) ) {
+			else if ( (LA236_0==AT_IDENT||(LA236_0 >= BOTTOMCENTER_SYM && LA236_0 <= BOTTOMRIGHT_SYM)||LA236_0==CHARSET_SYM||LA236_0==COUNTER_STYLE_SYM||LA236_0==FONT_FACE_SYM||LA236_0==IMPORT_SYM||(LA236_0 >= LEFTBOTTOM_SYM && LA236_0 <= LEFTTOP_SYM)||LA236_0==MEDIA_SYM||LA236_0==MOZ_DOCUMENT_SYM||LA236_0==NAMESPACE_SYM||LA236_0==PAGE_SYM||(LA236_0 >= RIGHTBOTTOM_SYM && LA236_0 <= RIGHTTOP_SYM)||(LA236_0 >= SASS_AT_ROOT && LA236_0 <= SASS_DEBUG)||(LA236_0 >= SASS_EACH && LA236_0 <= SASS_ELSE)||LA236_0==SASS_EXTEND||(LA236_0 >= SASS_FOR && LA236_0 <= SASS_FUNCTION)||(LA236_0 >= SASS_IF && LA236_0 <= SASS_MIXIN)||(LA236_0 >= SASS_RETURN && LA236_0 <= SASS_WHILE)||(LA236_0 >= TOPCENTER_SYM && LA236_0 <= TOPRIGHT_SYM)||LA236_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt236=2;
 			}
 
@@ -17959,7 +17962,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(250, decisionCanBacktrack[250]);
 
 			int LA250_0 = input.LA(1);
-			if ( (LA250_0==AT_IDENT||(LA250_0 >= BOTTOMCENTER_SYM && LA250_0 <= BOTTOMRIGHT_SYM)||LA250_0==CHARSET_SYM||LA250_0==COUNTER_STYLE_SYM||LA250_0==FONT_FACE_SYM||LA250_0==IMPORT_SYM||(LA250_0 >= LEFTBOTTOM_SYM && LA250_0 <= LEFTTOP_SYM)||LA250_0==MEDIA_SYM||LA250_0==MOZ_DOCUMENT_SYM||LA250_0==NAMESPACE_SYM||LA250_0==PAGE_SYM||(LA250_0 >= RIGHTBOTTOM_SYM && LA250_0 <= RIGHTTOP_SYM)||(LA250_0 >= SASS_AT_ROOT && LA250_0 <= SASS_DEBUG)||(LA250_0 >= SASS_EACH && LA250_0 <= SASS_EXTEND)||(LA250_0 >= SASS_FOR && LA250_0 <= SASS_FUNCTION)||(LA250_0 >= SASS_IF && LA250_0 <= SASS_MIXIN)||LA250_0==SASS_RETURN||(LA250_0 >= SASS_WARN && LA250_0 <= SASS_WHILE)||(LA250_0 >= TOPCENTER_SYM && LA250_0 <= TOPRIGHT_SYM)||LA250_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA250_0==AT_IDENT||(LA250_0 >= BOTTOMCENTER_SYM && LA250_0 <= BOTTOMRIGHT_SYM)||LA250_0==CHARSET_SYM||LA250_0==COUNTER_STYLE_SYM||LA250_0==FONT_FACE_SYM||LA250_0==IMPORT_SYM||(LA250_0 >= LEFTBOTTOM_SYM && LA250_0 <= LEFTTOP_SYM)||LA250_0==MEDIA_SYM||LA250_0==MOZ_DOCUMENT_SYM||LA250_0==NAMESPACE_SYM||LA250_0==PAGE_SYM||(LA250_0 >= RIGHTBOTTOM_SYM && LA250_0 <= RIGHTTOP_SYM)||(LA250_0 >= SASS_AT_ROOT && LA250_0 <= SASS_DEBUG)||(LA250_0 >= SASS_EACH && LA250_0 <= SASS_ELSE)||LA250_0==SASS_EXTEND||(LA250_0 >= SASS_FOR && LA250_0 <= SASS_FUNCTION)||(LA250_0 >= SASS_IF && LA250_0 <= SASS_MIXIN)||LA250_0==SASS_RETURN||(LA250_0 >= SASS_WARN && LA250_0 <= SASS_WHILE)||(LA250_0 >= TOPCENTER_SYM && LA250_0 <= TOPRIGHT_SYM)||LA250_0==WEBKIT_KEYFRAMES_SYM) ) {
 				int LA250_1 = input.LA(2);
 				if ( (evalPredicate(isLessSource(),"isLessSource()")) ) {
 					alt250=1;
@@ -18327,7 +18330,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(251, decisionCanBacktrack[251]);
 
 			int LA251_0 = input.LA(1);
-			if ( (LA251_0==AT_IDENT||(LA251_0 >= BOTTOMCENTER_SYM && LA251_0 <= BOTTOMRIGHT_SYM)||LA251_0==CHARSET_SYM||LA251_0==COUNTER_STYLE_SYM||LA251_0==FONT_FACE_SYM||LA251_0==IMPORT_SYM||(LA251_0 >= LEFTBOTTOM_SYM && LA251_0 <= LEFTTOP_SYM)||LA251_0==MEDIA_SYM||LA251_0==MOZ_DOCUMENT_SYM||LA251_0==NAMESPACE_SYM||LA251_0==PAGE_SYM||(LA251_0 >= RIGHTBOTTOM_SYM && LA251_0 <= RIGHTTOP_SYM)||(LA251_0 >= SASS_AT_ROOT && LA251_0 <= SASS_DEBUG)||(LA251_0 >= SASS_EACH && LA251_0 <= SASS_EXTEND)||(LA251_0 >= SASS_FOR && LA251_0 <= SASS_FUNCTION)||(LA251_0 >= SASS_IF && LA251_0 <= SASS_MIXIN)||LA251_0==SASS_RETURN||(LA251_0 >= SASS_WARN && LA251_0 <= SASS_WHILE)||(LA251_0 >= TOPCENTER_SYM && LA251_0 <= TOPRIGHT_SYM)||LA251_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA251_0==AT_IDENT||(LA251_0 >= BOTTOMCENTER_SYM && LA251_0 <= BOTTOMRIGHT_SYM)||LA251_0==CHARSET_SYM||LA251_0==COUNTER_STYLE_SYM||LA251_0==FONT_FACE_SYM||LA251_0==IMPORT_SYM||(LA251_0 >= LEFTBOTTOM_SYM && LA251_0 <= LEFTTOP_SYM)||LA251_0==MEDIA_SYM||LA251_0==MOZ_DOCUMENT_SYM||LA251_0==NAMESPACE_SYM||LA251_0==PAGE_SYM||(LA251_0 >= RIGHTBOTTOM_SYM && LA251_0 <= RIGHTTOP_SYM)||(LA251_0 >= SASS_AT_ROOT && LA251_0 <= SASS_DEBUG)||(LA251_0 >= SASS_EACH && LA251_0 <= SASS_ELSE)||LA251_0==SASS_EXTEND||(LA251_0 >= SASS_FOR && LA251_0 <= SASS_FUNCTION)||(LA251_0 >= SASS_IF && LA251_0 <= SASS_MIXIN)||LA251_0==SASS_RETURN||(LA251_0 >= SASS_WARN && LA251_0 <= SASS_WHILE)||(LA251_0 >= TOPCENTER_SYM && LA251_0 <= TOPRIGHT_SYM)||LA251_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt251=1;
 			}
 			else if ( (LA251_0==SASS_VAR) ) {
@@ -18355,7 +18358,7 @@ public class Css3Parser extends DebugParser {
 						if (state.backtracking>0) {state.failed=true; return;}
 						throw new FailedPredicateException(input, "cp_variable", "isLessSource()");
 					}dbg.location(1007,27);
-					if ( input.LA(1)==AT_IDENT||(input.LA(1) >= BOTTOMCENTER_SYM && input.LA(1) <= BOTTOMRIGHT_SYM)||input.LA(1)==CHARSET_SYM||input.LA(1)==COUNTER_STYLE_SYM||input.LA(1)==FONT_FACE_SYM||input.LA(1)==IMPORT_SYM||(input.LA(1) >= LEFTBOTTOM_SYM && input.LA(1) <= LEFTTOP_SYM)||input.LA(1)==MEDIA_SYM||input.LA(1)==MOZ_DOCUMENT_SYM||input.LA(1)==NAMESPACE_SYM||input.LA(1)==PAGE_SYM||(input.LA(1) >= RIGHTBOTTOM_SYM && input.LA(1) <= RIGHTTOP_SYM)||(input.LA(1) >= SASS_AT_ROOT && input.LA(1) <= SASS_DEBUG)||(input.LA(1) >= SASS_EACH && input.LA(1) <= SASS_EXTEND)||(input.LA(1) >= SASS_FOR && input.LA(1) <= SASS_FUNCTION)||(input.LA(1) >= SASS_IF && input.LA(1) <= SASS_MIXIN)||input.LA(1)==SASS_RETURN||(input.LA(1) >= SASS_WARN && input.LA(1) <= SASS_WHILE)||(input.LA(1) >= TOPCENTER_SYM && input.LA(1) <= TOPRIGHT_SYM)||input.LA(1)==WEBKIT_KEYFRAMES_SYM ) {
+					if ( input.LA(1)==AT_IDENT||(input.LA(1) >= BOTTOMCENTER_SYM && input.LA(1) <= BOTTOMRIGHT_SYM)||input.LA(1)==CHARSET_SYM||input.LA(1)==COUNTER_STYLE_SYM||input.LA(1)==FONT_FACE_SYM||input.LA(1)==IMPORT_SYM||(input.LA(1) >= LEFTBOTTOM_SYM && input.LA(1) <= LEFTTOP_SYM)||input.LA(1)==MEDIA_SYM||input.LA(1)==MOZ_DOCUMENT_SYM||input.LA(1)==NAMESPACE_SYM||input.LA(1)==PAGE_SYM||(input.LA(1) >= RIGHTBOTTOM_SYM && input.LA(1) <= RIGHTTOP_SYM)||(input.LA(1) >= SASS_AT_ROOT && input.LA(1) <= SASS_DEBUG)||(input.LA(1) >= SASS_EACH && input.LA(1) <= SASS_ELSE)||input.LA(1)==SASS_EXTEND||(input.LA(1) >= SASS_FOR && input.LA(1) <= SASS_FUNCTION)||(input.LA(1) >= SASS_IF && input.LA(1) <= SASS_MIXIN)||input.LA(1)==SASS_RETURN||(input.LA(1) >= SASS_WARN && input.LA(1) <= SASS_WHILE)||(input.LA(1) >= TOPCENTER_SYM && input.LA(1) <= TOPRIGHT_SYM)||input.LA(1)==WEBKIT_KEYFRAMES_SYM ) {
 						input.consume();
 						state.errorRecovery=false;
 						state.failed=false;
@@ -19053,7 +19056,7 @@ public class Css3Parser extends DebugParser {
 			else if ( (LA265_0==HASH) && (synpred38_Css3())) {
 				alt265=1;
 			}
-			else if ( (LA265_0==AT_IDENT||(LA265_0 >= BOTTOMCENTER_SYM && LA265_0 <= BOTTOMRIGHT_SYM)||LA265_0==CHARSET_SYM||LA265_0==COUNTER_STYLE_SYM||LA265_0==FONT_FACE_SYM||LA265_0==IMPORT_SYM||(LA265_0 >= LEFTBOTTOM_SYM && LA265_0 <= LEFTTOP_SYM)||LA265_0==MEDIA_SYM||LA265_0==MOZ_DOCUMENT_SYM||LA265_0==NAMESPACE_SYM||LA265_0==PAGE_SYM||(LA265_0 >= RIGHTBOTTOM_SYM && LA265_0 <= RIGHTTOP_SYM)||(LA265_0 >= SASS_AT_ROOT && LA265_0 <= SASS_DEBUG)||(LA265_0 >= SASS_EACH && LA265_0 <= SASS_EXTEND)||(LA265_0 >= SASS_FOR && LA265_0 <= SASS_FUNCTION)||(LA265_0 >= SASS_IF && LA265_0 <= SASS_MIXIN)||LA265_0==SASS_RETURN||(LA265_0 >= SASS_WARN && LA265_0 <= SASS_WHILE)||(LA265_0 >= TOPCENTER_SYM && LA265_0 <= TOPRIGHT_SYM)||LA265_0==WEBKIT_KEYFRAMES_SYM) && (synpred38_Css3())) {
+			else if ( (LA265_0==AT_IDENT||(LA265_0 >= BOTTOMCENTER_SYM && LA265_0 <= BOTTOMRIGHT_SYM)||LA265_0==CHARSET_SYM||LA265_0==COUNTER_STYLE_SYM||LA265_0==FONT_FACE_SYM||LA265_0==IMPORT_SYM||(LA265_0 >= LEFTBOTTOM_SYM && LA265_0 <= LEFTTOP_SYM)||LA265_0==MEDIA_SYM||LA265_0==MOZ_DOCUMENT_SYM||LA265_0==NAMESPACE_SYM||LA265_0==PAGE_SYM||(LA265_0 >= RIGHTBOTTOM_SYM && LA265_0 <= RIGHTTOP_SYM)||(LA265_0 >= SASS_AT_ROOT && LA265_0 <= SASS_DEBUG)||(LA265_0 >= SASS_EACH && LA265_0 <= SASS_ELSE)||LA265_0==SASS_EXTEND||(LA265_0 >= SASS_FOR && LA265_0 <= SASS_FUNCTION)||(LA265_0 >= SASS_IF && LA265_0 <= SASS_MIXIN)||LA265_0==SASS_RETURN||(LA265_0 >= SASS_WARN && LA265_0 <= SASS_WHILE)||(LA265_0 >= TOPCENTER_SYM && LA265_0 <= TOPRIGHT_SYM)||LA265_0==WEBKIT_KEYFRAMES_SYM) && (synpred38_Css3())) {
 				alt265=1;
 			}
 			else if ( (LA265_0==SASS_VAR) && (synpred38_Css3())) {
@@ -19143,7 +19146,7 @@ public class Css3Parser extends DebugParser {
 					try { dbg.enterDecision(264, decisionCanBacktrack[264]);
 
 					int LA264_0 = input.LA(1);
-					if ( ((LA264_0 >= ANGLE && LA264_0 <= AT_IDENT)||(LA264_0 >= BOTTOMCENTER_SYM && LA264_0 <= BOTTOMRIGHT_SYM)||LA264_0==CHARSET_SYM||LA264_0==COUNTER_STYLE_SYM||LA264_0==DIMENSION||LA264_0==EMS||LA264_0==EXS||(LA264_0 >= FONT_FACE_SYM && LA264_0 <= FREQ)||LA264_0==GEN||(LA264_0 >= HASH && LA264_0 <= HASH_SYMBOL)||(LA264_0 >= IDENT && LA264_0 <= IMPORT_SYM)||(LA264_0 >= LEFTBOTTOM_SYM && LA264_0 <= LENGTH)||LA264_0==LESS_JS_STRING||LA264_0==LPAREN||(LA264_0 >= MEDIA_SYM && LA264_0 <= MOZ_DOCUMENT_SYM)||LA264_0==NAMESPACE_SYM||(LA264_0 >= NOT && LA264_0 <= NUMBER)||(LA264_0 >= PAGE_SYM && LA264_0 <= PERCENTAGE_SYMBOL)||LA264_0==PLUS||(LA264_0 >= REM && LA264_0 <= RIGHTTOP_SYM)||(LA264_0 >= SASS_AT_ROOT && LA264_0 <= SASS_DEBUG)||(LA264_0 >= SASS_EACH && LA264_0 <= SASS_EXTEND)||(LA264_0 >= SASS_FOR && LA264_0 <= SASS_FUNCTION)||(LA264_0 >= SASS_IF && LA264_0 <= SASS_MIXIN)||(LA264_0 >= SASS_RETURN && LA264_0 <= SASS_WHILE)||LA264_0==STRING||(LA264_0 >= TILDE && LA264_0 <= TOPRIGHT_SYM)||LA264_0==URI||LA264_0==WEBKIT_KEYFRAMES_SYM) ) {
+					if ( ((LA264_0 >= ANGLE && LA264_0 <= AT_IDENT)||(LA264_0 >= BOTTOMCENTER_SYM && LA264_0 <= BOTTOMRIGHT_SYM)||LA264_0==CHARSET_SYM||LA264_0==COUNTER_STYLE_SYM||LA264_0==DIMENSION||LA264_0==EMS||LA264_0==EXS||(LA264_0 >= FONT_FACE_SYM && LA264_0 <= FREQ)||LA264_0==GEN||(LA264_0 >= HASH && LA264_0 <= HASH_SYMBOL)||(LA264_0 >= IDENT && LA264_0 <= IMPORT_SYM)||(LA264_0 >= LEFTBOTTOM_SYM && LA264_0 <= LENGTH)||LA264_0==LESS_JS_STRING||LA264_0==LPAREN||(LA264_0 >= MEDIA_SYM && LA264_0 <= MOZ_DOCUMENT_SYM)||LA264_0==NAMESPACE_SYM||(LA264_0 >= NOT && LA264_0 <= NUMBER)||(LA264_0 >= PAGE_SYM && LA264_0 <= PERCENTAGE_SYMBOL)||LA264_0==PLUS||(LA264_0 >= REM && LA264_0 <= RIGHTTOP_SYM)||(LA264_0 >= SASS_AT_ROOT && LA264_0 <= SASS_DEBUG)||(LA264_0 >= SASS_EACH && LA264_0 <= SASS_ELSE)||LA264_0==SASS_EXTEND||(LA264_0 >= SASS_FOR && LA264_0 <= SASS_FUNCTION)||(LA264_0 >= SASS_IF && LA264_0 <= SASS_MIXIN)||(LA264_0 >= SASS_RETURN && LA264_0 <= SASS_WHILE)||LA264_0==STRING||(LA264_0 >= TILDE && LA264_0 <= TOPRIGHT_SYM)||LA264_0==URI||LA264_0==WEBKIT_KEYFRAMES_SYM) ) {
 						alt264=1;
 					}
 					} finally {dbg.exitDecision(264);}
@@ -19766,7 +19769,7 @@ public class Css3Parser extends DebugParser {
 					try { dbg.enterDecision(277, decisionCanBacktrack[277]);
 
 					int LA277_0 = input.LA(1);
-					if ( (LA277_0==AT_IDENT||(LA277_0 >= BOTTOMCENTER_SYM && LA277_0 <= BOTTOMRIGHT_SYM)||LA277_0==CHARSET_SYM||(LA277_0 >= COUNTER_STYLE_SYM && LA277_0 <= CP_DOTS)||LA277_0==FONT_FACE_SYM||LA277_0==IMPORT_SYM||(LA277_0 >= LEFTBOTTOM_SYM && LA277_0 <= LEFTTOP_SYM)||LA277_0==LESS_REST||LA277_0==MEDIA_SYM||LA277_0==MOZ_DOCUMENT_SYM||LA277_0==NAMESPACE_SYM||LA277_0==PAGE_SYM||(LA277_0 >= RIGHTBOTTOM_SYM && LA277_0 <= RIGHTTOP_SYM)||(LA277_0 >= SASS_AT_ROOT && LA277_0 <= SASS_DEBUG)||(LA277_0 >= SASS_EACH && LA277_0 <= SASS_EXTEND)||(LA277_0 >= SASS_FOR && LA277_0 <= SASS_FUNCTION)||(LA277_0 >= SASS_IF && LA277_0 <= SASS_MIXIN)||(LA277_0 >= SASS_RETURN && LA277_0 <= SASS_WHILE)||(LA277_0 >= TOPCENTER_SYM && LA277_0 <= TOPRIGHT_SYM)||LA277_0==WEBKIT_KEYFRAMES_SYM) ) {
+					if ( (LA277_0==AT_IDENT||(LA277_0 >= BOTTOMCENTER_SYM && LA277_0 <= BOTTOMRIGHT_SYM)||LA277_0==CHARSET_SYM||(LA277_0 >= COUNTER_STYLE_SYM && LA277_0 <= CP_DOTS)||LA277_0==FONT_FACE_SYM||LA277_0==IMPORT_SYM||(LA277_0 >= LEFTBOTTOM_SYM && LA277_0 <= LEFTTOP_SYM)||LA277_0==LESS_REST||LA277_0==MEDIA_SYM||LA277_0==MOZ_DOCUMENT_SYM||LA277_0==NAMESPACE_SYM||LA277_0==PAGE_SYM||(LA277_0 >= RIGHTBOTTOM_SYM && LA277_0 <= RIGHTTOP_SYM)||(LA277_0 >= SASS_AT_ROOT && LA277_0 <= SASS_DEBUG)||(LA277_0 >= SASS_EACH && LA277_0 <= SASS_ELSE)||LA277_0==SASS_EXTEND||(LA277_0 >= SASS_FOR && LA277_0 <= SASS_FUNCTION)||(LA277_0 >= SASS_IF && LA277_0 <= SASS_MIXIN)||(LA277_0 >= SASS_RETURN && LA277_0 <= SASS_WHILE)||(LA277_0 >= TOPCENTER_SYM && LA277_0 <= TOPRIGHT_SYM)||LA277_0==WEBKIT_KEYFRAMES_SYM) ) {
 						alt277=1;
 					}
 					} finally {dbg.exitDecision(277);}
@@ -19955,7 +19958,7 @@ public class Css3Parser extends DebugParser {
 							try { dbg.enterDecision(282, decisionCanBacktrack[282]);
 
 							int LA282_0 = input.LA(1);
-							if ( (LA282_0==AT_IDENT||(LA282_0 >= BOTTOMCENTER_SYM && LA282_0 <= BOTTOMRIGHT_SYM)||LA282_0==CHARSET_SYM||(LA282_0 >= COUNTER_STYLE_SYM && LA282_0 <= CP_DOTS)||LA282_0==FONT_FACE_SYM||LA282_0==IMPORT_SYM||(LA282_0 >= LEFTBOTTOM_SYM && LA282_0 <= LEFTTOP_SYM)||LA282_0==LESS_REST||LA282_0==MEDIA_SYM||LA282_0==MOZ_DOCUMENT_SYM||LA282_0==NAMESPACE_SYM||LA282_0==PAGE_SYM||(LA282_0 >= RIGHTBOTTOM_SYM && LA282_0 <= RIGHTTOP_SYM)||(LA282_0 >= SASS_AT_ROOT && LA282_0 <= SASS_DEBUG)||(LA282_0 >= SASS_EACH && LA282_0 <= SASS_EXTEND)||(LA282_0 >= SASS_FOR && LA282_0 <= SASS_FUNCTION)||(LA282_0 >= SASS_IF && LA282_0 <= SASS_MIXIN)||(LA282_0 >= SASS_RETURN && LA282_0 <= SASS_WHILE)||(LA282_0 >= TOPCENTER_SYM && LA282_0 <= TOPRIGHT_SYM)||LA282_0==WEBKIT_KEYFRAMES_SYM) ) {
+							if ( (LA282_0==AT_IDENT||(LA282_0 >= BOTTOMCENTER_SYM && LA282_0 <= BOTTOMRIGHT_SYM)||LA282_0==CHARSET_SYM||(LA282_0 >= COUNTER_STYLE_SYM && LA282_0 <= CP_DOTS)||LA282_0==FONT_FACE_SYM||LA282_0==IMPORT_SYM||(LA282_0 >= LEFTBOTTOM_SYM && LA282_0 <= LEFTTOP_SYM)||LA282_0==LESS_REST||LA282_0==MEDIA_SYM||LA282_0==MOZ_DOCUMENT_SYM||LA282_0==NAMESPACE_SYM||LA282_0==PAGE_SYM||(LA282_0 >= RIGHTBOTTOM_SYM && LA282_0 <= RIGHTTOP_SYM)||(LA282_0 >= SASS_AT_ROOT && LA282_0 <= SASS_DEBUG)||(LA282_0 >= SASS_EACH && LA282_0 <= SASS_ELSE)||LA282_0==SASS_EXTEND||(LA282_0 >= SASS_FOR && LA282_0 <= SASS_FUNCTION)||(LA282_0 >= SASS_IF && LA282_0 <= SASS_MIXIN)||(LA282_0 >= SASS_RETURN && LA282_0 <= SASS_WHILE)||(LA282_0 >= TOPCENTER_SYM && LA282_0 <= TOPRIGHT_SYM)||LA282_0==WEBKIT_KEYFRAMES_SYM) ) {
 								alt282=1;
 							}
 							} finally {dbg.exitDecision(282);}
@@ -20185,7 +20188,7 @@ public class Css3Parser extends DebugParser {
 							try { dbg.enterDecision(288, decisionCanBacktrack[288]);
 
 							int LA288_0 = input.LA(1);
-							if ( ((LA288_0 >= ANGLE && LA288_0 <= AT_IDENT)||(LA288_0 >= BOTTOMCENTER_SYM && LA288_0 <= BOTTOMRIGHT_SYM)||LA288_0==CHARSET_SYM||LA288_0==COUNTER_STYLE_SYM||LA288_0==DIMENSION||LA288_0==EMS||LA288_0==EXS||(LA288_0 >= FONT_FACE_SYM && LA288_0 <= FREQ)||LA288_0==GEN||(LA288_0 >= HASH && LA288_0 <= HASH_SYMBOL)||(LA288_0 >= IDENT && LA288_0 <= IMPORT_SYM)||(LA288_0 >= LEFTBOTTOM_SYM && LA288_0 <= LENGTH)||LA288_0==LESS_JS_STRING||LA288_0==LPAREN||(LA288_0 >= MEDIA_SYM && LA288_0 <= MOZ_DOCUMENT_SYM)||LA288_0==NAMESPACE_SYM||(LA288_0 >= NOT && LA288_0 <= NUMBER)||(LA288_0 >= PAGE_SYM && LA288_0 <= PERCENTAGE_SYMBOL)||LA288_0==PLUS||(LA288_0 >= REM && LA288_0 <= RIGHTTOP_SYM)||(LA288_0 >= SASS_AT_ROOT && LA288_0 <= SASS_DEBUG)||(LA288_0 >= SASS_EACH && LA288_0 <= SASS_EXTEND)||(LA288_0 >= SASS_FOR && LA288_0 <= SASS_FUNCTION)||(LA288_0 >= SASS_IF && LA288_0 <= SASS_MIXIN)||(LA288_0 >= SASS_RETURN && LA288_0 <= SASS_WHILE)||LA288_0==STRING||(LA288_0 >= TILDE && LA288_0 <= TOPRIGHT_SYM)||LA288_0==URI||LA288_0==WEBKIT_KEYFRAMES_SYM) ) {
+							if ( ((LA288_0 >= ANGLE && LA288_0 <= AT_IDENT)||(LA288_0 >= BOTTOMCENTER_SYM && LA288_0 <= BOTTOMRIGHT_SYM)||LA288_0==CHARSET_SYM||LA288_0==COUNTER_STYLE_SYM||LA288_0==DIMENSION||LA288_0==EMS||LA288_0==EXS||(LA288_0 >= FONT_FACE_SYM && LA288_0 <= FREQ)||LA288_0==GEN||(LA288_0 >= HASH && LA288_0 <= HASH_SYMBOL)||(LA288_0 >= IDENT && LA288_0 <= IMPORT_SYM)||(LA288_0 >= LEFTBOTTOM_SYM && LA288_0 <= LENGTH)||LA288_0==LESS_JS_STRING||LA288_0==LPAREN||(LA288_0 >= MEDIA_SYM && LA288_0 <= MOZ_DOCUMENT_SYM)||LA288_0==NAMESPACE_SYM||(LA288_0 >= NOT && LA288_0 <= NUMBER)||(LA288_0 >= PAGE_SYM && LA288_0 <= PERCENTAGE_SYMBOL)||LA288_0==PLUS||(LA288_0 >= REM && LA288_0 <= RIGHTTOP_SYM)||(LA288_0 >= SASS_AT_ROOT && LA288_0 <= SASS_DEBUG)||(LA288_0 >= SASS_EACH && LA288_0 <= SASS_ELSE)||LA288_0==SASS_EXTEND||(LA288_0 >= SASS_FOR && LA288_0 <= SASS_FUNCTION)||(LA288_0 >= SASS_IF && LA288_0 <= SASS_MIXIN)||(LA288_0 >= SASS_RETURN && LA288_0 <= SASS_WHILE)||LA288_0==STRING||(LA288_0 >= TILDE && LA288_0 <= TOPRIGHT_SYM)||LA288_0==URI||LA288_0==WEBKIT_KEYFRAMES_SYM) ) {
 								alt288=1;
 							}
 							} finally {dbg.exitDecision(288);}
@@ -20320,7 +20323,7 @@ public class Css3Parser extends DebugParser {
 							try { dbg.enterDecision(292, decisionCanBacktrack[292]);
 
 							int LA292_0 = input.LA(1);
-							if ( ((LA292_0 >= ANGLE && LA292_0 <= AT_IDENT)||(LA292_0 >= BOTTOMCENTER_SYM && LA292_0 <= BOTTOMRIGHT_SYM)||LA292_0==CHARSET_SYM||LA292_0==COUNTER_STYLE_SYM||LA292_0==DIMENSION||LA292_0==EMS||LA292_0==EXS||(LA292_0 >= FONT_FACE_SYM && LA292_0 <= FREQ)||LA292_0==GEN||(LA292_0 >= HASH && LA292_0 <= HASH_SYMBOL)||(LA292_0 >= IDENT && LA292_0 <= IMPORT_SYM)||(LA292_0 >= LEFTBOTTOM_SYM && LA292_0 <= LENGTH)||LA292_0==LESS_JS_STRING||LA292_0==LPAREN||(LA292_0 >= MEDIA_SYM && LA292_0 <= MOZ_DOCUMENT_SYM)||LA292_0==NAMESPACE_SYM||(LA292_0 >= NOT && LA292_0 <= NUMBER)||(LA292_0 >= PAGE_SYM && LA292_0 <= PERCENTAGE_SYMBOL)||LA292_0==PLUS||(LA292_0 >= REM && LA292_0 <= RIGHTTOP_SYM)||(LA292_0 >= SASS_AT_ROOT && LA292_0 <= SASS_DEBUG)||(LA292_0 >= SASS_EACH && LA292_0 <= SASS_EXTEND)||(LA292_0 >= SASS_FOR && LA292_0 <= SASS_FUNCTION)||(LA292_0 >= SASS_IF && LA292_0 <= SASS_MIXIN)||(LA292_0 >= SASS_RETURN && LA292_0 <= SASS_WHILE)||LA292_0==STRING||(LA292_0 >= TILDE && LA292_0 <= TOPRIGHT_SYM)||LA292_0==URI||LA292_0==WEBKIT_KEYFRAMES_SYM) ) {
+							if ( ((LA292_0 >= ANGLE && LA292_0 <= AT_IDENT)||(LA292_0 >= BOTTOMCENTER_SYM && LA292_0 <= BOTTOMRIGHT_SYM)||LA292_0==CHARSET_SYM||LA292_0==COUNTER_STYLE_SYM||LA292_0==DIMENSION||LA292_0==EMS||LA292_0==EXS||(LA292_0 >= FONT_FACE_SYM && LA292_0 <= FREQ)||LA292_0==GEN||(LA292_0 >= HASH && LA292_0 <= HASH_SYMBOL)||(LA292_0 >= IDENT && LA292_0 <= IMPORT_SYM)||(LA292_0 >= LEFTBOTTOM_SYM && LA292_0 <= LENGTH)||LA292_0==LESS_JS_STRING||LA292_0==LPAREN||(LA292_0 >= MEDIA_SYM && LA292_0 <= MOZ_DOCUMENT_SYM)||LA292_0==NAMESPACE_SYM||(LA292_0 >= NOT && LA292_0 <= NUMBER)||(LA292_0 >= PAGE_SYM && LA292_0 <= PERCENTAGE_SYMBOL)||LA292_0==PLUS||(LA292_0 >= REM && LA292_0 <= RIGHTTOP_SYM)||(LA292_0 >= SASS_AT_ROOT && LA292_0 <= SASS_DEBUG)||(LA292_0 >= SASS_EACH && LA292_0 <= SASS_ELSE)||LA292_0==SASS_EXTEND||(LA292_0 >= SASS_FOR && LA292_0 <= SASS_FUNCTION)||(LA292_0 >= SASS_IF && LA292_0 <= SASS_MIXIN)||(LA292_0 >= SASS_RETURN && LA292_0 <= SASS_WHILE)||LA292_0==STRING||(LA292_0 >= TILDE && LA292_0 <= TOPRIGHT_SYM)||LA292_0==URI||LA292_0==WEBKIT_KEYFRAMES_SYM) ) {
 								alt292=1;
 							}
 							} finally {dbg.exitDecision(292);}
@@ -20493,7 +20496,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(298, decisionCanBacktrack[298]);
 
 			int LA298_0 = input.LA(1);
-			if ( ((LA298_0 >= AT_IDENT && LA298_0 <= AT_SIGN)||(LA298_0 >= BOTTOMCENTER_SYM && LA298_0 <= BOTTOMRIGHT_SYM)||(LA298_0 >= CHARSET_SYM && LA298_0 <= COLON)||LA298_0==COUNTER_STYLE_SYM||LA298_0==DCOLON||LA298_0==DOT||LA298_0==FONT_FACE_SYM||(LA298_0 >= GEN && LA298_0 <= GREATER)||(LA298_0 >= HASH && LA298_0 <= HASH_SYMBOL)||LA298_0==IDENT||LA298_0==IMPORT_SYM||(LA298_0 >= LBRACKET && LA298_0 <= LEFTTOP_SYM)||LA298_0==LESS_AND||(LA298_0 >= MEDIA_SYM && LA298_0 <= MOZ_DOCUMENT_SYM)||LA298_0==NAMESPACE_SYM||LA298_0==PAGE_SYM||(LA298_0 >= PIPE && LA298_0 <= PLUS)||(LA298_0 >= RIGHTBOTTOM_SYM && LA298_0 <= RIGHTTOP_SYM)||(LA298_0 >= SASS_AT_ROOT && LA298_0 <= SASS_DEBUG)||(LA298_0 >= SASS_EACH && LA298_0 <= SASS_FUNCTION)||(LA298_0 >= SASS_IF && LA298_0 <= SASS_MIXIN)||(LA298_0 >= SASS_RETURN && LA298_0 <= SEMI)||LA298_0==STAR||LA298_0==TILDE||(LA298_0 >= TOPCENTER_SYM && LA298_0 <= TOPRIGHT_SYM)||LA298_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA298_0 >= AT_IDENT && LA298_0 <= AT_SIGN)||(LA298_0 >= BOTTOMCENTER_SYM && LA298_0 <= BOTTOMRIGHT_SYM)||(LA298_0 >= CHARSET_SYM && LA298_0 <= COLON)||LA298_0==COUNTER_STYLE_SYM||LA298_0==DCOLON||LA298_0==DOT||LA298_0==FONT_FACE_SYM||(LA298_0 >= GEN && LA298_0 <= GREATER)||(LA298_0 >= HASH && LA298_0 <= HASH_SYMBOL)||LA298_0==IDENT||LA298_0==IMPORT_SYM||(LA298_0 >= LBRACKET && LA298_0 <= LEFTTOP_SYM)||LA298_0==LESS_AND||(LA298_0 >= MEDIA_SYM && LA298_0 <= MOZ_DOCUMENT_SYM)||LA298_0==NAMESPACE_SYM||LA298_0==PAGE_SYM||(LA298_0 >= PIPE && LA298_0 <= PLUS)||(LA298_0 >= RIGHTBOTTOM_SYM && LA298_0 <= RIGHTTOP_SYM)||(LA298_0 >= SASS_AT_ROOT && LA298_0 <= SASS_DEBUG)||(LA298_0 >= SASS_EACH && LA298_0 <= SASS_ELSE)||(LA298_0 >= SASS_EXTEND && LA298_0 <= SASS_FUNCTION)||(LA298_0 >= SASS_IF && LA298_0 <= SASS_MIXIN)||(LA298_0 >= SASS_RETURN && LA298_0 <= SEMI)||LA298_0==STAR||LA298_0==TILDE||(LA298_0 >= TOPCENTER_SYM && LA298_0 <= TOPRIGHT_SYM)||LA298_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt298=1;
 			}
 			} finally {dbg.exitDecision(298);}
@@ -20936,7 +20939,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(314, decisionCanBacktrack[314]);
 
 			int LA314_0 = input.LA(1);
-			if ( (LA314_0==AT_IDENT||(LA314_0 >= BOTTOMCENTER_SYM && LA314_0 <= BOTTOMRIGHT_SYM)||LA314_0==CHARSET_SYM||LA314_0==COUNTER_STYLE_SYM||LA314_0==FONT_FACE_SYM||LA314_0==IMPORT_SYM||(LA314_0 >= LEFTBOTTOM_SYM && LA314_0 <= LEFTTOP_SYM)||LA314_0==MEDIA_SYM||LA314_0==MOZ_DOCUMENT_SYM||LA314_0==NAMESPACE_SYM||LA314_0==PAGE_SYM||(LA314_0 >= RIGHTBOTTOM_SYM && LA314_0 <= RIGHTTOP_SYM)||(LA314_0 >= SASS_AT_ROOT && LA314_0 <= SASS_DEBUG)||(LA314_0 >= SASS_EACH && LA314_0 <= SASS_EXTEND)||(LA314_0 >= SASS_FOR && LA314_0 <= SASS_FUNCTION)||(LA314_0 >= SASS_IF && LA314_0 <= SASS_MIXIN)||(LA314_0 >= SASS_RETURN && LA314_0 <= SASS_WHILE)||(LA314_0 >= TOPCENTER_SYM && LA314_0 <= TOPRIGHT_SYM)||LA314_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA314_0==AT_IDENT||(LA314_0 >= BOTTOMCENTER_SYM && LA314_0 <= BOTTOMRIGHT_SYM)||LA314_0==CHARSET_SYM||LA314_0==COUNTER_STYLE_SYM||LA314_0==FONT_FACE_SYM||LA314_0==IMPORT_SYM||(LA314_0 >= LEFTBOTTOM_SYM && LA314_0 <= LEFTTOP_SYM)||LA314_0==MEDIA_SYM||LA314_0==MOZ_DOCUMENT_SYM||LA314_0==NAMESPACE_SYM||LA314_0==PAGE_SYM||(LA314_0 >= RIGHTBOTTOM_SYM && LA314_0 <= RIGHTTOP_SYM)||(LA314_0 >= SASS_AT_ROOT && LA314_0 <= SASS_DEBUG)||(LA314_0 >= SASS_EACH && LA314_0 <= SASS_ELSE)||LA314_0==SASS_EXTEND||(LA314_0 >= SASS_FOR && LA314_0 <= SASS_FUNCTION)||(LA314_0 >= SASS_IF && LA314_0 <= SASS_MIXIN)||(LA314_0 >= SASS_RETURN && LA314_0 <= SASS_WHILE)||(LA314_0 >= TOPCENTER_SYM && LA314_0 <= TOPRIGHT_SYM)||LA314_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt314=1;
 			}
 			else if ( (LA314_0==CP_DOTS||LA314_0==LESS_REST) ) {
@@ -21731,7 +21734,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(327, decisionCanBacktrack[327]);
 
 			int LA327_0 = input.LA(1);
-			if ( (LA327_0==AT_IDENT||(LA327_0 >= BOTTOMCENTER_SYM && LA327_0 <= BOTTOMRIGHT_SYM)||LA327_0==CHARSET_SYM||LA327_0==COUNTER_STYLE_SYM||LA327_0==FONT_FACE_SYM||LA327_0==IMPORT_SYM||(LA327_0 >= LEFTBOTTOM_SYM && LA327_0 <= LEFTTOP_SYM)||LA327_0==MEDIA_SYM||LA327_0==MOZ_DOCUMENT_SYM||LA327_0==NAMESPACE_SYM||LA327_0==PAGE_SYM||(LA327_0 >= RIGHTBOTTOM_SYM && LA327_0 <= RIGHTTOP_SYM)||(LA327_0 >= SASS_AT_ROOT && LA327_0 <= SASS_DEBUG)||(LA327_0 >= SASS_EACH && LA327_0 <= SASS_EXTEND)||(LA327_0 >= SASS_FOR && LA327_0 <= SASS_FUNCTION)||(LA327_0 >= SASS_IF && LA327_0 <= SASS_MIXIN)||(LA327_0 >= SASS_RETURN && LA327_0 <= SASS_WHILE)||(LA327_0 >= TOPCENTER_SYM && LA327_0 <= TOPRIGHT_SYM)||LA327_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA327_0==AT_IDENT||(LA327_0 >= BOTTOMCENTER_SYM && LA327_0 <= BOTTOMRIGHT_SYM)||LA327_0==CHARSET_SYM||LA327_0==COUNTER_STYLE_SYM||LA327_0==FONT_FACE_SYM||LA327_0==IMPORT_SYM||(LA327_0 >= LEFTBOTTOM_SYM && LA327_0 <= LEFTTOP_SYM)||LA327_0==MEDIA_SYM||LA327_0==MOZ_DOCUMENT_SYM||LA327_0==NAMESPACE_SYM||LA327_0==PAGE_SYM||(LA327_0 >= RIGHTBOTTOM_SYM && LA327_0 <= RIGHTTOP_SYM)||(LA327_0 >= SASS_AT_ROOT && LA327_0 <= SASS_DEBUG)||(LA327_0 >= SASS_EACH && LA327_0 <= SASS_ELSE)||LA327_0==SASS_EXTEND||(LA327_0 >= SASS_FOR && LA327_0 <= SASS_FUNCTION)||(LA327_0 >= SASS_IF && LA327_0 <= SASS_MIXIN)||(LA327_0 >= SASS_RETURN && LA327_0 <= SASS_WHILE)||(LA327_0 >= TOPCENTER_SYM && LA327_0 <= TOPRIGHT_SYM)||LA327_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt327=1;
 			}
 			else if ( (LA327_0==IDENT) ) {
@@ -22506,7 +22509,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(341, decisionCanBacktrack[341]);
 
 			int LA341_0 = input.LA(1);
-			if ( ((LA341_0 >= ANGLE && LA341_0 <= AT_IDENT)||(LA341_0 >= BOTTOMCENTER_SYM && LA341_0 <= BOTTOMRIGHT_SYM)||LA341_0==CHARSET_SYM||LA341_0==COUNTER_STYLE_SYM||LA341_0==DIMENSION||LA341_0==EMS||LA341_0==EXS||(LA341_0 >= FONT_FACE_SYM && LA341_0 <= FREQ)||LA341_0==GEN||(LA341_0 >= HASH && LA341_0 <= HASH_SYMBOL)||LA341_0==IDENT||LA341_0==IMPORT_SYM||(LA341_0 >= LEFTBOTTOM_SYM && LA341_0 <= LENGTH)||LA341_0==LESS_JS_STRING||(LA341_0 >= MEDIA_SYM && LA341_0 <= MOZ_DOCUMENT_SYM)||LA341_0==NAMESPACE_SYM||LA341_0==NUMBER||(LA341_0 >= PAGE_SYM && LA341_0 <= PERCENTAGE_SYMBOL)||LA341_0==PLUS||(LA341_0 >= REM && LA341_0 <= RIGHTTOP_SYM)||(LA341_0 >= SASS_AT_ROOT && LA341_0 <= SASS_DEBUG)||(LA341_0 >= SASS_EACH && LA341_0 <= SASS_EXTEND)||(LA341_0 >= SASS_FOR && LA341_0 <= SASS_FUNCTION)||(LA341_0 >= SASS_IF && LA341_0 <= SASS_MIXIN)||(LA341_0 >= SASS_RETURN && LA341_0 <= SASS_WHILE)||LA341_0==STRING||(LA341_0 >= TILDE && LA341_0 <= TOPRIGHT_SYM)||LA341_0==URI||LA341_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA341_0 >= ANGLE && LA341_0 <= AT_IDENT)||(LA341_0 >= BOTTOMCENTER_SYM && LA341_0 <= BOTTOMRIGHT_SYM)||LA341_0==CHARSET_SYM||LA341_0==COUNTER_STYLE_SYM||LA341_0==DIMENSION||LA341_0==EMS||LA341_0==EXS||(LA341_0 >= FONT_FACE_SYM && LA341_0 <= FREQ)||LA341_0==GEN||(LA341_0 >= HASH && LA341_0 <= HASH_SYMBOL)||LA341_0==IDENT||LA341_0==IMPORT_SYM||(LA341_0 >= LEFTBOTTOM_SYM && LA341_0 <= LENGTH)||LA341_0==LESS_JS_STRING||(LA341_0 >= MEDIA_SYM && LA341_0 <= MOZ_DOCUMENT_SYM)||LA341_0==NAMESPACE_SYM||LA341_0==NUMBER||(LA341_0 >= PAGE_SYM && LA341_0 <= PERCENTAGE_SYMBOL)||LA341_0==PLUS||(LA341_0 >= REM && LA341_0 <= RIGHTTOP_SYM)||(LA341_0 >= SASS_AT_ROOT && LA341_0 <= SASS_DEBUG)||(LA341_0 >= SASS_EACH && LA341_0 <= SASS_ELSE)||LA341_0==SASS_EXTEND||(LA341_0 >= SASS_FOR && LA341_0 <= SASS_FUNCTION)||(LA341_0 >= SASS_IF && LA341_0 <= SASS_MIXIN)||(LA341_0 >= SASS_RETURN && LA341_0 <= SASS_WHILE)||LA341_0==STRING||(LA341_0 >= TILDE && LA341_0 <= TOPRIGHT_SYM)||LA341_0==URI||LA341_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt341=1;
 			}
 			} finally {dbg.exitDecision(341);}
@@ -22595,7 +22598,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(343, decisionCanBacktrack[343]);
 
 			int LA343_0 = input.LA(1);
-			if ( ((LA343_0 >= AT_IDENT && LA343_0 <= AT_SIGN)||(LA343_0 >= BOTTOMCENTER_SYM && LA343_0 <= BOTTOMRIGHT_SYM)||(LA343_0 >= CHARSET_SYM && LA343_0 <= COLON)||LA343_0==COUNTER_STYLE_SYM||LA343_0==DCOLON||LA343_0==DOT||LA343_0==FONT_FACE_SYM||(LA343_0 >= GEN && LA343_0 <= GREATER)||(LA343_0 >= HASH && LA343_0 <= HASH_SYMBOL)||LA343_0==IDENT||LA343_0==IMPORT_SYM||(LA343_0 >= LBRACKET && LA343_0 <= LEFTTOP_SYM)||LA343_0==LESS_AND||(LA343_0 >= MEDIA_SYM && LA343_0 <= MOZ_DOCUMENT_SYM)||LA343_0==NAMESPACE_SYM||LA343_0==PAGE_SYM||(LA343_0 >= PIPE && LA343_0 <= PLUS)||(LA343_0 >= RIGHTBOTTOM_SYM && LA343_0 <= RIGHTTOP_SYM)||(LA343_0 >= SASS_AT_ROOT && LA343_0 <= SASS_DEBUG)||(LA343_0 >= SASS_EACH && LA343_0 <= SASS_FUNCTION)||(LA343_0 >= SASS_IF && LA343_0 <= SASS_MIXIN)||(LA343_0 >= SASS_RETURN && LA343_0 <= SEMI)||LA343_0==STAR||LA343_0==TILDE||(LA343_0 >= TOPCENTER_SYM && LA343_0 <= TOPRIGHT_SYM)||LA343_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( ((LA343_0 >= AT_IDENT && LA343_0 <= AT_SIGN)||(LA343_0 >= BOTTOMCENTER_SYM && LA343_0 <= BOTTOMRIGHT_SYM)||(LA343_0 >= CHARSET_SYM && LA343_0 <= COLON)||LA343_0==COUNTER_STYLE_SYM||LA343_0==DCOLON||LA343_0==DOT||LA343_0==FONT_FACE_SYM||(LA343_0 >= GEN && LA343_0 <= GREATER)||(LA343_0 >= HASH && LA343_0 <= HASH_SYMBOL)||LA343_0==IDENT||LA343_0==IMPORT_SYM||(LA343_0 >= LBRACKET && LA343_0 <= LEFTTOP_SYM)||LA343_0==LESS_AND||(LA343_0 >= MEDIA_SYM && LA343_0 <= MOZ_DOCUMENT_SYM)||LA343_0==NAMESPACE_SYM||LA343_0==PAGE_SYM||(LA343_0 >= PIPE && LA343_0 <= PLUS)||(LA343_0 >= RIGHTBOTTOM_SYM && LA343_0 <= RIGHTTOP_SYM)||(LA343_0 >= SASS_AT_ROOT && LA343_0 <= SASS_DEBUG)||(LA343_0 >= SASS_EACH && LA343_0 <= SASS_ELSE)||(LA343_0 >= SASS_EXTEND && LA343_0 <= SASS_FUNCTION)||(LA343_0 >= SASS_IF && LA343_0 <= SASS_MIXIN)||(LA343_0 >= SASS_RETURN && LA343_0 <= SEMI)||LA343_0==STAR||LA343_0==TILDE||(LA343_0 >= TOPCENTER_SYM && LA343_0 <= TOPRIGHT_SYM)||LA343_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt343=1;
 			}
 			} finally {dbg.exitDecision(343);}
@@ -23102,7 +23105,7 @@ public class Css3Parser extends DebugParser {
 
 
 	// $ANTLR start "sass_else"
-	// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1258:1: sass_else : ( SASS_ELSE ( ws )? sass_control_block | SASS_ELSE ( ws )? {...}? IDENT ( ws )? sass_control_expression ( ws )? sass_control_block ( ( ws )? sass_else )? );
+	// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1258:1: sass_else : ( SASS_ELSE ( ws )? sass_control_block | ( ( SASS_ELSE ( ws )? {...}? IDENT ) | SASS_ELSEIF ) ( ws )? sass_control_expression ( ws )? sass_control_block ( ( ws )? sass_else )? );
 	public final void sass_else() throws RecognitionException {
 		try { dbg.enterRule(getGrammarFileName(), "sass_else");
 		if ( getRuleLevel()==0 ) {dbg.commence();}
@@ -23110,21 +23113,21 @@ public class Css3Parser extends DebugParser {
 		dbg.location(1258, 0);
 
 		try {
-			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:5: ( SASS_ELSE ( ws )? sass_control_block | SASS_ELSE ( ws )? {...}? IDENT ( ws )? sass_control_expression ( ws )? sass_control_block ( ( ws )? sass_else )? )
-			int alt356=2;
-			try { dbg.enterDecision(356, decisionCanBacktrack[356]);
+			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1259:5: ( SASS_ELSE ( ws )? sass_control_block | ( ( SASS_ELSE ( ws )? {...}? IDENT ) | SASS_ELSEIF ) ( ws )? sass_control_expression ( ws )? sass_control_block ( ( ws )? sass_else )? )
+			int alt357=2;
+			try { dbg.enterDecision(357, decisionCanBacktrack[357]);
 
 			try {
 				isCyclicDecision = true;
-				alt356 = dfa356.predict(input);
+				alt357 = dfa357.predict(input);
 			}
 			catch (NoViableAltException nvae) {
 				dbg.recognitionException(nvae);
 				throw nvae;
 			}
-			} finally {dbg.exitDecision(356);}
+			} finally {dbg.exitDecision(357);}
 
-			switch (alt356) {
+			switch (alt357) {
 				case 1 :
 					dbg.enterAlt(1);
 
@@ -23169,76 +23172,97 @@ public class Css3Parser extends DebugParser {
 				case 2 :
 					dbg.enterAlt(2);
 
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:5: SASS_ELSE ( ws )? {...}? IDENT ( ws )? sass_control_expression ( ws )? sass_control_block ( ( ws )? sass_else )?
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:5: ( ( SASS_ELSE ( ws )? {...}? IDENT ) | SASS_ELSEIF ) ( ws )? sass_control_expression ( ws )? sass_control_block ( ( ws )? sass_else )?
 					{
 					dbg.location(1262,5);
-					match(input,SASS_ELSE,FOLLOW_SASS_ELSE_in_sass_else7744); if (state.failed) return;dbg.location(1262,15);
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:15: ( ws )?
-					int alt351=2;
-					try { dbg.enterSubRule(351);
-					try { dbg.enterDecision(351, decisionCanBacktrack[351]);
-
-					int LA351_0 = input.LA(1);
-					if ( (LA351_0==COMMENT||LA351_0==NL||LA351_0==WS) ) {
-						alt351=1;
-					}
-					} finally {dbg.exitDecision(351);}
-
-					switch (alt351) {
-						case 1 :
-							dbg.enterAlt(1);
-
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:15: ws
-							{
-							dbg.location(1262,15);
-							pushFollow(FOLLOW_ws_in_sass_else7746);
-							ws();
-							state._fsp--;
-							if (state.failed) return;
-							}
-							break;
-
-					}
-					} finally {dbg.exitSubRule(351);}
-					dbg.location(1262,19);
-					if ( !(evalPredicate(tokenNameEquals("if"),"tokenNameEquals(\"if\")")) ) {
-						if (state.backtracking>0) {state.failed=true; return;}
-						throw new FailedPredicateException(input, "sass_else", "tokenNameEquals(\"if\")");
-					}dbg.location(1262,44);
-					match(input,IDENT,FOLLOW_IDENT_in_sass_else7751); if (state.failed) return;dbg.location(1262,59);
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:59: ( ws )?
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:5: ( ( SASS_ELSE ( ws )? {...}? IDENT ) | SASS_ELSEIF )
 					int alt352=2;
 					try { dbg.enterSubRule(352);
 					try { dbg.enterDecision(352, decisionCanBacktrack[352]);
 
 					int LA352_0 = input.LA(1);
-					if ( (LA352_0==COMMENT||LA352_0==NL||LA352_0==WS) ) {
+					if ( (LA352_0==SASS_ELSE) ) {
 						alt352=1;
 					}
+					else if ( (LA352_0==SASS_ELSEIF) ) {
+						alt352=2;
+					}
+
+					else {
+						if (state.backtracking>0) {state.failed=true; return;}
+						NoViableAltException nvae =
+							new NoViableAltException("", 352, 0, input);
+						dbg.recognitionException(nvae);
+						throw nvae;
+					}
+
 					} finally {dbg.exitDecision(352);}
 
 					switch (alt352) {
 						case 1 :
 							dbg.enterAlt(1);
 
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:59: ws
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:6: ( SASS_ELSE ( ws )? {...}? IDENT )
 							{
-							dbg.location(1262,59);
-							pushFollow(FOLLOW_ws_in_sass_else7755);
-							ws();
-							state._fsp--;
-							if (state.failed) return;
+							dbg.location(1262,6);
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:6: ( SASS_ELSE ( ws )? {...}? IDENT )
+							dbg.enterAlt(1);
+
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:7: SASS_ELSE ( ws )? {...}? IDENT
+							{
+							dbg.location(1262,7);
+							match(input,SASS_ELSE,FOLLOW_SASS_ELSE_in_sass_else7746); if (state.failed) return;dbg.location(1262,17);
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:17: ( ws )?
+							int alt351=2;
+							try { dbg.enterSubRule(351);
+							try { dbg.enterDecision(351, decisionCanBacktrack[351]);
+
+							int LA351_0 = input.LA(1);
+							if ( (LA351_0==COMMENT||LA351_0==NL||LA351_0==WS) ) {
+								alt351=1;
+							}
+							} finally {dbg.exitDecision(351);}
+
+							switch (alt351) {
+								case 1 :
+									dbg.enterAlt(1);
+
+									// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:17: ws
+									{
+									dbg.location(1262,17);
+									pushFollow(FOLLOW_ws_in_sass_else7748);
+									ws();
+									state._fsp--;
+									if (state.failed) return;
+									}
+									break;
+
+							}
+							} finally {dbg.exitSubRule(351);}
+							dbg.location(1262,21);
+							if ( !(evalPredicate(tokenNameEquals("if"),"tokenNameEquals(\"if\")")) ) {
+								if (state.backtracking>0) {state.failed=true; return;}
+								throw new FailedPredicateException(input, "sass_else", "tokenNameEquals(\"if\")");
+							}dbg.location(1262,46);
+							match(input,IDENT,FOLLOW_IDENT_in_sass_else7753); if (state.failed) return;
+							}
+
+							}
+							break;
+						case 2 :
+							dbg.enterAlt(2);
+
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:64: SASS_ELSEIF
+							{
+							dbg.location(1262,64);
+							match(input,SASS_ELSEIF,FOLLOW_SASS_ELSEIF_in_sass_else7760); if (state.failed) return;
 							}
 							break;
 
 					}
 					} finally {dbg.exitSubRule(352);}
-					dbg.location(1262,63);
-					pushFollow(FOLLOW_sass_control_expression_in_sass_else7758);
-					sass_control_expression();
-					state._fsp--;
-					if (state.failed) return;dbg.location(1262,87);
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:87: ( ws )?
+					dbg.location(1262,77);
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:77: ( ws )?
 					int alt353=2;
 					try { dbg.enterSubRule(353);
 					try { dbg.enterDecision(353, decisionCanBacktrack[353]);
@@ -23253,10 +23277,10 @@ public class Css3Parser extends DebugParser {
 						case 1 :
 							dbg.enterAlt(1);
 
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:87: ws
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:77: ws
 							{
-							dbg.location(1262,87);
-							pushFollow(FOLLOW_ws_in_sass_else7760);
+							dbg.location(1262,77);
+							pushFollow(FOLLOW_ws_in_sass_else7763);
 							ws();
 							state._fsp--;
 							if (state.failed) return;
@@ -23265,52 +23289,84 @@ public class Css3Parser extends DebugParser {
 
 					}
 					} finally {dbg.exitSubRule(353);}
-					dbg.location(1262,91);
-					pushFollow(FOLLOW_sass_control_block_in_sass_else7763);
+					dbg.location(1262,81);
+					pushFollow(FOLLOW_sass_control_expression_in_sass_else7766);
+					sass_control_expression();
+					state._fsp--;
+					if (state.failed) return;dbg.location(1262,105);
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:105: ( ws )?
+					int alt354=2;
+					try { dbg.enterSubRule(354);
+					try { dbg.enterDecision(354, decisionCanBacktrack[354]);
+
+					int LA354_0 = input.LA(1);
+					if ( (LA354_0==COMMENT||LA354_0==NL||LA354_0==WS) ) {
+						alt354=1;
+					}
+					} finally {dbg.exitDecision(354);}
+
+					switch (alt354) {
+						case 1 :
+							dbg.enterAlt(1);
+
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:105: ws
+							{
+							dbg.location(1262,105);
+							pushFollow(FOLLOW_ws_in_sass_else7768);
+							ws();
+							state._fsp--;
+							if (state.failed) return;
+							}
+							break;
+
+					}
+					} finally {dbg.exitSubRule(354);}
+					dbg.location(1262,109);
+					pushFollow(FOLLOW_sass_control_block_in_sass_else7771);
 					sass_control_block();
 					state._fsp--;
-					if (state.failed) return;dbg.location(1262,110);
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:110: ( ( ws )? sass_else )?
-					int alt355=2;
-					try { dbg.enterSubRule(355);
-					try { dbg.enterDecision(355, decisionCanBacktrack[355]);
+					if (state.failed) return;dbg.location(1262,128);
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:128: ( ( ws )? sass_else )?
+					int alt356=2;
+					try { dbg.enterSubRule(356);
+					try { dbg.enterDecision(356, decisionCanBacktrack[356]);
 
 					try {
 						isCyclicDecision = true;
-						alt355 = dfa355.predict(input);
+						alt356 = dfa356.predict(input);
 					}
 					catch (NoViableAltException nvae) {
 						dbg.recognitionException(nvae);
 						throw nvae;
 					}
-					} finally {dbg.exitDecision(355);}
+					} finally {dbg.exitDecision(356);}
 
-					switch (alt355) {
+					switch (alt356) {
 						case 1 :
 							dbg.enterAlt(1);
 
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:111: ( ws )? sass_else
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:129: ( ws )? sass_else
 							{
-							dbg.location(1262,111);
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:111: ( ws )?
-							int alt354=2;
-							try { dbg.enterSubRule(354);
-							try { dbg.enterDecision(354, decisionCanBacktrack[354]);
+							dbg.location(1262,129);
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:129: ( ws )?
+							int alt355=2;
+							try { dbg.enterSubRule(355);
+							try { dbg.enterDecision(355, decisionCanBacktrack[355]);
 
-							int LA354_0 = input.LA(1);
-							if ( (LA354_0==COMMENT||LA354_0==NL||LA354_0==WS) ) {
-								alt354=1;
+							int LA355_0 = input.LA(1);
+							if ( (LA355_0==COMMENT||LA355_0==NL||LA355_0==WS) ) {
+								alt355=1;
 							}
-							} finally {dbg.exitDecision(354);}
+							} finally {dbg.exitDecision(355);}
 
-							switch (alt354) {
+							switch (alt355) {
 								case 1 :
 									dbg.enterAlt(1);
 
-									// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:111: ws
+									// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1262:129: ws
 									{
-									dbg.location(1262,111);
-									pushFollow(FOLLOW_ws_in_sass_else7766);
+									dbg.location(1262,129);
+									pushFollow(FOLLOW_ws_in_sass_else7774);
 									ws();
 									state._fsp--;
 									if (state.failed) return;
@@ -23318,9 +23374,9 @@ public class Css3Parser extends DebugParser {
 									break;
 
 							}
-							} finally {dbg.exitSubRule(354);}
-							dbg.location(1262,115);
-							pushFollow(FOLLOW_sass_else_in_sass_else7769);
+							} finally {dbg.exitSubRule(355);}
+							dbg.location(1262,133);
+							pushFollow(FOLLOW_sass_else_in_sass_else7777);
 							sass_else();
 							state._fsp--;
 							if (state.failed) return;
@@ -23328,7 +23384,7 @@ public class Css3Parser extends DebugParser {
 							break;
 
 					}
-					} finally {dbg.exitSubRule(355);}
+					} finally {dbg.exitSubRule(356);}
 
 					}
 					break;
@@ -23371,7 +23427,7 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1267:5: cp_expression
 			{
 			dbg.location(1267,5);
-			pushFollow(FOLLOW_cp_expression_in_sass_control_expression7792);
+			pushFollow(FOLLOW_cp_expression_in_sass_control_expression7800);
 			cp_expression();
 			state._fsp--;
 			if (state.failed) return;
@@ -23414,16 +23470,16 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1272:5: SASS_FOR ws cp_variable ws {...}? IDENT ws cp_math_expression ws {...}? IDENT ws cp_math_expression ( ws )? sass_control_block
 			{
 			dbg.location(1272,5);
-			match(input,SASS_FOR,FOLLOW_SASS_FOR_in_sass_for7813); if (state.failed) return;dbg.location(1272,14);
-			pushFollow(FOLLOW_ws_in_sass_for7815);
+			match(input,SASS_FOR,FOLLOW_SASS_FOR_in_sass_for7821); if (state.failed) return;dbg.location(1272,14);
+			pushFollow(FOLLOW_ws_in_sass_for7823);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1272,17);
-			pushFollow(FOLLOW_cp_variable_in_sass_for7817);
+			pushFollow(FOLLOW_cp_variable_in_sass_for7825);
 			cp_variable();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1272,29);
-			pushFollow(FOLLOW_ws_in_sass_for7819);
+			pushFollow(FOLLOW_ws_in_sass_for7827);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1272,32);
@@ -23431,16 +23487,16 @@ public class Css3Parser extends DebugParser {
 				if (state.backtracking>0) {state.failed=true; return;}
 				throw new FailedPredicateException(input, "sass_for", "tokenNameEquals(\"from\")");
 			}dbg.location(1272,59);
-			match(input,IDENT,FOLLOW_IDENT_in_sass_for7823); if (state.failed) return;dbg.location(1272,74);
-			pushFollow(FOLLOW_ws_in_sass_for7827);
+			match(input,IDENT,FOLLOW_IDENT_in_sass_for7831); if (state.failed) return;dbg.location(1272,74);
+			pushFollow(FOLLOW_ws_in_sass_for7835);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1272,77);
-			pushFollow(FOLLOW_cp_math_expression_in_sass_for7829);
+			pushFollow(FOLLOW_cp_math_expression_in_sass_for7837);
 			cp_math_expression();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1272,96);
-			pushFollow(FOLLOW_ws_in_sass_for7831);
+			pushFollow(FOLLOW_ws_in_sass_for7839);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1272,99);
@@ -23448,34 +23504,34 @@ public class Css3Parser extends DebugParser {
 				if (state.backtracking>0) {state.failed=true; return;}
 				throw new FailedPredicateException(input, "sass_for", "tokenNameEquals(\"to\")|tokenNameEquals(\"through\")");
 			}dbg.location(1272,151);
-			match(input,IDENT,FOLLOW_IDENT_in_sass_for7835); if (state.failed) return;dbg.location(1272,173);
-			pushFollow(FOLLOW_ws_in_sass_for7839);
+			match(input,IDENT,FOLLOW_IDENT_in_sass_for7843); if (state.failed) return;dbg.location(1272,173);
+			pushFollow(FOLLOW_ws_in_sass_for7847);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1272,176);
-			pushFollow(FOLLOW_cp_math_expression_in_sass_for7841);
+			pushFollow(FOLLOW_cp_math_expression_in_sass_for7849);
 			cp_math_expression();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1272,195);
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1272:195: ( ws )?
-			int alt357=2;
-			try { dbg.enterSubRule(357);
-			try { dbg.enterDecision(357, decisionCanBacktrack[357]);
+			int alt358=2;
+			try { dbg.enterSubRule(358);
+			try { dbg.enterDecision(358, decisionCanBacktrack[358]);
 
-			int LA357_0 = input.LA(1);
-			if ( (LA357_0==COMMENT||LA357_0==NL||LA357_0==WS) ) {
-				alt357=1;
+			int LA358_0 = input.LA(1);
+			if ( (LA358_0==COMMENT||LA358_0==NL||LA358_0==WS) ) {
+				alt358=1;
 			}
-			} finally {dbg.exitDecision(357);}
+			} finally {dbg.exitDecision(358);}
 
-			switch (alt357) {
+			switch (alt358) {
 				case 1 :
 					dbg.enterAlt(1);
 
 					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1272:195: ws
 					{
 					dbg.location(1272,195);
-					pushFollow(FOLLOW_ws_in_sass_for7843);
+					pushFollow(FOLLOW_ws_in_sass_for7851);
 					ws();
 					state._fsp--;
 					if (state.failed) return;
@@ -23483,9 +23539,9 @@ public class Css3Parser extends DebugParser {
 					break;
 
 			}
-			} finally {dbg.exitSubRule(357);}
+			} finally {dbg.exitSubRule(358);}
 			dbg.location(1272,199);
-			pushFollow(FOLLOW_sass_control_block_in_sass_for7846);
+			pushFollow(FOLLOW_sass_control_block_in_sass_for7854);
 			sass_control_block();
 			state._fsp--;
 			if (state.failed) return;
@@ -23528,16 +23584,16 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1277:5: SASS_EACH ws sass_each_variables ws {...}? IDENT ws cp_expression_list ( ws )? sass_control_block
 			{
 			dbg.location(1277,5);
-			match(input,SASS_EACH,FOLLOW_SASS_EACH_in_sass_each7867); if (state.failed) return;dbg.location(1277,15);
-			pushFollow(FOLLOW_ws_in_sass_each7869);
+			match(input,SASS_EACH,FOLLOW_SASS_EACH_in_sass_each7875); if (state.failed) return;dbg.location(1277,15);
+			pushFollow(FOLLOW_ws_in_sass_each7877);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1277,18);
-			pushFollow(FOLLOW_sass_each_variables_in_sass_each7871);
+			pushFollow(FOLLOW_sass_each_variables_in_sass_each7879);
 			sass_each_variables();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1277,38);
-			pushFollow(FOLLOW_ws_in_sass_each7873);
+			pushFollow(FOLLOW_ws_in_sass_each7881);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1277,41);
@@ -23545,34 +23601,34 @@ public class Css3Parser extends DebugParser {
 				if (state.backtracking>0) {state.failed=true; return;}
 				throw new FailedPredicateException(input, "sass_each", "tokenNameEquals(\"in\")");
 			}dbg.location(1277,66);
-			match(input,IDENT,FOLLOW_IDENT_in_sass_each7877); if (state.failed) return;dbg.location(1277,79);
-			pushFollow(FOLLOW_ws_in_sass_each7881);
+			match(input,IDENT,FOLLOW_IDENT_in_sass_each7885); if (state.failed) return;dbg.location(1277,79);
+			pushFollow(FOLLOW_ws_in_sass_each7889);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1277,82);
-			pushFollow(FOLLOW_cp_expression_list_in_sass_each7883);
+			pushFollow(FOLLOW_cp_expression_list_in_sass_each7891);
 			cp_expression_list();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1277,101);
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1277:101: ( ws )?
-			int alt358=2;
-			try { dbg.enterSubRule(358);
-			try { dbg.enterDecision(358, decisionCanBacktrack[358]);
+			int alt359=2;
+			try { dbg.enterSubRule(359);
+			try { dbg.enterDecision(359, decisionCanBacktrack[359]);
 
-			int LA358_0 = input.LA(1);
-			if ( (LA358_0==COMMENT||LA358_0==NL||LA358_0==WS) ) {
-				alt358=1;
+			int LA359_0 = input.LA(1);
+			if ( (LA359_0==COMMENT||LA359_0==NL||LA359_0==WS) ) {
+				alt359=1;
 			}
-			} finally {dbg.exitDecision(358);}
+			} finally {dbg.exitDecision(359);}
 
-			switch (alt358) {
+			switch (alt359) {
 				case 1 :
 					dbg.enterAlt(1);
 
 					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1277:101: ws
 					{
 					dbg.location(1277,101);
-					pushFollow(FOLLOW_ws_in_sass_each7885);
+					pushFollow(FOLLOW_ws_in_sass_each7893);
 					ws();
 					state._fsp--;
 					if (state.failed) return;
@@ -23580,9 +23636,9 @@ public class Css3Parser extends DebugParser {
 					break;
 
 			}
-			} finally {dbg.exitSubRule(358);}
+			} finally {dbg.exitSubRule(359);}
 			dbg.location(1277,105);
-			pushFollow(FOLLOW_sass_control_block_in_sass_each7888);
+			pushFollow(FOLLOW_sass_control_block_in_sass_each7896);
 			sass_control_block();
 			state._fsp--;
 			if (state.failed) return;
@@ -23625,29 +23681,29 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:5: cp_variable ( ( ( ws )? COMMA )=> ( ws )? COMMA ( ws )? cp_variable )*
 			{
 			dbg.location(1282,5);
-			pushFollow(FOLLOW_cp_variable_in_sass_each_variables7909);
+			pushFollow(FOLLOW_cp_variable_in_sass_each_variables7917);
 			cp_variable();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1282,17);
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:17: ( ( ( ws )? COMMA )=> ( ws )? COMMA ( ws )? cp_variable )*
-			try { dbg.enterSubRule(361);
+			try { dbg.enterSubRule(362);
 
-			loop361:
+			loop362:
 			while (true) {
-				int alt361=2;
-				try { dbg.enterDecision(361, decisionCanBacktrack[361]);
+				int alt362=2;
+				try { dbg.enterDecision(362, decisionCanBacktrack[362]);
 
 				try {
 					isCyclicDecision = true;
-					alt361 = dfa361.predict(input);
+					alt362 = dfa362.predict(input);
 				}
 				catch (NoViableAltException nvae) {
 					dbg.recognitionException(nvae);
 					throw nvae;
 				}
-				} finally {dbg.exitDecision(361);}
+				} finally {dbg.exitDecision(362);}
 
-				switch (alt361) {
+				switch (alt362) {
 				case 1 :
 					dbg.enterAlt(1);
 
@@ -23655,35 +23711,6 @@ public class Css3Parser extends DebugParser {
 					{
 					dbg.location(1282,33);
 					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:33: ( ws )?
-					int alt359=2;
-					try { dbg.enterSubRule(359);
-					try { dbg.enterDecision(359, decisionCanBacktrack[359]);
-
-					int LA359_0 = input.LA(1);
-					if ( (LA359_0==COMMENT||LA359_0==NL||LA359_0==WS) ) {
-						alt359=1;
-					}
-					} finally {dbg.exitDecision(359);}
-
-					switch (alt359) {
-						case 1 :
-							dbg.enterAlt(1);
-
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:33: ws
-							{
-							dbg.location(1282,33);
-							pushFollow(FOLLOW_ws_in_sass_each_variables7921);
-							ws();
-							state._fsp--;
-							if (state.failed) return;
-							}
-							break;
-
-					}
-					} finally {dbg.exitSubRule(359);}
-					dbg.location(1282,37);
-					match(input,COMMA,FOLLOW_COMMA_in_sass_each_variables7924); if (state.failed) return;dbg.location(1282,43);
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:43: ( ws )?
 					int alt360=2;
 					try { dbg.enterSubRule(360);
 					try { dbg.enterDecision(360, decisionCanBacktrack[360]);
@@ -23698,10 +23725,10 @@ public class Css3Parser extends DebugParser {
 						case 1 :
 							dbg.enterAlt(1);
 
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:43: ws
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:33: ws
 							{
-							dbg.location(1282,43);
-							pushFollow(FOLLOW_ws_in_sass_each_variables7926);
+							dbg.location(1282,33);
+							pushFollow(FOLLOW_ws_in_sass_each_variables7929);
 							ws();
 							state._fsp--;
 							if (state.failed) return;
@@ -23710,8 +23737,37 @@ public class Css3Parser extends DebugParser {
 
 					}
 					} finally {dbg.exitSubRule(360);}
+					dbg.location(1282,37);
+					match(input,COMMA,FOLLOW_COMMA_in_sass_each_variables7932); if (state.failed) return;dbg.location(1282,43);
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:43: ( ws )?
+					int alt361=2;
+					try { dbg.enterSubRule(361);
+					try { dbg.enterDecision(361, decisionCanBacktrack[361]);
+
+					int LA361_0 = input.LA(1);
+					if ( (LA361_0==COMMENT||LA361_0==NL||LA361_0==WS) ) {
+						alt361=1;
+					}
+					} finally {dbg.exitDecision(361);}
+
+					switch (alt361) {
+						case 1 :
+							dbg.enterAlt(1);
+
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:43: ws
+							{
+							dbg.location(1282,43);
+							pushFollow(FOLLOW_ws_in_sass_each_variables7934);
+							ws();
+							state._fsp--;
+							if (state.failed) return;
+							}
+							break;
+
+					}
+					} finally {dbg.exitSubRule(361);}
 					dbg.location(1282,47);
-					pushFollow(FOLLOW_cp_variable_in_sass_each_variables7929);
+					pushFollow(FOLLOW_cp_variable_in_sass_each_variables7937);
 					cp_variable();
 					state._fsp--;
 					if (state.failed) return;
@@ -23719,10 +23775,10 @@ public class Css3Parser extends DebugParser {
 					break;
 
 				default :
-					break loop361;
+					break loop362;
 				}
 			}
-			} finally {dbg.exitSubRule(361);}
+			} finally {dbg.exitSubRule(362);}
 
 			}
 
@@ -23763,34 +23819,34 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1287:5: SASS_WHILE ws sass_control_expression ( ws )? sass_control_block
 			{
 			dbg.location(1287,5);
-			match(input,SASS_WHILE,FOLLOW_SASS_WHILE_in_sass_while7954); if (state.failed) return;dbg.location(1287,16);
-			pushFollow(FOLLOW_ws_in_sass_while7956);
+			match(input,SASS_WHILE,FOLLOW_SASS_WHILE_in_sass_while7962); if (state.failed) return;dbg.location(1287,16);
+			pushFollow(FOLLOW_ws_in_sass_while7964);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1287,19);
-			pushFollow(FOLLOW_sass_control_expression_in_sass_while7958);
+			pushFollow(FOLLOW_sass_control_expression_in_sass_while7966);
 			sass_control_expression();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1287,43);
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1287:43: ( ws )?
-			int alt362=2;
-			try { dbg.enterSubRule(362);
-			try { dbg.enterDecision(362, decisionCanBacktrack[362]);
+			int alt363=2;
+			try { dbg.enterSubRule(363);
+			try { dbg.enterDecision(363, decisionCanBacktrack[363]);
 
-			int LA362_0 = input.LA(1);
-			if ( (LA362_0==COMMENT||LA362_0==NL||LA362_0==WS) ) {
-				alt362=1;
+			int LA363_0 = input.LA(1);
+			if ( (LA363_0==COMMENT||LA363_0==NL||LA363_0==WS) ) {
+				alt363=1;
 			}
-			} finally {dbg.exitDecision(362);}
+			} finally {dbg.exitDecision(363);}
 
-			switch (alt362) {
+			switch (alt363) {
 				case 1 :
 					dbg.enterAlt(1);
 
 					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1287:43: ws
 					{
 					dbg.location(1287,43);
-					pushFollow(FOLLOW_ws_in_sass_while7960);
+					pushFollow(FOLLOW_ws_in_sass_while7968);
 					ws();
 					state._fsp--;
 					if (state.failed) return;
@@ -23798,9 +23854,9 @@ public class Css3Parser extends DebugParser {
 					break;
 
 			}
-			} finally {dbg.exitSubRule(362);}
+			} finally {dbg.exitSubRule(363);}
 			dbg.location(1287,47);
-			pushFollow(FOLLOW_sass_control_block_in_sass_while7963);
+			pushFollow(FOLLOW_sass_control_block_in_sass_while7971);
 			sass_control_block();
 			state._fsp--;
 			if (state.failed) return;
@@ -23843,42 +23899,14 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1292:5: LBRACE ( ws )? ( declarations )? RBRACE
 			{
 			dbg.location(1292,5);
-			match(input,LBRACE,FOLLOW_LBRACE_in_sass_control_block7984); if (state.failed) return;dbg.location(1292,12);
+			match(input,LBRACE,FOLLOW_LBRACE_in_sass_control_block7992); if (state.failed) return;dbg.location(1292,12);
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1292:12: ( ws )?
-			int alt363=2;
-			try { dbg.enterSubRule(363);
-			try { dbg.enterDecision(363, decisionCanBacktrack[363]);
-
-			int LA363_0 = input.LA(1);
-			if ( (LA363_0==COMMENT||LA363_0==NL||LA363_0==WS) ) {
-				alt363=1;
-			}
-			} finally {dbg.exitDecision(363);}
-
-			switch (alt363) {
-				case 1 :
-					dbg.enterAlt(1);
-
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1292:12: ws
-					{
-					dbg.location(1292,12);
-					pushFollow(FOLLOW_ws_in_sass_control_block7986);
-					ws();
-					state._fsp--;
-					if (state.failed) return;
-					}
-					break;
-
-			}
-			} finally {dbg.exitSubRule(363);}
-			dbg.location(1292,16);
-			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1292:16: ( declarations )?
 			int alt364=2;
 			try { dbg.enterSubRule(364);
 			try { dbg.enterDecision(364, decisionCanBacktrack[364]);
 
 			int LA364_0 = input.LA(1);
-			if ( ((LA364_0 >= AT_IDENT && LA364_0 <= AT_SIGN)||(LA364_0 >= BOTTOMCENTER_SYM && LA364_0 <= BOTTOMRIGHT_SYM)||(LA364_0 >= CHARSET_SYM && LA364_0 <= COLON)||LA364_0==COUNTER_STYLE_SYM||LA364_0==DCOLON||LA364_0==DOT||LA364_0==FONT_FACE_SYM||(LA364_0 >= GEN && LA364_0 <= GREATER)||(LA364_0 >= HASH && LA364_0 <= HASH_SYMBOL)||LA364_0==IDENT||LA364_0==IMPORT_SYM||(LA364_0 >= LBRACKET && LA364_0 <= LEFTTOP_SYM)||LA364_0==LESS_AND||(LA364_0 >= MEDIA_SYM && LA364_0 <= MOZ_DOCUMENT_SYM)||LA364_0==NAMESPACE_SYM||LA364_0==PAGE_SYM||(LA364_0 >= PIPE && LA364_0 <= PLUS)||(LA364_0 >= RIGHTBOTTOM_SYM && LA364_0 <= RIGHTTOP_SYM)||(LA364_0 >= SASS_AT_ROOT && LA364_0 <= SASS_DEBUG)||(LA364_0 >= SASS_EACH && LA364_0 <= SASS_FUNCTION)||(LA364_0 >= SASS_IF && LA364_0 <= SASS_MIXIN)||(LA364_0 >= SASS_RETURN && LA364_0 <= SEMI)||LA364_0==STAR||LA364_0==TILDE||(LA364_0 >= TOPCENTER_SYM && LA364_0 <= TOPRIGHT_SYM)||LA364_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA364_0==COMMENT||LA364_0==NL||LA364_0==WS) ) {
 				alt364=1;
 			}
 			} finally {dbg.exitDecision(364);}
@@ -23887,11 +23915,11 @@ public class Css3Parser extends DebugParser {
 				case 1 :
 					dbg.enterAlt(1);
 
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1292:16: declarations
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1292:12: ws
 					{
-					dbg.location(1292,16);
-					pushFollow(FOLLOW_declarations_in_sass_control_block7989);
-					declarations();
+					dbg.location(1292,12);
+					pushFollow(FOLLOW_ws_in_sass_control_block7994);
+					ws();
 					state._fsp--;
 					if (state.failed) return;
 					}
@@ -23899,8 +23927,36 @@ public class Css3Parser extends DebugParser {
 
 			}
 			} finally {dbg.exitSubRule(364);}
+			dbg.location(1292,16);
+			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1292:16: ( declarations )?
+			int alt365=2;
+			try { dbg.enterSubRule(365);
+			try { dbg.enterDecision(365, decisionCanBacktrack[365]);
+
+			int LA365_0 = input.LA(1);
+			if ( ((LA365_0 >= AT_IDENT && LA365_0 <= AT_SIGN)||(LA365_0 >= BOTTOMCENTER_SYM && LA365_0 <= BOTTOMRIGHT_SYM)||(LA365_0 >= CHARSET_SYM && LA365_0 <= COLON)||LA365_0==COUNTER_STYLE_SYM||LA365_0==DCOLON||LA365_0==DOT||LA365_0==FONT_FACE_SYM||(LA365_0 >= GEN && LA365_0 <= GREATER)||(LA365_0 >= HASH && LA365_0 <= HASH_SYMBOL)||LA365_0==IDENT||LA365_0==IMPORT_SYM||(LA365_0 >= LBRACKET && LA365_0 <= LEFTTOP_SYM)||LA365_0==LESS_AND||(LA365_0 >= MEDIA_SYM && LA365_0 <= MOZ_DOCUMENT_SYM)||LA365_0==NAMESPACE_SYM||LA365_0==PAGE_SYM||(LA365_0 >= PIPE && LA365_0 <= PLUS)||(LA365_0 >= RIGHTBOTTOM_SYM && LA365_0 <= RIGHTTOP_SYM)||(LA365_0 >= SASS_AT_ROOT && LA365_0 <= SASS_DEBUG)||(LA365_0 >= SASS_EACH && LA365_0 <= SASS_ELSE)||(LA365_0 >= SASS_EXTEND && LA365_0 <= SASS_FUNCTION)||(LA365_0 >= SASS_IF && LA365_0 <= SASS_MIXIN)||(LA365_0 >= SASS_RETURN && LA365_0 <= SEMI)||LA365_0==STAR||LA365_0==TILDE||(LA365_0 >= TOPCENTER_SYM && LA365_0 <= TOPRIGHT_SYM)||LA365_0==WEBKIT_KEYFRAMES_SYM) ) {
+				alt365=1;
+			}
+			} finally {dbg.exitDecision(365);}
+
+			switch (alt365) {
+				case 1 :
+					dbg.enterAlt(1);
+
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1292:16: declarations
+					{
+					dbg.location(1292,16);
+					pushFollow(FOLLOW_declarations_in_sass_control_block7997);
+					declarations();
+					state._fsp--;
+					if (state.failed) return;
+					}
+					break;
+
+			}
+			} finally {dbg.exitSubRule(365);}
 			dbg.location(1292,30);
-			match(input,RBRACE,FOLLOW_RBRACE_in_sass_control_block7992); if (state.failed) return;
+			match(input,RBRACE,FOLLOW_RBRACE_in_sass_control_block8000); if (state.failed) return;
 			}
 
 		}
@@ -23940,51 +23996,22 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:5: SASS_FUNCTION ws sass_function_name ( ws )? LPAREN ( cp_args_list )? RPAREN ( ws )? LBRACE ( ws )? ( declarations )? RBRACE
 			{
 			dbg.location(1301,5);
-			match(input,SASS_FUNCTION,FOLLOW_SASS_FUNCTION_in_sass_function_declaration8034); if (state.failed) return;dbg.location(1301,19);
-			pushFollow(FOLLOW_ws_in_sass_function_declaration8036);
+			match(input,SASS_FUNCTION,FOLLOW_SASS_FUNCTION_in_sass_function_declaration8042); if (state.failed) return;dbg.location(1301,19);
+			pushFollow(FOLLOW_ws_in_sass_function_declaration8044);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1301,22);
-			pushFollow(FOLLOW_sass_function_name_in_sass_function_declaration8038);
+			pushFollow(FOLLOW_sass_function_name_in_sass_function_declaration8046);
 			sass_function_name();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1301,41);
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:41: ( ws )?
-			int alt365=2;
-			try { dbg.enterSubRule(365);
-			try { dbg.enterDecision(365, decisionCanBacktrack[365]);
-
-			int LA365_0 = input.LA(1);
-			if ( (LA365_0==COMMENT||LA365_0==NL||LA365_0==WS) ) {
-				alt365=1;
-			}
-			} finally {dbg.exitDecision(365);}
-
-			switch (alt365) {
-				case 1 :
-					dbg.enterAlt(1);
-
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:41: ws
-					{
-					dbg.location(1301,41);
-					pushFollow(FOLLOW_ws_in_sass_function_declaration8040);
-					ws();
-					state._fsp--;
-					if (state.failed) return;
-					}
-					break;
-
-			}
-			} finally {dbg.exitSubRule(365);}
-			dbg.location(1301,45);
-			match(input,LPAREN,FOLLOW_LPAREN_in_sass_function_declaration8043); if (state.failed) return;dbg.location(1301,52);
-			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:52: ( cp_args_list )?
 			int alt366=2;
 			try { dbg.enterSubRule(366);
 			try { dbg.enterDecision(366, decisionCanBacktrack[366]);
 
 			int LA366_0 = input.LA(1);
-			if ( (LA366_0==AT_IDENT||(LA366_0 >= BOTTOMCENTER_SYM && LA366_0 <= BOTTOMRIGHT_SYM)||LA366_0==CHARSET_SYM||(LA366_0 >= COUNTER_STYLE_SYM && LA366_0 <= CP_DOTS)||LA366_0==FONT_FACE_SYM||LA366_0==IMPORT_SYM||(LA366_0 >= LEFTBOTTOM_SYM && LA366_0 <= LEFTTOP_SYM)||LA366_0==LESS_REST||LA366_0==MEDIA_SYM||LA366_0==MOZ_DOCUMENT_SYM||LA366_0==NAMESPACE_SYM||LA366_0==PAGE_SYM||(LA366_0 >= RIGHTBOTTOM_SYM && LA366_0 <= RIGHTTOP_SYM)||(LA366_0 >= SASS_AT_ROOT && LA366_0 <= SASS_DEBUG)||(LA366_0 >= SASS_EACH && LA366_0 <= SASS_EXTEND)||(LA366_0 >= SASS_FOR && LA366_0 <= SASS_FUNCTION)||(LA366_0 >= SASS_IF && LA366_0 <= SASS_MIXIN)||(LA366_0 >= SASS_RETURN && LA366_0 <= SASS_WHILE)||(LA366_0 >= TOPCENTER_SYM && LA366_0 <= TOPRIGHT_SYM)||LA366_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA366_0==COMMENT||LA366_0==NL||LA366_0==WS) ) {
 				alt366=1;
 			}
 			} finally {dbg.exitDecision(366);}
@@ -23993,11 +24020,11 @@ public class Css3Parser extends DebugParser {
 				case 1 :
 					dbg.enterAlt(1);
 
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:52: cp_args_list
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:41: ws
 					{
-					dbg.location(1301,52);
-					pushFollow(FOLLOW_cp_args_list_in_sass_function_declaration8045);
-					cp_args_list();
+					dbg.location(1301,41);
+					pushFollow(FOLLOW_ws_in_sass_function_declaration8048);
+					ws();
 					state._fsp--;
 					if (state.failed) return;
 					}
@@ -24005,15 +24032,15 @@ public class Css3Parser extends DebugParser {
 
 			}
 			} finally {dbg.exitSubRule(366);}
-			dbg.location(1301,66);
-			match(input,RPAREN,FOLLOW_RPAREN_in_sass_function_declaration8048); if (state.failed) return;dbg.location(1301,73);
-			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:73: ( ws )?
+			dbg.location(1301,45);
+			match(input,LPAREN,FOLLOW_LPAREN_in_sass_function_declaration8051); if (state.failed) return;dbg.location(1301,52);
+			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:52: ( cp_args_list )?
 			int alt367=2;
 			try { dbg.enterSubRule(367);
 			try { dbg.enterDecision(367, decisionCanBacktrack[367]);
 
 			int LA367_0 = input.LA(1);
-			if ( (LA367_0==COMMENT||LA367_0==NL||LA367_0==WS) ) {
+			if ( (LA367_0==AT_IDENT||(LA367_0 >= BOTTOMCENTER_SYM && LA367_0 <= BOTTOMRIGHT_SYM)||LA367_0==CHARSET_SYM||(LA367_0 >= COUNTER_STYLE_SYM && LA367_0 <= CP_DOTS)||LA367_0==FONT_FACE_SYM||LA367_0==IMPORT_SYM||(LA367_0 >= LEFTBOTTOM_SYM && LA367_0 <= LEFTTOP_SYM)||LA367_0==LESS_REST||LA367_0==MEDIA_SYM||LA367_0==MOZ_DOCUMENT_SYM||LA367_0==NAMESPACE_SYM||LA367_0==PAGE_SYM||(LA367_0 >= RIGHTBOTTOM_SYM && LA367_0 <= RIGHTTOP_SYM)||(LA367_0 >= SASS_AT_ROOT && LA367_0 <= SASS_DEBUG)||(LA367_0 >= SASS_EACH && LA367_0 <= SASS_ELSE)||LA367_0==SASS_EXTEND||(LA367_0 >= SASS_FOR && LA367_0 <= SASS_FUNCTION)||(LA367_0 >= SASS_IF && LA367_0 <= SASS_MIXIN)||(LA367_0 >= SASS_RETURN && LA367_0 <= SASS_WHILE)||(LA367_0 >= TOPCENTER_SYM && LA367_0 <= TOPRIGHT_SYM)||LA367_0==WEBKIT_KEYFRAMES_SYM) ) {
 				alt367=1;
 			}
 			} finally {dbg.exitDecision(367);}
@@ -24022,11 +24049,11 @@ public class Css3Parser extends DebugParser {
 				case 1 :
 					dbg.enterAlt(1);
 
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:73: ws
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:52: cp_args_list
 					{
-					dbg.location(1301,73);
-					pushFollow(FOLLOW_ws_in_sass_function_declaration8050);
-					ws();
+					dbg.location(1301,52);
+					pushFollow(FOLLOW_cp_args_list_in_sass_function_declaration8053);
+					cp_args_list();
 					state._fsp--;
 					if (state.failed) return;
 					}
@@ -24034,9 +24061,9 @@ public class Css3Parser extends DebugParser {
 
 			}
 			} finally {dbg.exitSubRule(367);}
-			dbg.location(1301,77);
-			match(input,LBRACE,FOLLOW_LBRACE_in_sass_function_declaration8053); if (state.failed) return;dbg.location(1301,84);
-			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:84: ( ws )?
+			dbg.location(1301,66);
+			match(input,RPAREN,FOLLOW_RPAREN_in_sass_function_declaration8056); if (state.failed) return;dbg.location(1301,73);
+			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:73: ( ws )?
 			int alt368=2;
 			try { dbg.enterSubRule(368);
 			try { dbg.enterDecision(368, decisionCanBacktrack[368]);
@@ -24051,10 +24078,10 @@ public class Css3Parser extends DebugParser {
 				case 1 :
 					dbg.enterAlt(1);
 
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:84: ws
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:73: ws
 					{
-					dbg.location(1301,84);
-					pushFollow(FOLLOW_ws_in_sass_function_declaration8055);
+					dbg.location(1301,73);
+					pushFollow(FOLLOW_ws_in_sass_function_declaration8058);
 					ws();
 					state._fsp--;
 					if (state.failed) return;
@@ -24063,14 +24090,15 @@ public class Css3Parser extends DebugParser {
 
 			}
 			} finally {dbg.exitSubRule(368);}
-			dbg.location(1301,88);
-			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:88: ( declarations )?
+			dbg.location(1301,77);
+			match(input,LBRACE,FOLLOW_LBRACE_in_sass_function_declaration8061); if (state.failed) return;dbg.location(1301,84);
+			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:84: ( ws )?
 			int alt369=2;
 			try { dbg.enterSubRule(369);
 			try { dbg.enterDecision(369, decisionCanBacktrack[369]);
 
 			int LA369_0 = input.LA(1);
-			if ( ((LA369_0 >= AT_IDENT && LA369_0 <= AT_SIGN)||(LA369_0 >= BOTTOMCENTER_SYM && LA369_0 <= BOTTOMRIGHT_SYM)||(LA369_0 >= CHARSET_SYM && LA369_0 <= COLON)||LA369_0==COUNTER_STYLE_SYM||LA369_0==DCOLON||LA369_0==DOT||LA369_0==FONT_FACE_SYM||(LA369_0 >= GEN && LA369_0 <= GREATER)||(LA369_0 >= HASH && LA369_0 <= HASH_SYMBOL)||LA369_0==IDENT||LA369_0==IMPORT_SYM||(LA369_0 >= LBRACKET && LA369_0 <= LEFTTOP_SYM)||LA369_0==LESS_AND||(LA369_0 >= MEDIA_SYM && LA369_0 <= MOZ_DOCUMENT_SYM)||LA369_0==NAMESPACE_SYM||LA369_0==PAGE_SYM||(LA369_0 >= PIPE && LA369_0 <= PLUS)||(LA369_0 >= RIGHTBOTTOM_SYM && LA369_0 <= RIGHTTOP_SYM)||(LA369_0 >= SASS_AT_ROOT && LA369_0 <= SASS_DEBUG)||(LA369_0 >= SASS_EACH && LA369_0 <= SASS_FUNCTION)||(LA369_0 >= SASS_IF && LA369_0 <= SASS_MIXIN)||(LA369_0 >= SASS_RETURN && LA369_0 <= SEMI)||LA369_0==STAR||LA369_0==TILDE||(LA369_0 >= TOPCENTER_SYM && LA369_0 <= TOPRIGHT_SYM)||LA369_0==WEBKIT_KEYFRAMES_SYM) ) {
+			if ( (LA369_0==COMMENT||LA369_0==NL||LA369_0==WS) ) {
 				alt369=1;
 			}
 			} finally {dbg.exitDecision(369);}
@@ -24079,11 +24107,11 @@ public class Css3Parser extends DebugParser {
 				case 1 :
 					dbg.enterAlt(1);
 
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:88: declarations
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:84: ws
 					{
-					dbg.location(1301,88);
-					pushFollow(FOLLOW_declarations_in_sass_function_declaration8058);
-					declarations();
+					dbg.location(1301,84);
+					pushFollow(FOLLOW_ws_in_sass_function_declaration8063);
+					ws();
 					state._fsp--;
 					if (state.failed) return;
 					}
@@ -24091,8 +24119,36 @@ public class Css3Parser extends DebugParser {
 
 			}
 			} finally {dbg.exitSubRule(369);}
+			dbg.location(1301,88);
+			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:88: ( declarations )?
+			int alt370=2;
+			try { dbg.enterSubRule(370);
+			try { dbg.enterDecision(370, decisionCanBacktrack[370]);
+
+			int LA370_0 = input.LA(1);
+			if ( ((LA370_0 >= AT_IDENT && LA370_0 <= AT_SIGN)||(LA370_0 >= BOTTOMCENTER_SYM && LA370_0 <= BOTTOMRIGHT_SYM)||(LA370_0 >= CHARSET_SYM && LA370_0 <= COLON)||LA370_0==COUNTER_STYLE_SYM||LA370_0==DCOLON||LA370_0==DOT||LA370_0==FONT_FACE_SYM||(LA370_0 >= GEN && LA370_0 <= GREATER)||(LA370_0 >= HASH && LA370_0 <= HASH_SYMBOL)||LA370_0==IDENT||LA370_0==IMPORT_SYM||(LA370_0 >= LBRACKET && LA370_0 <= LEFTTOP_SYM)||LA370_0==LESS_AND||(LA370_0 >= MEDIA_SYM && LA370_0 <= MOZ_DOCUMENT_SYM)||LA370_0==NAMESPACE_SYM||LA370_0==PAGE_SYM||(LA370_0 >= PIPE && LA370_0 <= PLUS)||(LA370_0 >= RIGHTBOTTOM_SYM && LA370_0 <= RIGHTTOP_SYM)||(LA370_0 >= SASS_AT_ROOT && LA370_0 <= SASS_DEBUG)||(LA370_0 >= SASS_EACH && LA370_0 <= SASS_ELSE)||(LA370_0 >= SASS_EXTEND && LA370_0 <= SASS_FUNCTION)||(LA370_0 >= SASS_IF && LA370_0 <= SASS_MIXIN)||(LA370_0 >= SASS_RETURN && LA370_0 <= SEMI)||LA370_0==STAR||LA370_0==TILDE||(LA370_0 >= TOPCENTER_SYM && LA370_0 <= TOPRIGHT_SYM)||LA370_0==WEBKIT_KEYFRAMES_SYM) ) {
+				alt370=1;
+			}
+			} finally {dbg.exitDecision(370);}
+
+			switch (alt370) {
+				case 1 :
+					dbg.enterAlt(1);
+
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1301:88: declarations
+					{
+					dbg.location(1301,88);
+					pushFollow(FOLLOW_declarations_in_sass_function_declaration8066);
+					declarations();
+					state._fsp--;
+					if (state.failed) return;
+					}
+					break;
+
+			}
+			} finally {dbg.exitSubRule(370);}
 			dbg.location(1301,102);
-			match(input,RBRACE,FOLLOW_RBRACE_in_sass_function_declaration8061); if (state.failed) return;
+			match(input,RBRACE,FOLLOW_RBRACE_in_sass_function_declaration8069); if (state.failed) return;
 			}
 
 		}
@@ -24132,7 +24188,7 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1306:5: IDENT
 			{
 			dbg.location(1306,5);
-			match(input,IDENT,FOLLOW_IDENT_in_sass_function_name8082); if (state.failed) return;
+			match(input,IDENT,FOLLOW_IDENT_in_sass_function_name8090); if (state.failed) return;
 			}
 
 		}
@@ -24172,12 +24228,12 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1311:5: SASS_RETURN ws cp_expression
 			{
 			dbg.location(1311,5);
-			match(input,SASS_RETURN,FOLLOW_SASS_RETURN_in_sass_function_return8103); if (state.failed) return;dbg.location(1311,17);
-			pushFollow(FOLLOW_ws_in_sass_function_return8105);
+			match(input,SASS_RETURN,FOLLOW_SASS_RETURN_in_sass_function_return8111); if (state.failed) return;dbg.location(1311,17);
+			pushFollow(FOLLOW_ws_in_sass_function_return8113);
 			ws();
 			state._fsp--;
 			if (state.failed) return;dbg.location(1311,20);
-			pushFollow(FOLLOW_cp_expression_in_sass_function_return8107);
+			pushFollow(FOLLOW_cp_expression_in_sass_function_return8115);
 			cp_expression();
 			state._fsp--;
 			if (state.failed) return;
@@ -24220,7 +24276,7 @@ public class Css3Parser extends DebugParser {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1316:5: SASS_CONTENT
 			{
 			dbg.location(1316,5);
-			match(input,SASS_CONTENT,FOLLOW_SASS_CONTENT_in_sass_content8128); if (state.failed) return;
+			match(input,SASS_CONTENT,FOLLOW_SASS_CONTENT_in_sass_content8136); if (state.failed) return;
 			}
 
 		}
@@ -24264,7 +24320,7 @@ public class Css3Parser extends DebugParser {
 				if (state.backtracking>0) {state.failed=true; return;}
 				throw new FailedPredicateException(input, "less_import_types", "tokenNameIs(new String[]{\"LESS\", \"CSS\", \"REFERENCE\", \"INLINE\", \"ONCE\", \"MULTIPLE\"})");
 			}dbg.location(1320,92);
-			match(input,IDENT,FOLLOW_IDENT_in_less_import_types8147); if (state.failed) return;
+			match(input,IDENT,FOLLOW_IDENT_in_less_import_types8155); if (state.failed) return;
 			}
 
 		}
@@ -24311,7 +24367,7 @@ public class Css3Parser extends DebugParser {
 				if (state.backtracking>0) {state.failed=true; return;}
 				throw new FailedPredicateException(input, "less_when", "tokenNameEquals(\"when\")");
 			}dbg.location(1327,32);
-			match(input,IDENT,FOLLOW_IDENT_in_less_when8170); if (state.failed) return;
+			match(input,IDENT,FOLLOW_IDENT_in_less_when8178); if (state.failed) return;
 			}
 
 		}
@@ -24355,7 +24411,7 @@ public class Css3Parser extends DebugParser {
 				if (state.backtracking>0) {state.failed=true; return;}
 				throw new FailedPredicateException(input, "key_and", "tokenNameEquals(\"and\")");
 			}dbg.location(1331,31);
-			match(input,IDENT,FOLLOW_IDENT_in_key_and8189); if (state.failed) return;
+			match(input,IDENT,FOLLOW_IDENT_in_key_and8197); if (state.failed) return;
 			}
 
 		}
@@ -24399,7 +24455,7 @@ public class Css3Parser extends DebugParser {
 				if (state.backtracking>0) {state.failed=true; return;}
 				throw new FailedPredicateException(input, "key_or", "tokenNameEquals(\"or\")");
 			}dbg.location(1335,30);
-			match(input,IDENT,FOLLOW_IDENT_in_key_or8207); if (state.failed) return;
+			match(input,IDENT,FOLLOW_IDENT_in_key_or8215); if (state.failed) return;
 			}
 
 		}
@@ -24443,7 +24499,7 @@ public class Css3Parser extends DebugParser {
 				if (state.backtracking>0) {state.failed=true; return;}
 				throw new FailedPredicateException(input, "key_only", "tokenNameEquals(\"only\")");
 			}dbg.location(1339,32);
-			match(input,IDENT,FOLLOW_IDENT_in_key_only8225); if (state.failed) return;
+			match(input,IDENT,FOLLOW_IDENT_in_key_only8233); if (state.failed) return;
 			}
 
 		}
@@ -24475,17 +24531,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(372,45);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:372:45: ( ws )?
-		int alt370=2;
-		try { dbg.enterSubRule(370);
-		try { dbg.enterDecision(370, decisionCanBacktrack[370]);
+		int alt371=2;
+		try { dbg.enterSubRule(371);
+		try { dbg.enterDecision(371, decisionCanBacktrack[371]);
 
-		int LA370_0 = input.LA(1);
-		if ( (LA370_0==COMMENT||LA370_0==NL||LA370_0==WS) ) {
-			alt370=1;
+		int LA371_0 = input.LA(1);
+		if ( (LA371_0==COMMENT||LA371_0==NL||LA371_0==WS) ) {
+			alt371=1;
 		}
-		} finally {dbg.exitDecision(370);}
+		} finally {dbg.exitDecision(371);}
 
-		switch (alt370) {
+		switch (alt371) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -24500,7 +24556,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(370);}
+		} finally {dbg.exitSubRule(371);}
 		dbg.location(372,49);
 		pushFollow(FOLLOW_mediaQueryList_in_synpred1_Css3359);
 		mediaQueryList();
@@ -24520,17 +24576,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(375,99);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:375:99: ( ws )?
-		int alt371=2;
-		try { dbg.enterSubRule(371);
-		try { dbg.enterDecision(371, decisionCanBacktrack[371]);
+		int alt372=2;
+		try { dbg.enterSubRule(372);
+		try { dbg.enterDecision(372, decisionCanBacktrack[372]);
 
-		int LA371_0 = input.LA(1);
-		if ( (LA371_0==COMMENT||LA371_0==NL||LA371_0==WS) ) {
-			alt371=1;
+		int LA372_0 = input.LA(1);
+		if ( (LA372_0==COMMENT||LA372_0==NL||LA372_0==WS) ) {
+			alt372=1;
 		}
-		} finally {dbg.exitDecision(371);}
+		} finally {dbg.exitDecision(372);}
 
-		switch (alt371) {
+		switch (alt372) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -24545,7 +24601,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(371);}
+		} finally {dbg.exitSubRule(372);}
 		dbg.location(375,103);
 		pushFollow(FOLLOW_mediaQueryList_in_synpred2_Css3423);
 		mediaQueryList();
@@ -24565,17 +24621,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(377,102);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:377:102: ( ws )?
-		int alt372=2;
-		try { dbg.enterSubRule(372);
-		try { dbg.enterDecision(372, decisionCanBacktrack[372]);
+		int alt373=2;
+		try { dbg.enterSubRule(373);
+		try { dbg.enterDecision(373, decisionCanBacktrack[373]);
 
-		int LA372_0 = input.LA(1);
-		if ( (LA372_0==COMMENT||LA372_0==NL||LA372_0==WS) ) {
-			alt372=1;
+		int LA373_0 = input.LA(1);
+		if ( (LA373_0==COMMENT||LA373_0==NL||LA373_0==WS) ) {
+			alt373=1;
 		}
-		} finally {dbg.exitDecision(372);}
+		} finally {dbg.exitDecision(373);}
 
-		switch (alt372) {
+		switch (alt373) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -24590,7 +24646,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(372);}
+		} finally {dbg.exitSubRule(373);}
 		dbg.location(377,106);
 		pushFollow(FOLLOW_mediaQueryList_in_synpred3_Css3477);
 		mediaQueryList();
@@ -24610,17 +24666,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(392,28);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:392:28: ( ws )?
-		int alt373=2;
-		try { dbg.enterSubRule(373);
-		try { dbg.enterDecision(373, decisionCanBacktrack[373]);
+		int alt374=2;
+		try { dbg.enterSubRule(374);
+		try { dbg.enterDecision(374, decisionCanBacktrack[374]);
 
-		int LA373_0 = input.LA(1);
-		if ( (LA373_0==COMMENT||LA373_0==NL||LA373_0==WS) ) {
-			alt373=1;
+		int LA374_0 = input.LA(1);
+		if ( (LA374_0==COMMENT||LA374_0==NL||LA374_0==WS) ) {
+			alt374=1;
 		}
-		} finally {dbg.exitDecision(373);}
+		} finally {dbg.exitDecision(374);}
 
-		switch (alt373) {
+		switch (alt374) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -24635,7 +24691,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(373);}
+		} finally {dbg.exitSubRule(374);}
 		dbg.location(392,32);
 		match(input,SEMI,FOLLOW_SEMI_in_synpred4_Css3599); if (state.failed) return;
 		}
@@ -24646,28 +24702,28 @@ public class Css3Parser extends DebugParser {
 	// $ANTLR start synpred5_Css3
 	public final void synpred5_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:401:5: ( SASS_MIXIN | ( DOT IDENT ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | SEMI ) )* LBRACE ) )
-		int alt377=2;
-		try { dbg.enterDecision(377, decisionCanBacktrack[377]);
+		int alt378=2;
+		try { dbg.enterDecision(378, decisionCanBacktrack[378]);
 
-		int LA377_0 = input.LA(1);
-		if ( (LA377_0==SASS_MIXIN) ) {
-			alt377=1;
+		int LA378_0 = input.LA(1);
+		if ( (LA378_0==SASS_MIXIN) ) {
+			alt378=1;
 		}
-		else if ( (LA377_0==DOT) ) {
-			alt377=2;
+		else if ( (LA378_0==DOT) ) {
+			alt378=2;
 		}
 
 		else {
 			if (state.backtracking>0) {state.failed=true; return;}
 			NoViableAltException nvae =
-				new NoViableAltException("", 377, 0, input);
+				new NoViableAltException("", 378, 0, input);
 			dbg.recognitionException(nvae);
 			throw nvae;
 		}
 
-		} finally {dbg.exitDecision(377);}
+		} finally {dbg.exitDecision(378);}
 
-		switch (alt377) {
+		switch (alt378) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -24692,17 +24748,17 @@ public class Css3Parser extends DebugParser {
 				match(input,DOT,FOLLOW_DOT_in_synpred5_Css3702); if (state.failed) return;dbg.location(401,24);
 				match(input,IDENT,FOLLOW_IDENT_in_synpred5_Css3704); if (state.failed) return;dbg.location(401,30);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:401:30: ( ws )?
-				int alt374=2;
-				try { dbg.enterSubRule(374);
-				try { dbg.enterDecision(374, decisionCanBacktrack[374]);
+				int alt375=2;
+				try { dbg.enterSubRule(375);
+				try { dbg.enterDecision(375, decisionCanBacktrack[375]);
 
-				int LA374_0 = input.LA(1);
-				if ( (LA374_0==COMMENT||LA374_0==NL||LA374_0==WS) ) {
-					alt374=1;
+				int LA375_0 = input.LA(1);
+				if ( (LA375_0==COMMENT||LA375_0==NL||LA375_0==WS) ) {
+					alt375=1;
 				}
-				} finally {dbg.exitDecision(374);}
+				} finally {dbg.exitDecision(375);}
 
-				switch (alt374) {
+				switch (alt375) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -24717,25 +24773,25 @@ public class Css3Parser extends DebugParser {
 						break;
 
 				}
-				} finally {dbg.exitSubRule(374);}
+				} finally {dbg.exitSubRule(375);}
 				dbg.location(401,34);
 				match(input,LPAREN,FOLLOW_LPAREN_in_synpred5_Css3709); if (state.failed) return;dbg.location(401,41);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:401:41: (~ RPAREN )*
-				try { dbg.enterSubRule(375);
+				try { dbg.enterSubRule(376);
 
-				loop375:
+				loop376:
 				while (true) {
-					int alt375=2;
-					try { dbg.enterDecision(375, decisionCanBacktrack[375]);
+					int alt376=2;
+					try { dbg.enterDecision(376, decisionCanBacktrack[376]);
 
-					int LA375_0 = input.LA(1);
-					if ( ((LA375_0 >= A && LA375_0 <= RIGHTTOP_SYM)||(LA375_0 >= S && LA375_0 <= Z)) ) {
-						alt375=1;
+					int LA376_0 = input.LA(1);
+					if ( ((LA376_0 >= A && LA376_0 <= RIGHTTOP_SYM)||(LA376_0 >= S && LA376_0 <= Z)) ) {
+						alt376=1;
 					}
 
-					} finally {dbg.exitDecision(375);}
+					} finally {dbg.exitDecision(376);}
 
-					switch (alt375) {
+					switch (alt376) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -24757,28 +24813,28 @@ public class Css3Parser extends DebugParser {
 						break;
 
 					default :
-						break loop375;
+						break loop376;
 					}
 				}
-				} finally {dbg.exitSubRule(375);}
+				} finally {dbg.exitSubRule(376);}
 				dbg.location(401,52);
 				match(input,RPAREN,FOLLOW_RPAREN_in_synpred5_Css3717); if (state.failed) return;dbg.location(401,59);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:401:59: (~ ( LBRACE | SEMI ) )*
-				try { dbg.enterSubRule(376);
+				try { dbg.enterSubRule(377);
 
-				loop376:
+				loop377:
 				while (true) {
-					int alt376=2;
-					try { dbg.enterDecision(376, decisionCanBacktrack[376]);
+					int alt377=2;
+					try { dbg.enterDecision(377, decisionCanBacktrack[377]);
 
-					int LA376_0 = input.LA(1);
-					if ( ((LA376_0 >= A && LA376_0 <= L)||(LA376_0 >= LBRACKET && LA376_0 <= SASS_WHILE)||(LA376_0 >= SOLIDUS && LA376_0 <= Z)) ) {
-						alt376=1;
+					int LA377_0 = input.LA(1);
+					if ( ((LA377_0 >= A && LA377_0 <= L)||(LA377_0 >= LBRACKET && LA377_0 <= SASS_WHILE)||(LA377_0 >= SOLIDUS && LA377_0 <= Z)) ) {
+						alt377=1;
 					}
 
-					} finally {dbg.exitDecision(376);}
+					} finally {dbg.exitDecision(377);}
 
-					switch (alt376) {
+					switch (alt377) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -24800,10 +24856,10 @@ public class Css3Parser extends DebugParser {
 						break;
 
 					default :
-						break loop376;
+						break loop377;
 					}
 				}
-				} finally {dbg.exitSubRule(376);}
+				} finally {dbg.exitSubRule(377);}
 				dbg.location(401,75);
 				match(input,LBRACE,FOLLOW_LBRACE_in_synpred5_Css3727); if (state.failed) return;
 				}
@@ -24828,21 +24884,21 @@ public class Css3Parser extends DebugParser {
 		state._fsp--;
 		if (state.failed) return;dbg.location(403,22);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:403:22: ( ( ws )? IMPORTANT_SYM )?
-		int alt379=2;
-		try { dbg.enterSubRule(379);
-		try { dbg.enterDecision(379, decisionCanBacktrack[379]);
+		int alt380=2;
+		try { dbg.enterSubRule(380);
+		try { dbg.enterDecision(380, decisionCanBacktrack[380]);
 
 		try {
 			isCyclicDecision = true;
-			alt379 = dfa379.predict(input);
+			alt380 = dfa380.predict(input);
 		}
 		catch (NoViableAltException nvae) {
 			dbg.recognitionException(nvae);
 			throw nvae;
 		}
-		} finally {dbg.exitDecision(379);}
+		} finally {dbg.exitDecision(380);}
 
-		switch (alt379) {
+		switch (alt380) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -24850,17 +24906,17 @@ public class Css3Parser extends DebugParser {
 				{
 				dbg.location(403,23);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:403:23: ( ws )?
-				int alt378=2;
-				try { dbg.enterSubRule(378);
-				try { dbg.enterDecision(378, decisionCanBacktrack[378]);
+				int alt379=2;
+				try { dbg.enterSubRule(379);
+				try { dbg.enterDecision(379, decisionCanBacktrack[379]);
 
-				int LA378_0 = input.LA(1);
-				if ( (LA378_0==COMMENT||LA378_0==NL||LA378_0==WS) ) {
-					alt378=1;
+				int LA379_0 = input.LA(1);
+				if ( (LA379_0==COMMENT||LA379_0==NL||LA379_0==WS) ) {
+					alt379=1;
 				}
-				} finally {dbg.exitDecision(378);}
+				} finally {dbg.exitDecision(379);}
 
-				switch (alt378) {
+				switch (alt379) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -24875,27 +24931,27 @@ public class Css3Parser extends DebugParser {
 						break;
 
 				}
-				} finally {dbg.exitSubRule(378);}
+				} finally {dbg.exitSubRule(379);}
 				dbg.location(403,27);
 				match(input,IMPORTANT_SYM,FOLLOW_IMPORTANT_SYM_in_synpred6_Css3751); if (state.failed) return;
 				}
 				break;
 
 		}
-		} finally {dbg.exitSubRule(379);}
+		} finally {dbg.exitSubRule(380);}
 		dbg.location(403,43);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:403:43: ( ws )?
-		int alt380=2;
-		try { dbg.enterSubRule(380);
-		try { dbg.enterDecision(380, decisionCanBacktrack[380]);
+		int alt381=2;
+		try { dbg.enterSubRule(381);
+		try { dbg.enterDecision(381, decisionCanBacktrack[381]);
 
-		int LA380_0 = input.LA(1);
-		if ( (LA380_0==COMMENT||LA380_0==NL||LA380_0==WS) ) {
-			alt380=1;
+		int LA381_0 = input.LA(1);
+		if ( (LA381_0==COMMENT||LA381_0==NL||LA381_0==WS) ) {
+			alt381=1;
 		}
-		} finally {dbg.exitDecision(380);}
+		} finally {dbg.exitDecision(381);}
 
-		switch (alt380) {
+		switch (alt381) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -24910,7 +24966,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(380);}
+		} finally {dbg.exitSubRule(381);}
 		dbg.location(403,47);
 		match(input,SEMI,FOLLOW_SEMI_in_synpred6_Css3758); if (state.failed) return;
 		}
@@ -24944,56 +25000,6 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(405,8);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:405:8: (~ ( LBRACE | SEMI | RBRACE | COLON ) )+
-		int cnt381=0;
-		try { dbg.enterSubRule(381);
-
-		loop381:
-		while (true) {
-			int alt381=2;
-			try { dbg.enterDecision(381, decisionCanBacktrack[381]);
-
-			int LA381_0 = input.LA(1);
-			if ( ((LA381_0 >= A && LA381_0 <= CHARSET_SYM)||(LA381_0 >= COMMA && LA381_0 <= L)||(LA381_0 >= LBRACKET && LA381_0 <= R)||(LA381_0 >= RBRACKET && LA381_0 <= SASS_WHILE)||(LA381_0 >= SOLIDUS && LA381_0 <= Z)) ) {
-				alt381=1;
-			}
-
-			} finally {dbg.exitDecision(381);}
-
-			switch (alt381) {
-			case 1 :
-				dbg.enterAlt(1);
-
-				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:
-				{
-				dbg.location(405,8);
-				if ( (input.LA(1) >= A && input.LA(1) <= CHARSET_SYM)||(input.LA(1) >= COMMA && input.LA(1) <= L)||(input.LA(1) >= LBRACKET && input.LA(1) <= R)||(input.LA(1) >= RBRACKET && input.LA(1) <= SASS_WHILE)||(input.LA(1) >= SOLIDUS && input.LA(1) <= Z) ) {
-					input.consume();
-					state.errorRecovery=false;
-					state.failed=false;
-				}
-				else {
-					if (state.backtracking>0) {state.failed=true; return;}
-					MismatchedSetException mse = new MismatchedSetException(null,input);
-					dbg.recognitionException(mse);
-					throw mse;
-				}
-				}
-				break;
-
-			default :
-				if ( cnt381 >= 1 ) break loop381;
-				if (state.backtracking>0) {state.failed=true; return;}
-				EarlyExitException eee = new EarlyExitException(381, input);
-				dbg.recognitionException(eee);
-
-				throw eee;
-			}
-			cnt381++;
-		}
-		} finally {dbg.exitSubRule(381);}
-		dbg.location(405,37);
-		match(input,COLON,FOLLOW_COLON_in_synpred8_Css3816); if (state.failed) return;dbg.location(405,43);
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:405:43: (~ ( SEMI | LBRACE | RBRACE ) )+
 		int cnt382=0;
 		try { dbg.enterSubRule(382);
 
@@ -25003,7 +25009,7 @@ public class Css3Parser extends DebugParser {
 			try { dbg.enterDecision(382, decisionCanBacktrack[382]);
 
 			int LA382_0 = input.LA(1);
-			if ( ((LA382_0 >= A && LA382_0 <= L)||(LA382_0 >= LBRACKET && LA382_0 <= R)||(LA382_0 >= RBRACKET && LA382_0 <= SASS_WHILE)||(LA382_0 >= SOLIDUS && LA382_0 <= Z)) ) {
+			if ( ((LA382_0 >= A && LA382_0 <= CHARSET_SYM)||(LA382_0 >= COMMA && LA382_0 <= L)||(LA382_0 >= LBRACKET && LA382_0 <= R)||(LA382_0 >= RBRACKET && LA382_0 <= SASS_WHILE)||(LA382_0 >= SOLIDUS && LA382_0 <= Z)) ) {
 				alt382=1;
 			}
 
@@ -25015,8 +25021,8 @@ public class Css3Parser extends DebugParser {
 
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:
 				{
-				dbg.location(405,43);
-				if ( (input.LA(1) >= A && input.LA(1) <= L)||(input.LA(1) >= LBRACKET && input.LA(1) <= R)||(input.LA(1) >= RBRACKET && input.LA(1) <= SASS_WHILE)||(input.LA(1) >= SOLIDUS && input.LA(1) <= Z) ) {
+				dbg.location(405,8);
+				if ( (input.LA(1) >= A && input.LA(1) <= CHARSET_SYM)||(input.LA(1) >= COMMA && input.LA(1) <= L)||(input.LA(1) >= LBRACKET && input.LA(1) <= R)||(input.LA(1) >= RBRACKET && input.LA(1) <= SASS_WHILE)||(input.LA(1) >= SOLIDUS && input.LA(1) <= Z) ) {
 					input.consume();
 					state.errorRecovery=false;
 					state.failed=false;
@@ -25041,6 +25047,56 @@ public class Css3Parser extends DebugParser {
 			cnt382++;
 		}
 		} finally {dbg.exitSubRule(382);}
+		dbg.location(405,37);
+		match(input,COLON,FOLLOW_COLON_in_synpred8_Css3816); if (state.failed) return;dbg.location(405,43);
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:405:43: (~ ( SEMI | LBRACE | RBRACE ) )+
+		int cnt383=0;
+		try { dbg.enterSubRule(383);
+
+		loop383:
+		while (true) {
+			int alt383=2;
+			try { dbg.enterDecision(383, decisionCanBacktrack[383]);
+
+			int LA383_0 = input.LA(1);
+			if ( ((LA383_0 >= A && LA383_0 <= L)||(LA383_0 >= LBRACKET && LA383_0 <= R)||(LA383_0 >= RBRACKET && LA383_0 <= SASS_WHILE)||(LA383_0 >= SOLIDUS && LA383_0 <= Z)) ) {
+				alt383=1;
+			}
+
+			} finally {dbg.exitDecision(383);}
+
+			switch (alt383) {
+			case 1 :
+				dbg.enterAlt(1);
+
+				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:
+				{
+				dbg.location(405,43);
+				if ( (input.LA(1) >= A && input.LA(1) <= L)||(input.LA(1) >= LBRACKET && input.LA(1) <= R)||(input.LA(1) >= RBRACKET && input.LA(1) <= SASS_WHILE)||(input.LA(1) >= SOLIDUS && input.LA(1) <= Z) ) {
+					input.consume();
+					state.errorRecovery=false;
+					state.failed=false;
+				}
+				else {
+					if (state.backtracking>0) {state.failed=true; return;}
+					MismatchedSetException mse = new MismatchedSetException(null,input);
+					dbg.recognitionException(mse);
+					throw mse;
+				}
+				}
+				break;
+
+			default :
+				if ( cnt383 >= 1 ) break loop383;
+				if (state.backtracking>0) {state.failed=true; return;}
+				EarlyExitException eee = new EarlyExitException(383, input);
+				dbg.recognitionException(eee);
+
+				throw eee;
+			}
+			cnt383++;
+		}
+		} finally {dbg.exitSubRule(383);}
 		dbg.location(405,66);
 		match(input,SEMI,FOLLOW_SEMI_in_synpred8_Css3828); if (state.failed) return;
 		}
@@ -25057,17 +25113,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(419,18);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:419:18: ( ws )?
-		int alt383=2;
-		try { dbg.enterSubRule(383);
-		try { dbg.enterDecision(383, decisionCanBacktrack[383]);
+		int alt384=2;
+		try { dbg.enterSubRule(384);
+		try { dbg.enterDecision(384, decisionCanBacktrack[384]);
 
-		int LA383_0 = input.LA(1);
-		if ( (LA383_0==COMMENT||LA383_0==NL||LA383_0==WS) ) {
-			alt383=1;
+		int LA384_0 = input.LA(1);
+		if ( (LA384_0==COMMENT||LA384_0==NL||LA384_0==WS) ) {
+			alt384=1;
 		}
-		} finally {dbg.exitDecision(383);}
+		} finally {dbg.exitDecision(384);}
 
-		switch (alt383) {
+		switch (alt384) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25082,7 +25138,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(383);}
+		} finally {dbg.exitSubRule(384);}
 		dbg.location(419,22);
 		match(input,COMMA,FOLLOW_COMMA_in_synpred9_Css3939); if (state.failed) return;
 		}
@@ -25099,17 +25155,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(459,23);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:459:23: ( ws )?
-		int alt384=2;
-		try { dbg.enterSubRule(384);
-		try { dbg.enterDecision(384, decisionCanBacktrack[384]);
+		int alt385=2;
+		try { dbg.enterSubRule(385);
+		try { dbg.enterDecision(385, decisionCanBacktrack[385]);
 
-		int LA384_0 = input.LA(1);
-		if ( (LA384_0==COMMENT||LA384_0==NL||LA384_0==WS) ) {
-			alt384=1;
+		int LA385_0 = input.LA(1);
+		if ( (LA385_0==COMMENT||LA385_0==NL||LA385_0==WS) ) {
+			alt385=1;
 		}
-		} finally {dbg.exitDecision(384);}
+		} finally {dbg.exitDecision(385);}
 
-		switch (alt384) {
+		switch (alt385) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25124,7 +25180,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(384);}
+		} finally {dbg.exitSubRule(385);}
 		dbg.location(459,27);
 		match(input,SEMI,FOLLOW_SEMI_in_synpred10_Css31238); if (state.failed) return;
 		}
@@ -25135,28 +25191,28 @@ public class Css3Parser extends DebugParser {
 	// $ANTLR start synpred11_Css3
 	public final void synpred11_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:467:9: ( SASS_MIXIN | ( DOT IDENT ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | RBRACE | SEMI ) )* LBRACE ) )
-		int alt388=2;
-		try { dbg.enterDecision(388, decisionCanBacktrack[388]);
+		int alt389=2;
+		try { dbg.enterDecision(389, decisionCanBacktrack[389]);
 
-		int LA388_0 = input.LA(1);
-		if ( (LA388_0==SASS_MIXIN) ) {
-			alt388=1;
+		int LA389_0 = input.LA(1);
+		if ( (LA389_0==SASS_MIXIN) ) {
+			alt389=1;
 		}
-		else if ( (LA388_0==DOT) ) {
-			alt388=2;
+		else if ( (LA389_0==DOT) ) {
+			alt389=2;
 		}
 
 		else {
 			if (state.backtracking>0) {state.failed=true; return;}
 			NoViableAltException nvae =
-				new NoViableAltException("", 388, 0, input);
+				new NoViableAltException("", 389, 0, input);
 			dbg.recognitionException(nvae);
 			throw nvae;
 		}
 
-		} finally {dbg.exitDecision(388);}
+		} finally {dbg.exitDecision(389);}
 
-		switch (alt388) {
+		switch (alt389) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25181,17 +25237,17 @@ public class Css3Parser extends DebugParser {
 				match(input,DOT,FOLLOW_DOT_in_synpred11_Css31318); if (state.failed) return;dbg.location(467,28);
 				match(input,IDENT,FOLLOW_IDENT_in_synpred11_Css31320); if (state.failed) return;dbg.location(467,34);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:467:34: ( ws )?
-				int alt385=2;
-				try { dbg.enterSubRule(385);
-				try { dbg.enterDecision(385, decisionCanBacktrack[385]);
+				int alt386=2;
+				try { dbg.enterSubRule(386);
+				try { dbg.enterDecision(386, decisionCanBacktrack[386]);
 
-				int LA385_0 = input.LA(1);
-				if ( (LA385_0==COMMENT||LA385_0==NL||LA385_0==WS) ) {
-					alt385=1;
+				int LA386_0 = input.LA(1);
+				if ( (LA386_0==COMMENT||LA386_0==NL||LA386_0==WS) ) {
+					alt386=1;
 				}
-				} finally {dbg.exitDecision(385);}
+				} finally {dbg.exitDecision(386);}
 
-				switch (alt385) {
+				switch (alt386) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -25206,25 +25262,25 @@ public class Css3Parser extends DebugParser {
 						break;
 
 				}
-				} finally {dbg.exitSubRule(385);}
+				} finally {dbg.exitSubRule(386);}
 				dbg.location(467,38);
 				match(input,LPAREN,FOLLOW_LPAREN_in_synpred11_Css31325); if (state.failed) return;dbg.location(467,45);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:467:45: (~ RPAREN )*
-				try { dbg.enterSubRule(386);
+				try { dbg.enterSubRule(387);
 
-				loop386:
+				loop387:
 				while (true) {
-					int alt386=2;
-					try { dbg.enterDecision(386, decisionCanBacktrack[386]);
+					int alt387=2;
+					try { dbg.enterDecision(387, decisionCanBacktrack[387]);
 
-					int LA386_0 = input.LA(1);
-					if ( ((LA386_0 >= A && LA386_0 <= RIGHTTOP_SYM)||(LA386_0 >= S && LA386_0 <= Z)) ) {
-						alt386=1;
+					int LA387_0 = input.LA(1);
+					if ( ((LA387_0 >= A && LA387_0 <= RIGHTTOP_SYM)||(LA387_0 >= S && LA387_0 <= Z)) ) {
+						alt387=1;
 					}
 
-					} finally {dbg.exitDecision(386);}
+					} finally {dbg.exitDecision(387);}
 
-					switch (alt386) {
+					switch (alt387) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -25246,28 +25302,28 @@ public class Css3Parser extends DebugParser {
 						break;
 
 					default :
-						break loop386;
+						break loop387;
 					}
 				}
-				} finally {dbg.exitSubRule(386);}
+				} finally {dbg.exitSubRule(387);}
 				dbg.location(467,56);
 				match(input,RPAREN,FOLLOW_RPAREN_in_synpred11_Css31333); if (state.failed) return;dbg.location(467,63);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:467:63: (~ ( LBRACE | RBRACE | SEMI ) )*
-				try { dbg.enterSubRule(387);
+				try { dbg.enterSubRule(388);
 
-				loop387:
+				loop388:
 				while (true) {
-					int alt387=2;
-					try { dbg.enterDecision(387, decisionCanBacktrack[387]);
+					int alt388=2;
+					try { dbg.enterDecision(388, decisionCanBacktrack[388]);
 
-					int LA387_0 = input.LA(1);
-					if ( ((LA387_0 >= A && LA387_0 <= L)||(LA387_0 >= LBRACKET && LA387_0 <= R)||(LA387_0 >= RBRACKET && LA387_0 <= SASS_WHILE)||(LA387_0 >= SOLIDUS && LA387_0 <= Z)) ) {
-						alt387=1;
+					int LA388_0 = input.LA(1);
+					if ( ((LA388_0 >= A && LA388_0 <= L)||(LA388_0 >= LBRACKET && LA388_0 <= R)||(LA388_0 >= RBRACKET && LA388_0 <= SASS_WHILE)||(LA388_0 >= SOLIDUS && LA388_0 <= Z)) ) {
+						alt388=1;
 					}
 
-					} finally {dbg.exitDecision(387);}
+					} finally {dbg.exitDecision(388);}
 
-					switch (alt387) {
+					switch (alt388) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -25289,10 +25345,10 @@ public class Css3Parser extends DebugParser {
 						break;
 
 					default :
-						break loop387;
+						break loop388;
 					}
 				}
-				} finally {dbg.exitSubRule(387);}
+				} finally {dbg.exitSubRule(388);}
 				dbg.location(467,86);
 				match(input,LBRACE,FOLLOW_LBRACE_in_synpred11_Css31345); if (state.failed) return;
 				}
@@ -25317,17 +25373,17 @@ public class Css3Parser extends DebugParser {
 		state._fsp--;
 		if (state.failed) return;dbg.location(469,26);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:469:26: ( ws )?
-		int alt389=2;
-		try { dbg.enterSubRule(389);
-		try { dbg.enterDecision(389, decisionCanBacktrack[389]);
+		int alt390=2;
+		try { dbg.enterSubRule(390);
+		try { dbg.enterDecision(390, decisionCanBacktrack[390]);
 
-		int LA389_0 = input.LA(1);
-		if ( (LA389_0==COMMENT||LA389_0==NL||LA389_0==WS) ) {
-			alt389=1;
+		int LA390_0 = input.LA(1);
+		if ( (LA390_0==COMMENT||LA390_0==NL||LA390_0==WS) ) {
+			alt390=1;
 		}
-		} finally {dbg.exitDecision(389);}
+		} finally {dbg.exitDecision(390);}
 
-		switch (alt389) {
+		switch (alt390) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25342,7 +25398,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(389);}
+		} finally {dbg.exitSubRule(390);}
 		dbg.location(469,30);
 		match(input,SEMI,FOLLOW_SEMI_in_synpred12_Css31376); if (state.failed) return;
 		}
@@ -25397,17 +25453,17 @@ public class Css3Parser extends DebugParser {
 		state._fsp--;
 		if (state.failed) return;dbg.location(473,24);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:473:24: ( ws )?
-		int alt390=2;
-		try { dbg.enterSubRule(390);
-		try { dbg.enterDecision(390, decisionCanBacktrack[390]);
+		int alt391=2;
+		try { dbg.enterSubRule(391);
+		try { dbg.enterDecision(391, decisionCanBacktrack[391]);
 
-		int LA390_0 = input.LA(1);
-		if ( (LA390_0==COMMENT||LA390_0==NL||LA390_0==WS) ) {
-			alt390=1;
+		int LA391_0 = input.LA(1);
+		if ( (LA391_0==COMMENT||LA391_0==NL||LA391_0==WS) ) {
+			alt391=1;
 		}
-		} finally {dbg.exitDecision(390);}
+		} finally {dbg.exitDecision(391);}
 
-		switch (alt390) {
+		switch (alt391) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25422,7 +25478,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(390);}
+		} finally {dbg.exitSubRule(391);}
 		dbg.location(473,28);
 		match(input,COLON,FOLLOW_COLON_in_synpred15_Css31445); if (state.failed) return;
 		}
@@ -25439,17 +25495,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(635,28);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:635:28: ( ws )?
-		int alt391=2;
-		try { dbg.enterSubRule(391);
-		try { dbg.enterDecision(391, decisionCanBacktrack[391]);
+		int alt392=2;
+		try { dbg.enterSubRule(392);
+		try { dbg.enterDecision(392, decisionCanBacktrack[392]);
 
-		int LA391_0 = input.LA(1);
-		if ( (LA391_0==COMMENT||LA391_0==NL||LA391_0==WS) ) {
-			alt391=1;
+		int LA392_0 = input.LA(1);
+		if ( (LA392_0==COMMENT||LA392_0==NL||LA392_0==WS) ) {
+			alt392=1;
 		}
-		} finally {dbg.exitDecision(391);}
+		} finally {dbg.exitDecision(392);}
 
-		switch (alt391) {
+		switch (alt392) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25464,7 +25520,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(391);}
+		} finally {dbg.exitSubRule(392);}
 		dbg.location(635,32);
 		match(input,COMMA,FOLLOW_COMMA_in_synpred16_Css32599); if (state.failed) return;
 		}
@@ -25553,17 +25609,17 @@ public class Css3Parser extends DebugParser {
 		state._fsp--;
 		if (state.failed) return;dbg.location(672,17);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:672:17: ( ws )?
-		int alt392=2;
-		try { dbg.enterSubRule(392);
-		try { dbg.enterDecision(392, decisionCanBacktrack[392]);
+		int alt393=2;
+		try { dbg.enterSubRule(393);
+		try { dbg.enterDecision(393, decisionCanBacktrack[393]);
 
-		int LA392_0 = input.LA(1);
-		if ( (LA392_0==COMMENT||LA392_0==NL||LA392_0==WS) ) {
-			alt392=1;
+		int LA393_0 = input.LA(1);
+		if ( (LA393_0==COMMENT||LA393_0==NL||LA393_0==WS) ) {
+			alt393=1;
 		}
-		} finally {dbg.exitDecision(392);}
+		} finally {dbg.exitDecision(393);}
 
-		switch (alt392) {
+		switch (alt393) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25578,25 +25634,25 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(392);}
+		} finally {dbg.exitSubRule(393);}
 		dbg.location(672,21);
 		match(input,COLON,FOLLOW_COLON_in_synpred21_Css32941); if (state.failed) return;dbg.location(672,27);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:672:27: (~ ( LBRACE | SEMI | RBRACE ) )*
-		try { dbg.enterSubRule(393);
+		try { dbg.enterSubRule(394);
 
-		loop393:
+		loop394:
 		while (true) {
-			int alt393=2;
-			try { dbg.enterDecision(393, decisionCanBacktrack[393]);
+			int alt394=2;
+			try { dbg.enterDecision(394, decisionCanBacktrack[394]);
 
-			int LA393_0 = input.LA(1);
-			if ( ((LA393_0 >= A && LA393_0 <= L)||(LA393_0 >= LBRACKET && LA393_0 <= R)||(LA393_0 >= RBRACKET && LA393_0 <= SASS_WHILE)||(LA393_0 >= SOLIDUS && LA393_0 <= Z)) ) {
-				alt393=1;
+			int LA394_0 = input.LA(1);
+			if ( ((LA394_0 >= A && LA394_0 <= L)||(LA394_0 >= LBRACKET && LA394_0 <= R)||(LA394_0 >= RBRACKET && LA394_0 <= SASS_WHILE)||(LA394_0 >= SOLIDUS && LA394_0 <= Z)) ) {
+				alt394=1;
 			}
 
-			} finally {dbg.exitDecision(393);}
+			} finally {dbg.exitDecision(394);}
 
-			switch (alt393) {
+			switch (alt394) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25618,10 +25674,10 @@ public class Css3Parser extends DebugParser {
 				break;
 
 			default :
-				break loop393;
+				break loop394;
 			}
 		}
-		} finally {dbg.exitSubRule(393);}
+		} finally {dbg.exitSubRule(394);}
 		dbg.location(672,50);
 		if ( input.LA(1)==RBRACE||input.LA(1)==SEMI ) {
 			input.consume();
@@ -25642,28 +25698,28 @@ public class Css3Parser extends DebugParser {
 	// $ANTLR start synpred22_Css3
 	public final void synpred22_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:673:7: ( SASS_MIXIN | ( DOT IDENT ( ws )? LPAREN (~ RPAREN )* RPAREN (~ ( LBRACE | SEMI | RBRACE ) )* LBRACE ) )
-		int alt397=2;
-		try { dbg.enterDecision(397, decisionCanBacktrack[397]);
+		int alt398=2;
+		try { dbg.enterDecision(398, decisionCanBacktrack[398]);
 
-		int LA397_0 = input.LA(1);
-		if ( (LA397_0==SASS_MIXIN) ) {
-			alt397=1;
+		int LA398_0 = input.LA(1);
+		if ( (LA398_0==SASS_MIXIN) ) {
+			alt398=1;
 		}
-		else if ( (LA397_0==DOT) ) {
-			alt397=2;
+		else if ( (LA398_0==DOT) ) {
+			alt398=2;
 		}
 
 		else {
 			if (state.backtracking>0) {state.failed=true; return;}
 			NoViableAltException nvae =
-				new NoViableAltException("", 397, 0, input);
+				new NoViableAltException("", 398, 0, input);
 			dbg.recognitionException(nvae);
 			throw nvae;
 		}
 
-		} finally {dbg.exitDecision(397);}
+		} finally {dbg.exitDecision(398);}
 
-		switch (alt397) {
+		switch (alt398) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25688,17 +25744,17 @@ public class Css3Parser extends DebugParser {
 				match(input,DOT,FOLLOW_DOT_in_synpred22_Css32975); if (state.failed) return;dbg.location(673,26);
 				match(input,IDENT,FOLLOW_IDENT_in_synpred22_Css32977); if (state.failed) return;dbg.location(673,32);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:673:32: ( ws )?
-				int alt394=2;
-				try { dbg.enterSubRule(394);
-				try { dbg.enterDecision(394, decisionCanBacktrack[394]);
+				int alt395=2;
+				try { dbg.enterSubRule(395);
+				try { dbg.enterDecision(395, decisionCanBacktrack[395]);
 
-				int LA394_0 = input.LA(1);
-				if ( (LA394_0==COMMENT||LA394_0==NL||LA394_0==WS) ) {
-					alt394=1;
+				int LA395_0 = input.LA(1);
+				if ( (LA395_0==COMMENT||LA395_0==NL||LA395_0==WS) ) {
+					alt395=1;
 				}
-				} finally {dbg.exitDecision(394);}
+				} finally {dbg.exitDecision(395);}
 
-				switch (alt394) {
+				switch (alt395) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -25713,25 +25769,25 @@ public class Css3Parser extends DebugParser {
 						break;
 
 				}
-				} finally {dbg.exitSubRule(394);}
+				} finally {dbg.exitSubRule(395);}
 				dbg.location(673,36);
 				match(input,LPAREN,FOLLOW_LPAREN_in_synpred22_Css32982); if (state.failed) return;dbg.location(673,43);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:673:43: (~ RPAREN )*
-				try { dbg.enterSubRule(395);
+				try { dbg.enterSubRule(396);
 
-				loop395:
+				loop396:
 				while (true) {
-					int alt395=2;
-					try { dbg.enterDecision(395, decisionCanBacktrack[395]);
+					int alt396=2;
+					try { dbg.enterDecision(396, decisionCanBacktrack[396]);
 
-					int LA395_0 = input.LA(1);
-					if ( ((LA395_0 >= A && LA395_0 <= RIGHTTOP_SYM)||(LA395_0 >= S && LA395_0 <= Z)) ) {
-						alt395=1;
+					int LA396_0 = input.LA(1);
+					if ( ((LA396_0 >= A && LA396_0 <= RIGHTTOP_SYM)||(LA396_0 >= S && LA396_0 <= Z)) ) {
+						alt396=1;
 					}
 
-					} finally {dbg.exitDecision(395);}
+					} finally {dbg.exitDecision(396);}
 
-					switch (alt395) {
+					switch (alt396) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -25753,28 +25809,28 @@ public class Css3Parser extends DebugParser {
 						break;
 
 					default :
-						break loop395;
+						break loop396;
 					}
 				}
-				} finally {dbg.exitSubRule(395);}
+				} finally {dbg.exitSubRule(396);}
 				dbg.location(673,54);
 				match(input,RPAREN,FOLLOW_RPAREN_in_synpred22_Css32990); if (state.failed) return;dbg.location(673,61);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:673:61: (~ ( LBRACE | SEMI | RBRACE ) )*
-				try { dbg.enterSubRule(396);
+				try { dbg.enterSubRule(397);
 
-				loop396:
+				loop397:
 				while (true) {
-					int alt396=2;
-					try { dbg.enterDecision(396, decisionCanBacktrack[396]);
+					int alt397=2;
+					try { dbg.enterDecision(397, decisionCanBacktrack[397]);
 
-					int LA396_0 = input.LA(1);
-					if ( ((LA396_0 >= A && LA396_0 <= L)||(LA396_0 >= LBRACKET && LA396_0 <= R)||(LA396_0 >= RBRACKET && LA396_0 <= SASS_WHILE)||(LA396_0 >= SOLIDUS && LA396_0 <= Z)) ) {
-						alt396=1;
+					int LA397_0 = input.LA(1);
+					if ( ((LA397_0 >= A && LA397_0 <= L)||(LA397_0 >= LBRACKET && LA397_0 <= R)||(LA397_0 >= RBRACKET && LA397_0 <= SASS_WHILE)||(LA397_0 >= SOLIDUS && LA397_0 <= Z)) ) {
+						alt397=1;
 					}
 
-					} finally {dbg.exitDecision(396);}
+					} finally {dbg.exitDecision(397);}
 
-					switch (alt396) {
+					switch (alt397) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -25796,10 +25852,10 @@ public class Css3Parser extends DebugParser {
 						break;
 
 					default :
-						break loop396;
+						break loop397;
 					}
 				}
-				} finally {dbg.exitSubRule(396);}
+				} finally {dbg.exitSubRule(397);}
 				dbg.location(673,84);
 				match(input,LBRACE,FOLLOW_LBRACE_in_synpred22_Css33002); if (state.failed) return;
 				}
@@ -25824,21 +25880,21 @@ public class Css3Parser extends DebugParser {
 		state._fsp--;
 		if (state.failed) return;dbg.location(675,22);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:675:22: ( ( ws )? IMPORTANT_SYM )?
-		int alt399=2;
-		try { dbg.enterSubRule(399);
-		try { dbg.enterDecision(399, decisionCanBacktrack[399]);
+		int alt400=2;
+		try { dbg.enterSubRule(400);
+		try { dbg.enterDecision(400, decisionCanBacktrack[400]);
 
 		try {
 			isCyclicDecision = true;
-			alt399 = dfa399.predict(input);
+			alt400 = dfa400.predict(input);
 		}
 		catch (NoViableAltException nvae) {
 			dbg.recognitionException(nvae);
 			throw nvae;
 		}
-		} finally {dbg.exitDecision(399);}
+		} finally {dbg.exitDecision(400);}
 
-		switch (alt399) {
+		switch (alt400) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25846,17 +25902,17 @@ public class Css3Parser extends DebugParser {
 				{
 				dbg.location(675,23);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:675:23: ( ws )?
-				int alt398=2;
-				try { dbg.enterSubRule(398);
-				try { dbg.enterDecision(398, decisionCanBacktrack[398]);
+				int alt399=2;
+				try { dbg.enterSubRule(399);
+				try { dbg.enterDecision(399, decisionCanBacktrack[399]);
 
-				int LA398_0 = input.LA(1);
-				if ( (LA398_0==COMMENT||LA398_0==NL||LA398_0==WS) ) {
-					alt398=1;
+				int LA399_0 = input.LA(1);
+				if ( (LA399_0==COMMENT||LA399_0==NL||LA399_0==WS) ) {
+					alt399=1;
 				}
-				} finally {dbg.exitDecision(398);}
+				} finally {dbg.exitDecision(399);}
 
-				switch (alt398) {
+				switch (alt399) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -25871,27 +25927,27 @@ public class Css3Parser extends DebugParser {
 						break;
 
 				}
-				} finally {dbg.exitSubRule(398);}
+				} finally {dbg.exitSubRule(399);}
 				dbg.location(675,27);
 				match(input,IMPORTANT_SYM,FOLLOW_IMPORTANT_SYM_in_synpred23_Css33026); if (state.failed) return;
 				}
 				break;
 
 		}
-		} finally {dbg.exitSubRule(399);}
+		} finally {dbg.exitSubRule(400);}
 		dbg.location(675,43);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:675:43: ( ws )?
-		int alt400=2;
-		try { dbg.enterSubRule(400);
-		try { dbg.enterDecision(400, decisionCanBacktrack[400]);
+		int alt401=2;
+		try { dbg.enterSubRule(401);
+		try { dbg.enterDecision(401, decisionCanBacktrack[401]);
 
-		int LA400_0 = input.LA(1);
-		if ( (LA400_0==COMMENT||LA400_0==NL||LA400_0==WS) ) {
-			alt400=1;
+		int LA401_0 = input.LA(1);
+		if ( (LA401_0==COMMENT||LA401_0==NL||LA401_0==WS) ) {
+			alt401=1;
 		}
-		} finally {dbg.exitDecision(400);}
+		} finally {dbg.exitDecision(401);}
 
-		switch (alt400) {
+		switch (alt401) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25906,7 +25962,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(400);}
+		} finally {dbg.exitSubRule(401);}
 		dbg.location(675,47);
 		match(input,SEMI,FOLLOW_SEMI_in_synpred23_Css33033); if (state.failed) return;
 		}
@@ -25940,29 +25996,29 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(677,8);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:677:8: ( ( SASS_AT_ROOT ( ws selectorsGroup )? ) | selectorsGroup )
-		int alt402=2;
-		try { dbg.enterSubRule(402);
-		try { dbg.enterDecision(402, decisionCanBacktrack[402]);
+		int alt403=2;
+		try { dbg.enterSubRule(403);
+		try { dbg.enterDecision(403, decisionCanBacktrack[403]);
 
-		int LA402_0 = input.LA(1);
-		if ( (LA402_0==SASS_AT_ROOT) ) {
-			alt402=1;
+		int LA403_0 = input.LA(1);
+		if ( (LA403_0==SASS_AT_ROOT) ) {
+			alt403=1;
 		}
-		else if ( (LA402_0==AT_SIGN||LA402_0==COLON||LA402_0==DCOLON||LA402_0==DOT||(LA402_0 >= GEN && LA402_0 <= GREATER)||(LA402_0 >= HASH && LA402_0 <= HASH_SYMBOL)||LA402_0==IDENT||LA402_0==LBRACKET||LA402_0==LESS_AND||LA402_0==MINUS||(LA402_0 >= PIPE && LA402_0 <= PLUS)||LA402_0==SASS_EXTEND_ONLY_SELECTOR||LA402_0==STAR||LA402_0==TILDE) ) {
-			alt402=2;
+		else if ( (LA403_0==AT_SIGN||LA403_0==COLON||LA403_0==DCOLON||LA403_0==DOT||(LA403_0 >= GEN && LA403_0 <= GREATER)||(LA403_0 >= HASH && LA403_0 <= HASH_SYMBOL)||LA403_0==IDENT||LA403_0==LBRACKET||LA403_0==LESS_AND||LA403_0==MINUS||(LA403_0 >= PIPE && LA403_0 <= PLUS)||LA403_0==SASS_EXTEND_ONLY_SELECTOR||LA403_0==STAR||LA403_0==TILDE) ) {
+			alt403=2;
 		}
 
 		else {
 			if (state.backtracking>0) {state.failed=true; return;}
 			NoViableAltException nvae =
-				new NoViableAltException("", 402, 0, input);
+				new NoViableAltException("", 403, 0, input);
 			dbg.recognitionException(nvae);
 			throw nvae;
 		}
 
-		} finally {dbg.exitDecision(402);}
+		} finally {dbg.exitDecision(403);}
 
-		switch (alt402) {
+		switch (alt403) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -25977,21 +26033,21 @@ public class Css3Parser extends DebugParser {
 				dbg.location(677,10);
 				match(input,SASS_AT_ROOT,FOLLOW_SASS_AT_ROOT_in_synpred25_Css33081); if (state.failed) return;dbg.location(677,23);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:677:23: ( ws selectorsGroup )?
-				int alt401=2;
-				try { dbg.enterSubRule(401);
-				try { dbg.enterDecision(401, decisionCanBacktrack[401]);
+				int alt402=2;
+				try { dbg.enterSubRule(402);
+				try { dbg.enterDecision(402, decisionCanBacktrack[402]);
 
 				try {
 					isCyclicDecision = true;
-					alt401 = dfa401.predict(input);
+					alt402 = dfa402.predict(input);
 				}
 				catch (NoViableAltException nvae) {
 					dbg.recognitionException(nvae);
 					throw nvae;
 				}
-				} finally {dbg.exitDecision(401);}
+				} finally {dbg.exitDecision(402);}
 
-				switch (alt401) {
+				switch (alt402) {
 					case 1 :
 						dbg.enterAlt(1);
 
@@ -26010,7 +26066,7 @@ public class Css3Parser extends DebugParser {
 						break;
 
 				}
-				} finally {dbg.exitSubRule(401);}
+				} finally {dbg.exitSubRule(402);}
 
 				}
 
@@ -26030,20 +26086,20 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(402);}
+		} finally {dbg.exitSubRule(403);}
 		dbg.location(677,63);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:677:63: ( ws )?
-		int alt403=2;
-		try { dbg.enterSubRule(403);
-		try { dbg.enterDecision(403, decisionCanBacktrack[403]);
+		int alt404=2;
+		try { dbg.enterSubRule(404);
+		try { dbg.enterDecision(404, decisionCanBacktrack[404]);
 
-		int LA403_0 = input.LA(1);
-		if ( (LA403_0==COMMENT||LA403_0==NL||LA403_0==WS) ) {
-			alt403=1;
+		int LA404_0 = input.LA(1);
+		if ( (LA404_0==COMMENT||LA404_0==NL||LA404_0==WS) ) {
+			alt404=1;
 		}
-		} finally {dbg.exitDecision(403);}
+		} finally {dbg.exitDecision(404);}
 
-		switch (alt403) {
+		switch (alt404) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26058,7 +26114,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(403);}
+		} finally {dbg.exitSubRule(404);}
 		dbg.location(677,67);
 		match(input,LBRACE,FOLLOW_LBRACE_in_synpred25_Css33099); if (state.failed) return;
 		}
@@ -26075,17 +26131,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(708,82);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:708:82: ( ws )?
-		int alt404=2;
-		try { dbg.enterSubRule(404);
-		try { dbg.enterDecision(404, decisionCanBacktrack[404]);
+		int alt405=2;
+		try { dbg.enterSubRule(405);
+		try { dbg.enterDecision(405, decisionCanBacktrack[405]);
 
-		int LA404_0 = input.LA(1);
-		if ( (LA404_0==COMMENT||LA404_0==NL||LA404_0==WS) ) {
-			alt404=1;
+		int LA405_0 = input.LA(1);
+		if ( (LA405_0==COMMENT||LA405_0==NL||LA405_0==WS) ) {
+			alt405=1;
 		}
-		} finally {dbg.exitDecision(404);}
+		} finally {dbg.exitDecision(405);}
 
-		switch (alt404) {
+		switch (alt405) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26100,7 +26156,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(404);}
+		} finally {dbg.exitSubRule(405);}
 		dbg.location(708,86);
 		pushFollow(FOLLOW_esPred_in_synpred26_Css33338);
 		esPred();
@@ -26137,17 +26193,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(709,35);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:709:35: ( ws )?
-		int alt405=2;
-		try { dbg.enterSubRule(405);
-		try { dbg.enterDecision(405, decisionCanBacktrack[405]);
+		int alt406=2;
+		try { dbg.enterSubRule(406);
+		try { dbg.enterDecision(406, decisionCanBacktrack[406]);
 
-		int LA405_0 = input.LA(1);
-		if ( (LA405_0==COMMENT||LA405_0==NL||LA405_0==WS) ) {
-			alt405=1;
+		int LA406_0 = input.LA(1);
+		if ( (LA406_0==COMMENT||LA406_0==NL||LA406_0==WS) ) {
+			alt406=1;
 		}
-		} finally {dbg.exitDecision(405);}
+		} finally {dbg.exitDecision(406);}
 
-		switch (alt405) {
+		switch (alt406) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26162,7 +26218,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(405);}
+		} finally {dbg.exitSubRule(406);}
 		dbg.location(709,39);
 		pushFollow(FOLLOW_esPred_in_synpred28_Css33373);
 		esPred();
@@ -26182,17 +26238,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(723,8);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:723:8: ( IDENT | STAR )?
-		int alt406=2;
-		try { dbg.enterSubRule(406);
-		try { dbg.enterDecision(406, decisionCanBacktrack[406]);
+		int alt407=2;
+		try { dbg.enterSubRule(407);
+		try { dbg.enterDecision(407, decisionCanBacktrack[407]);
 
-		int LA406_0 = input.LA(1);
-		if ( (LA406_0==IDENT||LA406_0==STAR) ) {
-			alt406=1;
+		int LA407_0 = input.LA(1);
+		if ( (LA407_0==IDENT||LA407_0==STAR) ) {
+			alt407=1;
 		}
-		} finally {dbg.exitDecision(406);}
+		} finally {dbg.exitDecision(407);}
 
-		switch (alt406) {
+		switch (alt407) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26214,7 +26270,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(406);}
+		} finally {dbg.exitSubRule(407);}
 		dbg.location(723,24);
 		match(input,PIPE,FOLLOW_PIPE_in_synpred29_Css33478); if (state.failed) return;
 		}
@@ -26231,21 +26287,21 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(900,15);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:900:15: ( ws | ( ( ws )? operator ( ws )? ) |)
-		int alt409=3;
-		try { dbg.enterSubRule(409);
-		try { dbg.enterDecision(409, decisionCanBacktrack[409]);
+		int alt410=3;
+		try { dbg.enterSubRule(410);
+		try { dbg.enterDecision(410, decisionCanBacktrack[410]);
 
 		try {
 			isCyclicDecision = true;
-			alt409 = dfa409.predict(input);
+			alt410 = dfa410.predict(input);
 		}
 		catch (NoViableAltException nvae) {
 			dbg.recognitionException(nvae);
 			throw nvae;
 		}
-		} finally {dbg.exitDecision(409);}
+		} finally {dbg.exitDecision(410);}
 
-		switch (alt409) {
+		switch (alt410) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26271,38 +26327,6 @@ public class Css3Parser extends DebugParser {
 				{
 				dbg.location(900,23);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:900:23: ( ws )?
-				int alt407=2;
-				try { dbg.enterSubRule(407);
-				try { dbg.enterDecision(407, decisionCanBacktrack[407]);
-
-				int LA407_0 = input.LA(1);
-				if ( (LA407_0==COMMENT||LA407_0==NL||LA407_0==WS) ) {
-					alt407=1;
-				}
-				} finally {dbg.exitDecision(407);}
-
-				switch (alt407) {
-					case 1 :
-						dbg.enterAlt(1);
-
-						// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:900:23: ws
-						{
-						dbg.location(900,23);
-						pushFollow(FOLLOW_ws_in_synpred30_Css34914);
-						ws();
-						state._fsp--;
-						if (state.failed) return;
-						}
-						break;
-
-				}
-				} finally {dbg.exitSubRule(407);}
-				dbg.location(900,27);
-				pushFollow(FOLLOW_operator_in_synpred30_Css34917);
-				operator();
-				state._fsp--;
-				if (state.failed) return;dbg.location(900,36);
-				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:900:36: ( ws )?
 				int alt408=2;
 				try { dbg.enterSubRule(408);
 				try { dbg.enterDecision(408, decisionCanBacktrack[408]);
@@ -26317,6 +26341,38 @@ public class Css3Parser extends DebugParser {
 					case 1 :
 						dbg.enterAlt(1);
 
+						// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:900:23: ws
+						{
+						dbg.location(900,23);
+						pushFollow(FOLLOW_ws_in_synpred30_Css34914);
+						ws();
+						state._fsp--;
+						if (state.failed) return;
+						}
+						break;
+
+				}
+				} finally {dbg.exitSubRule(408);}
+				dbg.location(900,27);
+				pushFollow(FOLLOW_operator_in_synpred30_Css34917);
+				operator();
+				state._fsp--;
+				if (state.failed) return;dbg.location(900,36);
+				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:900:36: ( ws )?
+				int alt409=2;
+				try { dbg.enterSubRule(409);
+				try { dbg.enterDecision(409, decisionCanBacktrack[409]);
+
+				int LA409_0 = input.LA(1);
+				if ( (LA409_0==COMMENT||LA409_0==NL||LA409_0==WS) ) {
+					alt409=1;
+				}
+				} finally {dbg.exitDecision(409);}
+
+				switch (alt409) {
+					case 1 :
+						dbg.enterAlt(1);
+
 						// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:900:36: ws
 						{
 						dbg.location(900,36);
@@ -26328,7 +26384,7 @@ public class Css3Parser extends DebugParser {
 						break;
 
 				}
-				} finally {dbg.exitSubRule(408);}
+				} finally {dbg.exitSubRule(409);}
 
 				}
 
@@ -26343,7 +26399,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(409);}
+		} finally {dbg.exitSubRule(410);}
 		dbg.location(900,58);
 		pushFollow(FOLLOW_term_in_synpred30_Css34928);
 		term();
@@ -26367,17 +26423,17 @@ public class Css3Parser extends DebugParser {
 		state._fsp--;
 		if (state.failed) return;dbg.location(907,23);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:907:23: ( ws )?
-		int alt410=2;
-		try { dbg.enterSubRule(410);
-		try { dbg.enterDecision(410, decisionCanBacktrack[410]);
+		int alt411=2;
+		try { dbg.enterSubRule(411);
+		try { dbg.enterDecision(411, decisionCanBacktrack[411]);
 
-		int LA410_0 = input.LA(1);
-		if ( (LA410_0==COMMENT||LA410_0==NL||LA410_0==WS) ) {
-			alt410=1;
+		int LA411_0 = input.LA(1);
+		if ( (LA411_0==COMMENT||LA411_0==NL||LA411_0==WS) ) {
+			alt411=1;
 		}
-		} finally {dbg.exitDecision(410);}
+		} finally {dbg.exitDecision(411);}
 
-		switch (alt410) {
+		switch (alt411) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26392,7 +26448,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(410);}
+		} finally {dbg.exitSubRule(411);}
 		dbg.location(907,27);
 		match(input,LPAREN,FOLLOW_LPAREN_in_synpred31_Css35006); if (state.failed) return;
 		}
@@ -26413,17 +26469,17 @@ public class Css3Parser extends DebugParser {
 		state._fsp--;
 		if (state.failed) return;dbg.location(968,26);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:968:26: ( ws )?
-		int alt411=2;
-		try { dbg.enterSubRule(411);
-		try { dbg.enterDecision(411, decisionCanBacktrack[411]);
+		int alt412=2;
+		try { dbg.enterSubRule(412);
+		try { dbg.enterDecision(412, decisionCanBacktrack[412]);
 
-		int LA411_0 = input.LA(1);
-		if ( (LA411_0==COMMENT||LA411_0==NL||LA411_0==WS) ) {
-			alt411=1;
+		int LA412_0 = input.LA(1);
+		if ( (LA412_0==COMMENT||LA412_0==NL||LA412_0==WS) ) {
+			alt412=1;
 		}
-		} finally {dbg.exitDecision(411);}
+		} finally {dbg.exitDecision(412);}
 
-		switch (alt411) {
+		switch (alt412) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26438,7 +26494,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(411);}
+		} finally {dbg.exitSubRule(412);}
 		dbg.location(968,30);
 		if ( input.LA(1)==COLON||input.LA(1)==OPEQ ) {
 			input.consume();
@@ -26482,21 +26538,21 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(981,21);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:981:21: ( ws | ( ( ws )? SOLIDUS ( ws )? ) |)
-		int alt414=3;
-		try { dbg.enterSubRule(414);
-		try { dbg.enterDecision(414, decisionCanBacktrack[414]);
+		int alt415=3;
+		try { dbg.enterSubRule(415);
+		try { dbg.enterDecision(415, decisionCanBacktrack[415]);
 
 		try {
 			isCyclicDecision = true;
-			alt414 = dfa414.predict(input);
+			alt415 = dfa415.predict(input);
 		}
 		catch (NoViableAltException nvae) {
 			dbg.recognitionException(nvae);
 			throw nvae;
 		}
-		} finally {dbg.exitDecision(414);}
+		} finally {dbg.exitDecision(415);}
 
-		switch (alt414) {
+		switch (alt415) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26522,35 +26578,6 @@ public class Css3Parser extends DebugParser {
 				{
 				dbg.location(981,29);
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:981:29: ( ws )?
-				int alt412=2;
-				try { dbg.enterSubRule(412);
-				try { dbg.enterDecision(412, decisionCanBacktrack[412]);
-
-				int LA412_0 = input.LA(1);
-				if ( (LA412_0==COMMENT||LA412_0==NL||LA412_0==WS) ) {
-					alt412=1;
-				}
-				} finally {dbg.exitDecision(412);}
-
-				switch (alt412) {
-					case 1 :
-						dbg.enterAlt(1);
-
-						// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:981:29: ws
-						{
-						dbg.location(981,29);
-						pushFollow(FOLLOW_ws_in_synpred34_Css35662);
-						ws();
-						state._fsp--;
-						if (state.failed) return;
-						}
-						break;
-
-				}
-				} finally {dbg.exitSubRule(412);}
-				dbg.location(981,33);
-				match(input,SOLIDUS,FOLLOW_SOLIDUS_in_synpred34_Css35665); if (state.failed) return;dbg.location(981,41);
-				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:981:41: ( ws )?
 				int alt413=2;
 				try { dbg.enterSubRule(413);
 				try { dbg.enterDecision(413, decisionCanBacktrack[413]);
@@ -26565,6 +26592,35 @@ public class Css3Parser extends DebugParser {
 					case 1 :
 						dbg.enterAlt(1);
 
+						// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:981:29: ws
+						{
+						dbg.location(981,29);
+						pushFollow(FOLLOW_ws_in_synpred34_Css35662);
+						ws();
+						state._fsp--;
+						if (state.failed) return;
+						}
+						break;
+
+				}
+				} finally {dbg.exitSubRule(413);}
+				dbg.location(981,33);
+				match(input,SOLIDUS,FOLLOW_SOLIDUS_in_synpred34_Css35665); if (state.failed) return;dbg.location(981,41);
+				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:981:41: ( ws )?
+				int alt414=2;
+				try { dbg.enterSubRule(414);
+				try { dbg.enterDecision(414, decisionCanBacktrack[414]);
+
+				int LA414_0 = input.LA(1);
+				if ( (LA414_0==COMMENT||LA414_0==NL||LA414_0==WS) ) {
+					alt414=1;
+				}
+				} finally {dbg.exitDecision(414);}
+
+				switch (alt414) {
+					case 1 :
+						dbg.enterAlt(1);
+
 						// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:981:41: ws
 						{
 						dbg.location(981,41);
@@ -26576,7 +26632,7 @@ public class Css3Parser extends DebugParser {
 						break;
 
 				}
-				} finally {dbg.exitSubRule(413);}
+				} finally {dbg.exitSubRule(414);}
 
 				}
 
@@ -26591,7 +26647,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(414);}
+		} finally {dbg.exitSubRule(415);}
 		dbg.location(981,63);
 		pushFollow(FOLLOW_term_in_synpred34_Css35676);
 		term();
@@ -26611,35 +26667,6 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(1016,7);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1016:7: ( ws )?
-		int alt415=2;
-		try { dbg.enterSubRule(415);
-		try { dbg.enterDecision(415, decisionCanBacktrack[415]);
-
-		int LA415_0 = input.LA(1);
-		if ( (LA415_0==COMMENT||LA415_0==NL||LA415_0==WS) ) {
-			alt415=1;
-		}
-		} finally {dbg.exitDecision(415);}
-
-		switch (alt415) {
-			case 1 :
-				dbg.enterAlt(1);
-
-				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1016:7: ws
-				{
-				dbg.location(1016,7);
-				pushFollow(FOLLOW_ws_in_synpred35_Css36110);
-				ws();
-				state._fsp--;
-				if (state.failed) return;
-				}
-				break;
-
-		}
-		} finally {dbg.exitSubRule(415);}
-		dbg.location(1016,11);
-		match(input,COMMA,FOLLOW_COMMA_in_synpred35_Css36113); if (state.failed) return;dbg.location(1016,17);
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1016:17: ( ws )?
 		int alt416=2;
 		try { dbg.enterSubRule(416);
 		try { dbg.enterDecision(416, decisionCanBacktrack[416]);
@@ -26654,6 +26681,35 @@ public class Css3Parser extends DebugParser {
 			case 1 :
 				dbg.enterAlt(1);
 
+				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1016:7: ws
+				{
+				dbg.location(1016,7);
+				pushFollow(FOLLOW_ws_in_synpred35_Css36110);
+				ws();
+				state._fsp--;
+				if (state.failed) return;
+				}
+				break;
+
+		}
+		} finally {dbg.exitSubRule(416);}
+		dbg.location(1016,11);
+		match(input,COMMA,FOLLOW_COMMA_in_synpred35_Css36113); if (state.failed) return;dbg.location(1016,17);
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1016:17: ( ws )?
+		int alt417=2;
+		try { dbg.enterSubRule(417);
+		try { dbg.enterDecision(417, decisionCanBacktrack[417]);
+
+		int LA417_0 = input.LA(1);
+		if ( (LA417_0==COMMENT||LA417_0==NL||LA417_0==WS) ) {
+			alt417=1;
+		}
+		} finally {dbg.exitDecision(417);}
+
+		switch (alt417) {
+			case 1 :
+				dbg.enterAlt(1);
+
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1016:17: ws
 				{
 				dbg.location(1016,17);
@@ -26665,7 +26721,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(416);}
+		} finally {dbg.exitSubRule(417);}
 		dbg.location(1016,21);
 		pushFollow(FOLLOW_cp_expression_in_synpred35_Css36118);
 		cp_expression();
@@ -26685,17 +26741,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(1033,10);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1033:10: ( ws )?
-		int alt417=2;
-		try { dbg.enterSubRule(417);
-		try { dbg.enterDecision(417, decisionCanBacktrack[417]);
+		int alt418=2;
+		try { dbg.enterSubRule(418);
+		try { dbg.enterDecision(418, decisionCanBacktrack[418]);
 
-		int LA417_0 = input.LA(1);
-		if ( (LA417_0==COMMENT||LA417_0==NL||LA417_0==WS) ) {
-			alt417=1;
+		int LA418_0 = input.LA(1);
+		if ( (LA418_0==COMMENT||LA418_0==NL||LA418_0==WS) ) {
+			alt418=1;
 		}
-		} finally {dbg.exitDecision(417);}
+		} finally {dbg.exitDecision(418);}
 
-		switch (alt417) {
+		switch (alt418) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26710,7 +26766,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(417);}
+		} finally {dbg.exitSubRule(418);}
 		dbg.location(1033,14);
 		pushFollow(FOLLOW_cp_expression_operator_in_synpred36_Css36182);
 		cp_expression_operator();
@@ -26730,17 +26786,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(1034,12);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1034:12: ( ws )?
-		int alt418=2;
-		try { dbg.enterSubRule(418);
-		try { dbg.enterDecision(418, decisionCanBacktrack[418]);
+		int alt419=2;
+		try { dbg.enterSubRule(419);
+		try { dbg.enterDecision(419, decisionCanBacktrack[419]);
 
-		int LA418_0 = input.LA(1);
-		if ( (LA418_0==COMMENT||LA418_0==NL||LA418_0==WS) ) {
-			alt418=1;
+		int LA419_0 = input.LA(1);
+		if ( (LA419_0==COMMENT||LA419_0==NL||LA419_0==WS) ) {
+			alt419=1;
 		}
-		} finally {dbg.exitDecision(418);}
+		} finally {dbg.exitDecision(419);}
 
-		switch (alt418) {
+		switch (alt419) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26755,7 +26811,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(418);}
+		} finally {dbg.exitSubRule(419);}
 		dbg.location(1034,16);
 		pushFollow(FOLLOW_cp_expression_atom_in_synpred37_Css36211);
 		cp_expression_atom();
@@ -26792,17 +26848,17 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(1074,14);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1074:14: ( ws )?
-		int alt419=2;
-		try { dbg.enterSubRule(419);
-		try { dbg.enterDecision(419, decisionCanBacktrack[419]);
+		int alt420=2;
+		try { dbg.enterSubRule(420);
+		try { dbg.enterDecision(420, decisionCanBacktrack[420]);
 
-		int LA419_0 = input.LA(1);
-		if ( (LA419_0==COMMENT||LA419_0==NL||LA419_0==WS) ) {
-			alt419=1;
+		int LA420_0 = input.LA(1);
+		if ( (LA420_0==COMMENT||LA420_0==NL||LA420_0==WS) ) {
+			alt420=1;
 		}
-		} finally {dbg.exitDecision(419);}
+		} finally {dbg.exitDecision(420);}
 
-		switch (alt419) {
+		switch (alt420) {
 			case 1 :
 				dbg.enterAlt(1);
 
@@ -26817,7 +26873,7 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(419);}
+		} finally {dbg.exitSubRule(420);}
 		dbg.location(1074,18);
 		if ( input.LA(1)==MINUS||input.LA(1)==PLUS||(input.LA(1) >= SOLIDUS && input.LA(1) <= STAR) ) {
 			input.consume();
@@ -26844,24 +26900,24 @@ public class Css3Parser extends DebugParser {
 		{
 		dbg.location(1282,20);
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:20: ( ws )?
-		int alt420=2;
-		try { dbg.enterSubRule(420);
-		try { dbg.enterDecision(420, decisionCanBacktrack[420]);
+		int alt421=2;
+		try { dbg.enterSubRule(421);
+		try { dbg.enterDecision(421, decisionCanBacktrack[421]);
 
-		int LA420_0 = input.LA(1);
-		if ( (LA420_0==COMMENT||LA420_0==NL||LA420_0==WS) ) {
-			alt420=1;
+		int LA421_0 = input.LA(1);
+		if ( (LA421_0==COMMENT||LA421_0==NL||LA421_0==WS) ) {
+			alt421=1;
 		}
-		} finally {dbg.exitDecision(420);}
+		} finally {dbg.exitDecision(421);}
 
-		switch (alt420) {
+		switch (alt421) {
 			case 1 :
 				dbg.enterAlt(1);
 
 				// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1282:20: ws
 				{
 				dbg.location(1282,20);
-				pushFollow(FOLLOW_ws_in_synpred40_Css37914);
+				pushFollow(FOLLOW_ws_in_synpred40_Css37922);
 				ws();
 				state._fsp--;
 				if (state.failed) return;
@@ -26869,9 +26925,9 @@ public class Css3Parser extends DebugParser {
 				break;
 
 		}
-		} finally {dbg.exitSubRule(420);}
+		} finally {dbg.exitSubRule(421);}
 		dbg.location(1282,24);
-		match(input,COMMA,FOLLOW_COMMA_in_synpred40_Css37917); if (state.failed) return;
+		match(input,COMMA,FOLLOW_COMMA_in_synpred40_Css37925); if (state.failed) return;
 		}
 
 	}
@@ -27574,14 +27630,14 @@ public class Css3Parser extends DebugParser {
 	protected DFA323 dfa323 = new DFA323(this);
 	protected DFA344 dfa344 = new DFA344(this);
 	protected DFA349 dfa349 = new DFA349(this);
+	protected DFA357 dfa357 = new DFA357(this);
 	protected DFA356 dfa356 = new DFA356(this);
-	protected DFA355 dfa355 = new DFA355(this);
-	protected DFA361 dfa361 = new DFA361(this);
-	protected DFA379 dfa379 = new DFA379(this);
-	protected DFA399 dfa399 = new DFA399(this);
-	protected DFA401 dfa401 = new DFA401(this);
-	protected DFA409 dfa409 = new DFA409(this);
-	protected DFA414 dfa414 = new DFA414(this);
+	protected DFA362 dfa362 = new DFA362(this);
+	protected DFA380 dfa380 = new DFA380(this);
+	protected DFA400 dfa400 = new DFA400(this);
+	protected DFA402 dfa402 = new DFA402(this);
+	protected DFA410 dfa410 = new DFA410(this);
+	protected DFA415 dfa415 = new DFA415(this);
 	static final String DFA3_eotS =
 		"\5\uffff";
 	static final String DFA3_eofS =
@@ -27589,7 +27645,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA3_minS =
 		"\1\6\1\23\1\uffff\1\23\1\uffff";
 	static final String DFA3_maxS =
-		"\1\u008f\1\u0090\1\uffff\1\u0090\1\uffff";
+		"\1\u0090\1\u0091\1\uffff\1\u0091\1\uffff";
 	static final String DFA3_acceptS =
 		"\2\uffff\1\2\1\uffff\1\1";
 	static final String DFA3_specialS =
@@ -27598,11 +27654,11 @@ public class Css3Parser extends DebugParser {
 			"\2\2\2\uffff\5\2\3\uffff\1\1\1\2\3\uffff\1\2\5\uffff\1\2\1\uffff\1\2"+
 			"\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\11\uffff\1\2\2\uffff\2\2\6\uffff"+
-			"\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff"+
-			"\1\2\1\uffff\5\2\6\uffff\1\2",
-			"\1\2\1\uffff\1\3\73\uffff\1\3\56\uffff\1\4\17\uffff\1\3",
+			"\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff\3\2\1\uffff\5\2\1\uffff"+
+			"\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2",
+			"\1\2\1\uffff\1\3\73\uffff\1\3\57\uffff\1\4\17\uffff\1\3",
 			"",
-			"\1\2\1\uffff\1\3\73\uffff\1\3\56\uffff\1\4\17\uffff\1\3",
+			"\1\2\1\uffff\1\3\73\uffff\1\3\57\uffff\1\4\17\uffff\1\3",
 			""
 	};
 
@@ -27651,7 +27707,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA5_minS =
 		"\1\6\1\23\1\uffff\1\23\1\uffff";
 	static final String DFA5_maxS =
-		"\1\u008f\1\u0090\1\uffff\1\u0090\1\uffff";
+		"\1\u0090\1\u0091\1\uffff\1\u0091\1\uffff";
 	static final String DFA5_acceptS =
 		"\2\uffff\1\2\1\uffff\1\1";
 	static final String DFA5_specialS =
@@ -27660,12 +27716,12 @@ public class Css3Parser extends DebugParser {
 			"\2\2\2\uffff\5\2\3\uffff\2\2\3\uffff\1\2\5\uffff\1\2\1\uffff\1\2\7\uffff"+
 			"\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff\4\2\2\uffff"+
 			"\1\2\6\uffff\3\2\5\uffff\1\1\11\uffff\1\2\2\uffff\2\2\6\uffff\3\2\2\uffff"+
-			"\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff"+
-			"\5\2\6\uffff\1\2",
-			"\1\2\1\uffff\1\3\34\uffff\1\4\36\uffff\1\3\56\uffff\1\4\12\uffff\1\4"+
+			"\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff"+
+			"\1\2\1\uffff\5\2\6\uffff\1\2",
+			"\1\2\1\uffff\1\3\34\uffff\1\4\36\uffff\1\3\57\uffff\1\4\12\uffff\1\4"+
 			"\4\uffff\1\3",
 			"",
-			"\1\2\1\uffff\1\3\34\uffff\1\4\36\uffff\1\3\56\uffff\1\4\12\uffff\1\4"+
+			"\1\2\1\uffff\1\3\34\uffff\1\4\36\uffff\1\3\57\uffff\1\4\12\uffff\1\4"+
 			"\4\uffff\1\3",
 			""
 	};
@@ -27715,7 +27771,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA8_minS =
 		"\1\6\1\uffff\2\23\1\uffff";
 	static final String DFA8_maxS =
-		"\1\u008f\1\uffff\2\u0090\1\uffff";
+		"\1\u0090\1\uffff\2\u0091\1\uffff";
 	static final String DFA8_acceptS =
 		"\1\uffff\1\2\2\uffff\1\1";
 	static final String DFA8_specialS =
@@ -27724,12 +27780,12 @@ public class Css3Parser extends DebugParser {
 			"\2\1\2\uffff\5\1\3\uffff\2\1\3\uffff\1\1\5\uffff\1\1\1\uffff\1\1\7\uffff"+
 			"\1\1\2\uffff\2\1\2\uffff\2\1\2\uffff\1\1\1\uffff\1\1\6\uffff\4\1\2\uffff"+
 			"\1\1\6\uffff\3\1\5\uffff\1\2\11\uffff\1\1\2\uffff\2\1\6\uffff\3\1\2\uffff"+
-			"\3\1\1\uffff\6\1\1\uffff\3\1\1\uffff\5\1\1\uffff\1\1\2\uffff\1\1\1\uffff"+
-			"\5\1\6\uffff\1\1",
+			"\3\1\1\uffff\2\1\1\uffff\4\1\1\uffff\3\1\1\uffff\5\1\1\uffff\1\1\2\uffff"+
+			"\1\1\1\uffff\5\1\6\uffff\1\1",
 			"",
-			"\1\1\1\uffff\1\3\34\uffff\1\4\36\uffff\1\3\56\uffff\1\4\12\uffff\1\4"+
+			"\1\1\1\uffff\1\3\34\uffff\1\4\36\uffff\1\3\57\uffff\1\4\12\uffff\1\4"+
 			"\4\uffff\1\3",
-			"\1\1\1\uffff\1\3\34\uffff\1\4\36\uffff\1\3\56\uffff\1\4\12\uffff\1\4"+
+			"\1\1\1\uffff\1\3\34\uffff\1\4\36\uffff\1\3\57\uffff\1\4\12\uffff\1\4"+
 			"\4\uffff\1\3",
 			""
 	};
@@ -27779,15 +27835,15 @@ public class Css3Parser extends DebugParser {
 	static final String DFA32_minS =
 		"\1\64\2\25\1\0\1\uffff\1\0\2\uffff";
 	static final String DFA32_maxS =
-		"\1\64\2\u0090\1\0\1\uffff\1\0\2\uffff";
+		"\1\64\2\u0091\1\0\1\uffff\1\0\2\uffff";
 	static final String DFA32_acceptS =
 		"\4\uffff\1\3\1\uffff\1\1\1\2";
 	static final String DFA32_specialS =
 		"\3\uffff\1\1\1\uffff\1\0\2\uffff}>";
 	static final String[] DFA32_transitionS = {
 			"\1\1",
-			"\1\2\60\uffff\1\4\12\uffff\1\2\56\uffff\1\3\12\uffff\1\3\4\uffff\1\2",
-			"\1\2\60\uffff\1\4\12\uffff\1\2\56\uffff\1\5\12\uffff\1\5\4\uffff\1\2",
+			"\1\2\60\uffff\1\4\12\uffff\1\2\57\uffff\1\3\12\uffff\1\3\4\uffff\1\2",
+			"\1\2\60\uffff\1\4\12\uffff\1\2\57\uffff\1\5\12\uffff\1\5\4\uffff\1\2",
 			"\1\uffff",
 			"",
 			"\1\uffff",
@@ -27879,7 +27935,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA24_minS =
 		"\2\6\2\uffff";
 	static final String DFA24_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA24_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA24_specialS =
@@ -27889,14 +27945,14 @@ public class Css3Parser extends DebugParser {
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\4\uffff\1\2\1\uffff\3\2\5\uffff\1\2\1\1\3\uffff\1\2"+
 			"\4\uffff\1\2\2\uffff\2\2\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff"+
-			"\6\2\1\uffff\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff"+
-			"\1\2\1\1",
+			"\2\2\1\uffff\4\2\1\uffff\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff"+
+			"\5\2\6\uffff\1\2\1\1",
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\3\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\4\uffff\1\2\1\uffff\3\2\5\uffff\1\2\1\1\3\uffff\1\2"+
 			"\4\uffff\1\2\2\uffff\2\2\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff"+
-			"\6\2\1\uffff\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff"+
-			"\1\2\1\1",
+			"\2\2\1\uffff\4\2\1\uffff\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff"+
+			"\5\2\6\uffff\1\2\1\1",
 			"",
 			""
 	};
@@ -27946,7 +28002,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA38_minS =
 		"\2\6\1\0\1\uffff\1\0\1\uffff";
 	static final String DFA38_maxS =
-		"\2\u0090\1\0\1\uffff\1\0\1\uffff";
+		"\2\u0091\1\0\1\uffff\1\0\1\uffff";
 	static final String DFA38_acceptS =
 		"\3\uffff\1\2\1\uffff\1\1";
 	static final String DFA38_specialS =
@@ -27955,13 +28011,15 @@ public class Css3Parser extends DebugParser {
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\4\3\1\2\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\4\3\1\2\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3"+
+			"\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\4\3\1\4\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\4\3\1\4\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3"+
+			"\1\1",
 			"\1\uffff",
 			"",
 			"\1\uffff",
@@ -28050,7 +28108,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA44_minS =
 		"\2\6\2\uffff";
 	static final String DFA44_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA44_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA44_specialS =
@@ -28059,13 +28117,13 @@ public class Css3Parser extends DebugParser {
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\2\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\2\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -28115,7 +28173,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA46_minS =
 		"\2\6\2\uffff";
 	static final String DFA46_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA46_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA46_specialS =
@@ -28124,13 +28182,13 @@ public class Css3Parser extends DebugParser {
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\2\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\2\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -28180,22 +28238,22 @@ public class Css3Parser extends DebugParser {
 	static final String DFA50_minS =
 		"\2\6\2\uffff";
 	static final String DFA50_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA50_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA50_specialS =
-		"\1\0\1\1\2\uffff}>";
+		"\1\1\1\0\2\uffff}>";
 	static final String[] DFA50_transitionS = {
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\3\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\5\uffff"+
 			"\5\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff"+
-			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\3\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\5\uffff"+
 			"\5\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff"+
-			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"",
 			""
 	};
@@ -28242,30 +28300,30 @@ public class Css3Parser extends DebugParser {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
+						int LA50_1 = input.LA(1);
+						 
+						int index50_1 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA50_1==EOF||(LA50_1 >= AT_IDENT && LA50_1 <= AT_SIGN)||(LA50_1 >= BOTTOMCENTER_SYM && LA50_1 <= BOTTOMRIGHT_SYM)||(LA50_1 >= CHARSET_SYM && LA50_1 <= COLON)||LA50_1==COUNTER_STYLE_SYM||LA50_1==DCOLON||LA50_1==DOT||LA50_1==FONT_FACE_SYM||(LA50_1 >= GEN && LA50_1 <= GREATER)||(LA50_1 >= HASH && LA50_1 <= HASH_SYMBOL)||LA50_1==IDENT||LA50_1==IMPORT_SYM||(LA50_1 >= LBRACE && LA50_1 <= LEFTTOP_SYM)||LA50_1==LESS_AND||(LA50_1 >= MEDIA_SYM && LA50_1 <= MOZ_DOCUMENT_SYM)||LA50_1==NAMESPACE_SYM||LA50_1==PAGE_SYM||(LA50_1 >= PIPE && LA50_1 <= PLUS)||LA50_1==RBRACE||(LA50_1 >= RIGHTBOTTOM_SYM && LA50_1 <= RIGHTTOP_SYM)||(LA50_1 >= SASS_AT_ROOT && LA50_1 <= SASS_DEBUG)||(LA50_1 >= SASS_EACH && LA50_1 <= SASS_ELSE)||(LA50_1 >= SASS_EXTEND && LA50_1 <= SASS_FUNCTION)||(LA50_1 >= SASS_IF && LA50_1 <= SASS_MIXIN)||(LA50_1 >= SASS_RETURN && LA50_1 <= SEMI)||LA50_1==STAR||LA50_1==TILDE||(LA50_1 >= TOPCENTER_SYM && LA50_1 <= TOPRIGHT_SYM)||LA50_1==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
+						else if ( (LA50_1==COMMENT||LA50_1==NL||LA50_1==WS) ) {s = 1;}
+						else if ( (LA50_1==COMMA) && (synpred9_Css3())) {s = 3;}
+						 
+						input.seek(index50_1);
+						if ( s>=0 ) return s;
+						break;
+
+					case 1 : 
 						int LA50_0 = input.LA(1);
 						 
 						int index50_0 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (LA50_0==COMMENT||LA50_0==NL||LA50_0==WS) ) {s = 1;}
-						else if ( (LA50_0==EOF||(LA50_0 >= AT_IDENT && LA50_0 <= AT_SIGN)||(LA50_0 >= BOTTOMCENTER_SYM && LA50_0 <= BOTTOMRIGHT_SYM)||(LA50_0 >= CHARSET_SYM && LA50_0 <= COLON)||LA50_0==COUNTER_STYLE_SYM||LA50_0==DCOLON||LA50_0==DOT||LA50_0==FONT_FACE_SYM||(LA50_0 >= GEN && LA50_0 <= GREATER)||(LA50_0 >= HASH && LA50_0 <= HASH_SYMBOL)||LA50_0==IDENT||LA50_0==IMPORT_SYM||(LA50_0 >= LBRACE && LA50_0 <= LEFTTOP_SYM)||LA50_0==LESS_AND||(LA50_0 >= MEDIA_SYM && LA50_0 <= MOZ_DOCUMENT_SYM)||LA50_0==NAMESPACE_SYM||LA50_0==PAGE_SYM||(LA50_0 >= PIPE && LA50_0 <= PLUS)||LA50_0==RBRACE||(LA50_0 >= RIGHTBOTTOM_SYM && LA50_0 <= RIGHTTOP_SYM)||(LA50_0 >= SASS_AT_ROOT && LA50_0 <= SASS_DEBUG)||(LA50_0 >= SASS_EACH && LA50_0 <= SASS_FUNCTION)||(LA50_0 >= SASS_IF && LA50_0 <= SASS_MIXIN)||(LA50_0 >= SASS_RETURN && LA50_0 <= SEMI)||LA50_0==STAR||LA50_0==TILDE||(LA50_0 >= TOPCENTER_SYM && LA50_0 <= TOPRIGHT_SYM)||LA50_0==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
+						else if ( (LA50_0==EOF||(LA50_0 >= AT_IDENT && LA50_0 <= AT_SIGN)||(LA50_0 >= BOTTOMCENTER_SYM && LA50_0 <= BOTTOMRIGHT_SYM)||(LA50_0 >= CHARSET_SYM && LA50_0 <= COLON)||LA50_0==COUNTER_STYLE_SYM||LA50_0==DCOLON||LA50_0==DOT||LA50_0==FONT_FACE_SYM||(LA50_0 >= GEN && LA50_0 <= GREATER)||(LA50_0 >= HASH && LA50_0 <= HASH_SYMBOL)||LA50_0==IDENT||LA50_0==IMPORT_SYM||(LA50_0 >= LBRACE && LA50_0 <= LEFTTOP_SYM)||LA50_0==LESS_AND||(LA50_0 >= MEDIA_SYM && LA50_0 <= MOZ_DOCUMENT_SYM)||LA50_0==NAMESPACE_SYM||LA50_0==PAGE_SYM||(LA50_0 >= PIPE && LA50_0 <= PLUS)||LA50_0==RBRACE||(LA50_0 >= RIGHTBOTTOM_SYM && LA50_0 <= RIGHTTOP_SYM)||(LA50_0 >= SASS_AT_ROOT && LA50_0 <= SASS_DEBUG)||(LA50_0 >= SASS_EACH && LA50_0 <= SASS_ELSE)||(LA50_0 >= SASS_EXTEND && LA50_0 <= SASS_FUNCTION)||(LA50_0 >= SASS_IF && LA50_0 <= SASS_MIXIN)||(LA50_0 >= SASS_RETURN && LA50_0 <= SEMI)||LA50_0==STAR||LA50_0==TILDE||(LA50_0 >= TOPCENTER_SYM && LA50_0 <= TOPRIGHT_SYM)||LA50_0==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
 						else if ( (LA50_0==COMMA) && (synpred9_Css3())) {s = 3;}
 						 
 						input.seek(index50_0);
-						if ( s>=0 ) return s;
-						break;
-
-					case 1 : 
-						int LA50_1 = input.LA(1);
-						 
-						int index50_1 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA50_1==EOF||(LA50_1 >= AT_IDENT && LA50_1 <= AT_SIGN)||(LA50_1 >= BOTTOMCENTER_SYM && LA50_1 <= BOTTOMRIGHT_SYM)||(LA50_1 >= CHARSET_SYM && LA50_1 <= COLON)||LA50_1==COUNTER_STYLE_SYM||LA50_1==DCOLON||LA50_1==DOT||LA50_1==FONT_FACE_SYM||(LA50_1 >= GEN && LA50_1 <= GREATER)||(LA50_1 >= HASH && LA50_1 <= HASH_SYMBOL)||LA50_1==IDENT||LA50_1==IMPORT_SYM||(LA50_1 >= LBRACE && LA50_1 <= LEFTTOP_SYM)||LA50_1==LESS_AND||(LA50_1 >= MEDIA_SYM && LA50_1 <= MOZ_DOCUMENT_SYM)||LA50_1==NAMESPACE_SYM||LA50_1==PAGE_SYM||(LA50_1 >= PIPE && LA50_1 <= PLUS)||LA50_1==RBRACE||(LA50_1 >= RIGHTBOTTOM_SYM && LA50_1 <= RIGHTTOP_SYM)||(LA50_1 >= SASS_AT_ROOT && LA50_1 <= SASS_DEBUG)||(LA50_1 >= SASS_EACH && LA50_1 <= SASS_FUNCTION)||(LA50_1 >= SASS_IF && LA50_1 <= SASS_MIXIN)||(LA50_1 >= SASS_RETURN && LA50_1 <= SEMI)||LA50_1==STAR||LA50_1==TILDE||(LA50_1 >= TOPCENTER_SYM && LA50_1 <= TOPRIGHT_SYM)||LA50_1==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
-						else if ( (LA50_1==COMMENT||LA50_1==NL||LA50_1==WS) ) {s = 1;}
-						else if ( (LA50_1==COMMA) && (synpred9_Css3())) {s = 3;}
-						 
-						input.seek(index50_1);
 						if ( s>=0 ) return s;
 						break;
 			}
@@ -28284,7 +28342,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA55_minS =
 		"\2\6\1\uffff\3\7\1\uffff\1\7";
 	static final String DFA55_maxS =
-		"\2\u0090\1\uffff\3\u0090\1\uffff\1\u0090";
+		"\2\u0091\1\uffff\3\u0091\1\uffff\1\u0091";
 	static final String DFA55_acceptS =
 		"\2\uffff\1\2\3\uffff\1\1\1\uffff";
 	static final String DFA55_specialS =
@@ -28293,27 +28351,27 @@ public class Css3Parser extends DebugParser {
 			"\2\2\2\uffff\5\2\3\uffff\3\2\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff\1\2"+
 			"\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\3\1\uffff\1\2\5\uffff"+
 			"\5\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff"+
-			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"\2\2\2\uffff\5\2\3\uffff\3\2\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff\1\2"+
 			"\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\4\1\uffff\1\2\5\uffff"+
 			"\5\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff"+
-			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"",
 			"\1\2\13\uffff\2\2\1\5\7\uffff\1\2\1\uffff\1\2\13\uffff\1\2\2\uffff\2"+
-			"\2\12\uffff\2\2\12\uffff\1\6\12\uffff\1\5\13\uffff\2\2\22\uffff\1\2\20"+
+			"\2\12\uffff\2\2\12\uffff\1\6\12\uffff\1\5\13\uffff\2\2\23\uffff\1\2\20"+
 			"\uffff\1\2\15\uffff\1\5",
 			"\1\2\13\uffff\2\2\1\7\7\uffff\1\2\1\uffff\1\2\13\uffff\1\2\2\uffff\2"+
-			"\2\12\uffff\2\2\12\uffff\1\6\12\uffff\1\7\13\uffff\2\2\22\uffff\1\2\20"+
+			"\2\12\uffff\2\2\12\uffff\1\6\12\uffff\1\7\13\uffff\2\2\23\uffff\1\2\20"+
 			"\uffff\1\2\15\uffff\1\7",
 			"\1\2\13\uffff\2\2\1\5\7\uffff\1\2\1\uffff\1\2\12\uffff\2\2\2\uffff\2"+
 			"\2\2\uffff\1\2\7\uffff\2\2\5\uffff\1\2\4\uffff\1\6\2\uffff\1\2\7\uffff"+
-			"\1\5\13\uffff\2\2\22\uffff\1\2\15\uffff\1\2\2\uffff\1\2\15\uffff\1\5",
+			"\1\5\13\uffff\2\2\23\uffff\1\2\15\uffff\1\2\2\uffff\1\2\15\uffff\1\5",
 			"",
 			"\1\2\13\uffff\2\2\1\7\7\uffff\1\2\1\uffff\1\2\12\uffff\2\2\2\uffff\2"+
 			"\2\2\uffff\1\2\7\uffff\2\2\5\uffff\1\2\4\uffff\1\6\2\uffff\1\2\7\uffff"+
-			"\1\7\13\uffff\2\2\22\uffff\1\2\15\uffff\1\2\2\uffff\1\2\15\uffff\1\7"
+			"\1\7\13\uffff\2\2\23\uffff\1\2\15\uffff\1\2\2\uffff\1\2\15\uffff\1\7"
 	};
 
 	static final short[] DFA55_eot = DFA.unpackEncodedString(DFA55_eotS);
@@ -28361,7 +28419,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA58_minS =
 		"\2\6\1\uffff\3\7\1\uffff\1\7";
 	static final String DFA58_maxS =
-		"\2\u0090\1\uffff\3\u0090\1\uffff\1\u0090";
+		"\2\u0091\1\uffff\3\u0091\1\uffff\1\u0091";
 	static final String DFA58_acceptS =
 		"\2\uffff\1\2\3\uffff\1\1\1\uffff";
 	static final String DFA58_specialS =
@@ -28370,27 +28428,27 @@ public class Css3Parser extends DebugParser {
 			"\2\2\2\uffff\5\2\3\uffff\3\2\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff\1\2"+
 			"\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\3\1\uffff\1\2\5\uffff"+
 			"\5\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff"+
-			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"\2\2\2\uffff\5\2\3\uffff\3\2\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff\1\2"+
 			"\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\4\1\uffff\1\2\5\uffff"+
 			"\5\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff"+
-			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\uffff\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"",
 			"\1\2\13\uffff\2\2\1\5\7\uffff\1\2\1\uffff\1\2\13\uffff\1\2\2\uffff\2"+
-			"\2\12\uffff\2\2\12\uffff\1\6\12\uffff\1\5\13\uffff\2\2\22\uffff\1\2\20"+
+			"\2\12\uffff\2\2\12\uffff\1\6\12\uffff\1\5\13\uffff\2\2\23\uffff\1\2\20"+
 			"\uffff\1\2\15\uffff\1\5",
 			"\1\2\13\uffff\2\2\1\7\7\uffff\1\2\1\uffff\1\2\13\uffff\1\2\2\uffff\2"+
-			"\2\12\uffff\2\2\12\uffff\1\6\12\uffff\1\7\13\uffff\2\2\22\uffff\1\2\20"+
+			"\2\12\uffff\2\2\12\uffff\1\6\12\uffff\1\7\13\uffff\2\2\23\uffff\1\2\20"+
 			"\uffff\1\2\15\uffff\1\7",
 			"\1\2\13\uffff\2\2\1\5\7\uffff\1\2\1\uffff\1\2\12\uffff\2\2\2\uffff\2"+
 			"\2\2\uffff\1\2\7\uffff\2\2\5\uffff\1\2\4\uffff\1\6\2\uffff\1\2\7\uffff"+
-			"\1\5\13\uffff\2\2\22\uffff\1\2\15\uffff\1\2\2\uffff\1\2\15\uffff\1\5",
+			"\1\5\13\uffff\2\2\23\uffff\1\2\15\uffff\1\2\2\uffff\1\2\15\uffff\1\5",
 			"",
 			"\1\2\13\uffff\2\2\1\7\7\uffff\1\2\1\uffff\1\2\12\uffff\2\2\2\uffff\2"+
 			"\2\2\uffff\1\2\7\uffff\2\2\5\uffff\1\2\4\uffff\1\6\2\uffff\1\2\7\uffff"+
-			"\1\7\13\uffff\2\2\22\uffff\1\2\15\uffff\1\2\2\uffff\1\2\15\uffff\1\7"
+			"\1\7\13\uffff\2\2\23\uffff\1\2\15\uffff\1\2\2\uffff\1\2\15\uffff\1\7"
 	};
 
 	static final short[] DFA58_eot = DFA.unpackEncodedString(DFA58_eotS);
@@ -28438,14 +28496,14 @@ public class Css3Parser extends DebugParser {
 	static final String DFA63_minS =
 		"\2\23\2\uffff";
 	static final String DFA63_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA63_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA63_specialS =
 		"\4\uffff}>";
 	static final String[] DFA63_transitionS = {
-			"\1\2\1\uffff\1\1\73\uffff\1\1\26\uffff\1\3\47\uffff\1\1",
-			"\1\2\1\uffff\1\1\73\uffff\1\1\26\uffff\1\3\47\uffff\1\1",
+			"\1\2\1\uffff\1\1\73\uffff\1\1\26\uffff\1\3\50\uffff\1\1",
+			"\1\2\1\uffff\1\1\73\uffff\1\1\26\uffff\1\3\50\uffff\1\1",
 			"",
 			""
 	};
@@ -28495,7 +28553,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA71_minS =
 		"\2\6\1\0\1\uffff\1\0\1\uffff";
 	static final String DFA71_maxS =
-		"\2\u0090\1\0\1\uffff\1\0\1\uffff";
+		"\2\u0091\1\0\1\uffff\1\0\1\uffff";
 	static final String DFA71_acceptS =
 		"\3\uffff\1\2\1\uffff\1\1";
 	static final String DFA71_specialS =
@@ -28504,13 +28562,15 @@ public class Css3Parser extends DebugParser {
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\4\3\1\2\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\4\3\1\2\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3"+
+			"\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\4\3\1\4\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\4\3\1\4\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3"+
+			"\1\1",
 			"\1\uffff",
 			"",
 			"\1\uffff",
@@ -28599,14 +28659,14 @@ public class Css3Parser extends DebugParser {
 	static final String DFA98_minS =
 		"\2\24\2\uffff";
 	static final String DFA98_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA98_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA98_specialS =
 		"\4\uffff}>";
 	static final String[] DFA98_transitionS = {
-			"\1\3\1\1\44\uffff\1\2\26\uffff\1\1\76\uffff\1\1",
-			"\1\3\1\1\44\uffff\1\2\26\uffff\1\1\76\uffff\1\1",
+			"\1\3\1\1\44\uffff\1\2\26\uffff\1\1\77\uffff\1\1",
+			"\1\3\1\1\44\uffff\1\2\26\uffff\1\1\77\uffff\1\1",
 			"",
 			""
 	};
@@ -28656,7 +28716,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA105_minS =
 		"\1\6\1\uffff\2\23\1\uffff";
 	static final String DFA105_maxS =
-		"\1\u008f\1\uffff\2\u0090\1\uffff";
+		"\1\u0090\1\uffff\2\u0091\1\uffff";
 	static final String DFA105_acceptS =
 		"\1\uffff\1\1\2\uffff\1\2";
 	static final String DFA105_specialS =
@@ -28664,11 +28724,11 @@ public class Css3Parser extends DebugParser {
 	static final String[] DFA105_transitionS = {
 			"\1\1\3\uffff\5\2\3\uffff\1\1\4\uffff\1\1\17\uffff\1\1\2\uffff\1\1\4\uffff"+
 			"\1\1\2\uffff\1\1\1\uffff\1\1\7\uffff\3\2\11\uffff\3\1\5\uffff\1\1\11"+
-			"\uffff\1\1\12\uffff\3\2\2\uffff\3\1\1\uffff\3\1\1\uffff\2\1\1\uffff\3"+
-			"\1\1\uffff\4\1\2\uffff\1\1\4\uffff\5\2\6\uffff\1\1",
+			"\uffff\1\1\12\uffff\3\2\2\uffff\3\1\1\uffff\2\1\1\uffff\1\1\1\uffff\2"+
+			"\1\1\uffff\3\1\1\uffff\4\1\2\uffff\1\1\4\uffff\5\2\6\uffff\1\1",
 			"",
-			"\1\1\1\uffff\1\3\44\uffff\1\4\26\uffff\1\3\76\uffff\1\3",
-			"\1\1\1\uffff\1\3\44\uffff\1\4\26\uffff\1\3\76\uffff\1\3",
+			"\1\1\1\uffff\1\3\44\uffff\1\4\26\uffff\1\3\77\uffff\1\3",
+			"\1\1\1\uffff\1\3\44\uffff\1\4\26\uffff\1\3\77\uffff\1\3",
 			""
 	};
 
@@ -28717,7 +28777,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA109_minS =
 		"\1\6\1\uffff\2\23\1\uffff";
 	static final String DFA109_maxS =
-		"\1\u008f\1\uffff\2\u0090\1\uffff";
+		"\1\u0090\1\uffff\2\u0091\1\uffff";
 	static final String DFA109_acceptS =
 		"\1\uffff\1\1\2\uffff\1\2";
 	static final String DFA109_specialS =
@@ -28725,11 +28785,11 @@ public class Css3Parser extends DebugParser {
 	static final String[] DFA109_transitionS = {
 			"\1\1\3\uffff\5\2\3\uffff\1\1\4\uffff\1\1\17\uffff\1\1\2\uffff\1\1\4\uffff"+
 			"\1\1\2\uffff\1\1\1\uffff\1\1\7\uffff\3\2\11\uffff\3\1\5\uffff\1\1\11"+
-			"\uffff\1\1\12\uffff\3\2\2\uffff\3\1\1\uffff\3\1\1\uffff\2\1\1\uffff\3"+
-			"\1\1\uffff\4\1\2\uffff\1\1\4\uffff\5\2\6\uffff\1\1",
+			"\uffff\1\1\12\uffff\3\2\2\uffff\3\1\1\uffff\2\1\1\uffff\1\1\1\uffff\2"+
+			"\1\1\uffff\3\1\1\uffff\4\1\2\uffff\1\1\4\uffff\5\2\6\uffff\1\1",
 			"",
-			"\1\1\1\uffff\1\3\44\uffff\1\4\26\uffff\1\3\76\uffff\1\3",
-			"\1\1\1\uffff\1\3\44\uffff\1\4\26\uffff\1\3\76\uffff\1\3",
+			"\1\1\1\uffff\1\3\44\uffff\1\4\26\uffff\1\3\77\uffff\1\3",
+			"\1\1\1\uffff\1\3\44\uffff\1\4\26\uffff\1\3\77\uffff\1\3",
 			""
 	};
 
@@ -28778,7 +28838,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA129_minS =
 		"\2\6\3\uffff";
 	static final String DFA129_maxS =
-		"\2\u0090\3\uffff";
+		"\2\u0091\3\uffff";
 	static final String DFA129_acceptS =
 		"\2\uffff\1\3\1\1\1\2";
 	static final String DFA129_specialS =
@@ -28787,13 +28847,13 @@ public class Css3Parser extends DebugParser {
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\uffff\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\3\6\2\1\4\3\2\1\uffff\5\2\1\uffff"+
-			"\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\3\2\2\1\uffff\4\2\1\4\3\2\1\uffff"+
+			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\uffff\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\3\6\2\1\4\3\2\1\uffff\5\2\1\uffff"+
-			"\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\3\2\2\1\uffff\4\2\1\4\3\2\1\uffff"+
+			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"",
 			"",
 			""
@@ -28844,7 +28904,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA131_minS =
 		"\2\6\1\0\1\uffff\1\0\1\uffff";
 	static final String DFA131_maxS =
-		"\2\u0090\1\0\1\uffff\1\0\1\uffff";
+		"\2\u0091\1\0\1\uffff\1\0\1\uffff";
 	static final String DFA131_acceptS =
 		"\3\uffff\1\2\1\uffff\1\1";
 	static final String DFA131_specialS =
@@ -28852,14 +28912,14 @@ public class Css3Parser extends DebugParser {
 	static final String[] DFA131_transitionS = {
 			"\1\3\3\uffff\5\3\3\uffff\1\3\1\uffff\1\2\1\1\1\uffff\1\3\17\uffff\1\3"+
 			"\2\uffff\1\3\4\uffff\1\3\2\uffff\1\3\1\uffff\1\3\7\uffff\3\3\11\uffff"+
-			"\3\3\5\uffff\1\3\1\1\10\uffff\1\3\12\uffff\4\3\1\uffff\3\3\1\uffff\3"+
-			"\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\3\uffff\1\3\3\uffff\5\3\6\uffff"+
-			"\1\3\1\1",
+			"\3\3\5\uffff\1\3\1\1\10\uffff\1\3\12\uffff\4\3\1\uffff\3\3\1\uffff\2"+
+			"\3\1\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\3\uffff\1\3\3\uffff"+
+			"\5\3\6\uffff\1\3\1\1",
 			"\1\3\3\uffff\5\3\3\uffff\1\3\1\uffff\1\4\1\1\1\uffff\1\3\17\uffff\1"+
 			"\3\2\uffff\1\3\4\uffff\1\3\2\uffff\1\3\1\uffff\1\3\7\uffff\3\3\11\uffff"+
-			"\3\3\5\uffff\1\3\1\1\10\uffff\1\3\12\uffff\4\3\1\uffff\3\3\1\uffff\3"+
-			"\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\3\uffff\1\3\3\uffff\5\3\6\uffff"+
-			"\1\3\1\1",
+			"\3\3\5\uffff\1\3\1\1\10\uffff\1\3\12\uffff\4\3\1\uffff\3\3\1\uffff\2"+
+			"\3\1\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\3\uffff\1\3\3\uffff"+
+			"\5\3\6\uffff\1\3\1\1",
 			"\1\uffff",
 			"",
 			"\1\uffff",
@@ -28948,7 +29008,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA139_minS =
 		"\2\6\2\uffff";
 	static final String DFA139_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA139_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA139_specialS =
@@ -28956,14 +29016,14 @@ public class Css3Parser extends DebugParser {
 	static final String[] DFA139_transitionS = {
 			"\1\3\3\uffff\5\3\3\uffff\1\3\1\uffff\1\3\1\1\1\uffff\1\3\17\uffff\1\3"+
 			"\2\uffff\1\3\4\uffff\1\3\2\uffff\1\3\1\2\1\3\7\uffff\3\3\11\uffff\3\3"+
-			"\5\uffff\1\3\1\1\10\uffff\1\3\12\uffff\4\3\1\uffff\3\3\1\uffff\3\3\1"+
-			"\uffff\2\3\1\uffff\3\3\1\uffff\4\3\3\uffff\1\3\3\uffff\5\3\6\uffff\1"+
-			"\3\1\1",
+			"\5\uffff\1\3\1\1\10\uffff\1\3\12\uffff\4\3\1\uffff\3\3\1\uffff\2\3\1"+
+			"\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\3\uffff\1\3\3\uffff\5"+
+			"\3\6\uffff\1\3\1\1",
 			"\1\3\3\uffff\5\3\3\uffff\1\3\1\uffff\1\3\1\1\1\uffff\1\3\17\uffff\1"+
 			"\3\2\uffff\1\3\4\uffff\1\3\2\uffff\1\3\1\2\1\3\7\uffff\3\3\11\uffff\3"+
-			"\3\5\uffff\1\3\1\1\10\uffff\1\3\12\uffff\4\3\1\uffff\3\3\1\uffff\3\3"+
-			"\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\3\uffff\1\3\3\uffff\5\3\6\uffff"+
-			"\1\3\1\1",
+			"\3\5\uffff\1\3\1\1\10\uffff\1\3\12\uffff\4\3\1\uffff\3\3\1\uffff\2\3"+
+			"\1\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\3\uffff\1\3\3\uffff"+
+			"\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -29013,16 +29073,16 @@ public class Css3Parser extends DebugParser {
 	static final String DFA140_minS =
 		"\1\25\1\7\2\uffff";
 	static final String DFA140_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA140_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA140_specialS =
 		"\4\uffff}>";
 	static final String[] DFA140_transitionS = {
-			"\1\1\44\uffff\1\2\26\uffff\1\1\76\uffff\1\1",
+			"\1\1\44\uffff\1\2\26\uffff\1\1\77\uffff\1\1",
 			"\1\3\13\uffff\1\3\1\uffff\1\1\7\uffff\1\3\1\uffff\1\3\12\uffff\2\3\2"+
 			"\uffff\2\3\2\uffff\1\3\7\uffff\1\2\1\3\5\uffff\1\3\7\uffff\1\3\7\uffff"+
-			"\1\1\13\uffff\2\3\22\uffff\1\3\15\uffff\1\3\2\uffff\1\3\15\uffff\1\1",
+			"\1\1\13\uffff\2\3\23\uffff\1\3\15\uffff\1\3\2\uffff\1\3\15\uffff\1\1",
 			"",
 			""
 	};
@@ -29072,7 +29132,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA158_minS =
 		"\2\6\1\uffff\1\6\1\uffff";
 	static final String DFA158_maxS =
-		"\1\u008f\1\u0090\1\uffff\1\u0090\1\uffff";
+		"\1\u0090\1\u0091\1\uffff\1\u0091\1\uffff";
 	static final String DFA158_acceptS =
 		"\2\uffff\1\1\1\uffff\1\2";
 	static final String DFA158_specialS =
@@ -29081,19 +29141,21 @@ public class Css3Parser extends DebugParser {
 			"\2\2\2\uffff\5\2\3\uffff\2\2\3\uffff\1\2\5\uffff\1\2\1\uffff\1\2\7\uffff"+
 			"\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff\4\2\2\uffff"+
 			"\1\2\6\uffff\3\2\5\uffff\1\2\11\uffff\1\2\2\uffff\2\2\6\uffff\3\2\2\uffff"+
-			"\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff\4\2\1\1\1\uffff\1\2\2\uffff\1\2"+
-			"\1\uffff\5\2\6\uffff\1\2",
+			"\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff\3\2\1\uffff\4\2\1\1\1\uffff\1\2"+
+			"\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2",
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\uffff\1\3\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\3\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\4\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff"+
-			"\4\2\1\1\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\3",
+			"\2\uffff\1\4\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\uffff\4\2\1\1\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2"+
+			"\1\3",
 			"",
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\uffff\1\3\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\3\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\4\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\uffff"+
-			"\4\2\1\1\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\3",
+			"\2\uffff\1\4\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\uffff\4\2\1\1\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2"+
+			"\1\3",
 			""
 	};
 
@@ -29142,30 +29204,33 @@ public class Css3Parser extends DebugParser {
 	static final String DFA151_minS =
 		"\1\25\2\6\2\uffff\1\6";
 	static final String DFA151_maxS =
-		"\3\u0090\2\uffff\1\u0090";
+		"\3\u0091\2\uffff\1\u0091";
 	static final String DFA151_acceptS =
 		"\3\uffff\1\2\1\1\1\uffff";
 	static final String DFA151_specialS =
 		"\6\uffff}>";
 	static final String[] DFA151_transitionS = {
-			"\1\1\73\uffff\1\1\17\uffff\1\3\33\uffff\1\2\22\uffff\1\1",
+			"\1\1\73\uffff\1\1\17\uffff\1\3\34\uffff\1\2\22\uffff\1\1",
 			"\2\4\2\uffff\5\4\3\uffff\2\4\1\uffff\1\1\1\uffff\1\4\5\uffff\1\4\1\uffff"+
 			"\1\4\7\uffff\1\4\2\uffff\2\4\2\uffff\2\4\2\uffff\1\4\1\uffff\1\4\6\uffff"+
 			"\4\4\2\uffff\1\4\6\uffff\3\4\5\uffff\1\4\1\1\10\uffff\1\4\2\uffff\2\4"+
-			"\2\uffff\1\3\3\uffff\3\4\2\uffff\3\4\1\uffff\6\4\1\uffff\3\4\1\uffff"+
-			"\4\4\1\2\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4\1\1",
+			"\2\uffff\1\3\3\uffff\3\4\2\uffff\3\4\1\uffff\2\4\1\uffff\4\4\1\uffff"+
+			"\3\4\1\uffff\4\4\1\2\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4"+
+			"\1\1",
 			"\2\4\2\uffff\5\4\3\uffff\2\4\1\uffff\1\5\1\uffff\1\4\5\uffff\1\4\1\uffff"+
 			"\1\4\7\uffff\1\4\2\uffff\2\4\2\uffff\2\4\2\uffff\1\4\1\uffff\1\4\6\uffff"+
 			"\4\4\2\uffff\1\4\6\uffff\3\4\5\uffff\1\4\1\5\10\uffff\1\4\2\uffff\2\4"+
-			"\2\uffff\1\3\3\uffff\3\4\2\uffff\3\4\1\uffff\6\4\1\uffff\3\4\1\uffff"+
-			"\4\4\1\2\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4\1\5",
+			"\2\uffff\1\3\3\uffff\3\4\2\uffff\3\4\1\uffff\2\4\1\uffff\4\4\1\uffff"+
+			"\3\4\1\uffff\4\4\1\2\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4"+
+			"\1\5",
 			"",
 			"",
 			"\2\4\2\uffff\5\4\3\uffff\2\4\1\uffff\1\5\1\uffff\1\4\5\uffff\1\4\1\uffff"+
 			"\1\4\7\uffff\1\4\2\uffff\2\4\2\uffff\2\4\2\uffff\1\4\1\uffff\1\4\6\uffff"+
 			"\4\4\2\uffff\1\4\6\uffff\3\4\5\uffff\1\4\1\5\10\uffff\1\4\2\uffff\2\4"+
-			"\2\uffff\1\3\3\uffff\3\4\2\uffff\3\4\1\uffff\6\4\1\uffff\3\4\1\uffff"+
-			"\4\4\1\2\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4\1\5"
+			"\2\uffff\1\3\3\uffff\3\4\2\uffff\3\4\1\uffff\2\4\1\uffff\4\4\1\uffff"+
+			"\3\4\1\uffff\4\4\1\2\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4"+
+			"\1\5"
 	};
 
 	static final short[] DFA151_eot = DFA.unpackEncodedString(DFA151_eotS);
@@ -29213,18 +29278,18 @@ public class Css3Parser extends DebugParser {
 	static final String DFA150_minS =
 		"\1\25\1\6\2\uffff";
 	static final String DFA150_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA150_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA150_specialS =
 		"\4\uffff}>";
 	static final String[] DFA150_transitionS = {
-			"\1\1\73\uffff\1\1\53\uffff\1\2\22\uffff\1\1",
+			"\1\1\73\uffff\1\1\54\uffff\1\2\22\uffff\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\6\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff\4\3\1\2\1\uffff"+
-			"\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\6\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff\3\3\1\uffff"+
+			"\4\3\1\2\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -29274,14 +29339,14 @@ public class Css3Parser extends DebugParser {
 	static final String DFA155_minS =
 		"\2\25\3\uffff";
 	static final String DFA155_maxS =
-		"\2\u0090\3\uffff";
+		"\2\u0091\3\uffff";
 	static final String DFA155_acceptS =
 		"\2\uffff\1\1\1\3\1\2";
 	static final String DFA155_specialS =
 		"\5\uffff}>";
 	static final String[] DFA155_transitionS = {
-			"\1\1\73\uffff\1\1\17\uffff\1\3\33\uffff\1\2\22\uffff\1\1",
-			"\1\1\73\uffff\1\1\17\uffff\1\4\33\uffff\1\2\22\uffff\1\1",
+			"\1\1\73\uffff\1\1\17\uffff\1\3\34\uffff\1\2\22\uffff\1\1",
+			"\1\1\73\uffff\1\1\17\uffff\1\4\34\uffff\1\2\22\uffff\1\1",
 			"",
 			"",
 			""
@@ -29332,18 +29397,18 @@ public class Css3Parser extends DebugParser {
 	static final String DFA160_minS =
 		"\1\25\1\6\2\uffff";
 	static final String DFA160_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA160_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA160_specialS =
 		"\4\uffff}>";
 	static final String[] DFA160_transitionS = {
-			"\1\1\35\uffff\1\2\35\uffff\1\1\17\uffff\1\3\33\uffff\1\3\22\uffff\1\1",
+			"\1\1\35\uffff\1\2\35\uffff\1\1\17\uffff\1\3\34\uffff\1\3\22\uffff\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\2\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -29393,18 +29458,18 @@ public class Css3Parser extends DebugParser {
 	static final String DFA162_minS =
 		"\1\25\1\6\2\uffff";
 	static final String DFA162_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA162_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA162_specialS =
 		"\4\uffff}>";
 	static final String[] DFA162_transitionS = {
-			"\1\1\35\uffff\1\2\35\uffff\1\1\17\uffff\1\3\33\uffff\1\3\22\uffff\1\1",
+			"\1\1\35\uffff\1\2\35\uffff\1\1\17\uffff\1\3\34\uffff\1\3\22\uffff\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\2\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -29454,14 +29519,14 @@ public class Css3Parser extends DebugParser {
 	static final String DFA166_minS =
 		"\2\24\2\uffff";
 	static final String DFA166_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA166_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA166_specialS =
 		"\4\uffff}>";
 	static final String[] DFA166_transitionS = {
-			"\1\3\1\1\44\uffff\1\2\26\uffff\1\1\76\uffff\1\1",
-			"\1\3\1\1\44\uffff\1\2\26\uffff\1\1\76\uffff\1\1",
+			"\1\3\1\1\44\uffff\1\2\26\uffff\1\1\77\uffff\1\1",
+			"\1\3\1\1\44\uffff\1\2\26\uffff\1\1\77\uffff\1\1",
 			"",
 			""
 	};
@@ -29511,17 +29576,17 @@ public class Css3Parser extends DebugParser {
 	static final String DFA172_minS =
 		"\1\24\1\7\2\uffff";
 	static final String DFA172_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA172_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA172_specialS =
 		"\4\uffff}>";
 	static final String[] DFA172_transitionS = {
-			"\1\2\1\1\25\uffff\1\3\16\uffff\1\2\26\uffff\1\1\14\uffff\1\3\43\uffff"+
+			"\1\2\1\1\25\uffff\1\3\16\uffff\1\2\26\uffff\1\1\14\uffff\1\3\44\uffff"+
 			"\1\3\15\uffff\1\1",
 			"\1\3\13\uffff\1\3\1\2\1\1\7\uffff\1\3\1\uffff\1\3\12\uffff\2\3\2\uffff"+
 			"\2\3\2\uffff\1\3\7\uffff\1\2\1\3\5\uffff\1\3\7\uffff\1\3\7\uffff\1\1"+
-			"\13\uffff\2\3\22\uffff\1\3\15\uffff\1\3\2\uffff\1\3\15\uffff\1\1",
+			"\13\uffff\2\3\23\uffff\1\3\15\uffff\1\3\2\uffff\1\3\15\uffff\1\1",
 			"",
 			""
 	};
@@ -29571,16 +29636,16 @@ public class Css3Parser extends DebugParser {
 	static final String DFA171_minS =
 		"\1\25\1\7\2\uffff";
 	static final String DFA171_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA171_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA171_specialS =
 		"\4\uffff}>";
 	static final String[] DFA171_transitionS = {
-			"\1\1\25\uffff\1\2\45\uffff\1\1\14\uffff\1\2\43\uffff\1\2\15\uffff\1\1",
+			"\1\1\25\uffff\1\2\45\uffff\1\1\14\uffff\1\2\44\uffff\1\2\15\uffff\1\1",
 			"\1\3\13\uffff\1\3\1\uffff\1\1\7\uffff\1\3\1\uffff\1\3\12\uffff\1\3\1"+
 			"\2\2\uffff\2\3\2\uffff\1\3\10\uffff\1\3\5\uffff\1\3\7\uffff\1\3\7\uffff"+
-			"\1\1\13\uffff\1\3\1\2\22\uffff\1\3\15\uffff\1\3\2\uffff\1\2\15\uffff"+
+			"\1\1\13\uffff\1\3\1\2\23\uffff\1\3\15\uffff\1\3\2\uffff\1\2\15\uffff"+
 			"\1\1",
 			"",
 			""
@@ -29631,16 +29696,16 @@ public class Css3Parser extends DebugParser {
 	static final String DFA175_minS =
 		"\2\7\1\uffff\1\7\1\uffff";
 	static final String DFA175_maxS =
-		"\2\u0090\1\uffff\1\117\1\uffff";
+		"\2\u0091\1\uffff\1\117\1\uffff";
 	static final String DFA175_acceptS =
 		"\2\uffff\1\1\1\uffff\1\2";
 	static final String DFA175_specialS =
 		"\5\uffff}>";
 	static final String[] DFA175_transitionS = {
 			"\1\2\13\uffff\1\2\1\uffff\1\1\7\uffff\1\2\1\uffff\1\2\16\uffff\2\2\13"+
-			"\uffff\1\2\25\uffff\1\1\37\uffff\1\2\36\uffff\1\1",
+			"\uffff\1\2\25\uffff\1\1\40\uffff\1\2\36\uffff\1\1",
 			"\1\2\13\uffff\1\2\1\uffff\1\1\7\uffff\1\2\1\uffff\1\2\16\uffff\1\2\1"+
-			"\3\2\uffff\1\4\10\uffff\1\2\15\uffff\1\4\7\uffff\1\1\37\uffff\1\2\36"+
+			"\3\2\uffff\1\4\10\uffff\1\2\15\uffff\1\4\7\uffff\1\1\40\uffff\1\2\36"+
 			"\uffff\1\1",
 			"",
 			"\1\2\62\uffff\1\4\24\uffff\1\2",
@@ -29692,16 +29757,16 @@ public class Css3Parser extends DebugParser {
 	static final String DFA178_minS =
 		"\2\7\1\uffff\1\7\1\uffff";
 	static final String DFA178_maxS =
-		"\2\u0090\1\uffff\1\117\1\uffff";
+		"\2\u0091\1\uffff\1\117\1\uffff";
 	static final String DFA178_acceptS =
 		"\2\uffff\1\1\1\uffff\1\2";
 	static final String DFA178_specialS =
 		"\5\uffff}>";
 	static final String[] DFA178_transitionS = {
 			"\1\2\13\uffff\1\2\1\uffff\1\1\7\uffff\1\2\1\uffff\1\2\16\uffff\2\2\13"+
-			"\uffff\1\2\25\uffff\1\1\37\uffff\1\2\36\uffff\1\1",
+			"\uffff\1\2\25\uffff\1\1\40\uffff\1\2\36\uffff\1\1",
 			"\1\2\13\uffff\1\2\1\uffff\1\1\7\uffff\1\2\1\uffff\1\2\16\uffff\1\2\1"+
-			"\3\2\uffff\1\4\10\uffff\1\2\15\uffff\1\4\7\uffff\1\1\37\uffff\1\2\36"+
+			"\3\2\uffff\1\4\10\uffff\1\2\15\uffff\1\4\7\uffff\1\1\40\uffff\1\2\36"+
 			"\uffff\1\1",
 			"",
 			"\1\2\62\uffff\1\4\24\uffff\1\2",
@@ -29753,7 +29818,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA200_minS =
 		"\1\7\1\6\2\uffff";
 	static final String DFA200_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA200_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA200_specialS =
@@ -29761,12 +29826,12 @@ public class Css3Parser extends DebugParser {
 	static final String[] DFA200_transitionS = {
 			"\1\3\13\uffff\2\3\1\1\7\uffff\1\3\1\uffff\1\3\13\uffff\1\3\2\uffff\2"+
 			"\3\12\uffff\2\3\12\uffff\1\2\12\uffff\1\1\14\uffff\1\3\2\uffff\1\3\6"+
-			"\uffff\1\3\10\uffff\1\3\13\uffff\1\3\4\uffff\1\3\15\uffff\1\1",
+			"\uffff\1\3\11\uffff\1\3\13\uffff\1\3\4\uffff\1\3\15\uffff\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\3\3\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff\1\3"+
 			"\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\5\uffff"+
 			"\5\3\2\uffff\1\3\4\uffff\1\2\1\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3"+
-			"\2\uffff\2\3\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff"+
-			"\11\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\2\3\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff"+
+			"\4\3\1\uffff\11\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -29816,7 +29881,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA209_minS =
 		"\2\6\2\uffff";
 	static final String DFA209_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA209_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA209_specialS =
@@ -29825,13 +29890,13 @@ public class Css3Parser extends DebugParser {
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\2\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\2\1\3\6\uffff"+
 			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -29882,7 +29947,7 @@ public class Css3Parser extends DebugParser {
 		"\1\5\1\0\5\uffff\2\0\1\uffff\17\0\2\uffff\1\0\4\uffff\7\0\2\uffff\1\0"+
 		"\1\uffff\1\0\20\uffff";
 	static final String DFA219_maxS =
-		"\1\u0090\1\0\5\uffff\2\0\1\uffff\17\0\2\uffff\1\0\4\uffff\7\0\2\uffff"+
+		"\1\u0091\1\0\5\uffff\2\0\1\uffff\17\0\2\uffff\1\0\4\uffff\7\0\2\uffff"+
 		"\1\0\1\uffff\1\0\20\uffff";
 	static final String DFA219_acceptS =
 		"\2\uffff\1\2\47\uffff\1\1\1\uffff\14\1\1\uffff\3\1";
@@ -29896,9 +29961,9 @@ public class Css3Parser extends DebugParser {
 			"\1\15\1\2\2\uffff\1\33\1\13\2\uffff\1\12\1\2\1\25\5\uffff\2\2\3\46\1"+
 			"\56\1\uffff\1\2\1\71\5\uffff\1\44\1\14\1\41\5\uffff\1\46\1\1\4\uffff"+
 			"\1\54\3\uffff\1\27\1\55\1\73\1\2\1\30\2\uffff\1\2\1\uffff\1\60\1\65\3"+
-			"\46\1\2\1\uffff\1\26\1\24\1\16\1\uffff\1\22\1\46\1\45\1\2\1\21\1\46\1"+
-			"\uffff\1\20\1\10\1\7\1\uffff\1\46\1\17\1\16\1\23\1\2\1\52\1\2\1\67\1"+
-			"\uffff\1\53\1\63\5\46\2\uffff\1\72\3\uffff\1\42\1\1",
+			"\46\1\2\1\uffff\1\26\1\24\1\16\1\uffff\1\22\1\46\1\uffff\1\45\1\2\1\21"+
+			"\1\46\1\uffff\1\20\1\10\1\7\1\uffff\1\46\1\17\1\16\1\23\1\2\1\52\1\2"+
+			"\1\67\1\uffff\1\53\1\63\5\46\2\uffff\1\72\3\uffff\1\42\1\1",
 			"\1\uffff",
 			"",
 			"",
@@ -30436,7 +30501,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA218_minS =
 		"\2\5\3\uffff";
 	static final String DFA218_maxS =
-		"\2\u0090\3\uffff";
+		"\2\u0091\3\uffff";
 	static final String DFA218_acceptS =
 		"\2\uffff\1\2\1\3\1\1";
 	static final String DFA218_specialS =
@@ -30446,14 +30511,14 @@ public class Css3Parser extends DebugParser {
 			"\2\uffff\1\3\3\uffff\1\3\1\uffff\2\3\1\uffff\1\3\3\uffff\2\3\2\uffff"+
 			"\1\3\1\uffff\1\3\7\uffff\4\3\2\uffff\1\3\5\uffff\3\3\5\uffff\1\3\1\1"+
 			"\4\uffff\1\3\3\uffff\3\3\1\uffff\1\3\4\uffff\5\3\2\uffff\3\3\1\uffff"+
-			"\3\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\1\uffff\1\2\1\uffff\1\3\1\uffff"+
-			"\7\3\2\uffff\1\3\3\uffff\1\3\1\1",
+			"\2\3\1\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\1\uffff\1\2\1\uffff"+
+			"\1\3\1\uffff\7\3\2\uffff\1\3\3\uffff\1\3\1\1",
 			"\2\4\3\uffff\5\4\3\uffff\1\4\1\uffff\1\2\1\1\1\uffff\1\4\6\uffff\1\4"+
 			"\2\uffff\1\4\3\uffff\1\4\1\uffff\2\4\1\uffff\1\4\3\uffff\2\4\2\uffff"+
 			"\1\4\1\uffff\1\4\7\uffff\4\4\2\uffff\1\4\5\uffff\3\4\5\uffff\1\4\1\1"+
 			"\4\uffff\1\4\3\uffff\3\4\1\uffff\1\4\4\uffff\5\4\2\uffff\3\4\1\uffff"+
-			"\3\4\1\uffff\2\4\1\uffff\3\4\1\uffff\4\4\1\uffff\1\2\1\uffff\1\4\1\uffff"+
-			"\7\4\2\uffff\1\4\3\uffff\1\4\1\1",
+			"\2\4\1\uffff\1\4\1\uffff\2\4\1\uffff\3\4\1\uffff\4\4\1\uffff\1\2\1\uffff"+
+			"\1\4\1\uffff\7\4\2\uffff\1\4\3\uffff\1\4\1\1",
 			"",
 			"",
 			""
@@ -30504,14 +30569,14 @@ public class Css3Parser extends DebugParser {
 	static final String DFA230_minS =
 		"\2\24\2\uffff";
 	static final String DFA230_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA230_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA230_specialS =
 		"\4\uffff}>";
 	static final String[] DFA230_transitionS = {
-			"\1\3\1\1\73\uffff\1\1\26\uffff\1\2\47\uffff\1\1",
-			"\1\3\1\1\73\uffff\1\1\26\uffff\1\2\47\uffff\1\1",
+			"\1\3\1\1\73\uffff\1\1\26\uffff\1\2\50\uffff\1\1",
+			"\1\3\1\1\73\uffff\1\1\26\uffff\1\2\50\uffff\1\1",
 			"",
 			""
 	};
@@ -30561,7 +30626,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA240_minS =
 		"\2\5\35\uffff";
 	static final String DFA240_maxS =
-		"\2\u0090\35\uffff";
+		"\2\u0091\35\uffff";
 	static final String DFA240_acceptS =
 		"\2\uffff\1\2\34\1";
 	static final String DFA240_specialS =
@@ -30571,16 +30636,18 @@ public class Css3Parser extends DebugParser {
 			"\1\20\2\uffff\1\11\3\uffff\1\13\1\uffff\1\27\1\16\1\uffff\1\24\3\uffff"+
 			"\1\26\1\31\2\uffff\1\5\1\uffff\1\27\7\uffff\3\27\1\10\2\uffff\1\23\5"+
 			"\uffff\1\27\1\4\1\27\5\uffff\1\27\1\1\4\uffff\1\6\3\uffff\1\27\1\7\1"+
-			"\32\1\uffff\1\4\4\uffff\1\12\1\17\3\27\1\2\1\uffff\3\27\1\uffff\3\27"+
-			"\1\uffff\2\27\1\uffff\3\27\1\uffff\1\27\1\30\2\27\1\uffff\1\3\1\uffff"+
-			"\1\21\1\uffff\1\22\1\15\5\27\2\uffff\1\25\3\uffff\1\27\1\1",
+			"\32\1\uffff\1\4\4\uffff\1\12\1\17\3\27\1\2\1\uffff\3\27\1\uffff\2\27"+
+			"\1\uffff\1\27\1\uffff\2\27\1\uffff\3\27\1\uffff\1\27\1\30\2\27\1\uffff"+
+			"\1\3\1\uffff\1\21\1\uffff\1\22\1\15\5\27\2\uffff\1\25\3\uffff\1\27\1"+
+			"\1",
 			"\1\14\1\33\3\uffff\5\33\3\uffff\1\33\1\uffff\1\2\1\1\1\uffff\1\33\6"+
 			"\uffff\1\20\2\uffff\1\11\3\uffff\1\13\1\uffff\1\33\1\16\1\uffff\1\24"+
 			"\3\uffff\1\26\1\35\2\uffff\1\5\1\uffff\1\33\7\uffff\3\33\1\10\2\uffff"+
 			"\1\23\5\uffff\1\33\1\4\1\33\5\uffff\1\33\1\1\4\uffff\1\6\3\uffff\1\33"+
 			"\1\7\1\36\1\uffff\1\4\4\uffff\1\12\1\17\3\33\1\2\1\uffff\3\33\1\uffff"+
-			"\3\33\1\uffff\2\33\1\uffff\3\33\1\uffff\1\33\1\34\2\33\1\uffff\1\3\1"+
-			"\uffff\1\21\1\uffff\1\22\1\15\5\33\2\uffff\1\25\3\uffff\1\33\1\1",
+			"\2\33\1\uffff\1\33\1\uffff\2\33\1\uffff\3\33\1\uffff\1\33\1\34\2\33\1"+
+			"\uffff\1\3\1\uffff\1\21\1\uffff\1\22\1\15\5\33\2\uffff\1\25\3\uffff\1"+
+			"\33\1\1",
 			"",
 			"",
 			"",
@@ -30680,7 +30747,7 @@ public class Css3Parser extends DebugParser {
 						else if ( (LA240_1==GEN) && (synpred34_Css3())) {s = 20;}
 						else if ( (LA240_1==URI) && (synpred34_Css3())) {s = 21;}
 						else if ( (LA240_1==HASH) && (synpred34_Css3())) {s = 22;}
-						else if ( (LA240_1==AT_IDENT||(LA240_1 >= BOTTOMCENTER_SYM && LA240_1 <= BOTTOMRIGHT_SYM)||LA240_1==CHARSET_SYM||LA240_1==COUNTER_STYLE_SYM||LA240_1==FONT_FACE_SYM||LA240_1==IMPORT_SYM||(LA240_1 >= LEFTBOTTOM_SYM && LA240_1 <= LEFTTOP_SYM)||LA240_1==MEDIA_SYM||LA240_1==MOZ_DOCUMENT_SYM||LA240_1==NAMESPACE_SYM||LA240_1==PAGE_SYM||(LA240_1 >= RIGHTBOTTOM_SYM && LA240_1 <= RIGHTTOP_SYM)||(LA240_1 >= SASS_AT_ROOT && LA240_1 <= SASS_DEBUG)||(LA240_1 >= SASS_EACH && LA240_1 <= SASS_EXTEND)||(LA240_1 >= SASS_FOR && LA240_1 <= SASS_FUNCTION)||(LA240_1 >= SASS_IF && LA240_1 <= SASS_MIXIN)||LA240_1==SASS_RETURN||(LA240_1 >= SASS_WARN && LA240_1 <= SASS_WHILE)||(LA240_1 >= TOPCENTER_SYM && LA240_1 <= TOPRIGHT_SYM)||LA240_1==WEBKIT_KEYFRAMES_SYM) && (synpred34_Css3())) {s = 27;}
+						else if ( (LA240_1==AT_IDENT||(LA240_1 >= BOTTOMCENTER_SYM && LA240_1 <= BOTTOMRIGHT_SYM)||LA240_1==CHARSET_SYM||LA240_1==COUNTER_STYLE_SYM||LA240_1==FONT_FACE_SYM||LA240_1==IMPORT_SYM||(LA240_1 >= LEFTBOTTOM_SYM && LA240_1 <= LEFTTOP_SYM)||LA240_1==MEDIA_SYM||LA240_1==MOZ_DOCUMENT_SYM||LA240_1==NAMESPACE_SYM||LA240_1==PAGE_SYM||(LA240_1 >= RIGHTBOTTOM_SYM && LA240_1 <= RIGHTTOP_SYM)||(LA240_1 >= SASS_AT_ROOT && LA240_1 <= SASS_DEBUG)||(LA240_1 >= SASS_EACH && LA240_1 <= SASS_ELSE)||LA240_1==SASS_EXTEND||(LA240_1 >= SASS_FOR && LA240_1 <= SASS_FUNCTION)||(LA240_1 >= SASS_IF && LA240_1 <= SASS_MIXIN)||LA240_1==SASS_RETURN||(LA240_1 >= SASS_WARN && LA240_1 <= SASS_WHILE)||(LA240_1 >= TOPCENTER_SYM && LA240_1 <= TOPRIGHT_SYM)||LA240_1==WEBKIT_KEYFRAMES_SYM) && (synpred34_Css3())) {s = 27;}
 						else if ( (LA240_1==SASS_VAR) && (synpred34_Css3())) {s = 28;}
 						else if ( (LA240_1==HASH_SYMBOL) && (synpred34_Css3())) {s = 29;}
 						else if ( (LA240_1==PERCENTAGE_SYMBOL) && (synpred34_Css3())) {s = 30;}
@@ -30718,7 +30785,7 @@ public class Css3Parser extends DebugParser {
 						else if ( (LA240_0==GEN) && (synpred34_Css3())) {s = 20;}
 						else if ( (LA240_0==URI) && (synpred34_Css3())) {s = 21;}
 						else if ( (LA240_0==HASH) && (synpred34_Css3())) {s = 22;}
-						else if ( (LA240_0==AT_IDENT||(LA240_0 >= BOTTOMCENTER_SYM && LA240_0 <= BOTTOMRIGHT_SYM)||LA240_0==CHARSET_SYM||LA240_0==COUNTER_STYLE_SYM||LA240_0==FONT_FACE_SYM||LA240_0==IMPORT_SYM||(LA240_0 >= LEFTBOTTOM_SYM && LA240_0 <= LEFTTOP_SYM)||LA240_0==MEDIA_SYM||LA240_0==MOZ_DOCUMENT_SYM||LA240_0==NAMESPACE_SYM||LA240_0==PAGE_SYM||(LA240_0 >= RIGHTBOTTOM_SYM && LA240_0 <= RIGHTTOP_SYM)||(LA240_0 >= SASS_AT_ROOT && LA240_0 <= SASS_DEBUG)||(LA240_0 >= SASS_EACH && LA240_0 <= SASS_EXTEND)||(LA240_0 >= SASS_FOR && LA240_0 <= SASS_FUNCTION)||(LA240_0 >= SASS_IF && LA240_0 <= SASS_MIXIN)||LA240_0==SASS_RETURN||(LA240_0 >= SASS_WARN && LA240_0 <= SASS_WHILE)||(LA240_0 >= TOPCENTER_SYM && LA240_0 <= TOPRIGHT_SYM)||LA240_0==WEBKIT_KEYFRAMES_SYM) && (synpred34_Css3())) {s = 23;}
+						else if ( (LA240_0==AT_IDENT||(LA240_0 >= BOTTOMCENTER_SYM && LA240_0 <= BOTTOMRIGHT_SYM)||LA240_0==CHARSET_SYM||LA240_0==COUNTER_STYLE_SYM||LA240_0==FONT_FACE_SYM||LA240_0==IMPORT_SYM||(LA240_0 >= LEFTBOTTOM_SYM && LA240_0 <= LEFTTOP_SYM)||LA240_0==MEDIA_SYM||LA240_0==MOZ_DOCUMENT_SYM||LA240_0==NAMESPACE_SYM||LA240_0==PAGE_SYM||(LA240_0 >= RIGHTBOTTOM_SYM && LA240_0 <= RIGHTTOP_SYM)||(LA240_0 >= SASS_AT_ROOT && LA240_0 <= SASS_DEBUG)||(LA240_0 >= SASS_EACH && LA240_0 <= SASS_ELSE)||LA240_0==SASS_EXTEND||(LA240_0 >= SASS_FOR && LA240_0 <= SASS_FUNCTION)||(LA240_0 >= SASS_IF && LA240_0 <= SASS_MIXIN)||LA240_0==SASS_RETURN||(LA240_0 >= SASS_WARN && LA240_0 <= SASS_WHILE)||(LA240_0 >= TOPCENTER_SYM && LA240_0 <= TOPRIGHT_SYM)||LA240_0==WEBKIT_KEYFRAMES_SYM) && (synpred34_Css3())) {s = 23;}
 						else if ( (LA240_0==SASS_VAR) && (synpred34_Css3())) {s = 24;}
 						else if ( (LA240_0==HASH_SYMBOL) && (synpred34_Css3())) {s = 25;}
 						else if ( (LA240_0==PERCENTAGE_SYMBOL) && (synpred34_Css3())) {s = 26;}
@@ -30742,7 +30809,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA239_minS =
 		"\2\5\3\uffff";
 	static final String DFA239_maxS =
-		"\2\u0090\3\uffff";
+		"\2\u0091\3\uffff";
 	static final String DFA239_acceptS =
 		"\2\uffff\1\2\1\3\1\1";
 	static final String DFA239_specialS =
@@ -30751,15 +30818,15 @@ public class Css3Parser extends DebugParser {
 			"\2\3\3\uffff\5\3\3\uffff\1\3\2\uffff\1\1\1\uffff\1\3\6\uffff\1\3\2\uffff"+
 			"\1\3\3\uffff\1\3\1\uffff\2\3\1\uffff\1\3\3\uffff\2\3\2\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\4\3\2\uffff\1\3\5\uffff\3\3\5\uffff\1\3\1\1\4\uffff\1\3"+
-			"\3\uffff\3\3\1\uffff\1\3\4\uffff\5\3\2\uffff\3\3\1\uffff\3\3\1\uffff"+
-			"\2\3\1\uffff\3\3\1\uffff\4\3\1\uffff\1\2\1\uffff\1\3\1\uffff\7\3\2\uffff"+
-			"\1\3\3\uffff\1\3\1\1",
+			"\3\uffff\3\3\1\uffff\1\3\4\uffff\5\3\2\uffff\3\3\1\uffff\2\3\1\uffff"+
+			"\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\1\uffff\1\2\1\uffff\1\3\1\uffff"+
+			"\7\3\2\uffff\1\3\3\uffff\1\3\1\1",
 			"\2\4\3\uffff\5\4\3\uffff\1\4\2\uffff\1\1\1\uffff\1\4\6\uffff\1\4\2\uffff"+
 			"\1\4\3\uffff\1\4\1\uffff\2\4\1\uffff\1\4\3\uffff\2\4\2\uffff\1\4\1\uffff"+
 			"\1\4\7\uffff\4\4\2\uffff\1\4\5\uffff\3\4\5\uffff\1\4\1\1\4\uffff\1\4"+
-			"\3\uffff\3\4\1\uffff\1\4\4\uffff\5\4\2\uffff\3\4\1\uffff\3\4\1\uffff"+
-			"\2\4\1\uffff\3\4\1\uffff\4\4\1\uffff\1\2\1\uffff\1\4\1\uffff\7\4\2\uffff"+
-			"\1\4\3\uffff\1\4\1\1",
+			"\3\uffff\3\4\1\uffff\1\4\4\uffff\5\4\2\uffff\3\4\1\uffff\2\4\1\uffff"+
+			"\1\4\1\uffff\2\4\1\uffff\3\4\1\uffff\4\4\1\uffff\1\2\1\uffff\1\4\1\uffff"+
+			"\7\4\2\uffff\1\4\3\uffff\1\4\1\1",
 			"",
 			"",
 			""
@@ -30810,7 +30877,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA249_minS =
 		"\2\6\3\uffff";
 	static final String DFA249_maxS =
-		"\2\u0090\3\uffff";
+		"\2\u0091\3\uffff";
 	static final String DFA249_acceptS =
 		"\2\uffff\1\3\1\1\1\2";
 	static final String DFA249_specialS =
@@ -30819,13 +30886,13 @@ public class Css3Parser extends DebugParser {
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\uffff\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\3\6\2\1\4\3\2\1\uffff\5\2\1\uffff"+
-			"\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\3\2\2\1\uffff\4\2\1\4\3\2\1\uffff"+
+			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\uffff\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\3\6\2\1\4\3\2\1\uffff\5\2\1\uffff"+
-			"\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\3\2\2\1\uffff\4\2\1\4\3\2\1\uffff"+
+			"\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"",
 			"",
 			""
@@ -30876,22 +30943,22 @@ public class Css3Parser extends DebugParser {
 	static final String DFA254_minS =
 		"\2\6\2\uffff";
 	static final String DFA254_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA254_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA254_specialS =
-		"\1\1\1\0\2\uffff}>";
+		"\1\0\1\1\2\uffff}>";
 	static final String[] DFA254_transitionS = {
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\3\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\5\uffff"+
 			"\5\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\4\2\1\uffff\16\2\1\uffff\5\2\1\uffff\1\2\2\uffff"+
-			"\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\4\2\1\uffff\6\2\1\uffff\10\2\1\uffff\5\2\1\uffff"+
+			"\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\3\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\5\uffff"+
 			"\5\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\4\2\1\uffff\16\2\1\uffff\5\2\1\uffff\1\2\2\uffff"+
-			"\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\4\2\1\uffff\6\2\1\uffff\10\2\1\uffff\5\2\1\uffff"+
+			"\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"",
 			""
 	};
@@ -30938,30 +31005,30 @@ public class Css3Parser extends DebugParser {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
-						int LA254_1 = input.LA(1);
-						 
-						int index254_1 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (LA254_1==EOF||(LA254_1 >= AT_IDENT && LA254_1 <= AT_SIGN)||(LA254_1 >= BOTTOMCENTER_SYM && LA254_1 <= BOTTOMRIGHT_SYM)||(LA254_1 >= CHARSET_SYM && LA254_1 <= COLON)||LA254_1==COUNTER_STYLE_SYM||LA254_1==DCOLON||LA254_1==DOT||LA254_1==FONT_FACE_SYM||(LA254_1 >= GEN && LA254_1 <= GREATER)||(LA254_1 >= HASH && LA254_1 <= HASH_SYMBOL)||LA254_1==IDENT||LA254_1==IMPORT_SYM||(LA254_1 >= LBRACE && LA254_1 <= LEFTTOP_SYM)||LA254_1==LESS_AND||(LA254_1 >= MEDIA_SYM && LA254_1 <= MOZ_DOCUMENT_SYM)||LA254_1==NAMESPACE_SYM||LA254_1==PAGE_SYM||(LA254_1 >= PIPE && LA254_1 <= PLUS)||LA254_1==RBRACE||(LA254_1 >= RIGHTBOTTOM_SYM && LA254_1 <= RPAREN)||(LA254_1 >= SASS_AT_ROOT && LA254_1 <= SASS_MIXIN)||(LA254_1 >= SASS_RETURN && LA254_1 <= SEMI)||LA254_1==STAR||LA254_1==TILDE||(LA254_1 >= TOPCENTER_SYM && LA254_1 <= TOPRIGHT_SYM)||LA254_1==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
-						else if ( (LA254_1==COMMENT||LA254_1==NL||LA254_1==WS) ) {s = 1;}
-						else if ( (LA254_1==COMMA) && (synpred35_Css3())) {s = 3;}
-						 
-						input.seek(index254_1);
-						if ( s>=0 ) return s;
-						break;
-
-					case 1 : 
 						int LA254_0 = input.LA(1);
 						 
 						int index254_0 = input.index();
 						input.rewind();
 						s = -1;
 						if ( (LA254_0==COMMENT||LA254_0==NL||LA254_0==WS) ) {s = 1;}
-						else if ( (LA254_0==EOF||(LA254_0 >= AT_IDENT && LA254_0 <= AT_SIGN)||(LA254_0 >= BOTTOMCENTER_SYM && LA254_0 <= BOTTOMRIGHT_SYM)||(LA254_0 >= CHARSET_SYM && LA254_0 <= COLON)||LA254_0==COUNTER_STYLE_SYM||LA254_0==DCOLON||LA254_0==DOT||LA254_0==FONT_FACE_SYM||(LA254_0 >= GEN && LA254_0 <= GREATER)||(LA254_0 >= HASH && LA254_0 <= HASH_SYMBOL)||LA254_0==IDENT||LA254_0==IMPORT_SYM||(LA254_0 >= LBRACE && LA254_0 <= LEFTTOP_SYM)||LA254_0==LESS_AND||(LA254_0 >= MEDIA_SYM && LA254_0 <= MOZ_DOCUMENT_SYM)||LA254_0==NAMESPACE_SYM||LA254_0==PAGE_SYM||(LA254_0 >= PIPE && LA254_0 <= PLUS)||LA254_0==RBRACE||(LA254_0 >= RIGHTBOTTOM_SYM && LA254_0 <= RPAREN)||(LA254_0 >= SASS_AT_ROOT && LA254_0 <= SASS_MIXIN)||(LA254_0 >= SASS_RETURN && LA254_0 <= SEMI)||LA254_0==STAR||LA254_0==TILDE||(LA254_0 >= TOPCENTER_SYM && LA254_0 <= TOPRIGHT_SYM)||LA254_0==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
+						else if ( (LA254_0==EOF||(LA254_0 >= AT_IDENT && LA254_0 <= AT_SIGN)||(LA254_0 >= BOTTOMCENTER_SYM && LA254_0 <= BOTTOMRIGHT_SYM)||(LA254_0 >= CHARSET_SYM && LA254_0 <= COLON)||LA254_0==COUNTER_STYLE_SYM||LA254_0==DCOLON||LA254_0==DOT||LA254_0==FONT_FACE_SYM||(LA254_0 >= GEN && LA254_0 <= GREATER)||(LA254_0 >= HASH && LA254_0 <= HASH_SYMBOL)||LA254_0==IDENT||LA254_0==IMPORT_SYM||(LA254_0 >= LBRACE && LA254_0 <= LEFTTOP_SYM)||LA254_0==LESS_AND||(LA254_0 >= MEDIA_SYM && LA254_0 <= MOZ_DOCUMENT_SYM)||LA254_0==NAMESPACE_SYM||LA254_0==PAGE_SYM||(LA254_0 >= PIPE && LA254_0 <= PLUS)||LA254_0==RBRACE||(LA254_0 >= RIGHTBOTTOM_SYM && LA254_0 <= RPAREN)||(LA254_0 >= SASS_AT_ROOT && LA254_0 <= SASS_ELSE)||(LA254_0 >= SASS_EXTEND && LA254_0 <= SASS_MIXIN)||(LA254_0 >= SASS_RETURN && LA254_0 <= SEMI)||LA254_0==STAR||LA254_0==TILDE||(LA254_0 >= TOPCENTER_SYM && LA254_0 <= TOPRIGHT_SYM)||LA254_0==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
 						else if ( (LA254_0==COMMA) && (synpred35_Css3())) {s = 3;}
 						 
 						input.seek(index254_0);
+						if ( s>=0 ) return s;
+						break;
+
+					case 1 : 
+						int LA254_1 = input.LA(1);
+						 
+						int index254_1 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (LA254_1==EOF||(LA254_1 >= AT_IDENT && LA254_1 <= AT_SIGN)||(LA254_1 >= BOTTOMCENTER_SYM && LA254_1 <= BOTTOMRIGHT_SYM)||(LA254_1 >= CHARSET_SYM && LA254_1 <= COLON)||LA254_1==COUNTER_STYLE_SYM||LA254_1==DCOLON||LA254_1==DOT||LA254_1==FONT_FACE_SYM||(LA254_1 >= GEN && LA254_1 <= GREATER)||(LA254_1 >= HASH && LA254_1 <= HASH_SYMBOL)||LA254_1==IDENT||LA254_1==IMPORT_SYM||(LA254_1 >= LBRACE && LA254_1 <= LEFTTOP_SYM)||LA254_1==LESS_AND||(LA254_1 >= MEDIA_SYM && LA254_1 <= MOZ_DOCUMENT_SYM)||LA254_1==NAMESPACE_SYM||LA254_1==PAGE_SYM||(LA254_1 >= PIPE && LA254_1 <= PLUS)||LA254_1==RBRACE||(LA254_1 >= RIGHTBOTTOM_SYM && LA254_1 <= RPAREN)||(LA254_1 >= SASS_AT_ROOT && LA254_1 <= SASS_ELSE)||(LA254_1 >= SASS_EXTEND && LA254_1 <= SASS_MIXIN)||(LA254_1 >= SASS_RETURN && LA254_1 <= SEMI)||LA254_1==STAR||LA254_1==TILDE||(LA254_1 >= TOPCENTER_SYM && LA254_1 <= TOPRIGHT_SYM)||LA254_1==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
+						else if ( (LA254_1==COMMENT||LA254_1==NL||LA254_1==WS) ) {s = 1;}
+						else if ( (LA254_1==COMMA) && (synpred35_Css3())) {s = 3;}
+						 
+						input.seek(index254_1);
 						if ( s>=0 ) return s;
 						break;
 			}
@@ -30981,7 +31048,7 @@ public class Css3Parser extends DebugParser {
 		"\1\5\1\0\1\uffff\1\0\1\uffff\7\0\3\uffff\2\0\1\uffff\11\0\2\uffff\1\0"+
 		"\4\uffff\7\0\1\uffff\2\0\11\uffff\1\0\2\uffff\1\0\17\uffff";
 	static final String DFA258_maxS =
-		"\1\u0090\1\0\1\uffff\1\0\1\uffff\7\0\3\uffff\2\0\1\uffff\11\0\2\uffff"+
+		"\1\u0091\1\0\1\uffff\1\0\1\uffff\7\0\3\uffff\2\0\1\uffff\11\0\2\uffff"+
 		"\1\0\4\uffff\7\0\1\uffff\2\0\11\uffff\1\0\2\uffff\1\0\17\uffff";
 	static final String DFA258_acceptS =
 		"\2\uffff\1\3\56\uffff\4\1\1\uffff\1\1\1\2\1\uffff\17\2";
@@ -30997,9 +31064,9 @@ public class Css3Parser extends DebugParser {
 			"\2\2\3\53\1\73\1\63\1\2\1\104\1\64\1\2\1\uffff\1\107\1\uffff\1\46\1\7"+
 			"\1\43\5\uffff\1\53\1\1\3\uffff\1\67\1\71\3\uffff\1\31\1\72\1\106\1\2"+
 			"\1\65\2\uffff\1\2\1\uffff\1\75\1\102\3\53\1\2\1\uffff\1\30\1\26\1\20"+
-			"\1\2\1\24\1\53\1\47\1\2\1\23\1\52\1\2\1\22\1\17\1\11\1\uffff\1\53\1\12"+
-			"\1\20\1\25\1\2\1\uffff\1\2\1\13\1\uffff\1\70\1\100\5\53\2\uffff\1\105"+
-			"\3\uffff\1\44\1\1",
+			"\1\2\1\24\1\53\1\uffff\1\47\1\2\1\23\1\52\1\2\1\22\1\17\1\11\1\uffff"+
+			"\1\53\1\12\1\20\1\25\1\2\1\uffff\1\2\1\13\1\uffff\1\70\1\100\5\53\2\uffff"+
+			"\1\105\3\uffff\1\44\1\1",
 			"\1\uffff",
 			"",
 			"\1\uffff",
@@ -31612,7 +31679,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA269_minS =
 		"\1\5\1\0\12\uffff\1\0\27\uffff\1\0\5\uffff\1\0\36\uffff";
 	static final String DFA269_maxS =
-		"\1\u0090\1\0\12\uffff\1\0\27\uffff\1\0\5\uffff\1\0\36\uffff";
+		"\1\u0091\1\0\12\uffff\1\0\27\uffff\1\0\5\uffff\1\0\36\uffff";
 	static final String DFA269_acceptS =
 		"\2\uffff\1\2\105\uffff\1\1";
 	static final String DFA269_specialS =
@@ -31621,8 +31688,8 @@ public class Css3Parser extends DebugParser {
 			"\3\2\2\uffff\5\2\3\uffff\3\2\1\1\1\uffff\4\2\2\uffff\3\2\1\uffff\1\2"+
 			"\3\uffff\1\2\1\uffff\2\2\1\uffff\3\2\1\uffff\2\2\2\uffff\3\2\5\uffff"+
 			"\13\2\1\uffff\1\2\1\uffff\1\2\1\14\1\2\5\uffff\1\2\1\1\3\uffff\2\2\3"+
-			"\uffff\4\2\1\44\2\uffff\1\2\1\uffff\6\2\1\uffff\16\2\1\uffff\5\2\1\110"+
-			"\1\52\1\2\1\uffff\7\2\2\uffff\1\2\3\uffff\1\2\1\1",
+			"\uffff\4\2\1\44\2\uffff\1\2\1\uffff\6\2\1\uffff\6\2\1\uffff\10\2\1\uffff"+
+			"\5\2\1\110\1\52\1\2\1\uffff\7\2\2\uffff\1\2\3\uffff\1\2\1\1",
 			"\1\uffff",
 			"",
 			"",
@@ -31745,7 +31812,7 @@ public class Css3Parser extends DebugParser {
 						input.rewind();
 						s = -1;
 						if ( (LA269_0==COMMENT||LA269_0==NL||LA269_0==WS) ) {s = 1;}
-						else if ( (LA269_0==EOF||(LA269_0 >= ANGLE && LA269_0 <= AT_SIGN)||(LA269_0 >= BOTTOMCENTER_SYM && LA269_0 <= BOTTOMRIGHT_SYM)||(LA269_0 >= CHARSET_SYM && LA269_0 <= COMMA)||(LA269_0 >= COUNTER_STYLE_SYM && LA269_0 <= CP_NOT_EQ)||(LA269_0 >= DCOLON && LA269_0 <= DOT)||LA269_0==EMS||LA269_0==EXS||(LA269_0 >= FONT_FACE_SYM && LA269_0 <= FREQ)||(LA269_0 >= GEN && LA269_0 <= GREATER_OR_EQ)||(LA269_0 >= HASH && LA269_0 <= HASH_SYMBOL)||(LA269_0 >= IDENT && LA269_0 <= IMPORT_SYM)||(LA269_0 >= LBRACE && LA269_0 <= LESS_REST)||LA269_0==LPAREN||LA269_0==MEDIA_SYM||LA269_0==MOZ_DOCUMENT_SYM||LA269_0==NAMESPACE_SYM||(LA269_0 >= NOT && LA269_0 <= NUMBER)||(LA269_0 >= PAGE_SYM && LA269_0 <= PIPE)||LA269_0==RBRACE||(LA269_0 >= REM && LA269_0 <= RPAREN)||(LA269_0 >= SASS_AT_ROOT && LA269_0 <= SASS_MIXIN)||(LA269_0 >= SASS_RETURN && LA269_0 <= SEMI)||LA269_0==STRING||(LA269_0 >= TILDE && LA269_0 <= TOPRIGHT_SYM)||LA269_0==URI||LA269_0==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
+						else if ( (LA269_0==EOF||(LA269_0 >= ANGLE && LA269_0 <= AT_SIGN)||(LA269_0 >= BOTTOMCENTER_SYM && LA269_0 <= BOTTOMRIGHT_SYM)||(LA269_0 >= CHARSET_SYM && LA269_0 <= COMMA)||(LA269_0 >= COUNTER_STYLE_SYM && LA269_0 <= CP_NOT_EQ)||(LA269_0 >= DCOLON && LA269_0 <= DOT)||LA269_0==EMS||LA269_0==EXS||(LA269_0 >= FONT_FACE_SYM && LA269_0 <= FREQ)||(LA269_0 >= GEN && LA269_0 <= GREATER_OR_EQ)||(LA269_0 >= HASH && LA269_0 <= HASH_SYMBOL)||(LA269_0 >= IDENT && LA269_0 <= IMPORT_SYM)||(LA269_0 >= LBRACE && LA269_0 <= LESS_REST)||LA269_0==LPAREN||LA269_0==MEDIA_SYM||LA269_0==MOZ_DOCUMENT_SYM||LA269_0==NAMESPACE_SYM||(LA269_0 >= NOT && LA269_0 <= NUMBER)||(LA269_0 >= PAGE_SYM && LA269_0 <= PIPE)||LA269_0==RBRACE||(LA269_0 >= REM && LA269_0 <= RPAREN)||(LA269_0 >= SASS_AT_ROOT && LA269_0 <= SASS_ELSE)||(LA269_0 >= SASS_EXTEND && LA269_0 <= SASS_MIXIN)||(LA269_0 >= SASS_RETURN && LA269_0 <= SEMI)||LA269_0==STRING||(LA269_0 >= TILDE && LA269_0 <= TOPRIGHT_SYM)||LA269_0==URI||LA269_0==WEBKIT_KEYFRAMES_SYM) ) {s = 2;}
 						else if ( (LA269_0==MINUS) ) {s = 12;}
 						else if ( (LA269_0==PLUS) ) {s = 36;}
 						else if ( (LA269_0==STAR) ) {s = 42;}
@@ -31822,7 +31889,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA274_minS =
 		"\2\5\3\uffff\1\5";
 	static final String DFA274_maxS =
-		"\1\u008f\1\u0090\3\uffff\1\u0090";
+		"\1\u0090\1\u0091\3\uffff\1\u0091";
 	static final String DFA274_acceptS =
 		"\2\uffff\1\1\1\2\1\3\1\uffff";
 	static final String DFA274_specialS =
@@ -31831,24 +31898,24 @@ public class Css3Parser extends DebugParser {
 			"\2\2\3\uffff\5\2\3\uffff\1\2\4\uffff\1\2\6\uffff\1\2\2\uffff\1\2\3\uffff"+
 			"\1\2\1\uffff\2\2\1\uffff\1\2\3\uffff\2\2\2\uffff\1\2\1\3\1\2\7\uffff"+
 			"\4\2\2\uffff\1\2\3\uffff\1\4\1\uffff\1\2\1\1\1\2\5\uffff\1\2\5\uffff"+
-			"\1\2\3\uffff\3\2\1\uffff\1\1\4\uffff\5\2\2\uffff\3\2\1\uffff\3\2\1\uffff"+
-			"\2\2\1\uffff\3\2\1\uffff\4\2\3\uffff\1\2\1\uffff\7\2\2\uffff\1\2\3\uffff"+
-			"\1\2",
+			"\1\2\3\uffff\3\2\1\uffff\1\1\4\uffff\5\2\2\uffff\3\2\1\uffff\2\2\1\uffff"+
+			"\1\2\1\uffff\2\2\1\uffff\3\2\1\uffff\4\2\3\uffff\1\2\1\uffff\7\2\2\uffff"+
+			"\1\2\3\uffff\1\2",
 			"\2\2\3\uffff\5\2\3\uffff\1\2\2\uffff\1\5\1\uffff\1\2\6\uffff\1\2\2\uffff"+
 			"\1\2\3\uffff\1\2\1\uffff\2\2\1\uffff\1\2\3\uffff\2\2\2\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\4\2\2\uffff\1\2\3\uffff\1\4\1\uffff\1\2\1\uffff\1\2\5\uffff"+
-			"\1\2\1\5\4\uffff\1\2\3\uffff\3\2\6\uffff\5\2\2\uffff\3\2\1\uffff\3\2"+
-			"\1\uffff\2\2\1\uffff\3\2\1\uffff\4\2\3\uffff\1\2\1\uffff\7\2\2\uffff"+
-			"\1\2\3\uffff\1\2\1\5",
+			"\1\2\1\5\4\uffff\1\2\3\uffff\3\2\6\uffff\5\2\2\uffff\3\2\1\uffff\2\2"+
+			"\1\uffff\1\2\1\uffff\2\2\1\uffff\3\2\1\uffff\4\2\3\uffff\1\2\1\uffff"+
+			"\7\2\2\uffff\1\2\3\uffff\1\2\1\5",
 			"",
 			"",
 			"",
 			"\2\2\3\uffff\5\2\3\uffff\1\2\2\uffff\1\5\1\uffff\1\2\6\uffff\1\2\2\uffff"+
 			"\1\2\3\uffff\1\2\1\uffff\2\2\1\uffff\1\2\3\uffff\2\2\2\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\4\2\2\uffff\1\2\3\uffff\1\4\1\uffff\1\2\1\uffff\1\2\5\uffff"+
-			"\1\2\1\5\4\uffff\1\2\3\uffff\3\2\6\uffff\5\2\2\uffff\3\2\1\uffff\3\2"+
-			"\1\uffff\2\2\1\uffff\3\2\1\uffff\4\2\3\uffff\1\2\1\uffff\7\2\2\uffff"+
-			"\1\2\3\uffff\1\2\1\5"
+			"\1\2\1\5\4\uffff\1\2\3\uffff\3\2\6\uffff\5\2\2\uffff\3\2\1\uffff\2\2"+
+			"\1\uffff\1\2\1\uffff\2\2\1\uffff\3\2\1\uffff\4\2\3\uffff\1\2\1\uffff"+
+			"\7\2\2\uffff\1\2\3\uffff\1\2\1\5"
 	};
 
 	static final short[] DFA274_eot = DFA.unpackEncodedString(DFA274_eotS);
@@ -31896,14 +31963,14 @@ public class Css3Parser extends DebugParser {
 	static final String DFA279_minS =
 		"\2\25\2\uffff";
 	static final String DFA279_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA279_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA279_specialS =
 		"\4\uffff}>";
 	static final String[] DFA279_transitionS = {
-			"\1\1\34\uffff\1\2\7\uffff\1\3\26\uffff\1\1\76\uffff\1\1",
-			"\1\1\34\uffff\1\2\7\uffff\1\3\26\uffff\1\1\76\uffff\1\1",
+			"\1\1\34\uffff\1\2\7\uffff\1\3\26\uffff\1\1\77\uffff\1\1",
+			"\1\1\34\uffff\1\2\7\uffff\1\3\26\uffff\1\1\77\uffff\1\1",
 			"",
 			""
 	};
@@ -31953,14 +32020,14 @@ public class Css3Parser extends DebugParser {
 	static final String DFA283_minS =
 		"\2\25\2\uffff";
 	static final String DFA283_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA283_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA283_specialS =
 		"\4\uffff}>";
 	static final String[] DFA283_transitionS = {
-			"\1\1\44\uffff\1\3\13\uffff\1\2\12\uffff\1\1\76\uffff\1\1",
-			"\1\1\44\uffff\1\3\13\uffff\1\2\12\uffff\1\1\76\uffff\1\1",
+			"\1\1\44\uffff\1\3\13\uffff\1\2\12\uffff\1\1\77\uffff\1\1",
+			"\1\1\44\uffff\1\3\13\uffff\1\2\12\uffff\1\1\77\uffff\1\1",
 			"",
 			""
 	};
@@ -32010,7 +32077,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA289_minS =
 		"\2\6\2\uffff";
 	static final String DFA289_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA289_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA289_specialS =
@@ -32019,13 +32086,13 @@ public class Css3Parser extends DebugParser {
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\3\3\6\uffff\4\3\2\uffff"+
 			"\1\3\4\uffff\1\2\1\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\3\3\6\uffff\4\3\2\uffff"+
 			"\1\3\4\uffff\1\2\1\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -32075,7 +32142,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA293_minS =
 		"\2\6\2\uffff";
 	static final String DFA293_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA293_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA293_specialS =
@@ -32084,13 +32151,13 @@ public class Css3Parser extends DebugParser {
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\3\3\5\uffff\5\3\2\uffff"+
 			"\1\3\4\uffff\1\2\1\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\3\3\5\uffff\5\3\2\uffff"+
 			"\1\3\4\uffff\1\2\1\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff"+
-			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff"+
+			"\3\3\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -32140,7 +32207,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA295_minS =
 		"\2\6\2\uffff";
 	static final String DFA295_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA295_acceptS =
 		"\2\uffff\1\1\1\2";
 	static final String DFA295_specialS =
@@ -32149,13 +32216,13 @@ public class Css3Parser extends DebugParser {
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\3\3\5\uffff\1\2\4\3"+
 			"\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3\2\uffff"+
-			"\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff\5\3\1\uffff"+
-			"\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff\3\3\1\uffff"+
+			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\3\3\5\uffff\1\2\4\3"+
 			"\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3\2\uffff"+
-			"\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\6\3\1\uffff\3\3\1\uffff\5\3\1\uffff"+
-			"\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
+			"\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\2\3\1\uffff\4\3\1\uffff\3\3\1\uffff"+
+			"\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
 			"",
 			""
 	};
@@ -32205,7 +32272,7 @@ public class Css3Parser extends DebugParser {
 	static final String DFA305_minS =
 		"\3\5\1\uffff\1\5\1\uffff\1\5";
 	static final String DFA305_maxS =
-		"\1\u008f\2\u0090\1\uffff\1\u0090\1\uffff\1\u0090";
+		"\1\u0090\2\u0091\1\uffff\1\u0091\1\uffff\1\u0091";
 	static final String DFA305_acceptS =
 		"\3\uffff\1\2\1\uffff\1\1\1\uffff";
 	static final String DFA305_specialS =
@@ -32215,30 +32282,34 @@ public class Css3Parser extends DebugParser {
 			"\3\uffff\1\3\1\uffff\1\1\1\3\1\uffff\1\3\3\uffff\2\3\2\uffff\2\3\1\1"+
 			"\7\uffff\3\1\1\3\2\uffff\1\3\3\uffff\1\3\1\uffff\1\1\1\3\1\1\5\uffff"+
 			"\1\1\4\uffff\2\3\3\uffff\1\1\2\3\1\uffff\1\3\4\uffff\2\3\3\1\2\uffff"+
-			"\3\1\1\uffff\3\1\1\uffff\2\1\1\uffff\3\1\1\uffff\1\1\1\2\2\1\3\uffff"+
-			"\1\3\1\uffff\2\3\5\1\2\uffff\1\3\3\uffff\1\1",
+			"\3\1\1\uffff\2\1\1\uffff\1\1\1\uffff\2\1\1\uffff\3\1\1\uffff\1\1\1\2"+
+			"\2\1\3\uffff\1\3\1\uffff\2\3\5\1\2\uffff\1\3\3\uffff\1\1",
 			"\2\3\3\uffff\5\3\3\uffff\1\3\1\5\1\3\1\4\1\uffff\4\3\3\uffff\1\3\2\uffff"+
 			"\1\3\3\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\2\3\2\uffff\3\3\7\uffff"+
 			"\5\3\1\uffff\2\3\2\uffff\1\3\1\uffff\3\3\5\uffff\1\3\1\4\3\uffff\2\3"+
-			"\3\uffff\3\3\1\uffff\1\3\4\uffff\6\3\1\uffff\3\3\1\uffff\3\3\1\uffff"+
-			"\2\3\1\uffff\3\3\1\uffff\10\3\1\uffff\7\3\2\uffff\1\3\3\uffff\1\3\1\4",
+			"\3\uffff\3\3\1\uffff\1\3\4\uffff\6\3\1\uffff\3\3\1\uffff\2\3\1\uffff"+
+			"\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\10\3\1\uffff\7\3\2\uffff\1\3\3\uffff"+
+			"\1\3\1\4",
 			"\2\3\3\uffff\5\3\3\uffff\1\3\1\5\1\3\1\6\1\uffff\4\3\3\uffff\1\3\2\uffff"+
 			"\1\3\3\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\2\3\2\uffff\3\3\7\uffff"+
 			"\5\3\1\uffff\2\3\2\uffff\1\3\1\uffff\3\3\5\uffff\1\3\1\6\3\uffff\2\3"+
-			"\3\uffff\3\3\1\uffff\1\3\4\uffff\6\3\1\uffff\3\3\1\uffff\3\3\1\uffff"+
-			"\2\3\1\uffff\3\3\1\uffff\10\3\1\uffff\7\3\2\uffff\1\3\3\uffff\1\3\1\6",
+			"\3\uffff\3\3\1\uffff\1\3\4\uffff\6\3\1\uffff\3\3\1\uffff\2\3\1\uffff"+
+			"\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\10\3\1\uffff\7\3\2\uffff\1\3\3\uffff"+
+			"\1\3\1\6",
 			"",
 			"\2\3\3\uffff\5\3\3\uffff\1\3\1\5\1\3\1\4\1\uffff\4\3\3\uffff\1\3\2\uffff"+
 			"\1\3\3\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\2\3\2\uffff\3\3\7\uffff"+
 			"\5\3\1\uffff\2\3\2\uffff\1\3\1\uffff\3\3\5\uffff\1\3\1\4\3\uffff\2\3"+
-			"\3\uffff\3\3\1\uffff\1\3\4\uffff\6\3\1\uffff\3\3\1\uffff\3\3\1\uffff"+
-			"\2\3\1\uffff\3\3\1\uffff\10\3\1\uffff\7\3\2\uffff\1\3\3\uffff\1\3\1\4",
+			"\3\uffff\3\3\1\uffff\1\3\4\uffff\6\3\1\uffff\3\3\1\uffff\2\3\1\uffff"+
+			"\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\10\3\1\uffff\7\3\2\uffff\1\3\3\uffff"+
+			"\1\3\1\4",
 			"",
 			"\2\3\3\uffff\5\3\3\uffff\1\3\1\5\1\3\1\6\1\uffff\4\3\3\uffff\1\3\2\uffff"+
 			"\1\3\3\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\2\3\2\uffff\3\3\7\uffff"+
 			"\5\3\1\uffff\2\3\2\uffff\1\3\1\uffff\3\3\5\uffff\1\3\1\6\3\uffff\2\3"+
-			"\3\uffff\3\3\1\uffff\1\3\4\uffff\6\3\1\uffff\3\3\1\uffff\3\3\1\uffff"+
-			"\2\3\1\uffff\3\3\1\uffff\10\3\1\uffff\7\3\2\uffff\1\3\3\uffff\1\3\1\6"
+			"\3\uffff\3\3\1\uffff\1\3\4\uffff\6\3\1\uffff\3\3\1\uffff\2\3\1\uffff"+
+			"\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\10\3\1\uffff\7\3\2\uffff\1\3\3\uffff"+
+			"\1\3\1\6"
 	};
 
 	static final short[] DFA305_eot = DFA.unpackEncodedString(DFA305_eotS);
@@ -32286,22 +32357,22 @@ public class Css3Parser extends DebugParser {
 	static final String DFA308_minS =
 		"\1\24\1\6\1\uffff\1\6\1\uffff";
 	static final String DFA308_maxS =
-		"\1\175\1\u0090\1\uffff\1\u0090\1\uffff";
+		"\1\176\1\u0091\1\uffff\1\u0091\1\uffff";
 	static final String DFA308_acceptS =
 		"\2\uffff\1\2\1\uffff\1\1";
 	static final String DFA308_specialS =
 		"\5\uffff}>";
 	static final String[] DFA308_transitionS = {
-			"\1\1\3\uffff\1\2\53\uffff\1\2\43\uffff\1\2\24\uffff\1\1",
+			"\1\1\3\uffff\1\2\53\uffff\1\2\43\uffff\1\2\25\uffff\1\1",
 			"\1\4\3\uffff\5\4\3\uffff\1\4\2\uffff\1\3\1\uffff\1\4\1\2\16\uffff\1"+
 			"\4\14\uffff\1\4\7\uffff\3\4\5\uffff\1\2\3\uffff\1\4\1\uffff\1\4\5\uffff"+
-			"\1\4\1\3\10\uffff\1\4\12\uffff\3\4\1\2\1\uffff\3\4\1\uffff\3\4\1\uffff"+
-			"\2\4\1\uffff\3\4\1\uffff\4\4\7\uffff\5\4\6\uffff\1\4\1\3",
+			"\1\4\1\3\10\uffff\1\4\12\uffff\3\4\1\2\1\uffff\3\4\1\uffff\2\4\1\uffff"+
+			"\1\4\1\uffff\2\4\1\uffff\3\4\1\uffff\4\4\7\uffff\5\4\6\uffff\1\4\1\3",
 			"",
 			"\1\4\3\uffff\5\4\3\uffff\1\4\2\uffff\1\3\1\uffff\1\4\1\2\16\uffff\1"+
 			"\4\14\uffff\1\4\7\uffff\3\4\5\uffff\1\2\3\uffff\1\4\1\uffff\1\4\5\uffff"+
-			"\1\4\1\3\10\uffff\1\4\12\uffff\3\4\1\2\1\uffff\3\4\1\uffff\3\4\1\uffff"+
-			"\2\4\1\uffff\3\4\1\uffff\4\4\7\uffff\5\4\6\uffff\1\4\1\3",
+			"\1\4\1\3\10\uffff\1\4\12\uffff\3\4\1\2\1\uffff\3\4\1\uffff\2\4\1\uffff"+
+			"\1\4\1\uffff\2\4\1\uffff\3\4\1\uffff\4\4\7\uffff\5\4\6\uffff\1\4\1\3",
 			""
 	};
 
@@ -32350,14 +32421,14 @@ public class Css3Parser extends DebugParser {
 	static final String DFA323_minS =
 		"\2\24\2\uffff";
 	static final String DFA323_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA323_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA323_specialS =
 		"\4\uffff}>";
 	static final String[] DFA323_transitionS = {
-			"\1\3\1\1\34\uffff\1\3\7\uffff\1\2\26\uffff\1\1\76\uffff\1\1",
-			"\1\3\1\1\34\uffff\1\3\7\uffff\1\2\26\uffff\1\1\76\uffff\1\1",
+			"\1\3\1\1\34\uffff\1\3\7\uffff\1\2\26\uffff\1\1\77\uffff\1\1",
+			"\1\3\1\1\34\uffff\1\3\7\uffff\1\2\26\uffff\1\1\77\uffff\1\1",
 			"",
 			""
 	};
@@ -32407,18 +32478,18 @@ public class Css3Parser extends DebugParser {
 	static final String DFA344_minS =
 		"\1\25\1\6\2\uffff";
 	static final String DFA344_maxS =
-		"\2\u0090\2\uffff";
+		"\2\u0091\2\uffff";
 	static final String DFA344_acceptS =
 		"\2\uffff\1\2\1\1";
 	static final String DFA344_specialS =
 		"\4\uffff}>";
 	static final String[] DFA344_transitionS = {
-			"\1\1\73\uffff\1\1\17\uffff\1\2\33\uffff\1\2\22\uffff\1\1",
+			"\1\1\73\uffff\1\1\17\uffff\1\2\34\uffff\1\2\22\uffff\1\1",
 			"\2\2\2\uffff\5\2\3\uffff\2\2\1\uffff\1\1\1\uffff\1\2\5\uffff\1\2\1\uffff"+
 			"\1\2\7\uffff\1\2\2\uffff\2\2\2\uffff\2\2\2\uffff\1\2\1\uffff\1\2\6\uffff"+
 			"\4\2\2\uffff\1\2\6\uffff\3\2\5\uffff\1\2\1\1\10\uffff\1\2\2\uffff\2\2"+
-			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\6\2\1\uffff\3\2\1\3\5\2"+
-			"\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
+			"\2\uffff\1\2\3\uffff\3\2\2\uffff\3\2\1\uffff\2\2\1\uffff\4\2\1\uffff"+
+			"\3\2\1\3\5\2\1\uffff\1\2\2\uffff\1\2\1\uffff\5\2\6\uffff\1\2\1\1",
 			"",
 			""
 	};
@@ -32464,32 +32535,32 @@ public class Css3Parser extends DebugParser {
 	static final String DFA349_eotS =
 		"\10\uffff";
 	static final String DFA349_eofS =
-		"\2\3\6\uffff";
+		"\2\4\6\uffff";
 	static final String DFA349_minS =
-		"\2\6\1\23\1\uffff\2\23\1\uffff\1\23";
+		"\2\6\1\23\2\uffff\3\23";
 	static final String DFA349_maxS =
-		"\3\u0090\1\uffff\2\u0090\1\uffff\1\u0090";
+		"\3\u0091\2\uffff\3\u0091";
 	static final String DFA349_acceptS =
-		"\3\uffff\1\2\2\uffff\1\1\1\uffff";
+		"\3\uffff\1\1\1\2\3\uffff";
 	static final String DFA349_specialS =
 		"\10\uffff}>";
 	static final String[] DFA349_transitionS = {
-			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
-			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
-			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\1\3\1\2\4\3\1\uffff\3\3"+
-			"\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
-			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
-			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
-			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\1\3\1\4\4\3\1\uffff\3\3"+
-			"\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
-			"\1\3\1\uffff\1\5\34\uffff\1\6\7\uffff\1\6\26\uffff\1\5\76\uffff\1\5",
+			"\2\4\2\uffff\5\4\3\uffff\2\4\1\uffff\1\1\1\uffff\1\4\5\uffff\1\4\1\uffff"+
+			"\1\4\7\uffff\1\4\2\uffff\2\4\2\uffff\2\4\2\uffff\1\4\1\uffff\1\4\6\uffff"+
+			"\4\4\2\uffff\1\4\6\uffff\3\4\5\uffff\1\4\1\1\10\uffff\1\4\2\uffff\2\4"+
+			"\2\uffff\1\4\3\uffff\3\4\2\uffff\3\4\1\uffff\1\4\1\2\1\3\4\4\1\uffff"+
+			"\3\4\1\uffff\5\4\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4\1\1",
+			"\2\4\2\uffff\5\4\3\uffff\2\4\1\uffff\1\1\1\uffff\1\4\5\uffff\1\4\1\uffff"+
+			"\1\4\7\uffff\1\4\2\uffff\2\4\2\uffff\2\4\2\uffff\1\4\1\uffff\1\4\6\uffff"+
+			"\4\4\2\uffff\1\4\6\uffff\3\4\5\uffff\1\4\1\1\10\uffff\1\4\2\uffff\2\4"+
+			"\2\uffff\1\4\3\uffff\3\4\2\uffff\3\4\1\uffff\1\4\1\5\1\3\4\4\1\uffff"+
+			"\3\4\1\uffff\5\4\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4\1\1",
+			"\1\4\1\uffff\1\6\34\uffff\1\3\7\uffff\1\3\26\uffff\1\6\77\uffff\1\6",
 			"",
-			"\1\3\1\uffff\1\7\34\uffff\1\6\7\uffff\1\6\26\uffff\1\7\76\uffff\1\7",
-			"\1\3\1\uffff\1\5\34\uffff\1\6\7\uffff\1\6\26\uffff\1\5\76\uffff\1\5",
 			"",
-			"\1\3\1\uffff\1\7\34\uffff\1\6\7\uffff\1\6\26\uffff\1\7\76\uffff\1\7"
+			"\1\4\1\uffff\1\7\34\uffff\1\3\7\uffff\1\3\26\uffff\1\7\77\uffff\1\7",
+			"\1\4\1\uffff\1\6\34\uffff\1\3\7\uffff\1\3\26\uffff\1\6\77\uffff\1\6",
+			"\1\4\1\uffff\1\7\34\uffff\1\3\7\uffff\1\3\26\uffff\1\7\77\uffff\1\7"
 	};
 
 	static final short[] DFA349_eot = DFA.unpackEncodedString(DFA349_eotS);
@@ -32530,24 +32601,93 @@ public class Css3Parser extends DebugParser {
 		}
 	}
 
-	static final String DFA356_eotS =
+	static final String DFA357_eotS =
 		"\5\uffff";
-	static final String DFA356_eofS =
+	static final String DFA357_eofS =
 		"\5\uffff";
-	static final String DFA356_minS =
-		"\1\157\2\25\2\uffff";
-	static final String DFA356_maxS =
-		"\1\157\2\u0090\2\uffff";
-	static final String DFA356_acceptS =
-		"\3\uffff\1\1\1\2";
-	static final String DFA356_specialS =
+	static final String DFA357_minS =
+		"\1\157\1\25\1\uffff\1\25\1\uffff";
+	static final String DFA357_maxS =
+		"\1\160\1\u0091\1\uffff\1\u0091\1\uffff";
+	static final String DFA357_acceptS =
+		"\2\uffff\1\2\1\uffff\1\1";
+	static final String DFA357_specialS =
 		"\5\uffff}>";
-	static final String[] DFA356_transitionS = {
-			"\1\1",
-			"\1\2\34\uffff\1\4\7\uffff\1\3\26\uffff\1\2\76\uffff\1\2",
-			"\1\2\34\uffff\1\4\7\uffff\1\3\26\uffff\1\2\76\uffff\1\2",
+	static final String[] DFA357_transitionS = {
+			"\1\1\1\2",
+			"\1\3\34\uffff\1\2\7\uffff\1\4\26\uffff\1\3\77\uffff\1\3",
 			"",
+			"\1\3\34\uffff\1\2\7\uffff\1\4\26\uffff\1\3\77\uffff\1\3",
 			""
+	};
+
+	static final short[] DFA357_eot = DFA.unpackEncodedString(DFA357_eotS);
+	static final short[] DFA357_eof = DFA.unpackEncodedString(DFA357_eofS);
+	static final char[] DFA357_min = DFA.unpackEncodedStringToUnsignedChars(DFA357_minS);
+	static final char[] DFA357_max = DFA.unpackEncodedStringToUnsignedChars(DFA357_maxS);
+	static final short[] DFA357_accept = DFA.unpackEncodedString(DFA357_acceptS);
+	static final short[] DFA357_special = DFA.unpackEncodedString(DFA357_specialS);
+	static final short[][] DFA357_transition;
+
+	static {
+		int numStates = DFA357_transitionS.length;
+		DFA357_transition = new short[numStates][];
+		for (int i=0; i<numStates; i++) {
+			DFA357_transition[i] = DFA.unpackEncodedString(DFA357_transitionS[i]);
+		}
+	}
+
+	protected class DFA357 extends DFA {
+
+		public DFA357(BaseRecognizer recognizer) {
+			this.recognizer = recognizer;
+			this.decisionNumber = 357;
+			this.eot = DFA357_eot;
+			this.eof = DFA357_eof;
+			this.min = DFA357_min;
+			this.max = DFA357_max;
+			this.accept = DFA357_accept;
+			this.special = DFA357_special;
+			this.transition = DFA357_transition;
+		}
+		@Override
+		public String getDescription() {
+			return "1258:1: sass_else : ( SASS_ELSE ( ws )? sass_control_block | ( ( SASS_ELSE ( ws )? {...}? IDENT ) | SASS_ELSEIF ) ( ws )? sass_control_expression ( ws )? sass_control_block ( ( ws )? sass_else )? );";
+		}
+		public void error(NoViableAltException nvae) {
+			dbg.recognitionException(nvae);
+		}
+	}
+
+	static final String DFA356_eotS =
+		"\10\uffff";
+	static final String DFA356_eofS =
+		"\2\4\6\uffff";
+	static final String DFA356_minS =
+		"\2\6\1\23\2\uffff\3\23";
+	static final String DFA356_maxS =
+		"\3\u0091\2\uffff\3\u0091";
+	static final String DFA356_acceptS =
+		"\3\uffff\1\1\1\2\3\uffff";
+	static final String DFA356_specialS =
+		"\10\uffff}>";
+	static final String[] DFA356_transitionS = {
+			"\2\4\2\uffff\5\4\3\uffff\2\4\1\uffff\1\1\1\uffff\1\4\5\uffff\1\4\1\uffff"+
+			"\1\4\7\uffff\1\4\2\uffff\2\4\2\uffff\2\4\2\uffff\1\4\1\uffff\1\4\6\uffff"+
+			"\4\4\2\uffff\1\4\6\uffff\3\4\5\uffff\1\4\1\1\10\uffff\1\4\2\uffff\2\4"+
+			"\2\uffff\1\4\3\uffff\3\4\2\uffff\3\4\1\uffff\1\4\1\2\1\3\4\4\1\uffff"+
+			"\3\4\1\uffff\5\4\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4\1\1",
+			"\2\4\2\uffff\5\4\3\uffff\2\4\1\uffff\1\1\1\uffff\1\4\5\uffff\1\4\1\uffff"+
+			"\1\4\7\uffff\1\4\2\uffff\2\4\2\uffff\2\4\2\uffff\1\4\1\uffff\1\4\6\uffff"+
+			"\4\4\2\uffff\1\4\6\uffff\3\4\5\uffff\1\4\1\1\10\uffff\1\4\2\uffff\2\4"+
+			"\2\uffff\1\4\3\uffff\3\4\2\uffff\3\4\1\uffff\1\4\1\5\1\3\4\4\1\uffff"+
+			"\3\4\1\uffff\5\4\1\uffff\1\4\2\uffff\1\4\1\uffff\5\4\6\uffff\1\4\1\1",
+			"\1\4\1\uffff\1\6\34\uffff\1\3\7\uffff\1\3\26\uffff\1\6\77\uffff\1\6",
+			"",
+			"",
+			"\1\4\1\uffff\1\7\34\uffff\1\3\7\uffff\1\3\26\uffff\1\7\77\uffff\1\7",
+			"\1\4\1\uffff\1\6\34\uffff\1\3\7\uffff\1\3\26\uffff\1\6\77\uffff\1\6",
+			"\1\4\1\uffff\1\7\34\uffff\1\3\7\uffff\1\3\26\uffff\1\7\77\uffff\1\7"
 	};
 
 	static final short[] DFA356_eot = DFA.unpackEncodedString(DFA356_eotS);
@@ -32581,129 +32721,60 @@ public class Css3Parser extends DebugParser {
 		}
 		@Override
 		public String getDescription() {
-			return "1258:1: sass_else : ( SASS_ELSE ( ws )? sass_control_block | SASS_ELSE ( ws )? {...}? IDENT ( ws )? sass_control_expression ( ws )? sass_control_block ( ( ws )? sass_else )? );";
+			return "1262:128: ( ( ws )? sass_else )?";
 		}
 		public void error(NoViableAltException nvae) {
 			dbg.recognitionException(nvae);
 		}
 	}
 
-	static final String DFA355_eotS =
-		"\10\uffff";
-	static final String DFA355_eofS =
-		"\2\3\6\uffff";
-	static final String DFA355_minS =
-		"\2\6\1\23\1\uffff\2\23\1\uffff\1\23";
-	static final String DFA355_maxS =
-		"\3\u0090\1\uffff\2\u0090\1\uffff\1\u0090";
-	static final String DFA355_acceptS =
-		"\3\uffff\1\2\2\uffff\1\1\1\uffff";
-	static final String DFA355_specialS =
-		"\10\uffff}>";
-	static final String[] DFA355_transitionS = {
-			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
-			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
-			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\1\3\1\2\4\3\1\uffff\3\3"+
-			"\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
-			"\2\3\2\uffff\5\3\3\uffff\2\3\1\uffff\1\1\1\uffff\1\3\5\uffff\1\3\1\uffff"+
-			"\1\3\7\uffff\1\3\2\uffff\2\3\2\uffff\2\3\2\uffff\1\3\1\uffff\1\3\6\uffff"+
-			"\4\3\2\uffff\1\3\6\uffff\3\3\5\uffff\1\3\1\1\10\uffff\1\3\2\uffff\2\3"+
-			"\2\uffff\1\3\3\uffff\3\3\2\uffff\3\3\1\uffff\1\3\1\4\4\3\1\uffff\3\3"+
-			"\1\uffff\5\3\1\uffff\1\3\2\uffff\1\3\1\uffff\5\3\6\uffff\1\3\1\1",
-			"\1\3\1\uffff\1\5\34\uffff\1\6\7\uffff\1\6\26\uffff\1\5\76\uffff\1\5",
-			"",
-			"\1\3\1\uffff\1\7\34\uffff\1\6\7\uffff\1\6\26\uffff\1\7\76\uffff\1\7",
-			"\1\3\1\uffff\1\5\34\uffff\1\6\7\uffff\1\6\26\uffff\1\5\76\uffff\1\5",
-			"",
-			"\1\3\1\uffff\1\7\34\uffff\1\6\7\uffff\1\6\26\uffff\1\7\76\uffff\1\7"
-	};
-
-	static final short[] DFA355_eot = DFA.unpackEncodedString(DFA355_eotS);
-	static final short[] DFA355_eof = DFA.unpackEncodedString(DFA355_eofS);
-	static final char[] DFA355_min = DFA.unpackEncodedStringToUnsignedChars(DFA355_minS);
-	static final char[] DFA355_max = DFA.unpackEncodedStringToUnsignedChars(DFA355_maxS);
-	static final short[] DFA355_accept = DFA.unpackEncodedString(DFA355_acceptS);
-	static final short[] DFA355_special = DFA.unpackEncodedString(DFA355_specialS);
-	static final short[][] DFA355_transition;
-
-	static {
-		int numStates = DFA355_transitionS.length;
-		DFA355_transition = new short[numStates][];
-		for (int i=0; i<numStates; i++) {
-			DFA355_transition[i] = DFA.unpackEncodedString(DFA355_transitionS[i]);
-		}
-	}
-
-	protected class DFA355 extends DFA {
-
-		public DFA355(BaseRecognizer recognizer) {
-			this.recognizer = recognizer;
-			this.decisionNumber = 355;
-			this.eot = DFA355_eot;
-			this.eof = DFA355_eof;
-			this.min = DFA355_min;
-			this.max = DFA355_max;
-			this.accept = DFA355_accept;
-			this.special = DFA355_special;
-			this.transition = DFA355_transition;
-		}
-		@Override
-		public String getDescription() {
-			return "1262:110: ( ( ws )? sass_else )?";
-		}
-		public void error(NoViableAltException nvae) {
-			dbg.recognitionException(nvae);
-		}
-	}
-
-	static final String DFA361_eotS =
+	static final String DFA362_eotS =
 		"\4\uffff";
-	static final String DFA361_eofS =
+	static final String DFA362_eofS =
 		"\4\uffff";
-	static final String DFA361_minS =
+	static final String DFA362_minS =
 		"\2\24\2\uffff";
-	static final String DFA361_maxS =
-		"\2\u0090\2\uffff";
-	static final String DFA361_acceptS =
+	static final String DFA362_maxS =
+		"\2\u0091\2\uffff";
+	static final String DFA362_acceptS =
 		"\2\uffff\1\1\1\2";
-	static final String DFA361_specialS =
+	static final String DFA362_specialS =
 		"\1\0\1\1\2\uffff}>";
-	static final String[] DFA361_transitionS = {
-			"\1\2\1\1\73\uffff\1\1\76\uffff\1\1",
-			"\1\2\1\1\34\uffff\1\3\36\uffff\1\1\76\uffff\1\1",
+	static final String[] DFA362_transitionS = {
+			"\1\2\1\1\73\uffff\1\1\77\uffff\1\1",
+			"\1\2\1\1\34\uffff\1\3\36\uffff\1\1\77\uffff\1\1",
 			"",
 			""
 	};
 
-	static final short[] DFA361_eot = DFA.unpackEncodedString(DFA361_eotS);
-	static final short[] DFA361_eof = DFA.unpackEncodedString(DFA361_eofS);
-	static final char[] DFA361_min = DFA.unpackEncodedStringToUnsignedChars(DFA361_minS);
-	static final char[] DFA361_max = DFA.unpackEncodedStringToUnsignedChars(DFA361_maxS);
-	static final short[] DFA361_accept = DFA.unpackEncodedString(DFA361_acceptS);
-	static final short[] DFA361_special = DFA.unpackEncodedString(DFA361_specialS);
-	static final short[][] DFA361_transition;
+	static final short[] DFA362_eot = DFA.unpackEncodedString(DFA362_eotS);
+	static final short[] DFA362_eof = DFA.unpackEncodedString(DFA362_eofS);
+	static final char[] DFA362_min = DFA.unpackEncodedStringToUnsignedChars(DFA362_minS);
+	static final char[] DFA362_max = DFA.unpackEncodedStringToUnsignedChars(DFA362_maxS);
+	static final short[] DFA362_accept = DFA.unpackEncodedString(DFA362_acceptS);
+	static final short[] DFA362_special = DFA.unpackEncodedString(DFA362_specialS);
+	static final short[][] DFA362_transition;
 
 	static {
-		int numStates = DFA361_transitionS.length;
-		DFA361_transition = new short[numStates][];
+		int numStates = DFA362_transitionS.length;
+		DFA362_transition = new short[numStates][];
 		for (int i=0; i<numStates; i++) {
-			DFA361_transition[i] = DFA.unpackEncodedString(DFA361_transitionS[i]);
+			DFA362_transition[i] = DFA.unpackEncodedString(DFA362_transitionS[i]);
 		}
 	}
 
-	protected class DFA361 extends DFA {
+	protected class DFA362 extends DFA {
 
-		public DFA361(BaseRecognizer recognizer) {
+		public DFA362(BaseRecognizer recognizer) {
 			this.recognizer = recognizer;
-			this.decisionNumber = 361;
-			this.eot = DFA361_eot;
-			this.eof = DFA361_eof;
-			this.min = DFA361_min;
-			this.max = DFA361_max;
-			this.accept = DFA361_accept;
-			this.special = DFA361_special;
-			this.transition = DFA361_transition;
+			this.decisionNumber = 362;
+			this.eot = DFA362_eot;
+			this.eof = DFA362_eof;
+			this.min = DFA362_min;
+			this.max = DFA362_max;
+			this.accept = DFA362_accept;
+			this.special = DFA362_special;
+			this.transition = DFA362_transition;
 		}
 		@Override
 		public String getDescription() {
@@ -32718,87 +32789,87 @@ public class Css3Parser extends DebugParser {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
-						int LA361_0 = input.LA(1);
+						int LA362_0 = input.LA(1);
 						 
-						int index361_0 = input.index();
+						int index362_0 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA361_0==COMMENT||LA361_0==NL||LA361_0==WS) ) {s = 1;}
-						else if ( (LA361_0==COMMA) && (synpred40_Css3())) {s = 2;}
+						if ( (LA362_0==COMMENT||LA362_0==NL||LA362_0==WS) ) {s = 1;}
+						else if ( (LA362_0==COMMA) && (synpred40_Css3())) {s = 2;}
 						 
-						input.seek(index361_0);
+						input.seek(index362_0);
 						if ( s>=0 ) return s;
 						break;
 
 					case 1 : 
-						int LA361_1 = input.LA(1);
+						int LA362_1 = input.LA(1);
 						 
-						int index361_1 = input.index();
+						int index362_1 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (LA361_1==IDENT) ) {s = 3;}
-						else if ( (LA361_1==COMMENT||LA361_1==NL||LA361_1==WS) ) {s = 1;}
-						else if ( (LA361_1==COMMA) && (synpred40_Css3())) {s = 2;}
+						if ( (LA362_1==IDENT) ) {s = 3;}
+						else if ( (LA362_1==COMMENT||LA362_1==NL||LA362_1==WS) ) {s = 1;}
+						else if ( (LA362_1==COMMA) && (synpred40_Css3())) {s = 2;}
 						 
-						input.seek(index361_1);
+						input.seek(index362_1);
 						if ( s>=0 ) return s;
 						break;
 			}
 			if (state.backtracking>0) {state.failed=true; return -1;}
 			NoViableAltException nvae =
-				new NoViableAltException(getDescription(), 361, _s, input);
+				new NoViableAltException(getDescription(), 362, _s, input);
 			error(nvae);
 			throw nvae;
 		}
 	}
 
-	static final String DFA379_eotS =
+	static final String DFA380_eotS =
 		"\4\uffff";
-	static final String DFA379_eofS =
+	static final String DFA380_eofS =
 		"\4\uffff";
-	static final String DFA379_minS =
+	static final String DFA380_minS =
 		"\2\25\2\uffff";
-	static final String DFA379_maxS =
-		"\2\u0090\2\uffff";
-	static final String DFA379_acceptS =
+	static final String DFA380_maxS =
+		"\2\u0091\2\uffff";
+	static final String DFA380_acceptS =
 		"\2\uffff\1\1\1\2";
-	static final String DFA379_specialS =
+	static final String DFA380_specialS =
 		"\4\uffff}>";
-	static final String[] DFA379_transitionS = {
-			"\1\1\35\uffff\1\2\35\uffff\1\1\53\uffff\1\3\22\uffff\1\1",
-			"\1\1\35\uffff\1\2\35\uffff\1\1\53\uffff\1\3\22\uffff\1\1",
+	static final String[] DFA380_transitionS = {
+			"\1\1\35\uffff\1\2\35\uffff\1\1\54\uffff\1\3\22\uffff\1\1",
+			"\1\1\35\uffff\1\2\35\uffff\1\1\54\uffff\1\3\22\uffff\1\1",
 			"",
 			""
 	};
 
-	static final short[] DFA379_eot = DFA.unpackEncodedString(DFA379_eotS);
-	static final short[] DFA379_eof = DFA.unpackEncodedString(DFA379_eofS);
-	static final char[] DFA379_min = DFA.unpackEncodedStringToUnsignedChars(DFA379_minS);
-	static final char[] DFA379_max = DFA.unpackEncodedStringToUnsignedChars(DFA379_maxS);
-	static final short[] DFA379_accept = DFA.unpackEncodedString(DFA379_acceptS);
-	static final short[] DFA379_special = DFA.unpackEncodedString(DFA379_specialS);
-	static final short[][] DFA379_transition;
+	static final short[] DFA380_eot = DFA.unpackEncodedString(DFA380_eotS);
+	static final short[] DFA380_eof = DFA.unpackEncodedString(DFA380_eofS);
+	static final char[] DFA380_min = DFA.unpackEncodedStringToUnsignedChars(DFA380_minS);
+	static final char[] DFA380_max = DFA.unpackEncodedStringToUnsignedChars(DFA380_maxS);
+	static final short[] DFA380_accept = DFA.unpackEncodedString(DFA380_acceptS);
+	static final short[] DFA380_special = DFA.unpackEncodedString(DFA380_specialS);
+	static final short[][] DFA380_transition;
 
 	static {
-		int numStates = DFA379_transitionS.length;
-		DFA379_transition = new short[numStates][];
+		int numStates = DFA380_transitionS.length;
+		DFA380_transition = new short[numStates][];
 		for (int i=0; i<numStates; i++) {
-			DFA379_transition[i] = DFA.unpackEncodedString(DFA379_transitionS[i]);
+			DFA380_transition[i] = DFA.unpackEncodedString(DFA380_transitionS[i]);
 		}
 	}
 
-	protected class DFA379 extends DFA {
+	protected class DFA380 extends DFA {
 
-		public DFA379(BaseRecognizer recognizer) {
+		public DFA380(BaseRecognizer recognizer) {
 			this.recognizer = recognizer;
-			this.decisionNumber = 379;
-			this.eot = DFA379_eot;
-			this.eof = DFA379_eof;
-			this.min = DFA379_min;
-			this.max = DFA379_max;
-			this.accept = DFA379_accept;
-			this.special = DFA379_special;
-			this.transition = DFA379_transition;
+			this.decisionNumber = 380;
+			this.eot = DFA380_eot;
+			this.eof = DFA380_eof;
+			this.min = DFA380_min;
+			this.max = DFA380_max;
+			this.accept = DFA380_accept;
+			this.special = DFA380_special;
+			this.transition = DFA380_transition;
 		}
 		@Override
 		public String getDescription() {
@@ -32809,53 +32880,53 @@ public class Css3Parser extends DebugParser {
 		}
 	}
 
-	static final String DFA399_eotS =
+	static final String DFA400_eotS =
 		"\4\uffff";
-	static final String DFA399_eofS =
+	static final String DFA400_eofS =
 		"\4\uffff";
-	static final String DFA399_minS =
+	static final String DFA400_minS =
 		"\2\25\2\uffff";
-	static final String DFA399_maxS =
-		"\2\u0090\2\uffff";
-	static final String DFA399_acceptS =
+	static final String DFA400_maxS =
+		"\2\u0091\2\uffff";
+	static final String DFA400_acceptS =
 		"\2\uffff\1\1\1\2";
-	static final String DFA399_specialS =
+	static final String DFA400_specialS =
 		"\4\uffff}>";
-	static final String[] DFA399_transitionS = {
-			"\1\1\35\uffff\1\2\35\uffff\1\1\53\uffff\1\3\22\uffff\1\1",
-			"\1\1\35\uffff\1\2\35\uffff\1\1\53\uffff\1\3\22\uffff\1\1",
+	static final String[] DFA400_transitionS = {
+			"\1\1\35\uffff\1\2\35\uffff\1\1\54\uffff\1\3\22\uffff\1\1",
+			"\1\1\35\uffff\1\2\35\uffff\1\1\54\uffff\1\3\22\uffff\1\1",
 			"",
 			""
 	};
 
-	static final short[] DFA399_eot = DFA.unpackEncodedString(DFA399_eotS);
-	static final short[] DFA399_eof = DFA.unpackEncodedString(DFA399_eofS);
-	static final char[] DFA399_min = DFA.unpackEncodedStringToUnsignedChars(DFA399_minS);
-	static final char[] DFA399_max = DFA.unpackEncodedStringToUnsignedChars(DFA399_maxS);
-	static final short[] DFA399_accept = DFA.unpackEncodedString(DFA399_acceptS);
-	static final short[] DFA399_special = DFA.unpackEncodedString(DFA399_specialS);
-	static final short[][] DFA399_transition;
+	static final short[] DFA400_eot = DFA.unpackEncodedString(DFA400_eotS);
+	static final short[] DFA400_eof = DFA.unpackEncodedString(DFA400_eofS);
+	static final char[] DFA400_min = DFA.unpackEncodedStringToUnsignedChars(DFA400_minS);
+	static final char[] DFA400_max = DFA.unpackEncodedStringToUnsignedChars(DFA400_maxS);
+	static final short[] DFA400_accept = DFA.unpackEncodedString(DFA400_acceptS);
+	static final short[] DFA400_special = DFA.unpackEncodedString(DFA400_specialS);
+	static final short[][] DFA400_transition;
 
 	static {
-		int numStates = DFA399_transitionS.length;
-		DFA399_transition = new short[numStates][];
+		int numStates = DFA400_transitionS.length;
+		DFA400_transition = new short[numStates][];
 		for (int i=0; i<numStates; i++) {
-			DFA399_transition[i] = DFA.unpackEncodedString(DFA399_transitionS[i]);
+			DFA400_transition[i] = DFA.unpackEncodedString(DFA400_transitionS[i]);
 		}
 	}
 
-	protected class DFA399 extends DFA {
+	protected class DFA400 extends DFA {
 
-		public DFA399(BaseRecognizer recognizer) {
+		public DFA400(BaseRecognizer recognizer) {
 			this.recognizer = recognizer;
-			this.decisionNumber = 399;
-			this.eot = DFA399_eot;
-			this.eof = DFA399_eof;
-			this.min = DFA399_min;
-			this.max = DFA399_max;
-			this.accept = DFA399_accept;
-			this.special = DFA399_special;
-			this.transition = DFA399_transition;
+			this.decisionNumber = 400;
+			this.eot = DFA400_eot;
+			this.eof = DFA400_eof;
+			this.min = DFA400_min;
+			this.max = DFA400_max;
+			this.accept = DFA400_accept;
+			this.special = DFA400_special;
+			this.transition = DFA400_transition;
 		}
 		@Override
 		public String getDescription() {
@@ -32866,55 +32937,55 @@ public class Css3Parser extends DebugParser {
 		}
 	}
 
-	static final String DFA401_eotS =
+	static final String DFA402_eotS =
 		"\4\uffff";
-	static final String DFA401_eofS =
+	static final String DFA402_eofS =
 		"\4\uffff";
-	static final String DFA401_minS =
+	static final String DFA402_minS =
 		"\1\25\1\7\2\uffff";
-	static final String DFA401_maxS =
-		"\2\u0090\2\uffff";
-	static final String DFA401_acceptS =
+	static final String DFA402_maxS =
+		"\2\u0091\2\uffff";
+	static final String DFA402_acceptS =
 		"\2\uffff\1\2\1\1";
-	static final String DFA401_specialS =
+	static final String DFA402_specialS =
 		"\4\uffff}>";
-	static final String[] DFA401_transitionS = {
-			"\1\1\44\uffff\1\2\26\uffff\1\1\76\uffff\1\1",
+	static final String[] DFA402_transitionS = {
+			"\1\1\44\uffff\1\2\26\uffff\1\1\77\uffff\1\1",
 			"\1\3\13\uffff\1\3\1\uffff\1\1\7\uffff\1\3\1\uffff\1\3\12\uffff\2\3\2"+
 			"\uffff\2\3\2\uffff\1\3\7\uffff\1\2\1\3\5\uffff\1\3\7\uffff\1\3\7\uffff"+
-			"\1\1\13\uffff\2\3\22\uffff\1\3\15\uffff\1\3\2\uffff\1\3\15\uffff\1\1",
+			"\1\1\13\uffff\2\3\23\uffff\1\3\15\uffff\1\3\2\uffff\1\3\15\uffff\1\1",
 			"",
 			""
 	};
 
-	static final short[] DFA401_eot = DFA.unpackEncodedString(DFA401_eotS);
-	static final short[] DFA401_eof = DFA.unpackEncodedString(DFA401_eofS);
-	static final char[] DFA401_min = DFA.unpackEncodedStringToUnsignedChars(DFA401_minS);
-	static final char[] DFA401_max = DFA.unpackEncodedStringToUnsignedChars(DFA401_maxS);
-	static final short[] DFA401_accept = DFA.unpackEncodedString(DFA401_acceptS);
-	static final short[] DFA401_special = DFA.unpackEncodedString(DFA401_specialS);
-	static final short[][] DFA401_transition;
+	static final short[] DFA402_eot = DFA.unpackEncodedString(DFA402_eotS);
+	static final short[] DFA402_eof = DFA.unpackEncodedString(DFA402_eofS);
+	static final char[] DFA402_min = DFA.unpackEncodedStringToUnsignedChars(DFA402_minS);
+	static final char[] DFA402_max = DFA.unpackEncodedStringToUnsignedChars(DFA402_maxS);
+	static final short[] DFA402_accept = DFA.unpackEncodedString(DFA402_acceptS);
+	static final short[] DFA402_special = DFA.unpackEncodedString(DFA402_specialS);
+	static final short[][] DFA402_transition;
 
 	static {
-		int numStates = DFA401_transitionS.length;
-		DFA401_transition = new short[numStates][];
+		int numStates = DFA402_transitionS.length;
+		DFA402_transition = new short[numStates][];
 		for (int i=0; i<numStates; i++) {
-			DFA401_transition[i] = DFA.unpackEncodedString(DFA401_transitionS[i]);
+			DFA402_transition[i] = DFA.unpackEncodedString(DFA402_transitionS[i]);
 		}
 	}
 
-	protected class DFA401 extends DFA {
+	protected class DFA402 extends DFA {
 
-		public DFA401(BaseRecognizer recognizer) {
+		public DFA402(BaseRecognizer recognizer) {
 			this.recognizer = recognizer;
-			this.decisionNumber = 401;
-			this.eot = DFA401_eot;
-			this.eof = DFA401_eof;
-			this.min = DFA401_min;
-			this.max = DFA401_max;
-			this.accept = DFA401_accept;
-			this.special = DFA401_special;
-			this.transition = DFA401_transition;
+			this.decisionNumber = 402;
+			this.eot = DFA402_eot;
+			this.eof = DFA402_eof;
+			this.min = DFA402_min;
+			this.max = DFA402_max;
+			this.accept = DFA402_accept;
+			this.special = DFA402_special;
+			this.transition = DFA402_transition;
 		}
 		@Override
 		public String getDescription() {
@@ -32925,64 +32996,64 @@ public class Css3Parser extends DebugParser {
 		}
 	}
 
-	static final String DFA409_eotS =
+	static final String DFA410_eotS =
 		"\5\uffff";
-	static final String DFA409_eofS =
+	static final String DFA410_eofS =
 		"\5\uffff";
-	static final String DFA409_minS =
+	static final String DFA410_minS =
 		"\2\5\3\uffff";
-	static final String DFA409_maxS =
-		"\2\u0090\3\uffff";
-	static final String DFA409_acceptS =
+	static final String DFA410_maxS =
+		"\2\u0091\3\uffff";
+	static final String DFA410_acceptS =
 		"\2\uffff\1\2\1\3\1\1";
-	static final String DFA409_specialS =
+	static final String DFA410_specialS =
 		"\5\uffff}>";
-	static final String[] DFA409_transitionS = {
+	static final String[] DFA410_transitionS = {
 			"\2\3\3\uffff\5\3\3\uffff\1\3\1\uffff\1\2\1\1\1\uffff\1\3\6\uffff\1\3"+
 			"\2\uffff\1\3\3\uffff\1\3\1\uffff\2\3\1\uffff\1\3\3\uffff\2\3\2\uffff"+
 			"\1\3\1\uffff\1\3\7\uffff\4\3\2\uffff\1\3\5\uffff\3\3\5\uffff\1\3\1\1"+
 			"\4\uffff\1\3\3\uffff\3\3\1\uffff\1\3\4\uffff\5\3\2\uffff\3\3\1\uffff"+
-			"\3\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\1\uffff\1\2\1\uffff\1\3\1\uffff"+
-			"\7\3\2\uffff\1\3\3\uffff\1\3\1\1",
+			"\2\3\1\uffff\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\1\uffff\1\2\1\uffff"+
+			"\1\3\1\uffff\7\3\2\uffff\1\3\3\uffff\1\3\1\1",
 			"\2\4\3\uffff\5\4\3\uffff\1\4\1\uffff\1\2\1\1\1\uffff\1\4\6\uffff\1\4"+
 			"\2\uffff\1\4\3\uffff\1\4\1\uffff\2\4\1\uffff\1\4\3\uffff\2\4\2\uffff"+
 			"\1\4\1\uffff\1\4\7\uffff\4\4\2\uffff\1\4\5\uffff\3\4\5\uffff\1\4\1\1"+
 			"\4\uffff\1\4\3\uffff\3\4\1\uffff\1\4\4\uffff\5\4\2\uffff\3\4\1\uffff"+
-			"\3\4\1\uffff\2\4\1\uffff\3\4\1\uffff\4\4\1\uffff\1\2\1\uffff\1\4\1\uffff"+
-			"\7\4\2\uffff\1\4\3\uffff\1\4\1\1",
+			"\2\4\1\uffff\1\4\1\uffff\2\4\1\uffff\3\4\1\uffff\4\4\1\uffff\1\2\1\uffff"+
+			"\1\4\1\uffff\7\4\2\uffff\1\4\3\uffff\1\4\1\1",
 			"",
 			"",
 			""
 	};
 
-	static final short[] DFA409_eot = DFA.unpackEncodedString(DFA409_eotS);
-	static final short[] DFA409_eof = DFA.unpackEncodedString(DFA409_eofS);
-	static final char[] DFA409_min = DFA.unpackEncodedStringToUnsignedChars(DFA409_minS);
-	static final char[] DFA409_max = DFA.unpackEncodedStringToUnsignedChars(DFA409_maxS);
-	static final short[] DFA409_accept = DFA.unpackEncodedString(DFA409_acceptS);
-	static final short[] DFA409_special = DFA.unpackEncodedString(DFA409_specialS);
-	static final short[][] DFA409_transition;
+	static final short[] DFA410_eot = DFA.unpackEncodedString(DFA410_eotS);
+	static final short[] DFA410_eof = DFA.unpackEncodedString(DFA410_eofS);
+	static final char[] DFA410_min = DFA.unpackEncodedStringToUnsignedChars(DFA410_minS);
+	static final char[] DFA410_max = DFA.unpackEncodedStringToUnsignedChars(DFA410_maxS);
+	static final short[] DFA410_accept = DFA.unpackEncodedString(DFA410_acceptS);
+	static final short[] DFA410_special = DFA.unpackEncodedString(DFA410_specialS);
+	static final short[][] DFA410_transition;
 
 	static {
-		int numStates = DFA409_transitionS.length;
-		DFA409_transition = new short[numStates][];
+		int numStates = DFA410_transitionS.length;
+		DFA410_transition = new short[numStates][];
 		for (int i=0; i<numStates; i++) {
-			DFA409_transition[i] = DFA.unpackEncodedString(DFA409_transitionS[i]);
+			DFA410_transition[i] = DFA.unpackEncodedString(DFA410_transitionS[i]);
 		}
 	}
 
-	protected class DFA409 extends DFA {
+	protected class DFA410 extends DFA {
 
-		public DFA409(BaseRecognizer recognizer) {
+		public DFA410(BaseRecognizer recognizer) {
 			this.recognizer = recognizer;
-			this.decisionNumber = 409;
-			this.eot = DFA409_eot;
-			this.eof = DFA409_eof;
-			this.min = DFA409_min;
-			this.max = DFA409_max;
-			this.accept = DFA409_accept;
-			this.special = DFA409_special;
-			this.transition = DFA409_transition;
+			this.decisionNumber = 410;
+			this.eot = DFA410_eot;
+			this.eof = DFA410_eof;
+			this.min = DFA410_min;
+			this.max = DFA410_max;
+			this.accept = DFA410_accept;
+			this.special = DFA410_special;
+			this.transition = DFA410_transition;
 		}
 		@Override
 		public String getDescription() {
@@ -32993,64 +33064,64 @@ public class Css3Parser extends DebugParser {
 		}
 	}
 
-	static final String DFA414_eotS =
+	static final String DFA415_eotS =
 		"\5\uffff";
-	static final String DFA414_eofS =
+	static final String DFA415_eofS =
 		"\5\uffff";
-	static final String DFA414_minS =
+	static final String DFA415_minS =
 		"\2\5\3\uffff";
-	static final String DFA414_maxS =
-		"\2\u0090\3\uffff";
-	static final String DFA414_acceptS =
+	static final String DFA415_maxS =
+		"\2\u0091\3\uffff";
+	static final String DFA415_acceptS =
 		"\2\uffff\1\2\1\3\1\1";
-	static final String DFA414_specialS =
+	static final String DFA415_specialS =
 		"\5\uffff}>";
-	static final String[] DFA414_transitionS = {
+	static final String[] DFA415_transitionS = {
 			"\2\3\3\uffff\5\3\3\uffff\1\3\2\uffff\1\1\1\uffff\1\3\6\uffff\1\3\2\uffff"+
 			"\1\3\3\uffff\1\3\1\uffff\2\3\1\uffff\1\3\3\uffff\2\3\2\uffff\1\3\1\uffff"+
 			"\1\3\7\uffff\4\3\2\uffff\1\3\5\uffff\3\3\5\uffff\1\3\1\1\4\uffff\1\3"+
-			"\3\uffff\3\3\1\uffff\1\3\4\uffff\5\3\2\uffff\3\3\1\uffff\3\3\1\uffff"+
-			"\2\3\1\uffff\3\3\1\uffff\4\3\1\uffff\1\2\1\uffff\1\3\1\uffff\7\3\2\uffff"+
-			"\1\3\3\uffff\1\3\1\1",
+			"\3\uffff\3\3\1\uffff\1\3\4\uffff\5\3\2\uffff\3\3\1\uffff\2\3\1\uffff"+
+			"\1\3\1\uffff\2\3\1\uffff\3\3\1\uffff\4\3\1\uffff\1\2\1\uffff\1\3\1\uffff"+
+			"\7\3\2\uffff\1\3\3\uffff\1\3\1\1",
 			"\2\4\3\uffff\5\4\3\uffff\1\4\2\uffff\1\1\1\uffff\1\4\6\uffff\1\4\2\uffff"+
 			"\1\4\3\uffff\1\4\1\uffff\2\4\1\uffff\1\4\3\uffff\2\4\2\uffff\1\4\1\uffff"+
 			"\1\4\7\uffff\4\4\2\uffff\1\4\5\uffff\3\4\5\uffff\1\4\1\1\4\uffff\1\4"+
-			"\3\uffff\3\4\1\uffff\1\4\4\uffff\5\4\2\uffff\3\4\1\uffff\3\4\1\uffff"+
-			"\2\4\1\uffff\3\4\1\uffff\4\4\1\uffff\1\2\1\uffff\1\4\1\uffff\7\4\2\uffff"+
-			"\1\4\3\uffff\1\4\1\1",
+			"\3\uffff\3\4\1\uffff\1\4\4\uffff\5\4\2\uffff\3\4\1\uffff\2\4\1\uffff"+
+			"\1\4\1\uffff\2\4\1\uffff\3\4\1\uffff\4\4\1\uffff\1\2\1\uffff\1\4\1\uffff"+
+			"\7\4\2\uffff\1\4\3\uffff\1\4\1\1",
 			"",
 			"",
 			""
 	};
 
-	static final short[] DFA414_eot = DFA.unpackEncodedString(DFA414_eotS);
-	static final short[] DFA414_eof = DFA.unpackEncodedString(DFA414_eofS);
-	static final char[] DFA414_min = DFA.unpackEncodedStringToUnsignedChars(DFA414_minS);
-	static final char[] DFA414_max = DFA.unpackEncodedStringToUnsignedChars(DFA414_maxS);
-	static final short[] DFA414_accept = DFA.unpackEncodedString(DFA414_acceptS);
-	static final short[] DFA414_special = DFA.unpackEncodedString(DFA414_specialS);
-	static final short[][] DFA414_transition;
+	static final short[] DFA415_eot = DFA.unpackEncodedString(DFA415_eotS);
+	static final short[] DFA415_eof = DFA.unpackEncodedString(DFA415_eofS);
+	static final char[] DFA415_min = DFA.unpackEncodedStringToUnsignedChars(DFA415_minS);
+	static final char[] DFA415_max = DFA.unpackEncodedStringToUnsignedChars(DFA415_maxS);
+	static final short[] DFA415_accept = DFA.unpackEncodedString(DFA415_acceptS);
+	static final short[] DFA415_special = DFA.unpackEncodedString(DFA415_specialS);
+	static final short[][] DFA415_transition;
 
 	static {
-		int numStates = DFA414_transitionS.length;
-		DFA414_transition = new short[numStates][];
+		int numStates = DFA415_transitionS.length;
+		DFA415_transition = new short[numStates][];
 		for (int i=0; i<numStates; i++) {
-			DFA414_transition[i] = DFA.unpackEncodedString(DFA414_transitionS[i]);
+			DFA415_transition[i] = DFA.unpackEncodedString(DFA415_transitionS[i]);
 		}
 	}
 
-	protected class DFA414 extends DFA {
+	protected class DFA415 extends DFA {
 
-		public DFA414(BaseRecognizer recognizer) {
+		public DFA415(BaseRecognizer recognizer) {
 			this.recognizer = recognizer;
-			this.decisionNumber = 414;
-			this.eot = DFA414_eot;
-			this.eof = DFA414_eof;
-			this.min = DFA414_min;
-			this.max = DFA414_max;
-			this.accept = DFA414_accept;
-			this.special = DFA414_special;
-			this.transition = DFA414_transition;
+			this.decisionNumber = 415;
+			this.eot = DFA415_eot;
+			this.eof = DFA415_eof;
+			this.min = DFA415_min;
+			this.max = DFA415_max;
+			this.accept = DFA415_accept;
+			this.special = DFA415_special;
+			this.transition = DFA415_transition;
 		}
 		@Override
 		public String getDescription() {
@@ -33061,79 +33132,79 @@ public class Css3Parser extends DebugParser {
 		}
 	}
 
-	public static final BitSet FOLLOW_ws_in_styleSheet120 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_charSet_in_styleSheet130 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_styleSheet132 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_imports_in_styleSheet146 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_namespaces_in_styleSheet157 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE064010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_ws_in_styleSheet120 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_charSet_in_styleSheet130 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_styleSheet132 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_imports_in_styleSheet146 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_namespaces_in_styleSheet157 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE064010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_body_in_styleSheet168 = new BitSet(new long[]{0x0000000000000000L});
 	public static final BitSet FOLLOW_EOF_in_styleSheet176 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_namespace_in_namespaces193 = new BitSet(new long[]{0x0000000000200002L,0x0000000000030000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_namespace_in_namespaces193 = new BitSet(new long[]{0x0000000000200002L,0x0000000000030000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_namespaces195 = new BitSet(new long[]{0x0000000000000002L,0x0000000000010000L});
-	public static final BitSet FOLLOW_NAMESPACE_SYM_in_namespace211 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000010801L});
-	public static final BitSet FOLLOW_ws_in_namespace213 = new BitSet(new long[]{0x0004000000000000L,0x0000000000000000L,0x0000000000000801L});
-	public static final BitSet FOLLOW_namespacePrefixName_in_namespace217 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010801L});
-	public static final BitSet FOLLOW_ws_in_namespace219 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000801L});
-	public static final BitSet FOLLOW_resourceIdentifier_in_namespace224 = new BitSet(new long[]{0x0000000000200000L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_namespace226 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
+	public static final BitSet FOLLOW_NAMESPACE_SYM_in_namespace211 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000021002L});
+	public static final BitSet FOLLOW_ws_in_namespace213 = new BitSet(new long[]{0x0004000000000000L,0x0000000000000000L,0x0000000000001002L});
+	public static final BitSet FOLLOW_namespacePrefixName_in_namespace217 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000021002L});
+	public static final BitSet FOLLOW_ws_in_namespace219 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000001002L});
+	public static final BitSet FOLLOW_resourceIdentifier_in_namespace224 = new BitSet(new long[]{0x0000000000200000L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_namespace226 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
 	public static final BitSet FOLLOW_SEMI_in_namespace229 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_namespacePrefixName242 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_CHARSET_SYM_in_charSet276 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010001L});
-	public static final BitSet FOLLOW_ws_in_charSet278 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000001L});
-	public static final BitSet FOLLOW_charSetValue_in_charSet281 = new BitSet(new long[]{0x0000000000200000L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_charSet283 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
+	public static final BitSet FOLLOW_CHARSET_SYM_in_charSet276 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020002L});
+	public static final BitSet FOLLOW_ws_in_charSet278 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000002L});
+	public static final BitSet FOLLOW_charSetValue_in_charSet281 = new BitSet(new long[]{0x0000000000200000L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_charSet283 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
 	public static final BitSet FOLLOW_SEMI_in_charSet286 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_STRING_in_charSetValue300 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_importItem_in_imports314 = new BitSet(new long[]{0x0000000000200000L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_imports316 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
-	public static final BitSet FOLLOW_SEMI_in_imports319 = new BitSet(new long[]{0x0010000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_importItem_in_imports314 = new BitSet(new long[]{0x0000000000200000L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_imports316 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
+	public static final BitSet FOLLOW_SEMI_in_imports319 = new BitSet(new long[]{0x0010000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_imports321 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_IMPORT_SYM_in_importItem347 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010801L});
-	public static final BitSet FOLLOW_ws_in_importItem349 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000801L});
-	public static final BitSet FOLLOW_resourceIdentifier_in_importItem352 = new BitSet(new long[]{0x7014848000A47C42L,0x1EEDDCE004230540L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_importItem362 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004210540L,0x00000000000081F0L});
+	public static final BitSet FOLLOW_IMPORT_SYM_in_importItem347 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000021002L});
+	public static final BitSet FOLLOW_ws_in_importItem349 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000001002L});
+	public static final BitSet FOLLOW_resourceIdentifier_in_importItem352 = new BitSet(new long[]{0x7014848000A47C42L,0x3DDADCE004230540L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_importItem362 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004210540L,0x00000000000103E0L});
 	public static final BitSet FOLLOW_mediaQueryList_in_importItem365 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_IMPORT_SYM_in_importItem398 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010801L});
-	public static final BitSet FOLLOW_ws_in_importItem400 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000801L});
-	public static final BitSet FOLLOW_resourceIdentifier_in_importItem403 = new BitSet(new long[]{0x7014848000B47C42L,0x1EEDDCE004230540L,0x00000000000181F0L});
+	public static final BitSet FOLLOW_IMPORT_SYM_in_importItem398 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000021002L});
+	public static final BitSet FOLLOW_ws_in_importItem400 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000001002L});
+	public static final BitSet FOLLOW_resourceIdentifier_in_importItem403 = new BitSet(new long[]{0x7014848000B47C42L,0x3DDADCE004230540L,0x00000000000303E0L});
 	public static final BitSet FOLLOW_ws_in_importItem406 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_importItem409 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010801L});
-	public static final BitSet FOLLOW_ws_in_importItem411 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000801L});
-	public static final BitSet FOLLOW_resourceIdentifier_in_importItem414 = new BitSet(new long[]{0x7014848000B47C42L,0x1EEDDCE004230540L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_importItem426 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004210540L,0x00000000000081F0L});
+	public static final BitSet FOLLOW_COMMA_in_importItem409 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000021002L});
+	public static final BitSet FOLLOW_ws_in_importItem411 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000001002L});
+	public static final BitSet FOLLOW_resourceIdentifier_in_importItem414 = new BitSet(new long[]{0x7014848000B47C42L,0x3DDADCE004230540L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_importItem426 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004210540L,0x00000000000103E0L});
 	public static final BitSet FOLLOW_mediaQueryList_in_importItem429 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_IMPORT_SYM_in_importItem453 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010801L});
-	public static final BitSet FOLLOW_ws_in_importItem455 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L,0x0000000000000801L});
+	public static final BitSet FOLLOW_IMPORT_SYM_in_importItem453 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000021002L});
+	public static final BitSet FOLLOW_ws_in_importItem455 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L,0x0000000000001002L});
 	public static final BitSet FOLLOW_LPAREN_in_importItem459 = new BitSet(new long[]{0x0004000000000000L});
 	public static final BitSet FOLLOW_less_import_types_in_importItem461 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
-	public static final BitSet FOLLOW_RPAREN_in_importItem463 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010801L});
-	public static final BitSet FOLLOW_ws_in_importItem465 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000801L});
-	public static final BitSet FOLLOW_resourceIdentifier_in_importItem470 = new BitSet(new long[]{0x7014848000A47C42L,0x1EEDDCE004230540L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_importItem480 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004210540L,0x00000000000081F0L});
+	public static final BitSet FOLLOW_RPAREN_in_importItem463 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000021002L});
+	public static final BitSet FOLLOW_ws_in_importItem465 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000001002L});
+	public static final BitSet FOLLOW_resourceIdentifier_in_importItem470 = new BitSet(new long[]{0x7014848000A47C42L,0x3DDADCE004230540L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_importItem480 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004210540L,0x00000000000103E0L});
 	public static final BitSet FOLLOW_mediaQueryList_in_importItem483 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_MEDIA_SYM_in_media501 = new BitSet(new long[]{0x7014848000A47C40L,0x1EEDDCE004230540L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_media503 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004210540L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_mediaQueryList_in_media521 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_MEDIA_SYM_in_media501 = new BitSet(new long[]{0x7014848000A47C40L,0x3DDADCE004230540L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_media503 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004210540L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_mediaQueryList_in_media521 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_media529 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_media536 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_media538 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_syncToFollow_in_media541 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_media536 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_media538 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_syncToFollow_in_media541 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_mediaBody_in_media551 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_media558 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_mediaBodyItem_in_mediaBody592 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_mediaBody602 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
-	public static final BitSet FOLLOW_SEMI_in_mediaBody605 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_mediaBody609 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_SEMI_in_mediaBody636 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_mediaBody638 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_sass_extend_in_mediaBody657 = new BitSet(new long[]{0x0000000000200000L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_mediaBody660 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_SEMI_in_mediaBody665 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0xBEEFDCE064010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_mediaBodyItem_in_mediaBody592 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_mediaBody602 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
+	public static final BitSet FOLLOW_SEMI_in_mediaBody605 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_mediaBody609 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_SEMI_in_mediaBody636 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_mediaBody638 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_sass_extend_in_mediaBody657 = new BitSet(new long[]{0x0000000000200000L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_mediaBody660 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_SEMI_in_mediaBody665 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0x7DDEDCE064010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_cp_mixin_declaration_in_mediaBodyItem731 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_mixin_call_in_mediaBodyItem764 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_call_in_mediaBodyItem764 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaBodyItem767 = new BitSet(new long[]{0x0008000000000000L});
 	public static final BitSet FOLLOW_IMPORTANT_SYM_in_mediaBodyItem770 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_mixin_call_in_mediaBodyItem787 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_call_in_mediaBodyItem787 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaBodyItem790 = new BitSet(new long[]{0x0008000000000000L});
 	public static final BitSet FOLLOW_IMPORTANT_SYM_in_mediaBodyItem793 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_propertyDeclaration_in_mediaBodyItem832 = new BitSet(new long[]{0x0000000000000002L});
@@ -33146,50 +33217,50 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_fontFace_in_mediaBodyItem896 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_vendorAtRule_in_mediaBodyItem904 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_media_in_mediaBodyItem917 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_mediaQuery_in_mediaQueryList931 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_mediaQuery_in_mediaQueryList931 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaQueryList943 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_mediaQueryList946 = new BitSet(new long[]{0x7014848000A47C40L,0x1EEDDCE004230540L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_mediaQueryList948 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004210540L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_mediaQuery_in_mediaQueryList951 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_mediaQueryOperator_in_mediaQuery970 = new BitSet(new long[]{0x0004840000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COMMA_in_mediaQueryList946 = new BitSet(new long[]{0x7014848000A47C40L,0x3DDADCE004230540L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_mediaQueryList948 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004210540L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_mediaQuery_in_mediaQueryList951 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_mediaQueryOperator_in_mediaQuery970 = new BitSet(new long[]{0x0004840000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaQuery972 = new BitSet(new long[]{0x0004840000000000L});
-	public static final BitSet FOLLOW_mediaType_in_mediaQuery979 = new BitSet(new long[]{0x0004000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_mediaType_in_mediaQuery979 = new BitSet(new long[]{0x0004000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaQuery983 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_key_and_in_mediaQuery986 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_key_and_in_mediaQuery986 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaQuery988 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_mediaExpression_in_mediaQuery991 = new BitSet(new long[]{0x0004000000200002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_mediaExpression_in_mediaQuery1002 = new BitSet(new long[]{0x0004000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_mediaExpression_in_mediaQuery991 = new BitSet(new long[]{0x0004000000200002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_mediaExpression_in_mediaQuery1002 = new BitSet(new long[]{0x0004000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaQuery1006 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_key_and_in_mediaQuery1009 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_key_and_in_mediaQuery1009 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaQuery1011 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_mediaExpression_in_mediaQuery1014 = new BitSet(new long[]{0x0004000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_mediaExpression_in_mediaQuery1014 = new BitSet(new long[]{0x0004000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_cp_variable_in_mediaQuery1027 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_key_only_in_mediaQueryOperator1039 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_NOT_in_mediaQueryOperator1043 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_mediaType1055 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_GEN_in_mediaType1059 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_interpolation_expression_var_in_mediaType1065 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LPAREN_in_mediaExpression1083 = new BitSet(new long[]{0x7014848000A47C40L,0x1EEDDCE004030500L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_mediaExpression1085 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004010500L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_mediaFeature_in_mediaExpression1088 = new BitSet(new long[]{0x0000000000280000L,0x0000010000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_mediaFeatureValue_in_mediaExpression1090 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LPAREN_in_mediaExpression1083 = new BitSet(new long[]{0x7014848000A47C40L,0x3DDADCE004030500L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_mediaExpression1085 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004010500L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_mediaFeature_in_mediaExpression1088 = new BitSet(new long[]{0x0000000000280000L,0x0000010000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_mediaFeatureValue_in_mediaExpression1090 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_mediaExpression1093 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_mediaExpression1096 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_ws_in_mediaFeatureValue1117 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_mediaFeatureValue1120 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_mediaFeatureValue1122 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_COLON_in_mediaFeatureValue1120 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_mediaFeatureValue1122 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_expression_in_mediaFeatureValue1141 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_expression_in_mediaFeatureValue1161 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_mediaFeature1181 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_GEN_in_mediaFeature1185 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_variable_in_mediaFeature1193 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_interpolation_expression_var_in_mediaFeature1197 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_bodyItem_in_body1231 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_body1241 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
-	public static final BitSet FOLLOW_SEMI_in_body1244 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_body1248 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_SEMI_in_body1275 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_body1277 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0xBEEFDCE064010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_bodyItem_in_body1231 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_body1241 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
+	public static final BitSet FOLLOW_SEMI_in_body1244 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_body1248 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_SEMI_in_body1275 = new BitSet(new long[]{0x7814CC80A0AC7CC2L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_body1277 = new BitSet(new long[]{0x7814CC80A08C7CC2L,0x7DDEDCE064010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_cp_mixin_declaration_in_bodyItem1349 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_mixin_call_in_bodyItem1382 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_mixin_call_in_bodyItem1401 = new BitSet(new long[]{0x0000000000000002L});
@@ -33209,84 +33280,84 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_moz_document_in_vendorAtRule1597 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_webkitKeyframes_in_vendorAtRule1601 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_generic_at_rule_in_vendorAtRule1605 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_AT_IDENT_in_generic_at_rule1633 = new BitSet(new long[]{0x0404000000200000L,0x0000000000020000L,0x0000000000010001L});
-	public static final BitSet FOLLOW_ws_in_generic_at_rule1635 = new BitSet(new long[]{0x0404000000000000L,0x0000000000000000L,0x0000000000000001L});
-	public static final BitSet FOLLOW_atRuleId_in_generic_at_rule1640 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_AT_IDENT_in_generic_at_rule1633 = new BitSet(new long[]{0x0404000000200000L,0x0000000000020000L,0x0000000000020002L});
+	public static final BitSet FOLLOW_ws_in_generic_at_rule1635 = new BitSet(new long[]{0x0404000000000000L,0x0000000000000000L,0x0000000000000002L});
+	public static final BitSet FOLLOW_atRuleId_in_generic_at_rule1640 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_generic_at_rule1642 = new BitSet(new long[]{0x0400000000000000L});
 	public static final BitSet FOLLOW_LBRACE_in_generic_at_rule1656 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_syncTo_RBRACE_in_generic_at_rule1667 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_generic_at_rule1677 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_MOZ_DOCUMENT_SYM_in_moz_document1688 = new BitSet(new long[]{0x0000000000200000L,0x0000000000023800L,0x0000000000010800L});
-	public static final BitSet FOLLOW_ws_in_moz_document1690 = new BitSet(new long[]{0x0000000000000000L,0x0000000000003800L,0x0000000000000800L});
-	public static final BitSet FOLLOW_moz_document_function_in_moz_document1695 = new BitSet(new long[]{0x0400000000300000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_MOZ_DOCUMENT_SYM_in_moz_document1688 = new BitSet(new long[]{0x0000000000200000L,0x0000000000023800L,0x0000000000021000L});
+	public static final BitSet FOLLOW_ws_in_moz_document1690 = new BitSet(new long[]{0x0000000000000000L,0x0000000000003800L,0x0000000000001000L});
+	public static final BitSet FOLLOW_moz_document_function_in_moz_document1695 = new BitSet(new long[]{0x0400000000300000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_moz_document1697 = new BitSet(new long[]{0x0400000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_moz_document1703 = new BitSet(new long[]{0x0000000000200000L,0x0000000000023800L,0x0000000000010800L});
-	public static final BitSet FOLLOW_ws_in_moz_document1705 = new BitSet(new long[]{0x0000000000000000L,0x0000000000003800L,0x0000000000000800L});
-	public static final BitSet FOLLOW_moz_document_function_in_moz_document1708 = new BitSet(new long[]{0x0400000000300000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COMMA_in_moz_document1703 = new BitSet(new long[]{0x0000000000200000L,0x0000000000023800L,0x0000000000021000L});
+	public static final BitSet FOLLOW_ws_in_moz_document1705 = new BitSet(new long[]{0x0000000000000000L,0x0000000000003800L,0x0000000000001000L});
+	public static final BitSet FOLLOW_moz_document_function_in_moz_document1708 = new BitSet(new long[]{0x0400000000300000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_moz_document1710 = new BitSet(new long[]{0x0400000000100000L});
-	public static final BitSet FOLLOW_LBRACE_in_moz_document1717 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_moz_document1719 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_moz_document1717 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_moz_document1719 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_body_in_moz_document1724 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_moz_document1729 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_WEBKIT_KEYFRAMES_SYM_in_webkitKeyframes1766 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000010001L});
-	public static final BitSet FOLLOW_ws_in_webkitKeyframes1768 = new BitSet(new long[]{0x0004000000000000L,0x0000000000000000L,0x0000000000000001L});
-	public static final BitSet FOLLOW_atRuleId_in_webkitKeyframes1771 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_WEBKIT_KEYFRAMES_SYM_in_webkitKeyframes1766 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000020002L});
+	public static final BitSet FOLLOW_ws_in_webkitKeyframes1768 = new BitSet(new long[]{0x0004000000000000L,0x0000000000000000L,0x0000000000000002L});
+	public static final BitSet FOLLOW_atRuleId_in_webkitKeyframes1771 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_webkitKeyframes1773 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_webkitKeyframes1777 = new BitSet(new long[]{0x0004000000200000L,0x0000000208020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LBRACE_in_webkitKeyframes1777 = new BitSet(new long[]{0x0004000000200000L,0x0000000208020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_webkitKeyframes1779 = new BitSet(new long[]{0x0004000000000000L,0x0000000208000000L});
-	public static final BitSet FOLLOW_webkitKeyframesBlock_in_webkitKeyframes1786 = new BitSet(new long[]{0x0004000000200000L,0x0000000208020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_webkitKeyframesBlock_in_webkitKeyframes1786 = new BitSet(new long[]{0x0004000000200000L,0x0000000208020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_webkitKeyframes1788 = new BitSet(new long[]{0x0004000000000000L,0x0000000208000000L});
 	public static final BitSet FOLLOW_RBRACE_in_webkitKeyframes1795 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_webkitKeyframeSelectors_in_webkitKeyframesBlock1807 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_webkitKeyframeSelectors_in_webkitKeyframesBlock1807 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_webkitKeyframesBlock1809 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_webkitKeyframesBlock1813 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_webkitKeyframesBlock1816 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_syncToFollow_in_webkitKeyframesBlock1819 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_webkitKeyframesBlock1813 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_webkitKeyframesBlock1816 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_syncToFollow_in_webkitKeyframesBlock1819 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_declarations_in_webkitKeyframesBlock1823 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_webkitKeyframesBlock1827 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_webkitKeyframeSelectors1839 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_set_in_webkitKeyframeSelectors1839 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_webkitKeyframeSelectors1851 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_webkitKeyframeSelectors1854 = new BitSet(new long[]{0x0004000000200000L,0x0000000008020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COMMA_in_webkitKeyframeSelectors1854 = new BitSet(new long[]{0x0004000000200000L,0x0000000008020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_webkitKeyframeSelectors1856 = new BitSet(new long[]{0x0004000000000000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_set_in_webkitKeyframeSelectors1859 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_PAGE_SYM_in_page1884 = new BitSet(new long[]{0x0404000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_set_in_webkitKeyframeSelectors1859 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_PAGE_SYM_in_page1884 = new BitSet(new long[]{0x0404000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_page1886 = new BitSet(new long[]{0x0404000000080000L});
-	public static final BitSet FOLLOW_IDENT_in_page1891 = new BitSet(new long[]{0x0400000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_IDENT_in_page1891 = new BitSet(new long[]{0x0400000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_page1893 = new BitSet(new long[]{0x0400000000080000L});
-	public static final BitSet FOLLOW_pseudoPage_in_page1900 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_pseudoPage_in_page1900 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_page1902 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_page1915 = new BitSet(new long[]{0x7014848000A47C40L,0xBEEDDCE204030700L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_page1917 = new BitSet(new long[]{0x7014848000847C40L,0xBEEDDCE204010700L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_propertyDeclaration_in_page1960 = new BitSet(new long[]{0x0000000000200000L,0x2000000200020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_margin_in_page1962 = new BitSet(new long[]{0x0000000000200000L,0x2000000200020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_page1965 = new BitSet(new long[]{0x0000000000000000L,0x2000000200000000L});
-	public static final BitSet FOLLOW_SEMI_in_page1971 = new BitSet(new long[]{0x7014848000A47C40L,0xBEEDDCE204030700L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_page1973 = new BitSet(new long[]{0x7014848000847C40L,0xBEEDDCE204010700L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_propertyDeclaration_in_page1978 = new BitSet(new long[]{0x0000000000200000L,0x2000000200020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_margin_in_page1980 = new BitSet(new long[]{0x0000000000200000L,0x2000000200020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_page1983 = new BitSet(new long[]{0x0000000000000000L,0x2000000200000000L});
+	public static final BitSet FOLLOW_LBRACE_in_page1915 = new BitSet(new long[]{0x7014848000A47C40L,0x7DDADCE204030700L,0x00000000000303E1L});
+	public static final BitSet FOLLOW_ws_in_page1917 = new BitSet(new long[]{0x7014848000847C40L,0x7DDADCE204010700L,0x00000000000103E1L});
+	public static final BitSet FOLLOW_propertyDeclaration_in_page1960 = new BitSet(new long[]{0x0000000000200000L,0x4000000200020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_margin_in_page1962 = new BitSet(new long[]{0x0000000000200000L,0x4000000200020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_page1965 = new BitSet(new long[]{0x0000000000000000L,0x4000000200000000L});
+	public static final BitSet FOLLOW_SEMI_in_page1971 = new BitSet(new long[]{0x7014848000A47C40L,0x7DDADCE204030700L,0x00000000000303E1L});
+	public static final BitSet FOLLOW_ws_in_page1973 = new BitSet(new long[]{0x7014848000847C40L,0x7DDADCE204010700L,0x00000000000103E1L});
+	public static final BitSet FOLLOW_propertyDeclaration_in_page1978 = new BitSet(new long[]{0x0000000000200000L,0x4000000200020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_margin_in_page1980 = new BitSet(new long[]{0x0000000000200000L,0x4000000200020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_page1983 = new BitSet(new long[]{0x0000000000000000L,0x4000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_page1998 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_COUNTER_STYLE_SYM_in_counterStyle2015 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COUNTER_STYLE_SYM_in_counterStyle2015 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_counterStyle2017 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_counterStyle2020 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_IDENT_in_counterStyle2020 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_counterStyle2022 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_counterStyle2033 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_counterStyle2035 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_syncToDeclarationsRule_in_counterStyle2038 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_counterStyle2033 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_counterStyle2035 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_syncToDeclarationsRule_in_counterStyle2038 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_declarations_in_counterStyle2042 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_counterStyle2053 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_FONT_FACE_SYM_in_fontFace2070 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_FONT_FACE_SYM_in_fontFace2070 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_fontFace2072 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_fontFace2083 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_fontFace2085 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_syncToDeclarationsRule_in_fontFace2088 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_fontFace2083 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_fontFace2085 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_syncToDeclarationsRule_in_fontFace2088 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_declarations_in_fontFace2092 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_fontFace2103 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_margin_sym_in_margin2117 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_margin_sym_in_margin2117 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_margin2119 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_margin2122 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_margin2124 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_syncToDeclarationsRule_in_margin2127 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_margin2122 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_margin2124 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_syncToDeclarationsRule_in_margin2127 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_declarations_in_margin2129 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_margin2132 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_COLON_in_pseudoPage2341 = new BitSet(new long[]{0x0004000000000000L});
@@ -33296,66 +33367,66 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_GEN_in_property2443 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_variable_in_property2453 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_map_name_in_sass_map2480 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_sass_map2482 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COLON_in_sass_map2482 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_sass_map2484 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_sass_map2487 = new BitSet(new long[]{0x7014848000B47C40L,0x1EEDDDE004030700L,0x00000000000181F1L});
-	public static final BitSet FOLLOW_ws_in_sass_map2489 = new BitSet(new long[]{0x7014848000947C40L,0x1EEDDDE004010700L,0x00000000000081F1L});
-	public static final BitSet FOLLOW_syncToFollow_in_sass_map2492 = new BitSet(new long[]{0x7014848000947C40L,0x1EEDDDE004010700L,0x00000000000081F1L});
+	public static final BitSet FOLLOW_LPAREN_in_sass_map2487 = new BitSet(new long[]{0x7014848000B47C40L,0x3DDADDE004030700L,0x00000000000303E2L});
+	public static final BitSet FOLLOW_ws_in_sass_map2489 = new BitSet(new long[]{0x7014848000947C40L,0x3DDADDE004010700L,0x00000000000103E2L});
+	public static final BitSet FOLLOW_syncToFollow_in_sass_map2492 = new BitSet(new long[]{0x7014848000947C40L,0x3DDADDE004010700L,0x00000000000103E2L});
 	public static final BitSet FOLLOW_sass_map_pairs_in_sass_map2511 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
-	public static final BitSet FOLLOW_RPAREN_in_sass_map2518 = new BitSet(new long[]{0x0000000000200002L,0x0010200000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_RPAREN_in_sass_map2518 = new BitSet(new long[]{0x0000000000200002L,0x0020200000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_sass_map2522 = new BitSet(new long[]{0x0000000000000000L,0x0000200000000000L});
-	public static final BitSet FOLLOW_SASS_DEFAULT_in_sass_map2525 = new BitSet(new long[]{0x0000000000200002L,0x0010200000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_map2531 = new BitSet(new long[]{0x0000000000000000L,0x0010000000000000L});
-	public static final BitSet FOLLOW_SASS_GLOBAL_in_sass_map2534 = new BitSet(new long[]{0x0000000000200002L,0x0010200000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_SASS_DEFAULT_in_sass_map2525 = new BitSet(new long[]{0x0000000000200002L,0x0020200000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_map2531 = new BitSet(new long[]{0x0000000000000000L,0x0020000000000000L});
+	public static final BitSet FOLLOW_SASS_GLOBAL_in_sass_map2534 = new BitSet(new long[]{0x0000000000200002L,0x0020200000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_cp_variable_in_sass_map_name2558 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_sass_map_pair_in_sass_map_pairs2592 = new BitSet(new long[]{0x7014848000B47C42L,0x1EEDDCE004030700L,0x00000000000181F1L});
+	public static final BitSet FOLLOW_sass_map_pair_in_sass_map_pairs2592 = new BitSet(new long[]{0x7014848000B47C42L,0x3DDADCE004030700L,0x00000000000303E2L});
 	public static final BitSet FOLLOW_ws_in_sass_map_pairs2602 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_sass_map_pairs2605 = new BitSet(new long[]{0x7014848000B47C42L,0x1EEDDCE004030700L,0x00000000000181F1L});
-	public static final BitSet FOLLOW_ws_in_sass_map_pairs2609 = new BitSet(new long[]{0x7014848000947C42L,0x1EEDDCE004010700L,0x00000000000081F1L});
-	public static final BitSet FOLLOW_COMMA_in_sass_map_pairs2636 = new BitSet(new long[]{0x7014848000B47C42L,0x1EEDDCE004030700L,0x00000000000181F1L});
-	public static final BitSet FOLLOW_ws_in_sass_map_pairs2638 = new BitSet(new long[]{0x7014848000947C42L,0x1EEDDCE004010700L,0x00000000000081F1L});
-	public static final BitSet FOLLOW_property_in_sass_map_pair2674 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_STRING_in_sass_map_pair2676 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COMMA_in_sass_map_pairs2605 = new BitSet(new long[]{0x7014848000B47C42L,0x3DDADCE004030700L,0x00000000000303E2L});
+	public static final BitSet FOLLOW_ws_in_sass_map_pairs2609 = new BitSet(new long[]{0x7014848000947C42L,0x3DDADCE004010700L,0x00000000000103E2L});
+	public static final BitSet FOLLOW_COMMA_in_sass_map_pairs2636 = new BitSet(new long[]{0x7014848000B47C42L,0x3DDADCE004030700L,0x00000000000303E2L});
+	public static final BitSet FOLLOW_ws_in_sass_map_pairs2638 = new BitSet(new long[]{0x7014848000947C42L,0x3DDADCE004010700L,0x00000000000103E2L});
+	public static final BitSet FOLLOW_property_in_sass_map_pair2674 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_STRING_in_sass_map_pair2676 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_sass_map_pair2679 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_sass_map_pair2682 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_sass_map_pair2684 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_in_sass_map_pair2687 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COLON_in_sass_map_pair2682 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_sass_map_pair2684 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_in_sass_map_pair2687 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_sass_map_pair2690 = new BitSet(new long[]{0x0008000000000000L});
 	public static final BitSet FOLLOW_prio_in_sass_map_pair2693 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_AT_ROOT_in_rule2718 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_rule2721 = new BitSet(new long[]{0x0804CC00A0080080L,0x8002000060000202L,0x0000000000000004L});
-	public static final BitSet FOLLOW_selectorsGroup_in_rule2723 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_selectorsGroup_in_rule2730 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_SASS_AT_ROOT_in_rule2718 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_rule2721 = new BitSet(new long[]{0x0804CC00A0080080L,0x0004000060000202L,0x0000000000000009L});
+	public static final BitSet FOLLOW_selectorsGroup_in_rule2723 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_selectorsGroup_in_rule2730 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_rule2733 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_rule2740 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_rule2742 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_syncToFollow_in_rule2745 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_rule2740 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_rule2742 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_syncToFollow_in_rule2745 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_declarations_in_rule2755 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_rule2762 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SEMI_in_declarations2796 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_declarations2798 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_declaration_in_declarations2804 = new BitSet(new long[]{0x0000000000200002L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_declarations2809 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
-	public static final BitSet FOLLOW_SEMI_in_declarations2813 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE064030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_declarations2815 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_ws_in_declarations2821 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x9EEFDCE064010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_declaration_in_declarations2824 = new BitSet(new long[]{0x0000000000200002L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_declarations2830 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
-	public static final BitSet FOLLOW_SEMI_in_declarations2834 = new BitSet(new long[]{0x0000000000200002L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_declarations2836 = new BitSet(new long[]{0x0000000000000002L,0x2000000000000000L});
+	public static final BitSet FOLLOW_SEMI_in_declarations2796 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_declarations2798 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_declaration_in_declarations2804 = new BitSet(new long[]{0x0000000000200002L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_declarations2809 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
+	public static final BitSet FOLLOW_SEMI_in_declarations2813 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE064030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_declarations2815 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_ws_in_declarations2821 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x3DDEDCE064010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_declaration_in_declarations2824 = new BitSet(new long[]{0x0000000000200002L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_declarations2830 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
+	public static final BitSet FOLLOW_SEMI_in_declarations2834 = new BitSet(new long[]{0x0000000000200002L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_declarations2836 = new BitSet(new long[]{0x0000000000000002L,0x4000000000000000L});
 	public static final BitSet FOLLOW_ws_in_declarations2842 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SEMI_in_declarations2854 = new BitSet(new long[]{0x0000000000200002L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_declarations2856 = new BitSet(new long[]{0x0000000000000002L,0x2000000000000000L});
+	public static final BitSet FOLLOW_SEMI_in_declarations2854 = new BitSet(new long[]{0x0000000000200002L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_declarations2856 = new BitSet(new long[]{0x0000000000000002L,0x4000000000000000L});
 	public static final BitSet FOLLOW_cp_variable_declaration_in_declaration2885 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_map_in_declaration2898 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_nested_properties_in_declaration2910 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_propertyDeclaration_in_declaration2922 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_propertyDeclaration_in_declaration2961 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_mixin_declaration_in_declaration3006 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_mixin_call_in_declaration3039 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_call_in_declaration3039 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_declaration3042 = new BitSet(new long[]{0x0008000000000000L});
 	public static final BitSet FOLLOW_IMPORTANT_SYM_in_declaration3045 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_mixin_call_in_declaration3062 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_call_in_declaration3062 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_declaration3065 = new BitSet(new long[]{0x0008000000000000L});
 	public static final BitSet FOLLOW_IMPORTANT_SYM_in_declaration3068 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_rule_in_declaration3102 = new BitSet(new long[]{0x0000000000000002L});
@@ -33367,31 +33438,31 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_sass_function_return_in_declaration3162 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_importItem_in_declaration3172 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_GEN_in_declaration3180 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_selector_in_selectorsGroup3214 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_selector_in_selectorsGroup3214 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_selectorsGroup3217 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_selectorsGroup3220 = new BitSet(new long[]{0x0804CC00A0280080L,0x8002000060020202L,0x0000000000010004L});
-	public static final BitSet FOLLOW_ws_in_selectorsGroup3222 = new BitSet(new long[]{0x0804CC00A0080080L,0x8002000060000202L,0x0000000000000004L});
-	public static final BitSet FOLLOW_selector_in_selectorsGroup3225 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_combinator_in_selector3246 = new BitSet(new long[]{0x0804C400A0280080L,0x8002000020020202L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_selector3248 = new BitSet(new long[]{0x0804C400A0080080L,0x8002000020000202L});
-	public static final BitSet FOLLOW_simpleSelectorSequence_in_selector3253 = new BitSet(new long[]{0x0000080000200002L,0x0000000040020000L,0x0000000000010004L});
-	public static final BitSet FOLLOW_ws_in_selector3259 = new BitSet(new long[]{0x0000080000000000L,0x0000000040000000L,0x0000000000000004L});
-	public static final BitSet FOLLOW_combinator_in_selector3262 = new BitSet(new long[]{0x0804C400A0280080L,0x8002000020020202L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_selector3264 = new BitSet(new long[]{0x0804C400A0080080L,0x8002000020000202L});
-	public static final BitSet FOLLOW_ws_in_selector3268 = new BitSet(new long[]{0x0804C400A0080080L,0x8002000020000202L});
-	public static final BitSet FOLLOW_simpleSelectorSequence_in_selector3271 = new BitSet(new long[]{0x0000080000200002L,0x0000000040020000L,0x0000000000010004L});
-	public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence3325 = new BitSet(new long[]{0x0800C000A0280082L,0x0002000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_sass_selector_interpolation_exp_in_simpleSelectorSequence3330 = new BitSet(new long[]{0x0800C000A0280082L,0x0002000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_simpleSelectorSequence3343 = new BitSet(new long[]{0x0800C000A0080080L,0x0002000000000000L});
-	public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence3346 = new BitSet(new long[]{0x0800C000A0280082L,0x0002000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COMMA_in_selectorsGroup3220 = new BitSet(new long[]{0x0804CC00A0280080L,0x0004000060020202L,0x0000000000020009L});
+	public static final BitSet FOLLOW_ws_in_selectorsGroup3222 = new BitSet(new long[]{0x0804CC00A0080080L,0x0004000060000202L,0x0000000000000009L});
+	public static final BitSet FOLLOW_selector_in_selectorsGroup3225 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_combinator_in_selector3246 = new BitSet(new long[]{0x0804C400A0280080L,0x0004000020020202L,0x0000000000020001L});
+	public static final BitSet FOLLOW_ws_in_selector3248 = new BitSet(new long[]{0x0804C400A0080080L,0x0004000020000202L,0x0000000000000001L});
+	public static final BitSet FOLLOW_simpleSelectorSequence_in_selector3253 = new BitSet(new long[]{0x0000080000200002L,0x0000000040020000L,0x0000000000020008L});
+	public static final BitSet FOLLOW_ws_in_selector3259 = new BitSet(new long[]{0x0000080000000000L,0x0000000040000000L,0x0000000000000008L});
+	public static final BitSet FOLLOW_combinator_in_selector3262 = new BitSet(new long[]{0x0804C400A0280080L,0x0004000020020202L,0x0000000000020001L});
+	public static final BitSet FOLLOW_ws_in_selector3264 = new BitSet(new long[]{0x0804C400A0080080L,0x0004000020000202L,0x0000000000000001L});
+	public static final BitSet FOLLOW_ws_in_selector3268 = new BitSet(new long[]{0x0804C400A0080080L,0x0004000020000202L,0x0000000000000001L});
+	public static final BitSet FOLLOW_simpleSelectorSequence_in_selector3271 = new BitSet(new long[]{0x0000080000200002L,0x0000000040020000L,0x0000000000020008L});
+	public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence3325 = new BitSet(new long[]{0x0800C000A0280082L,0x0004000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_sass_selector_interpolation_exp_in_simpleSelectorSequence3330 = new BitSet(new long[]{0x0800C000A0280082L,0x0004000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_simpleSelectorSequence3343 = new BitSet(new long[]{0x0800C000A0080080L,0x0004000000000000L});
+	public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence3346 = new BitSet(new long[]{0x0800C000A0280082L,0x0004000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_simpleSelectorSequence3351 = new BitSet(new long[]{0x0004800000000000L,0x0000000000000200L});
-	public static final BitSet FOLLOW_sass_selector_interpolation_exp_in_simpleSelectorSequence3353 = new BitSet(new long[]{0x0800C000A0280082L,0x0002000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_typeSelector_in_simpleSelectorSequence3366 = new BitSet(new long[]{0x0800C000A0280082L,0x0002000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_simpleSelectorSequence3378 = new BitSet(new long[]{0x0800C000A0080080L,0x0002000000000000L});
-	public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence3381 = new BitSet(new long[]{0x0800C000A0280082L,0x0002000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_sass_selector_interpolation_exp_in_simpleSelectorSequence3353 = new BitSet(new long[]{0x0800C000A0280082L,0x0004000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_typeSelector_in_simpleSelectorSequence3366 = new BitSet(new long[]{0x0800C000A0280082L,0x0004000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_simpleSelectorSequence3378 = new BitSet(new long[]{0x0800C000A0080080L,0x0004000000000000L});
+	public static final BitSet FOLLOW_elementSubsequent_in_simpleSelectorSequence3381 = new BitSet(new long[]{0x0800C000A0280082L,0x0004000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_simpleSelectorSequence3388 = new BitSet(new long[]{0x0004800000000000L,0x0000000000000200L});
-	public static final BitSet FOLLOW_sass_selector_interpolation_exp_in_simpleSelectorSequence3390 = new BitSet(new long[]{0x0800C000A0280082L,0x0002000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_namespacePrefix_in_typeSelector3481 = new BitSet(new long[]{0x0004040000000000L,0x8000000000000002L});
+	public static final BitSet FOLLOW_sass_selector_interpolation_exp_in_simpleSelectorSequence3390 = new BitSet(new long[]{0x0800C000A0280082L,0x0004000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_namespacePrefix_in_typeSelector3481 = new BitSet(new long[]{0x0004040000000000L,0x0000000000000002L,0x0000000000000001L});
 	public static final BitSet FOLLOW_elementName_in_typeSelector3485 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_namespacePrefixName_in_namespacePrefix3500 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
 	public static final BitSet FOLLOW_STAR_in_namespacePrefix3504 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
@@ -33418,45 +33489,45 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_LESS_AND_in_elementName3876 = new BitSet(new long[]{0x0004000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_elementName3878 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_STAR_in_elementName3884 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LBRACKET_in_slAttribute3901 = new BitSet(new long[]{0x0004000000200000L,0x8000000020020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_namespacePrefix_in_slAttribute3908 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LBRACKET_in_slAttribute3901 = new BitSet(new long[]{0x0004000000200000L,0x0000000020020000L,0x0000000000020001L});
+	public static final BitSet FOLLOW_namespacePrefix_in_slAttribute3908 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_slAttribute3911 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_slAttributeName_in_slAttribute3922 = new BitSet(new long[]{0x0020000410600200L,0x0000000401020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_slAttributeName_in_slAttribute3922 = new BitSet(new long[]{0x0020000410600200L,0x0000000401020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_slAttribute3924 = new BitSet(new long[]{0x0020000410400200L,0x0000000401000000L});
-	public static final BitSet FOLLOW_set_in_slAttribute3958 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000010001L});
-	public static final BitSet FOLLOW_ws_in_slAttribute4138 = new BitSet(new long[]{0x0004000000000000L,0x0000000000000000L,0x0000000000000001L});
-	public static final BitSet FOLLOW_slAttributeValue_in_slAttribute4157 = new BitSet(new long[]{0x0000000000200000L,0x0000000400020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_set_in_slAttribute3958 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000020002L});
+	public static final BitSet FOLLOW_ws_in_slAttribute4138 = new BitSet(new long[]{0x0004000000000000L,0x0000000000000000L,0x0000000000000002L});
+	public static final BitSet FOLLOW_slAttributeValue_in_slAttribute4157 = new BitSet(new long[]{0x0000000000200000L,0x0000000400020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_slAttribute4175 = new BitSet(new long[]{0x0000000000000000L,0x0000000400000000L});
 	public static final BitSet FOLLOW_RBRACKET_in_slAttribute4200 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_slAttributeName4216 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_set_in_pseudo4288 = new BitSet(new long[]{0x0004040000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_set_in_pseudo4351 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_set_in_pseudo4351 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_pseudo4408 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_pseudo4411 = new BitSet(new long[]{0xF014C5A240A47C60L,0x9EEDDDF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_pseudo4413 = new BitSet(new long[]{0xF014C5A240847C60L,0x9EEDDDF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_expression_in_pseudo4419 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LPAREN_in_pseudo4411 = new BitSet(new long[]{0xF014C5A240A47C60L,0x3DDADDF85C430704L,0x00000000000313FBL});
+	public static final BitSet FOLLOW_ws_in_pseudo4413 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADDF85C410704L,0x00000000000113FBL});
+	public static final BitSet FOLLOW_expression_in_pseudo4419 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_pseudo4421 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_STAR_in_pseudo4427 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_pseudo4432 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_NOT_in_pseudo4511 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_NOT_in_pseudo4511 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_pseudo4513 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_pseudo4516 = new BitSet(new long[]{0x0804C400A0280080L,0x8002010020020202L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_pseudo4518 = new BitSet(new long[]{0x0804C400A0080080L,0x8002010020000202L});
+	public static final BitSet FOLLOW_LPAREN_in_pseudo4516 = new BitSet(new long[]{0x0804C400A0280080L,0x0004010020020202L,0x0000000000020001L});
+	public static final BitSet FOLLOW_ws_in_pseudo4518 = new BitSet(new long[]{0x0804C400A0080080L,0x0004010020000202L,0x0000000000000001L});
 	public static final BitSet FOLLOW_simpleSelectorSequence_in_pseudo4521 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_pseudo4524 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_STAR_in_propertyDeclaration4562 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004010700L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_property_in_propertyDeclaration4565 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_STAR_in_propertyDeclaration4562 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004010700L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_property_in_propertyDeclaration4565 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_propertyDeclaration4567 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_propertyDeclaration4570 = new BitSet(new long[]{0xF014C5A240A47C60L,0x1EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_propertyDeclaration4572 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_propertyValue_in_propertyDeclaration4575 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COLON_in_propertyDeclaration4570 = new BitSet(new long[]{0xF014C5A240A47C60L,0x3DDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_propertyDeclaration4572 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_propertyValue_in_propertyDeclaration4575 = new BitSet(new long[]{0x0008000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_propertyDeclaration4578 = new BitSet(new long[]{0x0008000000000000L});
 	public static final BitSet FOLLOW_prio_in_propertyDeclaration4581 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_STAR_in_propertyDeclaration4593 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004010700L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_property_in_propertyDeclaration4596 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_STAR_in_propertyDeclaration4593 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004010700L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_property_in_propertyDeclaration4596 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_propertyDeclaration4598 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_propertyDeclaration4601 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_propertyDeclaration4603 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_COLON_in_propertyDeclaration4601 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_propertyDeclaration4603 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_propertyValue_in_propertyDeclaration4606 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_expression_list_in_cp_propertyValue4640 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_propertyValue_in_cp_propertyValue4648 = new BitSet(new long[]{0x0000000000000002L});
@@ -33464,14 +33535,14 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_set_in_expressionPredicate4739 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_SEMI_in_syncTo_SEMI4840 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IMPORTANT_SYM_in_prio4885 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_term_in_expression4902 = new BitSet(new long[]{0xF014C5A240B47C62L,0x5EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_expression4934 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_ws_in_expression4939 = new BitSet(new long[]{0x0000000000100000L,0x4000000000000000L});
-	public static final BitSet FOLLOW_operator_in_expression4942 = new BitSet(new long[]{0xF014C5A240A47C60L,0x1EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_expression4944 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_term_in_expression4953 = new BitSet(new long[]{0xF014C5A240B47C62L,0x5EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_unaryOperator_in_term4978 = new BitSet(new long[]{0xF014C5A240A47C60L,0x1EEDDCF81C430504L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_term4980 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF81C410504L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_term_in_expression4902 = new BitSet(new long[]{0xF014C5A240B47C62L,0xBDDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_expression4934 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_ws_in_expression4939 = new BitSet(new long[]{0x0000000000100000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_operator_in_expression4942 = new BitSet(new long[]{0xF014C5A240A47C60L,0x3DDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_expression4944 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_term_in_expression4953 = new BitSet(new long[]{0xF014C5A240B47C62L,0xBDDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_unaryOperator_in_term4978 = new BitSet(new long[]{0xF014C5A240A47C60L,0x3DDADCF81C430504L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_term4980 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF81C410504L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_function_in_term5009 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_term5022 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_NUMBER_in_term5034 = new BitSet(new long[]{0x0000000000000002L});
@@ -33486,7 +33557,7 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_RESOLUTION_in_term5142 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_DIMENSION_in_term5154 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_STRING_in_term5171 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_TILDE_in_term5183 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000004L,0x0000000000000001L});
+	public static final BitSet FOLLOW_TILDE_in_term5183 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000004L,0x0000000000000002L});
 	public static final BitSet FOLLOW_set_in_term5185 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_LESS_JS_STRING_in_term5206 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_GEN_in_term5221 = new BitSet(new long[]{0x0000000000000002L});
@@ -33496,10 +33567,10 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_sass_interpolation_expression_var_in_term5273 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_term_symbol_in_term5287 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_PERCENTAGE_SYMBOL_in_cp_term_symbol5314 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_functionName_in_function5330 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_functionName_in_function5330 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_function5332 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_function5337 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDDF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_function5339 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDDF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_LPAREN_in_function5337 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADDF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_function5339 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADDF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_fnAttributes_in_function5366 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_function5397 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_functionName5449 = new BitSet(new long[]{0x0000000000080000L});
@@ -33507,16 +33578,16 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_IDENT_in_functionName5455 = new BitSet(new long[]{0x0000000080000002L});
 	public static final BitSet FOLLOW_DOT_in_functionName5458 = new BitSet(new long[]{0x0004000000000000L});
 	public static final BitSet FOLLOW_IDENT_in_functionName5460 = new BitSet(new long[]{0x0000000080000002L});
-	public static final BitSet FOLLOW_fnAttribute_in_fnAttributes5484 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_fnAttribute_in_fnAttributes5484 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_fnAttributes5487 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_fnAttributes5490 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_fnAttributes5492 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_fnAttribute_in_fnAttributes5495 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COMMA_in_fnAttributes5490 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_fnAttributes5492 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_fnAttribute_in_fnAttributes5495 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_fnAttributes5499 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fnAttributeName_in_fnAttribute5536 = new BitSet(new long[]{0x0000000000280000L,0x0000000001020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_fnAttributeName_in_fnAttribute5536 = new BitSet(new long[]{0x0000000000280000L,0x0000000001020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_fnAttribute5538 = new BitSet(new long[]{0x0000000000080000L,0x0000000001000000L});
-	public static final BitSet FOLLOW_set_in_fnAttribute5541 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C430744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_fnAttribute5547 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C410744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_set_in_fnAttribute5541 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C430744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_fnAttribute5547 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C410744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_fnAttributeValue_in_fnAttribute5550 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_expression_in_fnAttribute5567 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_expression_in_fnAttribute5579 = new BitSet(new long[]{0x0000000000000002L});
@@ -33524,42 +33595,42 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_DOT_in_fnAttributeName5605 = new BitSet(new long[]{0x0004000000000000L});
 	public static final BitSet FOLLOW_IDENT_in_fnAttributeName5607 = new BitSet(new long[]{0x0000000080000002L});
 	public static final BitSet FOLLOW_cp_variable_in_fnAttributeName5627 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_term_in_fnAttributeValue5650 = new BitSet(new long[]{0xF014C5A240A47C62L,0x5EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_fnAttributeValue5682 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_ws_in_fnAttributeValue5687 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
-	public static final BitSet FOLLOW_SOLIDUS_in_fnAttributeValue5690 = new BitSet(new long[]{0xF014C5A240A47C60L,0x1EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_fnAttributeValue5692 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_term_in_fnAttributeValue5701 = new BitSet(new long[]{0xF014C5A240A47C62L,0x5EEDDCF85C430704L,0x00000000000189FDL});
+	public static final BitSet FOLLOW_term_in_fnAttributeValue5650 = new BitSet(new long[]{0xF014C5A240A47C62L,0xBDDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_fnAttributeValue5682 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_ws_in_fnAttributeValue5687 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_SOLIDUS_in_fnAttributeValue5690 = new BitSet(new long[]{0xF014C5A240A47C60L,0x3DDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_fnAttributeValue5692 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_term_in_fnAttributeValue5701 = new BitSet(new long[]{0xF014C5A240A47C62L,0xBDDADCF85C430704L,0x00000000000313FAL});
 	public static final BitSet FOLLOW_cp_math_expression_in_fnAttributeValue5722 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_HASH_in_hexColor5736 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_variable_in_cp_variable_declaration5796 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_variable_in_cp_variable_declaration5796 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5798 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_cp_variable_declaration5801 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5803 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_COLON_in_cp_variable_declaration5801 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5803 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_expression_list_in_cp_variable_declaration5806 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_variable_in_cp_variable_declaration5828 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_variable_in_cp_variable_declaration5828 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5830 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_cp_variable_declaration5833 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5835 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_list_in_cp_variable_declaration5838 = new BitSet(new long[]{0x0000000000200002L,0x0010200000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COLON_in_cp_variable_declaration5833 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5835 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_list_in_cp_variable_declaration5838 = new BitSet(new long[]{0x0000000000200002L,0x0020200000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5842 = new BitSet(new long[]{0x0000000000000000L,0x0000200000000000L});
-	public static final BitSet FOLLOW_SASS_DEFAULT_in_cp_variable_declaration5845 = new BitSet(new long[]{0x0000000000200002L,0x0010200000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5851 = new BitSet(new long[]{0x0000000000000000L,0x0010000000000000L});
-	public static final BitSet FOLLOW_SASS_GLOBAL_in_cp_variable_declaration5854 = new BitSet(new long[]{0x0000000000200002L,0x0010200000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_SASS_DEFAULT_in_cp_variable_declaration5845 = new BitSet(new long[]{0x0000000000200002L,0x0020200000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_cp_variable_declaration5851 = new BitSet(new long[]{0x0000000000000000L,0x0020000000000000L});
+	public static final BitSet FOLLOW_SASS_GLOBAL_in_cp_variable_declaration5854 = new BitSet(new long[]{0x0000000000200002L,0x0020200000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_set_in_cp_variable5894 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_SASS_VAR_in_cp_variable6078 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_expression_in_cp_expression_list6102 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_expression_in_cp_expression_list6102 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_expression_list6121 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_cp_expression_list6124 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_expression_list6126 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_in_cp_expression_list6129 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_cp_expression_atom_in_cp_expression6162 = new BitSet(new long[]{0xF01CDDA246A47C62L,0x1EEDDCF85C63074DL,0x00000000000189FDL});
+	public static final BitSet FOLLOW_COMMA_in_cp_expression_list6124 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_expression_list6126 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_in_cp_expression_list6129 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_cp_expression_atom_in_cp_expression6162 = new BitSet(new long[]{0xF01CDDA246A47C62L,0x3DDADCF85C63074DL,0x00000000000313FAL});
 	public static final BitSet FOLLOW_ws_in_cp_expression6186 = new BitSet(new long[]{0x0004180006000000L,0x0000000000000009L});
-	public static final BitSet FOLLOW_cp_expression_operator_in_cp_expression6189 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_expression6191 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_atom_in_cp_expression6195 = new BitSet(new long[]{0xF01CDDA246A47C62L,0x1EEDDCF85C63074DL,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_expression6214 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_atom_in_cp_expression6217 = new BitSet(new long[]{0xF01CDDA246A47C62L,0x1EEDDCF85C63074DL,0x00000000000189FDL});
+	public static final BitSet FOLLOW_cp_expression_operator_in_cp_expression6189 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_expression6191 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_atom_in_cp_expression6195 = new BitSet(new long[]{0xF01CDDA246A47C62L,0x3DDADCF85C63074DL,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_expression6214 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_atom_in_cp_expression6217 = new BitSet(new long[]{0xF01CDDA246A47C62L,0x3DDADCF85C63074DL,0x00000000000313FAL});
 	public static final BitSet FOLLOW_key_or_in_cp_expression_operator6245 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_key_and_in_cp_expression_operator6249 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_CP_EQ_in_cp_expression_operator6254 = new BitSet(new long[]{0x0000000000000002L});
@@ -33568,133 +33639,133 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_LESS_OR_EQ_in_cp_expression_operator6266 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_GREATER_in_cp_expression_operator6270 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_GREATER_OR_EQ_in_cp_expression_operator6274 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_NOT_in_cp_expression_atom6300 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C430744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_expression_atom6302 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C410744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_NOT_in_cp_expression_atom6300 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C430744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_expression_atom6302 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C410744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_math_expression_in_cp_expression_atom6333 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LPAREN_in_cp_expression_atom6349 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDDF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_expression_atom6351 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDDF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_list_in_cp_expression_atom6355 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LPAREN_in_cp_expression_atom6349 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADDF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_expression_atom6351 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADDF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_list_in_cp_expression_atom6355 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_expression_atom6357 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_cp_expression_atom6362 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_math_expression_in_cp_math_expressions6394 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_cp_math_expressions6401 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C410744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_math_expression_in_cp_math_expressions6403 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_cp_math_expression_atom_in_cp_math_expression6437 = new BitSet(new long[]{0x0000000000200002L,0xC000000040020200L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_cp_math_expression6479 = new BitSet(new long[]{0x0000000000000000L,0xC000000040000200L});
-	public static final BitSet FOLLOW_set_in_cp_math_expression6482 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C430744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_math_expression6492 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C410744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_math_expression_atom_in_cp_math_expression6495 = new BitSet(new long[]{0x0000000000200002L,0xC000000040020200L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_math_expression_in_cp_math_expressions6394 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_cp_math_expressions6401 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C410744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_math_expression_in_cp_math_expressions6403 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_cp_math_expression_atom_in_cp_math_expression6437 = new BitSet(new long[]{0x0000000000200002L,0x8000000040020200L,0x0000000000020001L});
+	public static final BitSet FOLLOW_ws_in_cp_math_expression6479 = new BitSet(new long[]{0x0000000000000000L,0x8000000040000200L,0x0000000000000001L});
+	public static final BitSet FOLLOW_set_in_cp_math_expression6482 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C430744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_math_expression6492 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C410744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_math_expression_atom_in_cp_math_expression6495 = new BitSet(new long[]{0x0000000000200002L,0x8000000040020200L,0x0000000000020001L});
 	public static final BitSet FOLLOW_term_in_cp_math_expression_atom6528 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IMPORTANT_SYM_in_cp_math_expression_atom6536 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_unaryOperator_in_cp_math_expression_atom6547 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_unaryOperator_in_cp_math_expression_atom6547 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_math_expression_atom6549 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_cp_math_expression_atom6555 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C430744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_math_expression_atom6557 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C410744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_math_expression_in_cp_math_expression_atom6560 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LPAREN_in_cp_math_expression_atom6555 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C430744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_math_expression_atom6557 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C410744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_math_expression_in_cp_math_expression_atom6560 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_math_expression_atom6562 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_cp_math_expression_atom6565 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_DOT_in_cp_mixin_declaration6604 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_declaration6606 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_declaration6606 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6608 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_cp_mixin_declaration6611 = new BitSet(new long[]{0x7010008001A47C40L,0x1EEDDDE004030510L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6613 = new BitSet(new long[]{0x7010008001847C40L,0x1EEDDDE004010510L,0x00000000000081F0L});
+	public static final BitSet FOLLOW_LPAREN_in_cp_mixin_declaration6611 = new BitSet(new long[]{0x7010008001A47C40L,0x3DDADDE004030510L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6613 = new BitSet(new long[]{0x7010008001847C40L,0x3DDADDE004010510L,0x00000000000103E0L});
 	public static final BitSet FOLLOW_cp_args_list_in_cp_mixin_declaration6616 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
-	public static final BitSet FOLLOW_RPAREN_in_cp_mixin_declaration6619 = new BitSet(new long[]{0x0404000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_RPAREN_in_cp_mixin_declaration6619 = new BitSet(new long[]{0x0404000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6622 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_less_mixin_guarded_in_cp_mixin_declaration6625 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_SASS_MIXIN_in_cp_mixin_declaration6649 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_less_mixin_guarded_in_cp_mixin_declaration6625 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_SASS_MIXIN_in_cp_mixin_declaration6649 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6651 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_declaration6653 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_declaration6653 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6656 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_cp_mixin_declaration6659 = new BitSet(new long[]{0x7010008001A47C40L,0x1EEDDDE004030510L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6661 = new BitSet(new long[]{0x7010008001847C40L,0x1EEDDDE004010510L,0x00000000000081F0L});
+	public static final BitSet FOLLOW_LPAREN_in_cp_mixin_declaration6659 = new BitSet(new long[]{0x7010008001A47C40L,0x3DDADDE004030510L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6661 = new BitSet(new long[]{0x7010008001847C40L,0x3DDADDE004010510L,0x00000000000103E0L});
 	public static final BitSet FOLLOW_cp_args_list_in_cp_mixin_declaration6664 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
-	public static final BitSet FOLLOW_RPAREN_in_cp_mixin_declaration6667 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_RPAREN_in_cp_mixin_declaration6667 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_declaration6681 = new BitSet(new long[]{0x0400000000000000L});
 	public static final BitSet FOLLOW_cp_mixin_block_in_cp_mixin_declaration6684 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_DOT_in_cp_mixin_call6719 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_call6721 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_call6721 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_call6724 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_cp_mixin_call6727 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDDF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_mixin_call6729 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDDF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_LPAREN_in_cp_mixin_call6727 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADDF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_mixin_call6729 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADDF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_mixin_call_args_in_cp_mixin_call6732 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_cp_mixin_call6735 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_INCLUDE_in_cp_mixin_call6759 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_SASS_INCLUDE_in_cp_mixin_call6759 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_call6761 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_call6763 = new BitSet(new long[]{0x0400000000200002L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_name_in_cp_mixin_call6763 = new BitSet(new long[]{0x0400000000200002L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_call6766 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_cp_mixin_call6769 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDDF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_mixin_call6771 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDDF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_LPAREN_in_cp_mixin_call6769 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADDF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_mixin_call6771 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADDF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_mixin_call_args_in_cp_mixin_call6774 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
-	public static final BitSet FOLLOW_RPAREN_in_cp_mixin_call6777 = new BitSet(new long[]{0x0400000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_RPAREN_in_cp_mixin_call6777 = new BitSet(new long[]{0x0400000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_call6782 = new BitSet(new long[]{0x0400000000000000L});
 	public static final BitSet FOLLOW_cp_mixin_block_in_cp_mixin_call6785 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LBRACE_in_cp_mixin_block6814 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_cp_mixin_block6816 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_syncToFollow_in_cp_mixin_block6819 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_cp_mixin_block6814 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_cp_mixin_block6816 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_syncToFollow_in_cp_mixin_block6819 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_declarations_in_cp_mixin_block6829 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_cp_mixin_block6836 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_cp_mixin_name6857 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_mixin_call_arg_in_cp_mixin_call_args6888 = new BitSet(new long[]{0x0000000001100002L,0x2000000000000000L});
-	public static final BitSet FOLLOW_set_in_cp_mixin_call_args6892 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_mixin_call_args6900 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_mixin_call_arg_in_cp_mixin_call_args6903 = new BitSet(new long[]{0x0000000001100002L,0x2000000000000000L});
-	public static final BitSet FOLLOW_CP_DOTS_in_cp_mixin_call_args6909 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_call_arg_in_cp_mixin_call_args6888 = new BitSet(new long[]{0x0000000001100002L,0x4000000000000000L});
+	public static final BitSet FOLLOW_set_in_cp_mixin_call_args6892 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_mixin_call_args6900 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_mixin_call_arg_in_cp_mixin_call_args6903 = new BitSet(new long[]{0x0000000001100002L,0x4000000000000000L});
+	public static final BitSet FOLLOW_CP_DOTS_in_cp_mixin_call_args6909 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_call_args6911 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_variable_in_cp_mixin_call_arg6945 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_variable_in_cp_mixin_call_arg6945 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_call_arg6947 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_cp_mixin_call_arg6950 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_mixin_call_arg6952 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_in_cp_mixin_call_arg6955 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_cp_expression_in_cp_mixin_call_arg6967 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COLON_in_cp_mixin_call_arg6950 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_mixin_call_arg6952 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_in_cp_mixin_call_arg6955 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_cp_expression_in_cp_mixin_call_arg6967 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_mixin_call_arg6975 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_arg_in_cp_args_list7022 = new BitSet(new long[]{0x0000000001100002L,0x2000000000000010L});
-	public static final BitSet FOLLOW_set_in_cp_args_list7026 = new BitSet(new long[]{0x7010008000A47C40L,0x1EEDDCE004030500L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_cp_args_list7036 = new BitSet(new long[]{0x7010008000847C40L,0x1EEDDCE004010500L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_cp_arg_in_cp_args_list7039 = new BitSet(new long[]{0x0000000001100002L,0x2000000000000010L});
-	public static final BitSet FOLLOW_set_in_cp_args_list7046 = new BitSet(new long[]{0x0000000001200002L,0x0000000000020010L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_arg_in_cp_args_list7022 = new BitSet(new long[]{0x0000000001100002L,0x4000000000000010L});
+	public static final BitSet FOLLOW_set_in_cp_args_list7026 = new BitSet(new long[]{0x7010008000A47C40L,0x3DDADCE004030500L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_cp_args_list7036 = new BitSet(new long[]{0x7010008000847C40L,0x3DDADCE004010500L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_cp_arg_in_cp_args_list7039 = new BitSet(new long[]{0x0000000001100002L,0x4000000000000010L});
+	public static final BitSet FOLLOW_set_in_cp_args_list7046 = new BitSet(new long[]{0x0000000001200002L,0x0000000000020010L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_args_list7054 = new BitSet(new long[]{0x0000000001000002L,0x0000000000000010L});
-	public static final BitSet FOLLOW_set_in_cp_args_list7062 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_set_in_cp_args_list7062 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_args_list7070 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_cp_args_list7087 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_set_in_cp_args_list7087 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_args_list7095 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_variable_in_cp_arg7118 = new BitSet(new long[]{0x0000000000280002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_variable_in_cp_arg7118 = new BitSet(new long[]{0x0000000000280002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_arg7120 = new BitSet(new long[]{0x0000000000080002L});
-	public static final BitSet FOLLOW_COLON_in_cp_arg7125 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_cp_arg7127 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_in_cp_arg7130 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COLON_in_cp_arg7125 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_cp_arg7127 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_in_cp_arg7130 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_cp_arg7132 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_less_when_in_less_mixin_guarded7158 = new BitSet(new long[]{0x0000000000200000L,0x0000000000220040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_less_when_in_less_mixin_guarded7158 = new BitSet(new long[]{0x0000000000200000L,0x0000000000220040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_mixin_guarded7160 = new BitSet(new long[]{0x0000000000000000L,0x0000000000200040L});
-	public static final BitSet FOLLOW_less_condition_in_less_mixin_guarded7163 = new BitSet(new long[]{0x0004000000300002L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_less_condition_in_less_mixin_guarded7163 = new BitSet(new long[]{0x0004000000300002L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_mixin_guarded7166 = new BitSet(new long[]{0x0004000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_less_mixin_guarded7170 = new BitSet(new long[]{0x0000000000200000L,0x0000000000220040L,0x0000000000010000L});
-	public static final BitSet FOLLOW_key_and_in_less_mixin_guarded7174 = new BitSet(new long[]{0x0000000000200000L,0x0000000000220040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COMMA_in_less_mixin_guarded7170 = new BitSet(new long[]{0x0000000000200000L,0x0000000000220040L,0x0000000000020000L});
+	public static final BitSet FOLLOW_key_and_in_less_mixin_guarded7174 = new BitSet(new long[]{0x0000000000200000L,0x0000000000220040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_mixin_guarded7177 = new BitSet(new long[]{0x0000000000000000L,0x0000000000200040L});
-	public static final BitSet FOLLOW_less_condition_in_less_mixin_guarded7180 = new BitSet(new long[]{0x0004000000300002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_NOT_in_less_condition7206 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_less_condition_in_less_mixin_guarded7180 = new BitSet(new long[]{0x0004000000300002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_NOT_in_less_condition7206 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_condition7208 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_less_condition7217 = new BitSet(new long[]{0x7014008000A47C40L,0x1EEDDCE004030500L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_less_condition7219 = new BitSet(new long[]{0x7014008000847C40L,0x1EEDDCE004010500L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_cp_variable_in_less_condition7246 = new BitSet(new long[]{0x0000180000200000L,0x0000010001020009L,0x0000000000010000L});
-	public static final BitSet FOLLOW_less_function_in_condition_in_less_condition7250 = new BitSet(new long[]{0x0000180000200000L,0x0000010001020009L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LPAREN_in_less_condition7217 = new BitSet(new long[]{0x7014008000A47C40L,0x3DDADCE004030500L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_less_condition7219 = new BitSet(new long[]{0x7014008000847C40L,0x3DDADCE004010500L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_cp_variable_in_less_condition7246 = new BitSet(new long[]{0x0000180000200000L,0x0000010001020009L,0x0000000000020000L});
+	public static final BitSet FOLLOW_less_function_in_condition_in_less_condition7250 = new BitSet(new long[]{0x0000180000200000L,0x0000010001020009L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_condition7253 = new BitSet(new long[]{0x0000180000000000L,0x0000010001000009L});
-	public static final BitSet FOLLOW_less_condition_operator_in_less_condition7257 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C430744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_less_condition7259 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C410744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_less_condition_operator_in_less_condition7257 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C430744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_less_condition7259 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C410744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_math_expression_in_less_condition7262 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_less_condition7280 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_less_fn_name_in_less_function_in_condition7302 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_less_fn_name_in_less_function_in_condition7302 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_function_in_condition7304 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_less_function_in_condition7307 = new BitSet(new long[]{0x7010008000A47C40L,0x1EEDDCE004030500L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_less_function_in_condition7309 = new BitSet(new long[]{0x7010008000847C40L,0x1EEDDCE004010500L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_cp_variable_in_less_function_in_condition7312 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LPAREN_in_less_function_in_condition7307 = new BitSet(new long[]{0x7010008000A47C40L,0x3DDADCE004030500L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_less_function_in_condition7309 = new BitSet(new long[]{0x7010008000847C40L,0x3DDADCE004010500L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_cp_variable_in_less_function_in_condition7312 = new BitSet(new long[]{0x0000000000200000L,0x0000010000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_function_in_condition7314 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
 	public static final BitSet FOLLOW_RPAREN_in_less_function_in_condition7317 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_IDENT_in_less_fn_name7339 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_AT_SIGN_in_less_selector_interpolation7397 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_less_selector_interpolation7399 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_LBRACE_in_less_selector_interpolation7399 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_selector_interpolation7401 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_less_selector_interpolation7404 = new BitSet(new long[]{0x0000000000200000L,0x0000000200020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_IDENT_in_less_selector_interpolation7404 = new BitSet(new long[]{0x0000000000200000L,0x0000000200020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_less_selector_interpolation7406 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_less_selector_interpolation7409 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_interpolation_expression_var_in_sass_selector_interpolation_exp7436 = new BitSet(new long[]{0x0004800000000002L,0x0000000000000200L});
@@ -33702,151 +33773,152 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_IDENT_in_sass_selector_interpolation_exp7443 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_MINUS_in_sass_selector_interpolation_exp7447 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_HASH_SYMBOL_in_sass_interpolation_expression_var7474 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_sass_interpolation_expression_var7476 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_LBRACE_in_sass_interpolation_expression_var7476 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_expression_in_sass_interpolation_expression_var7478 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_sass_interpolation_expression_var7480 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_property_in_sass_nested_properties7520 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_property_in_sass_nested_properties7520 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_sass_nested_properties7522 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_sass_nested_properties7525 = new BitSet(new long[]{0xF414C5A240A47C60L,0x1EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_sass_nested_properties7527 = new BitSet(new long[]{0xF414C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_propertyValue_in_sass_nested_properties7531 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_COLON_in_sass_nested_properties7525 = new BitSet(new long[]{0xF414C5A240A47C60L,0x3DDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_sass_nested_properties7527 = new BitSet(new long[]{0xF414C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_propertyValue_in_sass_nested_properties7531 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_sass_nested_properties7533 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_sass_nested_properties7538 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_sass_nested_properties7540 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_syncToFollow_in_sass_nested_properties7543 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
+	public static final BitSet FOLLOW_LBRACE_in_sass_nested_properties7538 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_sass_nested_properties7540 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_syncToFollow_in_sass_nested_properties7543 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
 	public static final BitSet FOLLOW_declarations_in_sass_nested_properties7545 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
 	public static final BitSet FOLLOW_RBRACE_in_sass_nested_properties7548 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_EXTEND_in_sass_extend7569 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_extend7571 = new BitSet(new long[]{0x0804C400A0080080L,0x8002000020000202L});
-	public static final BitSet FOLLOW_simpleSelectorSequence_in_sass_extend7573 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_extend7576 = new BitSet(new long[]{0x0000000000000000L,0x0100000000000000L});
+	public static final BitSet FOLLOW_SASS_EXTEND_in_sass_extend7569 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_extend7571 = new BitSet(new long[]{0x0804C400A0080080L,0x0004000020000202L,0x0000000000000001L});
+	public static final BitSet FOLLOW_simpleSelectorSequence_in_sass_extend7573 = new BitSet(new long[]{0x0000000000200002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_extend7576 = new BitSet(new long[]{0x0000000000000000L,0x0200000000000000L});
 	public static final BitSet FOLLOW_SASS_OPTIONAL_in_sass_extend7578 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_SASS_EXTEND_ONLY_SELECTOR_in_sass_extend_only_selector7601 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_sass_debug7622 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_debug7632 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_set_in_sass_debug7622 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_debug7632 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_expression_in_sass_debug7634 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_if_in_sass_control7655 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_for_in_sass_control7659 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_each_in_sass_control7663 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_while_in_sass_control7667 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_IF_in_sass_if7688 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_sass_if7690 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_sass_control_expression_in_sass_if7693 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_SASS_IF_in_sass_if7688 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_sass_if7690 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_sass_control_expression_in_sass_if7693 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_sass_if7695 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_sass_control_block_in_sass_if7698 = new BitSet(new long[]{0x0000000000200002L,0x0000800000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_if7701 = new BitSet(new long[]{0x0000000000000000L,0x0000800000000000L});
+	public static final BitSet FOLLOW_sass_control_block_in_sass_if7698 = new BitSet(new long[]{0x0000000000200002L,0x0001800000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_if7701 = new BitSet(new long[]{0x0000000000000000L,0x0001800000000000L});
 	public static final BitSet FOLLOW_sass_else_in_sass_if7704 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_ELSE_in_sass_else7727 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_SASS_ELSE_in_sass_else7727 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_sass_else7729 = new BitSet(new long[]{0x0400000000000000L});
 	public static final BitSet FOLLOW_sass_control_block_in_sass_else7732 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_ELSE_in_sass_else7744 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_else7746 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_sass_else7751 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_sass_else7755 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_sass_control_expression_in_sass_else7758 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_else7760 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_sass_control_block_in_sass_else7763 = new BitSet(new long[]{0x0000000000200002L,0x0000800000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_else7766 = new BitSet(new long[]{0x0000000000000000L,0x0000800000000000L});
-	public static final BitSet FOLLOW_sass_else_in_sass_else7769 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_expression_in_sass_control_expression7792 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_FOR_in_sass_for7813 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_for7815 = new BitSet(new long[]{0x7010008000847C40L,0x1EEDDCE004010500L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_cp_variable_in_sass_for7817 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_for7819 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_sass_for7823 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_for7827 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C410744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_math_expression_in_sass_for7829 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_for7831 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_sass_for7835 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_for7839 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C410744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_math_expression_in_sass_for7841 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_for7843 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_sass_control_block_in_sass_for7846 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_EACH_in_sass_each7867 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_each7869 = new BitSet(new long[]{0x7010008000847C40L,0x1EEDDCE004010500L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_sass_each_variables_in_sass_each7871 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_each7873 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_sass_each7877 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_each7881 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_list_in_sass_each7883 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_each7885 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_sass_control_block_in_sass_each7888 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_variable_in_sass_each_variables7909 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_each_variables7921 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_sass_each_variables7924 = new BitSet(new long[]{0x7010008000A47C40L,0x1EEDDCE004030500L,0x00000000000181F0L});
-	public static final BitSet FOLLOW_ws_in_sass_each_variables7926 = new BitSet(new long[]{0x7010008000847C40L,0x1EEDDCE004010500L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_cp_variable_in_sass_each_variables7929 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_SASS_WHILE_in_sass_while7954 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_while7956 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_sass_control_expression_in_sass_while7958 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_while7960 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_sass_control_block_in_sass_while7963 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_LBRACE_in_sass_control_block7984 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_sass_control_block7986 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_declarations_in_sass_control_block7989 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
-	public static final BitSet FOLLOW_RBRACE_in_sass_control_block7992 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_FUNCTION_in_sass_function_declaration8034 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_function_declaration8036 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_sass_function_name_in_sass_function_declaration8038 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_function_declaration8040 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_sass_function_declaration8043 = new BitSet(new long[]{0x7010008001847C40L,0x1EEDDDE004010510L,0x00000000000081F0L});
-	public static final BitSet FOLLOW_cp_args_list_in_sass_function_declaration8045 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
-	public static final BitSet FOLLOW_RPAREN_in_sass_function_declaration8048 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_function_declaration8050 = new BitSet(new long[]{0x0400000000000000L});
-	public static final BitSet FOLLOW_LBRACE_in_sass_function_declaration8053 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0xBEEFDCE264030702L,0x00000000000181F4L});
-	public static final BitSet FOLLOW_ws_in_sass_function_declaration8055 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0xBEEFDCE264010702L,0x00000000000081F4L});
-	public static final BitSet FOLLOW_declarations_in_sass_function_declaration8058 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
-	public static final BitSet FOLLOW_RBRACE_in_sass_function_declaration8061 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_IDENT_in_sass_function_name8082 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_RETURN_in_sass_function_return8103 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_sass_function_return8105 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_cp_expression_in_sass_function_return8107 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_CONTENT_in_sass_content8128 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_IDENT_in_less_import_types8147 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_IDENT_in_less_when8170 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_IDENT_in_key_and8189 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_IDENT_in_key_or8207 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_IDENT_in_key_only8225 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred1_Css3356 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004210540L,0x00000000000081F0L});
+	public static final BitSet FOLLOW_SASS_ELSE_in_sass_else7746 = new BitSet(new long[]{0x0004000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_else7748 = new BitSet(new long[]{0x0004000000000000L});
+	public static final BitSet FOLLOW_IDENT_in_sass_else7753 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_SASS_ELSEIF_in_sass_else7760 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_sass_else7763 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_sass_control_expression_in_sass_else7766 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_else7768 = new BitSet(new long[]{0x0400000000000000L});
+	public static final BitSet FOLLOW_sass_control_block_in_sass_else7771 = new BitSet(new long[]{0x0000000000200002L,0x0001800000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_else7774 = new BitSet(new long[]{0x0000000000000000L,0x0001800000000000L});
+	public static final BitSet FOLLOW_sass_else_in_sass_else7777 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_cp_expression_in_sass_control_expression7800 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_SASS_FOR_in_sass_for7821 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_for7823 = new BitSet(new long[]{0x7010008000847C40L,0x3DDADCE004010500L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_cp_variable_in_sass_for7825 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_for7827 = new BitSet(new long[]{0x0004000000000000L});
+	public static final BitSet FOLLOW_IDENT_in_sass_for7831 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_for7835 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C410744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_math_expression_in_sass_for7837 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_for7839 = new BitSet(new long[]{0x0004000000000000L});
+	public static final BitSet FOLLOW_IDENT_in_sass_for7843 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_for7847 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C410744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_math_expression_in_sass_for7849 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_for7851 = new BitSet(new long[]{0x0400000000000000L});
+	public static final BitSet FOLLOW_sass_control_block_in_sass_for7854 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_SASS_EACH_in_sass_each7875 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_each7877 = new BitSet(new long[]{0x7010008000847C40L,0x3DDADCE004010500L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_sass_each_variables_in_sass_each7879 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_each7881 = new BitSet(new long[]{0x0004000000000000L});
+	public static final BitSet FOLLOW_IDENT_in_sass_each7885 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_each7889 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_list_in_sass_each7891 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_each7893 = new BitSet(new long[]{0x0400000000000000L});
+	public static final BitSet FOLLOW_sass_control_block_in_sass_each7896 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_cp_variable_in_sass_each_variables7917 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_each_variables7929 = new BitSet(new long[]{0x0000000000100000L});
+	public static final BitSet FOLLOW_COMMA_in_sass_each_variables7932 = new BitSet(new long[]{0x7010008000A47C40L,0x3DDADCE004030500L,0x00000000000303E0L});
+	public static final BitSet FOLLOW_ws_in_sass_each_variables7934 = new BitSet(new long[]{0x7010008000847C40L,0x3DDADCE004010500L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_cp_variable_in_sass_each_variables7937 = new BitSet(new long[]{0x0000000000300002L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_SASS_WHILE_in_sass_while7962 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_while7964 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_sass_control_expression_in_sass_while7966 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_while7968 = new BitSet(new long[]{0x0400000000000000L});
+	public static final BitSet FOLLOW_sass_control_block_in_sass_while7971 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_LBRACE_in_sass_control_block7992 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_sass_control_block7994 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_declarations_in_sass_control_block7997 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
+	public static final BitSet FOLLOW_RBRACE_in_sass_control_block8000 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_SASS_FUNCTION_in_sass_function_declaration8042 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_function_declaration8044 = new BitSet(new long[]{0x0004000000000000L});
+	public static final BitSet FOLLOW_sass_function_name_in_sass_function_declaration8046 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_function_declaration8048 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
+	public static final BitSet FOLLOW_LPAREN_in_sass_function_declaration8051 = new BitSet(new long[]{0x7010008001847C40L,0x3DDADDE004010510L,0x00000000000103E0L});
+	public static final BitSet FOLLOW_cp_args_list_in_sass_function_declaration8053 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
+	public static final BitSet FOLLOW_RPAREN_in_sass_function_declaration8056 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_function_declaration8058 = new BitSet(new long[]{0x0400000000000000L});
+	public static final BitSet FOLLOW_LBRACE_in_sass_function_declaration8061 = new BitSet(new long[]{0x7814CC80A0AC7CC0L,0x7DDEDCE264030702L,0x00000000000303E9L});
+	public static final BitSet FOLLOW_ws_in_sass_function_declaration8063 = new BitSet(new long[]{0x7814CC80A08C7CC0L,0x7DDEDCE264010702L,0x00000000000103E9L});
+	public static final BitSet FOLLOW_declarations_in_sass_function_declaration8066 = new BitSet(new long[]{0x0000000000000000L,0x0000000200000000L});
+	public static final BitSet FOLLOW_RBRACE_in_sass_function_declaration8069 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_IDENT_in_sass_function_name8090 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_SASS_RETURN_in_sass_function_return8111 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_sass_function_return8113 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_cp_expression_in_sass_function_return8115 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_SASS_CONTENT_in_sass_content8136 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_IDENT_in_less_import_types8155 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_IDENT_in_less_when8178 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_IDENT_in_key_and8197 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_IDENT_in_key_or8215 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_IDENT_in_key_only8233 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ws_in_synpred1_Css3356 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004210540L,0x00000000000103E0L});
 	public static final BitSet FOLLOW_mediaQueryList_in_synpred1_Css3359 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred2_Css3420 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004210540L,0x00000000000081F0L});
+	public static final BitSet FOLLOW_ws_in_synpred2_Css3420 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004210540L,0x00000000000103E0L});
 	public static final BitSet FOLLOW_mediaQueryList_in_synpred2_Css3423 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred3_Css3474 = new BitSet(new long[]{0x7014848000847C40L,0x1EEDDCE004210540L,0x00000000000081F0L});
+	public static final BitSet FOLLOW_ws_in_synpred3_Css3474 = new BitSet(new long[]{0x7014848000847C40L,0x3DDADCE004210540L,0x00000000000103E0L});
 	public static final BitSet FOLLOW_mediaQueryList_in_synpred3_Css3477 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred4_Css3596 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
+	public static final BitSet FOLLOW_ws_in_synpred4_Css3596 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
 	public static final BitSet FOLLOW_SEMI_in_synpred4_Css3599 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_SASS_MIXIN_in_synpred5_Css3697 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_DOT_in_synpred5_Css3702 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_synpred5_Css3704 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_IDENT_in_synpred5_Css3704 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred5_Css3706 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_synpred5_Css3709 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x00000000000FFFFFL});
-	public static final BitSet FOLLOW_RPAREN_in_synpred5_Css3717 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xDFFFFFFFFFFFFFFFL,0x00000000000FFFFFL});
+	public static final BitSet FOLLOW_LPAREN_in_synpred5_Css3709 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x00000000001FFFFFL});
+	public static final BitSet FOLLOW_RPAREN_in_synpred5_Css3717 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xBFFFFFFFFFFFFFFFL,0x00000000001FFFFFL});
 	public static final BitSet FOLLOW_LBRACE_in_synpred5_Css3727 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_mixin_call_in_synpred6_Css3745 = new BitSet(new long[]{0x0008000000200000L,0x2000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_call_in_synpred6_Css3745 = new BitSet(new long[]{0x0008000000200000L,0x4000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred6_Css3748 = new BitSet(new long[]{0x0008000000000000L});
-	public static final BitSet FOLLOW_IMPORTANT_SYM_in_synpred6_Css3751 = new BitSet(new long[]{0x0000000000200000L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_synpred6_Css3755 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
+	public static final BitSet FOLLOW_IMPORTANT_SYM_in_synpred6_Css3751 = new BitSet(new long[]{0x0000000000200000L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_synpred6_Css3755 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
 	public static final BitSet FOLLOW_SEMI_in_synpred6_Css3758 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_mixin_call_in_synpred7_Css3781 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_COLON_in_synpred8_Css3816 = new BitSet(new long[]{0xFBFFFFFFFFFFFFF0L,0xDFFFFFFDFFFFFFFFL,0x00000000000FFFFFL});
+	public static final BitSet FOLLOW_COLON_in_synpred8_Css3816 = new BitSet(new long[]{0xFBFFFFFFFFFFFFF0L,0xBFFFFFFDFFFFFFFFL,0x00000000001FFFFFL});
 	public static final BitSet FOLLOW_SEMI_in_synpred8_Css3828 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_ws_in_synpred9_Css3936 = new BitSet(new long[]{0x0000000000100000L});
 	public static final BitSet FOLLOW_COMMA_in_synpred9_Css3939 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred10_Css31235 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
+	public static final BitSet FOLLOW_ws_in_synpred10_Css31235 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
 	public static final BitSet FOLLOW_SEMI_in_synpred10_Css31238 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_SASS_MIXIN_in_synpred11_Css31313 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_DOT_in_synpred11_Css31318 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_synpred11_Css31320 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_IDENT_in_synpred11_Css31320 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred11_Css31322 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_synpred11_Css31325 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x00000000000FFFFFL});
-	public static final BitSet FOLLOW_RPAREN_in_synpred11_Css31333 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xDFFFFFFDFFFFFFFFL,0x00000000000FFFFFL});
+	public static final BitSet FOLLOW_LPAREN_in_synpred11_Css31325 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x00000000001FFFFFL});
+	public static final BitSet FOLLOW_RPAREN_in_synpred11_Css31333 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xBFFFFFFDFFFFFFFFL,0x00000000001FFFFFL});
 	public static final BitSet FOLLOW_LBRACE_in_synpred11_Css31345 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_mixin_call_in_synpred12_Css31371 = new BitSet(new long[]{0x0000000000200000L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_synpred12_Css31373 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
+	public static final BitSet FOLLOW_cp_mixin_call_in_synpred12_Css31371 = new BitSet(new long[]{0x0000000000200000L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_synpred12_Css31373 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
 	public static final BitSet FOLLOW_SEMI_in_synpred12_Css31376 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_mixin_call_in_synpred13_Css31395 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_map_in_synpred14_Css31423 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_variable_in_synpred15_Css31440 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_variable_in_synpred15_Css31440 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred15_Css31442 = new BitSet(new long[]{0x0000000000080000L});
 	public static final BitSet FOLLOW_COLON_in_synpred15_Css31445 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_ws_in_synpred16_Css32596 = new BitSet(new long[]{0x0000000000100000L});
@@ -33855,63 +33927,63 @@ public class Css3Parser extends DebugParser {
 	public static final BitSet FOLLOW_sass_map_in_synpred18_Css32894 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_sass_nested_properties_in_synpred19_Css32907 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_propertyDeclaration_in_synpred20_Css32919 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_property_in_synpred21_Css32936 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_property_in_synpred21_Css32936 = new BitSet(new long[]{0x0000000000280000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred21_Css32938 = new BitSet(new long[]{0x0000000000080000L});
-	public static final BitSet FOLLOW_COLON_in_synpred21_Css32941 = new BitSet(new long[]{0xFBFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x00000000000FFFFFL});
+	public static final BitSet FOLLOW_COLON_in_synpred21_Css32941 = new BitSet(new long[]{0xFBFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x00000000001FFFFFL});
 	public static final BitSet FOLLOW_set_in_synpred21_Css32953 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_SASS_MIXIN_in_synpred22_Css32970 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_DOT_in_synpred22_Css32975 = new BitSet(new long[]{0x0004000000000000L});
-	public static final BitSet FOLLOW_IDENT_in_synpred22_Css32977 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_IDENT_in_synpred22_Css32977 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred22_Css32979 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_LPAREN_in_synpred22_Css32982 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x00000000000FFFFFL});
-	public static final BitSet FOLLOW_RPAREN_in_synpred22_Css32990 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xDFFFFFFDFFFFFFFFL,0x00000000000FFFFFL});
+	public static final BitSet FOLLOW_LPAREN_in_synpred22_Css32982 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xFFFFFFFFFFFFFFFFL,0x00000000001FFFFFL});
+	public static final BitSet FOLLOW_RPAREN_in_synpred22_Css32990 = new BitSet(new long[]{0xFFFFFFFFFFFFFFF0L,0xBFFFFFFDFFFFFFFFL,0x00000000001FFFFFL});
 	public static final BitSet FOLLOW_LBRACE_in_synpred22_Css33002 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_cp_mixin_call_in_synpred23_Css33020 = new BitSet(new long[]{0x0008000000200000L,0x2000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_cp_mixin_call_in_synpred23_Css33020 = new BitSet(new long[]{0x0008000000200000L,0x4000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred23_Css33023 = new BitSet(new long[]{0x0008000000000000L});
-	public static final BitSet FOLLOW_IMPORTANT_SYM_in_synpred23_Css33026 = new BitSet(new long[]{0x0000000000200000L,0x2000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_synpred23_Css33030 = new BitSet(new long[]{0x0000000000000000L,0x2000000000000000L});
+	public static final BitSet FOLLOW_IMPORTANT_SYM_in_synpred23_Css33026 = new BitSet(new long[]{0x0000000000200000L,0x4000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_synpred23_Css33030 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
 	public static final BitSet FOLLOW_SEMI_in_synpred23_Css33033 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_mixin_call_in_synpred24_Css33056 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_SASS_AT_ROOT_in_synpred25_Css33081 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_ws_in_synpred25_Css33084 = new BitSet(new long[]{0x0804CC00A0080080L,0x8002000060000202L,0x0000000000000004L});
-	public static final BitSet FOLLOW_selectorsGroup_in_synpred25_Css33086 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_selectorsGroup_in_synpred25_Css33093 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_SASS_AT_ROOT_in_synpred25_Css33081 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_ws_in_synpred25_Css33084 = new BitSet(new long[]{0x0804CC00A0080080L,0x0004000060000202L,0x0000000000000009L});
+	public static final BitSet FOLLOW_selectorsGroup_in_synpred25_Css33086 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_selectorsGroup_in_synpred25_Css33093 = new BitSet(new long[]{0x0400000000200000L,0x0000000000020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred25_Css33096 = new BitSet(new long[]{0x0400000000000000L});
 	public static final BitSet FOLLOW_LBRACE_in_synpred25_Css33099 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred26_Css33335 = new BitSet(new long[]{0x0800C000A0080000L,0x0002000000000000L});
+	public static final BitSet FOLLOW_ws_in_synpred26_Css33335 = new BitSet(new long[]{0x0800C000A0080000L,0x0004000000000000L});
 	public static final BitSet FOLLOW_esPred_in_synpred26_Css33338 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_typeSelector_in_synpred27_Css33363 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred28_Css33370 = new BitSet(new long[]{0x0800C000A0080000L,0x0002000000000000L});
+	public static final BitSet FOLLOW_ws_in_synpred28_Css33370 = new BitSet(new long[]{0x0800C000A0080000L,0x0004000000000000L});
 	public static final BitSet FOLLOW_esPred_in_synpred28_Css33373 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_PIPE_in_synpred29_Css33478 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred30_Css34909 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_ws_in_synpred30_Css34914 = new BitSet(new long[]{0x0000000000100000L,0x4000000000000000L});
-	public static final BitSet FOLLOW_operator_in_synpred30_Css34917 = new BitSet(new long[]{0xF014C5A240A47C60L,0x1EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_synpred30_Css34919 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_ws_in_synpred30_Css34909 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_ws_in_synpred30_Css34914 = new BitSet(new long[]{0x0000000000100000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_operator_in_synpred30_Css34917 = new BitSet(new long[]{0xF014C5A240A47C60L,0x3DDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_synpred30_Css34919 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_term_in_synpred30_Css34928 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_functionName_in_synpred31_Css35001 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000010000L});
+	public static final BitSet FOLLOW_functionName_in_synpred31_Css35001 = new BitSet(new long[]{0x0000000000200000L,0x0000000000020040L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred31_Css35003 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000040L});
 	public static final BitSet FOLLOW_LPAREN_in_synpred31_Css35006 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_fnAttributeName_in_synpred32_Css35523 = new BitSet(new long[]{0x0000000000280000L,0x0000000001020000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_fnAttributeName_in_synpred32_Css35523 = new BitSet(new long[]{0x0000000000280000L,0x0000000001020000L,0x0000000000020000L});
 	public static final BitSet FOLLOW_ws_in_synpred32_Css35525 = new BitSet(new long[]{0x0000000000080000L,0x0000000001000000L});
 	public static final BitSet FOLLOW_set_in_synpred32_Css35528 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_expression_in_synpred33_Css35563 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred34_Css35657 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
-	public static final BitSet FOLLOW_ws_in_synpred34_Css35662 = new BitSet(new long[]{0x0000000000000000L,0x4000000000000000L});
-	public static final BitSet FOLLOW_SOLIDUS_in_synpred34_Css35665 = new BitSet(new long[]{0xF014C5A240A47C60L,0x1EEDDCF85C430704L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_synpred34_Css35667 = new BitSet(new long[]{0xF014C5A240847C60L,0x1EEDDCF85C410704L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_ws_in_synpred34_Css35657 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
+	public static final BitSet FOLLOW_ws_in_synpred34_Css35662 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_SOLIDUS_in_synpred34_Css35665 = new BitSet(new long[]{0xF014C5A240A47C60L,0x3DDADCF85C430704L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_synpred34_Css35667 = new BitSet(new long[]{0xF014C5A240847C60L,0x3DDADCF85C410704L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_term_in_synpred34_Css35676 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_ws_in_synpred35_Css36110 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_synpred35_Css36113 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x1EEDDCF85C630744L,0x00000000000189FDL});
-	public static final BitSet FOLLOW_ws_in_synpred35_Css36115 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_COMMA_in_synpred35_Css36113 = new BitSet(new long[]{0xF01CC5A240A47C60L,0x3DDADCF85C630744L,0x00000000000313FAL});
+	public static final BitSet FOLLOW_ws_in_synpred35_Css36115 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_expression_in_synpred35_Css36118 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_ws_in_synpred36_Css36179 = new BitSet(new long[]{0x0004180006000000L,0x0000000000000009L});
 	public static final BitSet FOLLOW_cp_expression_operator_in_synpred36_Css36182 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred37_Css36208 = new BitSet(new long[]{0xF01CC5A240847C60L,0x1EEDDCF85C610744L,0x00000000000089FDL});
+	public static final BitSet FOLLOW_ws_in_synpred37_Css36208 = new BitSet(new long[]{0xF01CC5A240847C60L,0x3DDADCF85C610744L,0x00000000000113FAL});
 	public static final BitSet FOLLOW_cp_expression_atom_in_synpred37_Css36211 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_cp_math_expression_in_synpred38_Css36330 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred39_Css36463 = new BitSet(new long[]{0x0000000000000000L,0xC000000040000200L});
+	public static final BitSet FOLLOW_ws_in_synpred39_Css36463 = new BitSet(new long[]{0x0000000000000000L,0x8000000040000200L,0x0000000000000001L});
 	public static final BitSet FOLLOW_set_in_synpred39_Css36466 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ws_in_synpred40_Css37914 = new BitSet(new long[]{0x0000000000100000L});
-	public static final BitSet FOLLOW_COMMA_in_synpred40_Css37917 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ws_in_synpred40_Css37922 = new BitSet(new long[]{0x0000000000100000L});
+	public static final BitSet FOLLOW_COMMA_in_synpred40_Css37925 = new BitSet(new long[]{0x0000000000000002L});
 }
