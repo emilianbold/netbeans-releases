@@ -351,6 +351,11 @@ public final class NpmLibraries {
             return libraryInfo.icon;
         }
 
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
     private static final class NpmLibraryInfo implements Comparable<NpmLibraryInfo> {

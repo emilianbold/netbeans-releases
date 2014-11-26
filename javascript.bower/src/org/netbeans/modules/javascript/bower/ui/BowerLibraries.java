@@ -338,6 +338,11 @@ public final class BowerLibraries {
             return libraryInfo.icon;
         }
 
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
     private static final class BowerLibraryInfo implements Comparable<BowerLibraryInfo> {

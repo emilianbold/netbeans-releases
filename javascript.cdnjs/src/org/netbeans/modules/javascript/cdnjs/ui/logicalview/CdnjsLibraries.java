@@ -299,6 +299,11 @@ public final class CdnjsLibraries {
             return ImageUtilities.loadImage(LIBRARIES_ICON, false);
         }
 
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+
     }
 
     private static final class CustomizeLibrariesAction extends AbstractAction {
