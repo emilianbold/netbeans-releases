@@ -195,10 +195,10 @@ public final class BowerProblemProvider extends NodeProblemProvider {
 
         public FutureResult() {
             try {
-                ClientSideProjectUtilities.logUsage(BowerInstallAction.class, "USG_BOWER_INSTALL", null);
+                ClientSideProjectUtilities.logUsage(BowerProblemProvider.class, "USG_BOWER_INSTALL", null);
                 done = new AtomicBoolean(false);
                 cancelled = new AtomicBoolean(false);
-                execute = new NodeExecutor(Bundle.TTL_bower_install(ProjectUtils.getInformation(project).getDisplayName()),
+                execute = new NodeExecutor("bower install", // XXX
                         "bower",
                         project.getProjectDirectory(), new String[]{"install"}).execute(); //NOI18N
             } catch (IOException ex) {
