@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -140,7 +141,7 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
             ProjectProblem problem = ProjectProblem.createWarning(
                     Bundle.NpmProblemsProvider_dependencies_none_title(),
                     Bundle.NpmProblemsProvider_dependencies_none_description(NodeJsUtils.getProjectDisplayName(project)),
-                    new ProjectProblemResolverImpl("npmInstall", new NpmInstallResult()));
+                    new ProjectProblemResolverImpl("npmInstall", new NpmInstallResult())); // NOI18N
             currentProblems.add(problem);
         }
     }
@@ -186,8 +187,11 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
+            String oldName = fe.getName() + (StringUtils.hasText(fe.getExt()) ? "." + fe.getExt() : ""); // NOI18N
             processFileChange(fe.getFile().getNameExt());
-            processFolderChange(fe.getName() + "." + fe.getExt()); // NOI18N
+            processFileChange(oldName);
+            processFolderChange(fe.getFile().getNameExt());
+            processFolderChange(oldName);
         }
 
         private void processFileChange(String fileName) {

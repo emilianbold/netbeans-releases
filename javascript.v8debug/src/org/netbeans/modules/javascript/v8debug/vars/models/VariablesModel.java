@@ -421,6 +421,11 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     }
 
     @Override
+    public void notifyCurrentFrame(CallFrame cf) {
+        refresh();
+    }
+    
+    @Override
     public void notifyFinished() {
         
     }

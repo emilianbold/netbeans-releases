@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.bower.file;
+
+import java.util.Collection;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
+import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
+
+@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+public final class ImportantFilesImpl implements ImportantFilesImplementation {
+
+    private final ImportantFilesSupport support;
 
 
-@TemplateRegistration(folder = "ClientSide",
-        content = "bower.json",
-        scriptEngine = "freemarker",
-        position = 700,
-        displayName = "#Templates.bower.json",
-        description = "bowerdescription.html",
-        targetName = "bower",
-        category = "html5")
+    public ImportantFilesImpl(Project project) {
+        assert project != null;
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), BowerJson.FILE_NAME, ".bowerrc"); // NOI18N
+    }
 
-package org.netbeans.modules.web.clientproject.bower;
+    @Override
+    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
+        return support.getFiles(null);
+    }
 
-import org.netbeans.api.templates.TemplateRegistration;
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        support.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        support.removeChangeListener(listener);
+    }
+
+}

@@ -708,7 +708,14 @@ public class CSS {
             } else if ("Page.frameNavigated".equals(method)) { // NOI18N
                 // We cannot reset styleSheetHeaders on DOM.documentUpdated because
                 // CSS.styleSheetAdded events are fired before DOM.documentUpdated.
-                styleSheetHeaders.clear();
+                Object frame = response.getParams().get("frame"); // NOI18N
+                if (frame instanceof JSONObject) {
+                    Object parentFrame = ((JSONObject)frame).get("parentId"); // NOI18N
+                    if (parentFrame == null) {
+                        // 248911: Clear the headers when the root frame is navigated only.
+                        styleSheetHeaders.clear();
+                    }
+                }
             } else if ("DOM.documentUpdated".equals(method)) { // NOI18N
                 synchronized (this) {
                     styleSheets.clear();

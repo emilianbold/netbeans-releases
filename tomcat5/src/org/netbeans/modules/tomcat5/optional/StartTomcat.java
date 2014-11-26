@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -134,6 +135,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     
     /** For how long should we keep trying to get response from the server. */
     private static final long TIMEOUT_DELAY = 180000;
+
+    private static final Pattern WINDOWS_ESCAPED_JAVA_OPTS = Pattern.compile("^set\\s\"JAVA_OPTS.*$");
     
     private static final Logger LOGGER = Logger.getLogger(StartTomcat.class.getName());
         
@@ -386,13 +389,20 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 };
                 boolean isWindows = Utilities.isWindows();
                 for (String prop : PROXY_PROPS) {
-                    if (javaOpts.indexOf(prop) == -1) {
+                    if (!javaOpts.contains(prop)) {
                         String value = System.getProperty(prop);
                         if (value != null) {
-                            if ((isWindows || tm.isTomcat70() || tm.isTomcat80()) && "http.nonProxyHosts".equals(prop)) { // NOI18N
-                                // enclose in double quotes to escape the pipes separating the hosts on windows
-                                // or on unix - tomcat 7 use eval instead of exec
-                                value = "\"" + value + "\""; // NOI18N
+                            if ("http.nonProxyHosts".equals(prop)) { // NOI18N
+                                if (isWindows) {
+                                    boolean javaOptsEscaped = isJavaOptsEscaped();
+                                    if (javaOptsEscaped) {
+                                        value = value.replaceAll("\\|", "^|"); // NOI18N
+                                    } else {
+                                        value = "\"" + value + "\""; // NOI18N
+                                    }
+                                } else if (tm.isTomcat70() || tm.isTomcat80()) {
+                                    value = "\"" + value + "\""; // NOI18N
+                                }
                             }
                             sb.append(" -D").append(prop).append("=").append(value); // NOI18N
                         }
@@ -770,7 +780,27 @@ public final class StartTomcat extends StartServer implements ProgressObject {
         }
         return platform;
     }
-    
+
+    // FIXME should we cache this?
+    private boolean isJavaOptsEscaped() {
+        if (Utilities.isUnix()) {
+            return false;
+        }
+        FileObject start = FileUtil.toFileObject(FileUtil.normalizeFile(getStartupScript()));
+        if (start != null) {
+            try {
+                for(String line : start.asLines("UTF-8")) { // NOI18N
+                    if (WINDOWS_ESCAPED_JAVA_OPTS.matcher(line).matches()) {
+                        return true;
+                    }
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        return false;
+    }
+
     /** enable/disable ${catalina.home}/common/endorsed/*.jar in the catalina class
      loader in the catalina.properties file */
     private void patchCatalinaProperties(File catalinaBase, final boolean endorsedEnabled) {

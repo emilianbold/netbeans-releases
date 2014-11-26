@@ -1619,12 +1619,12 @@ public class Css3ParserScssTest extends CssTestBase {
                 + ".selector#{$i} { content: $i; }"
                 + "}\n");
     }
-    
+
     //can't parse an expression inside the interpolation expression
     public void _testInterpolationExpression_BUG1() {
         assertParses(".span:nth-child(#{6-$i}) { content: $i; }");
     }
-    
+
     //can't parse an interpolation expression as fn argument
     public void _testInterpolationExpression_BUG2() {
         assertParses(".span:nth-child(#{$i}) { content: $i; }");
@@ -1643,17 +1643,17 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  }\n"
                 + "}\n");
     }
-    
+
     public void testMixin() {
         String source = "@mixin simple($selectorPrefix){}";
         CssParserResult result = TestUtil.parse(source);
-        assertResultOK(result);   
+        assertResultOK(result);
     }
-    
+
     public void testScssVar() {
         String source = ".test {background-image: $var;}";
         CssParserResult result = TestUtil.parse(source);
-        assertResultOK(result);   
+        assertResultOK(result);
     }
 
     public void testInterpolationInSelector() {
@@ -1663,35 +1663,84 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
         source = ".table-odd-cols-#{$i} > .oj-row > .oj-col:nth-child(even) {}";
-        result = TestUtil.parse(source);        
-        assertResultOK(result);  
-        
+        result = TestUtil.parse(source);
+        assertResultOK(result);
+
         source = ".table-odd-cols-#{$i}-test:nth-child(even) {}";
-        result = TestUtil.parse(source);        
+        result = TestUtil.parse(source);
         assertResultOK(result);
     }
-    
+
     public void testMapWithStrings() {
-        String source = "$map: (\n" +
-            "    '1':       'one',\n" +
-            ");";
+        String source = "$map: (\n"
+                + "    '1':       'one',\n"
+                + ");";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
-    
+
     public void testMapDeclarationWithDefault() {
         String source = "$modules: () !default;";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
-    
+
     public void testIfWithoutSpace() {
-        String source = "@if($allowTagSelectors)\n" +
-            "  {\n" +
-            "    #{$tagSelectors} {\n" +
-            "      color: red;\n" +
-            "    }\n" +
-            "  }";
+        String source = "@if($allowTagSelectors)\n"
+                + "  {\n"
+                + "    #{$tagSelectors} {\n"
+                + "      color: red;\n"
+                + "    }\n"
+                + "  }";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+
+    public void testElseIfTogether() {
+        String source = "@mixin icon($name, $character: null, $font-family: 'Pictos') {\n"
+                + "    @if $character != null {\n"
+                + "        content: \"#{$character}\";\n"
+                + "    } @elseif $raw_character != null {\n"
+                + "        content: \"#{$raw_character}\";\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+
+    public void testFunctionParametersOnNewLines() {
+        String source = "@function matte-gradient (\n"
+                + "    $bg-color: $base-color,\n"
+                + "    $direction: top,\n"
+                + "    $contrast: 1\n"
+                + ") {\n"
+                + "    @return linear-gradient(red);\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testAdditionalCommaInTheEndOfSelector() {
+        String source = ".ui-convex,\n"
+                + ".ui-convex-hover,\n"
+                + "{\n"
+                + "    width: 10em;\n"
+                + "    height: 2em;\n"
+                + "    \n"
+                + "    margin: 1em auto;\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testQuoteEscapingInString() {
+        String source = "@function icon-character-for-name($name) {\n"
+                + "    // http://pictos.cc/font/\n"
+                + "\n"
+                + "    // Row 1\n"
+                + "    @if ($name == \"anchor\") { @return \"a\"; }\n"
+                + "    @else if ($name == \"quote\") { @return \"\\\"\"; }\n"
+                + "    @else if ($name == \"volume_mute\") { @return \"<\"; }}";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }

@@ -58,6 +58,7 @@ import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.modules.javascript.v8debug.EditorUtils;
 import org.netbeans.modules.javascript.v8debug.ScriptsHandler;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.filesystems.FileObject;
@@ -180,6 +181,7 @@ public final class CallStackAnnotationListener extends DebuggerManagerAdapter
     private final class DbgListener implements V8Debugger.Listener {
         
         private final V8Debugger dbg;
+        private volatile boolean topFrameShown;
         
         public DbgListener(V8Debugger dbg) {
             this.dbg = dbg;
@@ -190,12 +192,26 @@ public final class CallStackAnnotationListener extends DebuggerManagerAdapter
             if (currentV8Dbg == dbg) {
                 if (suspended) {
                     annotationProcessor.post(new AnnotateTask(dbg));
+                    topFrameShown = true;
                 } else {
                     annotationProcessor.post(new AnnotateTask(null));
+                    topFrameShown = false;
                 }
             }
         }
 
+        @Override
+        public void notifyCurrentFrame(CallFrame cf) {
+            if (cf == null) {
+                return ;
+            }
+            if (topFrameShown && cf.isTopFrame()) {
+                return ;
+            }
+            topFrameShown = false;
+            EditorUtils.showFrameLine(dbg, cf, true);
+        }
+        
         @Override
         public void notifyFinished() {
         }

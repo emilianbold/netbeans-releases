@@ -691,7 +691,7 @@ declaration
 
 selectorsGroup
     :
-        selector (ws? COMMA ws? selector)*
+        selector (ws? COMMA ws? selector)* ({isCssPreprocessorSource()}? COMMA)?
     ;
 
 selector
@@ -772,7 +772,7 @@ cssClass
 
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : IDENT | GEN | (LESS_AND IDENT?) | STAR
+    : IDENT | GEN | (LESS_AND (IDENT | MINUS | NUMBER)*) | STAR
     ;
 
 slAttribute
@@ -1259,7 +1259,7 @@ sass_else
     :
     SASS_ELSE ws? sass_control_block
     |
-    SASS_ELSE ws? {tokenNameEquals("if")}? IDENT /* if */ ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
+    ((SASS_ELSE ws? {tokenNameEquals("if")}? IDENT /* if */) | SASS_ELSEIF) ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
 
 sass_control_expression
@@ -1298,7 +1298,7 @@ sass_function_declaration
     //but so far haven't found any such example so I put the declarations rule inside
     //and added the sass_function_return into the declarations rule itself (not fully correct)
     //as the return should be allowed only from the sass function declaration
-    SASS_FUNCTION ws sass_function_name ws? LPAREN cp_args_list? RPAREN ws? LBRACE ws? declarations? RBRACE
+    SASS_FUNCTION ws sass_function_name ws? LPAREN ws? cp_args_list? RPAREN ws? LBRACE ws? declarations? RBRACE
     ;
 
 sass_function_name
@@ -1686,7 +1686,7 @@ STRING          : '\'' ( ~('\r'|'\f'|'\'') )*
                         | { $type = INVALID; }
                     )
 
-                | '"' ( ~('\r'|'\f'|'"') )*
+                | '"' ( (( '\\' '\"')=> '\\' '\"') | ~('\r'|'\f'|'"') )*
                     (
                           '"'
                         | { $type = INVALID; }
@@ -1752,7 +1752,7 @@ SASS_DEBUG          : '@DEBUG';
 SASS_WARN           : '@WARN';
 SASS_IF             : '@IF';
 SASS_ELSE           : '@ELSE';
-//SASS_ELSEIF         : '@ELSE' WS? 'IF'; //@elseif, @else if, @else    if
+SASS_ELSEIF         : '@ELSEIF'; //@elseif
 SASS_FOR            : '@FOR';
 SASS_FUNCTION       : '@FUNCTION';
 SASS_RETURN         : '@RETURN';

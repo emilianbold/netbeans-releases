@@ -62,6 +62,8 @@ public final class CallStack {
     
     private final V8Frame[] frames;
     private final ReferencedValues rvals;
+    private CallFrame[] callFrames;
+    private CallFrame topFrame;
     
     public CallStack(V8Frame[] frames, ReferencedValue[] referencedValues) {
         this.frames = frames;
@@ -76,17 +78,41 @@ public final class CallStack {
         return frames;
     }
     
-    public CallFrame[] createCallFrames() {
-        CallFrame[] cfs = new CallFrame[frames.length];
-        for (int i = 0; i < frames.length; i++) {
-            cfs[i] = new CallFrame(frames[i], rvals);
+    public CallFrame[] getCallFrames() {
+        synchronized (this) {
+            if (callFrames == null) {
+                CallFrame[] cfs = new CallFrame[frames.length];
+                if (frames.length > 0) {
+                    if (topFrame == null) {
+                        topFrame = new CallFrame(frames[0], rvals, true);
+                    }
+                    cfs[0] = topFrame;
+                }
+                for (int i = 1; i < frames.length; i++) {
+                    cfs[i] = new CallFrame(frames[i], rvals, false);
+                }
+                callFrames = cfs;
+            }
+            return callFrames;
         }
-        return cfs;
     }
     
-    public @CheckForNull CallFrame createTopFrame() {
+//    private CallFrame[] createCallFrames() {
+//        CallFrame[] cfs = new CallFrame[frames.length];
+//        for (int i = 0; i < frames.length; i++) {
+//            cfs[i] = new CallFrame(frames[i], rvals, i == 0);
+//        }
+//        return cfs;
+//    }
+    
+    public @CheckForNull CallFrame getTopFrame() {
         if (frames.length > 0) {
-            return new CallFrame(frames[0], rvals);
+            synchronized (this) {
+                if (topFrame == null) {
+                    topFrame = new CallFrame(frames[0], rvals, true);
+                }
+                return topFrame;
+            }
         } else {
             return null;
         }

@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.v8debug.callstack.models;
 
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.V8Script;
@@ -108,7 +109,7 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
             if (dbg.isSuspended()) {
                 CallStack cs = dbg.getCurrentCallStack();
                 if (cs != null) {
-                    return cs.createCallFrames();
+                    return cs.getCallFrames();
                 }
             } else {
                 return new Object[] { DBG_RUNNING_NODE };
@@ -189,19 +190,16 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
             V8Frame frame = cf.getFrame();
             String text = "";
             String scriptName = getScriptName(cf);
-            String thisName = getThisName(cf);
+            String thisName = cf.getThisName();
             if ("Object".equals(thisName) || "global".equals(thisName)) {
                 thisName = null;
             }
-            String functionName = getFunctionName(cf);
-            if (functionName != null && functionName.isEmpty()) {
-                functionName = null;
-            }
+            String functionName = cf.getFunctionName();
             long line = frame.getLine()+1;
             long column = frame.getColumn()+1;
             
             text = ((thisName != null && !thisName.isEmpty()) ? thisName + '.' : "") +
-                   ((functionName != null) ? functionName : "[anonymous]") +
+                   functionName +
                    " (" + ((scriptName != null) ? scriptName : "?") +
                    ":"+line+":"+column+")";
             //text += ":"+line+":"+column;
@@ -212,64 +210,25 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
         throw new UnknownTypeException(node);
     }
     
-    private static String getScriptName(CallFrame cf) {
-        long scriptRef = cf.getFrame().getScriptRef();
-        V8Value scriptValue = cf.getRvals().getReferencedValue(scriptRef);
-        if (scriptValue instanceof V8ScriptValue) {
-            V8Script script = ((V8ScriptValue) scriptValue).getScript();
-            if (script != null) {
-                String scriptName = script.getName();
-                if (scriptName == null) {
-                    return null;
-                }
-                int i = scriptName.lastIndexOf('/');
-                if (i < 0) {
-                    i = scriptName.lastIndexOf('\\');
-                }
-                if (i > 0) {
-                    scriptName = scriptName.substring(i+1);
-                }
-                return scriptName;
+    static String getScriptName(CallFrame cf) {
+        V8Script script = cf.getScript();
+        if (script != null) {
+            String scriptName = script.getName();
+            if (scriptName == null) {
+                return null;
             }
+            int i = scriptName.lastIndexOf('/');
+            if (i < 0) {
+                i = scriptName.lastIndexOf('\\');
+            }
+            if (i > 0) {
+                scriptName = scriptName.substring(i+1);
+            }
+            return scriptName;
         }
         return null;
     }
     
-    private static String getThisName(CallFrame cf) {
-        ReferencedValue receiver = cf.getFrame().getReceiver();
-        V8Value thisValue;
-        if (receiver.hasValue()) {
-            thisValue = receiver.getValue();
-        } else {
-            thisValue = cf.getRvals().getReferencedValue(receiver.getReference());
-        }
-        if (!(thisValue instanceof V8Object)) {
-            return null;
-        }
-        String className = ((V8Object) thisValue).getClassName();
-        return className;
-    }
-    
-    private static String getFunctionName(CallFrame cf) {
-        ReferencedValue functionRV = cf.getFrame().getFunction();
-        V8Value functionValue;
-        if (functionRV.hasValue()) {
-            functionValue = functionRV.getValue();
-        } else {
-            functionValue = cf.getRvals().getReferencedValue(functionRV.getReference());
-        }
-        if (functionValue instanceof V8Function) {
-            V8Function function = (V8Function) functionValue;
-            String name = function.getName();
-            if (name == null || name.isEmpty()) {
-                name = function.getInferredName();
-            }
-            return name;
-        } else {
-            return null;
-        }
-    }
-
     @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         throw new UnsupportedOperationException("Not to be called.");
@@ -294,6 +253,8 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
     
     private class ChangeListener implements V8Debugger.Listener {
         
+        private WeakReference<CallFrame> lastCurrentFrame = new WeakReference<CallFrame>(null);
+        
         public ChangeListener() {}
 
         @Override
@@ -301,6 +262,18 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
             fireChangeEvent(new ModelEvent.TreeChanged(DebuggingModel.this));
         }
 
+        @Override
+        public void notifyCurrentFrame(CallFrame cf) {
+            CallFrame last = lastCurrentFrame.get();
+            if (last != null) {
+                fireChangeEvent(new ModelEvent.NodeChanged(DebuggingModel.this, last));
+            }
+            if (cf != null) {
+                fireChangeEvent(new ModelEvent.NodeChanged(DebuggingModel.this, cf));
+            }
+            lastCurrentFrame = new WeakReference<>(cf);
+        }
+        
         @Override
         public void notifyFinished() {
         }

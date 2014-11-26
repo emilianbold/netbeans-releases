@@ -65,6 +65,7 @@ import org.netbeans.lib.v8debug.commands.SetBreakpoint;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.modules.javascript.v8debug.ScriptsHandler;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.filesystems.FileObject;
@@ -195,6 +196,10 @@ public class BreakpointsHandler implements V8Debugger.Listener {
         }
     }
 
+    @Override
+    public void notifyCurrentFrame(CallFrame cf) {
+    }
+    
     @Override
     public void notifyFinished() {
         synchronized (submittingBreakpoints) {
