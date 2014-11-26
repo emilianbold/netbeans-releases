@@ -98,6 +98,11 @@ public class V8DebuggerTooltipSupport implements DebuggerTooltipSupport {
         }
 
         @Override
+        public void notifyCurrentFrame(CallFrame cf) {
+            doClose();
+        }
+        
+        @Override
         public void notifyFinished() {
             doClose();
         }

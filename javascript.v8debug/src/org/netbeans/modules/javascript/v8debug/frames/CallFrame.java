@@ -42,8 +42,17 @@
 
 package org.netbeans.modules.javascript.v8debug.frames;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.lib.v8debug.V8Frame;
+import org.netbeans.lib.v8debug.V8Script;
+import org.netbeans.lib.v8debug.vars.ReferencedValue;
+import org.netbeans.lib.v8debug.vars.V8Function;
+import org.netbeans.lib.v8debug.vars.V8Object;
+import org.netbeans.lib.v8debug.vars.V8ScriptValue;
+import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.ReferencedValues;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,10 +62,12 @@ public final class CallFrame {
     
     private final V8Frame frame;
     private final ReferencedValues rvals;
+    private final boolean topFrame;
     
-    public CallFrame(V8Frame frame, ReferencedValues rvals) {
+    public CallFrame(V8Frame frame, ReferencedValues rvals, boolean topFrame) {
         this.frame = frame;
         this.rvals = rvals;
+        this.topFrame = topFrame;
     }
 
     public V8Frame getFrame() {
@@ -67,4 +78,61 @@ public final class CallFrame {
         return rvals;
     }
     
+    public boolean isTopFrame() {
+        return topFrame;
+    }
+    
+    @CheckForNull
+    public V8Script getScript() {
+        long ref = frame.getScriptRef();
+        V8Value val = rvals.getReferencedValue(ref);
+        if (val instanceof V8ScriptValue) {
+            return ((V8ScriptValue) val).getScript();
+        } else {
+            return null;
+        }
+    }
+    
+    @CheckForNull
+    public String getThisName() {
+        ReferencedValue receiver = frame.getReceiver();
+        V8Value thisValue;
+        if (receiver.hasValue()) {
+            thisValue = receiver.getValue();
+        } else {
+            thisValue = rvals.getReferencedValue(receiver.getReference());
+        }
+        if (!(thisValue instanceof V8Object)) {
+            return null;
+        }
+        String className = ((V8Object) thisValue).getClassName();
+        return className;
+    }
+    
+    @NonNull
+    @NbBundle.Messages("CTL_anonymousFunction=anonymous")
+    public String getFunctionName() {
+        ReferencedValue functionRV = frame.getFunction();
+        V8Value functionValue;
+        if (functionRV.hasValue()) {
+            functionValue = functionRV.getValue();
+        } else {
+            functionValue = rvals.getReferencedValue(functionRV.getReference());
+        }
+        String name;
+        if (functionValue instanceof V8Function) {
+            V8Function function = (V8Function) functionValue;
+            name = function.getName();
+            if (name == null || name.isEmpty()) {
+                name = function.getInferredName();
+            }
+        } else {
+            name = null;
+        }
+        if (name == null || name.isEmpty()) {
+            name = "["+Bundle.CTL_anonymousFunction()+"]";
+        }
+        return name;
+    }
+
 }

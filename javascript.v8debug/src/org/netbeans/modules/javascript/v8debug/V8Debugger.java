@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.CheckReturnValue;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
@@ -248,6 +249,7 @@ public final class V8Debugger {
         }
     }
     
+    @CheckForNull
     public CallFrame getCurrentFrame() {
         CallFrame f;
         Lock rl = accessLock.readLock();
@@ -259,7 +261,7 @@ public final class V8Debugger {
                 rl.unlock();
                 rl = null;
                 synchronized (currentFrameRetrieveLock) {
-                    f = currentCallStack.createTopFrame();
+                    f = currentCallStack.getTopFrame();
                     if (f != null) {
                         Lock wl = accessLock.writeLock();
                         wl.lock();
@@ -268,8 +270,11 @@ public final class V8Debugger {
                         } finally {
                             wl.unlock();
                         }
-                        return f;
                     }
+                }
+                if (f != null) {
+                    fireCurrentFrame(f);
+                    return f;
                 }
             }
             //LOG.fine("  getCurrentFrame(): f = "+f+", isSuspended() = "+isSuspended());
@@ -298,7 +303,7 @@ public final class V8Debugger {
                         public void notifyResponse(V8Request request, V8Response response) {
                             if (response != null && response.isSuccess()) {
                                 Frame.ResponseBody frb = (Frame.ResponseBody) response.getBody();
-                                fRef[0] = new CallFrame(frb.getFrame(), new ReferencedValues(response));
+                                fRef[0] = new CallFrame(frb.getFrame(), new ReferencedValues(response), true);
                             }
                             synchronized (currentFrameRetrieveLock) {
                                 currentFrameRetrieveLock.notifyAll();
@@ -319,6 +324,7 @@ public final class V8Debugger {
                         wl.unlock();
                     }
                 }
+                fireCurrentFrame(f);
             }
         } finally {
             if (rl != null) {
@@ -329,6 +335,24 @@ public final class V8Debugger {
         return f;
     }
 
+    public void setCurrentFrame(@NonNull CallFrame callFrame) {
+        assert callFrame != null: "Only existing frames can be set";
+        Lock wl = accessLock.writeLock();
+        wl.lock();
+        try {
+            this.currentFrame = callFrame;
+        } finally {
+            wl.unlock();
+        }
+        fireCurrentFrame(callFrame);
+    }
+    
+    private void fireCurrentFrame(CallFrame cf) {
+        for (Listener l : listeners) {
+            l.notifyCurrentFrame(cf);
+        }
+    }
+    
     public CallStack getCurrentCallStack() {
         CallStack cs;
         Lock rl = accessLock.readLock();
@@ -568,6 +592,7 @@ public final class V8Debugger {
     private void notifySuspended(boolean suspended) {
         assert !accessLock.isWriteLockedByCurrentThread();
         LOG.fine("notifySuspended("+suspended+")");
+        boolean fireNullCF = false;
         synchronized (suspendedUpdateLock) {
             if (this.suspended == suspended) {
                 return ;
@@ -577,6 +602,7 @@ public final class V8Debugger {
             try {
                 if (!suspended) {
                     // Resumed
+                    fireNullCF = currentFrame != null;
                     currentFrame = null;
                     currentCallStack = null;
                 }
@@ -584,6 +610,11 @@ public final class V8Debugger {
                 LOG.fine("notifySuspended():  suspended property is set to "+suspended);
             } finally {
                 wl.unlock();
+            }
+        }
+        if (fireNullCF) {
+            for (Listener l : listeners) {
+                l.notifyCurrentFrame(null);
             }
         }
         for (Listener l : listeners) {
@@ -628,7 +659,7 @@ public final class V8Debugger {
             }
         });
     }
-    
+
     @NbBundle.Messages("V8DebugProtocolPane=V8 Debug Protocol")
     private final class CommListener implements IOListener {
         
@@ -671,6 +702,8 @@ public final class V8Debugger {
     public interface Listener {
         
         void notifySuspended(boolean suspended);
+        
+        void notifyCurrentFrame(@NullAllowed CallFrame cf);
         
         void notifyFinished();
         
