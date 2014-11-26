@@ -68,7 +68,6 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-@MIMEResolver.Registration(displayName = "bower", resource = "bower-resolver.xml", position = 128)
 @ActionID(id = "org.netbeans.modules.web.clientproject.grunt.BowerInstallAction", category = "Build")
 @ActionRegistration(displayName = "#CTL_BowerInstallAction", lazy=false)
 @ActionReferences(value = {
