@@ -54,6 +54,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.createprojectapi.ClientSideProjectGenerator;
 import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectProperties;
 import org.netbeans.spi.project.ui.ProjectConvertor;
@@ -73,7 +74,7 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
         final FileObject jsonFile = getJsonFile(projectDirectory);
         assert jsonFile != null : projectDirectory;
         String displayName = getDisplayName(jsonFile);
-        if (displayName == null) {
+        if (!StringUtilities.hasText(displayName)) {
             // should not happen often
             displayName = projectDirectory.getNameExt();
         }
