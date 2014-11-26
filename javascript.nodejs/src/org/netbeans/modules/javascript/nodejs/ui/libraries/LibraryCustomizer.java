@@ -52,8 +52,8 @@ import org.openide.util.NbBundle;
  * 
  * @author Jan Stola
  */
-class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
-    private static final String CATEGORY_NAME = "NpmLibraries"; // NOI18N
+public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+    public static final String CATEGORY_NAME = "NpmLibraries"; // NOI18N
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org.netbeans.modules.web.clientproject",

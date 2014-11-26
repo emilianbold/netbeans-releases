@@ -55,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
+import org.netbeans.modules.javascript.nodejs.ui.libraries.LibraryCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -390,8 +391,7 @@ public final class NpmLibraries {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // XXX
-            project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("NPM_LIBRARIES", null); // NOI18N
+            project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(LibraryCustomizer.CATEGORY_NAME, null);
         }
 
     }
