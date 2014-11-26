@@ -42,14 +42,14 @@
 
 
 @TemplateRegistration(folder = "ClientSide",
-        content = "bower.json",
+        content = "../resources/bower.json",
         scriptEngine = "freemarker",
         position = 700,
         displayName = "#Templates.bower.json",
-        description = "bowerdescription.html",
+        description = "../resources/BowerJsonDescription.html",
         targetName = "bower",
         category = "html5")
 
-package org.netbeans.modules.web.clientproject.bower;
+package org.netbeans.modules.javascript.bower.ui.wizard;
 
 import org.netbeans.api.templates.TemplateRegistration;
