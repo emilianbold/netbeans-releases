@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 /**
  * npm package/library.
  *
@@ -50,6 +53,10 @@ package org.netbeans.modules.javascript.nodejs.ui.libraries;
 public class Library {
     /** Name of the library. */
     private final String name;
+    /** Versions of the library. */
+    private Library.Version[] versions;
+    /** Latest version of the library. */
+    private Library.Version latestVersion;
 
     /**
      * Creates a new {@code Library} with the given name.
@@ -69,9 +76,52 @@ public class Library {
         return name;
     }
 
-    // PENDING
+    /**
+     * Returns versions of the library.
+     * 
+     * @return versions of the library.
+     */
+    public Library.Version[] getVersions() {
+        return versions;
+    }
+
+    /**
+     * Returns the latest version of the library.
+     * 
+     * @return latest version of the library.
+     */
     public Library.Version getLatestVersion() {
-        return null;
+        return latestVersion;
+    }
+
+    /**
+     * Returns library that corresponds to the JSON object obtained
+     * as a result of a call to {@code npm view --json} command.
+     * 
+     * @param viewInfo result of some {@code npm view --json} command.
+     * @return library that corresponds to the given JSON object.
+     */
+    static Library forViewInfo(JSONObject viewInfo) {
+        String name = (String)viewInfo.get("name"); // NOI18N
+        Library library = new Library(name);
+
+        String latestVersionName = (String)viewInfo.get("version"); // NOI18N
+        Library.Version latestVersion = null;
+
+        JSONArray versionArray = (JSONArray)viewInfo.get("versions"); // NOI18N
+        Library.Version[] versions = new Library.Version[versionArray.size()];
+        for (int i=0; i<versionArray.size(); i++) {
+            String versionName = (String)versionArray.get(i);
+            Library.Version version = new Library.Version(library, versionName);
+            if (versionName.equals(latestVersionName)) {
+                latestVersion = version;
+            }
+            versions[i] = version;
+        }
+        library.versions = versions;
+        library.latestVersion = latestVersion;
+
+        return library;
     }
 
     /**

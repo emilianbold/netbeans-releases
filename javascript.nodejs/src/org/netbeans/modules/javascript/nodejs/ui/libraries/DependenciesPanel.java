@@ -43,6 +43,7 @@
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -55,19 +56,29 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.json.simple.JSONObject;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
+ * Panel for customization of one set (regular/development/optional) of npm dependencies
  *
  * @author Jan Stola
  */
 public class DependenciesPanel extends javax.swing.JPanel {
+    /** Request processor for this class. */
+    private static final RequestProcessor RP = new RequestProcessor(DependenciesPanel.class.getName(), 3);
+    /** Selected dependencies. */
     private final List<Library.Version> dependencies = new ArrayList<>();
     /** Model for a table of selected dependencies. */
     private final DependencyTableModel tableModel;
     /** Maps the name of the library to its npm meta-data. */
     private final Map<String,Library> dependencyInfo = new HashMap<>();
+    /** Owning project. */
+    private Project project;
 
     /**
      * Creates a new {@code DependenciesPanel}.
@@ -81,18 +92,77 @@ public class DependenciesPanel extends javax.swing.JPanel {
         tableColumnModel.getColumn(2).setCellRenderer(versionColumnRenderer);
     }
 
+    /**
+     * Sets the owning project.
+     * 
+     * @param project owning project.
+     */
+    void setProject(Project project) {
+        this.project = project;
+    }
+
+    /**
+     * Sets the existing dependencies.
+     * 
+     * @param dependencies existing dependencies.
+     */
     void setDependencies(List<Library.Version> dependencies) {
         this.dependencies.addAll(dependencies);
         sortDependencies();
         loadDependencyInfo(dependencies);
     }
 
+    /**
+     * Sorts the list of dependencies.
+     */
     private void sortDependencies() {
         Collections.sort(dependencies, new LibraryVersionComparator());
     }
 
-    private void loadDependencyInfo(List<Library.Version> dependencies) {
-        // PENDING
+    /**
+     * Loads information about given libraries/dependencies/packages.
+     * 
+     * @param dependencies dependencies to load information about.
+     */
+    private void loadDependencyInfo(final List<Library.Version> dependencies) {
+        if (RP.isRequestProcessorThread()) {
+            NpmExecutable executable = NpmExecutable.getDefault(project, false);
+            if (executable != null) {
+                for (Library.Version dependency : dependencies) {
+                    String libraryName = dependency.getLibrary().getName();
+                    JSONObject info = executable.view(libraryName);
+                    Library library = (info == null) ? null : Library.forViewInfo(info);
+                    updateDependencyInfo(libraryName, library);
+                }
+            }
+        } else {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    loadDependencyInfo(dependencies);
+                }
+            });
+        }
+    }
+
+    /**
+     * Updates the view according to the newly loaded library/dependency information.
+     * 
+     * @param libraryName name of the library.
+     * @param library information about the library.
+     */
+    private void updateDependencyInfo(final String libraryName, final Library library) {
+        if (EventQueue.isDispatchThread()) {
+            dependencyInfo.put(libraryName, library);
+            tableModel.fireTableDataChanged();
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateDependencyInfo(libraryName, library);
+                }
+            });
+        }
     }
 
     /**

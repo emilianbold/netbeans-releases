@@ -67,6 +67,9 @@ public class LibrariesPanel extends javax.swing.JPanel {
         PackageJson packagejson = NodeJsSupport.forProject(project).getPackageJson();
         if (packagejson.exists()) {
             PackageJson.NpmDependencies dependencies = packagejson.getDependencies();
+            regularPanel.setProject(project);
+            developmentPanel.setProject(project);
+            optionalPanel.setProject(project);
             regularPanel.setDependencies(toLibraries(dependencies.dependencies));
             developmentPanel.setDependencies(toLibraries(dependencies.devDependencies));
             optionalPanel.setDependencies(toLibraries(dependencies.optionalDependencies));
