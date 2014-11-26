@@ -43,10 +43,22 @@ package org.netbeans.modules.javascript.bower.util;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.common.api.UsageLogger;
 
 public final class BowerUtils {
 
+    private static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.bower"; // NOI18N
+    private static final UsageLogger BOWER_INSTALL_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
+            .message(BowerUtils.class, "USG_BOWER_INSTALL") // NOI18N
+            .unrepeated(true)
+            .create();
+
+
     private BowerUtils() {
+    }
+
+    public static void logUsageBowerInstall() {
+        BOWER_INSTALL_USAGE_LOGGER.log();
     }
 
     public static String getProjectDisplayName(Project project) {
