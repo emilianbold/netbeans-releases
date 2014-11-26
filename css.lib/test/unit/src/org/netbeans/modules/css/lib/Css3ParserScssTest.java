@@ -1732,4 +1732,16 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testQuoteEscapingInString() {
+        String source = "@function icon-character-for-name($name) {\n"
+                + "    // http://pictos.cc/font/\n"
+                + "\n"
+                + "    // Row 1\n"
+                + "    @if ($name == \"anchor\") { @return \"a\"; }\n"
+                + "    @else if ($name == \"quote\") { @return \"\\\"\"; }\n"
+                + "    @else if ($name == \"volume_mute\") { @return \"<\"; }}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }
