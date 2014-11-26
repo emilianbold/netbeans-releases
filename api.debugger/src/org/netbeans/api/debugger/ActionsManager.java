@@ -49,11 +49,11 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.openide.util.Cancellable;
+import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
@@ -205,7 +205,7 @@ public final class ActionsManager {
         synchronized (actionProvidersLock) {
             inited = (actionProviders != null);
         }
-        if (!inited && SwingUtilities.isEventDispatchThread()) {
+        if (!inited && Mutex.EVENT.isReadAccess()) { // is EDT
             return postActionWithLazyInit(action);
         }
         ArrayList<ActionsProvider> l = getActionProvidersForActionWithInit(action);
@@ -292,7 +292,7 @@ public final class ActionsManager {
             }
         }
         if (doInit) {
-            if (SwingUtilities.isEventDispatchThread()) {
+            if (Mutex.EVENT.isReadAccess()) { // SwingUtilities.isEventDispatchThread()
                 // Need to initialize lazily when called in AWT
                 // A state change will be fired after actions providers are initialized.
                 new RequestProcessor(ActionsManager.class).post(new Runnable() {
