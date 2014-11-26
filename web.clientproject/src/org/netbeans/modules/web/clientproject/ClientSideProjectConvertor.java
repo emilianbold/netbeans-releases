@@ -67,13 +67,26 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectConvertor.class.getName());
 
+    private static final String[] JSON_FILES = new String[] {
+        "package.json", // NOI18N
+        "bower.json", // NOI18N
+    };
+
 
     @Override
     public Result isProject(FileObject projectDirectory) {
         assert projectDirectory != null;
-        final FileObject jsonFile = getJsonFile(projectDirectory);
-        assert jsonFile != null : projectDirectory;
-        String displayName = getDisplayName(jsonFile);
+        String displayName = null;
+        for (String jsonFile : JSON_FILES) {
+            FileObject file = projectDirectory.getFileObject(jsonFile);
+            if (file == null) {
+                continue;
+            }
+            displayName = getDisplayName(file);
+            if (StringUtilities.hasText(displayName)) {
+                break;
+            }
+        }
         if (!StringUtilities.hasText(displayName)) {
             // should not happen often
             displayName = projectDirectory.getNameExt();
@@ -83,15 +96,6 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
                 new Factory(projectDirectory, displayName),
                 displayName,
                 ImageUtilities.image2Icon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON)));
-    }
-
-    private FileObject getJsonFile(FileObject projectDirectory) {
-        // prefer package.json
-        FileObject jsonFile = projectDirectory.getFileObject("package.json"); // NOI18N
-        if (jsonFile != null) {
-            return jsonFile;
-        }
-        return projectDirectory.getFileObject("bower.json"); // NOI18N
     }
 
     @CheckForNull
