@@ -111,6 +111,8 @@
                 <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.analysis.api</friend>
+                <friend>org.netbeans.modules.cnd.analysis.impl</friend>
+                <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
