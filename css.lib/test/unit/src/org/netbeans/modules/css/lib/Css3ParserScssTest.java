@@ -1695,4 +1695,16 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testElseIfTogether() {
+        String source = "@mixin icon($name, $character: null, $font-family: 'Pictos') {\n"
+                + "    @if $character != null {\n"
+                + "        content: \"#{$character}\";\n"
+                + "    } @elseif $raw_character != null {\n"
+                + "        content: \"#{$raw_character}\";\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }

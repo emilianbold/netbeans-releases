@@ -1259,7 +1259,7 @@ sass_else
     :
     SASS_ELSE ws? sass_control_block
     |
-    SASS_ELSE ws? {tokenNameEquals("if")}? IDENT /* if */ ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
+    ((SASS_ELSE ws? {tokenNameEquals("if")}? IDENT /* if */) | SASS_ELSEIF) ws? sass_control_expression ws? sass_control_block (ws? sass_else)?
     ;
 
 sass_control_expression
@@ -1752,7 +1752,7 @@ SASS_DEBUG          : '@DEBUG';
 SASS_WARN           : '@WARN';
 SASS_IF             : '@IF';
 SASS_ELSE           : '@ELSE';
-//SASS_ELSEIF         : '@ELSE' WS? 'IF'; //@elseif, @else if, @else    if
+SASS_ELSEIF         : '@ELSEIF'; //@elseif
 SASS_FOR            : '@FOR';
 SASS_FUNCTION       : '@FUNCTION';
 SASS_RETURN         : '@RETURN';
