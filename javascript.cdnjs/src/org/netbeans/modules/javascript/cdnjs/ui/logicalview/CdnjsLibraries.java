@@ -91,7 +91,7 @@ public final class CdnjsLibraries {
         return new CdnjsLibrariesNodeFactory();
     }
 
-    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 620)
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-maven", position = 630)
     public static NodeFactory forMavenProject() {
         return new CdnjsLibrariesNodeFactory();
     }
