@@ -77,6 +77,7 @@ import org.openide.filesystems.MIMEResolver;
 @MIMEResolver.Registration(displayName = "bower.json", resource = "../resources/bower-resolver.xml", position = 128)
 public final class BowerJson {
 
+    @MIMEResolver.Registration(displayName = "bowerrc", resource = "../resources/bowerrc-resolver.xml", position = 129)
     private static final Logger LOGGER = Logger.getLogger(BowerJson.class.getName());
 
     public static final String FILE_NAME = "bower.json"; // NOI18N
