@@ -169,7 +169,7 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider {
         if (directory == null) {
             directory = "bower_components"; // NOI18N
         }
-        return new File(bowerJson.getFile().getParentFile(), directory);
+        return new File(bowerrcJson.getFile().getParentFile(), directory);
     }
 
     void listenOnBowerComponentsDir() {
