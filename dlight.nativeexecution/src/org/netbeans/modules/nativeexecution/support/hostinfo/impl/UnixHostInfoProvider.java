@@ -65,9 +65,11 @@ import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.netbeans.modules.nativeexecution.support.MiscUtils;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -77,6 +79,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
     private static final String TMPBASE = System.getProperty("cnd.tmpbase", null); // NOI18N
     private static final String PATH_VAR = "PATH"; // NOI18N
     private static final String PATH_TO_PREPEND = System.getProperty("hostinfo.prepend.path", null); // NOI18N
+    private static final String ERROR_MESSAGE_PREFIX = "Error: TMPDIRBASE is not writable: "; // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final File hostinfoScript;
 
@@ -167,6 +170,12 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
             for (String errLine : errorLines) {
                 log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
+                if (errLine.startsWith(ERROR_MESSAGE_PREFIX)) {
+                    String title = NbBundle.getMessage(UnixHostInfoProvider.class, "TITLE_PermissionDenied");
+                    String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", TMPBASE, "localhost");
+                    String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", TMPBASE, "localhost");
+                    MiscUtils.showNotification(title, shortMsg, msg);
+                }
             }
 
             if (result != 0) {
@@ -221,6 +230,12 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             String errLine;
             while ((errLine = errReader.readLine()) != null) {
                 log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
+                if (errLine.startsWith(ERROR_MESSAGE_PREFIX)) {
+                    String title = NbBundle.getMessage(UnixHostInfoProvider.class, "TITLE_PermissionDenied");
+                    String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", TMPBASE, execEnv);
+                    String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", TMPBASE, execEnv);
+                    MiscUtils.showNotification(title, shortMsg, msg);
+                }
             }
 
             fillProperties(hostInfo, in);

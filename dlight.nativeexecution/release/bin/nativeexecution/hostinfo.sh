@@ -72,6 +72,20 @@ elif [ "${OSFAMILY}" = "MACOSX" ]; then
    OSBUILD=`hostinfo | sed -n '/kernel version/{n;p;}' | sed 's/[	 ]*\([^:]*\).*/\1/'`
 fi
 
+wx_test() {
+    tmp="${1}/wx_test"
+    touch ${tmp} 2> /dev/null
+    if [ $? -eq 0 ]; then
+        chmod u+x ${tmp} 2> /dev/null
+        if [ -x ${tmp} ]; then
+            rm ${tmp} 2> /dev/null
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
 USER=${USER:-`logname 2>/dev/null`}
 USER=${USER:-${USERNAME}}
 TMPBASE=${TMPBASE:-/var/tmp}
@@ -79,40 +93,50 @@ TMPBASE=${TMPBASE:-/var/tmp}
 SUFFIX=0
 TMPDIRBASE=${TMPBASE}/dlight_${USER}
 
-if [ ! -w ${TMPBASE} -a ! -w ${TMPDIRBASE} ]; then
-    TMPBASE=/tmp
-    TMPDIRBASE=${TMPBASE}/dlight_${USER}
+if ! wx_test ${TMPBASE}; then
+    if ! wx_test ${TMPDIRBASE}; then
+        TMPBASE=/tmp
+        TMPDIRBASE=${TMPBASE}/dlight_${USER}
+    fi
 fi
 
 mkdir -p ${TMPDIRBASE}
-while [ ! -w ${TMPDIRBASE} -a ${SUFFIX} -lt 5 ]; do
-    echo "Warning: ${TMPDIRBASE} is not writable">&2
-    SUFFIX=`expr 1 + ${SUFFIX}`
-    TMPDIRBASE=${TMPBASE}/dlight_${USER}_${SUFFIX}
-    /bin/mkdir -p ${TMPDIRBASE} 2>/dev/null
+while [ ${SUFFIX} -lt 5 ]; do
+    if ! wx_test ${TMPDIRBASE}; then
+        echo "Warning: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
+        SUFFIX=`expr 1 + ${SUFFIX}`
+        TMPDIRBASE=${TMPBASE}/dlight_${USER}_${SUFFIX}
+        /bin/mkdir -p ${TMPDIRBASE} 2>/dev/null
+    else
+        break
+    fi
 done
 
-if [ -w ${TMPDIRBASE} ]; then
+if wx_test ${TMPDIRBASE}; then
     SUFFIX=0
     TMPBASE=${TMPDIRBASE}
     TMPDIRBASE=${TMPBASE}/${NB_KEY}
     mkdir -p ${TMPDIRBASE}
-    while [ ! -w ${TMPDIRBASE} -a ${SUFFIX} -lt 5 ]; do
-        echo "Warning: ${TMPDIRBASE} is not writable">&2
-        SUFFIX=`expr 1 + ${SUFFIX}`
-        TMPDIRBASE=${TMPBASE}/${NB_KEY}_${SUFFIX}
-        /bin/mkdir -p ${TMPDIRBASE} 2>/dev/null
+    while [ ${SUFFIX} -lt 5 ]; do
+        if ! wx_test ${TMPDIRBASE}; then
+            echo "Warning: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
+            SUFFIX=`expr 1 + ${SUFFIX}`
+            TMPDIRBASE=${TMPBASE}/${NB_KEY}_${SUFFIX}
+            /bin/mkdir -p ${TMPDIRBASE} 2>/dev/null
+        else
+            break
+        fi
     done
 fi
 
-if [ ! -w ${TMPDIRBASE} ]; then
+if ! wx_test ${TMPDIRBASE}; then
     TMPDIRBASE=${TMPBASE}
 fi
 
-if [ ! -w ${TMPDIRBASE} ]; then
-    echo "Error: {TMPDIRBASE} is not writable">&2
+if ! wx_test ${TMPDIRBASE}; then
+    echo "Error: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
 fi
-
+\
 ENVFILE="${TMPDIRBASE}/env"
 
 ID=`LC_MESSAGES=C /usr/bin/id`

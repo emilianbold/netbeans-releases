@@ -70,6 +70,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
@@ -242,7 +243,7 @@ class SftpSupport {
                     if (isUnitTest) {
                         logException(ex, null);
                     } else {
-                        MiscUtils.showJSCHTooLongNotification();
+                        MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
                     }
                     rc = 7;
                 } else {
@@ -456,7 +457,7 @@ class SftpSupport {
                     if (isUnitTest) {
                         logException(ex, error);
                     } else {
-                        MiscUtils.showJSCHTooLongNotification();
+                        MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
                     }
                     rc = 7;
                 } else {

@@ -45,6 +45,7 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
@@ -52,26 +53,25 @@ import org.openide.util.NbBundle;
 
 public class MiscUtils {
 
-    private static final String JSCHReceivedMessageIsTooLongText = NbBundle.getMessage(MiscUtils.class, "JSCHReceivedMessageIsTooLong.error.text");
-
     public static boolean isJSCHTooLongException(Exception ex) {
         return ex.getCause() instanceof JSchException && ex.getCause().getMessage().contains("Received message is too long: ");
-    }
-
-    public static String getJSCHTooLongMessage() {
-        return JSCHReceivedMessageIsTooLongText;
     }
 
     public static void showJSCHTooLongNotification(String envName) {
         String title = NbBundle.getMessage(MiscUtils.class, "JSCHReceivedMessageIsTooLong.error.title", envName);
         String shortText = NbBundle.getMessage(MiscUtils.class, "JSCHReceivedMessageIsTooLong.error.shorttext");
         String details = NbBundle.getMessage(MiscUtils.class, "JSCHReceivedMessageIsTooLong.error.text");
-        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
-        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(details), NotificationDisplayer.Priority.NORMAL);
+        showNotification(title, shortText, details);
     }
-
-    public static void showJSCHTooLongNotification() {
-        showJSCHTooLongNotification("");    //NOI18N
+    
+    public static void showNotification(String title, String shortText, String longText) {
+        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
+        longText = "<html>" + longText + "</html>";
+        NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(longText), NotificationDisplayer.Priority.NORMAL, NotificationDisplayer.Category.WARNING);
+    }
+    
+    public static JComponent getNotificationLabel(String text) {
+        return new JLabel(text);
     }
     
     /**
