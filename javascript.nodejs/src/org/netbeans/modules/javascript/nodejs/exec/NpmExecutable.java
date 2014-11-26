@@ -43,15 +43,22 @@ package org.netbeans.modules.javascript.nodejs.exec;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
@@ -66,6 +73,7 @@ import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 
 public class NpmExecutable {
@@ -139,6 +147,25 @@ public class NpmExecutable {
         return task;
     }
 
+    @CheckForNull
+    public JSONObject view(String packageName) {
+        List<String> params = new ArrayList<>();
+        params.add("view"); // NOI18N
+        params.add("--json"); // NOI18N
+        params.add(packageName);
+        JSONObject info = null;
+        try {
+            StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+            getExecutable("npm view").additionalParameters(params).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            String result = factory.getResult();
+            info = (JSONObject)new JSONParser().parse(result);
+        } catch (ExecutionException | ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return info;
+    }
+
     private ExternalExecutable getExecutable(String title) {
         assert title != null;
         return new ExternalExecutable(getCommand())
@@ -157,6 +184,14 @@ public class NpmExecutable {
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
+    }
+
+    private static ExecutionDescriptor getSilentDescriptor() {
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .inputVisible(false)
+                .frontWindow(false)
+                .showProgress(false);
     }
 
     private File getWorkDir() {
@@ -228,6 +263,32 @@ public class NpmExecutable {
             sb.append(StringUtils.implode(super.getParams(params), "\" \"")); // NOI18N
             sb.append("\""); // NOI18N
             return Collections.singletonList(sb.toString());
+        }
+
+    }
+
+    private static final class StringBuilderInputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+        private final StringBuilder result = new StringBuilder();
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return new InputProcessor() {
+                @Override
+                public void processInput(char[] chars) throws IOException {
+                    result.append(chars);
+                }
+                @Override
+                public void reset() throws IOException {
+                    result.setLength(0);
+                }
+                @Override
+                public void close() throws IOException {
+                }
+            };
+        }
+
+        String getResult() {
+            return result.toString();
         }
 
     }
