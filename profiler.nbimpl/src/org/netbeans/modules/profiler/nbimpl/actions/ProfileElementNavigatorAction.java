@@ -89,16 +89,26 @@ import org.openide.util.lookup.Lookups;
 })
 public final class ProfileElementNavigatorAction extends NodeAction {
     
-    public String getName() { return Bundle.ProfileElementNavigatorAction_Name(); }
+    private String name = Bundle.ProfileElementNavigatorAction_Name();
+    
+    public String getName() { return name; }
     
     protected boolean enable(Node[] activatedNodes) {
         ElementHandle eh = getHandle(activatedNodes);
-        if (eh == null) return false;
+        ElementKind kind = eh == null ? null : eh.getKind();
         
-        ElementKind kind = eh.getKind();
-        return ElementKind.CLASS.equals(kind) ||
-               ElementKind.METHOD.equals(kind) ||
-               ElementKind.CONSTRUCTOR.equals(kind);
+        if (ElementKind.METHOD.equals(kind) || ElementKind.CONSTRUCTOR.equals(kind)) {
+            name = Bundle.ProfileMethodEditorAction_Name();
+            return true;
+        }
+        
+        if (ElementKind.CLASS.equals(kind)) {
+            name = Bundle.ProfileClassEditorAction_Name();
+            return true;
+        }
+        
+        name = Bundle.ProfileElementNavigatorAction_Name();
+        return false;
     }
 
     
