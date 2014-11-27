@@ -180,13 +180,14 @@ public final class OptionsExportModel {
                 Enumeration<? extends ZipEntry> entries = zipFile.entries();
                 while (entries.hasMoreElements()) {
                     ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-                    if(zipEntry.getName().equals(OptionsExportModel.BUILD_INFO)) {
+                    if (zipEntry.getName().equals(OptionsExportModel.BUILD_INFO)) {
                         InputStream stream = zipFile.getInputStream(zipEntry);
                         BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
                         String strLine;
                         while ((strLine = br.readLine()) != null) {
-                            if(strLine.startsWith("ProductVersion=")) {  // NOI18N
-                                buildNumber = getBuildNumber(strLine.substring(strLine.indexOf(" (Build ") + 8, strLine.length() - 1));  // NOI18N
+                            buildNumber = parseBuildNumber(strLine);
+                            if(buildNumber != null) {
+                                break; // successfully parsed build number, no need to continue
                             }
                         }
                     }
@@ -209,8 +210,9 @@ public final class OptionsExportModel {
                     br = Files.newBufferedReader(Paths.get(Utilities.toURI(children[0])), StandardCharsets.UTF_8);
                     String strLine;
                     while ((strLine = br.readLine()) != null) {
-                        if (strLine.startsWith("ProductVersion=")) {  // NOI18N
-                            buildNumber = getBuildNumber(strLine.substring(strLine.indexOf(" (Build ") + 8, strLine.length() - 1));  // NOI18N
+                        buildNumber = parseBuildNumber(strLine);
+                        if (buildNumber != null) {
+                            break; // successfully parsed build number, no need to continue
                         }
                     }
                 } catch (IOException ex) {
@@ -218,14 +220,42 @@ public final class OptionsExportModel {
                 }
             }
         }
-        return buildNumber == null ? -1 : Double.parseDouble(buildNumber);
+        if(buildNumber == null) {
+            return -1;
+        }
+        try {
+            return Double.parseDouble(buildNumber);
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.INFO, "Could not parse netbeans.buildnumber: {0}", buildNumber);  //NOI18N
+            return -1;
+        }
+    }
+    
+    String parseBuildNumber(String strLine) {
+        String buildNumber = null;
+        if (strLine.startsWith("NetbeansBuildnumber=")) {  // NOI18N
+            return getBuildNumber(strLine.substring(20));
+        }
+        if (strLine.startsWith("ProductVersion=")) {  // NOI18N
+            int index = strLine.indexOf(" (Build ");
+            if (index != -1) {
+                return getBuildNumber(strLine.substring(index + 8, strLine.length() - 1));
+            } else {
+                // org.netbeans.core.startup.Bundle#currentVersion has been branded, so at this point
+                // we can only guess/hope that build number is the last number in the branded token
+                index = strLine.lastIndexOf(" ") + 1;
+                return getBuildNumber(strLine.substring(index));
+            }
+        }
+        return buildNumber;
     }
     
     String getBuildNumber(String build) {
+        String number = build;
         if (build.contains("-")) { // dev build e.g. 20140606-ab7b8979c660
-            build = build.substring(0, build.indexOf("-")).concat("2359");  // NOI18N
+            number = build.substring(0, build.indexOf("-")).concat("2359");  // NOI18N
         }
-        return build;
+        return number;
     }
 
     /**
@@ -1182,6 +1212,7 @@ public final class OptionsExportModel {
                 System.getProperty("java.vm.version", ""); //NOI18N
         out.putNextEntry(new ZipEntry("build.info"));  //NOI18N
         PrintWriter writer = new PrintWriter(out);
+        writer.println("NetbeansBuildnumber=" + System.getProperty("netbeans.buildnumber")); //NOI18N
         writer.println("ProductVersion=" + productVersion); //NOI18N
         writer.println("OS=" + os); //NOI18N
         writer.println("Java=" + java); //NOI18Nv
