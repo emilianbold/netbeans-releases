@@ -87,7 +87,7 @@ public class VarValuesLoader {
         synchronized (varQueue) {
             V8Value value;
             value = var.getValue();
-            if (value == null) {
+            if (value == null || var.hasIncompleteValue()) {
                 //LOG.fine("Queueing variable '"+var.getName()+"' "+var+" for evaluation.");
                 varQueue.add(var);
                 Loader loader = loadTasks.poll();
