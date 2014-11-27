@@ -498,17 +498,17 @@ final class EventSupport extends SourceEnvironment {
         /**
          * The controlled scheduler
          */
-        SchedulerControl               control;
+        final SchedulerControl control;
         
         /**
          * The current source attached to the scheduler
          */
-        Source                      source;
-        
+        Source source;
         /**
          * WeakListener last in effect
          */
-        PropertyChangeListener      weakListener;
+        PropertyChangeListener weakListener;
+        Reference<DataObject> eventSource;
 
         public SchedL(SchedulerControl control) {
             this.control = control;
@@ -530,26 +530,36 @@ final class EventSupport extends SourceEnvironment {
             }
         }
         
-        public synchronized void attachSource(Source s, boolean attach) {
+        public void attachSource(
+                @NonNull final Scheduler sched,
+                @NonNull final Source s,
+                final boolean attach) {
+            assert Thread.holdsLock(sched);
             if (source != null) {
-                final FileObject fo = source.getFileObject();
-                assert (attach || source == s) && (weakListener != null || fo == null);
-                if (fo != null) {
-                    try {
-                        final DataObject dobj = DataObject.find(fo);
+                assert attach || source == s : String.format(
+                    "attach: %b, source:%s(%d), s:%s(%d)",  //NOI18N
+                    attach,
+                    source,
+                    System.identityHashCode(source),
+                    s,
+                    System.identityHashCode(s));
+                if (weakListener != null) {
+                    assert eventSource != null;
+                    final DataObject dobj = eventSource.get();
+                    if (dobj != null) {
                         dobj.removePropertyChangeListener(weakListener);
-                    } catch (DataObjectNotFoundException nfe) {
-                        //No DataObject for file - ignore
                     }
                 }
                 weakListener = null;
-                this.source = null;
+                eventSource = null;
+                source = null;
             }
             if (attach) {
                 final FileObject fo = s.getFileObject();
                 if (fo != null) {
                     try {
                         final DataObject dobj = DataObject.find(fo);
+                        eventSource = new WeakReference<>(dobj);
                         weakListener = WeakListeners.propertyChange(this, dobj);
                         dobj.addPropertyChangeListener(weakListener);
                     } catch (DataObjectNotFoundException ex) {
@@ -563,19 +573,19 @@ final class EventSupport extends SourceEnvironment {
     
     @Override
     public void attachScheduler(SchedulerControl s, boolean attach) {
+        final Source now = getSourceControl().getSource();
+        final Scheduler sched;
         SchedL l;
-        Source now = getSourceControl().getSource();
-        
         synchronized (scheduledSources) {
-            Scheduler sched = s.getScheduler();
-             l = scheduledSources.get(sched);
+            sched = s.getScheduler();
+            l = scheduledSources.get(sched);
             if (attach && l == null) {
                 l = new SchedL(s);
                 scheduledSources.put(sched, l);
             }
         }
         if (l != null) {
-            l.attachSource(now, attach);
+            l.attachSource(sched, now, attach);
         }
     }
 }
