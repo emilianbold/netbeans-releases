@@ -265,7 +265,7 @@ public class PerfIDEValidation extends JellyTestCase {
         // "Standard"
         npwo.selectCategory("HTML5");
         // "Java Application"
-        npwo.selectProject("HTML5 Application");
+        npwo.selectProject("HTML5/JavaScript");
         npwo.next();
         npwo.finish();        
         // wait project appear in projects view
