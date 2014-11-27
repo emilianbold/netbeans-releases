@@ -1506,7 +1506,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(BUILD_ANALAZYER_ELEMENT, "" + codeAssistanceConfiguration.getBuildAnalyzer().getValue()); // NOI18N
         }
         if (codeAssistanceConfiguration.getResolveSymbolicLinks().getModified()) {
-            xes.element(RESOLVE_SYMBOLIC_LINKS, "" + codeAssistanceConfiguration.getBuildAnalyzer().getValue()); // NOI18N
+            xes.element(RESOLVE_SYMBOLIC_LINKS, "" + codeAssistanceConfiguration.getResolveSymbolicLinks().getValue()); // NOI18N
         }
         if (codeAssistanceConfiguration.getIncludeInCA().getModified()) {
             xes.element(CODE_ASSISTANCE_INCLUDE_ADDITIONAL, "" + codeAssistanceConfiguration.getIncludeInCA().getValue()); // NOI18N
