@@ -76,7 +76,7 @@ public class ResolveSymbolicLinks extends NamedOption {
 
     @Override
     public Object getDefaultValue() {
-        return false;
+        return Boolean.getBoolean("cnd.project.resolve.symlinks");
     }
 
     @Override
