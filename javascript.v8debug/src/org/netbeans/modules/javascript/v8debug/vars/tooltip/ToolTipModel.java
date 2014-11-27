@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.javascript.v8debug.vars.tooltip;
 
-import java.util.concurrent.CancellationException;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.lib.v8debug.V8Frame;
-import org.netbeans.lib.v8debug.vars.V8Object;
-import org.netbeans.lib.v8debug.vars.V8Value;
-import org.netbeans.modules.javascript.v8debug.V8Debugger;
-import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript.v8debug.vars.EvaluationError;
-import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
-import org.netbeans.modules.javascript.v8debug.vars.Variable;
+import org.netbeans.modules.javascript.v8debug.V8DebuggerEngineProvider;
 import org.netbeans.modules.javascript.v8debug.vars.models.VariablesModel;
 import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
-import org.openide.util.Pair;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
+import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Martin Entlicher
+ * @author Martin
  */
-public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<V8DebuggerTooltipSupport> {
-
-    @Override
-    protected V8DebuggerTooltipSupport getEngineDebugger(Session session, DebuggerEngine engine) {
-        V8Debugger debugger = engine.lookupFirst(null, V8Debugger.class);
-        if (debugger == null || !debugger.isSuspended()) {
-            return null;
-        }
-        CallFrame currentFrame = debugger.getCurrentFrame();
-        return new V8DebuggerTooltipSupport(debugger, currentFrame);
+@DebuggerServiceRegistration(path=V8DebuggerEngineProvider.ENGINE_NAME+"/ToolTipView",
+                             types={ TreeModel.class, ExtendedNodeModel.class,
+                                     TableModel.class, TreeExpansionModelFilter.class })
+public class ToolTipModel extends VariablesModel implements TreeExpansionModelFilter {
+    
+    public ToolTipModel(ContextProvider contextProvider) {
+        super(contextProvider);
     }
 
     @Override
-    protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, V8DebuggerTooltipSupport dbg) throws CancellationException {
-        String toolTipText;
-        Variable var = null;
-        try {
-            V8Value value = V8Evaluator.evaluate(dbg.getDebugger(), expression);
-            if (value == null) {
-                throw new CancellationException();
-            }
-            toolTipText = expression + " = " + V8Evaluator.getStringValue(value);
-            if (VariablesModel.hasChildren(value)) {
-                var = new Variable(Variable.Kind.LOCAL, expression, value.getHandle(), value, false);
-            }
-        } catch (EvaluationError ex) {
-            toolTipText = expression + " = >" + ex.getMessage () + "<";
+    public int getChildrenCount(Object parent) throws UnknownTypeException {
+        if (parent == ROOT) {
+            return 1;
+        } else {
+            return super.getChildrenCount(parent);
         }
-        return Pair.of(toolTipText, (Object) var);
     }
+
+    @Override
+    public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
+        if (parent == ROOT) {
+            Object ttv = AbstractJSToolTipAnnotation.getTooltipVariable();
+            if (ttv != null) {
+                return new Object[] { ttv };
+            } else {
+                return new Object[] { };
+            }
+        } else {
+            return super.getChildren(parent, from, to);
+        }
+    }
+
+    @Override
+    public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
+        if (node == AbstractJSToolTipAnnotation.getTooltipVariable()) {
+            return true;
+        } else {
+            return original.isExpanded(node);
+        }
+    }
+
+    @Override
+    public void nodeExpanded(Object node) {}
+
+    @Override
+    public void nodeCollapsed(Object node) {}
     
 }

@@ -57,8 +57,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -363,6 +365,38 @@ public class OptionsExportModelTest extends NbTestCase {
         // first write the enabledItems.info in user dir
         Files.write(Paths.get(Utilities.toURI(new File(sourceUserdir, OptionsExportModel.ENABLED_ITEMS_INFO))), "Category0Item01".getBytes());
         assertEquals(enabledItems, model.getEnabledItemsDuringExport(sourceUserdir)); // reading enabledItems.info from user dir
+    }
+    
+    public void testGetBuildNumberDuringExport() throws Exception {
+        createModel(new String[][]{
+            {"Category0", "Item00", "dir0/subdir0/.*", null},});
+        ArrayList<String> enabledItems = new ArrayList<String>();
+        enabledItems.add("Category0Item01");
+
+        File targetZipFile = new File(getWorkDir(), "export.zip");
+        System.setProperty("netbeans.buildnumber", "201408251540");
+        model.doExport(targetZipFile, enabledItems);
+        assertEquals(Double.parseDouble("201408251540"), model.getBuildNumberDuringExport(targetZipFile));
+        
+        targetZipFile = new File(getWorkDir(), "export2.zip");
+        System.setProperty("netbeans.buildnumber", "20141127-4fefcedaef32");
+        model.doExport(targetZipFile, enabledItems);
+        assertEquals(Double.parseDouble("201411272359"), model.getBuildNumberDuringExport(targetZipFile));
+    }
+    
+    public void testParseBuildNumber() throws Exception {
+        createModel(new String[][]{
+            {"Category0", "Item00", "dir0/subdir0/.*", null},});
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("ProductVersion=NetBeans IDE 8.0.1 (Build 201408251540)", "201408251540");
+        map.put("ProductVersion=NetBeans IDE 8.0.1 (Build 20141127-4fefcedaef32)", "201411272359");
+        map.put("ProductVersion=OptionsImport 20140825154", "20140825154");
+        map.put("NetbeansBuildnumber=201408251540", "201408251540");
+        map.put("NetbeansBuildnumber=20141127-4fefcedaef32", "201411272359");
+        
+        for(Map.Entry<String, String> entry : map.entrySet()) {
+            assertTrue("Error parsing: " + entry.getKey(), model.parseBuildNumber(entry.getKey()).equals(entry.getValue()));
+        }
     }
 
     public void testImportProperties() throws Exception {

@@ -445,6 +445,7 @@ public final class OptionsChooserPanel extends JPanel {
             // indicating it was created from a version prior to 7.4
             enabledItems = getOptionsExportModel().getEnabledItemsDuringExport(new File(txtFile.getText()));
             // If the returned value is -1, it means that there is no build.info in the importing zip file or userdir
+            // or that there was an exception while trying to parse the build number
             buildNumberDuringExport = getOptionsExportModel().getBuildNumberDuringExport(new File(txtFile.getText()));
         }
         for (OptionsExportModel.Category category : getOptionsExportModel().getCategories()) {
