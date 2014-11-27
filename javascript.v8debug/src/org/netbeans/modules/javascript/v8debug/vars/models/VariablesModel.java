@@ -269,7 +269,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
         return true;
     }
     
-    protected final boolean hasChildren(V8Value value) {
+    public static boolean hasChildren(V8Value value) {
         if (value instanceof V8Object) {
             V8Object obj = (V8Object) value;
             V8Object.Array array = obj.getArray();
