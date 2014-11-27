@@ -159,7 +159,7 @@
     <echo message="JDK Metadata: Version: ${jdk.version.number} Update: ${jdk.update.number} Build: ${jdk.build.number} Build type: ${jdk.build.type}" />
     
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
-    <property name="jdk.bundle.files.suffix" value="nb-8_0_1"/>
+    <property name="jdk.bundle.files.suffix" value="nb-8_0_2"/>
     <property name="output.jdk.dir" value="jdk/"/>
     <condition property="jdk.bundle.files.prefix" value="jdk-${jdk.version.number}" else="jdk-${jdk.version.number}u${jdk.update.number}">
         <equals arg1="${jdk.update.number}" arg2="0"/>
