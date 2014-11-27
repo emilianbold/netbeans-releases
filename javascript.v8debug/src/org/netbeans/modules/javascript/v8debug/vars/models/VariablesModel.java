@@ -73,6 +73,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -98,6 +99,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     
     protected final V8Debugger dbg;
     private final VarValuesLoader vvl;
+    private volatile boolean topFrameRefreshed;
 
     public VariablesModel(ContextProvider contextProvider) {
         dbg = contextProvider.lookupFirst(null, V8Debugger.class);
@@ -140,19 +142,23 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 ReferencedValue rv = namerv.getValue();
                 long ref = rv.getReference();
                 V8Value v = rvals.getReferencedValue(ref);
+                boolean incompleteValue = false;
                 if (v == null) {
                     v = rv.getValue();
+                    incompleteValue = true;
                 }
-                ch[i++] = new Variable(Variable.Kind.ARGUMENT, name, ref, v);
+                ch[i++] = new Variable(Variable.Kind.ARGUMENT, name, ref, v, incompleteValue);
             }
             for (String name : localRefs.keySet()) {
                 ReferencedValue rv = localRefs.get(name);
                 long ref = rv.getReference();
                 V8Value v = rvals.getReferencedValue(ref);
+                boolean incompleteValue = false;
                 if (v == null) {
                     v = rv.getValue();
+                    incompleteValue = true;
                 }
-                ch[i++] = new Variable(Variable.Kind.LOCAL, name, ref, v);
+                ch[i++] = new Variable(Variable.Kind.LOCAL, name, ref, v, incompleteValue);
             }
             for (V8Scope scope : scopes) {
                 if (V8Scope.Type.Local.equals(scope.getType())) {
@@ -215,7 +221,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 long index = indexIterator.nextIndex();
                 children.add(new Variable(Variable.Kind.ARRAY_ELEMENT,
                                           Long.toString(index),
-                                          array.getReferenceAt(index), null));
+                                          array.getReferenceAt(index), null, true));
             }
         }
         Map<String, V8Object.Property> properties = obj.getProperties();
@@ -228,7 +234,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
         int chi = 0;
         for (String name : properties.keySet()) {
             V8Object.Property property = properties.get(name);
-            Variable var = new Variable(Variable.Kind.PROPERTY, name, property.getReference(), null);
+            Variable var = new Variable(Variable.Kind.PROPERTY, name, property.getReference(), null, true);
             if (children != null) {
                 children.add(var);
             } else {
@@ -250,6 +256,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
             Variable var = (Variable) node;
             try {
                 V8Value value = var.getValue();
+                if ((value == null || (value instanceof V8Object)) && var.hasIncompleteValue()) {
+                    return false; // Allow to load children
+                }
                 return !hasChildren(value);
             } catch (EvaluationError ex) {
             }
@@ -378,7 +387,11 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
             if (node instanceof Variable) {
                 Variable var = (Variable) node;
                 try {
+                    boolean wasIncomplete = var.hasIncompleteValue();
                     V8Value value = vvl.getValue(var);
+                    if (wasIncomplete && !hasChildren(value)) {
+                        fireChangeEvent(new ModelEvent.NodeChanged(VariablesModel.this, node, ModelEvent.NodeChanged.CHILDREN_MASK));
+                    }
                     return V8Evaluator.getStringValue(value);
                 } catch (EvaluationError ex) {
                     return toHTML(ex.getLocalizedMessage(), false, false, Color.red);
@@ -391,7 +404,11 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 Variable var = (Variable) node;
                 V8Value value;
                 try {
+                    boolean wasIncomplete = var.hasIncompleteValue();
                     value = vvl.getValue(var);
+                    if (wasIncomplete && !hasChildren(value)) {
+                        fireChangeEvent(new ModelEvent.NodeChanged(VariablesModel.this, node, ModelEvent.NodeChanged.CHILDREN_MASK));
+                    }
                 } catch (EvaluationError ex) {
                     return "";
                 }
@@ -418,10 +435,18 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     @Override
     public void notifySuspended(boolean suspended) {
         refresh();
+        topFrameRefreshed = suspended;
     }
 
     @Override
     public void notifyCurrentFrame(CallFrame cf) {
+        if (cf == null) {
+            return ;
+        }
+        if (topFrameRefreshed && cf.isTopFrame()) {
+            return ;
+        }
+        topFrameRefreshed = false;
         refresh();
     }
     

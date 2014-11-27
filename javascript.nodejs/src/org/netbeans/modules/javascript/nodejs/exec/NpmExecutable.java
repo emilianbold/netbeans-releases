@@ -166,6 +166,24 @@ public class NpmExecutable {
         return info;
     }
 
+    @CheckForNull
+    public String search(String searchTerm) {
+        List<String> params = new ArrayList<>();
+        params.add("search"); // NOI18N
+        params.add("--long"); // NOI18N
+        params.add(searchTerm);
+        String result = null;
+        StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+        try {
+            getExecutable("npm search").additionalParameters(params).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            result = factory.getResult();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return result;
+    }
+
     private ExternalExecutable getExecutable(String title) {
         assert title != null;
         return new ExternalExecutable(getCommand())
