@@ -219,11 +219,10 @@ public class OutputFileManager extends CachingFileManager {
     /**
      * Prevents <error>, <any> from being generated.
      * @param fqn to check
-     * @return true if the name does not contain '<'
+     * @return true if the fqn does not contain '<'
      */
     private static boolean isValidClassName(@NonNull final String fqn) {
-        int ld = fqn.lastIndexOf('.');      //NOI18N
-        return fqn.indexOf('<', ld) < 0;    //NOI18N
+        return fqn.indexOf('<') < 0;    //NOI18N
     }
 
     private File getClassFolderForSource (final javax.tools.FileObject sibling, final String baseName) throws IOException {
