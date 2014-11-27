@@ -117,8 +117,8 @@ final class FileObjectCrawler extends Crawler {
 
         if (files != null) {
             if (files.length > 1) {
-                final Map<FileObject, Set<FileObject>> clusters = new HashMap<FileObject, Set<FileObject>>();
-                final Map<FileObject, StringBuilder> relPaths = new HashMap<FileObject, StringBuilder>();
+                final Map<FileObject, Set<FileObject>> clusters = new HashMap<>();
+                final Map<FileObject, StringBuilder> relPaths = new HashMap<>();
 NEXT_FILE:      for(FileObject f : files) {
                     FileObject parent = f.getParent();
                     Set<FileObject> cluster = clusters.get(parent);
@@ -144,21 +144,52 @@ NEXT_FILE:      for(FileObject f : files) {
                                 case UNRELATED:
                                     break;
                                 case EQUAL:
+                                    //Invalid parent file?
+                                    final boolean oldValid = relPath.getKey().isValid();
+                                    final boolean newValid = parent.isValid();
+                                    if (!oldValid) {
+                                        final Set<FileObject> invalidSet = clusters.remove(relPath.getKey());
+                                        it.remove();
+                                        if (newValid) {
+                                            cluster = new HashSet<>();
+                                            clusters.put(parent, cluster);
+                                            relPaths.put(parent, currentRelPath);
+                                            for (FileObject ifo : invalidSet) {
+                                                final FileObject rfo = parent.getFileObject(ifo.getNameExt());
+                                                if (rfo != null) {
+                                                    cluster.add(rfo);
+                                                }
+                                            }
+                                            updateRelPaths(relPaths, clusters, f);
+                                            cluster.add(f);
+                                        }
+                                        continue NEXT_FILE;
+                                    }
+                                    if (!newValid) {
+                                        cluster = clusters.get(relPath.getKey());
+                                        f = relPath.getKey().getFileObject(f.getNameExt());
+                                        if (f != null) {
+                                            updateRelPaths(relPaths, clusters, f);
+                                            cluster.add(f);
+                                        }
+                                        continue NEXT_FILE;
+                                    }
                                 default:
-                                    throw new IllegalStateException();
+                                    throw new IllegalStateException(String.format(
+                                        "clusters: %s, relPaths: %s, file: %s, parent: %s, currentRelPath: %s",  //NOI18N
+                                        clusters,
+                                        relPaths,
+                                        f,
+                                        parent,
+                                        currentRelPath
+                                    ));
                             }
                         }
-                        cluster = new HashSet<FileObject>();
+                        cluster = new HashSet<>();
                         clusters.put(parent, cluster);
                         relPaths.put(parent, currentRelPath);
                     } else {
-                        for (Iterator<Map.Entry<FileObject,StringBuilder>> it = relPaths.entrySet().iterator(); it.hasNext();) {
-                            final Map.Entry<FileObject, StringBuilder> relPath = it.next();
-                            if (f.equals(relPath.getKey()) || FileUtil.isParentOf(f, relPath.getKey())) {
-                                clusters.remove(relPath.getKey());
-                                it.remove();
-                            }
-                        }
+                        updateRelPaths(relPaths, clusters, f);
                     }
                     cluster.add(f);
                 }
@@ -231,6 +262,19 @@ NEXT_FILE:      for(FileObject f : files) {
         }
 
         return finished;
+    }
+
+    private void updateRelPaths(
+        @NonNull final Map<FileObject,StringBuilder> relPaths,
+        @NonNull final Map<FileObject,Set<FileObject>> clusters,
+        @NonNull final FileObject newFile) {
+        for (Iterator<Map.Entry<FileObject,StringBuilder>> it = relPaths.entrySet().iterator(); it.hasNext();) {
+            final Map.Entry<FileObject, StringBuilder> relPath = it.next();
+            if (newFile.equals(relPath.getKey()) || FileUtil.isParentOf(newFile, relPath.getKey())) {
+                clusters.remove(relPath.getKey());
+                it.remove();
+            }
+        }
     }
 
     private boolean collect (
