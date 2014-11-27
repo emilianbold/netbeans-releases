@@ -63,12 +63,18 @@ public class Variable {
     private final long ref;
     private V8Value value;
     private String valueLoadError;
+    private boolean hasIncompleteValue;
     
-    public Variable(Kind kind, String name, long ref, V8Value value) {
+    public Variable(Kind kind, String name, long ref, V8Value value, boolean incompleteValue) {
         this.kind = kind;
         this.name = name;
         this.ref = ref;
         this.value = value;
+        this.hasIncompleteValue = incompleteValue;
+    }
+    
+    public boolean hasIncompleteValue() {
+        return hasIncompleteValue;
     }
     
     public Kind getKind() {
@@ -92,6 +98,7 @@ public class Variable {
     
     void setValue(V8Value value) {
         this.value = value;
+        this.hasIncompleteValue = false;
     }
     
     void setValueLoadError(String valueLoadError) {
