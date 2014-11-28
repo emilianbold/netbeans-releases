@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
