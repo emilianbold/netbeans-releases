@@ -51,9 +51,12 @@ import java.util.concurrent.Future;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.bower.file.BowerJson;
 import org.netbeans.modules.javascript.bower.options.BowerOptions;
 import org.netbeans.modules.javascript.bower.options.BowerOptionsValidator;
+import org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanelController;
 import org.netbeans.modules.javascript.bower.util.BowerUtils;
 import org.netbeans.modules.javascript.bower.util.FileUtils;
 import org.netbeans.modules.javascript.bower.util.StringUtils;
@@ -65,12 +68,21 @@ import org.openide.util.Utilities;
 
 public class BowerExecutable {
 
-    public static final String BOWER_NAME = "bower"; // NOI18N
+    public static final String BOWER_NAME;
 
     private static final String INSTALL_PARAM = "install"; // NOI18N
 
     protected final Project project;
     protected final String bowerPath;
+
+
+    static {
+        if (Utilities.isWindows()) {
+            BOWER_NAME = "bower.cmd"; // NOI18N
+        } else {
+            BOWER_NAME = "bower"; // NOI18N
+        }
+    }
 
 
     BowerExecutable(String bowerPath, @NullAllowed Project project) {
@@ -86,8 +98,7 @@ public class BowerExecutable {
                 .getResult();
         if (validateResult(result) != null) {
             if (showOptions) {
-                // XXX
-                // OptionsDisplayer.getDefault().open(BowerOptionsPanelController.OPTIONS_PATH);
+                OptionsDisplayer.getDefault().open(BowerOptionsPanelController.OPTIONS_PATH);
             }
             return null;
         }
@@ -126,8 +137,7 @@ public class BowerExecutable {
         return new ExternalExecutable(getCommand())
                 .workDir(getWorkDir())
                 .displayName(title)
-                // XXX
-                //.optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
+                .optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
                 .noOutput(false);
     }
 
@@ -137,8 +147,7 @@ public class BowerExecutable {
                 .frontWindow(true)
                 .frontWindowOnError(false)
                 .controllable(true)
-                // XXX
-                //.optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
+                .optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
     }
@@ -147,7 +156,10 @@ public class BowerExecutable {
         if (project == null) {
             return FileUtils.TMP_DIR;
         }
-        // XXX check bower.json
+        BowerJson bowerJson = new BowerJson(project.getProjectDirectory());
+        if (bowerJson.exists()) {
+            return new File(bowerJson.getPath()).getParentFile();
+        }
         File workDir = FileUtil.toFile(project.getProjectDirectory());
         assert workDir != null : project.getProjectDirectory();
         return workDir;
