@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.ui.options;
+package org.netbeans.modules.javascript.bower.ui.options;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
@@ -47,31 +47,30 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
-import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
+import org.netbeans.modules.javascript.bower.options.BowerOptions;
+import org.netbeans.modules.javascript.bower.options.BowerOptionsValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-
-@NbBundle.Messages("NodeJsOptionsPanelController.name=Node.js")
+@NbBundle.Messages("BowerOptionsPanelController.name=Bower")
 @OptionsPanelController.SubRegistration(
-    location = NodeJsOptionsPanelController.OPTIONS_CATEGORY,
-    id = NodeJsOptionsPanelController.OPTIONS_SUBCATEGORY,
-    displayName = "#NodeJsOptionsPanelController.name" // NOI18N
+    location = BowerOptionsPanelController.OPTIONS_CATEGORY,
+    id = BowerOptionsPanelController.OPTIONS_SUBCATEGORY,
+    displayName = "#BowerOptionsPanelController.name" // NOI18N
 )
-public final class NodeJsOptionsPanelController extends OptionsPanelController implements ChangeListener {
+public class BowerOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
     public static final String OPTIONS_CATEGORY = "Html5"; // NOI18N
-    public static final String OPTIONS_SUBCATEGORY = "NodeJs"; // NOI18N
+    public static final String OPTIONS_SUBCATEGORY = "Bower"; // NOI18N
     public static final String OPTIONS_PATH = OPTIONS_CATEGORY + "/" + OPTIONS_SUBCATEGORY; // NOI18N
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // @GuardedBy("EDT")
-    private NodeJsOptionsPanel nodeJsOptionsPanel;
+    private BowerOptionsPanel bowerOptionsPanel;
     private volatile boolean changed = false;
     private boolean firstOpening = true;
 
@@ -81,8 +80,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         assert EventQueue.isDispatchThread();
         if (firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
             firstOpening = false;
-            getPanel().setNode(getNodeJsOptions().getNode());
-            getPanel().setNpm(getNodeJsOptions().getNpm());
+            getPanel().setBower(getBowerOptions().getBower());
         }
         changed = false;
     }
@@ -92,8 +90,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                getNodeJsOptions().setNode(getPanel().getNode());
-                getNodeJsOptions().setNpm(getPanel().getNpm());
+                getBowerOptions().setBower(getPanel().getBower());
                 changed = false;
             }
         });
@@ -102,27 +99,25 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     @Override
     public void cancel() {
         if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
-            getPanel().setNode(getNodeJsOptions().getNode());
-            getPanel().setNpm(getNodeJsOptions().getNpm());
+            getPanel().setBower(getBowerOptions().getBower());
         }
     }
 
     @Override
     public boolean isValid() {
         assert EventQueue.isDispatchThread();
-        NodeJsOptionsPanel panel = getPanel();
-        ValidationResult result = new NodeJsOptionsValidator()
-                .validateNode(panel.getNode())
-                .validateNpm(panel.getNpm())
+        BowerOptionsPanel panel = getPanel();
+        ValidationResult result = new BowerOptionsValidator()
+                .validateBower(panel.getBower())
                 .getResult();
         // errors
         if (result.hasErrors()) {
-            panel.setError(result.getErrors().get(0).getMessage());
+            panel.setError(result.getFirstErrorMessage());
             return false;
         }
         // warnings
         if (result.hasWarnings()) {
-            panel.setWarning(result.getWarnings().get(0).getMessage());
+            panel.setWarning(result.getFirstWarningMessage());
             return true;
         }
         // everything ok
@@ -132,13 +127,8 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
 
     @Override
     public boolean isChanged() {
-        String saved = getNodeJsOptions().getNode();
-        String current = getPanel().getNode().trim();
-        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
-            return true;
-        }
-        saved = getNodeJsOptions().getNpm();
-        current = getPanel().getNpm().trim();
+        String saved = getBowerOptions().getBower();
+        String current = getPanel().getBower().trim();
         return saved == null ? !current.isEmpty() : !saved.equals(current);
     }
 
@@ -150,7 +140,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.javascript.bower.ui.options.BowerOptionsPanelController"); // NOI18N
     }
 
     @Override
@@ -172,17 +162,17 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 
-    private NodeJsOptionsPanel getPanel() {
+    private BowerOptionsPanel getPanel() {
         assert EventQueue.isDispatchThread();
-        if (nodeJsOptionsPanel == null) {
-            nodeJsOptionsPanel = NodeJsOptionsPanel.create();
-            nodeJsOptionsPanel.addChangeListener(this);
+        if (bowerOptionsPanel == null) {
+            bowerOptionsPanel = new BowerOptionsPanel();
+            bowerOptionsPanel.addChangeListener(this);
         }
-        return nodeJsOptionsPanel;
+        return bowerOptionsPanel;
     }
 
-    private NodeJsOptions getNodeJsOptions() {
-        return NodeJsOptions.getInstance();
+    private BowerOptions getBowerOptions() {
+        return BowerOptions.getInstance();
     }
 
 }

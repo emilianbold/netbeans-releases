@@ -50,12 +50,14 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.cssprep.CssPrepOptionsPanelController;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorsAccessor;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorsCustomizer;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorsProblemProvider;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
@@ -89,7 +91,7 @@ public final class CssPreprocessors {
      * Top level category name in IDE Options.
      * @since 1.43
      */
-    public static final String OPTIONS_CATEGORY = "Advanced"; // NOI18N
+    public static final String OPTIONS_CATEGORY = "Html5"; // NOI18N
     /**
      * Subcategory name in IDE Options.
      * @since 1.43
@@ -154,6 +156,19 @@ public final class CssPreprocessors {
      */
     public ProjectCustomizer.CompositeCategoryProvider createCustomizer() {
         return new CssPreprocessorsCustomizer();
+    }
+
+    /**
+     * Create IDE Options for CSS preprocessors.
+     * <p>
+     * Options category is {@link #OPTIONS_CATEGORY} ({@value #OPTIONS_CATEGORY}) and
+     * subcategory is {@link #OPTIONS_SUBCATEGORY} ({@value #OPTIONS_SUBCATEGORY}). The whole
+     * path is {@link #OPTIONS_PATH} ({@value #OPTIONS_PATH}).
+     * @return
+     * @since 1.76
+     */
+    public OptionsPanelController createOptions() {
+        return new CssPrepOptionsPanelController();
     }
 
     /**

@@ -871,6 +871,10 @@ public class MultiDataObject extends DataObject {
 
         FileObject pf = null;
         Map<String, Object> params = CreateAction.getCallParameters(name);
+        // #248975: backwards-compatible hack: initializes Lookup caches, so Lookup finds registrations against
+        // the old deprecated service when trying to locate new CFTH instances. This allows to freely order
+        // old and new handlers
+        Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class);
         pf = FileBuilder.createFromTemplate(getPrimaryFile(), df.getPrimaryFile(), name, params, FileBuilder.Mode.FAIL);
         if (pf == null) {
             // do the regular creation
