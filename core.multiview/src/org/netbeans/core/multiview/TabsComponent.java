@@ -187,7 +187,14 @@ class TabsComponent extends JPanel {
         bar.add(toolbarPanel, cons);
     }
 
-
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if( null != awtEventListener ) {
+            Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener);
+        }
+    }
+    
     MultiViewDescription getTopComponentDescription() {
 	return topBottomDescriptions == null ? model.getActiveDescription() : topBottomDescriptions[0];
     }
