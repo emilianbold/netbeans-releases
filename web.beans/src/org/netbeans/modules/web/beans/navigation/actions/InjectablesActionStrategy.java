@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.beans.navigation.actions;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.VariableElement;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
@@ -107,7 +108,7 @@ public final class InjectablesActionStrategy implements ModelActionStrategy {
     {
         final VariableElement var = WebBeansActionHelper.findVariable(model, 
                 subject);
-        DependencyInjectionResult result = var== null? null: model.lookupInjectables(var, null);
+        DependencyInjectionResult result = var== null? null: model.lookupInjectables(var, null, new AtomicBoolean(false));
         if (result == null) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,

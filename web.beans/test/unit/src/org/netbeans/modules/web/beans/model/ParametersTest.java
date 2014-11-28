@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -187,7 +188,7 @@ public class ParametersTest extends CommonTestCase {
                         assertFindParameterResultProductions(element, provider);
                     }
                     else if (method.getSimpleName().contentEquals("method4") ){
-                        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
+                        DependencyInjectionResult result = provider.findParameterInjectable(element, null, new AtomicBoolean(false));
                         assertResultInjectables(result);
                         assertResultProductions(result, true, "productionField");
                     }
@@ -196,7 +197,7 @@ public class ParametersTest extends CommonTestCase {
                         assertFindParameterResultProductions(element, provider, "productionMethod");
                     }
                     else if (method.getSimpleName().contentEquals("method6") ){
-                        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
+                        DependencyInjectionResult result = provider.findParameterInjectable(element, null, new AtomicBoolean(false));
                         /* Method has no any special annotation. It's argument is not injection point.*/
                         assertTrue( result instanceof DefinitionErrorResult );
                     }

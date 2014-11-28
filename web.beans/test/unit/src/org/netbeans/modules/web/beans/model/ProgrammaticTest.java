@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -123,7 +124,7 @@ public class ProgrammaticTest extends CommonTestCase {
                     if ( element.getSimpleName().contentEquals("myField1")){
                         assertTrue ( "myField1 should be recognized as programmatic " +
                         		"injection point",model.isDynamicInjectionPoint(element));
-                        DependencyInjectionResult injectables = model.lookupInjectables(element, null);
+                        DependencyInjectionResult injectables = model.lookupInjectables(element, null, new AtomicBoolean(false));
                         ResultKind kind = injectables.getKind();
                         assertEquals(ResultKind.INJECTABLES_RESOLVED, kind);
                         check(element, injectables, kind);
@@ -131,7 +132,7 @@ public class ProgrammaticTest extends CommonTestCase {
                     else if ( element.getSimpleName().contentEquals("myField2")){
                         assertFalse ( "myField2 should be recognized as programmatic " +
                                 "injection point",model.isDynamicInjectionPoint(element));
-                        DependencyInjectionResult injectables = model.lookupInjectables(element, null);
+                        DependencyInjectionResult injectables = model.lookupInjectables(element, null, new AtomicBoolean(false));
                         ResultKind kind = injectables.getKind();
                         assertEquals(ResultKind.RESOLUTION_ERROR, kind);
                         assertTrue( injectables instanceof DependencyInjectionResult.Error );

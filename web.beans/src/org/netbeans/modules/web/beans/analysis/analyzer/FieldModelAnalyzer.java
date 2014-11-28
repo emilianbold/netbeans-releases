@@ -69,6 +69,9 @@ public class FieldModelAnalyzer implements ModelAnalyzer {
             Result result )
     {
         VariableElement var = (VariableElement) element;
+        if ( cancel.get()){
+            return;
+        }
         TypeMirror varType = model.getCompilationController().getTypes().asMemberOf( 
                 (DeclaredType)parent.asType(),  var );
         for (FieldAnalyzer analyzer : ANALYZERS) {

@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -122,7 +123,7 @@ class EnableBeansFilter {
         isProgrammatic = programmatic;
     }
     
-    DependencyInjectionResult filter(){
+    DependencyInjectionResult filter(AtomicBoolean cancel){
         myAlternatives = new HashSet<Element>();
         myEnabledAlternatives = new HashSet<Element>();
         
@@ -132,7 +133,7 @@ class EnableBeansFilter {
         TypeElement firstElement = typeElements.size()>0 ? typeElements.iterator().next() : null;
         
         // remove elements defined in compile class path which doesn't have beans.xml
-        filter.filter( typeElements );
+        filter.filter( typeElements, cancel );
         for (TypeElement typeElement : typeElements) {
             if ( getResult().isAlternative(typeElement)){
                 myAlternatives.add( typeElement );

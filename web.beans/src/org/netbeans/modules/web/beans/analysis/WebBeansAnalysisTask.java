@@ -144,6 +144,9 @@ public class WebBeansAnalysisTask extends AbstractAnalysisTask {
                 public Void run( WebBeansModel model ) throws Exception {
                     CompilationController controller = model.getCompilationController();
                     for (ElementHandle<TypeElement> handle : handles) {
+                        if(isCancelled()) {
+                            break;
+                        }
                         TypeElement type = handle.resolve( controller );
                         if ( type == null ){
                             continue;

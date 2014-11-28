@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -115,14 +116,14 @@ public class ModelTest extends CommonTestCase {
                 VariableElement fieldA = variables.get("myFieldA");
                 assertNotNull( fieldA );
                 DependencyInjectionResult result = model.lookupInjectables(fieldA, 
-                        null);
+                        null, new AtomicBoolean(false));
                 assertEquals(DependencyInjectionResult.ResultKind.DEFINITION_ERROR,  
                         result.getKind());
                 assertTrue( result instanceof DependencyInjectionResult.Error);
                 
                 VariableElement fieldB = variables.get("myFieldB");
                 assertNotNull( fieldB );
-                result = model.lookupInjectables(fieldB, null);
+                result = model.lookupInjectables(fieldB, null, new AtomicBoolean(false));
                 assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED,  
                         result.getKind());
                 return null;

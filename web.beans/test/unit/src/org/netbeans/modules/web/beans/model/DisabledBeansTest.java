@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
@@ -380,7 +381,7 @@ public class DisabledBeansTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
                         assertNotNull( result );
                         assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED  ,
                                 result.getKind() );
@@ -495,7 +496,7 @@ public class DisabledBeansTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
                         assertNotNull( result );
                         assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED ,
                                 result.getKind() );
@@ -511,7 +512,7 @@ public class DisabledBeansTest extends CommonTestCase {
                                 "foo.One.SubClass2", qualifiedName.toString());
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
                         assertNotNull( result );
                         assertEquals(DependencyInjectionResult.ResultKind.INJECTABLE_RESOLVED ,
                             result.getKind() );
@@ -526,7 +527,7 @@ public class DisabledBeansTest extends CommonTestCase {
                                "foo.Two", qualifiedName.toString());
                     }
                     else if ( element.getSimpleName().contentEquals("myField3")){
-                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
                         assertNotNull( result );
                         assertEquals(DependencyInjectionResult.ResultKind.RESOLUTION_ERROR ,
                             result.getKind() ) ;
@@ -538,7 +539,7 @@ public class DisabledBeansTest extends CommonTestCase {
                         		" not managed bean", 1 , size);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        DependencyInjectionResult result = model.lookupInjectables(element, null);
+                        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
                         assertNotNull( result );
                         assertEquals(DependencyInjectionResult.ResultKind.RESOLUTION_ERROR ,
                                 result.getKind() );
@@ -684,7 +685,7 @@ public class DisabledBeansTest extends CommonTestCase {
      */
     private void checkVarious1( VariableElement element, WebBeansModel model )
     {
-        DependencyInjectionResult result = model.lookupInjectables(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
         
         assertNotNull( result );
         
@@ -721,7 +722,7 @@ public class DisabledBeansTest extends CommonTestCase {
      */
     private void checkVarious2( VariableElement element, WebBeansModel model )
     {
-        DependencyInjectionResult result = model.lookupInjectables(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
         
         assertNotNull( result );
         
@@ -783,7 +784,7 @@ public class DisabledBeansTest extends CommonTestCase {
     private void checkSpecializes3( VariableElement element,
             WebBeansModel model )
     {
-        DependencyInjectionResult result = model.lookupInjectables(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
         
         assertNotNull( result );
         
@@ -853,7 +854,7 @@ public class DisabledBeansTest extends CommonTestCase {
     private void checkSpecializes2( VariableElement element,
             WebBeansModel model )
     {
-        DependencyInjectionResult result = model.lookupInjectables(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
         
         assertNotNull( result );
         
@@ -909,7 +910,7 @@ public class DisabledBeansTest extends CommonTestCase {
 
     private void checkSpecializes1( VariableElement element, WebBeansModel model )
     {
-        DependencyInjectionResult result = model.lookupInjectables(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
 
         assertNotNull(result);
 
@@ -973,7 +974,7 @@ public class DisabledBeansTest extends CommonTestCase {
     private void checkAlternative2( VariableElement element,
             WebBeansModel model )
     {
-        DependencyInjectionResult result = model.lookupInjectables(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
         
         assertNotNull( result );
         
@@ -1035,7 +1036,7 @@ public class DisabledBeansTest extends CommonTestCase {
     private void checkAlternative1( VariableElement element,
             WebBeansModel model )
     {
-        DependencyInjectionResult result = model.lookupInjectables(element, null);
+        DependencyInjectionResult result = model.lookupInjectables(element, null, new AtomicBoolean(false));
         
         assertNotNull( result );
         
