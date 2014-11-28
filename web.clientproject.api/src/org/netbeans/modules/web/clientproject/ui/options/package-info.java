@@ -44,7 +44,7 @@
     id = "Html5",
     categoryName = "#Html5.Options.name",
     iconBase = "org/netbeans/modules/web/clientproject/ui/resources/html5-options.png",
-    position = 650
+    position = 630
 )
 @NbBundle.Messages("Html5.Options.name=HTML/JS")
 package org.netbeans.modules.web.clientproject.ui.options;
