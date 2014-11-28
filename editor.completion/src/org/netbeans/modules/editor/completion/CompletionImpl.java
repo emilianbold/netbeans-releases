@@ -1083,13 +1083,16 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             for (CompletionItem item : items) {
                 CharSequence text = item.getInsertPrefix();
                 String name = text != null ? text.toString() : null;
-                if (name != null && name.startsWith(prefix))
-                    return idx;
-                int d = getDistance(name.toLowerCase(), prefLC);
-                if (d < distance) {
-                    distance = d;
-                    closestIdx = idx;
-                }                
+                if (name != null) {
+                    if (name.startsWith(prefix)) {
+                        return idx;
+                    }
+                    int d = getDistance(name.toLowerCase(), prefLC);
+                    if (d < distance) {
+                        distance = d;
+                        closestIdx = idx;
+                    }
+                }
                 idx++;
             }
         }

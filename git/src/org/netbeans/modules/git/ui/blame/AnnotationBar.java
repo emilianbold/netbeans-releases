@@ -1032,6 +1032,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * @return the preferred width of this component
      */
     private int getBarWidth() {
+        JTextComponent component = editorUI.getComponent();
+        if (component == null) {
+            return 0;
+        }
         String longestString = "";  // NOI18N
         if (elementAnnotations == null) {
             longestString = elementAnnotationsSubstitute;
@@ -1048,7 +1052,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         }
         char[] data = longestString.toCharArray();
-        int w = getGraphics().getFontMetrics(editorUI.getComponent().getFont()).charsWidth(data, 0,  data.length);
+        int w = getGraphics().getFontMetrics(component.getFont()).charsWidth(data, 0,  data.length);
         return w + 4 + (isKenai() ? 18 : 0);
     }
 
