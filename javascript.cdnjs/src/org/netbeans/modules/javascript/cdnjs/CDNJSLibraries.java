@@ -55,7 +55,7 @@ public final class CDNJSLibraries {
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org.netbeans.modules.web.clientproject", // NOI18N
-            category = "JsLibs",
+            category = "JsLibs", // NOI18N
             position = 100)
     public static ProjectCustomizer.CompositeCategoryProvider forHtml5Project() {
         return new LibraryCustomizer();
@@ -63,7 +63,7 @@ public final class CDNJSLibraries {
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-php-project", // NOI18N
-            category = "JsLibs",
+            category = "JsLibs", // NOI18N
             position = 100)
     public static ProjectCustomizer.CompositeCategoryProvider forPhpProject() {
         return new LibraryCustomizer();
@@ -71,7 +71,7 @@ public final class CDNJSLibraries {
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-web-project", // NOI18N
-            category = "JsLibs",
+            category = "JsLibs", // NOI18N
             position = 100)
     public static ProjectCustomizer.CompositeCategoryProvider forWebProject() {
         return new LibraryCustomizer();
@@ -79,7 +79,7 @@ public final class CDNJSLibraries {
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-maven", // NOI18N
-            category = "JsLibs",
+            category = "JsLibs", // NOI18N
             position = 100)
     public static ProjectCustomizer.CompositeCategoryProvider forMavenProject() {
         return new LibraryCustomizer();
