@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipError;
 import java.util.zip.ZipFile;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
@@ -71,6 +72,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 public class CachingArchive implements Archive, FileChangeListener {
@@ -263,6 +265,10 @@ public class CachingArchive implements Archive, FileChangeListener {
         }
     }
 
+    @NbBundle.Messages({
+    "# {0} - the ZIP filename",
+    "ERR_CorruptedZipFile=The ZIP file {0} is either corrupted, or is being built by an external process. Some entries may not be accessible"
+    })
     private Map<String,Folder> createMap(File file ) throws IOException {        
         if (!file.canRead()) {
             return Collections.<String, Folder>emptyMap();
@@ -305,6 +311,14 @@ public class CachingArchive implements Archive, FileChangeListener {
                         entry = e.nextElement();
                     } catch (IllegalArgumentException iae) {
                         throw new IOException(iae);
+                    } catch (ZipError ze) {
+                        // the JAR may be corrupted somehow; no further entry read
+                        // will probably succeed, so just skip the rest of the jar.
+                        Exceptions.printStackTrace(
+                                Exceptions.attachLocalizedMessage(
+                                Exceptions.attachSeverity(ze, Level.WARNING),
+                                Bundle.ERR_CorruptedZipFile(file)));
+                        break;
                     }
                     String name = entry.getName();
                     String dirname;
