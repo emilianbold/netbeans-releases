@@ -41,20 +41,17 @@
  */
 package org.netbeans.modules.web.clientproject.ui.customizer;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
-import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
-import org.netbeans.modules.web.clientproject.env.Env;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -168,20 +165,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             position = 400)
     public static ProjectCustomizer.CompositeCategoryProvider createJsTesting() {
         return JsTestingProviders.getDefault().createCustomizer();
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = ClientSideProjectType.TYPE,
-            position = 200)
-    public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptFiles() {
-        return CDNJSLibraries.createCustomizer(new CDNJSLibraries.CustomizerContext() {
-            @Override
-            public File getWebRoot(Lookup context) {
-                ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
-                assert projectProperties != null;
-                return projectProperties.getResolvedSiteRootFolder();
-            }
-        });
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

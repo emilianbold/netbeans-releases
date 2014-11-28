@@ -43,7 +43,6 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +57,6 @@ import javax.swing.JPanel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
-import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -292,21 +290,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     )
     public static CompositePanelProviderImpl createBrowser() {
         return new CompositePanelProviderImpl(BROWSER);
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 190
-    )
-    public static ProjectCustomizer.CompositeCategoryProvider createJsFiles() {
-        return CDNJSLibraries.createCustomizer(new CDNJSLibraries.CustomizerContext() {
-            @Override
-            public File getWebRoot(Lookup context) {
-                PhpProjectProperties projectProperties = context.lookup(PhpProjectProperties.class);
-                assert projectProperties != null;
-                return projectProperties.getResolvedWebRootFolder();
-            }
-        });
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

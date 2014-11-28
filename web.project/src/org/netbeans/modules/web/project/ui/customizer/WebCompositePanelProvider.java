@@ -246,22 +246,6 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         return new WebCompositePanelProvider(WEBSERVICESCATEGORY);
     }
     
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=350)
-    public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptLibraries() {
-        return CDNJSLibraries.createCustomizer(new CDNJSLibraries.CustomizerContext(){
-            @Override
-            public File getWebRoot(Lookup context) {
-                WebProjectProperties projectProperties = context.lookup(WebProjectProperties.class);
-                assert projectProperties != null;
-                FileObject fo = projectProperties.getProject().getAPIWebModule().getDocumentBase();
-                if (fo != null) {
-                    return FileUtil.toFile(fo);
-                }
-                return null;
-            }
-        });
-    }
-
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-web-project", position = 375)
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {

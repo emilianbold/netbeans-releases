@@ -43,24 +43,17 @@ package org.netbeans.modules.maven.j2ee.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.List;
 import javax.swing.JComponent;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerFrameworks;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEar;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEjb;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
-import org.netbeans.modules.maven.j2ee.web.WebProjectUtils;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -87,24 +80,6 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     public static MavenCompositePanelProvider createFrameworks() {
         return new MavenCompositePanelProvider(FRAMEWORKS);
     }
-    
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 258)
-    public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptLibraries() {
-        return new FilterProvider(CDNJSLibraries.createCustomizer(new CDNJSLibraries.CustomizerContext() {
-
-            @Override
-            public File getWebRoot(Lookup context) {
-                final Project project = context.lookup(Project.class);
-                assert project != null;
-                FileObject docBase = WebProjectUtils.getDocumentBase(project);
-                if (docBase != null) {
-                    return FileUtil.toFile(docBase);
-                }
-                return null;
-            }
-
-        }));
-     }
     
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 259)
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
