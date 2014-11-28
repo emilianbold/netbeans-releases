@@ -61,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
  * 
  * @author sdedic
  */
-@ServiceProvider(service = CreateFromTemplateAttributes.class, position = Integer.MIN_VALUE)
+@ServiceProvider(service = CreateFromTemplateAttributes.class, position = Integer.MIN_VALUE + 1)
 public class AttributeHandlerBridge implements CreateFromTemplateAttributes {
     private Lookup.Result<CreateFromTemplateAttributesProvider> providers;
 
