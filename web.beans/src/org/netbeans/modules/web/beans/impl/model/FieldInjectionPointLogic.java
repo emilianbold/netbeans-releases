@@ -70,6 +70,8 @@ import org.openide.util.NbBundle;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 import org.netbeans.modules.web.beans.api.model.BeanArchiveType;
 
@@ -120,7 +122,7 @@ abstract class FieldInjectionPointLogic {
     }
     
     protected DependencyInjectionResult findVariableInjectable( VariableElement element, 
-            DeclaredType parentType , ResultLookupStrategy strategy )
+            DeclaredType parentType , ResultLookupStrategy strategy, AtomicBoolean cancel )
     {
         DeclaredType parent = parentType;
         try {
@@ -134,6 +136,10 @@ abstract class FieldInjectionPointLogic {
                              type!= null? type.toString(): null));
         }
         
+        if(cancel.get()) {
+            return null;
+        }
+        
         TypeMirror elementType = strategy.getType(getModel(), parent , element );
         
         if(elementType instanceof DeclaredType && AnnotationUtil.PROVIDER.equals(""+((DeclaredType)elementType).asElement())) {
@@ -144,8 +150,8 @@ abstract class FieldInjectionPointLogic {
             }
         }
         
-        DependencyInjectionResult result  = doFindVariableInjectable(element, elementType, true);
-        return strategy.getResult( getModel() , result );
+        DependencyInjectionResult result  = doFindVariableInjectable(element, elementType, true, cancel);
+        return strategy.getResult( getModel() , result, cancel );
     }
     
     protected DeclaredType getParent( Element element , DeclaredType parentType) 
@@ -168,7 +174,7 @@ abstract class FieldInjectionPointLogic {
     }
     
     protected DependencyInjectionResult doFindVariableInjectable( VariableElement element,
-            TypeMirror elementType, boolean injectRequired)
+            TypeMirror elementType, boolean injectRequired, AtomicBoolean cancel)
     {
         List<AnnotationMirror> quilifierAnnotations = new LinkedList<AnnotationMirror>();
         boolean anyQualifier = false;
@@ -213,8 +219,8 @@ abstract class FieldInjectionPointLogic {
                 defaultQualifier )
         {
             LOGGER.fine("Found built-in binding "+annotationName); // NOI18N
-            Set<TypeElement> assignableTypes= getAssignableTypes( element , 
-                    elementType );
+            Set<TypeElement> assignableTypes = cancel.get() ? new HashSet<TypeElement>() : getAssignableTypes( element , 
+                    elementType, cancel );
             if ( defaultQualifier ){
                 LOGGER.fine("@Default annotation requires test for implementors" +
                         " of varaible type");                      // NOI18N
@@ -266,7 +272,7 @@ abstract class FieldInjectionPointLogic {
             }
         }
         else {
-            productionElements = getProductions( quilifierAnnotations); 
+            productionElements = getProductions( quilifierAnnotations, cancel); 
             filterBindingsByMembers( quilifierAnnotations , productionElements , 
                      Element.class );
         }
@@ -282,15 +288,18 @@ abstract class FieldInjectionPointLogic {
     }
     
     protected Set<Element> getChildSpecializes( Element productionElement,
-            WebBeansModelImplementation model )
+            WebBeansModelImplementation model, AtomicBoolean cancel )
     {
         TypeElement typeElement = model.getHelper().getCompilationController()
                 .getElementUtilities().enclosingTypeElement(productionElement);
-        Set<TypeElement> implementors = getImplementors(model, typeElement);
+        Set<TypeElement> implementors = getImplementors(model, typeElement, cancel);
         implementors.remove( productionElement.getEnclosingElement());
         Set<Element> specializeElements = new HashSet<Element>();
         specializeElements.add(productionElement);
         for (TypeElement implementor : implementors) {
+            if(cancel.get()) {
+                break;
+            }
             inspectHierarchy(productionElement, implementor,
                     specializeElements, model);
         }
@@ -454,7 +463,7 @@ abstract class FieldInjectionPointLogic {
     }
     
     static Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
-            Element typeElement )
+            Element typeElement, AtomicBoolean cancel )
     {
         if (! (typeElement instanceof TypeElement )){
             return Collections.emptySet();
@@ -464,10 +473,10 @@ abstract class FieldInjectionPointLogic {
         
         Set<TypeElement> toProcess = new HashSet<TypeElement>();
         toProcess.add((TypeElement) typeElement );
-        while ( toProcess.size() >0 ){
+        while ( toProcess.size() >0 && !cancel.get()){
             TypeElement element = toProcess.iterator().next();
             toProcess.remove( element );
-            Set<TypeElement> set = doGetImplementors(modelImpl, element );
+            Set<TypeElement> set = doGetImplementors(modelImpl, element, cancel );
             if ( set.size() == 0 ){
                 continue;
             }
@@ -542,13 +551,17 @@ abstract class FieldInjectionPointLogic {
     }
 
     private static Set<TypeElement> doGetImplementors( 
-            WebBeansModelImplementation modelImpl, TypeElement typeElement )
+            WebBeansModelImplementation modelImpl, TypeElement typeElement, AtomicBoolean cancel )
     {
         Set<TypeElement> result = new HashSet<TypeElement>();
         ElementHandle<TypeElement> handle = ElementHandle
                 .create((TypeElement) typeElement);
-        final Set<ElementHandle<TypeElement>> handles = modelImpl
-                .getHelper().getClasspathInfo().getClassIndex()
+        ClassIndex classIndex = modelImpl
+                .getHelper().getClasspathInfo().getClassIndex();
+        if(cancel.get()) {
+            return Collections.emptySet();
+        }
+        final Set<ElementHandle<TypeElement>> handles = classIndex
                 .getElements(
                         handle,
                         EnumSet.of(SearchKind.IMPLEMENTORS),
@@ -560,6 +573,9 @@ abstract class FieldInjectionPointLogic {
             return Collections.emptySet();
         }
         for (ElementHandle<TypeElement> elementHandle : handles) {
+            if(cancel.get()) {
+                return Collections.emptySet();
+            }
             LOGGER.log(Level.FINE, "found derived element {0}",
                     elementHandle.getQualifiedName()); // NOI18N
             TypeElement derivedElement = elementHandle.resolve(modelImpl
@@ -624,7 +640,7 @@ abstract class FieldInjectionPointLogic {
     }
 
     private Set<TypeElement> getAssignableTypes( VariableElement element,
-            TypeMirror elementType )
+            TypeMirror elementType, AtomicBoolean cancel )
     {
         if (elementType.getKind() != TypeKind.DECLARED) {
             return Collections.emptySet();
@@ -635,10 +651,10 @@ abstract class FieldInjectionPointLogic {
         }
         if (!((TypeElement) typeElement).getTypeParameters().isEmpty()) {
             return getAssignables(  elementType, (TypeElement)typeElement, 
-                    element );
+                    element, cancel );
         }
         else {
-            Set<TypeElement> implementors = getImplementors(getModel(), typeElement);
+            Set<TypeElement> implementors = getImplementors(getModel(), typeElement, cancel);
             restrictedTypeFilter( implementors , (TypeElement)typeElement );
             return implementors;
         }
@@ -652,9 +668,9 @@ abstract class FieldInjectionPointLogic {
     }
 
     private Set<TypeElement> getAssignables(  TypeMirror elementType, 
-            TypeElement typeElement  , VariableElement element) 
+            TypeElement typeElement  , VariableElement element, AtomicBoolean cancel) 
     {
-        Set<TypeElement> result = getImplementors(getModel(), typeElement);
+        Set<TypeElement> result = getImplementors(getModel(), typeElement, cancel);
         
         // Now filter all found child classes according to real element type ( type mirror )  
         TypeBindingFilter filter = TypeBindingFilter.get();
@@ -667,7 +683,7 @@ abstract class FieldInjectionPointLogic {
      * Method finds production elements which have appropriate binding types.
      */
     private Set<Element> getProductions( 
-            List<AnnotationMirror> qualifierAnnotations ) 
+            List<AnnotationMirror> qualifierAnnotations, AtomicBoolean cancel) 
     {
         List<Set<Element>> bindingCollections = 
             new ArrayList<Set<Element>>( qualifierAnnotations.size());
@@ -683,6 +699,10 @@ abstract class FieldInjectionPointLogic {
                 qualifierAnnotations ).get(DEFAULT_QUALIFIER_ANNOTATION) != null ;
         Set<Element> currentBindings = new HashSet<Element>();
         for (AnnotationMirror annotationMirror : qualifierAnnotations) {
+            if(cancel.get()) {
+                currentBindings.clear();
+                break;
+            }
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
             if ( annotationElement == null ){
@@ -690,7 +710,7 @@ abstract class FieldInjectionPointLogic {
             }
             String annotationFQN = annotationElement.getQualifiedName().toString();
             findAnnotation( bindingCollections, annotationFQN , hasDefault,
-                    currentBindings );
+                    currentBindings, cancel);
         }
 
         if ( hasDefault ){
@@ -715,7 +735,8 @@ abstract class FieldInjectionPointLogic {
 
     private void findAnnotation( final List<Set<Element>> bindingCollections, 
             final String annotationFQN ,final boolean hasCurrent , 
-            final Set<Element> currentBindings )
+            final Set<Element> currentBindings,
+            final AtomicBoolean cancel)
     {
         try {
             final Set<Element> bindings = new HashSet<Element>();
@@ -733,7 +754,7 @@ abstract class FieldInjectionPointLogic {
                                     {
                                         bindings.add(element);
                                         bindings.addAll(getChildSpecializes(
-                                                element, getModel()));
+                                                element, getModel(), cancel));
                                         if (annotationFQN
                                                 .contentEquals(DEFAULT_QUALIFIER_ANNOTATION))
                                         {

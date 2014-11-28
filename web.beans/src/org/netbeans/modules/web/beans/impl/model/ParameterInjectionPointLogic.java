@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -92,7 +93,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
     }
     
     protected DependencyInjectionResult findParameterInjectable( VariableElement element , 
-            DeclaredType parentType , ResultLookupStrategy strategy ) 
+            DeclaredType parentType , ResultLookupStrategy strategy, AtomicBoolean cancel ) 
     {
         DeclaredType parent = parentType;
         try {
@@ -146,7 +147,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
                         PRODUCER_ANNOTATION, getModel().getHelper()) || disposes||
                         observes)
         {
-            result = doFindVariableInjectable(element, elementType , false );
+            result = doFindVariableInjectable(element, elementType , false, cancel );
             isInjectionPoint = true;
         }
         if ( disposes ){
@@ -173,7 +174,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic
         }
 
         if ( isInjectionPoint ){
-            return strategy.getResult(getModel(), result );
+            return strategy.getResult(getModel(), result, cancel );
         }
         else {
             return new DefinitionErrorResult(element, elementType, 

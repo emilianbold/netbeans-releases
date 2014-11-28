@@ -100,7 +100,7 @@ public class InjectionPointAnalyzer extends AbstractDecoratorAnalyzer<Void> impl
                     if (!checkBuiltInBeans(element, elementType, model, cancel))
                     {
                         DependencyInjectionResult res = model
-                                .lookupInjectables(element, null);
+                                .lookupInjectables(element, null, cancel);
                         checkResult(res, element, model, result);
                         if (isDelegate) {
                             analyzeDecoratedBeans(res, element, null, parent,

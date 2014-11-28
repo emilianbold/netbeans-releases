@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.api.model;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -98,9 +99,9 @@ public final class WebBeansModel {
      * @return search result information
      */
     public DependencyInjectionResult lookupInjectables( VariableElement element , 
-            DeclaredType parentType)
+            DeclaredType parentType, AtomicBoolean cancel)
     {
-        return getProvider().lookupInjectables(element, parentType);
+        return getProvider().lookupInjectables(element, parentType, cancel);
     }
     
     /**
@@ -171,7 +172,7 @@ public final class WebBeansModel {
      * @return list of elements annotated with @Named
      */
     public List<Element> getNamedElements(){
-        return getProvider().getNamedElements( );
+        return getProvider().getNamedElements( new AtomicBoolean(false) );
     }
     
     /**

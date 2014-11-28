@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -60,7 +61,7 @@ public class SingleResultLookupStrategy implements ResultLookupStrategy {
      * @see org.netbeans.modules.web.beans.impl.model.ResultLookupStrategy#getResult(org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation, org.netbeans.modules.web.beans.api.model.Result)
      */
     @Override
-    public DependencyInjectionResult getResult( WebBeansModelImplementation model , DependencyInjectionResult result ) {
+    public DependencyInjectionResult getResult( WebBeansModelImplementation model , DependencyInjectionResult result, AtomicBoolean cancel ) {
         /*
          * Simple filtering related to production elements types.
          * F.e. there could be injection point with String type.
@@ -69,9 +70,9 @@ public class SingleResultLookupStrategy implements ResultLookupStrategy {
          * is valid injectable. But String will be found as result of previous
          * procedure. So it should be removed.      
          */
-        filterBeans( result , model );
+        filterBeans( result , model, cancel );
         
-        result = filterEnabled(result , model);
+        result = filterEnabled(result , model, cancel);
         
         return result;
     }
@@ -96,7 +97,7 @@ public class SingleResultLookupStrategy implements ResultLookupStrategy {
         return typeMirror;
     }
 
-    protected void filterBeans( DependencyInjectionResult result, WebBeansModelImplementation model ) {
+    protected void filterBeans( DependencyInjectionResult result, WebBeansModelImplementation model, AtomicBoolean cancel ) {
         if ( result instanceof ResultImpl ){
             BeansFilter filter = BeansFilter.get();
             filter.filter(((ResultImpl)result).getTypeElements() );
@@ -104,12 +105,12 @@ public class SingleResultLookupStrategy implements ResultLookupStrategy {
     }
     
     protected DependencyInjectionResult filterEnabled( DependencyInjectionResult result, 
-            WebBeansModelImplementation model)
+            WebBeansModelImplementation model, AtomicBoolean cancel)
     {
         if ( result instanceof ResultImpl ){
             EnableBeansFilter filter = new EnableBeansFilter((ResultImpl)result,
                     model , false );
-            return filter.filter();
+            return filter.filter(cancel);
         }
         return result;
     }

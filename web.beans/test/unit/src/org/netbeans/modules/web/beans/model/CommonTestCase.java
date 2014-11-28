@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -118,49 +119,49 @@ public class CommonTestCase extends JavaSourceTestCase {
     public final void assertFindParameterResultInjectables(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null, new AtomicBoolean(false));
         assertResultInjectables(result, injectables);
     }
 
     public final void assertFindParameterResultProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null, new AtomicBoolean(false));
         assertResultProductions(result, injectables);
     }
 
     public final void assertFindParameterResultProductionsVar(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        DependencyInjectionResult result = provider.findParameterInjectable(element, null);
+        DependencyInjectionResult result = provider.findParameterInjectable(element, null, new AtomicBoolean(false));
         assertResultProductions(result, true, injectables);
     }
 
     public final void assertFindVariableResultInjectables(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null, new AtomicBoolean(false));
         assertResultInjectables(result, injectables);
     }
 
     public final void assertFindVariableResultProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null, new AtomicBoolean(false));
         assertResultProductions(result, injectables);
     }
 
     public final void assertFindVariableResultProductionsVar(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String... injectables) {
-        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null, new AtomicBoolean(false));
         assertResultProductions(result, true, injectables);
     }
 
     public final void assertFindAllProductions(VariableElement element,
             TestWebBeansModelProviderImpl provider,
             String productionName , String enclosingClass ) {
-        DependencyInjectionResult result = provider.findVariableInjectable(element, null);
+        DependencyInjectionResult result = provider.findVariableInjectable(element, null, new AtomicBoolean(false));
         assertResultAllProductions(result, productionName , enclosingClass );
     }
 

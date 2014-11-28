@@ -45,6 +45,7 @@ package org.netbeans.modules.web.beans.model.spi;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -68,7 +69,7 @@ import org.netbeans.modules.web.beans.api.model.InterceptorsResult;
  */
 public interface WebBeansModelProvider {
 
-    DependencyInjectionResult lookupInjectables( VariableElement element , DeclaredType parentType);
+    DependencyInjectionResult lookupInjectables( VariableElement element , DeclaredType parentType, AtomicBoolean cancel);
     
     boolean isDynamicInjectionPoint( VariableElement element );
     
@@ -76,7 +77,7 @@ public interface WebBeansModelProvider {
     
     List<AnnotationMirror> getQualifiers( Element element , boolean all );
 
-    List<Element> getNamedElements( );
+    List<Element> getNamedElements(AtomicBoolean cancel);
 
     String getName( Element element);
 

@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -80,12 +81,12 @@ public class MultiLookupStrategy extends SingleResultLookupStrategy {
     
     @Override
     protected DependencyInjectionResult filterEnabled( DependencyInjectionResult result, 
-            WebBeansModelImplementation model)
+            WebBeansModelImplementation model, AtomicBoolean cancel)
     {
         if ( result instanceof ResultImpl ){
             EnableBeansFilter filter = new EnableBeansFilter((ResultImpl)result,
                     model , true );
-            return filter.filter();
+            return filter.filter(cancel);
         }
         return result;
     }
