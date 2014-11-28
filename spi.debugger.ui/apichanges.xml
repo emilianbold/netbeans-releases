@@ -211,6 +211,24 @@ made subject to such option by the copyright holder.
         <issue number="193872"/>
     </change>
 
+    <change id="CodeEvaluator">
+        <api name="DebuggerCoreSPI"/>
+        <summary><code>CodeEvaluator</code> class added.</summary>
+        <version major="2" minor="49"/>
+        <date day="28" month="11" year="2014"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes" semantic="compatible"/>
+        <description>
+            <p>
+                <code>CodeEvaluator</code> class introduced
+                to access and manage a component for code evaluations
+                and handle it's result.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.ui" name="CodeEvaluator"/>
+        <issue number="248626"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

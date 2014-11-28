@@ -50,14 +50,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.CodeEvaluator;
+import org.netbeans.spi.debugger.ui.CodeEvaluator.Result.DefaultHistoryItem;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
 @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
@@ -65,20 +70,35 @@ import org.openide.util.datatransfer.PasteType;
                              position=280)
 public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
 
-    private final Collection<ModelListener> listeners = new HashSet<ModelListener>();
+    private static final String ICON_HISTORY_NODE =
+        "org/netbeans/modules/debugger/resources/evaluator/history_node_16.png"; // NOI18N
+
+    private static final String ICON_HISTORY_ITEM =
+        "org/netbeans/modules/debugger/resources/evaluator/eval_history_item.png"; // NOI18N
+    
+    private static final String ICON_EVAL_RESULT =
+        "org/netbeans/modules/debugger/resources/evaluator/evaluator_result_16.png"; // NOI18N
+
+    private CodeEvaluator.Result<Variable, DefaultHistoryItem> result;
+    //private final Collection<ModelListener> listeners = new HashSet<ModelListener>();
+    
+    public EvaluatorNodeModelFilter(ContextProvider contextProvider) {
+        result = CodeEvaluator.Result.get(contextProvider.lookupFirst(null, DebuggerEngine.class));
+    }
 
     public void addModelListener(ModelListener l) {
-        synchronized (listeners) {
-            listeners.add (l);
-        }
+//        synchronized (listeners) {
+//            listeners.add (l);
+//        }
     }
 
     public void removeModelListener (ModelListener l) {
-        synchronized (listeners) {
-            listeners.remove (l);
-        }
+//        synchronized (listeners) {
+//            listeners.remove (l);
+//        }
     }
 
+    /*
     private void fireNodeChanged (Object node) {
         List<ModelListener> ls;
         synchronized (listeners) {
@@ -96,6 +116,7 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
             ml.modelChanged (event);
         }
     }
+    */
 
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
         return false;
@@ -126,44 +147,49 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
     }
 
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node) throws UnknownTypeException {
-        if (node instanceof EvaluatorTreeModel.SpecialNode) {
-            return ((EvaluatorTreeModel.SpecialNode)node).getIconBase();
+        if (node == result.getResult()) {
+            return ICON_EVAL_RESULT;
         }
-        if (node == CodeEvaluator.getResult()) {
-            return "org/netbeans/modules/debugger/jpda/resources/evaluator_result_16.png"; // NOI18N
+        if (node instanceof DefaultHistoryItem) {
+            return ICON_HISTORY_ITEM;
+        }
+        if (node instanceof EvaluatorTreeModel.HistoryNode) {
+            return ICON_HISTORY_NODE;
         }
         return original.getIconBaseWithExtension(node);
     }
 
     public String getIconBase(NodeModel original, Object node) throws UnknownTypeException {
+        throw new IllegalStateException("getIconBaseWithExtension() to be called instead.");
+        /*
         if (node instanceof EvaluatorTreeModel.SpecialNode) {
             return ((EvaluatorTreeModel.SpecialNode)node).getIconBase();
         }
-        if (node == CodeEvaluator.getResult()) {
-            return "org/netbeans/modules/debugger/jpda/resources/evaluator_result_16.png"; // NOI18N
+        if (node == result.getResult()) {
+            return "org/netbeans/modules/debugger/resources/evaluator/evaluator_result_16.png"; // NOI18N
         }
-        return original.getIconBase(node);
+        return original.getIconBase(node);*/
     }
 
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
-        if (node instanceof EvaluatorTreeModel.SpecialNode) {
-            return ((EvaluatorTreeModel.SpecialNode)node).getDisplayName();
-        }
-        if (node == CodeEvaluator.getResult()) {
-            String str = CodeEvaluator.getExpressionText();
+        if (node == result.getResult()) {
+            String str = result.getExpression();
             if (str != null) {
                 return str;
             }
+        }
+        if (node instanceof DefaultHistoryItem) {
+            return ((DefaultHistoryItem) node).getExpression();
+        }
+        if (node instanceof EvaluatorTreeModel.HistoryNode) {
+            return NbBundle.getMessage(EvaluatorNodeModelFilter.class, "MSG_EvaluatorHistoryFilterNode"); // NOI18N
         }
         return original.getDisplayName(node);
     }
 
     public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
-        if (node instanceof EvaluatorTreeModel.SpecialNode) {
-            return ((EvaluatorTreeModel.SpecialNode)node).getShortDescription();
-        }
-        if (node == CodeEvaluator.getResult()) {
-            String str = CodeEvaluator.getExpressionText();
+        if (node == result.getResult()) {
+            String str = result.getExpression();
             if (str != null) {
                 StringBuffer buf = new StringBuffer();
                 buf.append("<html>");
@@ -176,6 +202,12 @@ public class EvaluatorNodeModelFilter implements ExtendedNodeModelFilter {
                 buf.append("</html>");
                 return buf.toString();
             }
+        }
+        if (node instanceof DefaultHistoryItem) {
+            return ((DefaultHistoryItem) node).getTooltip();
+        }
+        if (node instanceof EvaluatorTreeModel.HistoryNode) {
+            return NbBundle.getMessage(EvaluatorNodeModelFilter.class, "CTL_EvaluatorHistoryNode"); // NOI18N
         }
         return original.getShortDescription(node);
     }
