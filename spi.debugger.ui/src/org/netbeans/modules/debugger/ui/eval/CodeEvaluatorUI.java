@@ -42,14 +42,10 @@
 
 package org.netbeans.modules.debugger.ui.eval;
 
-import java.awt.AWTKeyStroke;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -59,13 +55,9 @@ import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -73,7 +65,6 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -81,20 +72,13 @@ import javax.swing.text.Document;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.Properties;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.ui.CodeEvaluator;
 import org.netbeans.spi.debugger.ui.CodeEvaluator.EvaluatorService;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.netbeans.spi.viewmodel.Models;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -119,18 +103,11 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
     private volatile String codeText = "";
     //private History history;
     private Reference<EvaluatorService> debuggerRef = new WeakReference(null);
-    private DbgManagerListener dbgManagerListener;
+    private final DbgManagerListener dbgManagerListener;
     //private TopComponent resultView;
-    //private List<String> editItemsList;
-    //private Set<String> editItemsSet = new HashSet<String>(editItemsList);
-    private JButton dropDownButton;
+    private final JButton dropDownButton;
 
-    //private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
-
-    //private HistoryRecord lastEvaluationRecord = null;
-    //private Variable result;
-    private static RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
-    //private RequestProcessor.Task evalTask = rp.create(new EvaluateTask());
+    private static final RequestProcessor rp = new RequestProcessor("Debugger Evaluator", 1);  // NOI18N
 
 
     /** Creates new form CodeEvaluator */
@@ -189,10 +166,6 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
         checkDebuggerState();
     }
     
-    //public static RequestProcessor getRequestProcessor() {
-    //    return rp;
-    //}
-
     public void pasteExpression(String expr) {
         codePane.setText(expr);
         codeText = expr;
@@ -214,6 +187,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
         button.setMargin(new Insets(0, 0, 0, 0));
         button.setFocusable(false);
         AbstractAction action = new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if ("pressed".equals(e.getActionCommand())) {
                     JComponent jc = (JComponent) e.getSource();
@@ -252,6 +226,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
     private void setupContext() {
         if (setupContextTask == null) {
             setupContextTask = rp.create(new Runnable() {
+                @Override
                 public void run() {
                     setupContextLazily();
                 }
@@ -266,6 +241,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
         final Document[] documentPtr = new Document[] { null };
 
         class ContextUpdated implements Runnable {
+            @Override
             public void run() {
                 if (codePane.getDocument() != documentPtr[0]) {
                     codePane.getDocument().addDocumentListener(CodeEvaluatorUI.this);
@@ -306,6 +282,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
 
     private void recomputeDropDownItems() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 List<String> editItemsList = getEditItemsList();
                 for (String str : editItemsList) {
@@ -339,6 +316,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
         } else {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         result[0] = getInstance();
                     }
@@ -353,26 +331,9 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
         return result[0];
     }
 
-    /*
-    public static ArrayList<History.Item> getHistory() {
-        CodeEvaluatorUI defaultInstance = getDefaultInstance();
-        return defaultInstance != null ? defaultInstance.history.getItems() : new ArrayList<History.Item>();
-    }
-
-    public static Variable getResult() {
-        CodeEvaluatorUI defaultInstance = getDefaultInstance();
-        return defaultInstance != null ? defaultInstance.result : null;
-    }
-
-    public static String getExpressionText() {
-        CodeEvaluatorUI defaultInstance = getDefaultInstance();
-        HistoryRecord rec = defaultInstance != null ? defaultInstance.lastEvaluationRecord : null;
-        return rec != null ? rec.expr : "";
-    }
-    */
-
     public static void addResultListener(final PropertyChangeListener listener) {
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 CodeEvaluatorUI defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -386,6 +347,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
 
     public static void removeResultListener(final PropertyChangeListener listener) {
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 CodeEvaluatorUI defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -399,6 +361,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
 
     private static void fireResultChange() {
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 CodeEvaluatorUI defaultInstance = getDefaultInstance();
                 if (defaultInstance != null) {
@@ -437,36 +400,6 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
                 }
             }
         });
-        /*
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
-                JPDADebugger debugger = null;
-                if (de != null) {
-                    debugger = de.lookupFirst(null, JPDADebugger.class);
-                }
-                JPDADebugger lastDebugger = debuggerRef.get();
-                if (debugger != lastDebugger) {
-                    setupContext();
-                }
-                if (lastDebugger != null && debugger != lastDebugger) {
-                    lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, CodeEvaluatorUI.this);
-                    lastDebugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluatorUI.this);
-                    debuggerRef = new WeakReference(null);
-                    displayResult(null);
-                }
-                if (debugger != null) {
-                    debuggerRef = new WeakReference(debugger);
-                    debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, CodeEvaluatorUI.this);
-                    debugger.addPropertyChangeListener(JPDADebugger.PROP_CLASSES_FIXED, CodeEvaluatorUI.this);
-                    debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, CodeEvaluatorUI.this);
-                } else {
-                    history.clear();
-                }
-                computeEvaluationButtonState();
-            }
-        });
-        */
     }
 
     private void computeEvaluationButtonState() {
@@ -706,9 +639,11 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
 
     // KeyListener implementation ..........................................
 
+    @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER && e.isControlDown()) {
             e.consume();
@@ -722,23 +657,27 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
 //        }
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
     }
 
     // DocumentListener implementation ..........................................
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateWatch();
         codeText = codePane.getText();
     }
 
     // DocumentListener
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateWatch();
         codeText = codePane.getText();
     }
 
     // DocumentListener
+    @Override
     public void changedUpdate(DocumentEvent e) {
         updateWatch();
         codeText = codePane.getText();
@@ -747,6 +686,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
     private void updateWatch() {
         // Update this LAZILY to prevent from deadlocks!
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 computeEvaluationButtonState();
             }
@@ -755,51 +695,23 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
 
     // PropertyChangeListener on current thread .................................
 
+    @Override
     public void propertyChange(PropertyChangeEvent event) {
         String propertyName = event.getPropertyName();
         if (EvaluatorService.PROP_CAN_EVALUATE.equals(propertyName)) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    synchronized (this) {
-                        EvaluatorService debugger = debuggerRef.get();
-                        if (debugger != null && debugger.canEvaluate()) {
-                            setupContext();
-                        }
-                        computeEvaluationButtonState();
+                    EvaluatorService debugger = debuggerRef.get();
+                    if (debugger != null && debugger.canEvaluate()) {
+                        setupContext();
                     }
+                    computeEvaluationButtonState();
                 }
             });
         } else if (EvaluatorService.PROP_EXPRESSIONS_HISTORY.equals(propertyName)) {
-            System.err.println("CodeEvaluatorUI.propertyChange("+propertyName+")");
-            Thread.dumpStack();
             recomputeDropDownItems();
         }
-        /*
-        } else if (EvaluatorService.PROP_CAN_EVALUATE.equals(propertyName)) {
-            synchronized (this) {
-                JPDADebugger debugger = debuggerRef.get();
-                if (debugger != null && debugger.getState() != JPDADebugger.STATE_STOPPED) {
-                    if (result != null) {
-                        history.addItem(lastEvaluationRecord.expr, lastEvaluationRecord.type,
-                            lastEvaluationRecord.value, lastEvaluationRecord.toString);
-                        lastEvaluationRecord = null;
-                        result = null;
-                        fireResultChange();
-                    } // if
-                } // if
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        JPDADebugger debugger = debuggerRef.get();
-                        if (debugger != null && debugger.getState() == JPDADebugger.STATE_STOPPED) {
-                            setupContext();
-                        }
-                        computeEvaluationButtonState();
-                    }
-                });
-            } // synchronized
-        }
-        */
     }
 
     // ..........................................................................
@@ -813,7 +725,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
 
     private static class DbgManagerListener extends DebuggerManagerAdapter {
 
-        private Reference<CodeEvaluatorUI> codeEvaluatorRef;
+        private final Reference<CodeEvaluatorUI> codeEvaluatorRef;
 
         public DbgManagerListener(CodeEvaluatorUI evaluator) {
             codeEvaluatorRef = new WeakReference<CodeEvaluatorUI>(evaluator);
@@ -837,6 +749,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
             text = str;
         }
 
+        @Override
         public void activate() {
             codePane.setText(text);
             codeText = text;
