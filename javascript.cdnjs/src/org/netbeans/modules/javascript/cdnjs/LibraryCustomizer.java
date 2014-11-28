@@ -55,12 +55,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.javascript.cdnjs.api.CDNJSLibraries;
 import org.netbeans.modules.javascript.cdnjs.ui.SelectionPanel;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
@@ -76,17 +77,13 @@ import org.openide.util.RequestProcessor;
  * @author Jan Stola
  */
 public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
-    public static final String CATEGORY_NAME = "JavaScriptFiles"; // NOI18N
+    public static final String CATEGORY_NAME = "CDNJS"; // NOI18N
     private static final String DEFAULT_LIBRARY_FOLDER = "js/libs"; // NOI18N
     private static final String PREFERENCES_LIBRARY_FOLDER = "js.libs.folder"; // NOI18N
-    private final CDNJSLibraries.CustomizerContext customizerContext;
-    
-    public LibraryCustomizer(CDNJSLibraries.CustomizerContext context) {
-        this.customizerContext = context;
-    }
+
 
     @Override
-    @NbBundle.Messages("LibraryCustomizer.displayName=JavaScript Files")
+    @NbBundle.Messages("LibraryCustomizer.displayName=CDNJS")
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 CATEGORY_NAME, Bundle.LibraryCustomizer_displayName(), null);
@@ -96,7 +93,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         Project project = context.lookup(Project.class);
         Library.Version[] libraries = LibraryPersistence.getDefault().loadLibraries(project);
-        File webRoot = customizerContext.getWebRoot(context);
+        File webRoot = getWebRoot(project);
         if (webRoot == null) {
             webRoot = FileUtil.toFile(project.getProjectDirectory());
         }
@@ -110,6 +107,14 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             }
         });
         return customizer;
+    }
+
+    @CheckForNull
+    private File getWebRoot(Project project) {
+        for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
+            return FileUtil.toFile(webRoot);
+        }
+        return null;
     }
 
     private static Preferences getProjectPreferences(Project project) {
@@ -170,12 +175,12 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             "LibraryCustomizer.libraryFolderFailure=Unable to create library folder!",
             "LibraryCustomizer.creatingLibraryFolder=Creating a folder for JavaScript libraries.",
             "# {0} - library name",
-            "# {1} - file path",            
+            "# {1} - file path",
             "LibraryCustomizer.downloadingFile=Downloading file {1} of {0}."
         })
         private Library.Version[] updateLibraries(Library.Version[] newLibraries) {
             List<String> errors = new ArrayList<>();
-            
+
             Library.Version[] oldLibraries = LibraryPersistence.getDefault().loadLibraries(project);
             Map<String,Library.Version> oldMap = toMap(oldLibraries);
             Map<String,Library.Version> newMap = toMap(newLibraries);
@@ -274,9 +279,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                 Library.Version versionToStore = updateLibrary(librariesFob, oldVersion, newVersion, errors);
                 newMap.put(libraryName, versionToStore);
             }
-            
+
             reportErrors(errors);
- 
+
             return newMap.values().toArray(new Library.Version[newMap.size()]);
         }
 
@@ -376,7 +381,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             LibraryProvider libraryProvider = LibraryProvider.getInstance();
             String libraryName = oldVersion.getLibrary().getName();
             FileObject libraryFolder = librariesFolder.getFileObject(libraryName);
-            
+
             // Install missing files
             Map<String,String> oldFilesMap = new HashMap<>();
             String[] oldFiles = oldVersion.getFiles();
@@ -461,7 +466,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                     break;
                 }
                 file = parent;
-            }            
+            }
         }
 
         private void uninstallFile(String filePath) {

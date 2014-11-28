@@ -39,43 +39,50 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.cdnjs.api;
+package org.netbeans.modules.javascript.cdnjs;
 
-import java.io.File;
-import org.netbeans.modules.javascript.cdnjs.LibraryCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
 
 /**
- * Support for CDNJS libraries.
+ * Factory for CDNJS libraries in Project Properties dialogs.
  *
  * @author Jan Stola
  */
-public class CDNJSLibraries {
+public final class CDNJSLibraries {
 
-    /**
-     * Creates customizer of CDNJS libraries.
-     * 
-     * @param context context of the customizer.
-     * @return customizer of CDNJS libraries.
-     */
-    public static ProjectCustomizer.CompositeCategoryProvider createCustomizer(CustomizerContext context) {
-        return new LibraryCustomizer(context);
+    private CDNJSLibraries() {
     }
 
-    /**
-     * Context of the customizer.
-     */
-    public static interface CustomizerContext {
-
-        /**
-         * Returns the web root (that is used as a parent folder of libraries folder).
-         * 
-         * @param context project context.
-         * @return web root.
-         */
-        File getWebRoot(Lookup context);
-
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org.netbeans.modules.web.clientproject", // NOI18N
+            category = "JsLibs",
+            position = 100)
+    public static ProjectCustomizer.CompositeCategoryProvider forHtml5Project() {
+        return new LibraryCustomizer();
     }
-    
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-php-project", // NOI18N
+            category = "JsLibs",
+            position = 100)
+    public static ProjectCustomizer.CompositeCategoryProvider forPhpProject() {
+        return new LibraryCustomizer();
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-web-project", // NOI18N
+            category = "JsLibs",
+            position = 100)
+    public static ProjectCustomizer.CompositeCategoryProvider forWebProject() {
+        return new LibraryCustomizer();
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-maven", // NOI18N
+            category = "JsLibs",
+            position = 100)
+    public static ProjectCustomizer.CompositeCategoryProvider forMavenProject() {
+        return new LibraryCustomizer();
+    }
+
 }
