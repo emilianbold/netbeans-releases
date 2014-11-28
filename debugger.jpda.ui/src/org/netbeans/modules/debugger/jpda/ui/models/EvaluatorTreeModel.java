@@ -44,6 +44,7 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 
+import org.netbeans.spi.viewmodel.CachedChildrenTreeModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;

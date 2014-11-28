@@ -40,23 +40,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.models;
+package org.netbeans.spi.viewmodel;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
-import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
-
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  * A TreeModel, which caches children objects and allow seamless update of children objects.
  * 
  * @author Martin Entlicher
+ * @since 1.49
  */
 public abstract class CachedChildrenTreeModel extends Object implements TreeModel, AsynchronousModelFilter {
 
@@ -127,18 +124,40 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
         return ch;
     }
     
+    /**
+     * Compute the children nodes. This is called when there are no children
+     * cached for this node only.
+     * @param node The node to compute the children for
+     * @return The list of children
+     * @throws UnknownTypeException When this implementation is not able to
+     *         resolve children for given node type
+     */
     protected abstract Object[] computeChildren(Object node) throws UnknownTypeException;
     
+    /**
+     * Can be overridden to decide which nodes to cache and which not.
+     * @param node The node
+     * @return <code>true</code> when the children of this node should be cached,
+     *         <code>false</code> otherwise. The default implementation returns
+     *         <code>true</code> always.
+     */
     protected boolean cacheChildrenOf(Object node) {
         return true;
     }
 
+    /**
+     * Force a refresh of the cache.
+     * @param node The node to refresh the cache for.
+     */
     protected final void refreshCache(Object node) {
         synchronized (childrenCache) {
             childrenToRefresh.add(node);
         }
     }
 
+    /**
+     * Clear the entire cache.
+     */
     protected final void clearCache() {
         synchronized (childrenCache) {
             childrenCache.clear();
@@ -146,15 +165,33 @@ public abstract class CachedChildrenTreeModel extends Object implements TreeMode
         }
     }
     
+    /**
+     * Allows to reorder the children. This is called each time the children
+     * are requested, even when they're cached.
+     * @param nodes The original nodes returned by {@link #computeChildren(java.lang.Object)}
+     *              or by the cache.
+     * @return The reordered nodes. The default implementation returns the original nodes.
+     */
     protected Object[] reorder(Object[] nodes) {
         return nodes;
     }
     
+    /**
+     * Force to recompute all cached children.
+     * @throws UnknownTypeException When this implementation is not able to
+     *         resolve children for some node type
+     */
     protected final void recomputeChildren() throws UnknownTypeException {
         recomputeChildren(getRoot());
     }
     
-    protected void recomputeChildren(Object node) throws UnknownTypeException {
+    /**
+     * Force to recompute children cached for the given node.
+     * @param node The node to recompute the children for
+     * @throws UnknownTypeException When this implementation is not able to
+     *         resolve children for the given node type
+     */
+    protected final void recomputeChildren(Object node) throws UnknownTypeException {
         ChildrenTree cht;
         Set keys;
         synchronized (childrenCache) {
