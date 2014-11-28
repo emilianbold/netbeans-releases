@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 )
 public final class NodeJsOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
-    public static final String OPTIONS_CATEGORY = "Advanced"; // NOI18N
+    public static final String OPTIONS_CATEGORY = "Html5"; // NOI18N
     public static final String OPTIONS_SUBCATEGORY = "NodeJs"; // NOI18N
     public static final String OPTIONS_PATH = OPTIONS_CATEGORY + "/" + OPTIONS_SUBCATEGORY; // NOI18N
 

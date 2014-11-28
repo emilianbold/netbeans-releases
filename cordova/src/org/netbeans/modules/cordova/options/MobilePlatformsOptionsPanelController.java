@@ -54,7 +54,7 @@ import org.openide.util.RequestProcessor;
 
 @OptionsPanelController.SubRegistration(
         id = "MobilePlatforms", // NOI18N
-        location = "Advanced", // NOI18N
+        location = "Html5", // NOI18N
         displayName = "#AdvancedOption_DisplayName_MobilePlatforms", // NOI18N
         keywords = "#AdvancedOption_Keywords_MobilePlatforms", // NOI18N
         keywordsCategory = "Advanced/MobilePlatforms") // NOI18N

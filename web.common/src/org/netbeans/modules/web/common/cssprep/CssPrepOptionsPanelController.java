@@ -55,18 +55,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
-@OptionsPanelController.SubRegistration(
-    location=CssPreprocessors.OPTIONS_CATEGORY,
-    id=CssPreprocessors.OPTIONS_SUBCATEGORY,
-    displayName="#CssPrepOptionsPanel.name" // NOI18N
-)
 public final class CssPrepOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(CssPrepOptionsPanelController.class.getName());
