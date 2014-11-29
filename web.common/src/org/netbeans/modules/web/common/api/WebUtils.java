@@ -63,8 +63,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -551,6 +553,21 @@ public class WebUtils {
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    /**
+     * Checks whether the given project has web root.
+     * @param project project to be checked
+     * @return {@code true} if the given project has web root, {@code false} otherwise
+     * @since 1.78
+     */
+    public static boolean hasWebRoot(Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        ProjectWebRootProvider webRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
+        if (webRootProvider == null) {
+            return false;
+        }
+        return !webRootProvider.getWebRoots().isEmpty();
     }
 
 }
