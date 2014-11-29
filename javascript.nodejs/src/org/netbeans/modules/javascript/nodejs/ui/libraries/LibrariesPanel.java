@@ -64,7 +64,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
      */
     public LibrariesPanel(Project project) {
         initComponents();
-        PackageJson packagejson = NodeJsSupport.forProject(project).getPackageJson();
+        PackageJson packagejson = getPackageJson(project);
         if (packagejson.exists()) {
             PackageJson.NpmDependencies dependencies = packagejson.getDependencies();
             regularPanel.setProject(project);
@@ -77,6 +77,14 @@ public class LibrariesPanel extends javax.swing.JPanel {
             GroupLayout layout = (GroupLayout)getLayout();
             layout.replace(tabbedPane, messageLabel);
         }
+    }
+
+    private PackageJson getPackageJson(Project project) {
+        NodeJsSupport nodeJsSupport = project.getLookup().lookup(NodeJsSupport.class);
+        if (nodeJsSupport != null) {
+            return nodeJsSupport.getPackageJson();
+        }
+        return new PackageJson(project.getProjectDirectory());
     }
 
     /**
