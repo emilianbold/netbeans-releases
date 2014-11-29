@@ -60,6 +60,7 @@ import org.netbeans.modules.javascript2.debug.JSUtils;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.CodeEvaluator;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.text.Line;
 import org.openide.util.RequestProcessor;
@@ -114,6 +115,9 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
                     }
                 }
             });
+        } else if (action == ACTION_EVALUATE) {
+            CodeEvaluator.getDefault().open();
+            actionPerformedNotifier.run();
         } else {
             super.postAction(action, actionPerformedNotifier);
         }

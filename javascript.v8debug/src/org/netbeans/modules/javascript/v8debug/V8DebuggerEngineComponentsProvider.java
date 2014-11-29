@@ -69,7 +69,7 @@ public class V8DebuggerEngineComponentsProvider implements EngineComponentsProvi
         "localsView", "watchesView", "breakpointsView", "debuggingView"         // NOI18N
     };
     private static final String[] DBG_COMPONENTS_CLOSED = {
-        "callstackView", "debuggerJSevaluator", "resultsView", "sessionsView",  // NOI18N
+        "callstackView", "evaluatorPane", "resultsView", "sessionsView",  // NOI18N
     };
 
     @Override
