@@ -65,6 +65,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.netbeans.spi.debugger.ui.CodeEvaluator;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistrations;
 import org.netbeans.spi.debugger.ui.DebuggingView;
@@ -89,7 +90,8 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             BreakpointType.Registration.class.getCanonicalName(),
             ColumnModelRegistration.class.getCanonicalName(),
             ColumnModelRegistrations.class.getCanonicalName(),
-            DebuggingView.DVSupport.Registration.class.getCanonicalName()
+            DebuggingView.DVSupport.Registration.class.getCanonicalName(),
+            CodeEvaluator.EvaluatorService.Registration.class.getCanonicalName()
         ));
     }
 
@@ -145,6 +147,13 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             final String path = reg.path();
             final int position = reg.position();
             handleProviderRegistration(e, DebuggingView.DVSupport.class, path, position);
+            cnt++;
+        }
+        for (Element e : env.getElementsAnnotatedWith(CodeEvaluator.EvaluatorService.Registration.class)) {
+            CodeEvaluator.EvaluatorService.Registration reg = e.getAnnotation(CodeEvaluator.EvaluatorService.Registration.class);
+            final String path = reg.path();
+            final int position = reg.position();
+            handleProviderRegistration(e, CodeEvaluator.EvaluatorService.class, path, position);
             cnt++;
         }
         return cnt == annotations.size();

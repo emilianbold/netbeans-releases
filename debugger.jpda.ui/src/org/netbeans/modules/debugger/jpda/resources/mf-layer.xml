@@ -287,18 +287,4 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>    
     
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="evaluator.settings" url="evaluator.settings"/>
-        </folder>
-        <folder name="Modes">
-            <file name="code_evaluator.wsmode" url="code_evaluator.wsmode"/>
-            <folder name="code_evaluator">
-                <file name="evaluator.wstcref" url="evaluator.wstcref">
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-
 </filesystem>

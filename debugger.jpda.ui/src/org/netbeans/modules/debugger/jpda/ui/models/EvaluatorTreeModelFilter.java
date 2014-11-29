@@ -44,37 +44,40 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
+import org.netbeans.modules.debugger.jpda.ui.JPDACodeEvaluator;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.CodeEvaluator;
+import org.netbeans.spi.debugger.ui.CodeEvaluator.Result.DefaultHistoryItem;
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
-@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
-                             types=TreeModelFilter.class,
-                             position=350)
+//@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+//                             types=TreeModelFilter.class,
+//                             position=350)
 public class EvaluatorTreeModelFilter implements TreeModelFilter {
-
-    public static final String HISTORY_NODE =
-        "org/netbeans/modules/debugger/jpda/resources/field.gif";
-
-    public static final String HISTORY_ITEM =
-        "org/netbeans/modules/debugger/jpda/resources/eval_history_item.gif";
 
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
 
-    EvaluatorListener evalListener = new EvaluatorListener();
+    private final JPDACodeEvaluator jpdaEval;
+    private final CodeEvaluator.Result<Variable, DefaultHistoryItem> result;
+    private CodeEvaluator.Result.Listener evalListener = new EvaluatorListener();
 
-    public EvaluatorTreeModelFilter() {
-        CodeEvaluator.addResultListener(evalListener);
+    public EvaluatorTreeModelFilter(ContextProvider contextProvider) {
+        jpdaEval = (JPDACodeEvaluator) contextProvider.lookupFirst(null, CodeEvaluator.EvaluatorService.class);
+        assert jpdaEval != null;
+        //jpdaEval.addResultListener(evalListener);
+        result = CodeEvaluator.Result.get(contextProvider.lookupFirst(null, DebuggerEngine.class));
+        result.addListener(evalListener);
     }
 
     public void addModelListener(ModelListener l) {
@@ -116,7 +119,7 @@ public class EvaluatorTreeModelFilter implements TreeModelFilter {
             ls[i].modelChanged (ev);
         }
         // Select
-        CodeEvaluator.getRequestProcessor().post(new Runnable() {
+        jpdaEval.getRequestProcessor().post(new Runnable() {
             public void run() {
                 ModelEvent ev = new ModelEvent.SelectionChanged(EvaluatorTreeModelFilter.this, result);
                 for (int i = 0; i < ls.length; i++) {
@@ -131,12 +134,12 @@ public class EvaluatorTreeModelFilter implements TreeModelFilter {
     }
 
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
-        if (parent instanceof EvaluatorTreeModel.SpecialNode) {
-            return ((EvaluatorTreeModel.SpecialNode) parent).getChildren(from, to);
-        }
+//        if (parent instanceof EvaluatorTreeModel.SpecialNode) {
+//            return ((EvaluatorTreeModel.SpecialNode) parent).getChildren(from, to);
+//        }
         if (parent == TreeModel.ROOT) {
-            Variable result = CodeEvaluator.getResult();
-            ArrayList items = CodeEvaluator.getHistory();
+            Variable result = this.result.getResult();
+            List<DefaultHistoryItem> items = this.result.getHistoryItems();
             int count = 0;
             if (result != null) {
                 count++;
@@ -150,7 +153,7 @@ public class EvaluatorTreeModelFilter implements TreeModelFilter {
                 children[index++] = result;
             }
             if (items.size() > 0) {
-                children[index] = new EvaluatorTreeModel.HistoryNode();
+//                children[index] = new EvaluatorTreeModel.HistoryNode(items);
             }
             return children;
         }
@@ -159,8 +162,8 @@ public class EvaluatorTreeModelFilter implements TreeModelFilter {
 
     public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
         if (TreeModel.ROOT.equals(node)) {
-            Variable result = CodeEvaluator.getResult();
-            ArrayList items = CodeEvaluator.getHistory();
+            Variable result = this.result.getResult();
+            List<DefaultHistoryItem> items = this.result.getHistoryItems();
             int count = 0;
             if (result != null) {
                 count++;
@@ -170,173 +173,27 @@ public class EvaluatorTreeModelFilter implements TreeModelFilter {
             }
             return count;
         }
-        if (node instanceof EvaluatorTreeModel.SpecialNode) {
-            return ((EvaluatorTreeModel.SpecialNode)node).getChildrenCount();
-        }
+//        if (node instanceof EvaluatorTreeModel.SpecialNode) {
+//            return ((EvaluatorTreeModel.SpecialNode)node).getChildrenCount();
+//        }
         return original.getChildrenCount(node);
     }
 
     public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
         if (TreeModel.ROOT.equals(node)) {
             return false;
-        } else if (node instanceof EvaluatorTreeModel.SpecialNode) {
-            return ((EvaluatorTreeModel.SpecialNode)node).isLeaf();
+//        } else if (node instanceof EvaluatorTreeModel.SpecialNode) {
+//            return ((EvaluatorTreeModel.SpecialNode)node).isLeaf();
         }
         return original.isLeaf(node);
     }
 
-    // **************************************************************************
-
-    /*
-    abstract static class SpecialNode {
-
-        abstract Object [] getChildren(int from, int to);
-
-        abstract int getChildrenCount();
-
-        abstract String getDisplayName();
-
-        abstract String getValueAt(String columnID);
-
-        abstract String getShortDescription();
-
-        abstract String getIconBase();
-
-        abstract boolean isLeaf();
-
-    }
-
-    private static class HistoryNode extends SpecialNode {
+    private class EvaluatorListener implements CodeEvaluator.Result.Listener<Variable> {
 
         @Override
-        Object [] getChildren(int from, int to) {
-            ArrayList<HistoryPanel.Item> items = CodeEvaluator.getHistory();
-            ItemNode[] vals = new ItemNode[items.size()];
-            for (int x = 0; x < items.size(); x++) {
-                HistoryPanel.Item item = items.get(x);
-                vals[x] = new ItemNode(item);
-            }
-            return vals;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return o instanceof HistoryNode;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            return hash;
-        }
-
-        @Override
-        String getDisplayName() {
-            return NbBundle.getBundle(EvaluatorTreeModelFilter.class).getString("MSG_EvaluatorHistoryFilterNode"); // NOI18N
-        }
-
-        @Override
-        String getIconBase() {
-            return HISTORY_NODE;
-        }
-
-        @Override
-        boolean isLeaf() {
-            return false;
-        }
-
-        @Override
-        int getChildrenCount() {
-            return CodeEvaluator.getHistory().size();
-        }
-
-        @Override
-        String getShortDescription() {
-            return NbBundle.getBundle(EvaluatorTreeModelFilter.class).getString("CTL_EvaluatorHistoryNode"); // NOI18N
-        }
-
-        @Override
-        String getValueAt(String columnID) {
-            return ""; // NOI18N
-        }
-
-    }
-
-    private static class ItemNode extends SpecialNode {
-
-        HistoryPanel.Item item;
-
-        protected ItemNode(HistoryPanel.Item item) {
-            this.item = item;
-        }
-
-        @Override
-        Object [] getChildren(int from, int to) {
-            return new Object[0];
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ItemNode)) return false;
-            return item.equals(((ItemNode) o).item);
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 31 * hash + (this.item != null ? this.item.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        String getDisplayName() {
-            return item.expr;
-        }
-
-        @Override
-        String getIconBase() {
-            return HISTORY_ITEM;
-        }
-
-        @Override
-        boolean isLeaf() {
-            return true;
-        }
-
-        @Override
-        int getChildrenCount() {
-            return 0;
-        }
-
-        @Override
-        String getShortDescription() {
-            return NbBundle.getBundle(EvaluatorTreeModelFilter.class).getString("CTL_EvaluatorHistoryItem"); // NOI18N
-        }
-
-        @Override
-        String getValueAt(String columnID) {
-            if (Constants.LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
-                return item.toString;
-            } else if (Constants.LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
-                return item.type;
-            } else if (Constants.LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
-                return item.value;
-            }
-            return ""; // NOI18N
-        }
-
-    }
-     */
-
-    // **************************************************************************
-
-    private class EvaluatorListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void resultChanged(Variable v) {
             fireNodeChanged(TreeModel.ROOT);
-            fireSelectionChanged(CodeEvaluator.getResult());
+            fireSelectionChanged(v);
         }
 
     }

@@ -60,7 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -76,6 +75,7 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
 
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
+import org.netbeans.spi.viewmodel.CachedChildrenTreeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -149,6 +149,10 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     @Override
     protected Object[] computeChildren(Object parent) throws UnknownTypeException {
         return monitorChildrenFilter.getChildren(childrenModelImpl, parent, 0, Integer.MAX_VALUE);
+    }
+
+    void doRefreshCache(Object node) {
+        refreshCache(node);
     }
 
     private class ChildrenImplModel implements TreeModel {

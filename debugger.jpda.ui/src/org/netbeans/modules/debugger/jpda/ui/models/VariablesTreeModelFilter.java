@@ -62,23 +62,25 @@ import java.util.prefs.Preferences;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
+import org.netbeans.spi.debugger.ui.CodeEvaluator;
+import org.netbeans.spi.debugger.ui.CodeEvaluator.Result.DefaultHistoryItem;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
-import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -134,6 +136,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private final LinkedList evaluationQueue = new LinkedList();
 
+    private final CodeEvaluator.Result<Variable, DefaultHistoryItem> result;
     private EvaluatorListener evalListener;
     private VariablesPreferenceChangeListener prefListener;
     private Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(VariablesViewButtons.PREFERENCES_NAME);
@@ -142,7 +145,9 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         this.lookupProvider = lookupProvider;
         evaluationRP = lookupProvider.lookupFirst(null, RequestProcessor.class);
         evalListener = new EvaluatorListener();
-        CodeEvaluator.addResultListener(WeakListeners.propertyChange(evalListener, new ResultListenerRemoval()));
+        //CodeEvaluatorUI.addResultListener(WeakListeners.propertyChange(evalListener, new ResultListenerRemoval()));
+        result = CodeEvaluator.Result.get(lookupProvider.lookupFirst(null, DebuggerEngine.class));
+        result.addListener(evalListener);
         prefListener = new VariablesPreferenceChangeListener();
         preferences.addPreferenceChangeListener(WeakListeners.create(
                 PreferenceChangeListener.class, prefListener, preferences));
@@ -813,10 +818,10 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
 
     }
 
-    private class EvaluatorListener implements PropertyChangeListener {
+    private class EvaluatorListener implements CodeEvaluator.Result.Listener<Variable> {
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void resultChanged(Variable o) {
             try {
                 fireModelChange(new ModelEvent.NodeChanged(this, TreeModel.ROOT));
             } catch (ThreadDeath td) {
@@ -828,11 +833,4 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
 
     }
     
-    private static class ResultListenerRemoval {
-        
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-            CodeEvaluator.removeResultListener(l);
-        }
-    }
-
 }
