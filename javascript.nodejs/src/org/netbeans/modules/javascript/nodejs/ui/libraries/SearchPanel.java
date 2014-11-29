@@ -156,6 +156,7 @@ public class SearchPanel extends javax.swing.JPanel {
             librariesList.setModel(libraryListModelFor(libraries));
             librariesList.setSelectedIndex(0);
             showComponent(searchPanel);
+            librariesList.requestFocusInWindow();
         }
     }
 
@@ -340,7 +341,7 @@ public class SearchPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(searchLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
