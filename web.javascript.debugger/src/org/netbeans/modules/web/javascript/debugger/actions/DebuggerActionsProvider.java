@@ -54,13 +54,13 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.web.javascript.debugger.eval.ui.CodeEvaluator;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.spi.JavaScriptDebuggerFactory;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.CodeEvaluator;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
@@ -162,7 +162,7 @@ public class DebuggerActionsProvider extends ActionsProviderSupport
     @Override
     public void postAction(Object action, Runnable actionPerformedNotifier) {
         if (action == ActionsManager.ACTION_EVALUATE) {
-            CodeEvaluator.openEvaluator();
+            CodeEvaluator.getDefault().open();
             actionPerformedNotifier.run();
         } else {
             super.postAction(action, actionPerformedNotifier);

@@ -180,18 +180,4 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>    
     
-    <folder name="Windows2">
-        <folder name="Components">
-            <file name="debuggerJSevaluator.settings" url="resources/debuggerJSevaluator.settings"/>
-        </folder>
-        <folder name="Modes">
-            <file name="code_evaluator_js.wsmode" url="resources/code_evaluator_js.wsmode"/>
-            <folder name="code_evaluator_js">
-                <file name="debuggerJSevaluator.wstcref" url="resources/debuggerJSevaluator.wstcref">
-                    <attr name="position" intvalue="400"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    
 </filesystem>

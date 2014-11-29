@@ -411,7 +411,7 @@ public final class MiscEditorUtil {
                 actionPerform, Models.MULTISELECTION_TYPE_EXACTLY_ONE);
     }
     
-    public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
+    public static void setupContext(final JEditorPane editorPane, final Runnable contextSetUp) {
         //EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
         //editorPane.setEditorKit(kit); - Do not set it, setupContext() will do the job.
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
@@ -427,7 +427,7 @@ public final class MiscEditorUtil {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    contextSetUp.actionPerformed(null);
+                                    contextSetUp.run();
                                 }
                             });
                         }
@@ -452,7 +452,7 @@ public final class MiscEditorUtil {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    contextSetUp.actionPerformed(null);
+                    contextSetUp.run();
                 }
             });
         }

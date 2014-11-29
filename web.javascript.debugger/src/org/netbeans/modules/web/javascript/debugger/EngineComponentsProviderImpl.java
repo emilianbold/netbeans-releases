@@ -71,7 +71,7 @@ public class EngineComponentsProviderImpl implements EngineComponentsProvider {
         "localsView", "watchesView", "callstackView", "breakpointsView",
     };
     private static final String[] DBG_COMPONENTS_CLOSED = {
-        "debuggerJSevaluator", "resultsView", "sessionsView",
+        "evaluatorPane", "resultsView", "sessionsView",
     };
 
     @Override
