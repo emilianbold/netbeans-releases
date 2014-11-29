@@ -392,9 +392,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                     if (wasIncomplete && !hasChildren(value)) {
                         fireChangeEvent(new ModelEvent.NodeChanged(VariablesModel.this, node, ModelEvent.NodeChanged.CHILDREN_MASK));
                     }
-                    return V8Evaluator.getStringValue(value);
+                    return toHTML(V8Evaluator.getStringValue(value));
                 } catch (EvaluationError ex) {
-                    return toHTML(ex.getLocalizedMessage(), false, false, Color.red);
+                    return toHTML(ex.getLocalizedMessage(), true, false, Color.red);
                 }
             } else if (node instanceof ScopeValue) {
                 return "";
@@ -412,7 +412,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 } catch (EvaluationError ex) {
                     return "";
                 }
-                return V8Evaluator.getStringType(value);
+                return toHTML(V8Evaluator.getStringType(value));
             } else if (node instanceof ScopeValue) {
                 return "";
             }

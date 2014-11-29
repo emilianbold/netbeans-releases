@@ -228,11 +228,11 @@ public class WatchesModel extends VariablesModel implements TreeModelFilter {
                         if (WATCH_VALUE_COLUMN_ID.equals(columnID) ||
                             WATCH_TO_STRING_COLUMN_ID.equals(columnID)) {
                             
-                            return V8Evaluator.getStringValue(value);
+                            return toHTML(V8Evaluator.getStringValue(value));
                             
                         } else if (WATCH_TYPE_COLUMN_ID.equals(columnID)) {
                             
-                            return V8Evaluator.getStringType(value);
+                            return toHTML(V8Evaluator.getStringType(value));
                         }
                     }
                 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript.v8debug.vars.eval;
 
+import java.awt.Color;
 import java.util.List;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -263,7 +264,7 @@ public class EvaluationResultsModel extends VariablesModel {
                 if (Constants.LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
                     return "";
                 } else {
-                    return voe.getError();
+                    return toHTML(voe.getError(), true, false, Color.red);
                 }
             }
         }
