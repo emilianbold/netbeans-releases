@@ -99,7 +99,7 @@ public final class LibraryProvider {
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
-     * Creates a new {@code CDNJSLibraryProvider}.
+     * Creates a new {@code LibraryProvider}.
      */
     private LibraryProvider() {
     }
