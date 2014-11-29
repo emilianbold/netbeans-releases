@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.javascript.debugger.eval.ui;
+
+package org.netbeans.modules.javascript.v8debug.vars.eval;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
+import org.netbeans.modules.javascript.v8debug.V8DebuggerEngineProvider;
+import org.netbeans.modules.javascript.v8debug.vars.models.VariablesModel;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.debugger.ui.CodeEvaluator;
 import org.netbeans.spi.debugger.ui.CodeEvaluator.Result.DefaultHistoryItem;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
@@ -54,6 +56,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
+import static org.netbeans.spi.viewmodel.TreeModel.ROOT;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -62,26 +65,34 @@ import org.openide.util.RequestProcessor;
  *
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path="javascript-debuggerengine/ResultsView", types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
+@DebuggerServiceRegistration(path=V8DebuggerEngineProvider.ENGINE_NAME+"/ResultsView",
+                             types={ TreeModel.class, ExtendedNodeModel.class, TableModel.class })
 public class EvaluationResultsModel extends VariablesModel {
     
+    @StaticResource(searchClasspath = true)
     private static final String ICON_HISTORY_NODE =
         "org/netbeans/modules/debugger/resources/evaluator/history_node_16.png"; // NOI18N
 
+    @StaticResource(searchClasspath = true)
     private static final String ICON_HISTORY_ITEM =
         "org/netbeans/modules/debugger/resources/evaluator/eval_history_item.png"; // NOI18N
     
+    @StaticResource(searchClasspath = true)
     private static final String ICON_EVAL_RESULT =
         "org/netbeans/modules/debugger/resources/evaluator/evaluator_result_16.png"; // NOI18N
 
+    @StaticResource(searchClasspath = true)
+    private static final String ICON_WRONG_PASS =
+        "org/netbeans/modules/debugger/resources/wrong_pass.png"; // NOI18N
+
     private final static RequestProcessor RP = new RequestProcessor(EvaluationResultsModel.class);
-    private final CodeEvaluator.Result result;
+    private final org.netbeans.spi.debugger.ui.CodeEvaluator.Result result;
     private EvaluatorListener evalListener = new EvaluatorListener();
     
     public EvaluationResultsModel(ContextProvider contextProvider) {
         super(contextProvider);
         //CodeEvaluator.addResultListener(evalListener);
-        result = CodeEvaluator.Result.get(contextProvider.lookupFirst(null, DebuggerEngine.class));
+        result = org.netbeans.spi.debugger.ui.CodeEvaluator.Result.get(contextProvider.lookupFirst(null, DebuggerEngine.class));
         result.addListener(evalListener);
     }
 
@@ -92,6 +103,13 @@ public class EvaluationResultsModel extends VariablesModel {
         }
         if (parent == ROOT) {
             return 2;
+        } else if (parent instanceof VarOrError) {
+            VarOrError voe = (VarOrError) parent;
+            if (voe.hasVar()) {
+                return super.getChildrenCount(voe.getVar());
+            } else {
+                return 0;
+            }
         } else {
             return super.getChildrenCount(parent);
         }
@@ -102,34 +120,37 @@ public class EvaluationResultsModel extends VariablesModel {
         if (parent instanceof HistoryNode) {
             List l = ((HistoryNode) parent).getItems();
             for (Object o : l) {
-                if (!(o instanceof DefaultHistoryItem)) {
+                if (!(o instanceof org.netbeans.spi.debugger.ui.CodeEvaluator.Result.DefaultHistoryItem)) {
                     return new Object[]{};
                 }
             }
             return l.toArray();
         }
         if (parent == ROOT) {
-            if (this.result != null) {
-                Object result = this.result.getResult();
-                List items = this.result.getHistoryItems();
-                int count = 0;
-                if (result != null) {
-                    count++;
-                }
-                if (items.size() > 0) {
-                    count++;
-                }
-                Object[] children = new Object[count];
-                int index = 0;
-                if (result != null) {
-                    children[index++] = result;
-                }
-                if (items.size() > 0) {
-                    children[index] = new HistoryNode(items);
-                }
-                return children;
+            Object result = this.result.getResult();
+            List items = this.result.getHistoryItems();
+            int count = 0;
+            if (result != null) {
+                count++;
+            }
+            if (items.size() > 0) {
+                count++;
+            }
+            Object[] children = new Object[count];
+            int index = 0;
+            if (result != null) {
+                children[index++] = result;
+            }
+            if (items.size() > 0) {
+                children[index] = new HistoryNode(items);
+            }
+            return children;
+        } else if (parent instanceof VarOrError) {
+            VarOrError voe = (VarOrError) parent;
+            if (voe.hasVar()) {
+                return super.getChildren(voe.getVar(), from, to);
             } else {
-                return new Object[] {};
+                return new Object[]{};
             }
         } else {
             return super.getChildren(parent, from, to);
@@ -144,6 +165,13 @@ public class EvaluationResultsModel extends VariablesModel {
             return false;
         } else if (node instanceof DefaultHistoryItem) {
             return true;
+        } else if (node instanceof VarOrError) {
+            VarOrError voe = (VarOrError) node;
+            if (voe.hasVar()) {
+                return super.isLeaf(voe.getVar());
+            } else {
+                return true;
+            }
         }
         return super.isLeaf(node);
     }
@@ -156,6 +184,8 @@ public class EvaluationResultsModel extends VariablesModel {
         }
         if (node instanceof EvaluationResultsModel.HistoryNode) {
             return Bundle.CTL_EvaluatorHistoryNode();
+        } else if (node instanceof VarOrError) {
+            return result.getExpression();
         }
         return super.getDisplayName(node);
     }
@@ -183,6 +213,8 @@ public class EvaluationResultsModel extends VariablesModel {
         }
         if (node instanceof EvaluationResultsModel.HistoryNode) {
             return Bundle.CTL_EvaluatorHistoryNodeDescr();
+        } else if (node instanceof VarOrError) {
+            return result.getExpression();
         }
         return super.getShortDescription(node);
     }
@@ -197,6 +229,13 @@ public class EvaluationResultsModel extends VariablesModel {
         }
         if (node instanceof EvaluationResultsModel.HistoryNode) {
             return ICON_HISTORY_NODE;
+        } else if (node instanceof VarOrError) {
+            VarOrError voe = (VarOrError) node;
+            if (voe.hasVar()) {
+                return super.getIconBaseWithExtension(voe.getVar());
+            } else {
+                return ICON_WRONG_PASS;
+            }
         }
         return super.getIconBaseWithExtension(node);
     }
@@ -216,6 +255,17 @@ public class EvaluationResultsModel extends VariablesModel {
         }
         if (node instanceof EvaluationResultsModel.HistoryNode) {
             return "";
+        } else if (node instanceof VarOrError) {
+            VarOrError voe = (VarOrError) node;
+            if (voe.hasVar()) {
+                return super.getValueAt(voe.getVar(), columnID);
+            } else {
+                if (Constants.LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
+                    return "";
+                } else {
+                    return voe.getError();
+                }
+            }
         }
         return super.getValueAt(node, columnID);
     }
@@ -223,6 +273,8 @@ public class EvaluationResultsModel extends VariablesModel {
     @Override
     public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
         if (node instanceof DefaultHistoryItem || node instanceof EvaluationResultsModel.HistoryNode) {
+            return true;
+        } else if (node instanceof VarOrError) {
             return true;
         }
         return super.isReadOnly(node, columnID);
@@ -232,8 +284,11 @@ public class EvaluationResultsModel extends VariablesModel {
     public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
         if (node instanceof DefaultHistoryItem || node instanceof EvaluationResultsModel.HistoryNode) {
             return ;
+        } else if (node instanceof VarOrError) {
+            return ;
+        } else {
+            super.setValueAt(node, columnID, value);
         }
-        super.setValueAt(node, columnID, value);
     }
     
     public void fireNodeChanged (Object node) {
@@ -241,22 +296,12 @@ public class EvaluationResultsModel extends VariablesModel {
     }
     
     private void fireSelectionChanged(final Object result) {
-        final ModelListener[] ls;
-        synchronized (listeners) {
-            ls = listeners.toArray(new ModelListener[0]);
-        }
         // Unselect
-        ModelEvent ev = new ModelEvent.SelectionChanged(this);
-        for (int i = 0; i < ls.length; i++) {
-            ls[i].modelChanged (ev);
-        }
+        fireChangeEvent(new ModelEvent.SelectionChanged(this));
         // Select
         RP.post(new Runnable() {
             public void run() {
-                ModelEvent ev = new ModelEvent.SelectionChanged(EvaluationResultsModel.this, result);
-                for (int i = 0; i < ls.length; i++) {
-                    ls[i].modelChanged (ev);
-                }
+                fireChangeEvent(new ModelEvent.SelectionChanged(EvaluationResultsModel.this, result));
             }
         }, 500);
     }
@@ -274,14 +319,15 @@ public class EvaluationResultsModel extends VariablesModel {
         }
     }
 
-    private class EvaluatorListener implements CodeEvaluator.Result.Listener<ScopedRemoteObject> {
+    private class EvaluatorListener implements org.netbeans.spi.debugger.ui.CodeEvaluator.Result.Listener<VarOrError> {
 
         @Override
-        public void resultChanged(ScopedRemoteObject o) {
+        public void resultChanged(VarOrError voe) {
             fireNodeChanged(TreeModel.ROOT);
-            fireSelectionChanged(o);
+            fireSelectionChanged(voe);
         }
 
     }
 
+    
 }
