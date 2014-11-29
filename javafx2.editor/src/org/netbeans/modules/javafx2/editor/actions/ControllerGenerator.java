@@ -100,6 +100,7 @@ import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.EventHandler;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInclude;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
@@ -513,10 +514,6 @@ public class ControllerGenerator implements Task<WorkingCopy> {
     private void syncComponentBinding(FxInstance decl) {
         String id = decl.getId();
         TypeElement declType = getInstanceType(decl);
-        if (declType == null) {
-            return;
-        }
-
         TypeMirror fieldType = generatedFields.get(id);
         if (fieldType != null) {
             return;
@@ -524,6 +521,9 @@ public class ControllerGenerator implements Task<WorkingCopy> {
         
         VariableTree vt = fields.get(id);
         if (vt == null) {
+            if (declType == null) {
+                return;
+            }
             defineNewField(id, wcopy.getTreeMaker().Type(
                     eraseFieldTypeParameters(declType.asType(), wcopy)));
             generatedFields.put(id, declType.asType());
@@ -536,13 +536,15 @@ public class ControllerGenerator implements Task<WorkingCopy> {
         if (e == null) {
             throw new IllegalStateException();
         }
-        if (!wcopy.getTypes().isAssignable(
-                wcopy.getTypes().erasure(declType.asType()), 
-                wcopy.getTypes().erasure(e.asType()))) {
-            // the field's type does not match. Consistency of FXML vs. controller is necessary, so 
-            // we change field's type even though it may produce a compiler error.
-            wcopy.rewrite(vt.getType(), wcopy.getTreeMaker().Type(
-                    eraseFieldTypeParameters(declType.asType(), wcopy)));
+        if (declType != null) {
+            if (!wcopy.getTypes().isAssignable(
+                    wcopy.getTypes().erasure(declType.asType()), 
+                    wcopy.getTypes().erasure(e.asType()))) {
+                // the field's type does not match. Consistency of FXML vs. controller is necessary, so 
+                // we change field's type even though it may produce a compiler error.
+                wcopy.rewrite(vt.getType(), wcopy.getTreeMaker().Type(
+                        eraseFieldTypeParameters(declType.asType(), wcopy)));
+            }
         }
         // annotation and visibility. If not public, add @FXML annotation
         if (!FxClassUtils.isFxmlAccessible(e)) {
@@ -551,7 +553,13 @@ public class ControllerGenerator implements Task<WorkingCopy> {
         }
         mappedTrees.add(vt);
         // prevent further changes to the field
-        generatedFields.put(id, declType.asType());
+        TypeMirror v;
+        if (declType != null) {
+            v = declType.asType();
+        } else {
+            v = e.asType();
+        }
+        generatedFields.put(id, v);
     }
     
     private void defineNewField(String name, Tree typeTree) {
@@ -568,6 +576,18 @@ public class ControllerGenerator implements Task<WorkingCopy> {
     
     private class UpdatingVisitor extends FxNodeVisitor.ModelTraversal {
 
+        @Override
+        public void visitInclude(FxInclude decl) {
+            if (decl.getId() != null && Utilities.isJavaIdentifier(decl.getId())) {
+                // check that the component is not defined 
+                if (decl.getRoot().getInstance(decl.getId()) == decl) {
+                    syncComponentBinding(decl);
+                }
+            }
+            super.visitInclude(decl); 
+        }
+
+        
         @Override
         public void visitBaseInstance(FxInstance decl) {
             if (decl.getId() != null && Utilities.isJavaIdentifier(decl.getId())) {
