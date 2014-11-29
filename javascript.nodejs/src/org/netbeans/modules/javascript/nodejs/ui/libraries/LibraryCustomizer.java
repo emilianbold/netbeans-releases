@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -54,6 +55,33 @@ import org.openide.util.NbBundle;
  */
 public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
     public static final String CATEGORY_NAME = "NpmLibraries"; // NOI18N
+
+    private final boolean checkWebRoot;
+
+    public LibraryCustomizer() {
+        this(false);
+    }
+
+    public LibraryCustomizer(boolean checkWebRoot) {
+        this.checkWebRoot = checkWebRoot;
+    }
+
+    @Override
+    @NbBundle.Messages("LibraryCustomizer.displayName=npm")
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        if (checkWebRoot
+                && !WebUtils.hasWebRoot(context.lookup(Project.class))) {
+            return null;
+        }
+        return ProjectCustomizer.Category.create(
+                CATEGORY_NAME, Bundle.LibraryCustomizer_displayName(), null);
+    }
+
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project project = context.lookup(Project.class);
+        return new LibrariesPanel(project);
+    }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org.netbeans.modules.web.clientproject", // NOI18N
@@ -84,20 +112,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             category = "JsLibs", // NOI18N
             position = 100)
     public static ProjectCustomizer.CompositeCategoryProvider forMavenProject() {
-        return new LibraryCustomizer();
-    }
-
-    @Override
-    @NbBundle.Messages("LibraryCustomizer.displayName=npm")
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                CATEGORY_NAME, Bundle.LibraryCustomizer_displayName(), null);
-    }
-
-    @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        Project project = context.lookup(Project.class);
-        return new LibrariesPanel(project);
+        return new LibraryCustomizer(true);
     }
 
 }
