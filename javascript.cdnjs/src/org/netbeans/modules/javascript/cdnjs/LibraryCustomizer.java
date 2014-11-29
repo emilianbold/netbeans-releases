@@ -74,6 +74,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
+ * Customizer for CDNJS libraries.
  *
  * @author Jan Stola
  */
@@ -136,10 +137,22 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         return ProjectUtils.getPreferences(project, WebClientProjectConstants.class, true);
     }
 
+    /**
+     * Returns the library folder for the given project.
+     * 
+     * @param project project whose library folder should be returned.
+     * @return library folder for the given project.
+     */
     static String getLibraryFolder(Project project) {
         return getProjectPreferences(project).get(PREFERENCES_LIBRARY_FOLDER, DEFAULT_LIBRARY_FOLDER);
     }
 
+    /**
+     * Store the library folder for the given project.
+     * 
+     * @param project project whose library folder should be stored.
+     * @param libraryFolder library folder to store.
+     */
     static void storeLibraryFolder(Project project, String libraryFolder) {
         getProjectPreferences(project).put(PREFERENCES_LIBRARY_FOLDER, libraryFolder);
     }
