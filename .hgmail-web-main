@@ -1,4 +1,5 @@
 [usersubs]
 commits@php.netbeans.org=php*/*,hudson.php/*,languages.ini/*,languages.neon/*,languages.apacheconf/*,languages.twig/*
 mentlicher@netbeans.org=web.webkit.debugging/*,web.javascript.debugger/*
+jstola@netbeans.org=web.webkit.debugging/*,web.inspect/*,javascript.cdnjs/*,javascript.nodejs/src/org/netbeans/modules/javascript/nodejs/ui/libraries/*
 tmysik@netbeans.org=web.clientproject/*,web.clientproject.api/*,javascript.karma/*,javascript.nodejs/*,javascript.bower/*
