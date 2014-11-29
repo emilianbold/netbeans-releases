@@ -186,7 +186,9 @@ public class SearchPanel extends javax.swing.JPanel {
         String latestVersion = null;
         String keywords = null;
         if (!emptySelection) {
-            description = "<html>" + library.getDescription(); // NOI18N
+            if (!library.getDescription().isEmpty()) {
+                description = "<html>" + library.getDescription(); // NOI18N
+            }
             latestVersion = "<html>" + library.getLatestVersion().getName(); // NOI18N
             if (library.getKeywords().length > 0) {
                 StringBuilder keywordsText = new StringBuilder("<html>"); // NOI18N
@@ -199,6 +201,7 @@ public class SearchPanel extends javax.swing.JPanel {
         descriptionComponent.setText(description);
         latestVersionComponent.setText(latestVersion);
         keywordsComponent.setText(keywords);
+        descriptionComponent.setVisible(description != null);
         latestVersionLabel.setVisible(!emptySelection);
         keywordsLabel.setVisible(keywords != null);
         addButton.setEnabled(!emptySelection);

@@ -209,26 +209,31 @@ public class LibraryProvider {
             int versionIndex = header.indexOf("VERSION"); // NOI18N
             int keywordsIndex = header.indexOf("KEYWORDS"); // NOI18N
             List<Library> libraryList = new LinkedList<>();
-            String description = "";
+            String description = ""; // NOI18N
             for (int i=lines.length-1; i>=1; i--) {
                 String line = lines[i];
                 String name = line.substring(0,descriptionIndex).trim();
-                String descriptionPart = "".equals(name) // NOI18N
-                        ? line.substring(descriptionIndex)
+                int length = line.length();
+                String descriptionPart = length < authorIndex
+                        ? line.substring(descriptionIndex).trim()
                         : line.substring(descriptionIndex, authorIndex).trim();
                 description = descriptionPart + "\n" + description; // NOI18N
                 if (!"".equals(name)) { // NOI18N
-                    String versionName = line.substring(versionIndex, keywordsIndex).trim();
-                    String keywords = line.substring(keywordsIndex).trim();
+                    String versionName = length < keywordsIndex
+                            ? line.substring(versionIndex).trim()
+                            : line.substring(versionIndex, keywordsIndex).trim();
+                    String keywords = length < keywordsIndex
+                            ? "" // NOI18N
+                            : line.substring(keywordsIndex).trim();
                     Library library = new Library(name);
-                    library.setDescription(description);
+                    library.setDescription(description.trim());
                     if (!keywords.isEmpty()) {
                         library.setKeywords(keywords.split(" ")); // NOI18N
                     }
                     Library.Version version = new Library.Version(library, versionName);
                     library.setLatestVersion(version);
                     libraryList.add(0, library);
-                    description = "";
+                    description = ""; // NOI18N
                 }
             }
             return libraryList.toArray(new Library[libraryList.size()]);
