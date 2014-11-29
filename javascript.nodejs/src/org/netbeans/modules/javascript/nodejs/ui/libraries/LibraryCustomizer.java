@@ -88,7 +88,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
     }
 
     @Override
-    @NbBundle.Messages("LibraryCustomizer.displayName=npm Libraries")
+    @NbBundle.Messages("LibraryCustomizer.displayName=npm")
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 CATEGORY_NAME, Bundle.LibraryCustomizer_displayName(), null);
