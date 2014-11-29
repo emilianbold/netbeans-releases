@@ -135,7 +135,7 @@ public class WatchPanel {
         this.expression = expression;
     }
     
-    public static void setupContext(final JEditorPane editorPane, final ActionListener contextSetUp) {
+    public static void setupContext(final JEditorPane editorPane, final Runnable contextSetUp) {
         //EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
         //editorPane.setEditorKit(kit); - Do not set it, setupContext() will do the job.
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
@@ -153,7 +153,7 @@ public class WatchPanel {
                                 SwingUtilities.invokeLater(new Runnable() {
                                     @Override
                                     public void run() {
-                                        contextSetUp.actionPerformed(null);
+                                        contextSetUp.run();
                                     }
                                 });
                             }
@@ -181,7 +181,7 @@ public class WatchPanel {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    contextSetUp.actionPerformed(null);
+                    contextSetUp.run();
                 }
             });
         }
@@ -481,9 +481,9 @@ public class WatchPanel {
         editorPane.setText (expression);
         editorPane.selectAll ();
 
-        ActionListener editorPaneUpdated = new ActionListener() {
+        Runnable editorPaneUpdated = new Runnable() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void run() {
                 editorPane.setText (expression);
                 editorPane.selectAll ();
             }

@@ -13,6 +13,6 @@
         <path orientation="vertical" number="79" weight="0.1" />
         <path orientation="horizontal" number="30" weight="0.8" />
     </constraints>
-    <active-tc id="evaluator" />
+    <active-tc id="evaluatorPane" />
     <empty-behavior permanent="true" />
 </mode>

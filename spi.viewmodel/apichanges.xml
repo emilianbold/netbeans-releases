@@ -432,6 +432,22 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="ModelEvent" />
         <issue number="228909"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Add an abstract children caching model.</summary>
+        <version major="1" minor="49"/>
+        <date day="28" month="11" year="2014"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            Views that show asynchronously loaded children nodes, have problems
+            with visible refreshes of the children tree.
+            <code>CachedChildrenTreeModel</code> is introduced to allow seamless
+            refresh of children tree.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="CachedChildrenTreeModel" />
+        <issue number="248775"/>
+    </change>
 
 
 </changes>
