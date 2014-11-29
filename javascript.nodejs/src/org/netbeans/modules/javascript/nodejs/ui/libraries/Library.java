@@ -57,6 +57,10 @@ public class Library {
     private Library.Version[] versions;
     /** Latest version of the library. */
     private Library.Version latestVersion;
+    /** Description of the library. */
+    private String description;
+    /** Keywords for the library. */
+    private String[] keywords;
 
     /**
      * Creates a new {@code Library} with the given name.
@@ -86,12 +90,66 @@ public class Library {
     }
 
     /**
+     * Sets versions of the library.
+     * 
+     * @param versions versions of the library.
+     */
+    void setVersions(Library.Version[] versions) {
+        this.versions = versions;
+    }
+
+    /**
      * Returns the latest version of the library.
      * 
      * @return latest version of the library.
      */
     public Library.Version getLatestVersion() {
         return latestVersion;
+    }
+
+    /**
+     * Sets the latest version of the library.
+     * 
+     * @param latestVersion latest version of the library.
+     */
+    void setLatestVersion(Library.Version latestVersion) {
+        this.latestVersion = latestVersion;
+    }
+
+    /**
+     * Returns the description of the library.
+     * 
+     * @return description of the library.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the description of the library.
+     * 
+     * @param description description of the library.
+     */
+    void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Returns the keywords for this library.
+     * 
+     * @return keywords for this library.
+     */
+    public String[] getKeywords() {
+        return keywords == null ? new String[0] : keywords;
+    }
+
+    /**
+     * Sets the keywords for this library.
+     * 
+     * @param keywords keywords for this library.
+     */
+    void setKeywords(String[] keywords) {
+        this.keywords = keywords;
     }
 
     /**
@@ -118,8 +176,8 @@ public class Library {
             }
             versions[i] = version;
         }
-        library.versions = versions;
-        library.latestVersion = latestVersion;
+        library.setVersions(versions);
+        library.setLatestVersion(latestVersion);
 
         return library;
     }
