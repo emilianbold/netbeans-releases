@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.VersionsCache;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -104,7 +105,12 @@ public class DiffStreamSource extends StreamSource {
     @Override
     public String getName() {
         if (fileInRevision != null) {
-            return fileInRevision.getName();
+            File repo = Git.getInstance().getRepositoryRoot(fileInRevision);
+            if (repo != null) {
+                return GitUtils.getRelativePath(repo, fileInRevision);
+            } else {
+                return fileInRevision.getName();
+            }
         } else {
             return NbBundle.getMessage(DiffStreamSource.class, "LBL_Diff_Anonymous"); // NOI18N
         }

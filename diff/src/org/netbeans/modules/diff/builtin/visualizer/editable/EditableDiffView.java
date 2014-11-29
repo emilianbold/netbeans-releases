@@ -191,6 +191,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private final JPanel searchContainer;
     private static final String PROP_SEARCH_CONTAINER = "diff.search.container"; //NOI18N
     private final Object DIFFING_LOCK = new Object();
+    private final String name1;
+    private final String name2;
 
     public EditableDiffView (final StreamSource ss1, final StreamSource ss2) {
         this(ss1, ss2, false);
@@ -205,6 +207,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (title2 == null) title2 = NbBundle.getMessage(EditableDiffView.class, "CTL_DiffPanel_NoTitle"); // NOI18N
         String mimeType1 = ss1.getMIMEType();
         String mimeType2 = ss2.getMIMEType();
+        name1 = ss1.getName();
+        name2 = ss2.getName();
         if (mimeType1 == null) mimeType1 = mimeType2;
         if (mimeType2 == null) mimeType2 = mimeType1;
         binaryDiff = mimeType1 == null || mimeType2 == null || mimeType1.equals("application/octet-stream") || mimeType2.equals("application/octet-stream");        
@@ -1309,6 +1313,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     }
 
     private TextualDiffRefreshTask textualRefreshTask;
+    @NbBundle.Messages({
+        "Diff.dev_null=/dev/null"
+    })
     private class TextualDiffRefreshTask implements Cancellable {
 
         final StyledDocument out;
@@ -1354,8 +1361,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             Reader r1 = null;
             Reader r2 = null;
             
-            if (differences == null) {
-                differences = computeDiff();
+            if (differences == null || !firstSourceAvailable || !secondSourceAvailable) {
+                differences = computeDiff(true);
             }
 
             try {
@@ -1374,7 +1381,10 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 if (isCanceled()) {
                     return;
                 }
-                TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(fileLabel1.getText(), fileLabel2.getText(), null, null, r1, r2, differences);
+                TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
+                        firstSourceAvailable ? "a/" + name1 : Bundle.Diff_dev_null(),
+                        secondSourceAvailable ? "b/" + name2 : Bundle.Diff_dev_null(),
+                        null, null, r1, r2, differences);
                 info.setContextMode(true, 3);
                 final String diffText = TextDiffVisualizer.differenceToUnifiedDiffText(info);
                 if (isCanceled()) {
@@ -1472,7 +1482,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         @Override
         public void run() {
             synchronized (DIFFING_LOCK) {
-                final Difference[] differences = computeDiff();
+                final Difference[] differences = computeDiff(false);
                 if (textualRefreshTask != null) {
                     textualRefreshTask.refresh(differences);
                 }
@@ -1503,7 +1513,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
     }
 
-    private Difference[] computeDiff () {
+    private Difference[] computeDiff (boolean includeUnavailable) {
 
         if(editableDocument != null) { 
             // refresh fo before computing the diff, external changes might not have been recognized in some setups
@@ -1524,12 +1534,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             }
         }
 
-        if (!secondSourceAvailable || !firstSourceAvailable) {
+        if (!includeUnavailable && (!secondSourceAvailable || !firstSourceAvailable)) {
             return NO_DIFFERENCES;
         }
 
-        Reader first = getReader(jEditorPane1.getEditorPane().getDocument());
-        Reader second = getReader(jEditorPane2.getEditorPane().getDocument());
+        Reader first = includeUnavailable && !firstSourceAvailable ? new StringReader("") : getReader(jEditorPane1.getEditorPane().getDocument());
+        Reader second = includeUnavailable && !secondSourceAvailable ? new StringReader("") : getReader(jEditorPane2.getEditorPane().getDocument());
         if (first == null || second == null) {
             return NO_DIFFERENCES;
         }
