@@ -82,7 +82,7 @@ public final class CDNJSLibraries {
             category = "JsLibs", // NOI18N
             position = 300)
     public static ProjectCustomizer.CompositeCategoryProvider forMavenProject() {
-        return new LibraryCustomizer();
+        return new LibraryCustomizer(true);
     }
 
 }

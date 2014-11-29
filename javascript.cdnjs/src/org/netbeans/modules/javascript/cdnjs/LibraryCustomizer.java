@@ -61,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.cdnjs.ui.SelectionPanel;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -81,10 +82,23 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
     private static final String DEFAULT_LIBRARY_FOLDER = "js/libs"; // NOI18N
     private static final String PREFERENCES_LIBRARY_FOLDER = "js.libs.folder"; // NOI18N
 
+    private final boolean checkWebRoot;
+
+    public LibraryCustomizer() {
+        this(false);
+    }
+
+    public LibraryCustomizer(boolean checkWebRoot) {
+        this.checkWebRoot = checkWebRoot;
+    }
 
     @Override
     @NbBundle.Messages("LibraryCustomizer.displayName=CDNJS")
     public ProjectCustomizer.Category createCategory(Lookup context) {
+        if (checkWebRoot
+                && !WebUtils.hasWebRoot(context.lookup(Project.class))) {
+            return null;
+        }
         return ProjectCustomizer.Category.create(
                 CATEGORY_NAME, Bundle.LibraryCustomizer_displayName(), null);
     }
