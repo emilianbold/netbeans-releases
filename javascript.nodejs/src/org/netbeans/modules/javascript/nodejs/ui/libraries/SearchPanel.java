@@ -144,7 +144,7 @@ public class SearchPanel extends javax.swing.JPanel {
      * when the search failed). When there are no matching libraries than
      * an empty array is given.
      */
-    @NbBundle.Messages({"SearchPanel.message.searchFailed=Search failed :-("})
+    @NbBundle.Messages({"SearchPanel.message.searchFailed=<html><center>Search failed :-(</center><br><center>Check if 'npm search <i>query</i>' works on the command line.</center>"})
     final void updateLibraries(Library[] libraries) {
         if (libraries == null) {
             messageLabel.setText(Bundle.SearchPanel_message_searchFailed());

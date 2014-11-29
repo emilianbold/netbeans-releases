@@ -175,9 +175,12 @@ public class NpmExecutable {
         String result = null;
         StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
         try {
-            getExecutable("npm search").additionalParameters(params).
+            Integer exitCode = getExecutable("npm search").additionalParameters(params).
                     redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
             result = factory.getResult();
+            if (result.length() == 0 && exitCode != null && exitCode != 0) {
+                result = null;
+            }
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
