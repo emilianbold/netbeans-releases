@@ -42,11 +42,8 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.Device;
 import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
@@ -132,10 +129,16 @@ public enum IOSDevice implements Device {
                 ProcessUtilities.callProcess("killall", true, IOSPlatform.DEFAULT_TIMEOUT, "MobileSafari"); // NOI18N
             } catch (IOException ex) {
             }
-            String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath(); // NOI18N
-            String retVal = ProcessUtilities.callProcess(sim, true, IOSPlatform.DEFAULT_TIMEOUT, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/" + getIPhoneSimName() +".sdk/Applications/MobileSafari.app", "--exit", "--args", "-u", url); //NOI18N
+            String simctlList = ProcessUtilities.callProcess("xcrun", true, IOSPlatform.DEFAULT_TIMEOUT, "simctl", "list"); //NOI18N
+            if (!simctlList.contains("Booted")) { //NOI18N
+                // boot the simulator and wait until it is ready
+                String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath(); // NOI18N
+                ProcessUtilities.callProcess(sim, true, IOSPlatform.DEFAULT_TIMEOUT, "start", "--exit"); //NOI18N
+                Thread.sleep(10000); // try to wait for the simulator before loading the URL
+            }
+            String retVal = ProcessUtilities.callProcess("xcrun", true, IOSPlatform.DEFAULT_TIMEOUT, "simctl", "openurl", "booted", url); //NOI18N
             LOG.finest(retVal);
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IllegalStateException ex) {
             //MobileSafari failed to load

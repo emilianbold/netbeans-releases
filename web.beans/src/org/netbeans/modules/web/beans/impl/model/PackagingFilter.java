@@ -44,6 +44,7 @@ package org.netbeans.modules.web.beans.impl.model;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
@@ -70,31 +71,34 @@ class PackagingFilter {
         myModel = model;
     }
     
-    void filter(Collection<? extends Element> collection ){
+    void filter(Collection<? extends Element> collection, AtomicBoolean cancel ){
         for (Iterator<? extends Element> iterator = collection.iterator(); 
             iterator.hasNext(); ) 
         {
+            if(cancel.get()) {
+                break;
+            }
             Element element = iterator.next();
-            if ( remove(element)){
+            if ( remove(element, cancel)){
                 iterator.remove();
             }
         }
     }
     
-    void filterTypes(Collection<? extends DeclaredType> collection ){
+    void filterTypes(Collection<? extends DeclaredType> collection, AtomicBoolean cancel ){
         for (Iterator<? extends DeclaredType> iterator = collection.iterator(); 
             iterator.hasNext(); ) 
         {
             DeclaredType type = iterator.next();
             Element element = getModel().getHelper().getCompilationController().
                 getTypes().asElement( type );
-            if ( element != null && remove(element)){
+            if ( element != null && remove(element, cancel)){
                 iterator.remove();
             }
         }
     }
     
-    private boolean remove( Element element  ){
+    private boolean remove( Element element, AtomicBoolean cancel  ){
         TypeElement typeElement;
         if ( element instanceof TypeElement ){
             typeElement = (TypeElement) element;
@@ -103,7 +107,7 @@ class PackagingFilter {
             typeElement = getModel().getHelper().getCompilationController().
                 getElementUtilities().enclosingTypeElement(element);
         }
-        if ( typeElement == null ){
+        if ( typeElement == null || cancel.get()){
             return false;
         }
         
@@ -111,13 +115,13 @@ class PackagingFilter {
                 ClasspathInfo.create(getModel().getModelUnit().getBootPath() , 
                         ClassPath.EMPTY, getModel().getModelUnit().getSourcePath()));
         
-        if ( file != null ){
+        if ( file != null || cancel.get()){
             return false;
         }
         
         PackageElement pack = getModel().getHelper().getCompilationController().
             getElements().getPackageOf( typeElement );
-        if ( pack == null ){
+        if ( pack == null || cancel.get()){
             return false;
         }
         String packageName = pack.getQualifiedName().toString();
@@ -133,19 +137,19 @@ class PackagingFilter {
         if ( dotIndex != -1 ){
             className = className.substring( 0, dotIndex );
         }
-        if ( className == null ){
+        if ( className == null || cancel.get()){
             return false;
         }
         
         String path = packageName.replace('.', '/')+'/'+className+".class"; // NOI18N
         ClassPath classPath = getModel().getModelUnit().getCompilePath();
         FileObject resource = classPath.findResource( path );
-        if ( resource != null ){
+        if ( resource != null && !cancel.get()){
             FileObject root = classPath.findOwnerRoot( resource );
-            if ( root == null ){
+            if ( root == null || cancel.get()){
                 return false;
             }
-            if ( FileUtil.isArchiveFile( root )){
+            if ( FileUtil.isArchiveFile( root ) && !cancel.get()){
                 FileObject archiveFile = FileUtil.getArchiveFile(root);
                 String ext = archiveFile.getExt();
                 if ( "war".equalsIgnoreCase( ext)){                        // NOI18N

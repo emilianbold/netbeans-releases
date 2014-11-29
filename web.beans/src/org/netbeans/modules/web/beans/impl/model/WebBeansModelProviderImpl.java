@@ -107,15 +107,15 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType)
      */
     @Override
-    public DependencyInjectionResult lookupInjectables(VariableElement element, DeclaredType parentType)  {
+    public DependencyInjectionResult lookupInjectables(VariableElement element, DeclaredType parentType, AtomicBoolean cancel)  {
         TypeMirror type = getParameterType(element, null, INSTANCE_INTERFACE);
         if ( type != null ){
             return lookupInjectables(element, parentType , 
-                    ResultLookupStrategy.MULTI_LOOKUP_STRATEGY);
+                    ResultLookupStrategy.MULTI_LOOKUP_STRATEGY, cancel);
         }
         else {
             return lookupInjectables(element, parentType , 
-                ResultLookupStrategy.SINGLE_LOOKUP_STRATEGY );
+                ResultLookupStrategy.SINGLE_LOOKUP_STRATEGY, cancel );
         }
     }
     
@@ -235,7 +235,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getNamedElements()
      */
     @Override
-    public List<Element> getNamedElements() {
+    public List<Element> getNamedElements(AtomicBoolean cancel) {
         boolean dirty = isDirty.getAndSet( false );
         
         if ( !isIndexListenerAdded ){
@@ -264,7 +264,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
             if ( element== null || element.getKind()!= ElementKind.METHOD ){
                 continue;
             }
-            Set<Element> childSpecializes = getChildSpecializes( element, getModel() );
+            Set<Element> childSpecializes = getChildSpecializes( element, getModel(), cancel);
             result.addAll( childSpecializes );
         }
         result.addAll( members );
@@ -286,7 +286,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
             result.addAll( stereotypedMembers );
         }
         PackagingFilter filter = new PackagingFilter(getModel());
-        filter.filter(result);
+        filter.filter(result, cancel);
         
         setCachedResult( result );
         return result;
@@ -316,15 +316,19 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     }
     
     protected DependencyInjectionResult lookupInjectables( VariableElement element,
-            DeclaredType parentType , ResultLookupStrategy strategy)
+            DeclaredType parentType , ResultLookupStrategy strategy, AtomicBoolean cancel)
     {
         /* 
          * Element could be injection point. One need first if all to check this.  
          */
         Element parent = element.getEnclosingElement();
         
+        if(cancel.get()) {
+            return null;
+        }
+        
         if ( parent instanceof TypeElement){
-            return findVariableInjectable(element, parentType , strategy);
+            return findVariableInjectable(element, parentType , strategy, cancel);
         }
         else if ( parent instanceof ExecutableElement ){
             // Probably injected field in method. One need to check method.
@@ -335,7 +339,7 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
              * 2) Method is disposer method. In this case injectable
              * is producer corresponding method.
              */
-            return findParameterInjectable(element, parentType, strategy);
+            return findParameterInjectable(element, parentType, strategy, cancel);
         }
         
         return null;

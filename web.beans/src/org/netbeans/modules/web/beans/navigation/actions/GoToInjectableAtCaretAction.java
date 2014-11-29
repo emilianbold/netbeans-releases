@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -143,7 +144,7 @@ public class GoToInjectableAtCaretAction extends AbstractInjectableAction {
             StatusDisplayer.getDefault().setStatusText(e.getMessage(),
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
         }
-        final DependencyInjectionResult result = model.lookupInjectables(var, null);
+        final DependencyInjectionResult result = model.lookupInjectables(var, null, new AtomicBoolean(false));
         if (result == null) {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,

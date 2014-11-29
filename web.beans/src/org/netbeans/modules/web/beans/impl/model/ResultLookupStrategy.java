@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
@@ -60,7 +61,7 @@ public interface ResultLookupStrategy {
     
     ResultLookupStrategy MULTI_LOOKUP_STRATEGY = new MultiLookupStrategy();
 
-    DependencyInjectionResult getResult(WebBeansModelImplementation model, DependencyInjectionResult result );
+    DependencyInjectionResult getResult(WebBeansModelImplementation model, DependencyInjectionResult result, AtomicBoolean cancel );
     
     TypeMirror getType( WebBeansModelImplementation model,
             DeclaredType parent, VariableElement element);

@@ -110,7 +110,7 @@ public class InjectionPointParameterAnalyzer
                         {
                             DependencyInjectionResult res = model
                                     .lookupInjectables(var,
-                                            (DeclaredType) parent.asType());
+                                            (DeclaredType) parent.asType(), cancel);
                             checkResult(res, element, var, model, result);
                             if (isDelegate) {
                                 analyzeDecoratedBeans(res, var, element,
