@@ -222,7 +222,9 @@ public class LibraryProvider {
                     String keywords = line.substring(keywordsIndex).trim();
                     Library library = new Library(name);
                     library.setDescription(description);
-                    library.setKeywords(keywords.split(" ")); // NOI18N
+                    if (!keywords.isEmpty()) {
+                        library.setKeywords(keywords.split(" ")); // NOI18N
+                    }
                     Library.Version version = new Library.Version(library, versionName);
                     library.setLatestVersion(version);
                     libraryList.add(0, library);

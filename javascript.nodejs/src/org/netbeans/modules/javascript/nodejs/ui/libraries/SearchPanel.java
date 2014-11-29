@@ -188,15 +188,19 @@ public class SearchPanel extends javax.swing.JPanel {
         if (!emptySelection) {
             description = "<html>" + library.getDescription(); // NOI18N
             latestVersion = "<html>" + library.getLatestVersion().getName(); // NOI18N
-            StringBuilder keywordsText = new StringBuilder("<html>"); // NOI18N
-            for (String keyword : library.getKeywords()) {
-                keywordsText.append(keyword).append(" "); // NOI18N
+            if (library.getKeywords().length > 0) {
+                StringBuilder keywordsText = new StringBuilder("<html>"); // NOI18N
+                for (String keyword : library.getKeywords()) {
+                    keywordsText.append(keyword).append(" "); // NOI18N
+                }
+                keywords = keywordsText.toString();
             }
-            keywords = keywordsText.toString();
         }
         descriptionComponent.setText(description);
         latestVersionComponent.setText(latestVersion);
         keywordsComponent.setText(keywords);
+        latestVersionLabel.setVisible(!emptySelection);
+        keywordsLabel.setVisible(keywords != null);
         addButton.setEnabled(!emptySelection);
     }
 
@@ -268,7 +272,7 @@ public class SearchPanel extends javax.swing.JPanel {
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(scrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(librariesLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(searchPanelLayout.createSequentialGroup()
                         .addComponent(latestVersionLabel)
