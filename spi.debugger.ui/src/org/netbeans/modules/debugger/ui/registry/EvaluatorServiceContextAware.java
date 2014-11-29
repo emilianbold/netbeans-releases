@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,53 +34,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.actions;
+package org.netbeans.modules.debugger.ui.registry;
 
+import java.awt.event.ActionListener;
 import java.util.Collections;
-import java.util.Set;
-import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.spi.debugger.ActionsProvider;
+import java.util.List;
+import java.util.Map;
+import javax.swing.JEditorPane;
+import org.netbeans.spi.debugger.ContextAwareService;
+import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.ui.CodeEvaluator;
+import org.netbeans.spi.debugger.ui.CodeEvaluator.EvaluatorService;
 
 /**
- * Invokes the expression evaluator GUI
  *
  * @author Martin Entlicher
  */
-@ActionsProvider.Registration(path="netbeans-JPDASession", actions="evaluate")
-public class EvaluateActionProvider extends JPDADebuggerAction {
-
-    public EvaluateActionProvider(ContextProvider lookupProvider) {
-        super (
-            lookupProvider.lookupFirst(null, JPDADebugger.class)
-        );
-        getDebuggerImpl ().addPropertyChangeListener
-            (JPDADebugger.PROP_CURRENT_THREAD, this);
+public class EvaluatorServiceContextAware extends EvaluatorService implements ContextAwareService<EvaluatorService> {
+    
+    private final String serviceName;
+    private ContextProvider context;
+    private EvaluatorService delegate;
+    
+    public EvaluatorServiceContextAware(String serviceName) {
+        this.serviceName = serviceName;
+    }
+    
+    @Override
+    public EvaluatorService forContext(ContextProvider context) {
+        if (context == this.context) {
+            return this;
+        } else {
+            return (EvaluatorService) ContextAwareSupport.createInstance(serviceName, context);
+        }
     }
 
     @Override
-    public Set getActions () {
-        return Collections.singleton (ActionsManager.ACTION_EVALUATE);
+    public void setupContext(JEditorPane editorPane, Runnable contextSetUp) {
     }
 
     @Override
-    protected void checkEnabled (int debuggerState) {
-        setEnabledSingleAction(getDebuggerImpl().getCurrentThread() != null);
+    public boolean canEvaluate() {
+        return false;
     }
 
     @Override
-    public void postAction(Object action, Runnable actionPerformedNotifier) {
-        CodeEvaluator.getDefault().open();
+    public void evaluate(String expression) {
     }
 
     @Override
-    public void doAction(Object action) {
-        // Not called since we override postAction().
-        throw new UnsupportedOperationException("Not supported.");
+    public List<String> getExpressionsHistory() {
+        return Collections.EMPTY_LIST;
+    }
+
+    /**
+     * Creates instance of <code>ContextAwareService</code> based on layer.xml
+     * attribute values
+     *
+     * @param attrs attributes loaded from layer.xml
+     * @return new <code>ContextAwareService</code> instance
+     */
+    static ContextAwareService createService(Map attrs) throws ClassNotFoundException {
+        String serviceName = (String) attrs.get(DebuggerProcessor.SERVICE_NAME);
+        return new EvaluatorServiceContextAware(serviceName);
     }
 
 }

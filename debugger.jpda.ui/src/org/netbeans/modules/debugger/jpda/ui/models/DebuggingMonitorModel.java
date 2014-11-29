@@ -380,14 +380,14 @@ NodeActionsProviderFilter, TableModel, Constants {
                         threads = new ArrayList(threadsAskedForMonitors);
                     }
                     for (JPDAThread t : threads) {
-                        modelEventSource.refreshCache(t);
+                        modelEventSource.doRefreshCache(t);
                     }
                     List<CallStackFrame> frames;
                     synchronized (framesAskedForMonitors) {
                         frames = new ArrayList(framesAskedForMonitors);
                     }
                     for (CallStackFrame frame : frames) {
-                        modelEventSource.refreshCache(frame);
+                        modelEventSource.doRefreshCache(frame);
                     }
                     for (CallStackFrame frame : frames) {
                         fireModelChange(new ModelEvent.NodeChanged(modelEventSource,

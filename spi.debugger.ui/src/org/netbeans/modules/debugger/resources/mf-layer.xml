@@ -350,6 +350,7 @@ made subject to such option by the copyright holder.
             <file name="sources.settings" url="components/sources.settings"/>
             <file name="resultsView.settings" url="components/results.settings"/>
             <file name="debuggingView.settings" url="components/debugging.settings"/>
+            <file name="evaluatorPane.settings" url="components/evaluator.settings"/>
         </folder>
 
         <folder name="Modes">
@@ -384,6 +385,12 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="700"/>
                 </file>
             </folder>
+            <file name="code_evaluator.wsmode" url="evaluator/code_evaluator.wsmode"/>
+            <folder name="code_evaluator">
+                <file name="evaluatorPane.wstcref" url="modes/evaluator/evaluator.wstcref">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
         </folder>
         
         <folder name="Groups">
@@ -396,6 +403,7 @@ made subject to such option by the copyright holder.
                 <file name="callstackView.wstcgrp" url="groups/debugger/callstack.wstcgrp"/>
                 <file name="breakpointsView.wstcgrp" url="groups/debugger/breakpoints.wstcgrp"/>
                 <file name="sources.wstcgrp" url="groups/debugger/sources.wstcgrp"/>
+                <file name="evaluatorPane.wstcgrp" url="groups/debugger/evaluator.wstcgrp"/>
                 <file name="resultsView.wstcgrp" url="groups/debugger/results.wstcgrp"/>
             </folder>
         </folder>
