@@ -156,10 +156,12 @@ public class NpmExecutable {
         JSONObject info = null;
         try {
             StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
-            getExecutable("npm view").additionalParameters(params).
+            Integer exitCode = getExecutable("npm view").additionalParameters(params).
                     redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
             String result = factory.getResult();
-            info = (JSONObject)new JSONParser().parse(result);
+            if (exitCode != null && exitCode == 0) {
+                info = (JSONObject)new JSONParser().parse(result);
+            }
         } catch (ExecutionException | ParseException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
