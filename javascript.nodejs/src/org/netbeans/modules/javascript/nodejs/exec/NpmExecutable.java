@@ -167,6 +167,24 @@ public class NpmExecutable {
     }
 
     @CheckForNull
+    public JSONObject list() {
+        List<String> params = new ArrayList<>();
+        params.add("list"); // NOI18N
+        params.add("--json"); // NOI18N
+        JSONObject info = null;
+        try {
+            StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+            getExecutable("npm list").additionalParameters(params).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            String result = factory.getResult();
+            info = (JSONObject)new JSONParser().parse(result);
+        } catch (ExecutionException | ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return info;
+    }
+
+    @CheckForNull
     public String search(String searchTerm) {
         List<String> params = new ArrayList<>();
         params.add("search"); // NOI18N
