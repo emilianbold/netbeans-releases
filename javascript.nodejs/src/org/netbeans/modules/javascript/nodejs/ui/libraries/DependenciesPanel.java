@@ -57,9 +57,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.json.simple.JSONObject;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -132,14 +130,11 @@ public class DependenciesPanel extends javax.swing.JPanel {
      */
     private void loadDependencyInfo(final List<Library.Version> dependencies) {
         if (RP.isRequestProcessorThread()) {
-            NpmExecutable executable = NpmExecutable.getDefault(project, false);
-            if (executable != null) {
-                for (Library.Version dependency : dependencies) {
-                    String libraryName = dependency.getLibrary().getName();
-                    JSONObject info = executable.view(libraryName);
-                    Library library = (info == null) ? null : Library.forViewInfo(info);
-                    updateDependencyInfo(libraryName, library);
-                }
+            LibraryProvider provider = LibraryProvider.forProject(project);
+            for (Library.Version dependency : dependencies) {
+                String libraryName = dependency.getLibrary().getName();
+                Library library = provider.libraryDetails(libraryName);
+                updateDependencyInfo(libraryName, library);
             }
         } else {
             RP.post(new Runnable() {

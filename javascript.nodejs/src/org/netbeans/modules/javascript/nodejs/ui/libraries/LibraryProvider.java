@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
@@ -51,6 +52,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.openide.util.RequestProcessor;
@@ -80,8 +83,11 @@ public class LibraryProvider {
     /** Project for which the libraries should be provided. */
     private final Project project;
     /** Cache of the search results. It maps the search term to the search result. */
-    private final Map<String,WeakReference<Library[]>> cache =
+    private final Map<String,WeakReference<Library[]>> searchCache =
             Collections.synchronizedMap(new HashMap<String,WeakReference<Library[]>>());
+    /** Cache of library details. It maps name of the library/package to the library details. */
+    private final Map<String,WeakReference<Library>> detailCache =
+            Collections.synchronizedMap(new HashMap<String,WeakReference<Library>>());
     /** Property change support. */
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -142,7 +148,7 @@ public class LibraryProvider {
      * @param searchTerm search term.
      */
     public Library[] findLibraries(String searchTerm) {
-        WeakReference<Library[]> reference = cache.get(searchTerm);
+        WeakReference<Library[]> reference = searchCache.get(searchTerm);
         Library[] result = null;
         if (reference != null) {
             result = reference.get();
@@ -155,6 +161,62 @@ public class LibraryProvider {
     }
 
     /**
+     * Returns details of the library/package with the given name.
+     * 
+     * @param libraryName name of the library/package.
+     * @return details of the library/package with the given name.
+     */
+    public Library libraryDetails(String libraryName) {
+        assert !EventQueue.isDispatchThread();
+        WeakReference<Library> reference = detailCache.get(libraryName);
+        Library result = null;
+        if (reference != null) {
+            result = reference.get();
+        }
+        if (result == null) {
+            NpmExecutable executable = NpmExecutable.getDefault(project, false);
+            if (executable != null) {
+                JSONObject details = executable.view(libraryName);
+                if (details != null) {
+                    result = parseLibraryDetails(details);
+                    detailCache.put(libraryName, new WeakReference(result));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns library that corresponds to the JSON object obtained
+     * as a result of a call to {@code npm view --json} command.
+     * 
+     * @param viewInfo result of some {@code npm view --json} command.
+     * @return library that corresponds to the given JSON object.
+     */
+    private Library parseLibraryDetails(JSONObject viewInfo) {
+        String name = (String)viewInfo.get("name"); // NOI18N
+        Library library = new Library(name);
+
+        String latestVersionName = (String)viewInfo.get("version"); // NOI18N
+        Library.Version latestVersion = null;
+
+        JSONArray versionArray = (JSONArray)viewInfo.get("versions"); // NOI18N
+        Library.Version[] versions = new Library.Version[versionArray.size()];
+        for (int i=0; i<versionArray.size(); i++) {
+            String versionName = (String)versionArray.get(i);
+            Library.Version version = new Library.Version(library, versionName);
+            if (versionName.equals(latestVersionName)) {
+                latestVersion = version;
+            }
+            versions[i] = version;
+        }
+        library.setVersions(versions);
+        library.setLatestVersion(latestVersion);
+
+        return library;
+    }
+
+    /**
      * Updates the cache with the result of the search.
      * 
      * @param searchTerm search term.
@@ -163,7 +225,7 @@ public class LibraryProvider {
     void updateCache(String searchTerm, Library[] libraries) {
         if (libraries != null) {
             WeakReference<Library[]> reference = new WeakReference<>(libraries);
-            cache.put(searchTerm, reference);
+            searchCache.put(searchTerm, reference);
         }
         propertyChangeSupport.firePropertyChange(searchTerm, null, libraries);
     }

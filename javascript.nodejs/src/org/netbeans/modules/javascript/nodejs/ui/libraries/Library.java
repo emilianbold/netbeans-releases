@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 /**
  * npm package/library.
  *
@@ -150,36 +147,6 @@ public class Library {
      */
     void setKeywords(String[] keywords) {
         this.keywords = keywords;
-    }
-
-    /**
-     * Returns library that corresponds to the JSON object obtained
-     * as a result of a call to {@code npm view --json} command.
-     * 
-     * @param viewInfo result of some {@code npm view --json} command.
-     * @return library that corresponds to the given JSON object.
-     */
-    static Library forViewInfo(JSONObject viewInfo) {
-        String name = (String)viewInfo.get("name"); // NOI18N
-        Library library = new Library(name);
-
-        String latestVersionName = (String)viewInfo.get("version"); // NOI18N
-        Library.Version latestVersion = null;
-
-        JSONArray versionArray = (JSONArray)viewInfo.get("versions"); // NOI18N
-        Library.Version[] versions = new Library.Version[versionArray.size()];
-        for (int i=0; i<versionArray.size(); i++) {
-            String versionName = (String)versionArray.get(i);
-            Library.Version version = new Library.Version(library, versionName);
-            if (versionName.equals(latestVersionName)) {
-                latestVersion = version;
-            }
-            versions[i] = version;
-        }
-        library.setVersions(versions);
-        library.setLatestVersion(latestVersion);
-
-        return library;
     }
 
     /**
