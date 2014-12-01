@@ -142,7 +142,7 @@ public class FSCompletionUtils {
 //                    if (lastSlash == 1 && prefix.charAt(0) == '.') {
                         int newAnchor = anchor - prefix.length();
 //                    }
-                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : "./", addExtensions, newAnchor)); //NOI18N
+                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : (filePrefix.isEmpty() ? "./" : ""), addExtensions, newAnchor)); //NOI18N
                 }
             }
         }
