@@ -42,13 +42,16 @@
 
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.GroupLayout;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.openide.util.RequestProcessor;
 
 /**
  * Panel for customization of npm dependencies/library.
@@ -56,6 +59,8 @@ import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
  * @author Jan Stola
  */
 public class LibrariesPanel extends javax.swing.JPanel {
+    /** Request processor used by this class. */
+    private static final RequestProcessor RP = new RequestProcessor(LibrariesPanel.class);
 
     /**
      * Creates a new {@code LibrariesPanel}.
@@ -73,6 +78,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
             regularPanel.setDependencies(toLibraries(dependencies.dependencies));
             developmentPanel.setDependencies(toLibraries(dependencies.devDependencies));
             optionalPanel.setDependencies(toLibraries(dependencies.optionalDependencies));
+            loadInstalledLibraries(project);
         } else {
             GroupLayout layout = (GroupLayout)getLayout();
             layout.replace(tabbedPane, messageLabel);
@@ -101,6 +107,40 @@ public class LibrariesPanel extends javax.swing.JPanel {
             libraries.add(version);
         }
         return libraries;
+    }
+
+    /**
+     * Loads the libraries installed in the given project. Updates
+     * the view once the installed libraries are determined.
+     * 
+     * @param project project we are interested in.
+     */
+    private void loadInstalledLibraries(final Project project) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                LibraryProvider provider = LibraryProvider.forProject(project);
+                Library.Version[] libraries = provider.installedLibraries();
+                final Map<String,Library.Version> map;
+                if (libraries == null) {
+                    map = null;
+                } else {
+                    map = new HashMap<>();
+                    for (Library.Version libraryVersion : libraries) {
+                        map.put(libraryVersion.getLibrary().getName(), libraryVersion);
+                    }
+                }
+
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        regularPanel.setInstalledLibraries(map);
+                        developmentPanel.setInstalledLibraries(map);
+                        optionalPanel.setInstalledLibraries(map);
+                    }
+                });
+            }
+        });
     }
 
     /**

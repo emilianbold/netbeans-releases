@@ -79,6 +79,10 @@ public class DependenciesPanel extends javax.swing.JPanel {
     private final DependencyTableModel tableModel;
     /** Maps the name of the library to its npm meta-data. */
     private final Map<String,Library> dependencyInfo = new HashMap<>();
+    /** Map of the installed libraries. */
+    private Map<String,Library.Version> installedLibraries;
+    /** Determines whether the installed libraries were set. */
+    private boolean installedLibrariesSet;
     /** Owning project. */
     private Project project;
     /** Panel for searching npm libraries. */
@@ -94,6 +98,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
         TableColumnModel tableColumnModel = table.getColumnModel();
         tableColumnModel.getColumn(1).setCellRenderer(versionColumnRenderer);
         tableColumnModel.getColumn(2).setCellRenderer(versionColumnRenderer);
+        tableColumnModel.getColumn(3).setCellRenderer(versionColumnRenderer);
     }
 
     /**
@@ -164,6 +169,18 @@ public class DependenciesPanel extends javax.swing.JPanel {
                 }
             });
         }
+    }
+
+    /**
+     * Sets the map of the installed libraries.
+     * 
+     * @param installedLibraries installed libraries (maps name
+     * of the library/package to the library).
+     */
+    void setInstalledLibraries(Map<String,Library.Version> installedLibraries) {
+        this.installedLibraries = installedLibraries;
+        this.installedLibrariesSet = true;
+        tableModel.fireTableDataChanged();
     }
 
     /**
@@ -286,12 +303,14 @@ public class DependenciesPanel extends javax.swing.JPanel {
         final static Object UP_TO_DATE = new Object();
         final static Object CHECKING = new Object();
         final static Object UNKNOWN = new Object();
+        final static Object NO_VERSION = new Object();
 
         @Override
         @NbBundle.Messages({
             "DependenciesPanel.version.unknown=Version information not available",
-            "DependenciesPanel.version.checking=Checking for updates ...",
+            "DependenciesPanel.version.checking=Checking ...",
             "DependenciesPanel.version.uptodate=Up to date",
+            "DependenciesPanel.version.noversion=No version installed"
         })
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             String icon = null;
@@ -305,6 +324,9 @@ public class DependenciesPanel extends javax.swing.JPanel {
             } else if (value == UP_TO_DATE) {
                 icon = "org/netbeans/modules/javascript/nodejs/ui/resources/uptodate.gif"; // NOI18N
                 toolTip = Bundle.DependenciesPanel_version_uptodate();
+            } else if (value == NO_VERSION) {
+                icon = "org/netbeans/modules/javascript/nodejs/ui/resources/no-version.png"; // NOI18N
+                toolTip = Bundle.DependenciesPanel_version_noversion();
             }
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setHorizontalAlignment(CENTER);
@@ -332,21 +354,23 @@ public class DependenciesPanel extends javax.swing.JPanel {
 
         @Override
         public int getColumnCount() {
-            return 3;
+            return 4;
         }
 
         @Override
         @NbBundle.Messages({
             "DependenciesPanel.table.libraryColumn=Library",
-            "DependenciesPanel.table.versionColumn=Version",
+            "DependenciesPanel.table.requiredVersionColumn=Required Version",
+            "DependenciesPanel.table.installedVersionColumn=Installed Version",
             "DependenciesPanel.table.latestVersionColumn=Latest Version",
         })
         public String getColumnName(int column) {
             String columnName;
             switch (column) {
                 case 0: columnName = Bundle.DependenciesPanel_table_libraryColumn(); break;
-                case 1: columnName = Bundle.DependenciesPanel_table_versionColumn(); break;
-                case 2: columnName = Bundle.DependenciesPanel_table_latestVersionColumn(); break;
+                case 1: columnName = Bundle.DependenciesPanel_table_requiredVersionColumn(); break;
+                case 2: columnName = Bundle.DependenciesPanel_table_installedVersionColumn(); break;
+                case 3: columnName = Bundle.DependenciesPanel_table_latestVersionColumn(); break;
                 default: throw new IllegalArgumentException();
             }
             return columnName;
@@ -360,6 +384,19 @@ public class DependenciesPanel extends javax.swing.JPanel {
                 case 0: value = libraryVersion.getLibrary().getName(); break;
                 case 1: value = libraryVersion.getName(); break;
                 case 2:
+                    if (installedLibrariesSet) {
+                        String libraryName = libraryVersion.getLibrary().getName();
+                        Library.Version installedVersion = installedLibraries.get(libraryName);
+                        if (installedVersion == null) {
+                            value = VersionColumnRenderer.NO_VERSION;
+                        } else {
+                            value = installedVersion.getName();
+                        }
+                    } else {
+                        value = VersionColumnRenderer.CHECKING;
+                    }
+                    break;
+                case 3:
                     String libraryName = libraryVersion.getLibrary().getName();
                     Library library = dependencyInfo.get(libraryName);
                     if (library == null) {
@@ -368,9 +405,8 @@ public class DependenciesPanel extends javax.swing.JPanel {
                                 : VersionColumnRenderer.CHECKING;
                     } else {
                         String latestVersion = library.getLatestVersion().getName();
-                        String currentVersion = libraryVersion.getName();
-                        value = currentVersion.equals(latestVersion)
-                                ? VersionColumnRenderer.UP_TO_DATE : latestVersion;
+                        value = latestVersion;
+                        // PENDING VersionColumnRenderer.UP_TO_DATE
                     }
                     break;
                 default: throw new IllegalArgumentException();

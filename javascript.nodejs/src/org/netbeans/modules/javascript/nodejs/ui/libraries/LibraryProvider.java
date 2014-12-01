@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -181,6 +182,42 @@ public class LibraryProvider {
                     result = parseLibraryDetails(details);
                     detailCache.put(libraryName, new WeakReference(result));
                 }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the list of installed libraries/packages.
+     * 
+     * @return array with the installed libraries. Returns {@code null} when
+     * the attempt to determine the installed libraries failed. When no library
+     * is installed then an empty array is returned.
+     */
+    public Library.Version[] installedLibraries() {
+        Library.Version[] result = null;
+        NpmExecutable executable = NpmExecutable.getDefault(project, false);
+        if (executable != null) {
+            JSONObject json = executable.list();
+            if (json != null) {
+                List<Library.Version> libraries = new ArrayList<>();
+                JSONObject dependencies = (JSONObject)json.get("dependencies"); // NOI18N
+                if (dependencies != null) {
+                    for (Object key : dependencies.keySet()) {
+                        Object value = dependencies.get(key);
+                        if (value instanceof JSONObject) {
+                            JSONObject libraryInfo = (JSONObject)value;
+                            String versionName = (String)libraryInfo.get("version"); // NOI18N
+                            if (versionName != null) {
+                                String libraryName = key.toString();
+                                Library library = new Library(libraryName);
+                                Library.Version version = new Library.Version(library, versionName);
+                                libraries.add(version);
+                            }
+                        }
+                    }
+                }
+                result = libraries.toArray(new Library.Version[libraries.size()]);
             }
         }
         return result;

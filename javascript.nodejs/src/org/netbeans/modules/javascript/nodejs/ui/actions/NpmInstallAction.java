@@ -133,9 +133,6 @@ public final class NpmInstallAction extends AbstractAction implements ContextAwa
         if (!packageJson.exists()) {
             return this;
         }
-        if (packageJson.getDependencies().isEmpty()) {
-            return this;
-        }
         return new NpmInstallAction(contextProject != null ? contextProject : FileOwnerQuery.getOwner(Utilities.toURI(packageJson.getFile())));
     }
 

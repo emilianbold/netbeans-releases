@@ -143,10 +143,7 @@ public class BowerExecutable {
 
     private ExecutionDescriptor getDescriptor() {
         assert project != null;
-        return new ExecutionDescriptor()
-                .frontWindow(true)
-                .frontWindowOnError(false)
-                .controllable(true)
+        return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
