@@ -92,7 +92,7 @@ public class TruffleLocalVariablesTreeModel extends TruffleVariablesTreeModel {
                 //return currentPCInfo.getVars();
                 TruffleSlotVariable[] vars = selectedStackFrame.getVars();
                 ObjectVariable thisObj = selectedStackFrame.getThis();
-                if (thisObj != null) {
+                if (false && thisObj != null) {
                     TruffleVariable tThis = TruffleVariableImpl.get(thisObj);
                     if (tThis != null) {
                         Object[] children = new Object[vars.length + 1];

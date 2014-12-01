@@ -59,6 +59,7 @@ public class JPDAJSDebugProber implements NodeVisitor, ASTProber {
         return parent instanceof BlockNode;
     }
 
+    @Override
     public void probeAST(Node node) {
         node.accept(this);
     }

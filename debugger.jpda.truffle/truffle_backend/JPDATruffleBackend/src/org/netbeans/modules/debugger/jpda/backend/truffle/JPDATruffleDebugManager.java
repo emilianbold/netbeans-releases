@@ -36,6 +36,7 @@ import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -305,6 +306,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
                 thisObject = null;
             }
             
+            SourcePosition position = getPosition(astNode);
             //thisObject = new TruffleObject(context, "this", thisObj);
             /*
             System.err.println("JPDADebugClient: HALTED AT "+astNode+", "+frame+
@@ -335,7 +337,6 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             }*/
             //System.err.println("  stack trace = "+Arrays.toString(stackTrace));
             //System.err.println("  stack names = "+Arrays.toString(stackNames));
-            SourcePosition position = getPosition(astNode);
             topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget())+"\n"+
                        visualizer.displayMethodName(astNode)+"\n"+
                        visualizer.displaySourceLocation(astNode)+"\n"+
@@ -349,7 +350,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
     
     static final class SourcePosition {
         
-        private static final Map<Source, Long> sourceId = new WeakHashMap<Source, Long>();
+        private static final Map<Source, Long> sourceId = new WeakHashMap<>();
         private static long nextId = 0;
         
         long id;
