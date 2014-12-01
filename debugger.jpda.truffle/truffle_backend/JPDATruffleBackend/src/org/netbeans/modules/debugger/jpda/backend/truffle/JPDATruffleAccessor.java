@@ -272,13 +272,28 @@ public class JPDATruffleAccessor extends Object {
     */
     
     static LineBreakpoint setLineBreakpoint(String path, int line) {
+        return doSetLineBreakpoint(path, line, false);
+    }
+    
+    static LineBreakpoint setLineBreakpoint(URL url, int line) {
+        return doSetLineBreakpoint(url, line, false);
+    }
+    
+    static LineBreakpoint setOneShotLineBreakpoint(String path, int line) {
+        return doSetLineBreakpoint(path, line, true);
+    }
+    
+    static LineBreakpoint setOneShotLineBreakpoint(URL url, int line) {
+        return doSetLineBreakpoint(url, line, true);
+    }
+    
+    private static LineBreakpoint doSetLineBreakpoint(String path, int line, boolean oneShot) {
         try {
-            return setLineBreakpoint(new File(path).toURI().toURL(), line);
+            return doSetLineBreakpoint(new File(path).toURI().toURL(), line, oneShot);
         } catch (MalformedURLException muex) {
             System.err.println(muex.getLocalizedMessage());
             muex.printStackTrace();
         }
-        
         Source source;
         try {
             source = Source.fromFileName(path);
@@ -286,23 +301,28 @@ public class JPDATruffleAccessor extends Object {
             //System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
             return null;
         }
-        LineLocation bpLineLocation = source.createLineLocation(line);
-        LineBreakpoint lb = debugManager.setLineBreakpoint(bpLineLocation);
-        //System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
-        return lb;
+        return doSetLineBreakpoint(source, line, oneShot);
     }
     
-    static LineBreakpoint setLineBreakpoint(URL url, int line) {
+    private static LineBreakpoint doSetLineBreakpoint(URL url, int line, boolean oneShot) {
         Source source;
         try {
             source = Source.fromURL(url, url.getPath());
         } catch (IOException ioex) {
-            //System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
             return null;
         }
+        return doSetLineBreakpoint(source, line, oneShot);
+    }
+    
+    private static LineBreakpoint doSetLineBreakpoint(Source source, int line, boolean oneShot) {
         LineLocation bpLineLocation = source.createLineLocation(line);
-        LineBreakpoint lb = debugManager.setLineBreakpoint(bpLineLocation);
-        //System.err.println("setLineBreakpoint("+url+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+        LineBreakpoint lb;
+        if (oneShot) {
+            lb = debugManager.setOneShotLineBreakpoint(bpLineLocation);
+        } else {
+            lb = debugManager.setLineBreakpoint(bpLineLocation);
+        }
+        //System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
         return lb;
     }
     
