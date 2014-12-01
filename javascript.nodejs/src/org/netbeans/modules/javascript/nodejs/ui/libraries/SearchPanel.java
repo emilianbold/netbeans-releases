@@ -74,6 +74,7 @@ public class SearchPanel extends javax.swing.JPanel {
     public SearchPanel(LibraryProvider libraryProvider) {
         this.libraryProvider = libraryProvider;
         initComponents();
+        editPanel.setLibraryProvider(libraryProvider);
         librariesList.setCellRenderer(new LibraryRenderer());
         updateLibraries(new Library[0]);
         librarySelected(null);
@@ -184,13 +185,11 @@ public class SearchPanel extends javax.swing.JPanel {
     private void librarySelected(Library library) {
         boolean emptySelection = (library == null);
         String description = null;
-        String latestVersion = null;
         String keywords = null;
         if (!emptySelection) {
             if (!library.getDescription().isEmpty()) {
                 description = "<html>" + library.getDescription(); // NOI18N
             }
-            latestVersion = "<html>" + library.getLatestVersion().getName(); // NOI18N
             if (library.getKeywords().length > 0) {
                 StringBuilder keywordsText = new StringBuilder("<html>"); // NOI18N
                 for (String keyword : library.getKeywords()) {
@@ -198,13 +197,13 @@ public class SearchPanel extends javax.swing.JPanel {
                 }
                 keywords = keywordsText.toString();
             }
+            editPanel.setData(null, null, library);
         }
         descriptionComponent.setText(description);
-        latestVersionComponent.setText(latestVersion);
         keywordsComponent.setText(keywords);
         descriptionComponent.setVisible(description != null);
-        latestVersionLabel.setVisible(!emptySelection);
         keywordsLabel.setVisible(keywords != null);
+        editPanel.setVisible(!emptySelection);
         addButton.setEnabled(!emptySelection);
     }
 
@@ -243,8 +242,7 @@ public class SearchPanel extends javax.swing.JPanel {
         descriptionComponent = new javax.swing.JLabel();
         keywordsLabel = new javax.swing.JLabel();
         keywordsComponent = new javax.swing.JLabel();
-        latestVersionLabel = new javax.swing.JLabel();
-        latestVersionComponent = new javax.swing.JLabel();
+        editPanel = new org.netbeans.modules.javascript.nodejs.ui.libraries.EditPanel();
         addButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         searchLabel = new javax.swing.JLabel();
@@ -266,8 +264,6 @@ public class SearchPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(keywordsLabel, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.keywordsLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(latestVersionLabel, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.latestVersionLabel.text")); // NOI18N
-
         javax.swing.GroupLayout searchPanelLayout = new javax.swing.GroupLayout(searchPanel);
         searchPanel.setLayout(searchPanelLayout);
         searchPanelLayout.setHorizontalGroup(
@@ -278,14 +274,11 @@ public class SearchPanel extends javax.swing.JPanel {
                     .addComponent(librariesLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(searchPanelLayout.createSequentialGroup()
-                        .addComponent(latestVersionLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(latestVersionComponent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(descriptionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(descriptionComponent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(keywordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(keywordsComponent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(keywordsComponent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(editPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         searchPanelLayout.setVerticalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -299,13 +292,11 @@ public class SearchPanel extends javax.swing.JPanel {
                     .addGroup(searchPanelLayout.createSequentialGroup()
                         .addComponent(descriptionComponent)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(latestVersionLabel)
-                            .addComponent(latestVersionComponent))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(keywordsLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(keywordsComponent)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -383,10 +374,9 @@ public class SearchPanel extends javax.swing.JPanel {
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel descriptionComponent;
     private javax.swing.JLabel descriptionLabel;
+    private org.netbeans.modules.javascript.nodejs.ui.libraries.EditPanel editPanel;
     private javax.swing.JLabel keywordsComponent;
     private javax.swing.JLabel keywordsLabel;
-    private javax.swing.JLabel latestVersionComponent;
-    private javax.swing.JLabel latestVersionLabel;
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JList<Library> librariesList;
     private javax.swing.JLabel messageLabel;

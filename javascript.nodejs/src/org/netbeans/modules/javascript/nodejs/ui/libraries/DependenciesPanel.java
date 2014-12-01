@@ -138,7 +138,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
             LibraryProvider provider = LibraryProvider.forProject(project);
             for (Library.Version dependency : dependencies) {
                 String libraryName = dependency.getLibrary().getName();
-                Library library = provider.libraryDetails(libraryName);
+                Library library = provider.libraryDetails(libraryName, false);
                 updateDependencyInfo(libraryName, library);
             }
         } else {
