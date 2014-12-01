@@ -106,9 +106,8 @@ public final class NodeJsPathPanel extends JPanel {
         } else {
             nodeHintLabel.setText(Bundle.NodeJsPathPanel_node_hint1(nodes[0]));
         }
-
-        DocumentListener defaultDocumentListener = new NodeDocumentListener();
-        nodeTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        // listeners
+        nodeTextField.getDocument().addDocumentListener(new NodeDocumentListener());
     }
 
     public String getNode() {
@@ -382,6 +381,10 @@ public final class NodeJsPathPanel extends JPanel {
 
         private void processUpdate() {
             fireChange();
+            NodeExecutable node = NodeExecutable.forPath(getNode());
+            if (node != null) {
+                node.resetVersion();
+            }
             detectVersion();
         }
 
