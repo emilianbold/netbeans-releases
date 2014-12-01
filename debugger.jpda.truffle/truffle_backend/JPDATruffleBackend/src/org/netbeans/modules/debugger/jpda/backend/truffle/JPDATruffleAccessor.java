@@ -53,11 +53,15 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.Breakpoint;
 import com.oracle.truffle.debug.LineBreakpoint;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -268,6 +272,13 @@ public class JPDATruffleAccessor extends Object {
     */
     
     static LineBreakpoint setLineBreakpoint(String path, int line) {
+        try {
+            return setLineBreakpoint(new File(path).toURI().toURL(), line);
+        } catch (MalformedURLException muex) {
+            System.err.println(muex.getLocalizedMessage());
+            muex.printStackTrace();
+        }
+        
         Source source;
         try {
             source = Source.fromFileName(path);
@@ -275,8 +286,23 @@ public class JPDATruffleAccessor extends Object {
             //System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
             return null;
         }
-        LineBreakpoint lb = debugManager.setLineBreakpoint(source.createLineLocation(line));
-        //System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", lb = "+lb);
+        LineLocation bpLineLocation = source.createLineLocation(line);
+        LineBreakpoint lb = debugManager.setLineBreakpoint(bpLineLocation);
+        //System.err.println("setLineBreakpoint("+path+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+        return lb;
+    }
+    
+    static LineBreakpoint setLineBreakpoint(URL url, int line) {
+        Source source;
+        try {
+            source = Source.fromURL(url, url.getPath());
+        } catch (IOException ioex) {
+            //System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
+            return null;
+        }
+        LineLocation bpLineLocation = source.createLineLocation(line);
+        LineBreakpoint lb = debugManager.setLineBreakpoint(bpLineLocation);
+        //System.err.println("setLineBreakpoint("+url+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
         return lb;
     }
     
@@ -300,7 +326,7 @@ public class JPDATruffleAccessor extends Object {
     
     static Object evaluate(String expression, Object frameInstance) {
         FrameInstance fi = (FrameInstance) frameInstance;
-        MaterializedFrame frame = (MaterializedFrame) fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
+        MaterializedFrame frame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true).materialize();
         final Source source = Source.fromText(expression, "EVAL");
         Object value = debugManager.eval(source, fi.getCallNode(), frame);
         if (value == null) {
@@ -317,7 +343,7 @@ public class JPDATruffleAccessor extends Object {
         FrameInstance fi = (FrameInstance) frameInstance;
         // returns { Frame frame, FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes }
         Object[] slots = new Object[4];
-        MaterializedFrame frame = (MaterializedFrame) fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true);
+        MaterializedFrame frame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true).materialize();
         FrameDescriptor frameDescriptor = frame.getFrameDescriptor();
         List<? extends FrameSlot> slotsList = frameDescriptor.getSlots();
         ArrayList<FrameSlot> slotsArr = new ArrayList<>();

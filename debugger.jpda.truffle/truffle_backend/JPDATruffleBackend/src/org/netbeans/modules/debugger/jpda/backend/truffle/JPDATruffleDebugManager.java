@@ -8,15 +8,14 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.TruffleRuntime;
 import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
-import com.oracle.truffle.api.frame.FrameInstanceVisitor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrument.Probe;
 import com.oracle.truffle.api.instrument.SyntaxTag;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
@@ -29,24 +28,21 @@ import com.oracle.truffle.debug.impl.AbstractDebugManager;
 import com.oracle.truffle.debug.impl.DebugException;
 import com.oracle.truffle.debug.instrument.DebugInstrumentCallback;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
-import com.oracle.truffle.js.engine.TruffleJSEngineFactory;
 import com.oracle.truffle.js.nodes.JavaScriptNode;
 import com.oracle.truffle.js.nodes.ScriptNode;
-import com.oracle.truffle.js.nodes.instrument.JSNodeProber;
 import com.oracle.truffle.js.parser.JSEngine;
 import com.oracle.truffle.js.parser.env.Environment;
 import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSNodeProber;
+import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSDebugProber;
 
 /**
  *
@@ -54,26 +50,27 @@ import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSNodeProber;
  */
 class JPDATruffleDebugManager extends AbstractDebugManager {
     
-    private static final JSNodeProberDelegate nodeProberDelegate = new JSNodeProberDelegate();
+    //private static final JSNodeProberDelegate nodeProberDelegate = new JSNodeProberDelegate();
     
     private final ScriptEngine engine;
     private final ExecutionContext context;
     private final TopFrameHolder topFrameHolder;
 
     public JPDATruffleDebugManager(ScriptEngine engine, ExecutionContext context, DebugClient dbgClient) {
-        super(context, dbgClient);
+        super(dbgClient);
         this.engine = engine;
         this.context = context;
         this.topFrameHolder = new TopFrameHolder();
         ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
-        nodeProberDelegate.addNodeProber(
-                new JPDAJSNodeProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback, context)));
+        //nodeProberDelegate.addNodeProber(
+        //        new JPDAJSDebugProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback, context)));
         //System.err.println("new JPDATruffleDebugManager("+engine+")");
     }
     
     static JPDATruffleDebugManager setUp() {
         //System.err.println("JPDATruffleDebugManager.setUp()");
-        TruffleJSEngineFactory.addNodeProber(nodeProberDelegate);
+        //TruffleJSEngineFactory.addNodeProber(nodeProberDelegate);
+        Probe.registerASTProber(new JPDAJSDebugProber());
         return null; // Initialize TruffleJSEngine class only.
     }
 
@@ -185,6 +182,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
 
         @Override
         public void haltedAt(Node astNode, MaterializedFrame frame) {
+            //System.err.println("JPDADebugClient.haltedAt("+astNode+", "+frame+")");
             topFrameHolder.currentTopFrame = frame;
             topFrameHolder.currentNode = astNode;
             SourcePosition position = getPosition(astNode);
@@ -376,56 +374,6 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             }
             return id;
         }
-    }
-    
-    private static final class JSNodeProberDelegate implements JSNodeProber {
-        
-        private final List<JSNodeProber> probers = new ArrayList<>();
-
-        @Override
-        public JavaScriptNode probeAsStatement(JavaScriptNode jsn) {
-            for (JSNodeProber p : probers) {
-                jsn = p.probeAsStatement(jsn);
-            }
-            return jsn;
-        }
-
-        @Override
-        public JavaScriptNode probeAsCall(JavaScriptNode jsn, String name) {
-            for (JSNodeProber p : probers) {
-                jsn = p.probeAsCall(jsn, name);
-            }
-            return jsn;
-        }
-
-        @Override
-        public JavaScriptNode probeAsLocalAssignment(JavaScriptNode jsn, String name) {
-            for (JSNodeProber p : probers) {
-                jsn = p.probeAsLocalAssignment(jsn, name);
-            }
-            return jsn;
-        }
-
-        @Override
-        public JavaScriptNode probeAsThrow(JavaScriptNode jsn) {
-            for (JSNodeProber p : probers) {
-                jsn = p.probeAsThrow(jsn);
-            }
-            return jsn;
-        }
-
-        @Override
-        public Node probeAs(Node node, SyntaxTag st, Object... os) {
-            for (JSNodeProber p : probers) {
-                node = p.probeAs(node, st, os);
-            }
-            return node;
-        }
-
-        private void addNodeProber(JSNodeProber nodeProber) {
-            probers.add(nodeProber);
-        }
-        
     }
     
     private static class TopFrameHolder {

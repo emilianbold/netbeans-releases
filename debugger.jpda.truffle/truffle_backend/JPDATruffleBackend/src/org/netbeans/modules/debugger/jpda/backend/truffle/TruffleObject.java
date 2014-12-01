@@ -10,8 +10,8 @@ import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.objects.JSObject;
-import com.oracle.truffle.om.DynamicObject;
-import com.oracle.truffle.om.Property;
+import com.oracle.truffle.api.object.DynamicObject;
+import com.oracle.truffle.api.object.Property;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +81,7 @@ public class TruffleObject {
             Iterable<Property> enumerableProperties = JSObject.getEnumerableProperties(dobj);
             List<Object> ch = new ArrayList<>();
             for (Property p : enumerableProperties) {
-                String name = p.getName().toString();
+                String name = p.getKey().toString();
                 Object obj = JSObject.getProperty(dobj, name);
                 //Object obj = p.get(dobj, );//jso.getProperty((JSContext) context, name);
                 ch.add(new TruffleObject(context, name, obj));
@@ -100,7 +100,7 @@ public class TruffleObject {
             int n = props.size();
             Object[] ch = new Object[n];
             for (int i = 0; i < n; i++) {
-                String name = props.get(i).getName().toString();
+                String name = props.get(i).getKey().toString();
                 Object obj = props.get(i).get(dobj, true);
                 ch[i] = new TruffleObject(context, name, obj);
             }
