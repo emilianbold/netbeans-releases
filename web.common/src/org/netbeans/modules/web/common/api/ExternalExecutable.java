@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -95,6 +96,7 @@ public final class ExternalExecutable {
      *   <li>{@link ExecutionDescriptor#isFrontWindowOnError()  displays the Output window on error (since 1.62)}</li>
      *   <li>{@link ExecutionDescriptor#isInputVisible() has visible user input}</li>
      *   <li>{@link ExecutionDescriptor#showProgress() shows progress}</li>
+     *   <li>{@link ExecutionDescriptor#charset(java.nio.charset.Charset) charset set to UTF-8}</li>
      * </ul>
      */
     public static final ExecutionDescriptor DEFAULT_EXECUTION_DESCRIPTOR = new ExecutionDescriptor()
@@ -102,7 +104,8 @@ public final class ExternalExecutable {
             .frontWindow(true)
             .frontWindowOnError(true)
             .inputVisible(true)
-            .showProgress(true);
+            .showProgress(true)
+            .charset(StandardCharsets.UTF_8);
 
     private final String executable;
     private final List<String> parameters;
