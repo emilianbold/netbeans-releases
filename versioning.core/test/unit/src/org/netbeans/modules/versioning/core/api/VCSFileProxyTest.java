@@ -63,6 +63,7 @@ public class VCSFileProxyTest extends NbTestCase {
         File userdir = new File(getWorkDir(), "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
     }
     
     public void testIsDirectoryFolderFO() throws IOException {
