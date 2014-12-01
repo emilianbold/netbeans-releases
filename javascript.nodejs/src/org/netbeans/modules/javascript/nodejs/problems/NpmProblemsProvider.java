@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -282,7 +283,11 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
 
         @Override
         public Result get() throws InterruptedException, ExecutionException {
-            getTask().get();
+            try {
+                getTask().get();
+            } catch (CancellationException ex) {
+                // cancelled by user
+            }
             if (npmInstallRequired()) {
                 synchronized (this) {
                     task = null;

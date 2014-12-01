@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -325,7 +326,11 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider, Pro
 
         @Override
         public Result get() throws InterruptedException, ExecutionException {
-            getTask().get();
+            try {
+                getTask().get();
+            } catch (CancellationException ex) {
+                // cancelled by user
+            }
             if (bowerInstallRequired()) {
                 synchronized (this) {
                     task = null;
