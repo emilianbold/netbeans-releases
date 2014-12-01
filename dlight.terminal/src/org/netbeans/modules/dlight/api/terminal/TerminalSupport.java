@@ -65,7 +65,7 @@ public final class TerminalSupport {
      * @param env
      */
     public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false, false);
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, null, false, false, 0);
     }
 
     /**
@@ -76,7 +76,7 @@ public final class TerminalSupport {
      * @param env
      */
     public static void openTerminal(IOContainer ioContainer, String termTitle, ExecutionEnvironment env, String dir) {
-        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, false);
+        TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, false, 0);
     }
 
     /**
@@ -102,7 +102,28 @@ public final class TerminalSupport {
             instance.open();
             instance.requestActive();
             IOContainer ioContainer = instance.getIOContainer();
-            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, pwdFlag);
+            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, pwdFlag, 0);
+        } finally {
+            instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, prev);
+        }
+    }
+
+    /**
+     * Open terminal tab with specified id (try to restore pinned tab state from
+     * Preferences)
+     *
+     * @param id ID of a stored tab, from which we try to restore a state.
+     * Default value = 0 which means don't restore the state
+     */
+    public static void restoreTerminal(String termTitle, ExecutionEnvironment env, String dir, boolean pwdFlag, long id) {
+        final TerminalContainerTopComponent instance = TerminalContainerTopComponent.findInstance();
+        Object prev = instance.getClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY);
+        instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, Boolean.FALSE);
+        try {
+            instance.open();
+            instance.requestActive();
+            IOContainer ioContainer = instance.getIOContainer();
+            TerminalSupportImpl.openTerminalImpl(ioContainer, termTitle, env, dir, false, pwdFlag, id);
         } finally {
             instance.putClientProperty(TerminalContainerTopComponent.AUTO_OPEN_LOCAL_PROPERTY, prev);
         }

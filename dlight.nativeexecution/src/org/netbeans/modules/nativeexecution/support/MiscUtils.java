@@ -66,7 +66,7 @@ public class MiscUtils {
     
     public static void showNotification(String title, String shortText, String longText) {
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/error.png", false); //NOI18N
-        longText = "<html>" + longText + "</html>";
+        longText = "<html>" + longText + "</html>"; // NOI18N
         NotificationDisplayer.getDefault().notify(title, icon, new JLabel(shortText), new JLabel(longText), NotificationDisplayer.Priority.NORMAL, NotificationDisplayer.Category.WARNING);
     }
     
