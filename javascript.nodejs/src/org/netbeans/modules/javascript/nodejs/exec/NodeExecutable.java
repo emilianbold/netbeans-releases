@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -325,10 +326,8 @@ public class NodeExecutable {
     private ExecutionDescriptor getDescriptor(@NullAllowed Runnable debuggerStartTask) {
         assert project != null;
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
-        return new ExecutionDescriptor()
-                .frontWindow(true)
+        return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .frontWindowOnError(false)
-                .controllable(true)
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true)
@@ -340,7 +339,8 @@ public class NodeExecutable {
                 .inputOutput(InputOutput.NULL)
                 .inputVisible(false)
                 .frontWindow(false)
-                .showProgress(false);
+                .showProgress(false)
+                .charset(StandardCharsets.UTF_8);
     }
 
     private File getWorkDir() {
