@@ -262,33 +262,15 @@ public class PerfIDEValidation extends JellyTestCase {
     public void testNewJavaScriptProject() {
         NewProjectWizardOperator.invoke().cancel();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        // "Standard"
-        npwo.selectCategory("HTML5");
-        // "Java Application"
-        npwo.selectProject("HTML5/JavaScript");
+        npwo.selectCategory("HTML5/JavaScript");
+        npwo.selectProject("HTML5/JS Application");
         npwo.next();
+        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
+        npnlso.txtProjectName().setText("HTML5" + SAMPLE_PROJECT_NAME);
+        npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npwo.finish();        
         // wait project appear in projects view
-        new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
-
-        //disable the compile on save:
-//        ProjectsTabOperator.invoke().getProjectRootNode(SAMPLE_PROJECT_NAME).properties();
-//        // "Project Properties"
-//        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Customizer_Title");
-//        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
-//        // select "Compile" category
-//        String buildCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_BuildCategory");
-//        String compileCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Build");
-//        new Node(new Node(new JTreeOperator(propertiesDialogOper), buildCategoryTitle), compileCategoryTitle).select();
-//        // actually disable the quick run:
-//        String compileOnSaveLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "CustomizerCompile.CompileOnSave");
-//        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), compileOnSaveLabel, true, true);
-//        if (cb.isSelected()) {
-//            cb.doClick();
-//        }
-//        // confirm properties dialog
-//        propertiesDialogOper.ok();
-
+        new ProjectsTabOperator().getProjectRootNode("HTML5" + SAMPLE_PROJECT_NAME);
         // wait classpath scanning finished
         PerfWatchProjects.waitScanFinished();
     }
