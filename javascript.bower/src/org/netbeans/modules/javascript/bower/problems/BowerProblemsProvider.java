@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.bower.problems;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
-public final class BowerProblemsProvider implements ProjectProblemsProvider {
+public final class BowerProblemsProvider implements ProjectProblemsProvider, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(BowerProblemsProvider.class.getName());
 
@@ -78,7 +79,7 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider {
     final Project project;
     private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private final BowerJson bowerJson;
-    private final BowerrcJson bowerrcJson;
+    final BowerrcJson bowerrcJson;
 
 
     private BowerProblemsProvider(Project project) {
@@ -94,6 +95,7 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider {
         projectDirectory.addFileChangeListener(WeakListeners.create(
                 org.openide.filesystems.FileChangeListener.class, bowerProblemsProvider.fileChangeListener, projectDirectory));
         bowerProblemsProvider.listenOnBowerComponentsDir();
+        bowerProblemsProvider.bowerrcJson.addPropertyChangeListener(bowerProblemsProvider);
         return bowerProblemsProvider;
     }
 
@@ -189,6 +191,15 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider {
 
     void fireProblemsChanged() {
         problemsProviderSupport.fireProblemsChange();
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        // change in .bowerrc file
+        if (BowerrcJson.PROP_DIRECTORY.equals(evt.getPropertyName())) {
+            listenOnBowerComponentsDir();
+            fireProblemsChanged();
+        }
     }
 
     //~ Inner classes
