@@ -127,7 +127,7 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
     }
     
     public void testFSCompletion05() throws Exception {
-        checkAppliedCompletion("TestProject1/js/fileCC/main4.js", "requirejs(['fold^']);", "requirejs(['./folder1/^']);", "folder1", false);        
+        checkAppliedCompletion("TestProject1/js/fileCC/main4.js", "requirejs(['fold^']);", "requirejs(['folder1/^']);", "folder1", false);        
     }
     
     public void testFSCompletion06() throws Exception {
@@ -196,6 +196,14 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
     
     public void testIssue247729_01() throws Exception {
         checkAppliedCompletion("TestProject1/js/main3.js", "'text!fileCC/folder2/template/^',", "'text!fileCC/folder2/template/body.html^',", "body", false);        
+    }
+    
+    public void testIssue249026_01() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue249026/base.dt/js/issue249026_1.js", "'^'", "'base.dt/^'", "base.dt", false);        
+    }
+    
+    public void testIssue249026_02() throws Exception {
+        checkAppliedCompletion("TestProject1/js/fileCC/issue249026/base.dt/js/issue249026_2.js", "'b^'", "'base.dt/^'", "base.dt", false);        
     }
     
     public void checkAppliedCompletion(final String file, final String caretLine, final String expectedLine, final String itemToComplete, final boolean includeModifiers) throws Exception {
@@ -394,7 +402,7 @@ public class RequireFileCodeCompletionTest extends JsCodeCompletionBase {
                 });
 
                 assertDescriptionMatches(file, bd.getText(0, bd.getLength()), true, ".expected.js");
-                final String fileName = file.substring(0, file.indexOf(".")) + ".js." + getName() + ".expected.js";
+                final String fileName = file.substring(0, file.lastIndexOf(".")) + ".js." + getName() + ".expected.js";
                 assertTrue("File not found: " + getTestFile(fileName).getPath(), getTestFile(fileName).isValid());
                 Source expectedSource = getTestSource(getTestFile(fileName));
                 final StringBuilder expectedContent = new StringBuilder(expectedSource.getDocument(false).getText(0, expectedSource.getDocument(false).getLength()));
