@@ -47,6 +47,7 @@ package org.netbeans.modules.terminal.ioprovider;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.datatransfer.Clipboard;
@@ -69,6 +70,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -82,6 +84,8 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -126,16 +130,26 @@ import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Extent;
 import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.lib.terminalemulator.TermStream;
+import org.netbeans.modules.terminal.PinPanel;
 import org.netbeans.modules.terminal.api.IOResizable;
+import org.netbeans.modules.terminal.ioprovider.Task.ValueTask;
+import org.netbeans.modules.terminal.support.TerminalPinSupport;
+import org.netbeans.modules.terminal.support.TerminalPinSupport.DetailsStateListener;
+import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalCreationDetails;
+import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalDetails;
+import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalPinningDetails;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.datatransfer.ExTransferable;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -300,12 +314,14 @@ public final class Terminal extends JComponent {
 
 	@Override
 	public void titleChanged(String title) {
-	    String newTitle = title;
-	    updateTooltopText(newTitle);
-	    if (title.length() > MAX_TITLE_LENGTH) {
-		newTitle = PREFIX.concat(title.substring(title.length() - MAX_TITLE_LENGTH));
+	    if (!customTitle) {
+		String newTitle = title;
+		updateTooltopText(newTitle);
+		if (title.length() > MAX_TITLE_LENGTH) {
+		    newTitle = PREFIX.concat(title.substring(title.length() - MAX_TITLE_LENGTH));
+		}
+		updateName(newTitle);
 	    }
-	    updateName(newTitle);
 	}
     }
 
@@ -359,6 +375,9 @@ public final class Terminal extends JComponent {
 	actions.add(wrapAction);
 	actions.add(clearAction);
 	actions.add(closeAction);
+	
+	pinTabAction = new PinTabAction();
+	actions.add(pinTabAction);
 	setupKeymap(actions);
 
         mouseAdapter = new MouseAdapter() {
@@ -397,7 +416,7 @@ public final class Terminal extends JComponent {
 		    changeFontSizeBy(change);
 		    e.consume();
 		}
-	    }
+	    }	
 	});
 
 	termListener = new MyTermListener();
@@ -796,6 +815,136 @@ public final class Terminal extends JComponent {
         }
     }
 
+    private final class PinTabAction extends AbstractAction {
+	private final String pinMessage = NbBundle.getMessage(Terminal.class, "CTL_PinTab");
+	private final String unpinMessage = NbBundle.getMessage(Terminal.class, "CTL_UnpinTab");
+
+	private final TerminalPinSupport support = TerminalPinSupport.getDefault();
+	private final ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/terminal/support/pin.png", false); //NOI18N
+	
+	private String cwd = null;
+
+	public PinTabAction() {
+	    
+	    putValue(NAME, pinMessage);
+	    putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+
+	    support.addListener(new DetailsStateListener() {
+
+		@Override
+		public void detailsAdded(Term term) {
+		    if (term != term()) {
+			return;
+		    }
+		    TerminalPinningDetails pinDetails = support.findPinningDetails(term);
+		    if (pinDetails != null) {
+			customTitle = pinDetails.isCustomTitle();
+			if (customTitle) {
+			    setTitle(pinDetails.getTitle());
+			}
+			pin(true);
+		    } 
+		}
+	    });
+	    
+	    term.addListener(new TermListener() {
+
+		@Override
+		public void sizeChanged(Dimension cells, Dimension pixels) {
+		}
+
+		@Override
+		public void titleChanged(String title) {
+		}
+
+		@Override
+		public void cwdChanged(String aCwd) {
+		    cwd = aCwd;
+		}
+	    });
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+	    TerminalPinningDetails pinningDetails = support.findPinningDetails(term);
+	    boolean oldState = pinningDetails == null ? false: pinningDetails.isPinned();
+	    boolean newState = !oldState;
+	    
+	    if (newState) {
+		TerminalPinningDetails defaultValues = TerminalPinningDetails.create(customTitle, customTitle ? title : name, cwd, enabled);
+		PinPanel pinPanel = new PinPanel(new TerminalDetails(support.findCreationDetails(term), defaultValues));
+
+		DialogDescriptor dd = new DialogDescriptor(
+			pinPanel, 
+			NbBundle.getMessage(Terminal.class, "LBL_PinTab"), 
+			true,
+			DialogDescriptor.OK_CANCEL_OPTION,
+			DialogDescriptor.OK_OPTION, 
+			null
+		);
+
+		Dialog cfgDialog = DialogDisplayer.getDefault().createDialog(dd);
+
+		try {
+		    cfgDialog.setVisible(true);
+		} catch (Throwable th) {
+		    if (!(th.getCause() instanceof InterruptedException)) {
+			throw new RuntimeException(th);
+		    }
+		    dd.setValue(DialogDescriptor.CANCEL_OPTION);
+		} finally {
+		    cfgDialog.dispose();
+		}
+
+		if (dd.getValue() != DialogDescriptor.OK_OPTION) {
+		    return;
+		}
+		
+		String chosenTitle = pinPanel.getTitle();
+		boolean chosenIsCustom = pinPanel.isCustomTitle();
+		String chosenDirectory = pinPanel.getDirectory();
+		
+		if (chosenDirectory.isEmpty()) {
+		    chosenDirectory = null;
+		}
+		
+		support.tabWasPinned(
+			term,
+			TerminalPinningDetails.create(
+				chosenIsCustom,
+				chosenIsCustom ? chosenTitle : name,
+				chosenDirectory,
+				enabled
+			)
+		);
+		
+		if (chosenIsCustom && !title.equals(chosenTitle)) {
+		    customTitle = true;
+		    updateName(chosenTitle);
+		}
+	    } else {
+		support.tabWasUnpinned(term);
+	    }
+	    
+	    pin(newState);
+	}
+
+	private void pin(boolean isPinned) {
+	    if (isPinned) {
+		setIcon(icon);
+	    } else {
+		setIcon(null);
+	    }
+	    support.findPinningDetails(term).setPinned(isPinned);
+	    putValue(NAME, getMessage(isPinned));
+	}
+
+
+	private String getMessage(boolean isPinned) {
+	    return isPinned ? unpinMessage : pinMessage;
+	}
+    }
+
     private final Action copyAction = new CopyAction();
     private final Action setTitleAction = new SetTitleAction();
     private final Action pasteAction = new PasteAction();
@@ -806,6 +955,7 @@ public final class Terminal extends JComponent {
     private final Action largerFontAction = new LargerFontAction();
     private final Action smallerFontAction = new SmallerFontAction();
     private final Action dumpSequencesAction = new DumpSequencesAction();
+    private final Action pinTabAction;
 
 
 
@@ -917,6 +1067,10 @@ public final class Terminal extends JComponent {
 	task.post();
     }
 
+    private void setIcon(Icon icon) {
+	Task task = new Task.SetIcon(ioContainer, this, icon);
+	task.post();
+    }
 
     private boolean isBooleanStateAction(Action a) {
         Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);	//
@@ -973,7 +1127,7 @@ public final class Terminal extends JComponent {
 	System.out.printf("Terminal.setupKeymap() ... lookup returns %d hits\n", c.size());
 	Keymap globalKeymap = Lookup.getDefault().lookup(Keymap.class);
 	if (globalKeymap == null) {
-	    System.out.printf("\tCouldn't find keymap\n");
+	    System.out.printf("\tCouldn't findPinningDetails keymap\n");
 	} else {
 	    KeyStroke[] keyStrokes = globalKeymap.getBoundKeyStrokes();
 	    for (KeyStroke ks : keyStrokes) {
@@ -1018,6 +1172,7 @@ public final class Terminal extends JComponent {
         addMenuItem(menu, smallerFontAction);
 	addMenuItem(menu, new JSeparator());
 	addMenuItem(menu, setTitleAction);
+	addMenuItem(menu, pinTabAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, clearAction);
 	if (isClosable())
@@ -1245,7 +1400,7 @@ public final class Terminal extends JComponent {
 		@Override
 		public void run() {
 		    stream.sendChars(str.toCharArray(), 0, str.length());
-		}
+		    }
 	    });
 	}
 
