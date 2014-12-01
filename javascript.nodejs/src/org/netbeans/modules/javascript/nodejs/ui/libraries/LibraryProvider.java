@@ -78,7 +78,8 @@ import org.openide.util.RequestProcessor;
  */
 public class LibraryProvider {
     /** Library providers for individual projects. */
-    private static final Map<Project,LibraryProvider> providers = new WeakHashMap<>();
+    private static final Map<Project,LibraryProvider> providers =
+            Collections.synchronizedMap(new WeakHashMap<Project,LibraryProvider>());
     /** Request processor used by this class. */
     private static final RequestProcessor RP = new RequestProcessor(LibraryProvider.class.getName(), 3);
     /** Project for which the libraries should be provided. */
@@ -165,16 +166,19 @@ public class LibraryProvider {
      * Returns details of the library/package with the given name.
      * 
      * @param libraryName name of the library/package.
+     * @param cachedOnly if {@code true} then the details will be returned when
+     * they are cached only (i.e., {@code null} will be returned if they are not
+     * cached and no attempt will be made to obtain the details from the server).
      * @return details of the library/package with the given name.
      */
-    public Library libraryDetails(String libraryName) {
-        assert !EventQueue.isDispatchThread();
+    public Library libraryDetails(String libraryName, boolean cachedOnly) {
         WeakReference<Library> reference = detailCache.get(libraryName);
         Library result = null;
         if (reference != null) {
             result = reference.get();
         }
-        if (result == null) {
+        if (result == null && !cachedOnly) {
+            assert !EventQueue.isDispatchThread();
             NpmExecutable executable = NpmExecutable.getDefault(project, false);
             if (executable != null) {
                 JSONObject details = executable.view(libraryName);
