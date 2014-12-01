@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
+import java.util.Objects;
+
 /**
  * npm package/library.
  *
@@ -149,6 +151,26 @@ public class Library {
         this.keywords = keywords;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.name);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Library other = (Library) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Version of a npm package/library.
      */
@@ -185,6 +207,32 @@ public class Library {
          */
         public String getName() {
             return name;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 59 * hash + Objects.hashCode(this.library);
+            hash = 59 * hash + Objects.hashCode(this.name);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Version other = (Version) obj;
+            if (!Objects.equals(this.library, other.library)) {
+                return false;
+            }
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            return true;
         }
 
     }
