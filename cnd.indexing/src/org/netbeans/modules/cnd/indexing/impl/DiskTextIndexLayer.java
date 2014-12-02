@@ -69,7 +69,18 @@ import org.openide.util.RequestProcessor;
  * @author Vladimir Voskresensky
  */
 public final class DiskTextIndexLayer implements TextIndexLayer {
-
+    private static final boolean CHECK_KEY;
+    static {
+        boolean check;
+        if (System.getProperty("org.netbeans.modules.cnd.indexing.check.key") != null) {
+            check = Boolean.getBoolean(System.getProperty("org.netbeans.modules.cnd.indexing.check.key"));
+        } else {
+            boolean debug = false;
+            assert debug = true;
+            check = debug;
+        }
+        CHECK_KEY = check;
+    }// NOI18N
     private final static Logger LOG = Logger.getLogger("CndTextIndexImpl"); // NOI18N
     private final DocumentIndex index;
     private final ConcurrentLinkedQueue<StoreQueueEntry> unsavedQueue = new ConcurrentLinkedQueue<StoreQueueEntry>();
@@ -167,6 +178,11 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
     public void shutdown() {
         store();
         scheduleAtFixedRate.cancel(false);
+        try {
+            index.close();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private static class StoreQueueEntry {
@@ -211,7 +227,13 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
 
     private String toPrimaryKey(CndTextIndexKey key) {
 //        return String.valueOf(((long) unitCodec.unmaskRepositoryID(key.getUnitId()) << 32) + (long) key.getFileNameIndex());
-        return String.valueOf(((long) (key.getUnitId()) << 32) + (long) key.getFileNameIndex());
+        String result = String.valueOf(((long) (key.getUnitId()) << 32) + (long) key.getFileNameIndex());
+        if (CHECK_KEY) {
+            CndTextIndexKey fromPrimaryKey = fromPrimaryKey(result);
+//            System.out.println("fromKey=" + fromPrimaryKey + " originalKey:" + key);
+            assert fromPrimaryKey.getUnitId() == key.getUnitId() && fromPrimaryKey.getFileNameIndex() == key.getFileNameIndex();
+        }
+        return result;
     }
 
     private CndTextIndexKey fromPrimaryKey(String ext) {

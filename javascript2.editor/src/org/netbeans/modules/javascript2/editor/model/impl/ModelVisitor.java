@@ -1306,7 +1306,7 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
-    public Node enter(VarNode varNode) {
+    public Node enter(VarNode varNode) {        
         Node init = varNode.getInit();
         ReferenceNode rNode = null;
         if (init instanceof ReferenceNode) {
@@ -1372,12 +1372,25 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                     parent.addProperty(name.getName(), newVariable);
                     variable = newVariable;
-                }
+                } 
                 JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
                 variable.setDeprecated(docHolder.isDeprecated(varNode));
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
                 if (init instanceof IdentNode) {
-                    addOccurrence((IdentNode)init, variable.getName());
+                    IdentNode iNode = (IdentNode)init;
+                    if (!iNode.getName().equals(variable.getName())) {
+                        addOccurrence((IdentNode)init, variable.getName());
+                    } else {
+                        // the name of variable is the same as already existing function or var or parameter
+                        JsFunctionImpl currentFunction = modelBuilder.getCurrentDeclarationFunction();
+                        if (currentFunction != null && currentFunction.getParameter(variable.getName()) != null) {
+                            // it's a parameter
+                            addOccurrence((IdentNode)init, variable.getName());
+                        } else {
+                            variable.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                        }
+                    }
+                    
                 }
                 modelBuilder.setCurrentObject(variable);
                 Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, init);

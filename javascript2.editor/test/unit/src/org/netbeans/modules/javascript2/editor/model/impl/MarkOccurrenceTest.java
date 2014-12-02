@@ -1175,6 +1175,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue190645.js", "conf^ig.defaults.treasure.gold = 1;", true); 
     }
     
+    public void testIssue248960_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue248960.js", "var gotDepartment = gotDepartm^ent;", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

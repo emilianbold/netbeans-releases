@@ -128,7 +128,13 @@ public class OpenInTerminalAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return activatedNodes.length == 1;
+        if (activatedNodes.length == 1) {
+            Lookup lookup = activatedNodes[0].getLookup();
+            if (lookup.lookup(FileObject.class) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.nodejs.exec;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -156,7 +157,27 @@ public class NpmExecutable {
         JSONObject info = null;
         try {
             StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
-            getExecutable("npm view").additionalParameters(params).
+            Integer exitCode = getExecutable("npm view").additionalParameters(params).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            String result = factory.getResult();
+            if (exitCode != null && exitCode == 0) {
+                info = (JSONObject)new JSONParser().parse(result);
+            }
+        } catch (ExecutionException | ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return info;
+    }
+
+    @CheckForNull
+    public JSONObject list() {
+        List<String> params = new ArrayList<>();
+        params.add("list"); // NOI18N
+        params.add("--json"); // NOI18N
+        JSONObject info = null;
+        try {
+            StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+            getExecutable("npm list").additionalParameters(params).
                     redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
             String result = factory.getResult();
             info = (JSONObject)new JSONParser().parse(result);
@@ -198,10 +219,7 @@ public class NpmExecutable {
 
     private ExecutionDescriptor getDescriptor() {
         assert project != null;
-        return new ExecutionDescriptor()
-                .frontWindow(true)
-                .frontWindowOnError(false)
-                .controllable(true)
+        return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
@@ -212,7 +230,8 @@ public class NpmExecutable {
                 .inputOutput(InputOutput.NULL)
                 .inputVisible(false)
                 .frontWindow(false)
-                .showProgress(false);
+                .showProgress(false)
+                .charset(StandardCharsets.UTF_8);
     }
 
     private File getWorkDir() {

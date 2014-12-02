@@ -42,8 +42,7 @@
 
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import java.util.Objects;
 
 /**
  * npm package/library.
@@ -152,34 +151,24 @@ public class Library {
         this.keywords = keywords;
     }
 
-    /**
-     * Returns library that corresponds to the JSON object obtained
-     * as a result of a call to {@code npm view --json} command.
-     * 
-     * @param viewInfo result of some {@code npm view --json} command.
-     * @return library that corresponds to the given JSON object.
-     */
-    static Library forViewInfo(JSONObject viewInfo) {
-        String name = (String)viewInfo.get("name"); // NOI18N
-        Library library = new Library(name);
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.name);
+    }
 
-        String latestVersionName = (String)viewInfo.get("version"); // NOI18N
-        Library.Version latestVersion = null;
-
-        JSONArray versionArray = (JSONArray)viewInfo.get("versions"); // NOI18N
-        Library.Version[] versions = new Library.Version[versionArray.size()];
-        for (int i=0; i<versionArray.size(); i++) {
-            String versionName = (String)versionArray.get(i);
-            Library.Version version = new Library.Version(library, versionName);
-            if (versionName.equals(latestVersionName)) {
-                latestVersion = version;
-            }
-            versions[i] = version;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        library.setVersions(versions);
-        library.setLatestVersion(latestVersion);
-
-        return library;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Library other = (Library) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -218,6 +207,32 @@ public class Library {
          */
         public String getName() {
             return name;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 59 * hash + Objects.hashCode(this.library);
+            hash = 59 * hash + Objects.hashCode(this.name);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Version other = (Version) obj;
+            if (!Objects.equals(this.library, other.library)) {
+                return false;
+            }
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            return true;
         }
 
     }

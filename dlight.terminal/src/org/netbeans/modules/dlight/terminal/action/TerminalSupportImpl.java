@@ -59,6 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -71,6 +72,8 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
+import org.netbeans.modules.terminal.support.TerminalPinSupport;
+import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalCreationDetails;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -81,6 +84,9 @@ import org.openide.util.WeakListeners;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -109,40 +115,98 @@ public final class TerminalSupportImpl {
         button.setDisabledIcon(ImageUtilities.createDisabledIcon((Icon) icon));
         return button;
     }
-
+    
+    
+    /**
+     * Creates new Terminal tab. Method must be called from UI Thread.
+     * @param ioContainer parent tabbed container
+     * @param io io will be reused if this value is not null, if null the new one will be created 
+     * (<code>ioProvider.getIO(tabTitle, null, ioContainer)</code>)
+     * @param tabTitle tab title
+     * @param env execution environment
+     * @param dir Terminal tries to cd into this dir when connected
+     * @param silentMode produces output on errors if true
+     * @param pwdFlag try to set title to 'user@host - ${PWD}' every time ${PWD} changes.
+     */
     public static void openTerminalImpl(
             final IOContainer ioContainer,
             final String tabTitle,
             final ExecutionEnvironment env,
             final String dir,
             final boolean silentMode,
-            final boolean pwdFlag) {
+            final boolean pwdFlag,
+            final long termId) {
         final IOProvider ioProvider = IOProvider.get("Terminal"); // NOI18N
         if (ioProvider != null) {
+            final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
+            // Create a tab in EDT right after we call the method, don't let this 
+            // work to be done in RP in asynchronous manner. We need this to
+            // save tab order 
+            InputOutput io = ioProvider.getIO(tabTitle, null, ioContainer);
+            ioRef.set(io);
             final AtomicBoolean destroyed = new AtomicBoolean(false);
-            Runnable runnable = new Runnable() {
+            
+            final Runnable runnable = new Runnable() {
+                private final Runnable delegate = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (SwingUtilities.isEventDispatchThread()) {
+                            ioContainer.requestActive();
+                        } else {
+                            doWork();
+                        }
+                    }
+                };
 
                 @Override
                 public void run() {
-                    if (SwingUtilities.isEventDispatchThread()) {
-                        ioContainer.requestActive();
-                    } else {
-                        doWork();
-                    }
+                    delegate.run();
                 }
 
                 private void doWork() {
+                    boolean verbose = env.isRemote(); // can use silentMode instead
+                    OutputWriter out = ioRef.get().getOut();
+                    
+                    long id = TerminalPinSupport.getDefault().createPinDetails(TerminalCreationDetails.create(IOTerm.term(ioRef.get()), termId, env.getDisplayName(), pwdFlag));
+                    
                     if (!ConnectionManager.getInstance().isConnectedTo(env)) {
                         try {
+                            if (verbose) {
+                                out.println(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_ConnectingTo", env.getDisplayName() ));
+                            }
                             ConnectionManager.getInstance().connectTo(env);
                         } catch (IOException ex) {
                             if (!destroyed.get()) {
+                                if (verbose) {
+                                    try {
+                                        out.print(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_ConnectionFailed"));
+                                        out.println(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_Retry"), new HyperlinkAdapter() {
+                                            @Override
+                                            public void outputLineAction(OutputEvent ev) {
+                                                RP.post(delegate);
+                                            }
+                                        });
+                                    } catch (IOException ignored) {
+                                    }
+                                }
                                 String error = ex.getCause() == null ? ex.getMessage() : ex.getCause().getMessage();
                                 String msg = NbBundle.getMessage(TerminalSupportImpl.class, "TerminalAction.FailedToStart.text", error); // NOI18N
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
                             }
                             return;
                         } catch (CancellationException ex) {
+                            if (verbose) {
+                                try {
+                                    out.print(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_Canceled"));
+                                    out.println(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_Retry"), new HyperlinkAdapter() {
+                                        @Override
+                                        public void outputLineAction(OutputEvent ev) {
+                                            RP.post(delegate);
+                                        }
+                                    });
+                                } catch (IOException ignored) {
+                                }
+                            }
                             return;
                         }
                     }
@@ -173,13 +237,18 @@ public final class TerminalSupportImpl {
                         Exceptions.printStackTrace(ex);
                         return;
                     }
+                    
+                    if (verbose) {
+                        try {
+                            // Erase "log" in case we successfully connected to host
+                            out.reset();
+                        } catch (IOException ex) {
+                            // never thrown from TermOutputWriter
+                        }
+                    }
 
-                    final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
                     try {
-                        InputOutput io = ioProvider.getIO(tabTitle, null, ioContainer);
-                        ioRef.set(io);
-
-                        Term term = IOTerm.term(io);
+                        final Term term = IOTerm.term(ioRef.get());
                         // TODO: this is a temporary solution.
 
                         // Right now xterm emulation is not fully supported. (NB7.4)
@@ -196,6 +265,11 @@ public final class TerminalSupportImpl {
                         // clear env modified by NB. Let it be initialized by started shell process
                         npb.getEnvironment().put("LD_LIBRARY_PATH", "");// NOI18N
                         npb.getEnvironment().put("DYLD_LIBRARY_PATH", "");// NOI18N
+
+                        
+                        
+                        final TerminalPinSupport support = TerminalPinSupport.getDefault();
+                        String envId = ExecutionEnvironmentFactory.toUniqueID(env);
 
                         npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));
 
@@ -238,6 +312,7 @@ public final class TerminalSupportImpl {
                             @Override
                             public void run() {
                                 ioRef.get().closeInputOutput();
+                                support.close(term);
                             }
                         });
                         NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
@@ -275,7 +350,7 @@ public final class TerminalSupportImpl {
             RP.post(runnable);
         }
     }
-
+    
     private final static class NativeProcessListener implements ChangeListener, PropertyChangeListener {
 
         private final AtomicReference<NativeProcess> processRef;
@@ -316,6 +391,21 @@ public final class TerminalSupportImpl {
                     }
                 }
             }
+        }
+    }
+    
+    private static class HyperlinkAdapter implements OutputListener{
+
+        @Override
+        public void outputLineSelected(OutputEvent ev) {
+        }
+
+        @Override
+        public void outputLineAction(OutputEvent ev) {
+        }
+
+        @Override
+        public void outputLineCleared(OutputEvent ev) {
         }
     }
 }

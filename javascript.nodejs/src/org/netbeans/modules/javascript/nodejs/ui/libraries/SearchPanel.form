@@ -14,15 +14,11 @@
                   </Group>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Component id="latestVersionLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="latestVersionComponent" max="32767" attributes="0"/>
-                      </Group>
                       <Component id="descriptionLabel" alignment="0" max="32767" attributes="0"/>
                       <Component id="descriptionComponent" max="32767" attributes="0"/>
                       <Component id="keywordsLabel" alignment="0" max="32767" attributes="0"/>
                       <Component id="keywordsComponent" max="32767" attributes="0"/>
+                      <Component id="editPanel" alignment="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -40,14 +36,11 @@
                       <Group type="102" attributes="0">
                           <Component id="descriptionComponent" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="latestVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="latestVersionComponent" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="keywordsLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="keywordsComponent" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="editPanel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -102,14 +95,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="keywordsComponent">
         </Component>
-        <Component class="javax.swing.JLabel" name="latestVersionLabel">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/libraries/Bundle.properties" key="SearchPanel.latestVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-        </Component>
-        <Component class="javax.swing.JLabel" name="latestVersionComponent">
+        <Component class="org.netbeans.modules.javascript.nodejs.ui.libraries.EditPanel" name="editPanel">
         </Component>
       </SubComponents>
     </Container>

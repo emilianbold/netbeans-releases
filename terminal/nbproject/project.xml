@@ -166,6 +166,7 @@
                 <friend>org.netbeans.nativeexecution.terminal</friend>
                 <friend>org.netbeans.terminal.example</friend>
                 <package>org.netbeans.modules.terminal.api</package>
+                <package>org.netbeans.modules.terminal.support</package>
             </friend-packages>
         </data>
     </configuration>

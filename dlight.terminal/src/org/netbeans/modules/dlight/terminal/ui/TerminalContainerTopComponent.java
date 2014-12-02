@@ -48,7 +48,6 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -62,9 +61,12 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.dlight.terminal.action.TerminalAction;
-import org.netbeans.modules.dlight.terminal.action.TerminalSettingsAction;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.terminal.api.TerminalContainer;
+import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
@@ -238,6 +240,23 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
+        TerminalPinSupport support = TerminalPinSupport.getDefault();
+        List<TerminalPinSupport.TerminalDetails> readStoredDetails = support.readStoredDetails();
+//        support.clear();
+
+        for (TerminalPinSupport.TerminalDetails details : readStoredDetails) {
+            TerminalPinSupport.TerminalCreationDetails creationDetails = details.getCreationDetails();
+            TerminalPinSupport.TerminalPinningDetails pinningDetails = details.getPinningDetails();
+
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(creationDetails.getExecEnv());
+            String cwd = pinningDetails.getCwd();
+            if (cwd.isEmpty()) {
+                /* Will be opened in a default location */
+                cwd = null;
+            }
+            TerminalSupport.restoreTerminal(pinningDetails.getTitle(), env, cwd, creationDetails.isPwdFlag(), creationDetails.getId());
+        }
+
         JComponent selectedTerminal = getIOContainer().getSelected();
         if (selectedTerminal == null && (this.getClientProperty(AUTO_OPEN_LOCAL_PROPERTY) != Boolean.FALSE)) {
             for (Action action : getToolbarActions()) {
