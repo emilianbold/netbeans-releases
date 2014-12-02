@@ -1179,6 +1179,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue248960.js", "var gotDepartment = gotDepartm^ent;", true); 
     }
     
+    public void testIssue249006() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249006.js", "LoginSe^rvice.test = \"google\";", true);
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
