@@ -72,11 +72,13 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -86,7 +88,8 @@ import org.openide.util.RequestProcessor;
  * @author Jan Jancura
  */
 public abstract class Properties {
-
+    
+    private static final Logger LOG = Logger.getLogger(Properties.class.getName());
 
     private static Properties defaultProperties;
 
@@ -538,7 +541,7 @@ public abstract class Properties {
                 }
                 br.close ();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+                LOG.log(Level.WARNING, ex.getLocalizedMessage(), ex);
             }
         }
 
@@ -566,6 +569,7 @@ public abstract class Properties {
             }
         }
 
+        @NbBundle.Messages("MSG_CanNotSaveSettings=Can not save debugger settings.")
         private void saveIn () {
             synchronized (scheduledLock) {
                 scheduledLock[0] = false;
@@ -597,9 +601,7 @@ public abstract class Properties {
                 }
                 pw.flush ();
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.getDefault().annotate(ex,
-                        "Can not save debugger settings.")); // NOI18N
+                LOG.log(Level.WARNING, Bundle.MSG_CanNotSaveSettings(), ex);
             } finally {
                 try {
                     if (pw != null) {
@@ -810,7 +812,7 @@ public abstract class Properties {
                 try {
                     c = getClassLoader ().loadClass (typeID);
                 } catch (ClassNotFoundException e) {
-                    ErrorManager.getDefault().notify(e);
+                    LOG.log(Level.WARNING, e.getLocalizedMessage(), e);
                     return null;
                 }
                 while ((c != null) && (register.get (c.getName ()) == null)) {
@@ -884,7 +886,7 @@ public abstract class Properties {
                 return initialValue;
             }
             if (!value.startsWith ("\"")) { // NOI18N
-                ErrorManager.getDefault().log("Can not read string " + value + "."); // NOI18N
+                LOG.config("Can not read string " + value + ".");               // NOI18N
                 return defaultValue;
             }
             return value.substring (1, value.length () - 1);
@@ -1107,7 +1109,7 @@ public abstract class Properties {
                         }
                         return s;
                     }
-                    ErrorManager.getDefault().log("Can not read object " + typeID + ". No reader registered for type " + typeID + "."); // NOI18N
+                    LOG.config("Can not read object " + typeID + ". No reader registered for type " + typeID + "."); // NOI18N
                     return defaultValue;
                 }
                 typeID = typeID.substring (2);
@@ -1141,7 +1143,7 @@ public abstract class Properties {
                 }
                 Reader r = readers.find(typeID);
                 if (r == null) {
-                    ErrorManager.getDefault().log("Can not read object. No reader registered for type " + typeID + "."); // NOI18N
+                    LOG.config("Can not read object. No reader registered for type " + typeID + "."); // NOI18N
                     return defaultValue;
                 }
                 return r.read (typeID, getProperties (propertyName));
@@ -1169,7 +1171,7 @@ public abstract class Properties {
                     // find register
                     Reader r = readers.find(value.getClass ().getName ());
                     if (r == null) {
-                        ErrorManager.getDefault().log ("Can not write object " + value); // NOI18N
+                        LOG.config("Can not write object " + value); // NOI18N
                         return;
                     }
 
@@ -1283,19 +1285,13 @@ public abstract class Properties {
                 try {
                     c = (Collection) Class.forName (typeID.substring (2)).newInstance ();
                 } catch (ClassNotFoundException ex) {
-                    System.err.println(ex.getLocalizedMessage());
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                    ErrorManager.getDefault().notify(ex);
+                    LOG.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                     return defaultValue;
                 } catch (InstantiationException ex) {
-                    System.err.println(ex.getLocalizedMessage());
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                    ErrorManager.getDefault().notify(ex);
+                    LOG.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                     return defaultValue;
                 } catch (IllegalAccessException ex) {
-                    System.err.println(ex.getLocalizedMessage());
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                    ErrorManager.getDefault().notify(ex);
+                    LOG.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                     return defaultValue;
                 }
                 Properties p = getProperties (propertyName);
@@ -1355,13 +1351,13 @@ public abstract class Properties {
                 try {
                     m = (Map) Class.forName (typeID.substring (2)).newInstance ();
                 } catch (ClassNotFoundException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    LOG.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                     return defaultValue;
                 } catch (InstantiationException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    LOG.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                     return defaultValue;
                 } catch (IllegalAccessException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    LOG.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                     return defaultValue;
                 }
                 Properties p = getProperties (propertyName);
