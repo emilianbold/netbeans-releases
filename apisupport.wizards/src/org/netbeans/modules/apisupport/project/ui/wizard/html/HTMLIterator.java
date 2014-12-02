@@ -273,7 +273,7 @@ public final class HTMLIterator extends BasicWizardIterator {
         final String mode = model.getMode();
 
         try {
-            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.netbeans.api.html4j");
+            SpecificationVersion current = model.getModuleInfo().getDependencyVersion("org.netbeans.api.htmlui");
         } catch (IOException ex) {
             Logger.getLogger(HTMLIterator.class.getName()).log(Level.INFO, null, ex);
         }
@@ -317,7 +317,7 @@ public final class HTMLIterator extends BasicWizardIterator {
             replaceTokens.put("MODULENAME", moduleInfo.getCodeNameBase()); // NOI18N
             String specVersion = moduleInfo.getSpecVersion();
             replaceTokens.put("SPECVERSION", specVersion != null ? specVersion : "0"); // NOI18N
-            fileChanges.add(fileChanges.addModuleDependency("org.netbeans.api.html4j")); //NOI18N
+            fileChanges.add(fileChanges.addModuleDependency("org.netbeans.api.htmlui")); //NOI18N
             fileChanges.add(fileChanges.addModuleDependency("net.java.html")); //NOI18N
             fileChanges.add(fileChanges.addModuleDependency("net.java.html.json")); //NOI18N
             fileChanges.add(fileChanges.addModuleDependency("net.java.html.js")); //NOI18N
