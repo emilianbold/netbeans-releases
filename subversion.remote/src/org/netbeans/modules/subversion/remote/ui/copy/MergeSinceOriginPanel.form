@@ -34,7 +34,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="mergeEndBrowseRevisionButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="mergeEndUrlComboBox" pref="309" max="32767" attributes="2"/>
+                  <Component id="mergeEndUrlComboBox" max="32767" attributes="2"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="mergeEndBrowseButton" min="-2" max="-2" attributes="0"/>

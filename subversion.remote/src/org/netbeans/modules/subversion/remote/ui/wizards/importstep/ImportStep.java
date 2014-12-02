@@ -42,12 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.wizards.importstep;
+package org.netbeans.modules.subversion.remote.ui.wizards.importstep;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.JComponent;
@@ -55,31 +54,31 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
-import org.netbeans.modules.subversion.ui.browser.Browser;
-import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
-import org.netbeans.modules.subversion.ui.browser.BrowserAction;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
-import org.netbeans.modules.subversion.ui.commit.CommitAction;
-import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.WizardStepProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.browser.Browser;
+import org.netbeans.modules.subversion.remote.ui.browser.BrowserAction;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.remote.ui.checkout.CheckoutAction;
+import org.netbeans.modules.subversion.remote.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.StringSelector;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * @author Tomas Stupka
@@ -89,11 +88,11 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     private ImportPanel importPanel;
 
     private RepositoryPaths repositoryPaths;
-    private BrowserAction[] actions;
-    private File importDirectory;       
+    private final BrowserAction[] actions;
+    private final VCSFileProxy importDirectory;       
     private WizardStepProgressSupport support;
     
-    public ImportStep(BrowserAction[] actions, File importDirectory) {
+    public ImportStep(BrowserAction[] actions, VCSFileProxy importDirectory) {
         this.actions = actions;
         this.importDirectory = importDirectory;
     }
@@ -333,8 +332,8 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             importPanel.repositoryPathTextField.setEditable(editable);
         }
 
-        private void deleteDirectory(File file) {
-             File[] files = file.listFiles();
+        private void deleteDirectory(VCSFileProxy file) {
+             VCSFileProxy[] files = file.listFiles();
              if(files !=null || files.length > 0) {
                  for (int i = 0; i < files.length; i++) {
                      if(files[i].isDirectory()) {

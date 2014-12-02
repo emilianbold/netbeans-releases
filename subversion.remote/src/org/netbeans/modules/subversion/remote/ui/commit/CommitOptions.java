@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.subversion.remote.ui.commit;
 
 import org.openide.util.NbBundle;
 
@@ -64,6 +64,7 @@ public abstract class CommitOptions {
         this.bundleKey = bundleKey;
     }
 
+    @Override
     public String toString() {
         return NbBundle.getMessage(CommitOptions.class, bundleKey);
     }

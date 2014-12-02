@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.browser;
+package org.netbeans.modules.subversion.remote.ui.browser;
 
 /**
  *
@@ -78,7 +78,7 @@ public class ControlPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif"))); // NOI18N
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/warning.gif"))); // NOI18N
         warningLabel.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

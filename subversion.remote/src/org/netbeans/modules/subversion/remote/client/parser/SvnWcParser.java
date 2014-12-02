@@ -41,9 +41,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.client.parser;
+package org.netbeans.modules.subversion.remote.client.parser;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,14 +51,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNScheduleKind;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.xml.sax.SAXException;
 
 /**
@@ -72,7 +72,7 @@ public class SvnWcParser {
     public SvnWcParser() {
     }
 
-    private WorkingCopyDetails getWCDetails(File file) throws IOException, SAXException {   
+    private WorkingCopyDetails getWCDetails(VCSFileProxy file) throws IOException, SAXException {   
         Map<String, String> attributes = EntriesCache.getInstance().getFileAttributes(file);
         return WorkingCopyDetails.createWorkingCopy(file, attributes);
     }
@@ -80,16 +80,16 @@ public class SvnWcParser {
    /**
      * 
      */ 
-    public ISVNStatus[] getStatus(File path, boolean descend, boolean getAll) throws LocalSubversionException {        
+    public ISVNStatus[] getStatus(VCSFileProxy path, boolean descend, boolean getAll) throws LocalSubversionException {        
         List<ISVNStatus> l = getStatus(path, descend);
         return l.toArray(new ISVNStatus[l.size()]);
     }
 
-    private List<ISVNStatus> getStatus(File path, boolean descend) throws LocalSubversionException {
+    private List<ISVNStatus> getStatus(VCSFileProxy path, boolean descend) throws LocalSubversionException {
         List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);                        
         ret.add(getSingleStatus(path));
         
-        File[] children = getChildren(path);
+        VCSFileProxy[] children = getChildren(path);
         if(children != null) {
             for (int i = 0; i < children.length; i++) {
                 if(!SvnUtils.isPartOfSubversionMetadata(children[i]) && !SvnUtils.isAdministrative(path)) {                                       
@@ -107,17 +107,17 @@ public class SvnWcParser {
     /**
      * Returns an array of existed file's children plus all it's children from metadata
      */
-    private File[] getChildren (File file) throws LocalSubversionException {
-        File[] children = file.listFiles();
+    private VCSFileProxy[] getChildren (VCSFileProxy file) throws LocalSubversionException {
+        VCSFileProxy[] children = file.listFiles();
         if (children != null) { // it is a folder, get all its children from metadata
             try {
                 String[] entries = EntriesCache.getInstance().getChildren(file);
-                Set<File> childSet = new LinkedHashSet<File>(children.length + entries.length);
+                Set<VCSFileProxy> childSet = new LinkedHashSet<VCSFileProxy>(children.length + entries.length);
                 childSet.addAll(Arrays.asList(children));
                 for (String name : entries) {
-                    childSet.add(new File(file, name));
+                    childSet.add(VCSFileProxy.createFileProxy(file, name));
                 }
-                children = childSet.toArray(new File[childSet.size()]);
+                children = childSet.toArray(new VCSFileProxy[childSet.size()]);
             } catch (IOException ex) {
                 throw new LocalSubversionException(ex);
             } catch (SAXException ex) {
@@ -127,7 +127,7 @@ public class SvnWcParser {
         return children;
     }
 
-    public ISVNStatus getSingleStatus(File file) throws LocalSubversionException {
+    public ISVNStatus getSingleStatus(VCSFileProxy file) throws LocalSubversionException {
         String finalTextStatus = SVNStatusKind.NORMAL.toString();
         String finalPropStatus = SVNStatusKind.NONE.toString();
 
@@ -281,15 +281,15 @@ public class SvnWcParser {
         }
     }
 
-    private boolean isUnderParent (File file) {
+    private boolean isUnderParent (VCSFileProxy file) {
         Subversion.LOG.fine("SvnWcParser:isUnderParent: 168248 hook");  //NOI18N
-        File parentFile = file.getParentFile();
+        VCSFileProxy parentFile = file.getParentFile();
         if (parentFile != null) {
-            File[] children = parentFile.listFiles();
+            VCSFileProxy[] children = parentFile.listFiles();
             if (children != null) {
-                for (File child : children) {
+                for (VCSFileProxy child : children) {
                     if (file.equals(child)) {
-                        Subversion.LOG.fine("SvnWcParser:isUnderParent: file " + file.getAbsolutePath() + " seems to be a broken link"); //NOI18N
+                        Subversion.LOG.fine("SvnWcParser:isUnderParent: file " + file.getPath() + " seems to be a broken link"); //NOI18N
                         return true;
                     }
                 }
@@ -357,7 +357,7 @@ public class SvnWcParser {
         return returnValue;
     }
 
-    public ISVNInfo getUnknownInfo (File file) {
+    public ISVNInfo getUnknownInfo (VCSFileProxy file) {
         return new ParserSvnInfo(file, null, null, null,
                     SVNScheduleKind.NORMAL.toString(), 0, false, null, 0, null, 0, null,
                     null, null, null, null, null, SVNNodeKind.UNKNOWN.toString(), null, null);

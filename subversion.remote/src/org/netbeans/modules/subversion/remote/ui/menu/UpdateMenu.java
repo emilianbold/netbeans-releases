@@ -42,16 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.menu;
+package org.netbeans.modules.subversion.remote.ui.menu;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.subversion.Annotator;
-import org.netbeans.modules.subversion.ui.update.UpdateAction;
-import org.netbeans.modules.subversion.ui.update.UpdateToAction;
-import org.netbeans.modules.subversion.ui.update.UpdateWithDependenciesAction;
-import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
+import org.netbeans.modules.subversion.remote.Annotator;
+import org.netbeans.modules.subversion.remote.ui.update.UpdateAction;
+import org.netbeans.modules.subversion.remote.ui.update.UpdateToAction;
+import org.netbeans.modules.subversion.remote.ui.update.UpdateWithDependenciesAction;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;

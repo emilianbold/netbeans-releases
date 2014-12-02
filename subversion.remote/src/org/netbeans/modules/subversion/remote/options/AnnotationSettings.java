@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.options;
+package org.netbeans.modules.subversion.remote.options;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -58,11 +58,11 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.subversion.ui.wizards.URLPatternWizard;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.ui.wizards.URLPatternWizard;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -168,6 +168,7 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
         return exps;
     }    
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == panel.upButton) {
             onUpClick();
@@ -244,14 +245,20 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
     private void onEditClick() {
         ListSelectionModel selectionModel = getSelectionModel();
         int r = selectionModel.getMinSelectionIndex();        
-        if(r < 0) return;
+        if(r < 0) {
+            return;
+        }
 
         String pattern = (String) getModel().getValueAt(r, 0);
         String folder  = (String) getModel().getValueAt(r, 1);      
 
         EditAnnotationPanel editPanel = new EditAnnotationPanel();
-        if(pattern != null) editPanel.patternTextField.setText(pattern);
-        if(folder  != null) editPanel.folderTextField.setText(folder);
+        if(pattern != null) {
+            editPanel.patternTextField.setText(pattern);
+        }
+        if(folder  != null) {
+            editPanel.folderTextField.setText(folder);
+        }
         
         String title = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.edit.title");        
         if(showEdit(editPanel, title)) {
@@ -266,7 +273,9 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
     
     private void onWizardClick() {  
         URLPatternWizard wizard = new URLPatternWizard();
-        if (!wizard.show()) return;
+        if (!wizard.show()) {
+            return;
+        }
         String pattern = wizard.getPattern();
         String folder;
         if(wizard.useName()) {
@@ -300,6 +309,7 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
         return panel.expresionsTable.getSelectionModel();        
     }    
 
+    @Override
     public void tableChanged(TableModelEvent evt) {
         if (evt.getType() == TableModelEvent.UPDATE) {
             validateTable(evt.getFirstRow(), evt.getColumn());
@@ -332,6 +342,7 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
         }
     }
 
+    @Override
     public void valueChanged(ListSelectionEvent evt) {
         ListSelectionModel selectionModel = getSelectionModel();
         int r = selectionModel.getMinSelectionIndex();        
@@ -346,12 +357,15 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
         dd.setModal(true);        
         dd.setValid(isValid(editPanel));
         DocumentListener dl = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent arg0) {                
                 validate();
             }
+            @Override
             public void removeUpdate(DocumentEvent arg0) {
                 validate();                
             }
+            @Override
             public void changedUpdate(DocumentEvent arg0) {
                 validate();                
             }   

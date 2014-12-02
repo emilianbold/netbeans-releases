@@ -42,18 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.status;
+package org.netbeans.modules.subversion.remote.ui.status;
 
-import org.netbeans.modules.subversion.client.*;
-import org.netbeans.modules.subversion.ui.commit.*;
-import org.netbeans.modules.subversion.ui.diff.*;
-import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.util.NoContentPanel;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.explorer.ExplorerManager;
@@ -70,12 +60,28 @@ import java.awt.event.*;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.io.File;
 import java.util.logging.Level;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import org.netbeans.modules.subversion.ui.update.UpdateAction;
-import org.tigris.subversion.svnclientadapter.*;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.ui.update.UpdateAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
@@ -84,14 +90,14 @@ import org.tigris.subversion.svnclientadapter.*;
  */
 class VersioningPanel extends JPanel implements ExplorerManager.Provider, PreferenceChangeListener, PropertyChangeListener, VersioningListener, ActionListener {
     
-    private ExplorerManager             explorerManager;
+    private final ExplorerManager             explorerManager;
     private final SvnVersioningTopComponent parentTopComponent;
     private final Subversion            subversion;
     private Context                     context;
     private int                         displayStatuses;
     
-    private SyncTable                   syncTable;
-    private RequestProcessor.Task       refreshViewTask;
+    private final SyncTable                   syncTable;
+    private final RequestProcessor.Task       refreshViewTask;
 
     private VersioningPanelProgressSupport          svnProgressSupport;
     private static final RequestProcessor   rp = new RequestProcessor("SubversionView", 1, true);  // NOI18N
@@ -183,7 +189,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
-            if (tc == null) return;
+            if (tc == null) {
+                return;
+            }
             tc.setActivatedNodes((Node[]) evt.getNewValue());
         } else if (FileStatusCache.PROP_CACHE_READY.equals(evt.getPropertyName()) && Boolean.TRUE.equals(evt.getNewValue())) {
             reScheduleRefresh(0);
@@ -355,14 +363,16 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     private SyncFileNode [] getNodes(Context context, int includeStatus) {
-        File [] files = Subversion.getInstance().getStatusCache().listFiles(context.getRootFiles(), includeStatus);
+        VCSFileProxy [] files = Subversion.getInstance().getStatusCache().listFiles(context.getRootFiles(), includeStatus);
         SvnFileNode [] fnodes = new SvnFileNode[files.length];
         for (int i = 0; i < files.length; i++) {
             fnodes[i] = new SvnFileNode(files[i]);
         }
         SyncFileNode [] nodes = new SyncFileNode[fnodes.length];
         for (int i = 0; i < fnodes.length; i++) {
-            if (Thread.interrupted()) return null;
+            if (Thread.interrupted()) {
+                return null;
+            }
             SvnFileNode fnode = fnodes[i];
             nodes[i] = new SyncFileNode(fnode, this);
         }
@@ -404,7 +414,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
         // XXX #168094 logging
         if (!SvnUtils.isManaged(context.getRootFiles()[0])) {
-            Subversion.LOG.warning("VersioningPanel.onRefreshAction: context contains unmanaged file " + context.getRootFiles()[0].getAbsolutePath()); //NOI18N
+            Subversion.LOG.warning("VersioningPanel.onRefreshAction: context contains unmanaged file " + context.getRootFiles()[0].getPath()); //NOI18N
         }
         refreshStatuses();
     }
@@ -436,16 +446,16 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             if (context.getRoots().isEmpty()) {
                 return;
             }
-            Subversion.LOG.info("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getAbsolutePath()); //NOI18N
+            Subversion.LOG.info("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getPath()); //NOI18N
             boolean allUnmanaged = true;
-            for (File root : context.getRootFiles()) {
+            for (VCSFileProxy root : context.getRootFiles()) {
                 if (SvnUtils.isManaged(root)) {
                     allUnmanaged = false;
                     break;
                 }
             }
             if (allUnmanaged) {
-                Exception e = new Exception("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getAbsolutePath()); //NOI18N
+                Exception e = new Exception("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getPath()); //NOI18N
                 Subversion.LOG.log(Level.INFO, null, e);
             }
         }
@@ -518,7 +528,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     @Override
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
-            if (!affectsView(event)) return;
+            if (!affectsView(event)) {
+                return;
+            }
             reScheduleRefresh(1000);
         }
     }
@@ -534,13 +546,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             // and we would be listening for our own events
             return false;
         }
-        File file = (File) event.getParams()[0];
+        VCSFileProxy file = (VCSFileProxy) event.getParams()[0];
         FileInformation oldInfo = (FileInformation) event.getParams()[1];
         FileInformation newInfo = (FileInformation) event.getParams()[2];
         if (oldInfo == null) {
-            if ((newInfo.getStatus() & displayStatuses) == 0) return false;
+            if ((newInfo.getStatus() & displayStatuses) == 0) {
+                return false;
+            }
         } else {
-            if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
+            if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) {
+                return false;
+            }
         }
         return context.contains(file);
     }
@@ -615,9 +631,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private class ToolbarLayout implements LayoutManager {
 
         /** Expected border height */
-        private int TOOLBAR_HEIGHT_ADJUSTMENT = 4;
+        private static final int TOOLBAR_HEIGHT_ADJUSTMENT = 4;
 
-        private int TOOLBAR_SEPARATOR_MIN_WIDTH = 12;
+        private static final int TOOLBAR_SEPARATOR_MIN_WIDTH = 12;
 
         /** Cached toolbar height */
         private int toolbarHeight = -1;
@@ -625,7 +641,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         /** Guard for above cache. */
         private Dimension parentSize;
 
-        private Set<JComponent> adjusted = new HashSet<JComponent>();
+        private final Set<JComponent> adjusted = new HashSet<JComponent>();
 
         @Override
         public void removeLayoutComponent(Component comp) {
@@ -642,7 +658,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             int horizont = 0;
             for (int i = 0; i<components; i++) {
                 JComponent comp = (JComponent) parent.getComponent(i);
-                if (comp.isVisible() == false) continue;
+                if (comp.isVisible() == false) {
+                    continue;
+                }
                 comp.setLocation(horizont, 0);
                 Dimension pref = comp.getPreferredSize();
                 int width = pref.width;
@@ -678,7 +696,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             int horizont = 0;
             for (int i = 0; i<components; i++) {
                 Component comp = parent.getComponent(i);
-                if (comp.isVisible() == false) continue;
+                if (comp.isVisible() == false) {
+                    continue;
+                }
                 if (comp instanceof AbstractButton) {
                     adjustToobarButton((AbstractButton)comp);
                 } else {
@@ -743,7 +763,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         /** Toolbar controls must be smaller and should be transparent*/
         private void adjustToobarButton(final AbstractButton button) {
 
-            if (adjusted.contains(button)) return;
+            if (adjusted.contains(button)) {
+                return;
+            }
 
             // workaround for Ocean L&F clutter - toolbars use gradient.
             // To make the gradient visible under buttons the content area must not
@@ -772,7 +794,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         private void adjustToolbarComponentSize(JComponent button) {
 
-            if (adjusted.contains(button)) return;
+            if (adjusted.contains(button)) {
+                return;
+            }
 
             // as we cannot get the button small enough using the margin and border...
             if (button.getBorder() instanceof CompoundBorder) { // from BasicLookAndFeel
@@ -841,20 +865,20 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
         setLayout(new java.awt.GridBagLayout());
 
-        tgbAll.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/remote_vs_local.png"))); // NOI18N
+        tgbAll.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/remote_vs_local.png"))); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle"); // NOI18N
         tgbAll.setToolTipText(bundle.getString("CTL_Synchronize_Action_All_Tooltip")); // NOI18N
         tgbAll.setFocusable(false);
         tgbAll.addActionListener(this);
         jPanel2.add(tgbAll);
 
-        tgbLocal.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/local_vs_local.png"))); // NOI18N
+        tgbLocal.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/local_vs_local.png"))); // NOI18N
         tgbLocal.setToolTipText(bundle.getString("CTL_Synchronize_Action_Local_Tooltip")); // NOI18N
         tgbLocal.setFocusable(false);
         tgbLocal.addActionListener(this);
         jPanel2.add(tgbLocal);
 
-        tgbRemote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/remote_vs_remote.png"))); // NOI18N
+        tgbRemote.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/remote_vs_remote.png"))); // NOI18N
         tgbRemote.setToolTipText(bundle.getString("CTL_Synchronize_Action_Remote_Tooltip")); // NOI18N
         tgbRemote.setFocusable(false);
         tgbRemote.addActionListener(this);
@@ -864,7 +888,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jSeparator1.setPreferredSize(new java.awt.Dimension(2, 20));
         jPanel2.add(jSeparator1);
 
-        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/refresh.png"))); // NOI18N
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
         btnRefresh.setActionCommand("null"); // NOI18N
         btnRefresh.setFocusable(false);
@@ -873,7 +897,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel2.add(btnRefresh);
         btnRefresh.getAccessibleContext().setAccessibleName("Refresh Status");
 
-        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff.png"))); // NOI18N
+        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff.png"))); // NOI18N
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
         btnDiff.setFocusable(false);
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -884,7 +908,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
 
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/update.png"))); // NOI18N
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/update.png"))); // NOI18N
         btnUpdate.setToolTipText(bundle.getString("CTL_Synchronize_Action_Update_Tooltip")); // NOI18N
         btnUpdate.setFocusable(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
@@ -892,7 +916,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel2.add(btnUpdate);
         btnUpdate.getAccessibleContext().setAccessibleName("Update");
 
-        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png"))); // NOI18N
+        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/commit.png"))); // NOI18N
         btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
         btnCommit.setFocusable(false);
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));

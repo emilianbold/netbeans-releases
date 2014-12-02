@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
 /**
  *
@@ -71,7 +71,7 @@ public class OneFolderPreviewPanel extends javax.swing.JPanel {
         localFolderTextField.setEditable(false);
         localFolderTextField.setText(" "); // NOI18N
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/onefolder.png"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/onefolder.png"))); // NOI18N
         jLabel1.setLabelFor(repositoryFolderTextField);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

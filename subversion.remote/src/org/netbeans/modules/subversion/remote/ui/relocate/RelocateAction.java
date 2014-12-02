@@ -41,33 +41,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.relocate;
+package org.netbeans.modules.subversion.remote.ui.relocate;
 
 import java.awt.Dialog;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -82,11 +82,11 @@ public class RelocateAction extends ContextAction {
         }
         if (isCacheReady()) {
             final Context ctx = getCachedContext(nodes);
-            File[] roots = ctx.getRootFiles();
+            VCSFileProxy[] roots = ctx.getRootFiles();
             if(roots == null || roots.length < 1) {
                 return false;
             }
-            for (File file : roots) {
+            for (VCSFileProxy file : roots) {
                 if(file.isDirectory()) {
                     return true; // at least one dir
                 }
@@ -121,7 +121,7 @@ public class RelocateAction extends ContextAction {
         ResourceBundle loc = NbBundle.getBundle(RelocateAction.class);
         
         final Context ctx = getContext(nodes);
-        File[] roots = ctx.getRootFiles();
+        VCSFileProxy[] roots = ctx.getRootFiles();
         if (roots == null) {
             return;
         }
@@ -137,7 +137,7 @@ public class RelocateAction extends ContextAction {
         // 1.) it can be only a folder - see isEnabled
         // 2.) even if its a dataobject with more files, we just don't care,
         // the action will affect the whole working copy
-        final File root = roots[0];
+        final VCSFileProxy root = roots[0];
 
         SVNUrl repositoryUrl = null;
         try {
@@ -150,7 +150,7 @@ public class RelocateAction extends ContextAction {
             Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{ root });
             return;
         }
-        final String wc = root.getAbsolutePath();
+        final String wc = root.getPath();
         panel.getCurrentURL().setText(repositoryUrl.toString());
         panel.getWorkingCopy().setText(wc);
         
@@ -206,8 +206,8 @@ public class RelocateAction extends ContextAction {
             private void patchCache () {
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 // refresh status only for status entries already cached
-                File[] files = cache.listFiles(new File[] { root }, FileInformation.STATUS_MANAGED);
-                for (File f : files) {
+                VCSFileProxy[] files = cache.listFiles(new VCSFileProxy[] { root }, FileInformation.STATUS_MANAGED);
+                for (VCSFileProxy f : files) {
                     FileInformation fi = cache.getCachedStatus(f);
                     if (fi != null && fi.getEntry(null) != null) {
                         // cache needs to be refreshed

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.properties;
+package org.netbeans.modules.subversion.remote.ui.properties;
 
 /**
  *
@@ -49,8 +49,8 @@ package org.netbeans.modules.subversion.ui.properties;
  */
 public class SvnPropertiesNode {
 
-    private  String name;
-    private String value;
+    private final  String name;
+    private final String value;
     
     /** Creates a new instance of SvnPropertiesNodes */
     public SvnPropertiesNode(String name, String value) {
@@ -66,10 +66,12 @@ public class SvnPropertiesNode {
         return value;
     }    
     
+    @Override
     public int hashCode() {
         return name.hashCode();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

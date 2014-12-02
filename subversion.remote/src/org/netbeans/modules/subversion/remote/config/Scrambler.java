@@ -44,7 +44,7 @@
 
  * Contributor(s): Robert Greig.
  *****************************************************************************/
-package org.netbeans.modules.subversion.config;
+package org.netbeans.modules.subversion.remote.config;
 
 import org.netbeans.modules.proxy.Base64Encoder;
 
@@ -59,7 +59,7 @@ public class Scrambler {
     /**
      * The mapping array
      */
-    private int[] shifts;
+    private final int[] shifts;
 
     /**
      * The single instance of this class (Singleton design pattern)
@@ -314,7 +314,7 @@ public class Scrambler {
     }
     
     public String descramble(String scrambledText) {        
-        StringBuffer buf = new StringBuffer(); 
+        StringBuilder buf = new StringBuilder(); 
         if (scrambledText != null) {            
             byte[] decoded = decode(scrambledText); 
             for (int i = 1; i < decoded.length; ++i) {                

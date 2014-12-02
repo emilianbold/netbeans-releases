@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.ui.lock;
+package org.netbeans.modules.subversion.remote.ui.lock;
 
 import java.awt.Dialog;
 import javax.swing.JButton;

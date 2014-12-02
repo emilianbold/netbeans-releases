@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.properties;
+package org.netbeans.modules.subversion.remote.ui.properties;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -117,8 +117,9 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
     }
     
     public void setColumns(String[] clmns) {
-        if (Arrays.equals(columns, clmns))
+        if (Arrays.equals(columns, clmns)) {
             return;
+        }
         columns = clmns;
         tableModel.setColumns(clmns);
         setDefaultColumnSize();
@@ -131,10 +132,12 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
     private void setDefaultColumnSize() {
         int width = table.getWidth();
         TableColumnModel columnModel = table.getColumnModel();
-        if (columns == null || columnModel == null)
+        if (columns == null || columnModel == null) {
             return;
-        if (columnModel.getColumnCount() != columns.length)
+        }
+        if (columnModel.getColumnCount() != columns.length) {
             return;
+        }
         for (int i = 0; i < columns.length; i++) {
             String col = columns[i];                                
             sorter.setColumnComparator(i, null);                    
@@ -191,22 +194,27 @@ public class PropertiesTable implements AncestorListener, TableModelListener {
         return component;
     }
     
+    @Override
     public void ancestorAdded(AncestorEvent arg0) {
         setDefaultColumnSize();
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent arg0) {
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent arg0) {
     }
 
+    @Override
     public void tableChanged(TableModelEvent event) {
         table.repaint();
     }
 
     public class PropertiesTableCellRenderer extends DefaultTableCellRenderer {
            
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int rowIndex, int columnIndex) {
             int newLinePos;
             if (value instanceof String && (newLinePos = ((String) value).indexOf("\n")) > -1) { //NOI18N

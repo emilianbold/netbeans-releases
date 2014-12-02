@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -64,7 +64,7 @@ import java.util.logging.Logger;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.explorer.view.OutlineView;
@@ -116,6 +116,7 @@ class DiffTreeTable extends OutlineView {
     
     private void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (getOutline().getColumnCount() == 4) {
                     int width = getWidth();
@@ -136,7 +137,9 @@ class DiffTreeTable extends OutlineView {
 
     void setSelection(RepositoryRevision container) {
         RevisionNode node = (RevisionNode) getNode(rootNode, container);
-        if (node == null) return;
+        if (node == null) {
+            return;
+        }
         ExplorerManager em = ExplorerManager.find(this);
         try {
             em.setSelectedNodes(new Node [] { node });
@@ -147,7 +150,9 @@ class DiffTreeTable extends OutlineView {
 
     void setSelection(RepositoryRevision.Event revision) {
         RevisionNode node = (RevisionNode) getNode(rootNode, revision);
-        if (node == null) return;
+        if (node == null) {
+            return;
+        }
         ExplorerManager em = ExplorerManager.find(this);
         try {
             em.setSelectedNodes(new Node [] { node });
@@ -158,12 +163,16 @@ class DiffTreeTable extends OutlineView {
 
     private Node getNode(Node node, Object obj) {
         Object object = node.getLookup().lookup(obj.getClass());
-        if (obj.equals(object)) return node;
+        if (obj.equals(object)) {
+            return node;
+        }
         Enumeration children = node.getChildren().nodes();
         while (children.hasMoreElements()) {
             Node child = (Node) children.nextElement();
             Node result = getNode(child, obj);
-            if (result != null) return result;
+            if (result != null) {
+                return result;
+            }
         }
         return null;
     }
@@ -211,7 +220,7 @@ class DiffTreeTable extends OutlineView {
 
     private static class MessageRenderer implements TableCellRenderer {
         private final TableCellRenderer delegate;
-        private final Map<String, String> tooltips = new HashMap<>();
+        private final Map<String, String> tooltips = new HashMap<String, String>();
 
         public MessageRenderer (TableCellRenderer delegate) {
             this.delegate = delegate;
@@ -263,6 +272,7 @@ class DiffTreeTable extends OutlineView {
             return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name"); // NOI18N
         }
 
+        @Override
         public String getShortDescription() {
             return NbBundle.getMessage(DiffTreeTable.class, "LBL_DiffTree_Column_Name_Desc"); // NOI18N
         }
@@ -301,7 +311,7 @@ class DiffTreeTable extends OutlineView {
     }
 
     private class NoLeafIconRenderDataProvider implements RenderDataProvider {
-        private RenderDataProvider delegate;
+        private final RenderDataProvider delegate;
         public NoLeafIconRenderDataProvider( RenderDataProvider delegate ) {
             this.delegate = delegate;
         }
@@ -333,8 +343,9 @@ class DiffTreeTable extends OutlineView {
 
         @Override
         public Icon getIcon(Object o) {
-            if( getOutline().getOutlineModel().isLeaf(o) )
+            if( getOutline().getOutlineModel().isLeaf(o) ) {
                 return NO_ICON;
+            }
             return null;
         }
 

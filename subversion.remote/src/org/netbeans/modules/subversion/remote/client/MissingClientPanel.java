@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.Color;
 import java.awt.Font;

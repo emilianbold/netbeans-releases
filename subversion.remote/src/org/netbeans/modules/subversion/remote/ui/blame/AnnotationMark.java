@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.blame;
+package org.netbeans.modules.subversion.remote.ui.blame;
 
 import java.awt.Color;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;

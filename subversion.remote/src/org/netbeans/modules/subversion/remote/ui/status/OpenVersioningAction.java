@@ -42,14 +42,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.status;
+package org.netbeans.modules.subversion.remote.ui.status;
 
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
 
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -64,20 +64,21 @@ import org.openide.awt.ActionRegistration;
  *
  * @author Petr Kuzel
  */
-@ActionID(id = "org.netbeans.modules.subversion.ui.status.OpenVersioningAction", category = "Subversion")
+@ActionID(id = "org.netbeans.modules.subversion.remote.ui.status.OpenVersioningAction", category = "Subversion")
 @ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
 @ActionReferences({
    @ActionReference(path="OptionsDialog/Actions/Subversion")
 })
 public class OpenVersioningAction extends ShowAllChangesAction {
     
-    public static final String ICON_BASE = "org/netbeans/modules/subversion/resources/icons/versioning-view.png";
+    public static final String ICON_BASE = "org/netbeans/modules/subversion/remote/resources/icons/versioning-view.png";
     
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N
         setIcon(ImageUtilities.loadImageIcon(ICON_BASE, false)); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(OpenVersioningAction.class, "CTL_MenuItem_OpenVersioning"); // NOI18N
     }
@@ -87,14 +88,17 @@ public class OpenVersioningAction extends ShowAllChangesAction {
      * 
      * @return true
      */ 
+    @Override
     public boolean isEnabled() {
         return true;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(OpenVersioningAction.class);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         
         if(!Subversion.getInstance().checkClientAvailable()) {            
@@ -110,6 +114,7 @@ public class OpenVersioningAction extends ShowAllChangesAction {
         }
     }
 
+    @Override
     protected boolean shouldPostRefresh() {
         return false;
     }

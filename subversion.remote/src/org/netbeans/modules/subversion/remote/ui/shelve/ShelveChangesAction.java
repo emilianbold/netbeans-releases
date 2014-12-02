@@ -40,26 +40,28 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.ui.shelve;
+package org.netbeans.modules.subversion.remote.ui.shelve;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.Action;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.OutputLogger;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.ui.diff.ExportDiffAction;
-import org.netbeans.modules.subversion.ui.diff.Setup;
-import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.OutputLogger;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.ui.diff.ExportDiffAction;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry.ShelveChangesActionProvider;
 import org.netbeans.modules.versioning.shelve.ShelveChangesSupport;
@@ -70,8 +72,6 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -110,13 +110,13 @@ public class ShelveChangesAction extends ContextAction {
     @Override
     protected void performContextAction (Node[] nodes) {
         Context ctx = getContext(nodes);
-        final File[] roots = ctx.getRootFiles();
+        final VCSFileProxy[] roots = ctx.getRootFiles();
         if (roots == null || roots.length == 0) {
             Subversion.LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
             return;
         }
 
-        File root = roots[0];
+        VCSFileProxy root = roots[0];
 
         SVNUrl repositoryUrl = null;
         try {
@@ -138,27 +138,27 @@ public class ShelveChangesAction extends ContextAction {
 
     private static class SvnShelveChangesSupport extends ShelveChangesSupport {
         private SvnProgressSupport support;
-        private final File[] roots;
-        private File[] filteredRoots;
+        private final VCSFileProxy[] roots;
+        private VCSFileProxy[] filteredRoots;
         private Context context;
         private OutputLogger logger;
 
-        public SvnShelveChangesSupport (File[] roots) {
+        public SvnShelveChangesSupport (VCSFileProxy[] roots) {
             this.roots = roots;
         }
 
         @Override
-        protected void exportPatch (File toFile, File commonParent) throws IOException {
+        protected void exportPatch (VCSFileProxy toFile, VCSFileProxy commonParent) throws IOException {
             support.setDisplayName(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChanges.progress.exporting")); //NOI18N
-            File [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            VCSFileProxy [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             List<Setup> setups = new ArrayList<Setup>(files.length);
             for (int i = 0; i < files.length; i++) {
-                File file = files[i];
+                VCSFileProxy file = files[i];
                 Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
                 setups.add(setup);
             }
             SystemAction.get(ExportDiffAction.class).exportDiff(setups, toFile, commonParent, support);
-            logger.logMessage(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChangesAction.output.exporting", toFile.getAbsolutePath())); //NOI18N
+            logger.logMessage(NbBundle.getMessage(ShelveChangesAction.class, "MSG_ShelveChangesAction.output.exporting", toFile.getPath())); //NOI18N
         }
 
         @Override
@@ -177,14 +177,14 @@ public class ShelveChangesAction extends ContextAction {
                 @Override
                 protected void perform () {
                     // filter managed roots
-                    List<File> l = new LinkedList<File>();
-                    for (File file : roots) {
+                    List<VCSFileProxy> l = new LinkedList<VCSFileProxy>();
+                    for (VCSFileProxy file : roots) {
                         if(SvnUtils.isManaged(file)) {
                             l.add(file);
                         }
                     }
                     if (!l.isEmpty()) {
-                        filteredRoots = l.toArray(new File[l.size()]);
+                        filteredRoots = l.toArray(new VCSFileProxy[l.size()]);
                         context = new Context(filteredRoots);
                         logger = getLogger();
                         shelveChanges(filteredRoots);

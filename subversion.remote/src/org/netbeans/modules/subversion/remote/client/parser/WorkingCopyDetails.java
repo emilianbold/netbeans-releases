@@ -41,11 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.client.parser;
+package org.netbeans.modules.subversion.remote.client.parser;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -54,9 +53,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.config.KVFile;
-import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
+import org.netbeans.modules.subversion.remote.config.KVFile;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -74,7 +74,7 @@ public class WorkingCopyDetails {
     static final String VERSION_14 = "1.4";
     static final String ATTR_TREE_CONFLICT_DESCRIPTOR = "is-in-conflict"; //NOI18N
 
-    private final File file;
+    private final VCSFileProxy file;
     //These Map stores the values in the SVN entities file
     //for the file and its parent directory
     private final Map<String, String> attributes;
@@ -84,19 +84,19 @@ public class WorkingCopyDetails {
     private Map<String, byte[]> workingSvnProperties = null;
     private Map<String, byte[]> baseSvnProperties = null;
 
-    protected File propertiesFile = null;
-    private File basePropertiesFile = null;
-    private File textBaseFile = null;
+    protected VCSFileProxy propertiesFile = null;
+    private VCSFileProxy basePropertiesFile = null;
+    private VCSFileProxy textBaseFile = null;
     private final SVNConflictDescriptor conflictDescriptor;
 
     /** Creates a new instance of WorkingCopyDetails */
-    private WorkingCopyDetails(File file, Map<String, String> attributes, SVNConflictDescriptor conflictDescriptor) {
+    private WorkingCopyDetails(VCSFileProxy file, Map<String, String> attributes, SVNConflictDescriptor conflictDescriptor) {
         this.file = file;
         this.attributes  = attributes;
         this.conflictDescriptor = conflictDescriptor;
     }
 
-    public static WorkingCopyDetails createWorkingCopy(File file, Map<String, String> attributes) {
+    public static WorkingCopyDetails createWorkingCopy(VCSFileProxy file, Map<String, String> attributes) {
         SVNConflictDescriptor conflictDescriptor = null;
         if (attributes != null) {
             conflictDescriptor = EntriesCache.getInstance().getConflictDescriptor(file.getName(), attributes.get(WorkingCopyDetails.ATTR_TREE_CONFLICT_DESCRIPTOR));
@@ -110,13 +110,15 @@ public class WorkingCopyDetails {
             } else if(version.equals(VERSION_14)) {
                 
                 return new WorkingCopyDetails(file, attributes, conflictDescriptor) {
+                    @Override
                     public boolean propertiesExist() throws IOException {
                         return getAttributes().containsKey("has-props");        // NOI18N
                     }  
+                    @Override
                     public boolean propertiesModified() throws IOException {
                         return getAttributes().containsKey("has-prop-mods");    // NOI18N
                     }            
-                    File getPropertiesFile() throws IOException {
+                    VCSFileProxy getPropertiesFile() throws IOException {
                         if (propertiesFile == null) {
                             // unchanged properties have only the base file
                             boolean modified = getBooleanValue("has-prop-mods");                                // NOI18N
@@ -150,7 +152,7 @@ public class WorkingCopyDetails {
         return attributes;
     }
     
-    protected File getFile() {
+    protected VCSFileProxy getFile() {
         return file;
     }
     
@@ -167,7 +169,9 @@ public class WorkingCopyDetails {
     public long getLongValue(String key) throws LocalSubversionException {
         try {
             String value = getValue(key);
-            if(value==null) return -1;
+            if(value==null) {
+                return -1;
+            }
             return Long.parseLong(value);
         } catch (NumberFormatException ex) {
             throw new LocalSubversionException(ex);
@@ -177,7 +181,9 @@ public class WorkingCopyDetails {
     public Date getDateValue(String key) throws LocalSubversionException {
         try {
             String value = getValue(key);
-            if(value==null || value.equals("")) return null;
+            if(value==null || value.equals("")) {
+                return null;
+            }
             return SvnWcUtils.parseSvnDate(value);
         } catch (ParseException ex) {
             throw new LocalSubversionException(ex);
@@ -186,7 +192,9 @@ public class WorkingCopyDetails {
 
     public boolean getBooleanValue(String key) {
         String value = getValue(key);
-        if(value==null) return false;
+        if(value==null) {
+            return false;
+        }
         return Boolean.valueOf(value).booleanValue();
     }
 
@@ -198,21 +206,21 @@ public class WorkingCopyDetails {
         return getAttributes() !=null ? FILE_ATTRIBUTE_VALUE.equals(getAttributes().get("kind")) : false; // NOI18N
     }
 
-    File getPropertiesFile() throws IOException {
+    VCSFileProxy getPropertiesFile() throws IOException {
         if (propertiesFile == null) {
             propertiesFile = SvnWcUtils.getPropertiesFile(file, false);
         }
         return propertiesFile;
     }
 
-    File getBasePropertiesFile() throws IOException {
+    VCSFileProxy getBasePropertiesFile() throws IOException {
         if (basePropertiesFile == null) {
             basePropertiesFile = SvnWcUtils.getPropertiesFile(file, true);
         }
         return basePropertiesFile;
     }
 
-    private File getTextBaseFile() throws IOException {
+    private VCSFileProxy getTextBaseFile() throws IOException {
         if (textBaseFile == null) {
             textBaseFile = SvnWcUtils.getTextBaseFile(file);
         }
@@ -235,7 +243,7 @@ public class WorkingCopyDetails {
 
     public boolean propertiesExist() throws IOException {
         boolean returnValue = false;
-        File propsFile = getPropertiesFile();
+        VCSFileProxy propsFile = getPropertiesFile();
         returnValue = propsFile != null ? propsFile.exists() : false;
         if (returnValue) {
             //A size of 4 bytes is equivalent to empty properties
@@ -280,7 +288,7 @@ public class WorkingCopyDetails {
         return false;
     }
 
-    private Map<String, byte[]> loadProperties(File propsFile) throws IOException {
+    private Map<String, byte[]> loadProperties(VCSFileProxy propsFile) throws IOException {
         if(propsFile == null || !propsFile.exists()) {
             return null;
         }        
@@ -290,7 +298,7 @@ public class WorkingCopyDetails {
 
     public boolean textModified() throws IOException {
         if (file.exists()) {
-            File baseFile = getTextBaseFile();
+            VCSFileProxy baseFile = getTextBaseFile();
             if ((file == null) && (baseFile != null)) {
                 return true;
             }
@@ -333,7 +341,7 @@ public class WorkingCopyDetails {
     private boolean isSymbolicLink() throws IOException {
         boolean returnValue = false;
 
-	File baseFile = getTextBaseFile();
+	VCSFileProxy baseFile = getTextBaseFile();
 	if (baseFile != null) {
             BufferedReader reader = null;
             try {

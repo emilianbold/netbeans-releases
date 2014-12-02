@@ -42,13 +42,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.browser;
+package org.netbeans.modules.subversion.remote.ui.browser;
 
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPathNode.RepositoryPathEntry;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPathNode.RepositoryPathEntry;
 
 /**
  *

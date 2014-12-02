@@ -40,15 +40,14 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.util;
+package org.netbeans.modules.subversion.remote.util;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 
 /**
@@ -57,14 +56,14 @@ import org.netbeans.modules.versioning.util.SearchHistorySupport;
  */
 public class SvnSearchHistorySupport extends SearchHistorySupport {
 
-    public SvnSearchHistorySupport(File file) {
+    public SvnSearchHistorySupport(VCSFileProxy file) {
         super(file);
     }
 
     @Override
     protected boolean searchHistoryImpl(final int line) throws IOException {
         if(!Subversion.isClientAvailable(true)) {
-            org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+            Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
             return false;
         }
 
@@ -72,6 +71,7 @@ public class SvnSearchHistorySupport extends SearchHistorySupport {
          * Open in AWT
          */
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 SearchHistoryAction.openSearch(getFile(), line);
             }

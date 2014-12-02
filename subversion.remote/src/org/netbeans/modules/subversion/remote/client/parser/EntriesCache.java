@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.client.parser;
+package org.netbeans.modules.subversion.remote.client.parser;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -57,11 +57,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.parser.ConflictDescriptionParser.ParserConflictDescriptor;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
+import org.netbeans.modules.subversion.remote.client.parser.ConflictDescriptionParser.ParserConflictDescriptor;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.xml.XMLUtil;
-import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -432,6 +432,7 @@ public class EntriesCache {
         private static final String NAME_ATTRIBUTE = "name";  // NOI18N
         private EntryAttributes entryAttributes;
 
+        @Override
         public void startElement(String uri, String localName, String qName, Attributes elementAttributes) throws SAXException {
             if (ENTRY_ELEMENT_NAME.equals(qName)) {
                 Map<String, String> attributes = new HashMap<String, String>();
@@ -453,10 +454,12 @@ public class EntriesCache {
             }
         }
 
+        @Override
         public void error(SAXParseException e) throws SAXException {
             throw e;
         }
 
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
             throw e;
         }

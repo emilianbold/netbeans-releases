@@ -42,14 +42,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
 import java.util.Iterator;
 import java.util.regex.Matcher;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.*;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -58,12 +54,23 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ActionUtils;
-import org.netbeans.modules.subversion.util.ClientCheckSupport;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ActionUtils;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningOutputManager;
 import org.openide.DialogDisplayer;
@@ -72,12 +79,6 @@ import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Update action
@@ -87,6 +88,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class UpdateAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/update.png"; //NOI18N
     private static final int STATUS_RECURSIVELY_TRAVERSIBLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    private Object ClientCheckSupport;
 
     public UpdateAction () {
         this(ICON_RESOURCE);
@@ -96,6 +98,7 @@ public class UpdateAction extends ContextAction {
         super(iconResource);
     }
     
+    @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_Update";    // NOI18N
     }
@@ -166,11 +169,11 @@ public class UpdateAction extends ContextAction {
 
     private static void update(Context ctx, SvnProgressSupport progress, String contextDisplayName, SVNRevision revision) {
                
-        File[] roots = ctx.getRootFiles();
+        VCSFileProxy[] roots = ctx.getRootFiles();
         
         SVNUrl repositoryUrl = null;
         try {
-            for (File root : roots) {
+            for (VCSFileProxy root : roots) {
                 repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
                 if(repositoryUrl != null) {
                     break;
@@ -191,10 +194,10 @@ public class UpdateAction extends ContextAction {
         update(roots, progress, contextDisplayName, repositoryUrl, revision);
     }
 
-    private static void update(File[] roots, final SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, final SVNRevision revision) {
-        File[][] split = Utils.splitFlatOthers(roots);
-        final List<File> recursiveFiles = new ArrayList<File>();
-        final List<File> flatFiles = new ArrayList<File>();
+    private static void update(VCSFileProxy[] roots, final SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, final SVNRevision revision) {
+        VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(roots);
+        final List<VCSFileProxy> recursiveFiles = new ArrayList<VCSFileProxy>();
+        final List<VCSFileProxy> flatFiles = new ArrayList<VCSFileProxy>();
         
         // recursive files
         for (int i = 0; i<split[1].length; i++) {
@@ -248,9 +251,9 @@ public class UpdateAction extends ContextAction {
             if (!l.existedFiles.isEmpty() || !l.conflictedFiles.isEmpty()) {
                 // status of replaced files should be refreshed
                 // because locally added files can be replaced with those in repository and their status would be still the same in the cache
-                HashSet<File> filesToRefresh = new HashSet<File>(l.existedFiles);
+                HashSet<VCSFileProxy> filesToRefresh = new HashSet<VCSFileProxy>(l.existedFiles);
                 filesToRefresh.addAll(l.conflictedFiles);
-                Subversion.getInstance().getStatusCache().refreshAsync(filesToRefresh.toArray(new File[filesToRefresh.size()]));
+                Subversion.getInstance().getStatusCache().refreshAsync(filesToRefresh.toArray(new VCSFileProxy[filesToRefresh.size()]));
             }
             if (!l.conflictedFiles.isEmpty()) {
                 SwingUtilities.invokeLater(new Runnable() {
@@ -274,6 +277,7 @@ public class UpdateAction extends ContextAction {
 
     private static void openResults(final List<FileUpdateInfo> resultsList, final SVNUrl url, final String contextDisplayName) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 UpdateResults results = new UpdateResults(resultsList, url, contextDisplayName);
                 VersioningOutputManager vom = VersioningOutputManager.getInstance();
@@ -282,20 +286,20 @@ public class UpdateAction extends ContextAction {
         });
     }
     
-    private static void updateRoots(List<File> roots, SvnProgressSupport support, SvnClient client, boolean recursive, SVNRevision revision) throws SVNClientException {
-        for (Iterator<File> it = roots.iterator(); it.hasNext();) {
-            File root = it.next();
+    private static void updateRoots(List<VCSFileProxy> roots, SvnProgressSupport support, SvnClient client, boolean recursive, SVNRevision revision) throws SVNClientException {
+        for (Iterator<VCSFileProxy> it = roots.iterator(); it.hasNext();) {
+            VCSFileProxy root = it.next();
             if(support.isCanceled()) {
                 break;
             }
             long rev = client.update(root, revision == null ? SVNRevision.HEAD : revision, recursive);
-            revisionUpdateWorkaround(recursive, FileUtil.normalizeFile(root), client, rev);
+            revisionUpdateWorkaround(recursive, root.normalizeFile(), client, rev);
         }
-        return;
     }
 
-    private static void revisionUpdateWorkaround(final boolean recursive, final File root, final SvnClient client, final long revision) throws SVNClientException {
+    private static void revisionUpdateWorkaround(final boolean recursive, final VCSFileProxy root, final SvnClient client, final long revision) throws SVNClientException {
         Utils.post(new Runnable() {
+            @Override
             public void run() {
                 SVNRevision.Number svnRevision = null;
                 if(revision < -1) {
@@ -316,22 +320,22 @@ public class UpdateAction extends ContextAction {
 
                 // this isn't clean - the client notifies only files which realy were updated.
                 // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change         
-                List<File> filesToRefresh;
-                File[] fileArray;
+                List<VCSFileProxy> filesToRefresh;
+                VCSFileProxy[] fileArray;
                 if (recursive) {
-                    Subversion.getInstance().getStatusCache().patchRevision(new File[] { root }, svnRevision);
+                    Subversion.getInstance().getStatusCache().patchRevision(new VCSFileProxy[] { root }, svnRevision);
                     int maxItems = 5;
                     filesToRefresh = patchFilesRecursively(root, svnRevision, maxItems);
                     // if >= 10000 rather refresh everything than just too large set of files
-                    fileArray = filesToRefresh.size() >= maxItems ? null : filesToRefresh.toArray(new File[filesToRefresh.size()]);
+                    fileArray = filesToRefresh.size() >= maxItems ? null : filesToRefresh.toArray(new VCSFileProxy[filesToRefresh.size()]);
                 } else {
-                    filesToRefresh = new ArrayList<>();
+                    filesToRefresh = new ArrayList<VCSFileProxy>();
                     filesToRefresh.add(root);
-                    File[] files = root.listFiles();
+                    VCSFileProxy[] files = root.listFiles();
                     if (files != null) {
                         filesToRefresh.addAll(Arrays.asList(files));
                     }
-                    fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
+                    fileArray = filesToRefresh.toArray(new VCSFileProxy[filesToRefresh.size()]);
                     Subversion.getInstance().getStatusCache().patchRevision(fileArray, svnRevision);
                 }
 
@@ -373,7 +377,7 @@ public class UpdateAction extends ContextAction {
      * Run update on a single file
      * @param file
      */
-    public static void performUpdate(final File file) {
+    public static void performUpdate(final VCSFileProxy file) {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
         }
@@ -392,17 +396,18 @@ public class UpdateAction extends ContextAction {
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             public void perform() {
 //                FileStatusCache cache = Subversion.getInstance().getStatusCache();
 //                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-                update(new File[] {file}, this, file.getAbsolutePath(), repositoryUrl, null);
+                update(new VCSFileProxy[] {file}, this, file.getPath(), repositoryUrl, null);
             }
         };
         support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
     
-    private static List<File> patchFilesRecursively (File root, SVNRevision.Number revision, int maxReturnFiles) {
-        List<File> ret = new ArrayList<>();
+    private static List<VCSFileProxy> patchFilesRecursively (VCSFileProxy root, SVNRevision.Number revision, int maxReturnFiles) {
+        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
         if (root == null) {
             return ret;
         }
@@ -411,11 +416,11 @@ public class UpdateAction extends ContextAction {
             // it's better to refresh everything to save memory and it might be faster anyway
             ret.add(root);
         }
-        File[] files = root.listFiles();
+        VCSFileProxy[] files = root.listFiles();
         if (files != null) {
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             cache.patchRevision(files, revision);
-            for (File file : files) {
+            for (VCSFileProxy file : files) {
                 FileInformation info = cache.getCachedStatus(file);
                 if (!(SvnUtils.isPartOfSubversionMetadata(file) || SvnUtils.isAdministrative(file)
                         || info != null && (info.getStatus() & STATUS_RECURSIVELY_TRAVERSIBLE) == 0)) {
@@ -434,28 +439,37 @@ public class UpdateAction extends ContextAction {
 
         private List<FileUpdateInfo> results;        
         
-        public void setCommand(int command) {
+        @Override
+        public void setCommand(ISVNNotifyListener.Command command) {
         }
 
+        @Override
         public void logCommandLine(String str) {
         }
 
+        @Override
         public void logMessage(String logMsg) {
             catchMessage(logMsg);
         }
 
+        @Override
         public void logError(String str) {
-            if (str == null) return;
+            if (str == null) {
+                return;
+            }
             catchMessage(str);
         }
 
+        @Override
         public void logRevision(long rev, String str) {
         }
 
+        @Override
         public void logCompleted(String str) {
         }
 
-        public void onNotify(File file, SVNNodeKind kind) {   
+        @Override
+        public void onNotify(VCSFileProxy file, SVNNodeKind kind) {   
         }
         
         List<FileUpdateInfo> getResults() {
@@ -469,7 +483,9 @@ public class UpdateAction extends ContextAction {
             FileUpdateInfo[] fuis = FileUpdateInfo.createFromLogMsg(logMsg);
             if(fuis != null) {
                 for(FileUpdateInfo fui : fuis) {
-                    if(fui != null) getResults().add(fui);
+                    if(fui != null) {
+                        getResults().add(fui);
+                    }
                 }
             }
         }
@@ -477,22 +493,31 @@ public class UpdateAction extends ContextAction {
     };
 
     private static class UpdateNotifyListener implements ISVNNotifyListener {
-        private static Pattern conflictFilePattern = Pattern.compile("(C...|.C..|..C.|...C) ?(.+)"); //NOI18N
-        private static Pattern existedFilePattern = Pattern.compile("E    ?(.+)"); //NOI18N
-        HashSet<File> conflictedFiles = new HashSet<File>();
-        HashSet<File> existedFiles = new HashSet<File>();
+        private static final Pattern conflictFilePattern = Pattern.compile("(C...|.C..|..C.|...C) ?(.+)"); //NOI18N
+        private static final Pattern existedFilePattern = Pattern.compile("E    ?(.+)"); //NOI18N
+        HashSet<VCSFileProxy> conflictedFiles = new HashSet<VCSFileProxy>();
+        HashSet<VCSFileProxy> existedFiles = new HashSet<VCSFileProxy>();
+        @Override
         public void logMessage(String msg) {
             catchMessage(msg);
         }
+        @Override
         public void logError(String msg) {
-            if (msg == null) return;
+            if (msg == null) {
+                return;
+            }
             catchMessage(msg);
         }
-        public void setCommand(int arg0)                    { /* boring */  }
+        @Override
+        public void setCommand(ISVNNotifyListener.Command arg0)                    { /* boring */  }
+        @Override
         public void logCommandLine(String arg0)             { /* boring */  }
+        @Override
         public void logRevision(long arg0, String arg1)     { /* boring */  }
+        @Override
         public void logCompleted(String arg0)               { /* boring */  }
-        public void onNotify(File arg0, SVNNodeKind arg1)   { /* boring */  }
+        @Override
+        public void onNotify(VCSFileProxy arg0, SVNNodeKind arg1)   { /* boring */  }
 
         private void catchMessage (String message) {
             Matcher m = conflictFilePattern.matcher(message);

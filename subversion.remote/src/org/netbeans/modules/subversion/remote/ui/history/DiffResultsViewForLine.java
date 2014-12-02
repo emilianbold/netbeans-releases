@@ -40,13 +40,11 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
@@ -59,10 +57,12 @@ import javax.swing.text.StyledEditorKit;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +72,6 @@ import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * DiffResultsView not showing differences but rather fixed line numbers.
@@ -81,7 +80,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Ondra Vrabec
  */
 final class DiffResultsViewForLine extends DiffResultsView {
-    private int lineNumber;
+    private final int lineNumber;
     
     public DiffResultsViewForLine(final SearchHistoryPanel parent, final List<RepositoryRevision> results, final int lineNumber) {
         super(parent, results);
@@ -91,7 +90,9 @@ final class DiffResultsViewForLine extends DiffResultsView {
 
     @Override
     protected void showRevisionDiff(RepositoryRevision.Event rev, boolean showLastDifference) {
-        if (rev.getFile() == null) return;
+        if (rev.getFile() == null) {
+            return;
+        }
         showDiff(rev.getLogInfoHeader().getRepositoryRootUrl(), null, rev, showLastDifference);
     }
 
@@ -106,13 +107,17 @@ final class DiffResultsViewForLine extends DiffResultsView {
 
     @Override
     void onNextButton() {
-        if (++currentIndex >= treeView.getRowCount()) currentIndex = 0;
+        if (++currentIndex >= treeView.getRowCount()) {
+            currentIndex = 0;
+        }
         setDiffIndex(currentIndex, false);
     }
 
     @Override
     void onPrevButton() {
-        if (--currentIndex < 0) currentIndex = treeView.getRowCount() - 1;
+        if (--currentIndex < 0) {
+            currentIndex = treeView.getRowCount() - 1;
+        }
         setDiffIndex(currentIndex, true);
     }
 
@@ -143,6 +148,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision2, revision2);
             final LocalFileDiffStreamSource rightSource = new LocalFileDiffStreamSource(header.getFile(), true);
             this.setCancellableDelegate(new Cancellable() {
+                @Override
                 public boolean cancel() {
                     leftSource.cancel();
                     return true;
@@ -160,9 +166,12 @@ final class DiffResultsViewForLine extends DiffResultsView {
                 return;
             }
 
-            if (currentTask != this) return;
+            if (currentTask != this) {
+                return;
+            }
 
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         if (isCanceled()) {
@@ -244,7 +253,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             try {
                 DataObject dao = DataObject.find(fo);
                 if (dao.getPrimaryFile() == fo) {
-                    EditorCookie ec = dao.getCookie(EditorCookie.class);
+                    EditorCookie ec = dao.getLookup().lookup(EditorCookie.class);
                     if (ec != null) {
                         sdoc = ec.openDocument();
                     }
@@ -274,12 +283,12 @@ final class DiffResultsViewForLine extends DiffResultsView {
 
         private final FileObject    fileObject;
         private final boolean       isRight;
-        private File file;
+        private final VCSFileProxy file;
         private String mimeType;
 
-        public LocalFileDiffStreamSource (File file, boolean isRight) {
-            this.file = FileUtil.normalizeFile(file);
-            this.fileObject = FileUtil.toFileObject(this.file);
+        public LocalFileDiffStreamSource (VCSFileProxy file, boolean isRight) {
+            this.file = file.normalizeFile();
+            this.fileObject = file.toFileObject();
             this.isRight = isRight;
         }
 
@@ -297,18 +306,22 @@ final class DiffResultsViewForLine extends DiffResultsView {
             }
         }
 
+        @Override
         public String getName() {
             return file.getName();
         }
 
+        @Override
         public String getTitle() {
-            return fileObject != null ? FileUtil.getFileDisplayName(fileObject) : file.getAbsolutePath();
+            return fileObject != null ? FileUtil.getFileDisplayName(fileObject) : file.getPath();
         }
 
+        @Override
         public String getMIMEType() {
             return mimeType = fileObject != null && fileObject.isValid() ? SvnUtils.getMimeType(file) : null;
         }
 
+        @Override
         public Reader createReader() throws IOException {
             if (mimeType == null || !mimeType.startsWith("text/")) {
                 return null;
@@ -317,6 +330,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             }
         }
 
+        @Override
         public Writer createWriter(Difference[] conflicts) throws IOException {
             return null;
         }

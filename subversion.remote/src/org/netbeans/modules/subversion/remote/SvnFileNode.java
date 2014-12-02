@@ -42,18 +42,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Represents real or virtual (non-local) file.
@@ -66,8 +65,8 @@ public class SvnFileNode {
      * Careful, may not be normalized
      * @return 
      */
-    private final File file;
-    private final File normalizedFile;
+    private final VCSFileProxy file;
+    private final VCSFileProxy normalizedFile;
     private FileObject fileObject;
     private String relativePath;
     private String copy;
@@ -75,9 +74,9 @@ public class SvnFileNode {
     private Boolean fileFlag;
     private String mimeType;
 
-    public SvnFileNode(File file) {
+    public SvnFileNode(VCSFileProxy file) {
         this.file = file;
-        File norm = FileUtil.normalizeFile(file);
+        VCSFileProxy norm = file.normalizeFile();
         if (Utilities.isMac() || Utilities.isUnix()) {
             FileInformation fi = Subversion.getInstance().getStatusCache().getStatus(file);
             FileInformation fiNorm = Subversion.getInstance().getStatusCache().getStatus(norm);
@@ -100,13 +99,15 @@ public class SvnFileNode {
      * Careful, returned file may not be normalized
      * @return 
      */
-    public File getFile() {
+    public VCSFileProxy getFile() {
         return file;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
         return o instanceof SvnFileNode && file.equals(((SvnFileNode) o).file);
     }
 
@@ -117,7 +118,7 @@ public class SvnFileNode {
 
     public FileObject getFileObject() {
         if (fileObject == null && normalizedFile != null) {
-            fileObject = FileUtil.toFileObject(normalizedFile);
+            fileObject = normalizedFile.toFileObject();
         }
         return fileObject;
     }
@@ -170,7 +171,7 @@ public class SvnFileNode {
 
     public String getMimeType () {
         if (isFile() && mimeType == null) {
-            mimeType = SvnUtils.getMimeType(normalizedFile == null ? FileUtil.normalizeFile(file) : normalizedFile);
+            mimeType = SvnUtils.getMimeType(normalizedFile == null ? file.normalizeFile() : normalizedFile);
         }
         return mimeType;
     }

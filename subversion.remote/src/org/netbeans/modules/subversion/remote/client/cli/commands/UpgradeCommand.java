@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,14 +37,13 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.client.cli.commands;
 
-package org.netbeans.modules.subversion.client.cli.commands;
-
-import java.io.File;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -52,21 +51,21 @@ import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
  */
 public class UpgradeCommand extends SvnCommand {
     
-    private final File wcRoot;
+    private final VCSFileProxy wcRoot;
 
-    public UpgradeCommand (File wcRoot) {
+    public UpgradeCommand (VCSFileProxy wcRoot) {
         this.wcRoot = wcRoot;
     }
 
     @Override
-    protected int getCommand() {
+    protected ISVNNotifyListener.Command getCommand() {
         return ISVNNotifyListener.Command.UPGRADE;
     }
 
     @Override
     public void prepareCommand(Arguments arguments) {
         arguments.add("upgrade"); //NOI18N
-        arguments.add(wcRoot.getAbsolutePath());
+        arguments.add(wcRoot.getPath());
         setCommandWorkingDirectory(wcRoot);
     }
 }

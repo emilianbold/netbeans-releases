@@ -42,15 +42,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
-import java.io.*;
 import java.util.*;
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilterWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import javax.swing.*;
-import org.netbeans.modules.subversion.ui.commit.ConflictResolvedAction;
 import org.netbeans.spi.diff.*;
 
 import org.openide.util.*;
@@ -59,11 +67,13 @@ import org.openide.filesystems.*;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.*;
-import org.netbeans.modules.versioning.util.Utils;
-
-import org.tigris.subversion.svnclientadapter.*;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.commit.ConflictResolvedAction;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Shows basic conflict resolver UI.
@@ -86,10 +96,10 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     private String leftFileRevision = null;
     private String rightFileRevision = null;
 
-    private final File file;
+    private final VCSFileProxy file;
     private static final String NESTED_CONFLICT = "NESTED_CONFLICT";
 
-    public ResolveConflictsExecutor(File file) {
+    public ResolveConflictsExecutor(VCSFileProxy file) {
         super();
         this.file = file;
     }
@@ -102,7 +112,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         }
         
         try {
-            FileObject fo = FileUtil.toFileObject(file);
+            FileObject fo = file.toFileObject();
             if(fo == null) {
                 Subversion.LOG.log(Level.WARNING, "can''t resolve conflicts for null fileobject : {0}, exists: {1}", new Object[]{file, file.exists()});
                 return;
@@ -134,14 +144,14 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 JOptionPane.showMessageDialog(null, NbBundle.getMessage(ResolveConflictsExecutor.class, "MSG_NestedConflicts"), 
                                               NbBundle.getMessage(ResolveConflictsExecutor.class, "MSG_NestedConflicts_Title"), 
                                               JOptionPane.WARNING_MESSAGE);
-                Utils.openFile(file);
+                org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(file);
             } else {
                 Subversion.LOG.log(Level.SEVERE, null, ioex);
             }
         }
     }
     
-    private boolean handleMergeFor(final File file, FileObject fo, FileLock lock,
+    private boolean handleMergeFor(final VCSFileProxy file, FileObject fo, FileLock lock,
                                 final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
         String ext = "."+fo.getExt(); // NOI18N
@@ -172,8 +182,12 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         //GraphicalMergeVisualizer merge = new GraphicalMergeVisualizer();
         String originalLeftFileRevision = leftFileRevision;
         String originalRightFileRevision = rightFileRevision;
-        if (leftFileRevision != null) leftFileRevision.trim();
-        if (rightFileRevision != null) rightFileRevision.trim();
+        if (leftFileRevision != null) {
+            leftFileRevision.trim();
+        }
+        if (rightFileRevision != null) {
+            rightFileRevision.trim();
+        }
         if (leftFileRevision == null || leftFileRevision.equals(LOCAL_FILE_SUFFIX) || leftFileRevision.equals(WORKING_FILE_SUFFIX)) { // NOI18N
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
         } else {
@@ -210,8 +224,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     /**
      * Copy the file and conflict parts into another file.
      */
-    private Difference[] copyParts(boolean generateDiffs, File source,
-                                   File dest, boolean leftPart, Charset charset) throws IOException {
+    private Difference[] copyParts(boolean generateDiffs, VCSFileProxy source,
+                                   VCSFileProxy dest, boolean leftPart, Charset charset) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(source), charset));
         BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
         ArrayList<Difference> diffList = null;
@@ -367,12 +381,18 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                     w.write(line);
                     w.newLine();
                 }
-                if (isChangeLeft) text1.append(line).append("\n"); // NOI18N
-                if (isChangeRight) text2.append(line).append("\n"); // NOI18N
+                if (isChangeLeft) {
+                    text1.append(line).append("\n"); // NOI18N
+                }
+                if (isChangeRight) {
+                    text2.append(line).append("\n"); // NOI18N
+                }
                 if (generateDiffs) {
-                    if (isChangeLeft) i++;
-                    else if (isChangeRight) j++;
-                    else {
+                    if (isChangeLeft) {
+                        i++;
+                    } else if (isChangeRight) {
+                        j++;
+                    } else {
                         i++;
                         j++;
                     }
@@ -405,17 +425,17 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     
     private static class MergeResultWriterInfo extends StreamSource {
         
-        private File tempf1, tempf2, tempf3, outputFile;
-        private File fileToRepairEntriesOf;
-        private String mimeType;
-        private String leftFileRevision;
-        private String rightFileRevision;
+        private final VCSFileProxy tempf1, tempf2, tempf3, outputFile;
+        private VCSFileProxy fileToRepairEntriesOf;
+        private final String mimeType;
+        private final String leftFileRevision;
+        private final String rightFileRevision;
         private FileObject fo;
         private FileLock lock;
-        private Charset encoding;
+        private final Charset encoding;
         
-        public MergeResultWriterInfo(File tempf1, File tempf2, File tempf3,
-                                     File outputFile, String mimeType,
+        public MergeResultWriterInfo(VCSFileProxy tempf1, VCSFileProxy tempf2, VCSFileProxy tempf3,
+                                     VCSFileProxy outputFile, String mimeType,
                                      String leftFileRevision, String rightFileRevision,
                                      FileObject fo, FileLock lock, Charset encoding) {
             this.tempf1 = tempf1;
@@ -428,7 +448,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             this.fo = fo;
             this.lock = lock;
             if (encoding == null) {
-                encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(tempf1));
+                encoding = FileEncodingQuery.getEncoding(tempf1.toFileObject());
             }
             this.encoding = encoding;
         }

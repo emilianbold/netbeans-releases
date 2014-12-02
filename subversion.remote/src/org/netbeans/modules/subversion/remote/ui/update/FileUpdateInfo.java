@@ -28,11 +28,11 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
-import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -51,29 +51,29 @@ public class FileUpdateInfo {
      */
     private static final String KNOWN_ACTIONS = "ADUCG ";         
         
-    public static int ACTION_TYPE_FILE                 = 1;
-    public static int ACTION_TYPE_PROPERTY             = 2;
+    public static final int ACTION_TYPE_FILE                 = 1;
+    public static final int ACTION_TYPE_PROPERTY             = 2;
     
-    public static int ACTION_ADDED                     = 4;
-    public static int ACTION_DELETED                   = 8;
-    public static int ACTION_UPDATED                   = 16;
-    public static int ACTION_CONFLICTED                = 32;
-    public static int ACTION_MERGED                    = 64;
-    public static int ACTION_CONFLICTED_RESOLVED       = 128;
+    public static final int ACTION_ADDED                     = 4;
+    public static final int ACTION_DELETED                   = 8;
+    public static final int ACTION_UPDATED                   = 16;
+    public static final int ACTION_CONFLICTED                = 32;
+    public static final int ACTION_MERGED                    = 64;
+    public static final int ACTION_CONFLICTED_RESOLVED       = 128;
         
-    public static int ACTION_LOCK_BROKEN               = 256;
+    public static final int ACTION_LOCK_BROKEN               = 256;
         
-    private final File file;    
+    private final VCSFileProxy file;    
     private final int action;
     
     private static final Pattern pattern = Pattern.compile("^([ADUCG ])([ADUCG ])([B ])( *)(.+)$");
 
-    FileUpdateInfo(File file, int action) {
+    FileUpdateInfo(VCSFileProxy file, int action) {
         this.file   = file;
         this.action = action;
     }
 
-    public File getFile() {
+    public VCSFileProxy getFile() {
         return file;
     }
     
@@ -100,7 +100,7 @@ public class FileUpdateInfo {
         FileUpdateInfo[] fui = new FileUpdateInfo[2];
         int fileAction = parseAction(fileActionValue.charAt(0)) | (broken.equals("B") ? ACTION_LOCK_BROKEN : 0);
         int propertyAction = parseAction(propertyActionValue.charAt(0));
-        final File file = FileUtil.normalizeFile(new File(filePath));
+        final VCSFileProxy file = FileUtil.normalizeFile(new File(filePath));
         fui[0] = fileAction != 0 ? new FileUpdateInfo(file, fileAction | ACTION_TYPE_FILE) : null;
         fui[1] = propertyAction != 0 ? new FileUpdateInfo(file, propertyAction | ACTION_TYPE_PROPERTY) : null;
         return fui;

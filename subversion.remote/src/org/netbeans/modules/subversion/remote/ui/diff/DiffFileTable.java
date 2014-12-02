@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.util.NbBundle;
@@ -65,13 +65,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
-import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.ui.status.OpenInEditorAction;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.CollectionUtils;
+import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.openide.awt.MouseUtils;
 import org.openide.cookies.EditorCookie;
@@ -83,9 +83,9 @@ import org.openide.util.WeakListeners;
  */
 class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener {
     
-    private NodeTableModel tableModel;
+    private final NodeTableModel tableModel;
     private JTable table;
-    private JScrollPane     component;
+    private final JScrollPane     component;
     private DiffNode [] nodes = new DiffNode[0];
     /**
      * editor cookies belonging to the files being diffed.
@@ -97,14 +97,14 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     private EditorCookie[] editorCookies;
     
     private String []   tableColumns; 
-    private TableSorter sorter;
+    private final TableSorter sorter;
 
     /**
      * Defines labels for Diff view table columns.
      */ 
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
 
-    {
+    static {
         ResourceBundle loc = NbBundle.getBundle(DiffFileTable.class);
         columnLabels.put(DiffNode.COLUMN_NAME_NAME, new String [] {
                 loc.getString("CTL_DiffTable_Column_Name_Title"), 
@@ -123,6 +123,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     
     
     private static final Comparator NodeComparator = new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
             Node.Property p1 = (Node.Property) o1;
             Node.Property p2 = (Node.Property) o2;
@@ -181,6 +182,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
 
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 int width = table.getWidth();
                 if (tableColumns.length == 3) {
@@ -204,13 +206,16 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         });
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
     }
 
@@ -224,7 +229,9 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.  
      */ 
     final void setColumns(String [] columns) {
-        if (Arrays.equals(columns, tableColumns)) return;
+        if (Arrays.equals(columns, tableColumns)) {
+            return;
+        }
         setModelProperties(columns);
         tableColumns = columns;
         for (int i = 0; i < tableColumns.length; i++) {
@@ -327,6 +334,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
             super(name, String.class, displayName, shortDescription);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
@@ -349,6 +357,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
             }
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 // invoke later so the selection on the table will be set first
                 if (table.isShowing()) {
@@ -368,31 +377,40 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if (e.isPopupTrigger()) {
             showPopup(e);
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (e.isPopupTrigger()) {
             showPopup(e);
         }
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = table.rowAtPoint(e.getPoint());
-            if (row == -1) return;
+            if (row == -1) {
+                return;
+            }
             row = sorter.modelIndex(row);
             Action action = nodes[row].getPreferredAction();
-            if (action == null || !action.isEnabled()) action = new OpenInEditorAction();
+            if (action == null || !action.isEnabled()) {
+                action = new OpenInEditorAction();
+            }
             if (action.isEnabled()) {
                 action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
@@ -423,7 +441,9 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                 }
             }
             final TopComponent tc = (TopComponent) master.getClientProperty(TopComponent.class);
-            if (tc == null) return; // table is no longer in component hierarchy
+            if (tc == null) {
+                return; // table is no longer in component hierarchy
+            }
             Node [] nodesToActivate = selectedNodes.toArray(new Node[selectedNodes.size()]);
             tc.setActivatedNodes(nodesToActivate);
         }
@@ -431,7 +451,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
 
     private class DiffTableCellRenderer extends DefaultTableCellRenderer {
         
-        private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
+        private final FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
         
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -443,7 +463,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                        = DiffUtils.getHtmlDisplayName(nodes[modelRow],
                                                       isModified(modelRow),
                                                       isSelected);
-                if (SvnModuleConfig.getDefault().isExcludedFromCommit(nodes[modelRow].getSetup().getBaseFile().getAbsolutePath())) {
+                if (SvnModuleConfig.getDefault().isExcludedFromCommit(nodes[modelRow].getSetup().getBaseFile().getPath())) {
                     htmlDisplayName = "<s>" + (htmlDisplayName == null ? nodes[modelRow].getName() : htmlDisplayName) + "</s>"; //NOI18N
                 }
                 if (htmlDisplayName != null) {
@@ -456,8 +476,8 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                 renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
             if (renderer instanceof JComponent) {
-                File file = nodes[sorter.modelIndex(row)].getLookup().lookup(File.class); 
-                String path = file != null ? file.getAbsolutePath() : null; 
+                VCSFileProxy file = nodes[sorter.modelIndex(row)].getLookup().lookup(VCSFileProxy.class); 
+                String path = file != null ? file.getPath() : null; 
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;

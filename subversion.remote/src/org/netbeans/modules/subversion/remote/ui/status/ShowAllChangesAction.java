@@ -42,18 +42,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.status;
+package org.netbeans.modules.subversion.remote.ui.status;
 
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.subversion.ui.actions.*;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.util.Context;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.ui.actions.AbstractAllAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 
 /**
  * Open the Versioning status view for all projects.

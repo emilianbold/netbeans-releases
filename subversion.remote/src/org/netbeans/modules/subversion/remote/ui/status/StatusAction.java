@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.ui.status;
 
-package org.netbeans.modules.subversion.ui.status;
-
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.util.*;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.ISVNDirEntryWithLock;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNLock;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.ISVNDirEntryWithLock;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNLock;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  * Context sensitive status action. It opens the Subversion
@@ -72,7 +69,7 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
  *
  * @author Petr Kuzel
  */
-public class StatusAction  extends ContextAction {
+public class StatusAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/show_changes.png"; //NOI18N
 
     public StatusAction () {
@@ -130,7 +127,7 @@ public class StatusAction  extends ContextAction {
                 return;
             }
             Subversion.getInstance().getStatusCache().refreshCached(context);
-            File[] roots = context.getRootFiles();
+            VCSFileProxy[] roots = context.getRootFiles();
             for (int i = 0; i < roots.length; i++) {
                 executeStatus(roots[i], client, support, contactServer);
                 if (support.isCanceled()) {
@@ -146,12 +143,12 @@ public class StatusAction  extends ContextAction {
         }
     }
 
-    public static void executeStatus(File root, SvnClient client, SvnProgressSupport support, boolean contactServer) throws SVNClientException {
+    public static void executeStatus(VCSFileProxy root, SvnClient client, SvnProgressSupport support, boolean contactServer) throws SVNClientException {
         if (support != null && support.isCanceled()) {
             return;
         }
         ISVNStatus[] statuses;
-        Map<File, ISVNLock> locks = new HashMap<File, ISVNLock>();
+        Map<VCSFileProxy, ISVNLock> locks = new HashMap<VCSFileProxy, ISVNLock>();
         try {
             statuses = client.getStatus(root, true, false, contactServer); // cache refires events
             if (contactServer && SvnModuleConfig.getDefault().isGetRemoteLocks()) {
@@ -162,7 +159,7 @@ public class StatusAction  extends ContextAction {
                         if (entries != null) {
                             for (ISVNDirEntryWithLock entry : entries) {
                                 if (entry.getLock() != null) {
-                                    locks.put(root.isFile() ? root : new File(root, entry.getDirEntry().getPath().replace("/", File.separator)), entry.getLock()); //NOI18N
+                                    locks.put(root.isFile() ? root : VCSFileProxy.createFileProxy(root,  entry.getDirEntry().getPath()), entry.getLock()); //NOI18N
                                 }
                             }
                         }
@@ -174,7 +171,7 @@ public class StatusAction  extends ContextAction {
             }
         } catch (SVNClientException ex) {
             if (contactServer && SvnClientExceptionHandler.isNotUnderVersionControl(ex.getMessage())) {
-                Subversion.LOG.log(Level.INFO, "StatusAction.executeStatus: file under {0} not under version control, trying offline", root.getAbsolutePath()); //NOI8N
+                Subversion.LOG.log(Level.INFO, "StatusAction.executeStatus: file under {0} not under version control, trying offline", root.getPath()); //NOI8N
                 statuses = client.getStatus(root, true, false, false); // cache refires events
             } else {
                 throw ex;
@@ -189,7 +186,7 @@ public class StatusAction  extends ContextAction {
                 return;
             }
             ISVNStatus status = statuses[s];
-            File file = status.getFile();
+            VCSFileProxy file = status.getFile();
             if (file.isDirectory() && status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
                 // could have been created externally and the cache ignores by designe
                 // a newly created folders children.

@@ -40,26 +40,26 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.ui.wcadmin;
+package org.netbeans.modules.subversion.remote.ui.wcadmin;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -89,13 +89,13 @@ public class CleanupAction extends ContextAction {
     @Override
     protected void performContextAction(Node[] nodes) {
         final Context ctx = getContext(nodes);
-        final File[] roots = ctx.getRootFiles();
+        final VCSFileProxy[] roots = ctx.getRootFiles();
         if (roots == null || roots.length == 0) {
             Subversion.LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
             return;
         }
 
-        File root = roots[0];
+        VCSFileProxy root = roots[0];
 
         final SVNUrl repositoryUrl;
         SVNUrl repository = null;
@@ -112,7 +112,7 @@ public class CleanupAction extends ContextAction {
         SvnProgressSupport support = new SvnProgressSupport() {
             @Override
             protected void perform() {
-                for (File root : roots) {
+                for (VCSFileProxy root : roots) {
                     try {
                         SvnClient client = repositoryUrl == null ? Subversion.getInstance().getClient(false) : Subversion.getInstance().getClient(root);
                         setCancellableDelegate(client);

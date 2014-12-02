@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.wizards.importstep;
+package org.netbeans.modules.subversion.remote.ui.wizards.importstep;
 
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 

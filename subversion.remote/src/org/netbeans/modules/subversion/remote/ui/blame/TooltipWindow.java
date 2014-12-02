@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.blame;
+package org.netbeans.modules.subversion.remote.ui.blame;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -78,12 +78,12 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
-import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 
 /**
@@ -106,7 +106,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
      */
     private int messageOffset;
 
-    private VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
+    private final VCSHyperlinkSupport linkerSupport = new VCSHyperlinkSupport();
 
     /**
      * Currently showing popup
@@ -155,6 +155,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         contentWindow.addWindowFocusListener(this);
     }
 
+    @Override
     public void eventDispatched(AWTEvent event) {
         if (event.getID() == MouseEvent.MOUSE_PRESSED || event.getID() == KeyEvent.KEY_PRESSED) {
             onClick(event);
@@ -199,10 +200,12 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         contentWindow = null;
     }
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         if (e.getSource().equals(textPane)) {
             textPane.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -212,6 +215,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         textPane.setToolTipText("");  // NOI18N
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (e.getSource().equals(textPane)) {
             linkerSupport.computeBounds(textPane, 0);
@@ -221,26 +225,32 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         }
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         // not interested
     }
 
+    @Override
     public void windowGainedFocus(WindowEvent e) {
         //
     }
 
+    @Override
     public void windowLostFocus(WindowEvent e) {
         if (contentWindow != null && e.getOppositeWindow() == null) {
             shutdown();
@@ -317,8 +327,9 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 textPane.setDocument(doc);
                 textPane.setEditable(false);
                 Color color = UIManager.getColor( "nb.versioning.tooltip.background.color"); //NOI18N
-                if( null == color )
+                if( null == color ) {
                     color = new Color(233, 241, 255);
+                }
                 textPane.setBackground(color);
                 Element rootElement = org.openide.text.NbDocument.findLineRootElement(doc);
                 int lineCount = rootElement.getElementCount();

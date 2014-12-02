@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.options;
+package org.netbeans.modules.subversion.remote.options;
 
 /**
  *

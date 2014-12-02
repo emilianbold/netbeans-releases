@@ -41,17 +41,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.browser;
+package org.netbeans.modules.subversion.remote.ui.browser;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -71,6 +71,7 @@ public class SelectPathAction extends AbstractAction {
         setEnabled(true);
     }       
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         Node[] nodes = getSelectionNodes();
         

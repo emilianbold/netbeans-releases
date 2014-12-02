@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.search;
+package org.netbeans.modules.subversion.remote.ui.search;
 
 /**
  *

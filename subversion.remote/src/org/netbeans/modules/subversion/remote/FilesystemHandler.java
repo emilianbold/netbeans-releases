@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,33 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote;
 
-package org.netbeans.modules.subversion;
-
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import java.awt.EventQueue;
-import java.util.Map.Entry;
-import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.client.SvnClient;
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
-import org.netbeans.modules.subversion.notifications.NotificationsManager;
-import org.netbeans.modules.subversion.ui.status.StatusAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNProperty;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.notifications.NotificationsManager;
+import org.netbeans.modules.subversion.remote.ui.status.StatusAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnSearchHistorySupport;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.tigris.subversion.svnclientadapter.*;
 
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
@@ -80,14 +86,14 @@ class FilesystemHandler extends VCSInterceptor {
     /**
      * Stores all moved files for a later cache refresh in afterMove
      */
-    private final Set<File> movedFiles = new HashSet<File>();
-    private final Set<File> copiedFiles = new HashSet<File>();
+    private final Set<VCSFileProxy> movedFiles = new HashSet<VCSFileProxy>();
+    private final Set<VCSFileProxy> copiedFiles = new HashSet<VCSFileProxy>();
 
-    private final Set<File> internalyDeletedFiles = new HashSet<File>();
-    private final Set<File> toLockFiles = Collections.synchronizedSet(new HashSet<File>());
-    private final Map<File, Boolean> readOnlyFiles = Collections.synchronizedMap(new LinkedHashMap<File, Boolean>() {
+    private final Set<VCSFileProxy> internalyDeletedFiles = new HashSet<VCSFileProxy>();
+    private final Set<VCSFileProxy> toLockFiles = Collections.synchronizedSet(new HashSet<VCSFileProxy>());
+    private final Map<VCSFileProxy, Boolean> readOnlyFiles = Collections.synchronizedMap(new LinkedHashMap<VCSFileProxy, Boolean>() {
         @Override
-        protected boolean removeEldestEntry (Entry<File, Boolean> eldest) {
+        protected boolean removeEldestEntry (Map.Entry<VCSFileProxy, Boolean> eldest) {
             return size() > 100;
         }
     });
@@ -96,7 +102,7 @@ class FilesystemHandler extends VCSInterceptor {
     /**
      * Stores .svn folders that should be deleted ASAP.
      */
-    private final Set<File> invalidMetadata = new HashSet<File>(5);
+    private final Set<VCSFileProxy> invalidMetadata = new HashSet<VCSFileProxy>(5);
     private static final int STATUS_VCS_MODIFIED_ATTRIBUTE
             = FileInformation.STATUS_VERSIONED_CONFLICT
             | FileInformation.STATUS_VERSIONED_MERGE
@@ -108,7 +114,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public boolean beforeDelete(File file) {
+    public boolean beforeDelete(VCSFileProxy file) {
         Subversion.LOG.log(Level.FINE, "beforeDelete {0}", file);
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping delete due to missing client");
@@ -125,13 +131,13 @@ class FilesystemHandler extends VCSInterceptor {
      * @param file file to delete
      */
     @Override
-    public void doDelete(File file) throws IOException {
+    public void doDelete(VCSFileProxy file) throws IOException {
         Subversion.LOG.log(Level.FINE, "doDelete {0}", file);
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
                 try {
-                    client.remove(new File [] { file }, true); // delete all files recursively
+                    client.remove(new VCSFileProxy [] { file }, true); // delete all files recursively
                     return;
                 } catch (SVNClientException ex) {
                     // not interested, will continue and ask isVersioned()
@@ -143,7 +149,7 @@ class FilesystemHandler extends VCSInterceptor {
                  * But client.remove cannot be called since the folder is unversioned and we do not want to propagate an exception
                  */
                 if (isVersioned(file.getParentFile())) {
-                    client.remove(new File [] { file }, true); // delete all files recursively
+                    client.remove(new VCSFileProxy [] { file }, true); // delete all files recursively
                 }
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
@@ -161,7 +167,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void afterDelete(final File file) {
+    public void afterDelete(final VCSFileProxy file) {
         Subversion.LOG.log(Level.FINE, "afterDelete {0}", file);
         if (file == null || SvnUtils.isPartOfSubversionMetadata(file)) return;
 
@@ -182,14 +188,14 @@ class FilesystemHandler extends VCSInterceptor {
             @Override
             public void run() {
                 try {
-                    File parent = file.getParentFile();
+                    VCSFileProxy parent = file.getParentFile();
                     if(parent != null && !parent.exists()) {
                         return;
                     }
                     try {
                         SvnClient client = Subversion.getInstance().getClient(false);
                         if (shallRemove(client, file)) {
-                            client.remove(new File [] { file }, true);
+                            client.remove(new VCSFileProxy [] { file }, true);
                         }
                     } catch (SVNClientException e) {
                         // ignore; we do not know what to do here
@@ -211,20 +217,20 @@ class FilesystemHandler extends VCSInterceptor {
      * @throws java.io.IOException if error occurs
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException if error occurs
      */
-    private void moveFolderToDifferentRepository(File from, File to) throws IOException, SVNClientException {
+    private void moveFolderToDifferentRepository(VCSFileProxy from, VCSFileProxy to) throws IOException, SVNClientException {
         assert from.isDirectory();
         assert to.getParentFile().exists();
         if (!to.exists()) {
-            if (to.mkdir()) {
+            if (VCSFileProxySupport.mkdir(to)) {
                 cache.refreshAsync(to);
             } else {
                 Subversion.LOG.log(Level.WARNING, "{0}: Cannot create folder {1}", new Object[]{FilesystemHandler.class.getName(), to});
             }
         }
-        File[] files = from.listFiles();
-        for (File file : files) {
+        VCSFileProxy[] files = from.listFiles();
+        for (VCSFileProxy file : files) {
             if (!SvnUtils.isAdministrative(file)) {
-                svnMoveImplementation(file, new File(to, file.getName()));
+                svnMoveImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
             }
         }
     }
@@ -238,20 +244,20 @@ class FilesystemHandler extends VCSInterceptor {
      * @throws java.io.IOException if error occurs
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException if error occurs
      */
-    private void copyFolderToDifferentRepository(File from, File to) throws IOException, SVNClientException {
+    private void copyFolderToDifferentRepository(VCSFileProxy from, VCSFileProxy to) throws IOException, SVNClientException {
         assert from.isDirectory();
         assert to.getParentFile().exists();
         if (!to.exists()) {
-            if (to.mkdir()) {
+            if (VCSFileProxySupport.mkdir(to)) {
                 cache.refreshAsync(to);
             } else {
                 Subversion.LOG.log(Level.WARNING, "{0}: Cannot create folder {1}", new Object[]{FilesystemHandler.class.getName(), to});
             }
         }
-        File[] files = from.listFiles();
-        for (File file : files) {
+        VCSFileProxy[] files = from.listFiles();
+        for (VCSFileProxy file : files) {
             if (!SvnUtils.isAdministrative(file)) {
-                svnCopyImplementation(file, new File(to, file.getName()));
+                svnCopyImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
             }
         }
     }
@@ -262,11 +268,11 @@ class FilesystemHandler extends VCSInterceptor {
      * @param file file sheduled for removal
      * @return <code>true</code> if the <code>file</code> shall be really removed, <code>false</code> otherwise.
      */
-    private boolean shallRemove(SvnClient client, File file) throws SVNClientException {
+    private boolean shallRemove(SvnClient client, VCSFileProxy file) throws SVNClientException {
         boolean retval = true;
         if (!"true".equals(System.getProperty("org.netbeans.modules.subversion.deleteMissingFiles", "false"))) { //NOI18N
             // prevents automatic svn remove for those who dislike such behavior
-            Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false by default)", new String[] {file.getAbsolutePath()}); //NOI18N
+            Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false by default)", new String[] {file.getPath()}); //NOI18N
             retval = false;
         } else {
             ISVNStatus status = getStatus(client, file);
@@ -284,13 +290,13 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public boolean beforeMove(File from, File to) {
+    public boolean beforeMove(VCSFileProxy from, VCSFileProxy to) {
         Subversion.LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[]{from, to});
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping move due to missing client");
             return false;
         }
-        File destDir = to.getParentFile();
+        VCSFileProxy destDir = to.getParentFile();
         if (from != null && destDir != null) {
             // a direct cache call could, because of the synchrone beforeMove handling,
             // trigger an reentrant call on FS => we have to check manually
@@ -304,39 +310,39 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void doMove(final File from, final File to) throws IOException {
+    public void doMove(final VCSFileProxy from, final VCSFileProxy to) throws IOException {
         Subversion.LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[]{from, to});
         svnMoveImplementation(from, to);
     }
 
     @Override
-    public void afterMove(final File from, final File to) {
+    public void afterMove(final VCSFileProxy from, final VCSFileProxy to) {
         Subversion.LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[]{from, to});
-        File[] files;
+        VCSFileProxy[] files;
         synchronized(movedFiles) {
             movedFiles.add(from);
-            files = movedFiles.toArray(new File[movedFiles.size()]);
+            files = movedFiles.toArray(new VCSFileProxy[movedFiles.size()]);
             movedFiles.clear();
         }
         cache.refreshAsync(true, to);  // refresh the whole target tree
         cache.refreshAsync(files);
-        File parent = to.getParentFile();
+        VCSFileProxy parent = to.getParentFile();
         if (parent != null) {
             if (from.equals(to)) {
-                Subversion.LOG.log(Level.WARNING, "Wrong (identity) rename event for {0}", from.getAbsolutePath());
+                Subversion.LOG.log(Level.WARNING, "Wrong (identity) rename event for {0}", from.getPath());
             }
         }
     }
 
     @Override
-    public boolean beforeCopy(File from, File to) {
+    public boolean beforeCopy(VCSFileProxy from, VCSFileProxy to) {
         Subversion.LOG.log(Level.FINE, "beforeCopy {0} -> {1}", new Object[]{from, to});
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping copy due to missing client");
             return false;
         }
 
-        File destDir = to.getParentFile();
+        VCSFileProxy destDir = to.getParentFile();
         if (from != null && destDir != null) {
             // a direct cache call could, because of the synchrone beforeCopy handling,
             // trigger an reentrant call on FS => we have to check manually
@@ -360,38 +366,38 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void doCopy(final File from, final File to) throws IOException {
+    public void doCopy(final VCSFileProxy from, final VCSFileProxy to) throws IOException {
         Subversion.LOG.log(Level.FINE, "doCopy {0} -> {1}", new Object[]{from, to});
         svnCopyImplementation(from, to);
     }
 
     @Override
-    public void afterCopy(final File from, final File to) {
+    public void afterCopy(final VCSFileProxy from, final VCSFileProxy to) {
         Subversion.LOG.log(Level.FINE, "afterCopy {0} -> {1}", new Object[]{from, to});
-        File[] files;
+        VCSFileProxy[] files;
         synchronized(copiedFiles) {
             copiedFiles.add(from);
-            files = copiedFiles.toArray(new File[copiedFiles.size()]);
+            files = copiedFiles.toArray(new VCSFileProxy[copiedFiles.size()]);
             copiedFiles.clear();
         }
         cache.refreshAsync(true, to);  // refresh the whole target tree
         cache.refreshAsync(files);
-        File parent = to.getParentFile();
+        VCSFileProxy parent = to.getParentFile();
         if (parent != null) {
             if (from.equals(to)) {
-                Subversion.LOG.log(Level.WARNING, "Wrong (identity) rename event for {0}", from.getAbsolutePath());
+                Subversion.LOG.log(Level.WARNING, "Wrong (identity) rename event for {0}", from.getPath());
             }
         }
     }
 
-    private void svnCopyImplementation(final File from, final File to) throws IOException {
+    private void svnCopyImplementation(final VCSFileProxy from, final VCSFileProxy to) throws IOException {
         try {
             SvnClient client = Subversion.getInstance().getClient(false);
 
             // prepare destination, it must be under Subversion control
             removeInvalidMetadata();
 
-            File parent;
+            VCSFileProxy parent;
             if (to.isDirectory()) {
                 parent = to;
             } else {
@@ -420,7 +426,7 @@ class FilesystemHandler extends VCSInterceptor {
                     ISVNStatus status = getStatus(client, from);
 
                     // store all from-s children -> they also have to be refreshed in after copy
-                    List<File> srcChildren = null;
+                    List<VCSFileProxy> srcChildren = null;
                     try {
                         srcChildren = SvnUtils.listManagedRecursively(from);
                         if (parentIgnored) {
@@ -495,7 +501,7 @@ class FilesystemHandler extends VCSInterceptor {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
             }
             IOException ex = new IOException();
-            Exceptions.attachLocalizedMessage(ex, "Subversion failed to move " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage()); // NOI18N
+            Exceptions.attachLocalizedMessage(ex, "Subversion failed to move " + from.getPath() + " to: " + to.getPath() + "\n" + e.getLocalizedMessage()); // NOI18N
             ex.getCause().initCause(e);
             throw ex;
         }                 
@@ -503,7 +509,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public boolean beforeCreate(File file, boolean isDirectory) {
+    public boolean beforeCreate(VCSFileProxy file, boolean isDirectory) {
         Subversion.LOG.log(Level.FINE, "beforeCreate {0}", file);
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping create due to missing client");
@@ -511,7 +517,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             synchronized(invalidMetadata) {
-                File p = file;
+                VCSFileProxy p = file;
                 while(!SvnUtils.isAdministrative(p.getName())) {
                     p = p.getParentFile();
                     assert p != null : "file " + file + " doesn't have a .svn parent";
@@ -536,12 +542,12 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void doCreate(File file, boolean isDirectory) throws IOException {
+    public void doCreate(VCSFileProxy file, boolean isDirectory) throws IOException {
         // do nothing
     }
 
     @Override
-    public void afterCreate(final File file) {
+    public void afterCreate(final VCSFileProxy file) {
         Subversion.LOG.log(Level.FINE, "afterCreate {0}", file);
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             // not interested in .svn events
@@ -561,7 +567,7 @@ class FilesystemHandler extends VCSInterceptor {
                     cache.directoryContentChanged(file);
                 } else if ((status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 && file.exists()) {
                     // file exists but it's status is set to deleted
-                    File temporary = FileUtils.generateTemporaryFile(file.getParentFile(), file.getName());
+                    VCSFileProxy temporary = FileUtils.generateTemporaryFile(file.getParentFile(), file.getName());
                     try {
                         SvnClient client = Subversion.getInstance().getClient(false);
                         if (file.renameTo(temporary)) {
@@ -594,7 +600,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void afterChange(final File file) {
+    public void afterChange(final VCSFileProxy file) {
         if(!SvnClientFactory.isClientAvailable()) {
             Subversion.LOG.fine(" skipping afterChange due to missing client");
             return;
@@ -611,7 +617,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public Object getAttribute(final File file, String attrName) {
+    public Object getAttribute(final VCSFileProxy file, String attrName) {
         if("ProvidedExtensions.RemoteLocation".equals(attrName)) {
             return getRemoteRepository(file);
         } else if("ProvidedExtensions.Refresh".equals(attrName)) {
@@ -670,7 +676,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public void beforeEdit (final File file) {
+    public void beforeEdit (final VCSFileProxy file) {
         if (cache.ready()) {
             NotificationsManager.getInstance().scheduleFor(file);
         }
@@ -678,7 +684,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+    public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
         long retval = -1;
         if (SvnUtils.isAdministrative(dir.getName())) {
             retval = 0;
@@ -687,7 +693,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     @Override
-    public boolean isMutable(File file) {
+    public boolean isMutable(VCSFileProxy file) {
         boolean mutable = SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
         if (!mutable && SvnModuleConfig.getDefault().isAutoLock() && !readOnlyFiles.containsKey(file)) {
             toLockFiles.add(file);
@@ -696,8 +702,10 @@ class FilesystemHandler extends VCSInterceptor {
         return mutable;
     }
 
-    private String getRemoteRepository(File file) {
-        if(file == null) return null;
+    private String getRemoteRepository(VCSFileProxy file) {
+        if(file == null) {
+            return null;
+        }
         SVNUrl url = null;
         try {
             url = SvnUtils.getRepositoryRootUrl(file);
@@ -717,8 +725,8 @@ class FilesystemHandler extends VCSInterceptor {
      */
     void removeInvalidMetadata() {
         synchronized(invalidMetadata) {
-            for (File file : invalidMetadata) {
-                Utils.deleteRecursively(file);
+            for (VCSFileProxy file : invalidMetadata) {
+                SvnUtils.deleteRecursively(file);
             }
             invalidMetadata.clear();
         }
@@ -726,11 +734,11 @@ class FilesystemHandler extends VCSInterceptor {
 
     // private methods ---------------------------
 
-    private boolean hasMetadata(File file) {
-        return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead();
+    private boolean hasMetadata(VCSFileProxy file) {
+        return VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR).canRead();
     }
 
-    private boolean isVersioned(File file) {
+    private boolean isVersioned(VCSFileProxy file) {
         if (SvnUtils.isPartOfSubversionMetadata(file)) return false;
         if  (( !file.isFile() && hasMetadata(file) ) || ( file.isFile() && hasMetadata(file.getParentFile()) )) {
             return true;
@@ -751,9 +759,9 @@ class FilesystemHandler extends VCSInterceptor {
      * @return a list of folders
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
-    private static List<File> getDeletedParents(File file, SvnClient client) throws SVNClientException {
-        List<File> ret = new ArrayList<File>();
-        for(File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
+    private static List<VCSFileProxy> getDeletedParents(VCSFileProxy file, SvnClient client) throws SVNClientException {
+        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        for(VCSFileProxy parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
             ISVNStatus status = getStatus(client, parent);
             if (status == null || !status.getTextStatus().equals(SVNStatusKind.DELETED)) {
                 return ret;
@@ -763,7 +771,7 @@ class FilesystemHandler extends VCSInterceptor {
         return ret;
     }
 
-    private void revertDeleted(SvnClient client, final File file, boolean checkParents) {
+    private void revertDeleted(SvnClient client, final VCSFileProxy file, boolean checkParents) {
         try {
             ISVNStatus status = getStatus(client, file);
             revertDeleted(client, status, file, checkParents);
@@ -774,19 +782,19 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    private void revertDeleted(SvnClient client, ISVNStatus status, final File file, boolean checkParents) {
+    private void revertDeleted(SvnClient client, ISVNStatus status, final VCSFileProxy file, boolean checkParents) {
         try {
             if (FilesystemHandler.this.equals(status, SVNStatusKind.DELETED)) {
                 if(checkParents) {
                     // we have a file scheduled for deletion but it's going to be created again,
                     // => it's parent folder can't stay deleted either
-                    final List<File> deletedParents = getDeletedParents(file, client);
+                    final List<VCSFileProxy> deletedParents = getDeletedParents(file, client);
                     // XXX JAVAHL client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);
-                    for (File parent : deletedParents) {
+                    for (VCSFileProxy parent : deletedParents) {
                         client.revert(parent, false);
                     }
                     if (!deletedParents.isEmpty()) {
-                        Subversion.getInstance().getStatusCache().refreshAsync(deletedParents.toArray(new File[deletedParents.size()]));
+                        Subversion.getInstance().getStatusCache().refreshAsync(deletedParents.toArray(new VCSFileProxy[deletedParents.size()]));
                     }
                 }
 
@@ -804,7 +812,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    private void svnMoveImplementation(final File from, final File to) throws IOException {        
+    private void svnMoveImplementation(final VCSFileProxy from, final VCSFileProxy to) throws IOException {        
         try {
             boolean force = true; // file with local changes must be forced
             SvnClient client = Subversion.getInstance().getClient(false);
@@ -812,7 +820,7 @@ class FilesystemHandler extends VCSInterceptor {
             // prepare destination, it must be under Subversion control
             removeInvalidMetadata();
 
-            File parent;
+            VCSFileProxy parent;
             if (to.isDirectory()) {
                 parent = to;
             } else {
@@ -821,7 +829,7 @@ class FilesystemHandler extends VCSInterceptor {
 
             boolean parentIgnored = false;
             if (parent != null) {
-                assert SvnUtils.isManaged(parent) : "Cannot move " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ", " + parent.getAbsolutePath() + " is not managed";  // NOI18N see implsMove above
+                assert SvnUtils.isManaged(parent) : "Cannot move " + from.getPath() + " to " + to.getPath() + ", " + parent.getPath() + " is not managed";  // NOI18N see implsMove above
                 // a direct cache call could, because of the synchrone svnMoveImplementation handling,
                 // trigger an reentrant call on FS => we have to check manually
                 if (!isVersioned(parent)) {
@@ -840,7 +848,7 @@ class FilesystemHandler extends VCSInterceptor {
                     ISVNStatus status = getStatus(client, from);
 
                     // store all from-s children -> they also have to be refreshed in after move
-                    List<File> srcChildren = null;
+                    List<VCSFileProxy> srcChildren = null;
                     SVNUrl url = status != null && status.isCopied() ? getCopiedUrl(client, from) : null;
                     SVNUrl toUrl = toStatus != null ? toStatus.getUrl() : null;
                     try {
@@ -853,7 +861,7 @@ class FilesystemHandler extends VCSInterceptor {
                             // 2. file is ADDED and COPIED (by invoking svn copy) and target equals the original from the first copy
                             // otherwise svn move should be invoked
 
-                            File temp = from;
+                            VCSFileProxy temp = from;
                             if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
                                 Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
                                 temp = FileUtils.generateTemporaryFile(from.getParentFile(), from.getName());
@@ -870,7 +878,7 @@ class FilesystemHandler extends VCSInterceptor {
                                 if (status.getTextStatus().equals(SVNStatusKind.ADDED)) {
                                     client.revert(temp, true);
                                 } else {
-                                    client.remove(new File[] { temp }, true);
+                                    client.remove(new VCSFileProxy[] { temp }, true);
                                 }
                             }
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
@@ -882,7 +890,7 @@ class FilesystemHandler extends VCSInterceptor {
                         } else if (parentIgnored) {
                             // parent is ignored so do not add the file
                             moved = from.renameTo(to);
-                            client.remove(new File[] { from }, true);
+                            client.remove(new VCSFileProxy[] { from }, true);
                         } else {
                             SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
                             SVNUrl repositoryTarget = SvnUtils.getRepositoryRootUrl(parent);
@@ -893,7 +901,7 @@ class FilesystemHandler extends VCSInterceptor {
                                 } catch (SVNClientException ex) {
                                     if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
                                         Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
-                                        File temp = FileUtils.generateTemporaryFile(to.getParentFile(), from.getName());
+                                        VCSFileProxy temp = FileUtils.generateTemporaryFile(to.getParentFile(), from.getName());
                                         Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
                                         client.move(from, temp, force);
                                         Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 2: {0} -> {1}", new Object[] { temp, to }); //NOI18N
@@ -916,7 +924,7 @@ class FilesystemHandler extends VCSInterceptor {
                                             + ": cannot rename {0} to {1}", new Object[] {from, to});
                                 }
                                 if (remove) {
-                                    client.remove(new File[] {from}, force);
+                                    client.remove(new VCSFileProxy[] {from}, force);
                                     Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
                                             + ": moving between different repositories {0} to {1}", new Object[] {from, to});
                                 }
@@ -962,7 +970,7 @@ class FilesystemHandler extends VCSInterceptor {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
             }
             IOException ex = new IOException();
-            Exceptions.attachLocalizedMessage(ex, "Subversion failed to move " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage()); // NOI18N
+            Exceptions.attachLocalizedMessage(ex, "Subversion failed to move " + from.getPath() + " to: " + to.getPath() + "\n" + e.getLocalizedMessage()); // NOI18N
             ex.getCause().initCause(e);
             throw ex;
         }
@@ -972,13 +980,13 @@ class FilesystemHandler extends VCSInterceptor {
      * Seeks versioned root and then adds all folders
      * under Subversion (so it contains metadata),
      */
-    private boolean addDirectories(final File dir) throws SVNClientException  {
+    private boolean addDirectories(final VCSFileProxy dir) throws SVNClientException  {
         SvnClient client = Subversion.getInstance().getClient(false);
         ISVNStatus s = getStatus(client, dir);
         if(s.getTextStatus().equals(SVNStatusKind.IGNORED)) {
             return false;
         }
-        File parent = dir.getParentFile();
+        VCSFileProxy parent = dir.getParentFile();
         if (parent != null) {
             if (SvnUtils.isManaged(parent) && !isVersioned(parent)) {
                 if(!addDirectories(parent)) {  // RECURSION
@@ -993,7 +1001,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    private static ISVNStatus getStatus(SvnClient client, File file) throws SVNClientException {
+    private static ISVNStatus getStatus(SvnClient client, VCSFileProxy file) throws SVNClientException {
         // a direct cache call could, because of the synchrone beforeCreate handling,
         // trigger an reentrant call on FS => we have to check manually
         return SvnUtils.getSingleStatus(client, file);
@@ -1003,7 +1011,7 @@ class FilesystemHandler extends VCSInterceptor {
         return status != null && status.getTextStatus().equals(kind);
     }
 
-    private boolean copyFile(File from, File to) {
+    private boolean copyFile(VCSFileProxy from, VCSFileProxy to) {
         try {
             FileUtils.copyFile(from, to);
         } catch (IOException ex) {
@@ -1013,7 +1021,7 @@ class FilesystemHandler extends VCSInterceptor {
         return true;
     }
 
-    private void ensureLocked (final File file) {
+    private void ensureLocked (final VCSFileProxy file) {
         if (toLockFiles.contains(file)) {
             Runnable outsideAWT = new Runnable () {
                 @Override
@@ -1042,9 +1050,9 @@ class FilesystemHandler extends VCSInterceptor {
                                         // 1. svn lock A
                                         // 2. svn move A B - B is new and read-only
                                         // 3. move B A - A is now also read-only
-                                        client.unlock(new File[] { file }, false); //NOI18N
+                                        client.unlock(new VCSFileProxy[] { file }, false); //NOI18N
                                     }
-                                    client.lock(new File[] { file }, "", false); //NOI18N
+                                    client.lock(new VCSFileProxy[] { file }, "", false); //NOI18N
                                     readOnly = false;
                                 }
                             }
@@ -1068,7 +1076,7 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
-    private SVNUrl getCopiedUrl (SvnClient client, File f) {
+    private SVNUrl getCopiedUrl (SvnClient client, VCSFileProxy f) {
         try {
             ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, f);
             if (info != null) {

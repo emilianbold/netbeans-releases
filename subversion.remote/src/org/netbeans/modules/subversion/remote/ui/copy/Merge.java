@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -49,7 +49,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
@@ -62,14 +61,14 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.browser.Browser;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.ui.browser.Browser;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -80,7 +79,7 @@ public class Merge extends CopyDialog implements ItemListener {
     private String lastSelectedUrl;
     private final RepositoryFile repositoryFile;
 
-    public Merge(RepositoryFile repositoryRoot, File root) {
+    public Merge(RepositoryFile repositoryRoot, VCSFileProxy root) {
         super(new MergePanel(), NbBundle.getMessage(Merge.class, "CTL_Merge_Prompt", root.getName()), NbBundle.getMessage(Merge.class, "CTL_Merge_Title")); // NOI18N
 
         MergePanel panel = getMergePanel();
@@ -194,16 +193,17 @@ public class Merge extends CopyDialog implements ItemListener {
 
         private RepositoryPaths mergeStartRepositoryPaths;
         private RepositoryPaths mergeEndRepositoryPaths;
-        private RepositoryFile repositoryFile;
+        private final RepositoryFile repositoryFile;
 
         private boolean startPathValid = false;
         private boolean endPathValid = false;
+        private Object SvnSearch;
     
         MergeType (RepositoryFile repositoryFile) {
             this.repositoryFile = repositoryFile;
         }
 
-        protected void init(RepositoryPaths mergeStartRepositoryPaths, JLabel mergeStartRepositoryFolderLabel, RepositoryPaths mergeEndRepositoryPaths, JLabel mergeEndRepositoryFolderLabel, File root) {            
+        protected void init(RepositoryPaths mergeStartRepositoryPaths, JLabel mergeStartRepositoryFolderLabel, RepositoryPaths mergeEndRepositoryPaths, JLabel mergeEndRepositoryFolderLabel, VCSFileProxy root) {            
             if(mergeStartRepositoryPaths != null) {
                 this.mergeStartRepositoryPaths = mergeStartRepositoryPaths;
                 init(mergeStartRepositoryPaths, mergeStartRepositoryFolderLabel, root);   
@@ -220,7 +220,7 @@ public class Merge extends CopyDialog implements ItemListener {
             } 
         }
 
-        private void init(RepositoryPaths paths, JLabel label, File root) {
+        private void init(RepositoryPaths paths, JLabel label, VCSFileProxy root) {
             String browserPurposeMessage;
             int browserMode;
             if(root.isFile()) {
@@ -323,7 +323,7 @@ public class Merge extends CopyDialog implements ItemListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {                                        
-                boolean valid = ((Boolean) evt.getNewValue()).booleanValue();
+                boolean valid = (Boolean) evt.getNewValue();
                 if(evt.getSource() == getMergeStartRepositoryPath()) {
                     startPathValid = valid;
                 } else if(evt.getSource() == getMergeEndRepositoryPath()) {
@@ -340,10 +340,10 @@ public class Merge extends CopyDialog implements ItemListener {
 
     private class MergeTwoFoldersType extends MergeType {
 
-        private MergeTwoFoldersPanel panel;
-        private TwoFoldersPreviewPanel previewPanel;
+        private final MergeTwoFoldersPanel panel;
+        private final TwoFoldersPreviewPanel previewPanel;
 
-        public MergeTwoFoldersType(RepositoryFile repositoryRoot, File root) {
+        public MergeTwoFoldersType(RepositoryFile repositoryRoot, VCSFileProxy root) {
             super(repositoryRoot);
 
             panel = new MergeTwoFoldersPanel();
@@ -375,7 +375,7 @@ public class Merge extends CopyDialog implements ItemListener {
                  panel.mergeEndRepositoryFolderLabel,
                  root);
 
-            previewPanel.localFolderTextField.setText(root.getAbsolutePath());
+            previewPanel.localFolderTextField.setText(root.getPath());
             ((JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
             ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         }
@@ -430,12 +430,12 @@ public class Merge extends CopyDialog implements ItemListener {
 
     private class MergeOneFolderType extends MergeType {
 
-        private RepositoryPaths mergeEndRepositoryPaths;
-        private MergeOneFolderPanel panel;
-        private OneFolderPreviewPanel previewPanel;
+        private final RepositoryPaths mergeEndRepositoryPaths;
+        private final MergeOneFolderPanel panel;
+        private final OneFolderPreviewPanel previewPanel;
 
         /** Creates a new instance of MergeOneFolderType */
-        public MergeOneFolderType(RepositoryFile repositoryRoot, File root) {
+        public MergeOneFolderType(RepositoryFile repositoryRoot, VCSFileProxy root) {
             super(repositoryRoot);
             
             panel = new MergeOneFolderPanel();
@@ -467,7 +467,7 @@ public class Merge extends CopyDialog implements ItemListener {
                  null,
                  root);
             
-            previewPanel.localFolderTextField.setText(root.getAbsolutePath());
+            previewPanel.localFolderTextField.setText(root.getPath());
             ((JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
         }
 
@@ -527,11 +527,11 @@ public class Merge extends CopyDialog implements ItemListener {
 
     private class MergeSinceOriginType extends MergeType {
 
-        private MergeSinceOriginPanel panel;
-        private RepositoryPaths mergeEndRepositoryPaths;
-        private SinceOriginPreviewPanel previewPanel;
+        private final MergeSinceOriginPanel panel;
+        private final RepositoryPaths mergeEndRepositoryPaths;
+        private final SinceOriginPreviewPanel previewPanel;
 
-        public MergeSinceOriginType(RepositoryFile repositoryRoot, File root) {
+        public MergeSinceOriginType(RepositoryFile repositoryRoot, VCSFileProxy root) {
             super(repositoryRoot);
             
             panel = new MergeSinceOriginPanel();
@@ -548,7 +548,7 @@ public class Merge extends CopyDialog implements ItemListener {
                 );      
             
             init(null, null, mergeEndRepositoryPaths, panel.mergeEndRepositoryFolderLabel, root);
-            previewPanel.localFolderTextField.setText(root.getAbsolutePath());
+            previewPanel.localFolderTextField.setText(root.getPath());
             ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);                     
         }
 
@@ -647,7 +647,7 @@ public class Merge extends CopyDialog implements ItemListener {
         private final RepositoryPaths mergeEndRepositoryPaths;
         private final ReintegrateBranchPreviewPanel previewPanel;
 
-        public MergeBranchType (RepositoryFile repositoryRoot, File root) {
+        public MergeBranchType (RepositoryFile repositoryRoot, VCSFileProxy root) {
             super(repositoryRoot);
             
             panel = new MergeBranchPanel();
@@ -663,7 +663,7 @@ public class Merge extends CopyDialog implements ItemListener {
                 );      
             
             init(null, null, mergeEndRepositoryPaths, panel.mergeEndRepositoryFolderLabel, root);
-            previewPanel.localFolderTextField.setText(root.getAbsolutePath());
+            previewPanel.localFolderTextField.setText(root.getPath());
             ((JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);                     
         }
 

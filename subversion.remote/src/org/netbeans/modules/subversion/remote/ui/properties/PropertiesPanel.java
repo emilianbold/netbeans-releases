@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.properties;
+package org.netbeans.modules.subversion.remote.ui.properties;
 
 import javax.swing.GroupLayout;
 import java.util.Set;
@@ -75,8 +75,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import static javax.swing.GroupLayout.Alignment.BASELINE;
@@ -84,6 +82,8 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.versioning.util.ListenersSupport;
 
 /**
  *
@@ -145,8 +145,8 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     private static final Object EVENT_SETTINGS_CHANGED = new Object();
     private PropertiesTable propertiesTable;
     private ListenersSupport listenerSupport = new ListenersSupport(this);
-    private final javax.swing.ImageIcon warningIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif")); //NOI18N
-    private final javax.swing.ImageIcon errorIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/error.gif")); //NOI18N
+    private final javax.swing.ImageIcon warningIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/warning.gif")); //NOI18N
+    private final javax.swing.ImageIcon errorIcon = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/error.gif")); //NOI18N
     private final JLabel lblErrMessage = new JLabel(errorIcon, SwingConstants.LEADING);
     private final Document propNameDocument;
     private final Document propValueDocument;

@@ -42,26 +42,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import org.openide.awt.Mnemonics;
-import org.tigris.subversion.svnclientadapter.*;
-import org.netbeans.modules.subversion.ui.browser.Browser;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.NbBundle;
 import javax.swing.*;
-import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import static javax.swing.GroupLayout.Alignment.BASELINE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.ui.browser.Browser;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Packages search criteria in Search History panel.
@@ -70,11 +72,11 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  */
 class SearchCriteriaPanel extends javax.swing.JPanel {
     
-    private final File[] roots;
+    private final VCSFileProxy[] roots;
     private final SVNUrl url;
     
     /** Creates new form SearchCriteriaPanel */
-    public SearchCriteriaPanel(File [] roots) {
+    public SearchCriteriaPanel(VCSFileProxy [] roots) {
         this.roots = roots;
         this.url = null;
         initComponents();
@@ -103,7 +105,9 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     }
     
     private Date parseDate(String s) {
-        if (s == null) return null;
+        if (s == null) {
+            return null;
+        }
         for (int i = 0; i < SearchExecutor.dateFormats.length; i++) {
             DateFormat dateformat = SearchExecutor.dateFormats[i];
             try {
@@ -139,12 +143,16 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     }  
     
     public void setFrom(String from) {
-        if (from == null) from = "";  // NOI18N
+        if (from == null) {
+            from = "";  // NOI18N
+        }
         tfFrom.setText(from);
     }
 
     public void setTo(String to) {
-        if (to == null) to = "";  // NOI18N
+        if (to == null) {
+            to = "";  // NOI18N
+        }
         tfTo.setText(to);
     }
     

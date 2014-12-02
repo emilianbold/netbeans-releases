@@ -42,26 +42,26 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
-import java.io.File;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -104,10 +104,12 @@ public class MergeAction extends ContextAction {
         }
         
         Context ctx = getContext(nodes);        
-        final File[] roots = SvnUtils.getActionRoots(ctx);
-        if(roots == null || roots.length == 0) return;
+        final VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx);
+        if(roots == null || roots.length == 0) {
+            return;
+        }
 
-        File interestingFile;
+        VCSFileProxy interestingFile;
         if(roots.length == 1) {
             interestingFile = roots[0];
         } else {
@@ -130,7 +132,7 @@ public class MergeAction extends ContextAction {
             ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
                 @Override
                 public void perform() {
-                    for (File root : roots) {
+                    for (VCSFileProxy root : roots) {
                         performMerge(merge, repositoryRoot, root, this, roots.length > 1);
                     }
                 }
@@ -148,8 +150,8 @@ public class MergeAction extends ContextAction {
      * @param support
      * @param partOfMultiFile 
      */
-    private void performMerge(final Merge merge, RepositoryFile repositoryRoot, final File file, SvnProgressSupport support, boolean partOfMultiFile) {
-        File[][] split = Utils.splitFlatOthers(new File[] {file} );
+    private void performMerge(final Merge merge, RepositoryFile repositoryRoot, final VCSFileProxy file, SvnProgressSupport support, boolean partOfMultiFile) {
+        VCSFileProxy[][] split = Utils.splitFlatOthers(new VCSFileProxy[] {file} );
         final boolean recursive;
         // there can be only 1 root file
         if(split[0].length > 0) {

@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.wizards.urlpatternstep;
+package org.netbeans.modules.subversion.remote.ui.wizards.urlpatternstep;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,11 +53,11 @@ import java.awt.event.ItemListener;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.ui.browser.Browser;
-import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.ui.browser.Browser;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -69,10 +69,12 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
     private URLPatternPanel urlPatternPanel;
     private RepositoryPaths repositoryPaths;
 
+    @Override
     public HelpCtx getHelp() {    
         return new HelpCtx(URLPatternStep.class);
     }    
 
+    @Override
     protected JComponent createComponent() {
         if (urlPatternPanel == null) {
             urlPatternPanel = new URLPatternPanel();            
@@ -106,6 +108,7 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
         validateUserInput();          
     }    
      
+    @Override
     protected void validateBeforeNext() {
         // do nothing
     }
@@ -130,13 +133,17 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
     
     private String getGroupiefiedPath(int depth, boolean html) {
         String[] segments = urlPatternPanel.repositoryPathTextField.getText().split("/");
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         for(int i = 0; i < segments.length; i++) {
             if(i == depth) {
                 ret.append("/(");
-                if(html)ret.append("<b>");
+                if(html) {
+                    ret.append("<b>");
+                }
                 ret.append(segments[i]);
-                if(html)ret.append("</b>");
+                if(html) {
+                    ret.append("</b>");
+                }
                 ret.append(")");
             } else {
                 ret.append("/");
@@ -147,9 +154,13 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
             for(int i = segments.length; i <= depth; i++) {
                 if(i == depth) {                    
                     ret.append("/");                    
-                    if(html)ret.append("<b>");
+                    if(html) {
+                        ret.append("<b>");
+                    }
                     ret.append("(.+?)");                    
-                    if(html)ret.append("</b>");
+                    if(html) {
+                        ret.append("</b>");
+                    }
                 } else {
                     ret.append("/.*");
                 }                        
@@ -159,22 +170,27 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
         return ret.toString();
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {        
         validateUserInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput();        
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {        
         validateUserInput();      
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         validateUserInput();          
     }
 
+    @Override
     public void focusGained(FocusEvent evt) {
         if(evt.getSource() == urlPatternPanel.depthComboBox && 
            ! urlPatternPanel.useSubfolderRadioButton.isSelected()) 
@@ -183,10 +199,12 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
         }        
     }
 
+    @Override
     public void focusLost(FocusEvent evt) {
         
     }
 
+    @Override
     public void itemStateChanged(ItemEvent arg0) {
         validateUserInput();          
     }
@@ -196,8 +214,10 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
     }
     
     private String getPattern(boolean html) {
-        StringBuffer preview = new StringBuffer();                
-        if(html) preview.append("<html>");        
+        StringBuilder preview = new StringBuilder();                
+        if(html) {
+            preview.append("<html>");
+        }        
         if(urlPatternPanel.anyURLCheckBox.isSelected()) {
             preview.append(".*");
         } else {
@@ -205,9 +225,13 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
         }
         if(urlPatternPanel.useFolderRadioButton.isSelected()) {
             preview.append("/");
-            if(html) preview.append("<b>");
+            if(html) {
+                preview.append("<b>");
+            }
             preview.append(urlPatternPanel.repositoryPathTextField.getText());            
-            if(html) preview.append("</b>");
+            if(html) {
+                preview.append("</b>");
+            }
             preview.append("/.*");
         } else {
             String depthString = (String) urlPatternPanel.depthComboBox.getSelectedItem();
@@ -218,7 +242,9 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
             }
         }        
         
-        if(html) preview.append("</html>");
+        if(html) {
+            preview.append("</html>");
+        }
         return preview.toString();
     }
     

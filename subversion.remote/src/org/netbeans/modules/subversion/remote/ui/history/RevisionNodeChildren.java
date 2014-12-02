@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -59,8 +59,8 @@ import org.openide.util.WeakListeners;
  */
 class RevisionNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
 
-    private RepositoryRevision container;
-    private SearchHistoryPanel master;
+    private final RepositoryRevision container;
+    private final SearchHistoryPanel master;
     private boolean nodesCreated;
     private final PropertyChangeListener list;
 

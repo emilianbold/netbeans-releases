@@ -42,13 +42,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.config;
+package org.netbeans.modules.subversion.remote.config;
 
-import java.io.File;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import org.netbeans.modules.proxy.Base64Encoder;
-import org.netbeans.modules.subversion.config.KVFile.Key;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -91,12 +90,12 @@ public class CertificateFile extends SVNCredentialFile {
         setValue(getFailuresKey(), String.valueOf(failures));
     }
 
-    public static File getSystemCertFile(String realmString) {
+    public static VCSFileProxy getSystemCertFile(String realmString) {
         File file = new File(SvnConfigFiles.getUserConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
         return FileUtil.normalizeFile(file);
     }
 
-    public static File getNBCertFile(String realmString) {
+    public static VCSFileProxy getNBCertFile(String realmString) {
         File file = new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
         return FileUtil.normalizeFile(file);
     }

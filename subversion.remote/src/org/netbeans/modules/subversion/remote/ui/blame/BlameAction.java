@@ -42,27 +42,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.blame;
+package org.netbeans.modules.subversion.remote.ui.blame;
 
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.windows.WindowManager;
-import org.tigris.subversion.svnclientadapter.*;
 import javax.swing.*;
-import java.io.File;
 import java.util.*;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNAnnotations;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.text.NbDocument;
 import org.openide.util.Mutex;
 import org.openide.windows.TopComponent;
@@ -132,9 +138,11 @@ public class BlameAction extends ContextAction {
             AnnotationBarManager.hideAnnotationBar(pane);
         } else {
             EditorCookie ec = activatedEditorCookie(nodes);
-            if (ec == null) return;
+            if (ec == null) {
+                return;
+            }
             
-            final File file = activatedFile(nodes);
+            final VCSFileProxy file = activatedFile(nodes);
 
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes == null) {
@@ -149,7 +157,7 @@ public class BlameAction extends ContextAction {
         }
     }
 
-    public static void showAnnotations(JEditorPane currentPane, File file, SVNRevision revision) {
+    public static void showAnnotations(JEditorPane currentPane, VCSFileProxy file, SVNRevision revision) {
         final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
         ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
 
@@ -175,7 +183,7 @@ public class BlameAction extends ContextAction {
         computeAnnotations(repository, file, ab, revision);
     }
 
-    private static void computeAnnotations(SVNUrl repository, final File file, final AnnotationBar ab, final SVNRevision revision) {
+    private static void computeAnnotations(SVNUrl repository, final VCSFileProxy file, final AnnotationBar ab, final SVNRevision revision) {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
             @Override
@@ -187,7 +195,7 @@ public class BlameAction extends ContextAction {
     }
             
     
-    private static void computeAnnotations(File file, SvnProgressSupport progress, AnnotationBar ab, SVNRevision revision) {
+    private static void computeAnnotations(VCSFileProxy file, SvnProgressSupport progress, AnnotationBar ab, SVNRevision revision) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(file, progress);
@@ -299,18 +307,18 @@ public class BlameAction extends ContextAction {
         }
         if (nodes.length == 1) {
             Node node = nodes[0];
-            return (EditorCookie) node.getCookie(EditorCookie.class);
+            return node.getLookup().lookup(EditorCookie.class);
         }
         return null;
     }
 
-    private File activatedFile(Node[] nodes) {
+    private VCSFileProxy activatedFile(Node[] nodes) {
         if (nodes.length == 1) {
             Node node = nodes[0];
-            DataObject dobj = (DataObject) node.getCookie(DataObject.class);
+            DataObject dobj = node.getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 FileObject fo = dobj.getPrimaryFile();
-                return FileUtil.toFile(fo);
+                return VCSFileProxy.createFileProxy(fo);
             }
         }
         return null;
@@ -319,14 +327,14 @@ public class BlameAction extends ContextAction {
     private static class SVNClientListener implements ISVNNotifyListener {
         
         private final SVNUrl repository;
-        private final File file;
+        private final VCSFileProxy file;
         private final AnnotationBar ab;
         
         private long revision = -1;
         
-        private File notifiedFile = null;
+        private VCSFileProxy notifiedFile = null;
         
-        public SVNClientListener(long revision, SVNUrl repository, final File file, final AnnotationBar ab) {
+        public SVNClientListener(long revision, SVNUrl repository, final VCSFileProxy file, final AnnotationBar ab) {
             this.revision = revision;
             this.repository = repository;
             this.ab = ab;
@@ -334,7 +342,7 @@ public class BlameAction extends ContextAction {
         }                
         
         @Override
-        public void setCommand(int arg0) {            
+        public void setCommand(ISVNNotifyListener.Command arg0) {            
             // do nothing
         }
 
@@ -358,7 +366,7 @@ public class BlameAction extends ContextAction {
             if(notifiedFile == null) {
                 return;
             }
-            if(notifiedFile.getAbsolutePath().equals(file.getAbsolutePath()) && revision != newRevision) {
+            if(notifiedFile.getPath().equals(file.getPath()) && revision != newRevision) {
                 computeAnnotations(repository, file, ab, SVNRevision.BASE);
                 revision = newRevision;
                 notifiedFile = null;
@@ -371,7 +379,7 @@ public class BlameAction extends ContextAction {
         }
 
         @Override
-        public void onNotify(File file, SVNNodeKind nodeKind) {
+        public void onNotify(VCSFileProxy file, SVNNodeKind nodeKind) {
             notifiedFile = file;
         }        
     }

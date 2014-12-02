@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,17 +34,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.client.cli;
+package org.netbeans.modules.subversion.remote.client.cli;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 
 /**
  * Encapsulates svn shell process. 
@@ -114,7 +116,9 @@ class Commandline {
         command.commandStarted();
         try {
             cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
-            if(canceled) return;
+            if(canceled) {
+                return;
+            }
             ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
 
             Subversion.LOG.fine("cli: process created");                        // NOI18N
@@ -123,15 +127,21 @@ class Commandline {
             if(command.hasBinaryOutput()) {
                 ByteArrayOutputStream b = new ByteArrayOutputStream();
                 int i = -1;
-                if(canceled) return;
+                if(canceled) {
+                    return;
+                }
                 Subversion.LOG.fine("cli: ready for binary OUTPUT \"");         // NOI18N          
                 while(!canceled && (i = cli.getInputStream().read()) != -1) {
                     b.write(i);
                 }
-                if(Subversion.LOG.isLoggable(Level.FINER)) Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", (new String(b.toByteArray()))); // NOI18N
+                if(Subversion.LOG.isLoggable(Level.FINER)) {
+                    Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", (new String(b.toByteArray()))); // NOI18N
+                }
                 command.output(b.toByteArray());
             } else {             
-                if(canceled) return;
+                if(canceled) {
+                    return;
+                }
                 Subversion.LOG.fine("cli: ready for OUTPUT \"");                // NOI18N     
                 ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
                 while (!canceled && (line = ctOutput.readLine()) != null) {                                        
@@ -146,7 +156,9 @@ class Commandline {
                     command.errorText(line);
                 }
             }     
-            if(canceled) return;
+            if(canceled) {
+                return;
+            }
             cli.waitFor();
             command.commandCompleted(cli.exitValue());
         } catch (InterruptedException ie) {
@@ -193,9 +205,15 @@ class Commandline {
                 ret.add(key + "=" + vars.get(key));                             // NOI18N    
             }		                
         }                       
-        if(!vars.containsKey("LC_ALL"))      ret.add("LC_ALL=");                // NOI18N    
-        if(!vars.containsKey("LC_MESSAGES")) ret.add("LC_MESSAGES=C");          // NOI18N
-        if(!vars.containsKey("LC_TIME"))     ret.add("LC_TIME=C");              // NOI18N
+        if(!vars.containsKey("LC_ALL")) {
+            ret.add("LC_ALL=");                // NOI18N    
+        }
+        if(!vars.containsKey("LC_MESSAGES")) {
+            ret.add("LC_MESSAGES=C");          // NOI18N
+        }
+        if(!vars.containsKey("LC_TIME")) {
+            ret.add("LC_TIME=C");              // NOI18N
+        }
         return (String[]) ret.toArray(new String[ret.size()]);
     }	    
     

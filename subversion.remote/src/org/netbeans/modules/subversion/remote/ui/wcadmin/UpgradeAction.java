@@ -40,24 +40,24 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.ui.wcadmin;
+package org.netbeans.modules.subversion.remote.ui.wcadmin;
 
-import java.io.File;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.util.NotifyHtmlPanel;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -66,7 +66,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
@@ -95,7 +94,7 @@ public class UpgradeAction extends ContextAction {
     @Override
     protected void performContextAction(Node[] nodes) {
         final Context ctx = getContext(nodes);
-        final File[] roots = ctx.getRootFiles();
+        final VCSFileProxy[] roots = ctx.getRootFiles();
         if (roots == null || roots.length == 0) {
             Subversion.LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
             return;
@@ -104,16 +103,16 @@ public class UpgradeAction extends ContextAction {
         upgrade(true, roots);
     }
     
-    public void upgrade (final File root) {
+    public void upgrade (final VCSFileProxy root) {
         upgrade(false, root);
     }
 
     @NbBundle.Messages({
         "# {0} - path to a folder", "MSG_UpgradeAction_statusBar_upgraded=Working Copy at {0} upgraded successfully."
     })
-    private void upgrade (boolean explicitelyInvoked, File... roots) {
-        final Set<File> toUpgrade = new HashSet<>();
-        for (File root : roots) {
+    private void upgrade (boolean explicitelyInvoked, VCSFileProxy ... roots) {
+        final Set<VCSFileProxy> toUpgrade = new HashSet<VCSFileProxy>();
+        for (VCSFileProxy root : roots) {
             boolean needsUpgrade = false;
             try {
                 SvnUtils.getRepositoryRootUrl(root);
@@ -127,11 +126,11 @@ public class UpgradeAction extends ContextAction {
             }
             boolean accept;
             if (!explicitelyInvoked) {
-                accept = confirmPossibleUpgrade(root.getAbsolutePath());
+                accept = confirmPossibleUpgrade(root.getPath());
             } else if (needsUpgrade) {
-                accept = confirmUpgrade(root.getAbsolutePath());
+                accept = confirmUpgrade(root.getPath());
             } else {
-                accept = forceUpgrade(root.getAbsolutePath());
+                accept = forceUpgrade(root.getPath());
             }
             if (accept) {
                 toUpgrade.add(root);
@@ -144,19 +143,19 @@ public class UpgradeAction extends ContextAction {
         SvnProgressSupport support = new SvnProgressSupport() {
             @Override
             protected void perform() {
-                for (File root : toUpgrade) {
+                for (VCSFileProxy root : toUpgrade) {
                     try {
                         SvnClient client = Subversion.getInstance().getClient(true);
                         setCancellableDelegate(client);
                         boolean cont = true;
-                        File wcRoot = root;
+                        VCSFileProxy wcRoot = root;
                         while (cont) {
                             cont = false;
                             try {
                                 client.upgrade(wcRoot);
                                 Subversion.getInstance().getStatusCache().refreshAsync(Subversion.getInstance().getStatusCache().listFiles(
-                                        new File[] { Subversion.getInstance().getTopmostManagedAncestor(wcRoot) }, FileInformation.STATUS_LOCAL_CHANGE));
-                                StatusDisplayer.getDefault().setStatusText(Bundle.MSG_UpgradeAction_statusBar_upgraded(root.getAbsolutePath()));
+                                        new VCSFileProxy[] { Subversion.getInstance().getTopmostManagedAncestor(wcRoot) }, FileInformation.STATUS_LOCAL_CHANGE));
+                                StatusDisplayer.getDefault().setStatusText(Bundle.MSG_UpgradeAction_statusBar_upgraded(root.getPath()));
                             } catch (SVNClientException ex) {
                                 String msg = ex.getMessage().toLowerCase();
                                 if (msg.contains("as it is not a pre-1.7 working copy root")) { //NOI18N
@@ -165,7 +164,7 @@ public class UpgradeAction extends ContextAction {
                                         Pattern p = Pattern.compile(s, Pattern.DOTALL);
                                         Matcher m = p.matcher(ex.getMessage());
                                         if (m.matches()) {
-                                            File rootCandidate = new File(m.group(1));
+                                            VCSFileProxy rootCandidate = new File(m.group(1));
                                             if (!wcRoot.equals(rootCandidate)) {
                                                 wcRoot = rootCandidate;
                                                 cont = true;
@@ -175,7 +174,7 @@ public class UpgradeAction extends ContextAction {
                                     }
                                     if (!cont) {
                                         // if users selects folder without .svn folder
-                                        File rootCandidate = wcRoot.getParentFile();
+                                        VCSFileProxy rootCandidate = wcRoot.getParentFile();
                                         if (rootCandidate != null && SvnUtils.isManaged(rootCandidate)) {
                                             wcRoot = rootCandidate;
                                             cont = true;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,19 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.client.cli.commands;
 
-package org.netbeans.modules.subversion.client.cli.commands;
-
-import java.io.BufferedReader;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,16 +52,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessageChangePath;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNLogMessageChangePath;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.xml.XMLUtil;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNLogMessageChangePath;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -78,7 +74,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class LogCommand extends SvnCommand {
 
-    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
     static {        
         dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));       
     }
@@ -91,7 +87,7 @@ public class LogCommand extends SvnCommand {
     }
     
     private final LogType type;
-    private final File file;
+    private final VCSFileProxy file;
     private final SVNRevision revStart;
     private final SVNRevision revEnd;    
     private final SVNRevision pegRevision;    
@@ -103,7 +99,7 @@ public class LogCommand extends SvnCommand {
     private final String[] paths;
     
         
-    public LogCommand(File file, SVNRevision revStart, SVNRevision revEnd, SVNRevision pegRevision, boolean stopOnCopy, boolean fetchChangePath, long limit) {
+    public LogCommand(VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd, SVNRevision pegRevision, boolean stopOnCopy, boolean fetchChangePath, long limit) {
         this.file = file;
         this.revStart = revStart;
         this.revEnd = revEnd;
@@ -144,7 +140,7 @@ public class LogCommand extends SvnCommand {
     }    
     
     @Override
-    protected int getCommand() {
+    protected ISVNNotifyListener.Command getCommand() {
         return ISVNNotifyListener.Command.LOG;
     }
     
@@ -165,7 +161,7 @@ public class LogCommand extends SvnCommand {
                 if (pegRevision == null) {
                     arguments.add(file);
                 } else {
-                    arguments.add(file.getAbsolutePath() + "@" + pegRevision);
+                    arguments.add(file.getPath() + "@" + pegRevision);
                 }
                 break;
             case url:
@@ -195,7 +191,9 @@ public class LogCommand extends SvnCommand {
     }
 
     public ISVNLogMessage[] getLogMessages() throws SVNClientException {
-        if (output == null || output.length == 0) return new ISVNLogMessage[0];
+        if (output == null || output.length == 0) {
+            return new ISVNLogMessage[0];
+        }
         try {
             XMLReader saxReader = XMLUtil.createXMLReader();
 
@@ -237,7 +235,7 @@ public class LogCommand extends SvnCommand {
         private static final String ACTION_ATTRIBUTE        = "action";     // NOI18N                
         private static final String REVISION_ATTRIBUTE      = "revision";   // NOI18N
         
-        private List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();        
+        private final List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();        
         
         
         private Map<String, Object> values;
@@ -294,7 +292,9 @@ public class LogCommand extends SvnCommand {
                 if(values != null) {
                                                                                        
                     String author = (String) values.get(AUTHOR_ELEMENT_NAME);
-                    if(author == null) author = "";
+                    if(author == null) {
+                        author = "";
+                    }
                     Date date = null;
                     String dateValue = (String) values.get(DATE_ELEMENT_NAME);                                                
                     if (dateValue == null) throw new SAXException("'date' tag expected under 'logentry'");                        
@@ -305,7 +305,9 @@ public class LogCommand extends SvnCommand {
                         
                     }
                     String msg = (String) values.get(MSG_ELEMENT_NAME);
-                    if(msg == null) msg = "";
+                    if(msg == null) {
+                        msg = "";
+                    }
 
                     SVNRevision.Number rev = getRevision((String) values.get(REVISION_ATTRIBUTE));
                     
@@ -328,10 +330,12 @@ public class LogCommand extends SvnCommand {
             }
         }
                 
+        @Override
         public void error(SAXParseException e) throws SAXException {
             throw e;
         }
 
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
             throw e;
         }
@@ -355,8 +359,8 @@ public class LogCommand extends SvnCommand {
             return paths;
         }        
         
-        private Number getRevision(String revisionValue) {
-            Number rev = null;
+        private SVNRevision.Number getRevision(String revisionValue) {
+            SVNRevision.Number rev = null;
             if (revisionValue != null && !revisionValue.trim().equals("")) {
                 try {
                     rev = new SVNRevision.Number(Long.parseLong(revisionValue));
@@ -371,53 +375,64 @@ public class LogCommand extends SvnCommand {
     
     private class LogMessage implements ISVNLogMessage {
         private final String msg;
-        private final Number rev;
+        private final SVNRevision.Number rev;
         private final String author;
         private final Date date;
         private final ISVNLogMessageChangePath[] paths;
-        public LogMessage(String msg, Number rev, String author, Date date, ISVNLogMessageChangePath[] paths) {
+        public LogMessage(String msg, SVNRevision.Number rev, String author, Date date, ISVNLogMessageChangePath[] paths) {
             this.msg = msg;
             this.rev = rev;
             this.author = author;
             this.date = date;
             this.paths = paths;
         }
-        public Number getRevision() {
+        @Override
+        public SVNRevision.Number getRevision() {
             return rev;
         }
+        @Override
         public String getAuthor() {
             return author;
         }
+        @Override
         public Date getDate() {
             return date;
         }
+        @Override
         public String getMessage() {
             return msg;
         }
+        @Override
         public ISVNLogMessageChangePath[] getChangedPaths() {
             return paths;
         }
 
+        @Override
         public long getTimeMicros() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public long getTimeMillis() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public long getNumberOfChildren() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public ISVNLogMessage[] getChildMessages() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void addChild(ISVNLogMessage arg0) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public boolean hasChildren() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

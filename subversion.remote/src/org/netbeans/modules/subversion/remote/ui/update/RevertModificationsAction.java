@@ -42,32 +42,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.*;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Reverts local changes.
@@ -107,19 +108,21 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         final Context ctx = getContext(nodes);
-        File[] roots = ctx.getRootFiles();
+        VCSFileProxy[] roots = ctx.getRootFiles();
         // filter managed roots
-        List<File> l = new ArrayList<>();
-        for (File file : roots) {
+        List<VCSFileProxy> l = new ArrayList<VCSFileProxy>();
+        for (VCSFileProxy file : roots) {
             if(SvnUtils.isManaged(file)) {
                 l.add(file);
             }
         }
-        roots = l.toArray(new File[l.size()]);
+        roots = l.toArray(new VCSFileProxy[l.size()]);
 
-        if(roots == null || roots.length == 0) return;
+        if(roots == null || roots.length == 0) {
+            return;
+        }
 
-        File interestingFile;
+        VCSFileProxy interestingFile;
         if(roots.length == 1) {
             interestingFile = roots[0];
         } else {
@@ -169,12 +172,12 @@ public class RevertModificationsAction extends ContextAction {
             return;
         }
         
-        File files[] = ctx.getFiles();
-        final File[][] split;
+        VCSFileProxy files[] = ctx.getFiles();
+        final VCSFileProxy[][] split;
         if (onlySelectedFiles) {
-            split = new File[2][0];
+            split = new VCSFileProxy[2][0];
         } else {
-            split = Utils.splitFlatOthers(files);
+            split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(files);
         }
         try {
             SvnUtils.runWithoutIndexing(new Callable<Void>() {
@@ -185,7 +188,7 @@ public class RevertModificationsAction extends ContextAction {
                         if(support.isCanceled()) {
                             return null;
                         }
-                        File[] files = split[c];
+                        VCSFileProxy[] files = split[c];
                         boolean recursive = c == 1;
                         if (!recursive && revisions == null) {
                             // not recursively
@@ -222,15 +225,15 @@ public class RevertModificationsAction extends ContextAction {
                                 }
                                 if(files.length > 0 ) {                        
                                     // check for deleted files, we also want to undelete their parents
-                                    Set<File> deletedFiles = new HashSet<>();
-                                    for(File file : files) {
+                                    Set<VCSFileProxy> deletedFiles = new HashSet<VCSFileProxy>();
+                                    for(VCSFileProxy file : files) {
                                         deletedFiles.addAll(getDeletedParents(file));
                                     }
                                     
                                     handleCopiedFiles(client, files, recursive);
 
                                     // XXX JAVAHL client.revert(files, recursive);
-                                    for (File file : files) {
+                                    for (VCSFileProxy file : files) {
                                         client.revert(file, recursive);
                                     }
 
@@ -238,7 +241,7 @@ public class RevertModificationsAction extends ContextAction {
                                     // for all undeleted files
                                     if(deletedFiles.size() > 0) {
                                         // XXX JAVAHL client.revert(deletedFiles.toArray(new File[deletedFiles.size()]), false);
-                                        for (File file : deletedFiles) {
+                                        for (VCSFileProxy file : deletedFiles) {
                                             client.revert(file, false);
                                         }    
                                     }
@@ -251,12 +254,12 @@ public class RevertModificationsAction extends ContextAction {
                     return null;
                 }
 
-                private void handleCopiedFiles (SvnClient client, File[] files, boolean recursively) {
+                private void handleCopiedFiles (SvnClient client, VCSFileProxy[] files, boolean recursively) {
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     if (recursively) {
                         files = cache.listFiles(files, FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
                     }
-                    for (File f : files) {
+                    for (VCSFileProxy f : files) {
                         FileInformation fi = cache.getStatus(f);
                         if (fi.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
                             ISVNStatus entry = fi.getEntry(f);
@@ -299,7 +302,7 @@ public class RevertModificationsAction extends ContextAction {
         }
         
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        for (File file : cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+        for (VCSFileProxy file : cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY | FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             FileInformation fi;
             if (file.isDirectory() 
                     || (fi = cache.getCachedStatus(file)) != null && (fi.getStatus() & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) != 0) { // added files turned to not versioned
@@ -312,11 +315,11 @@ public class RevertModificationsAction extends ContextAction {
         }
 
         if(revertNewFiles) {
-            File[] newfiles = Subversion.getInstance().getStatusCache().listFiles(ctx.getRootFiles(), FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
-            for (File file : newfiles) {
+            VCSFileProxy[] newfiles = Subversion.getInstance().getStatusCache().listFiles(ctx.getRootFiles(), FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY);
+            for (VCSFileProxy file : newfiles) {
                 // do not act recursively if not allowed
                 if (!onlySelectedFiles || ctx.getRoots().contains(file)) {
-                    FileObject fo = FileUtil.toFileObject(file);
+                    FileObject fo = file.toFileObject();
                     try {
                         if(fo != null) {
                             fo.delete();
@@ -329,9 +332,9 @@ public class RevertModificationsAction extends ContextAction {
         }
     }     
 
-    private static List<File> getDeletedParents(File file) {
-        List<File> ret = new ArrayList<>();
-        for(File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
+    private static List<VCSFileProxy> getDeletedParents(VCSFileProxy file) {
+        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        for(VCSFileProxy parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
             FileInformation info = Subversion.getInstance().getStatusCache().getStatus(parent);
             if( !((info.getStatus() & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 ||
                   (info.getStatus() & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) != 0) )  

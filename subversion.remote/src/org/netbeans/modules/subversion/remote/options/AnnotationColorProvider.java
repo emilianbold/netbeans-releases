@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.subversion.options;
+package org.netbeans.modules.subversion.remote.options;
 
 import java.awt.Color;
 import java.text.MessageFormat;
 import java.util.Collection;
 import javax.swing.UIManager;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.subversion.Annotator;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SubversionVCS;
-import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.Annotator;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SubversionVCS;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Lookup;
@@ -93,34 +92,34 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
         TEXT_ANNOTATION_COLOR = c == null ? new Color(0x99, 0x99, 0x99) : c;
     }
 
-    public final AnnotationFormat UP_TO_DATE_FILE = createAnnotationFormat("uptodate", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_UpToDate"), null, false); //NOI18N
-    public final AnnotationFormat NEW_LOCALLY_FILE = createAnnotationFormat("newLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_NewLocally"), ADDED_COLOR, false); //NOI18N
-    public final AnnotationFormat NEW_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("newLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_NewLocally"), ADDED_COLOR, true); //NOI18N
-    public final AnnotationFormat NEW_IN_REPOSITORY_FILE = createAnnotationFormat("newinRepository", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_NewInRepository"), REMOTE_MODIFICATION_COLOR, false); //NOI18N
-    public final AnnotationFormat NEW_IN_REPOSITORY_FILE_TOOLTIP = createAnnotationFormat("newinRepositoryTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_NewInRepository"), REMOTE_MODIFICATION_COLOR, true); //NOI18N
-    public final AnnotationFormat ADDED_LOCALLY_FILE = createAnnotationFormat("addedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_AddedLocally"), ADDED_COLOR, false); //NOI18N
-    public final AnnotationFormat ADDED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("addedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_AddedLocally"), ADDED_COLOR, true); //NOI18N
-    public final AnnotationFormat COPIED_LOCALLY_FILE = createAnnotationFormat("copiedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_AddedLocallyCopied"), ADDED_COLOR, false); //NOI18N
-    public final AnnotationFormat COPIED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("copiedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_AddedLocallyCopied"), ADDED_COLOR, true); //NOI18N
-    public final AnnotationFormat MODIFIED_LOCALLY_FILE = createAnnotationFormat("modifiedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_ModifiedLocally"), MODIFIED_COLOR, false); //NOI18N
-    public final AnnotationFormat MODIFIED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("modifiedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_ModifiedLocally"), MODIFIED_COLOR, true); //NOI18N
-    public final AnnotationFormat MODIFIED_IN_REPOSITORY_FILE = createAnnotationFormat("modifiedinRepository", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_ModifiedInRepository"), REMOTE_MODIFICATION_COLOR, false); //NOI18N
-    public final AnnotationFormat MODIFIED_IN_REPOSITORY_FILE_TOOLTIP = createAnnotationFormat("modifiedinRepositoryTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_ModifiedInRepository"), REMOTE_MODIFICATION_COLOR, true); //NOI18N
-    public final AnnotationFormat MERGEABLE_FILE = createAnnotationFormat("mergeable", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Merge"), MODIFIED_COLOR, false); //NOI18N
-    public final AnnotationFormat MERGEABLE_FILE_TOOLTIP = createAnnotationFormat("mergeableTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Merge"), MODIFIED_COLOR, true); //NOI18N
-    public final AnnotationFormat REMOVED_LOCALLY_FILE = createAnnotationFormat("removedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_RemovedLocally"), DELETED_COLOR, false); //NOI18N
-    public final AnnotationFormat REMOVED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("removedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_RemovedLocally"), DELETED_COLOR, true); //NOI18N
-    public final AnnotationFormat REMOVED_IN_REPOSITORY_FILE = createAnnotationFormat("removedinRepository", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_RemovedInRepository"), REMOTE_MODIFICATION_COLOR, false); //NOI18N
-    public final AnnotationFormat REMOVED_IN_REPOSITORY_FILE_TOOLTIP = createAnnotationFormat("removedinRepositoryTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_RemovedInRepository"), REMOTE_MODIFICATION_COLOR, true); //NOI18N
-    public final AnnotationFormat DELETED_LOCALLY_FILE = createAnnotationFormat("deletedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_DeletedLocally"), DELETED_COLOR, false); //NOI18N
-    public final AnnotationFormat DELETED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("deletedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_DeletedLocally"), DELETED_COLOR, true); //NOI18N
-    public final AnnotationFormat EXCLUDED_FILE = createAnnotationFormat("excluded", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), IGNORED_COLOR, false); //NOI18N
-    public final AnnotationFormat EXCLUDED_FILE_TOOLTIP = createAnnotationFormat("excludedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), IGNORED_COLOR, true); //NOI18N
-    public final AnnotationFormat CONFLICT_FILE = createAnnotationFormat("conflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, false); //NOI18N
-    public final AnnotationFormat CONFLICT_FILE_TOOLTIP = createAnnotationFormat("conflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, true); //NOI18N
-    public final AnnotationFormat TREECONFLICT_FILE = createAnnotationFormat("treeconflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TreeConflict"), CONFLICTED_COLOR, false); //NOI18N
-    public final AnnotationFormat TREECONFLICT_FILE_TOOLTIP = createAnnotationFormat("treeconflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TreeConflict"), CONFLICTED_COLOR, true); //NOI18N
-    public final AnnotationFormat TEXT_ANNOTATION = createAnnotationFormat("textAnnotation", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TextAnnotation"), TEXT_ANNOTATION_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat UP_TO_DATE_FILE = createAnnotationFormat("uptodate", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_UpToDate"), null, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat NEW_LOCALLY_FILE = createAnnotationFormat("newLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_NewLocally"), ADDED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat NEW_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("newLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_NewLocally"), ADDED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat NEW_IN_REPOSITORY_FILE = createAnnotationFormat("newinRepository", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_NewInRepository"), REMOTE_MODIFICATION_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat NEW_IN_REPOSITORY_FILE_TOOLTIP = createAnnotationFormat("newinRepositoryTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_NewInRepository"), REMOTE_MODIFICATION_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat ADDED_LOCALLY_FILE = createAnnotationFormat("addedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_AddedLocally"), ADDED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat ADDED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("addedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_AddedLocally"), ADDED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat COPIED_LOCALLY_FILE = createAnnotationFormat("copiedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_AddedLocallyCopied"), ADDED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat COPIED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("copiedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_AddedLocallyCopied"), ADDED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat MODIFIED_LOCALLY_FILE = createAnnotationFormat("modifiedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_ModifiedLocally"), MODIFIED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat MODIFIED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("modifiedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_ModifiedLocally"), MODIFIED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat MODIFIED_IN_REPOSITORY_FILE = createAnnotationFormat("modifiedinRepository", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_ModifiedInRepository"), REMOTE_MODIFICATION_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat MODIFIED_IN_REPOSITORY_FILE_TOOLTIP = createAnnotationFormat("modifiedinRepositoryTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_ModifiedInRepository"), REMOTE_MODIFICATION_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat MERGEABLE_FILE = createAnnotationFormat("mergeable", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Merge"), MODIFIED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat MERGEABLE_FILE_TOOLTIP = createAnnotationFormat("mergeableTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Merge"), MODIFIED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat REMOVED_LOCALLY_FILE = createAnnotationFormat("removedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_RemovedLocally"), DELETED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat REMOVED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("removedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_RemovedLocally"), DELETED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat REMOVED_IN_REPOSITORY_FILE = createAnnotationFormat("removedinRepository", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_RemovedInRepository"), REMOTE_MODIFICATION_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat REMOVED_IN_REPOSITORY_FILE_TOOLTIP = createAnnotationFormat("removedinRepositoryTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_RemovedInRepository"), REMOTE_MODIFICATION_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat DELETED_LOCALLY_FILE = createAnnotationFormat("deletedLocally", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_DeletedLocally"), DELETED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat DELETED_LOCALLY_FILE_TOOLTIP = createAnnotationFormat("deletedLocallyTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_DeletedLocally"), DELETED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat EXCLUDED_FILE = createAnnotationFormat("excluded", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), IGNORED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat EXCLUDED_FILE_TOOLTIP = createAnnotationFormat("excludedTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Excluded"), IGNORED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat CONFLICT_FILE = createAnnotationFormat("conflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat CONFLICT_FILE_TOOLTIP = createAnnotationFormat("conflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_Conflict"), CONFLICTED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat TREECONFLICT_FILE = createAnnotationFormat("treeconflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TreeConflict"), CONFLICTED_COLOR, false); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat TREECONFLICT_FILE_TOOLTIP = createAnnotationFormat("treeconflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TreeConflict"), CONFLICTED_COLOR, true); //NOI18N
+    public final OptionsPanelColorProvider.AnnotationFormat TEXT_ANNOTATION = createAnnotationFormat("textAnnotation", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TextAnnotation"), TEXT_ANNOTATION_COLOR, true); //NOI18N
 
     public AnnotationColorProvider () {
         initColors();
@@ -167,8 +166,8 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     }
 
     @Override
-    protected void saveColors (Collection<AnnotationFormat> colors) {
-        for (AnnotationFormat af : colors) {
+    protected void saveColors (Collection<OptionsPanelColorProvider.AnnotationFormat> colors) {
+        for (OptionsPanelColorProvider.AnnotationFormat af : colors) {
             if (af != null) {
                 SvnModuleConfig.getDefault().setColor(getColorKey(af.getKey()), af.getActualColor());
             }

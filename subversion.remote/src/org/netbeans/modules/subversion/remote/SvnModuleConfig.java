@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,11 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote;
 
-package org.netbeans.modules.subversion;
-
-
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.net.MalformedURLException;
@@ -60,13 +57,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.options.AnnotationExpression;
-import org.netbeans.modules.subversion.ui.diff.Setup;
-import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.remote.options.AnnotationExpression;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbPreferences;
 
 /**
@@ -235,7 +231,7 @@ public class SvnModuleConfig {
             RepositoryConnection rcOld =  RepositoryConnection.parse(rcOldString);
             if(rcOld.equals(rc)) {
                 try {
-                    Utils.removeFromArray(prefs, KEY_RECENT_URL, rcOldString);
+                    org.netbeans.modules.versioning.util.Utils.removeFromArray(prefs, KEY_RECENT_URL, rcOldString);
                 } finally {
                     SvnConfigFiles.getInstance().reset();
                 }
@@ -247,7 +243,7 @@ public class SvnModuleConfig {
         String url = RepositoryConnection.getString(rc);
         if (!"".equals(url)) {                                          //NOI18N
             try {
-                Utils.insert(prefs, KEY_RECENT_URL, url, -1);
+                org.netbeans.modules.versioning.util.Utils.insert(prefs, KEY_RECENT_URL, url, -1);
             } finally {
                 SvnConfigFiles.getInstance().reset();
             }
@@ -590,9 +586,7 @@ public class SvnModuleConfig {
         if (preferredFactory == null) {
             getPreferences().remove(PROP_PREFERRED_FACTORY);
         } else {
-            assert SvnClientFactory.FACTORY_TYPE_COMMANDLINE.equals(preferredFactory)
-                || SvnClientFactory.FACTORY_TYPE_SVNKIT.equals(preferredFactory)
-                || SvnClientFactory.FACTORY_TYPE_JAVAHL.equals(preferredFactory);
+            assert SvnClientFactory.FACTORY_TYPE_COMMANDLINE.equals(preferredFactory);
             getPreferences().put(PROP_PREFERRED_FACTORY, preferredFactory);
             setForceCommnandlineClient(false);
             factory = ""; // override the global setting

@@ -42,24 +42,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.versioning.util.Utils;
-import java.io.*;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.VersionsCache;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Stream source for diffing remote SVN managed files .
@@ -68,18 +71,18 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class DiffStreamSource extends StreamSource implements Cancellable {
 
-    private final File      baseFile;
+    private final VCSFileProxy      baseFile;
     private final String    revision, pegRevision;
     private final String    title;
     private String          mimeType;
-    private SVNUrl          url;
-    private SVNUrl          repoUrl;
+    private final SVNUrl    url;
+    private final SVNUrl    repoUrl;
     private SvnClient       client;
 
     /**
      * Null is a valid value if base file does not exist in this revision.
      */
-    private File            remoteFile;
+    private VCSFileProxy            remoteFile;
     private boolean isDirectory;
     private final String baseFileName;
 
@@ -90,7 +93,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */
-    public DiffStreamSource(File baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String title) {
+    public DiffStreamSource(VCSFileProxy baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String title) {
         this.baseFile = baseFile;
         this.baseFileName = baseFile.getName();
         this.revision = this.pegRevision = revision;
@@ -107,7 +110,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      * @param pegRevision file peg revision
      * @param title title to use in diff panel
      */
-    public DiffStreamSource(File baseFile, String baseFileName, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String pegRevision, String title) {
+    public DiffStreamSource(VCSFileProxy baseFile, String baseFileName, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String pegRevision, String title) {
         this.baseFile = baseFile;
         this.baseFileName = baseFileName;
         this.revision = revision;
@@ -160,7 +163,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
     }
 
     private boolean isPrimary() {
-        FileObject fo = baseFile == null ? null : FileUtil.toFileObject(baseFile);
+        FileObject fo = baseFile == null ? null : baseFile.toFileObject();
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
@@ -179,9 +182,13 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         } catch (IOException e) {
             return Lookups.fixed();
         }
-        if (remoteFile == null || !isPrimary()) return Lookups.fixed();
-        FileObject remoteFo = FileUtil.toFileObject(remoteFile);
-        if (remoteFo == null) return Lookups.fixed();
+        if (remoteFile == null || !isPrimary()) {
+            return Lookups.fixed();
+        }
+        FileObject remoteFo = remoteFile.toFileObject();
+        if (remoteFo == null) {
+            return Lookups.fixed();
+        }
 
         return Lookups.fixed(remoteFo);
     }
@@ -200,7 +207,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
             mimeType = SvnUtils.getMimeType(baseFile);
         }
         try {
-            File rf = VersionsCache.getInstance().getFileRevision(repoUrl, url, revision, pegRevision, baseFileName);
+            VCSFileProxy rf = VersionsCache.getInstance().getFileRevision(repoUrl, url, revision, pegRevision, baseFileName);
             if (rf == null) {
                 remoteFile = null;
                 return;

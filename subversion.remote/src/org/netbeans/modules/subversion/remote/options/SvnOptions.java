@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.options;
+package org.netbeans.modules.subversion.remote.options;
 
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -55,14 +55,17 @@ import org.openide.util.NbBundle;
 public final class SvnOptions extends AdvancedOption {
 
 
+    @Override
     public String getDisplayName () {
         return NbBundle.getMessage (SvnOptions.class, "SvnOptions.displayName");    // NOI18N
     }
 
+    @Override
     public String getTooltip () {
         return NbBundle.getMessage (SvnOptions.class, "SvnOptions.toolTip");        // NOI18N
     }
 
+    @Override
     public OptionsPanelController create () {
         return new SvnOptionsController ();
     }

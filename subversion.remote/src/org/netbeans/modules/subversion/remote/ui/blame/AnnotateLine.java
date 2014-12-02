@@ -41,11 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.blame;
+package org.netbeans.modules.subversion.remote.ui.blame;
 
-import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
 
 import java.util.*;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessageChangePath;
 
 /**
  * One line of annotation, this is copied from CVS so that other support classes stay the same.

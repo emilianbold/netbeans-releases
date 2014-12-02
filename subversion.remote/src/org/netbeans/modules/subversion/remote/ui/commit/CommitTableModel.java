@@ -42,16 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.subversion.remote.ui.commit;
 
 import org.openide.util.NbBundle;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
-import java.io.File;
-import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Table model for the Commit dialog table.
@@ -81,7 +81,7 @@ public class CommitTableModel extends AbstractTableModel {
      */ 
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);   
 
-    {
+    static {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
         columnLabels.put(COLUMN_NAME_COMMIT, new String [] {
                                           loc.getString("CTL_CommitTable_Column_Commit"),  // NOI18N
@@ -126,7 +126,9 @@ public class CommitTableModel extends AbstractTableModel {
     }
     
     void setColumns(String [] cols) {
-        if (Arrays.equals(cols, columns)) return;
+        if (Arrays.equals(cols, columns)) {
+            return;
+        }
         columns = cols;
         fireTableStructureChanged();
     }
@@ -199,8 +201,8 @@ public class CommitTableModel extends AbstractTableModel {
             // XXX this is a mess
             if(rootFile != null) {
                 // must convert from native separators to slashes
-                String relativePath = nodes[rowIndex].getFile().getAbsolutePath().substring(rootFile.rootLocalPath.length());
-                shortPath = rootFile.repositoryPath + relativePath.replace(File.separatorChar, '/');
+                String relativePath = nodes[rowIndex].getFile().getPath().substring(rootFile.rootLocalPath.length());
+                shortPath = rootFile.repositoryPath + '/';
             } else {
                 shortPath = nodes[rowIndex].getLocation();
                 if (shortPath == null) {
@@ -362,20 +364,20 @@ public class CommitTableModel extends AbstractTableModel {
 
     private class Index {
 
-        private HashMap<File, Value> fileToIndex;
+        private HashMap<VCSFileProxy, Value> fileToIndex;
 
         public Index() {
             constructIndex();
         }
 
         private void constructIndex () {
-            fileToIndex = new HashMap<File, Value>(nodes.length);
+            fileToIndex = new HashMap<VCSFileProxy, Value>(nodes.length);
             for (int i = 0; i < nodes.length; ++i) {
                 Value value = new Value(i);
                 fileToIndex.put(nodes[i].getFile(), value);
             }
             for (int i = 0; i < nodes.length; ++i) {
-                File parentFile = nodes[i].getFile().getParentFile();
+                VCSFileProxy parentFile = nodes[i].getFile().getParentFile();
                 if (parentFile != null) {
                     Value value = fileToIndex.get(parentFile);
                     if (value != null) {
@@ -386,7 +388,7 @@ public class CommitTableModel extends AbstractTableModel {
         }
 
         private Integer getParent (int nodeIndex) {
-            File parentFile = nodes[nodeIndex].getFile().getParentFile();
+            VCSFileProxy parentFile = nodes[nodeIndex].getFile().getParentFile();
             Value parentValue = parentFile == null ? null : fileToIndex.get(parentFile);
             return parentValue == null ? null : parentValue.nodeIndex;
         }

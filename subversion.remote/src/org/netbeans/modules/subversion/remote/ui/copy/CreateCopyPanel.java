@@ -42,9 +42,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+
 
 /**
  *
@@ -91,7 +92,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
 
         urlComboBox.setEditable(true);
 
-        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif"))); // NOI18N
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/warning.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Warning")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(switchToCheckBox, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Switch")); // NOI18N
@@ -132,7 +133,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
 
         previewTextField.setEditable(false);
 
-        invalidValuesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/info.png"))); // NOI18N
+        invalidValuesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/info.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(invalidValuesLabel, "Error");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

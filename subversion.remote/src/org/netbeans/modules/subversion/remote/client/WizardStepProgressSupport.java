@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -54,7 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
+import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.RepositoryStep;
 import org.openide.util.Cancellable;
 
 /**
@@ -65,7 +65,7 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
 
     private JPanel progressComponent;
     private JLabel progressLabel;
-    private JPanel panel;
+    private final JPanel panel;
     private JButton stopButton;
     
     public WizardStepProgressSupport(JPanel panel) {
@@ -74,13 +74,16 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
 
     public abstract void setEditable(boolean bl);
 
+    @Override
     public void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 ProgressHandle progress = getProgressHandle(); // NOI18N
                 JComponent bar = ProgressHandleFactory.createProgressComponent(progress);
                 stopButton = new JButton(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2022")); // NOI18N
                 stopButton.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         cancel();
                     }
@@ -100,9 +103,11 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
         });                                                
     }
 
+    @Override
     protected void finnishProgress() {        
         WizardStepProgressSupport.super.finnishProgress();
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {                
                 panel.remove(progressComponent);
                 panel.revalidate();
@@ -113,13 +118,19 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
         });                
     }
 
+    @Override
     public void setDisplayName(String displayName) {
-        if(progressLabel != null) progressLabel.setText(displayName);
+        if(progressLabel != null) {
+            progressLabel.setText(displayName);
+        }
         super.setDisplayName(displayName);
     }
     
+    @Override
     public synchronized boolean cancel() {
-        if(stopButton!=null) stopButton.setEnabled(false);
+        if(stopButton!=null) {
+            stopButton.setEnabled(false);
+        }
         setDisplayName(org.openide.util.NbBundle.getMessage(WizardStepProgressSupport.class, "MSG_Progress_Terminating"));
         return super.cancel();
     }

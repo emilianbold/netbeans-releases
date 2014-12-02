@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,20 +34,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote;
 
-package org.netbeans.modules.subversion;
-
-import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.VersioningEvent;
-
-import java.io.*;
-
+import java.io.FilenameFilter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
 
 /**
  * Hides folders that have 'Localy removed' status.
@@ -69,7 +65,7 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
     }
 
     @Override
-    public boolean isVisible(File file) {
+    public boolean isVisible(VCSFileProxy file) {
         long t = System.currentTimeMillis();
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "isVisible {0}", new Object[] { file });
@@ -110,7 +106,7 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
     @Override
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
-            File file = (File) event.getParams()[0];
+            VCSFileProxy file = (VCSFileProxy) event.getParams()[0];
             if (file != null && file.isDirectory() && containsMetadata(file)) {
                 FileInformation old = (FileInformation) event.getParams()[1];
                 FileInformation cur = (FileInformation) event.getParams()[2];
@@ -121,7 +117,7 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
         }
     }
 
-    static boolean isHiddenFolder(FileInformation info, File file) {
+    static boolean isHiddenFolder(FileInformation info, VCSFileProxy file) {
         return file.isDirectory() && info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
     }
 
@@ -130,10 +126,10 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
      * Otherwise they are either new or come from 1.7+ working copies where svn folders
      * are removed from disk immediately.
      */
-    private boolean containsMetadata (File folder) {
+    private boolean containsMetadata (VCSFileProxy folder) {
         String[] children = folder.list(new FilenameFilter() {
             @Override
-            public boolean accept (File dir, String name) {
+            public boolean accept (VCSFileProxy dir, String name) {
                 return SvnUtils.isAdministrative(name);
             }
         });

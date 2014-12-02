@@ -41,9 +41,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
-import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -65,16 +64,16 @@ import java.awt.event.MouseEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.io.File;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
-import org.netbeans.modules.subversion.ui.status.OpenInEditorAction;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.ui.status.OpenInEditorAction;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.SortedTable;
+import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 
 /**
@@ -84,13 +83,13 @@ import org.netbeans.modules.versioning.util.VersioningListener;
  */
 class UpdateResultsTable implements MouseListener, ListSelectionListener, AncestorListener, VersioningListener {
 
-    private NodeTableModel tableModel;
-    private JTable table;
-    private JScrollPane component;
+    private final NodeTableModel tableModel;
+    private final JTable table;
+    private final JScrollPane component;
     private UpdateResultNode[] nodes = new UpdateResultNode[0];
     
     private String [] tableColumns = new String[0];
-    private TableSorter sorter;
+    private final TableSorter sorter;
     /**
      * File is in conflict and is not a directory
      */
@@ -100,6 +99,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
      * Defines labels for Versioning view table columns.
      */ 
     private final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private Object SvnPropertiesAction;
     {
         ResourceBundle loc = NbBundle.getBundle(UpdateResultsTable.class);
         columnLabels.put(UpdateResultNode.COLUMN_NAME_NAME, new String [] { 
@@ -114,6 +114,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     }
 
     private static final Comparator NodeComparator = new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
             Node.Property p1 = (Node.Property) o1;
             Node.Property p2 = (Node.Property) o2;
@@ -145,7 +146,9 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
         Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
-        if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
+        if (borderColor == null) {
+            borderColor = UIManager.getColor("controlShadow"); // NOI18N
+        }
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         table.addMouseListener(this);
         table.setDefaultRenderer(Node.Property.class, new UpdateResultsTable.SyncTableCellRenderer());
@@ -158,6 +161,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
 
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 int width = table.getWidth();
                 for (int i = 0; i < tableColumns.length; i++) {
@@ -171,13 +175,16 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         });
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
     }
 
@@ -200,7 +207,9 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.  
      */ 
     final void setColumns(String [] columns) {
-        if (Arrays.equals(columns, tableColumns)) return;
+        if (Arrays.equals(columns, tableColumns)) {
+            return;
+        }
         setDefaultColumnSizes();
         setModelProperties(columns);
         tableColumns = columns;
@@ -241,33 +250,41 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if(e.isPopupTrigger()) {
             onPopup(e);
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if(e.isPopupTrigger()) {
             onPopup(e);
         }     
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = table.rowAtPoint(e.getPoint());
-            if (row == -1) return;
+            if (row == -1) {
+                return;
+            }
             row = sorter.modelIndex(row);
             performOpen(row);
         }
@@ -306,11 +323,13 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         boolean isAction(FileUpdateInfo info);
     }
     private static ActionEvaluator conflictEvaluator = new ActionEvaluator() {
+        @Override
         public boolean isAction(FileUpdateInfo info) {
             return (info.getAction() & ACTION_CONFLICTED_FILE) == ACTION_CONFLICTED_FILE;
         }
     };
-    private static ActionEvaluator notDeletedEvaluator = new ActionEvaluator() {
+    private static final ActionEvaluator notDeletedEvaluator = new ActionEvaluator() {
+        @Override
         public boolean isAction(FileUpdateInfo info) {
             return (info.getAction() & ~FileUpdateInfo.ACTION_DELETED) != 0; 
         } 
@@ -322,6 +341,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             {
                 setEnabled(selection.length == 1 && hasAction(selection, notDeletedEvaluator) );
             }
+            @Override
             public void actionPerformed(ActionEvent e) {
                performOpen(selection[0]);
             }
@@ -330,6 +350,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             {
                 setEnabled(selection.length > 0 && hasAction(selection, conflictEvaluator));
             }
+            @Override
             public void actionPerformed(ActionEvent e) {                
                 ResolveConflictsAction.resolveConflicts(getSelectedFiles(selection));
             }
@@ -371,12 +392,12 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         }
     }
 
-    private void performOpenSvnProperties(File file) {        
-        SvnPropertiesAction.openProperties(new File[] {file}, file.getName());
+    private void performOpenSvnProperties(VCSFileProxy file) {        
+        SvnPropertiesAction.openProperties(new VCSFileProxy[] {file}, file.getName());
     }
     
-    private File[] getSelectedFiles(int[] selection) {
-        List<File> files = new ArrayList<File>();
+    private VCSFileProxy[] getSelectedFiles(int[] selection) {
+        List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
         for(int idx : selection) {
             int nodesIdx = sorter.modelIndex(idx);
             Node node = nodes[nodesIdx];
@@ -386,14 +407,17 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             }
             files.add(fui.getFile());
         }        
-        return files.toArray(new File[files.size()]);
+        return files.toArray(new VCSFileProxy[files.size()]);
     }
     
+    @Override
     public void valueChanged(ListSelectionEvent e) {
         final List<Node> selectedNodes = new ArrayList<Node>();
         ListSelectionModel selectionModel = table.getSelectionModel();
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
-        if (tc == null) return; // table is no longer in component hierarchy
+        if (tc == null) {
+            return; // table is no longer in component hierarchy
+        }
         
         int min = selectionModel.getMinSelectionIndex();
         if (min > -1) {                        
@@ -406,6 +430,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             }
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 tc.setActivatedNodes((Node[]) selectedNodes.toArray(new Node[selectedNodes.size()]));
             }            
@@ -414,8 +439,9 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     
     private class SyncTableCellRenderer extends DefaultTableCellRenderer {
         
-        private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
+        private final FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer;
             int modelColumnIndex = table.convertColumnIndexToModel(column);
@@ -431,20 +457,21 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
                 renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
             if (renderer instanceof JComponent) {
-                String path = nodes[sorter.modelIndex(row)].getInfo().getFile().getAbsolutePath(); 
+                String path = nodes[sorter.modelIndex(row)].getInfo().getFile().getPath(); 
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;
         }
     }
 
+    @Override
     public void versioningEvent(VersioningEvent event) {
         if(nodes.length == 0 ) {
             return;
         }        
         
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
-            File changedFile = (File) event.getParams()[0];
+            VCSFileProxy changedFile = (VCSFileProxy) event.getParams()[0];
             FileInformation newFileInfo = (FileInformation) event.getParams()[2];
             
             final List<UpdateResultNode> nodesList = new ArrayList<UpdateResultNode>();
@@ -476,6 +503,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
                 return;
             }
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (currentNodes == nodes) {
                         setTableModel(nodesList.toArray(new UpdateResultNode[nodesList.size()]));

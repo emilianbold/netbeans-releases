@@ -41,26 +41,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.tigris.subversion.svnclientadapter.*;
 import javax.swing.*;
 import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
-import java.io.File;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+
 
 /**
  * Executes searches in Search History panel.
@@ -81,13 +85,13 @@ class SearchExecutor extends SvnProgressSupport {
 
     private static final Logger LOG = Logger.getLogger(SearchExecutor.class.getName());
     private final SearchHistoryPanel    master;
-    private Map<SVNUrl, Set<File>>      workFiles;
-    private Map<String,File>            pathToRoot;
+    private Map<SVNUrl, Set<VCSFileProxy>>      workFiles;
+    private Map<String,VCSFileProxy>            pathToRoot;
     private final SearchCriteriaPanel   criteria;
 
     private int                         completedSearches;
     private boolean                     searchCanceled;
-    private List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
+    private final List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
     static final int DEFAULT_LIMIT = 10;
     private final SVNRevision fromRevision;
     private final SVNRevision toRevision;
@@ -103,19 +107,19 @@ class SearchExecutor extends SvnProgressSupport {
     }
 
     private void populatePathToRoot() {
-        pathToRoot = new HashMap<String, File>();
+        pathToRoot = new HashMap<String, VCSFileProxy>();
         try {
             if (searchingUrl()) {
                 String rootPath = SvnUtils.getRepositoryPath(master.getRoots()[0]);
                 pathToRoot.put(rootPath, master.getRoots()[0]);
             } else {
-                workFiles = new HashMap<SVNUrl, Set<File>>();
-                for (File file : master.getRoots()) {
+                workFiles = new HashMap<SVNUrl, Set<VCSFileProxy>>();
+                for (VCSFileProxy file : master.getRoots()) {
                     SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
                     populatePathToRoot(file, rootUrl);
-                    Set<File> set = workFiles.get(rootUrl);
+                    Set<VCSFileProxy> set = workFiles.get(rootUrl);
                     if (set == null) {
-                        set = new HashSet<File>(2);
+                        set = new HashSet<VCSFileProxy>(2);
                         workFiles.put(rootUrl, set);
                     }
                     set.add(file);
@@ -126,9 +130,9 @@ class SearchExecutor extends SvnProgressSupport {
         }
     }
 
-    private void populatePathToRoot(File file, SVNUrl rootUrl) throws SVNClientException {
-        Map<File, SVNUrl> m = SvnUtils.getRepositoryUrls(file);
-        for (Entry<File, SVNUrl> e : m.entrySet()) {
+    private void populatePathToRoot(VCSFileProxy file, SVNUrl rootUrl) throws SVNClientException {
+        Map<VCSFileProxy, SVNUrl> m = SvnUtils.getRepositoryUrls(file);
+        for (Entry<VCSFileProxy, SVNUrl> e : m.entrySet()) {
             SVNUrl url = e.getValue();
             if(url != null) {
                 String rootPath = SvnUtils.decodeToString(SVNUrlUtils.getRelativePath(rootUrl, url, true));
@@ -136,7 +140,7 @@ class SearchExecutor extends SvnProgressSupport {
                     LOG.log(Level.FINE, "populatePathToRoot: rootUrl: {0}, url: {1}, probably svn:externals", new String[] {rootUrl.toString(), url.toString()});
                     continue;
                 }
-                String fileAbsPath = e.getKey().getAbsolutePath().replace(File.separatorChar, '/');
+                String fileAbsPath = e.getKey().getPath().replace(File.separatorChar, '/');
                 int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
                 pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
                                new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
@@ -150,10 +154,14 @@ class SearchExecutor extends SvnProgressSupport {
         int bi = b.length() - 1;
         int slash = -1;
         for (;;) {
-            if (ai < 0 || bi < 0) break;
+            if (ai < 0 || bi < 0) {
+                break;
+            }
             char ca = a.charAt(ai);
             char cb = b.charAt(bi);
-            if(ca == '/') slash = ai;
+            if(ca == '/') {
+                slash = ai;
+            }
             if ( ca != cb ) {
                 if(slash > -1) {
                     return a.length() - slash;
@@ -188,7 +196,7 @@ class SearchExecutor extends SvnProgressSupport {
         } else {
             for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
                 final SVNUrl rootUrl = (SVNUrl) i.next();
-                final Set<File> files = workFiles.get(rootUrl);
+                final Set<VCSFileProxy> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
                 currentSearch = new SvnProgressSupport() {
                     @Override
@@ -206,7 +214,7 @@ class SearchExecutor extends SvnProgressSupport {
         }
     }
 
-    private void search(SVNUrl rootUrl, Set<File> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths, int limit) {
+    private void search(SVNUrl rootUrl, Set<VCSFileProxy> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths, int limit) {
         SvnClient client;
         try {
             client = Subversion.getInstance().getClient(rootUrl, progressSupport);
@@ -230,9 +238,9 @@ class SearchExecutor extends SvnProgressSupport {
         } else {
             String [] paths = new String[files.size()];
             int idx = 0;
-            Map<String, SVNRevision> revisions = new HashMap<>();
+            Map<String, SVNRevision> revisions = new HashMap<String, SVNRevision>();
             try {
-                for (File file : files) {
+                for (VCSFileProxy file : files) {
                     ISVNInfo info = client.getInfoFromWorkingCopy(file);
                     String p = SvnUtils.getRelativePath(file);
                     if(p != null && p.startsWith("/")) {
@@ -282,7 +290,9 @@ class SearchExecutor extends SvnProgressSupport {
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             ISVNLogMessage logMessage = logMessages[i];
-            if(logMessage == null) continue;
+            if(logMessage == null) {
+                continue;
+            }
             RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl, master.getRoots(), pathToRoot, pegRevisions);
             results.add(rev);
         }
@@ -333,7 +343,7 @@ class SearchExecutor extends SvnProgressSupport {
 
     List<RepositoryRevision> search(SVNUrl repositoryUrl, int count, SvnProgressSupport supp) {
         results.clear();
-        search(repositoryUrl, searchingUrl() ? null : new HashSet<File>(Arrays.asList(master.getRoots())),
+        search(repositoryUrl, searchingUrl() ? null : new HashSet<VCSFileProxy>(Arrays.asList(master.getRoots())),
                 fromRevision, toRevision, supp, false, count);
         return new ArrayList<RepositoryRevision>(results);
     }

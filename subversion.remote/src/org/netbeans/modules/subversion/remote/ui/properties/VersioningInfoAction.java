@@ -42,10 +42,9 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.properties;
+package org.netbeans.modules.subversion.remote.ui.properties;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -53,23 +52,24 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VersioningInfo;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * 
@@ -111,13 +111,13 @@ public final class VersioningInfoAction extends ContextAction {
     @Override
     protected void performContextAction(Node[] nodes) {       
         final Context ctx = getContext(nodes);
-        final File[] roots = ctx.getRootFiles();
+        final VCSFileProxy[] roots = ctx.getRootFiles();
         if (roots == null || roots.length == 0) {
             LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
             return;
         }
 
-        File root = roots[0];
+        VCSFileProxy root = roots[0];
 
         SVNUrl repositoryUrl = null;
         try {
@@ -135,15 +135,15 @@ public final class VersioningInfoAction extends ContextAction {
             private FileStatusCache cache;
             @Override
             protected void perform() {
-                Arrays.sort(roots, new Comparator<File>() {
+                Arrays.sort(roots, new Comparator<VCSFileProxy>() {
                     @Override
-                    public int compare(File f1, File f2) {
+                    public int compare(VCSFileProxy f1, VCSFileProxy f2) {
                         return f1.getName().compareTo(f2.getName());
                     }
                 });
-                final LinkedHashMap<File, Map<String, String>> properties = new LinkedHashMap<File, Map<String, String>>(roots.length);
+                final LinkedHashMap<VCSFileProxy, Map<String, String>> properties = new LinkedHashMap<VCSFileProxy, Map<String, String>>(roots.length);
                 cache = Subversion.getInstance().getStatusCache();
-                for (File root : roots) {
+                for (VCSFileProxy root : roots) {
                     FileInformation fi = cache.getStatus(root);
                     LinkedHashMap<String, String> fileProps = new LinkedHashMap<String, String>();
                     properties.put(root, fileProps);
@@ -167,7 +167,7 @@ public final class VersioningInfoAction extends ContextAction {
                 });
             }
 
-            private void putPropsForVersioned(LinkedHashMap<String, String> fileProps, File file, FileInformation fi) {
+            private void putPropsForVersioned(LinkedHashMap<String, String> fileProps, VCSFileProxy file, FileInformation fi) {
                 ISVNStatus status = fi.getEntry(file);
                 if (status == null || status.getUrl() == null) {
                     // still probably unversioned

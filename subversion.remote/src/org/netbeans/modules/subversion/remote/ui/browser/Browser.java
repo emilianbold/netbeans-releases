@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.browser;
+package org.netbeans.modules.subversion.remote.ui.browser;
 
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
@@ -57,11 +57,15 @@ import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNDirEntry;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -69,10 +73,6 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Handles the UI for repository browsing.
@@ -412,7 +412,9 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
             if((mode & BROWSER_FILES_SELECTION_ONLY) == BROWSER_FILES_SELECTION_ONLY) {
                 if(checkForNodeType(newSelection, SVNNodeKind.DIR))  {
                     panel.warning(org.openide.util.NbBundle.getMessage(Browser.class, "LBL_Warning_FileSelectionOnly"));        // NOI18N
-                    if(initialSelectionDone) keepWarning = true;
+                    if(initialSelectionDone) {
+                        keepWarning = true;
+                    }
                     throw new PropertyVetoException("", evt);                                                                   // NOI18N
                 }
             }
@@ -421,7 +423,9 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
             if((mode & BROWSER_FOLDERS_SELECTION_ONLY) == BROWSER_FOLDERS_SELECTION_ONLY) {
                 if(checkForNodeType(newSelection, SVNNodeKind.FILE)) {
                     panel.warning(org.openide.util.NbBundle.getMessage(Browser.class, "LBL_Warning_FolderSelectionOnly"));      // NOI18N
-                    if(initialSelectionDone) keepWarning = true;
+                    if(initialSelectionDone) {
+                        keepWarning = true;
+                    }
                     throw new PropertyVetoException("", evt);                                                                   // NOI18N
                 }
             }
@@ -449,7 +453,9 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
             }
             if(!selectionIsAtLevel(newSelection, getNodeLevel(selectedNode))) {
                 panel.warning(org.openide.util.NbBundle.getMessage(Browser.class, "LBL_Warning_NoMultiSelection"));     // NOI18N
-                if(initialSelectionDone) keepWarning = true;
+                if(initialSelectionDone) {
+                    keepWarning = true;
+                }
                 throw new PropertyVetoException("", evt);                                                               // NOI18N
             }
         }
@@ -523,7 +529,9 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
     @Override
     public void treeExpanded(TreeExpansionEvent event) {
         Object obj = event.getPath().getLastPathComponent();
-        if(obj == null) return;
+        if(obj == null) {
+            return;
+        }
         Node n = Visualizer.findNode(obj);
         if(n instanceof RepositoryPathNode) {
             RepositoryPathNode node = (RepositoryPathNode) n;

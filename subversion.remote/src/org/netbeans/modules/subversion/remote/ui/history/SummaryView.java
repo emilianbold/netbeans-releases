@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -49,33 +49,31 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.update.RevertModifications;
-import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
-import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.options.AnnotationColorProvider;
-import org.netbeans.modules.subversion.ui.diff.Setup;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.options.AnnotationColorProvider;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * @author Maros Sandor
@@ -333,7 +331,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             }
 
             @Override
-            public File[] getRoots () {
+            public VCSFileProxy[] getRoots () {
                 return master.getRoots();
             }
 
@@ -390,7 +388,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
                 RepositoryRevision.Event event = ((SvnLogEvent) selection[i]).getEvent();
                 drevList.add(event);
-                File file = event.getFile();
+                VCSFileProxy file = event.getFile();
 
                 if(!deleted && file != null && !file.exists() && event.getChangedPath().getAction() == 'D') {
                     deleted = true;
@@ -491,7 +489,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                     Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            Utils.openFile(FileUtil.normalizeFile(drev[0].getFile()));
+                            org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(drev[0].getFile().normalizeFile());
                         }
                     });
                 }
@@ -514,7 +512,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             @Override
             public void perform() {
                 for(RepositoryRevision.Event event : events) {
-                    File file = event.getFile();
+                    VCSFileProxy file = event.getFile();
                     boolean wasDeleted = event.getChangedPath().getAction() == 'D';
                     SVNUrl repoUrl = event.getLogInfoHeader().getRepositoryRootUrl();
                     SVNUrl fileUrl = repoUrl.appendPath(event.getChangedPath().getPath());                    

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.browser;
+package org.netbeans.modules.subversion.remote.ui.browser;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -51,17 +51,17 @@ import java.sql.Date;
 import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JButton;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPathNode.RepositoryPathEntry;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPathNode.RepositoryPathEntry;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * Creates a new folder in the browser
@@ -161,7 +161,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                         segmentNode = nextChildNode;
                     } else {
                         allNodesExists = false;
-                        RepositoryPathEntry entry = new RepositoryPathEntry(newFile, SVNNodeKind.DIR, new SVNRevision(0), new Date(System.currentTimeMillis()), ""); // XXX get author
+                        RepositoryPathEntry entry = new RepositoryPathEntry(newFile, SVNNodeKind.DIR, new SVNRevision.Number(0), new Date(System.currentTimeMillis()), ""); // XXX get author
                         Node node = RepositoryPathNode.createRepositoryPathNode(getBrowser(), entry);
                         segmentNode.getChildren().add(new Node[] {node});
                         segmentNode = node;

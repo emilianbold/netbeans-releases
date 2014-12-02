@@ -40,14 +40,13 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataObject;
@@ -71,7 +70,7 @@ public class SvnMetadataFolderLoader extends DataLoader {
             return null;
         }
 
-        File f = FileUtil.toFile(fo);
+        VCSFileProxy f = VCSFileProxy.createFileProxy(fo);
         if(f == null) {
             return null;
         }

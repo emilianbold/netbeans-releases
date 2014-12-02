@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.blame;
+package org.netbeans.modules.subversion.remote.ui.blame;
 
 import java.io.Reader;
 import java.io.IOException;
@@ -56,7 +56,7 @@ import java.util.List;
  */
 public final class LinesReader extends  Reader {
 
-    private List lines;
+    private final List lines;
     private int lineIndex;
     private int columnIndex;
     private boolean closed;
@@ -68,15 +68,23 @@ public final class LinesReader extends  Reader {
         this.lines = lines;
     }
 
+    @Override
     public void close() throws IOException {
-        if (closed) throw new IOException("Closed"); // NOI18N
+        if (closed) {
+            throw new IOException("Closed"); // NOI18N
+        }
         closed = true;
     }
 
+    @Override
     public int read(char cbuf[], int off, int len) throws IOException {
-        if (closed) throw new IOException("Closed"); // NOI18N
+        if (closed) {
+            throw new IOException("Closed"); // NOI18N
+        }
 
-        if (lineIndex >= lines.size()) return -1;
+        if (lineIndex >= lines.size()) {
+            return -1;
+        }
 
         AnnotateLine aline = (AnnotateLine) lines.get(lineIndex);
         String line = aline.getContent() + "\n"; // NOI18N

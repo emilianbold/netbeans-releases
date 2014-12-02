@@ -42,9 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
-
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
 /**
  *

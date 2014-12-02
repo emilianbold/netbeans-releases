@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,11 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -59,17 +56,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLKeyException;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientFactory.ConnectionType;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory.ConnectionType;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -86,7 +82,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
     private static final String DISPOSE_METHOD = "dispose"; //NOI18N
     private static final String CHECKOUT_METHOD = "checkout"; //NOI18N
-    private static final Set<String> ADMINISTRATIVE_METHODS = new HashSet<>(Arrays.asList(
+    private static final Set<String> ADMINISTRATIVE_METHODS = new HashSet<String>(Arrays.asList(
         "addConflictResolutionCallback", //NOI18N
         "addNotifyListener", //NOI18N
         "addPasswordCallback", //NOI18N
@@ -109,7 +105,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         CANCEL_OPERATION,
         DISPOSE_METHOD
     ));
-    private static final Set<String> READ_ONLY_METHODS = new HashSet<>(Arrays.asList(new String[] {
+    private static final Set<String> READ_ONLY_METHODS = new HashSet<String>(Arrays.asList(new String[] {
         "annotate", //NOI18N
         "createPatch", //NOI18N
         "diff", //NOI18N
@@ -136,7 +132,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         "propertyGet" //NOI18N
     }));
     
-    private final ISVNClientAdapter adapter;
+    private final SvnClient adapter;
     private final SvnClientDescriptor desc;
     private final Cancellable cancellable;
     private SvnProgressSupport support;
@@ -144,11 +140,11 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private static boolean metricsAlreadyLogged = false;
     private final ConnectionType connectionType;
     private volatile boolean disposed;
-    private static final Map<String, Mutex> locks = new HashMap<>(5);
+    private static final Map<String, Mutex> locks = new HashMap<String, Mutex>(5);
     private static final ConfigFiles SENSITIVE_CONFIG_FILES = new ConfigFiles();
     private static final boolean KEEP_SERVERS_FILE = Boolean.getBoolean("versioning.subversion.keepServersFile");
     
-    public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
+    public SvnClientInvocationHandler (SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
         
         assert adapter  != null;
         assert desc     != null;
@@ -315,10 +311,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         String client = null;
         if(SvnClientFactory.isCLI()) {
             client = "CLI";
-        } else if(SvnClientFactory.isJavaHl()) {
-            client = "JAVAHL";
-        } else if(SvnClientFactory.isSvnKit()) {
-            client = "SVNKIT";
         } else {
             Subversion.LOG.warning("Unknown client type!");            
         }
@@ -343,13 +335,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 || args == null || isClientAdministrativMethod(method.getName())) {
             return null;
         } else {
-            File root = null;
+            VCSFileProxy root = null;
             for (Object o : args) {
-                if (o instanceof File) {
-                    File f = (File) o;
+                if (o instanceof VCSFileProxy) {
+                    VCSFileProxy f = (VCSFileProxy) o;
                     root = getRoot(method.getName(), f);
-                } else if (o instanceof File[]) {
-                    for (File f : (File[]) o) {
+                } else if (o instanceof VCSFileProxy[]) {
+                    for (VCSFileProxy f : (VCSFileProxy[]) o) {
                         root = getRoot(method.getName(), f);
                         if (root != null) {
                             break;
@@ -361,13 +353,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 }
             }
             if (root != null) {
-                return getLock(root.getAbsolutePath());
+                return getLock(root.getPath());
             }
         }
         return null;
     }
 
-    private static File getRoot (String methodName, File f) {
+    private static VCSFileProxy getRoot (String methodName, VCSFileProxy f) {
         if (CHECKOUT_METHOD.equals(methodName)) {
             return f;
         } else {
@@ -429,7 +421,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }
         }
 
-        if( ISVNClientAdapter.class.isAssignableFrom(declaringClass) ) {
+        if( SvnClient.class.isAssignableFrom(declaringClass) ) {
             // Cliet Adapter
             if(support != null) {
                 support.setCancellableDelegate(cancellable);
@@ -511,9 +503,9 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         super.finalize();
     }
 
-    private static class ConfigFiles extends HashMap<File, Integer> {
+    private static class ConfigFiles extends HashMap<VCSFileProxy, Integer> {
 
-        public synchronized void add (File file) {
+        public synchronized void add (VCSFileProxy file) {
             Integer currentCounter = get(file);
             if (currentCounter == null) {
                 currentCounter = 0;
@@ -522,7 +514,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             put(file, currentCounter);
         }
 
-        public synchronized void decrease (File file) {
+        public synchronized void decrease (VCSFileProxy file) {
             Integer currentCounter = get(file);
             if (currentCounter == null) {
                 currentCounter = 1;

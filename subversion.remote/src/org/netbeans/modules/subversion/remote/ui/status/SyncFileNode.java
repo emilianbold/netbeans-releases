@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.status;
+package org.netbeans.modules.subversion.remote.ui.status;
 
 import java.io.IOException;
 import org.openide.nodes.*;
@@ -52,20 +52,20 @@ import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
-import org.netbeans.modules.subversion.ui.diff.DiffAction;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
-import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.WorkingCopyAttributesCache;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.remote.ui.update.ResolveConflictsAction;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * The node that is rendered in the SyncTable view. It gets values to display from the
@@ -107,7 +107,7 @@ public class SyncFileNode extends AbstractNode {
      * Careful, returned file may not be normalized
      * @return 
      */
-    public File getFile() {
+    public VCSFileProxy getFile() {
         return node.getFile();
     }
 
@@ -158,7 +158,9 @@ public class SyncFileNode extends AbstractNode {
     }
 
     private void initProperties() {
-        if (node.getFile().isDirectory()) setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif"); // NOI18N
+        if (node.getFile().isDirectory()) {
+            setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif"); // NOI18N
+        }
 
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();

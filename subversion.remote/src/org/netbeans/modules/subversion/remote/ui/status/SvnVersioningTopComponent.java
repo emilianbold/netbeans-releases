@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.status;
+package org.netbeans.modules.subversion.remote.ui.status;
 
 import javax.swing.SwingUtilities;
 import org.openide.util.*;
@@ -50,13 +50,17 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.subversion.util.Context;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.io.*;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Top component of the Versioning view.
@@ -67,7 +71,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
    
     private static final long serialVersionUID = 1L;    
     
-    private VersioningPanel         syncPanel;
+    private final VersioningPanel         syncPanel;
     private Context                 context;
     private String                  contentTitle;
     private String                  branchTitle;
@@ -87,10 +91,12 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         add(syncPanel);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
 
+    @Override
     protected void componentActivated() {
         updateTitle();
         syncPanel.focus(true);
@@ -101,6 +107,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         syncPanel.focus(false);
     }
 
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(context);
@@ -108,6 +115,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         out.writeLong(lastUpdateTimestamp);
     }
 
+    @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
         context = (Context) in.readObject();
@@ -116,17 +124,21 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         syncPanel.deserialize();
     }
 
+    @Override
     protected void componentOpened() {
         super.componentOpened();
         refreshContent();
     }
 
+    @Override
     protected void componentClosed() {
         super.componentClosed();
     }
 
     private void refreshContent() {
-        if (syncPanel == null) return;  // the component is not showing => nothing to refresh
+        if (syncPanel == null) {
+            return;  // the component is not showing => nothing to refresh
+        }
         updateTitle();
         syncPanel.setContext(context);        
     }
@@ -161,6 +173,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     private void updateTitle() {
         final String age = computeAge(System.currentTimeMillis() - lastUpdateTimestamp);
         SwingUtilities.invokeLater(new Runnable (){
+            @Override
             public void run() {
                 if (contentTitle == null) {
                     setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
@@ -248,11 +261,13 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     }
     
     private String getContextFilesList(Context ctx, String def) {
-        if (ctx == null || ctx.getRootFiles().length == 0) return def;
-        StringBuffer sb = new StringBuffer(200);
+        if (ctx == null || ctx.getRootFiles().length == 0) {
+            return def;
+        }
+        StringBuilder sb = new StringBuilder(200);
         sb.append("<html>"); // NOI18N
-        for (File file : ctx.getRootFiles()) {
-            sb.append(file.getAbsolutePath());
+        for (VCSFileProxy file : ctx.getRootFiles()) {
+            sb.append(file.getPath());
             sb.append("<br>"); // NOI18N
         }
         sb.delete(sb.length() - 4, Integer.MAX_VALUE);
@@ -264,10 +279,12 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         return context != null && context.getRootFiles().length > 0;
     }
 
+    @Override
     protected String preferredID() {
         return "synchronize";    // NOI18N       
     }
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }

@@ -40,13 +40,13 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.util;
+package org.netbeans.modules.subversion.remote.util;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 

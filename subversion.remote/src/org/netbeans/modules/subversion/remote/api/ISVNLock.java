@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.api;
 
-package org.netbeans.modules.subversion.client;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import java.util.Date;
 
 /**
  *
- * @author ondra
+ * @author Alexander Simon
  */
-class JhlClientCallback extends SvnClientCallback {
+public interface ISVNLock {
 
-    private static final Logger LOG = Logger.getLogger("versioning.subversion.passwordCallback.javahl"); //NOI18N
-    
-    public JhlClientCallback(SVNUrl repositoryUrl, int handledExceptions) {
-        super(repositoryUrl, handledExceptions);
-    }
+    public String getOwner();
 
-    @Override
-    public boolean askYesNo(String realm, String question, boolean yesIsDefault) {
-        // TODO implement me
-        return false;
-    }
+    public String getPath();
 
-    @Override
-    public boolean prompt(String realm, String username, boolean maySave) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "prompt for {0}, {1}", new Object[] { realm, username }); //NOI18N
-        }
-        return true;
-    }
+    public String getToken();
 
-    @Override
-    public String askQuestion(String realm, String question, boolean showAnswer, boolean maySave) {
-        // TODO implement me
-        return null;
-    }
+    public String getComment();
 
-    @Override
-    public boolean promptSSH(String realm, String username, int sshPort, boolean maySave) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "promptSSH for {0} [{1}]", new Object[] { realm, sshPort }); //NOI18N
-        }
-        return true;
-    }
+    public Date getCreationDate();
 
-    @Override
-    public boolean promptSSL(String realm, boolean maySave) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "promptSSL for {0}", realm); //NOI18N
-        }
-        return true;
-    }
-
-    @Override
-    public boolean promptUser(String realm, String username, boolean maySave) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "promptUser for {0}, {1}", new Object[] { realm, username }); //NOI18N
-        }
-        return true;
-    }
+    public Date getExpirationDate();
 }

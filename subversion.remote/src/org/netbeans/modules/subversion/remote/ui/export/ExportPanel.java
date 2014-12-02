@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.export;
+package org.netbeans.modules.subversion.remote.ui.export;
 
 /**
  *
@@ -82,7 +82,7 @@ public class ExportPanel extends javax.swing.JPanel {
             }
         });
 
-        invalidValuesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/info.png"))); // NOI18N
+        invalidValuesLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/info.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(invalidValuesLabel, "Error");
 
         org.openide.awt.Mnemonics.setLocalizedText(scanCheckBox, "&Scan for NetBeans projects after export");

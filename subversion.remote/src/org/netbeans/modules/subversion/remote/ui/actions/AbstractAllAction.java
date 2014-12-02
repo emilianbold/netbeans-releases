@@ -42,11 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.actions;
+package org.netbeans.modules.subversion.remote.ui.actions;
 
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.*;
-import org.netbeans.modules.subversion.util.*;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 
@@ -71,6 +71,7 @@ public abstract class AbstractAllAction extends SystemAction {
     /**
      * Enabled for at least one opened project
      */
+    @Override
     public boolean isEnabled() {
         if (super.isEnabled()) {
             Project projects[] = OpenProjects.getDefault().getOpenProjects();
@@ -84,6 +85,7 @@ public abstract class AbstractAllAction extends SystemAction {
         return false;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }

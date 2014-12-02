@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote;
 
-package org.netbeans.modules.subversion;
-
-import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.client.*;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.tigris.subversion.svnclientadapter.*;
-import org.openide.util.RequestProcessor;
-import java.io.*;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
-import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.modules.subversion.config.PasswordFile;
-import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnClientRefreshHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.config.PasswordFile;
+import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
+import org.netbeans.modules.subversion.remote.ui.ignore.IgnoreAction;
+import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
 
 /**
  * A singleton Subversion manager class, center of Subversion module. Use {@link #getInstance()} to get access
@@ -79,7 +91,7 @@ import org.openide.util.Utilities;
  * @author Maros Sandor
  */
 public class Subversion {
-
+    
     /**
      * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
      * if all annotaions changed.
@@ -118,7 +130,7 @@ public class Subversion {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote");
 
     private Result<? extends VCSHyperlinkProvider> hpResult;
 
@@ -134,7 +146,7 @@ public class Subversion {
 
     private Subversion() {
     }
-
+    
     private void init() {
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator(this);
@@ -145,7 +157,7 @@ public class Subversion {
 
         asyncInit();
     }
-
+    
     public void attachListeners(SubversionVCS svcs) {
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
@@ -211,9 +223,6 @@ public class Subversion {
     }
 
     public boolean checkClientAvailable() {
-        if(SvnClientFactory.wasJavahlCrash()) {
-            throw new RuntimeException("It appears that subversion javahl initialization caused trouble in a previous Netbeans session. Please report.");
-        }
         try {
             SvnClientFactory.checkClientAvailable();
         } catch (SVNClientException ex) {
@@ -257,7 +266,7 @@ public class Subversion {
             if(rc != null) {
                 username = rc.getUsername();
                 password = rc.getPassword();
-            } else if(!Utilities.isWindows()) {
+            } else {
                 PasswordFile pf = PasswordFile.findFileForUrl(repositoryUrl);
                 if(pf != null) {
                     username = pf.getUsername();
@@ -278,24 +287,24 @@ public class Subversion {
         return client;
     }
 
-    public SvnClient getClient(File file) throws SVNClientException {
+    public SvnClient getClient(VCSFileProxy file) throws SVNClientException {
         return getClient(file, null);
     }
 
-    public SvnClient getClient(File file, SvnProgressSupport support) throws SVNClientException {
+    public SvnClient getClient(VCSFileProxy file, SvnProgressSupport support) throws SVNClientException {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
-        assert repositoryUrl != null : "Unable to get repository: " + file.getAbsolutePath() + " is probably unmanaged."; // NOI18N
+        assert repositoryUrl != null : "Unable to get repository: " + file.getPath() + " is probably unmanaged."; // NOI18N
 
         return repositoryUrl == null ? null : getClient(repositoryUrl, support);
     }
 
     public SvnClient getClient(Context ctx, SvnProgressSupport support) throws SVNClientException {
-        File[] roots = ctx.getRootFiles();
+        VCSFileProxy[] roots = ctx.getRootFiles();
         SVNUrl repositoryUrl = null;
-        for (File root : roots) {
+        for (VCSFileProxy root : roots) {
             // XXX #168094 logging
             if (!SvnUtils.isManaged(root)) {
-                Subversion.LOG.log(Level.WARNING, "getClient: unmanaged file in context: {0}", root.getAbsoluteFile()); //NOI18N
+                Subversion.LOG.log(Level.WARNING, "getClient: unmanaged file in context: {0}", root.getPath()); //NOI18N
             }
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
             if (repositoryUrl != null) {
@@ -310,8 +319,8 @@ public class Subversion {
             // XXX #168094 logging
             // preventing NPE in getClient(repositoryUrl, support)
             StringBuilder sb = new StringBuilder("Cannot determine repositoryRootUrl for selected context:"); //NOI18N
-            for (File root : roots) {
-                sb.append("\n").append(root.getAbsolutePath());         //NOI18N
+            for (VCSFileProxy root : roots) {
+                sb.append("\n").append(root.getPath());         //NOI18N
             }
             throw new SVNClientException(sb.toString());
         }
@@ -389,13 +398,13 @@ public class Subversion {
      * @return true if file is listed in parent's ignore list
      * or IDE thinks it should be.
      */
-    boolean isIgnored(File file) {
+    boolean isIgnored(VCSFileProxy file) {
         String name = file.getName();
-        file = FileUtil.normalizeFile(file);
+        file = file.normalizeFile();
 
         // ask SVN
 
-        final File parent = file.getParentFile();
+        final VCSFileProxy parent = file.getParentFile();
         if (parent != null) {
             int pstatus = fileStatusCache.getStatus(parent).getStatus();
             if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
@@ -423,7 +432,7 @@ public class Subversion {
             }
         }
 
-        if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
+        if (SharabilityQuery.getSharability(VCSFileProxySupport.toURI(file)) == SharabilityQuery.Sharability.NOT_SHARABLE) {
             try {
                 // BEWARE: In NetBeans VISIBILTY == SHARABILITY ... and we hide Locally Removed folders => we must not Ignore them by mistake
                 FileInformation info = fileStatusCache.getCachedStatus(file); // getStatus may cause stack overflow
@@ -431,7 +440,7 @@ public class Subversion {
                     return false;
                 }
                 // if IDE-ignore-root then propagate IDE opinion to Subversion svn:ignore
-                if (SharabilityQuery.getSharability(parent) !=  SharabilityQuery.NOT_SHARABLE) {
+                if (SharabilityQuery.getSharability(VCSFileProxySupport.toURI(parent)) !=  SharabilityQuery.Sharability.NOT_SHARABLE) {
                     if ((fileStatusCache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
                         IgnoreAction.ignore(file);
                     }
@@ -489,13 +498,12 @@ public class Subversion {
         return rp;
     }
 
-    private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
+    private final Set<VCSFileProxy> unversionedParents = Collections.synchronizedSet(new HashSet<VCSFileProxy>(20));
     /**
      * Delegates to SubversionVCS.getTopmostManagedAncestor
      * @param file a file for which the topmost managed ancestor shall be looked up.
      * @return topmost managed ancestor for the given file
-     */
-    public File getTopmostManagedAncestor (File file) {
+     */    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
         }
@@ -503,7 +511,7 @@ public class Subversion {
             Subversion.LOG.fine(" cached as unversioned");
             return null;
     }
-        File metadataRoot = null;
+        VCSFileProxy metadataRoot = null;
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             Subversion.LOG.fine(" part of metaddata");
             for (;file != null; file = file.getParentFile()) {
@@ -517,8 +525,8 @@ public class Subversion {
                 }
             }
         }
-        File topmost = null;
-        Set<File> done = new HashSet<File>();
+        VCSFileProxy topmost = null;
+        Set<VCSFileProxy> done = new HashSet<VCSFileProxy>();
         for (; file != null; file = file.getParentFile()) {
             if(unversionedParents.contains(file)) {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
@@ -526,9 +534,11 @@ public class Subversion {
                 }
                 break;
             }
-            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
+            if (VersioningSupport.isExcluded(file)) {
+                break;
+            }
             // is the folder a special one where metadata should not be looked for?
-            boolean forbiddenFolder = org.netbeans.modules.versioning.util.Utils.isForbiddenFolder(file.getAbsolutePath());
+            boolean forbiddenFolder = Utils.isForbiddenFolder(file);
             if (!forbiddenFolder && SvnUtils.hasMetadata(file)) {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
                     Subversion.LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
@@ -565,7 +575,7 @@ public class Subversion {
         return fileStatusProvider;
     }
 
-    VCSInterceptor getVCSInterceptor() {
+    VCSInterceptor getInterceptor() {
         return filesystemHandler;
     }
 
@@ -588,8 +598,8 @@ public class Subversion {
      *
      * @param files files to chage the annotations for
      */
-    public void refreshAnnotations(File... files) {
-        Set<File> s = new HashSet<File>(Arrays.asList(files));
+    public void refreshAnnotations(VCSFileProxy ... files) {
+        Set<VCSFileProxy> s = new HashSet<VCSFileProxy>(Arrays.asList(files));
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, s);
     }
 
@@ -598,8 +608,8 @@ public class Subversion {
      *
      * @param files files to chage the annotations and sidebars for
      */
-    public void refreshAnnotationsAndSidebars (File... files) {
-        Set<File> s = files == null ? null : new HashSet<>(Arrays.asList(files));
+    public void refreshAnnotationsAndSidebars (VCSFileProxy... files) {
+        Set<VCSFileProxy> s = files == null ? null : new HashSet<VCSFileProxy>(Arrays.asList(files));
         support.firePropertyChange(PROP_BASE_FILE_CHANGED, null, s);
     }
 
@@ -625,13 +635,13 @@ public class Subversion {
         }
     }
 
-    public void getOriginalFile(File workingCopy, File originalFile) {
+    void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
         if ((info.getStatus() & STATUS_DIFFABLE) == 0) {
             return;
         }
 
-        File original = null;
+        VCSFileProxy original = null;
         try {
             SvnClientFactory.checkClientAvailable();
             original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
@@ -642,14 +652,14 @@ public class Subversion {
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
         } catch (SVNClientException ex) {
-            Subversion.LOG.log(Level.INFO, "Subversion.getOriginalFile: file is managed but svn client is unavailable (file {0})", workingCopy.getAbsolutePath()); //NOI18N
+            Subversion.LOG.log(Level.INFO, "Subversion.getOriginalFile: file is managed but svn client is unavailable (file {0})", workingCopy.getPath()); //NOI18N
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.log(Level.FINE, null, ex);
             }
         }
     }
-    
-    /**
+
+        /**
      *
      * @return registered hyperlink providers
      */
@@ -666,3 +676,4 @@ public class Subversion {
         return Collections.unmodifiableList(providersList);
     }
 }
+

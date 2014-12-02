@@ -41,10 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.config;
+package org.netbeans.modules.subversion.remote.config;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -59,18 +58,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.ini4j.Config;
 import org.ini4j.Ini;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnClientFactory.ConnectionType;
-import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory.ConnectionType;
+import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.NetworkSettings;
 import org.openide.util.Utilities;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -186,10 +185,10 @@ public class SvnConfigFiles {
      *     
      * @param host the host
      */
-    public File storeSvnServersSettings(SVNUrl url, ConnectionType connType) {
+    public VCSFileProxy storeSvnServersSettings(SVNUrl url, ConnectionType connType) {
                         
         assert url != null : "can\'t do anything for a null host";     // NOI18N
-        File sensitiveConfigFile = null;
+        VCSFileProxy sensitiveConfigFile = null;
                          
         if(!(url.getProtocol().startsWith("http") ||                    //NOI18N
              url.getProtocol().startsWith("https") ||                   //NOI18N
@@ -210,24 +209,14 @@ public class SvnConfigFiles {
             RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl);
             if (rc != null && url.getProtocol().startsWith("svn+")) {   //NOI18N
                 // must set tunnel info for the repository url
-                if (connType == ConnectionType.svnkit) {
-                    // hack for svnkit and ssh
-                    // ssh port is read only from ssh tunnel info and considered valid only when usernam and password are not empty
-                    // see implementation in SvnKit: org.tmatesoft.svn.core.internal.wc.DefaultSVNAuthenticationManager.getDefaultSSHAuthentication()
-                    // weird and ugly
-                    setExternalCommand("ssh", rc.getSshPortNumber() > 0 ? "ssh -p " + rc.getSshPortNumber() + " -P " + rc.getSshPortNumber() + " -l user -pw password" : "");
-                    nbGlobalSection.put("store-auth-creds", "yes");                                // NOI18N
-                    nbGlobalSection.put("store-passwords", "no");                                  // NOI18N
-                } else {
-                    setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
-                }
+                setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
             }
             boolean hasPassphrase = false;
             if(url.getProtocol().startsWith("https")) {
                 hasPassphrase = setSSLCert(rc, nbGlobalSection);
             }
             hasPassphrase = setProxy(url, nbGlobalSection) | hasPassphrase;
-            File configFile = storeIni(nbServers, "servers"); //NOI18N
+            VCSFileProxy configFile = storeIni(nbServers, "servers"); //NOI18N
             recentUrl = url.toString();
             if (hasPassphrase) {
                 sensitiveConfigFile = configFile;
@@ -340,9 +329,9 @@ public class SvnConfigFiles {
         return section;
     }
     
-    private File storeIni (Ini ini, String iniFile) {
+    private VCSFileProxy storeIni (Ini ini, String iniFile) {
         BufferedOutputStream bos = null;
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
+        VCSFileProxy file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
         try {
             file.getParentFile().mkdirs();
             ini.store(bos = FileUtils.createOutputStream(file));
@@ -527,7 +516,7 @@ public class SvnConfigFiles {
 
         patcher.patch(systemIniFile);
 
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + File.separatorChar + fileName)); // NOI18N
+        VCSFileProxy file = FileUtil.normalizeFile(new File(getNBConfigPath() + File.separatorChar + fileName)); // NOI18N
         BufferedOutputStream bos = null;
         try {
             file.getParentFile().mkdirs();
@@ -561,7 +550,7 @@ public class SvnConfigFiles {
     private Ini loadSystemIniFile(String fileName) {
         // config files from userdir
         String filePath = getUserConfigPath() + "/" + fileName;                         // NOI18N
-        File file = FileUtil.normalizeFile(new File(filePath));
+        VCSFileProxy file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
         try {            
             system = new Ini(new FileReader(file));

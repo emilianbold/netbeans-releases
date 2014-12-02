@@ -42,14 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.subversion.remote.ui.commit;
 
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.*;
-import org.netbeans.modules.subversion.ui.actions.*;
-import org.netbeans.modules.subversion.util.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -57,11 +52,19 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import org.tigris.subversion.svnclientadapter.*;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Delete action enabled for new local files (not yet in repository).
@@ -73,14 +76,17 @@ public final class DeleteLocalAction extends ContextAction {
 
     public static final int LOCALLY_DELETABLE_MASK = FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
+    @Override
     protected String getBaseName(Node [] activatedNodes) {
         return "Delete";  // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return LOCALLY_DELETABLE_MASK;
     }
     
+    @Override
     protected void performContextAction(final Node[] nodes) {
         NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt")); // NOI18N
         descriptor.setTitle(NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title")); // NOI18N
@@ -94,6 +100,7 @@ public final class DeleteLocalAction extends ContextAction {
         
         final Context ctx = getContext(nodes);
         ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
+            @Override
             public void perform() {
                 performDelete(ctx, this);
             }
@@ -114,7 +121,7 @@ public final class DeleteLocalAction extends ContextAction {
         if(support.isCanceled()) {
             return;
         }
-        final File[] files = ctx.getFiles();
+        final VCSFileProxy[] files = ctx.getFiles();
         try {
             SvnUtils.runWithoutIndexing(new Callable<Void>() {
                 @Override
@@ -124,8 +131,8 @@ public final class DeleteLocalAction extends ContextAction {
                             return null;
                         }
 
-                        File file = files[i];
-                        FileObject fo = FileUtil.toFileObject(file);
+                        VCSFileProxy file = files[i];
+                        FileObject fo = file.toFileObject();
                         if (fo != null) {
                             FileLock lock = null;
                             try {
@@ -137,7 +144,7 @@ public final class DeleteLocalAction extends ContextAction {
                                 lock = fo.lock();                    
                                 fo.delete(lock);       
                             } catch (IOException e) {
-                                Subversion.LOG.log(Level.SEVERE, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getAbsolutePath()), e); // NOI18N
+                                Subversion.LOG.log(Level.SEVERE, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getPath()), e); // NOI18N
                             } finally {
                                 if (lock != null) {
                                     lock.releaseLock();

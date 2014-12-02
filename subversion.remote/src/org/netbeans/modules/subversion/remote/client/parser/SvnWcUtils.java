@@ -41,21 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.client.parser;
+package org.netbeans.modules.subversion.remote.client.parser;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import org.netbeans.modules.subversion.client.*;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -68,15 +61,15 @@ public class SvnWcUtils {
     private static final String PROPS = "props";
     private static final String PROPS_BASE = "prop-base";
            
-    public static File getSvnFile(File file, String svnFileName) {
-        File svnFile = new File(file, SvnUtils.SVN_ADMIN_DIR + "/" + svnFileName);
+    public static VCSFileProxy getSvnFile(VCSFileProxy file, String svnFileName) {
+        VCSFileProxy svnFile = VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ADMIN_DIR + "/" + svnFileName);
         if(svnFile.canRead()) {
             return svnFile;
         }
         return null;                
     }
     
-    public static File getPropertiesFile(File file, boolean base) {
+    public static VCSFileProxy getPropertiesFile(VCSFileProxy file, boolean base) {
         if(file.isFile()) {            
             if (base) {
                 return getSvnFile(file.getParentFile(), PROPS_BASE + "/" + file.getName() + getPropFileNameSuffix(base));
@@ -96,7 +89,7 @@ public class SvnWcUtils {
         }        
     }
     
-    public static File getTextBaseFile(File file) throws IOException {
+    public static VCSFileProxy getTextBaseFile(VCSFileProxy file) throws IOException {
         return getSvnFile(file.getParentFile(), "text-base/" + file.getName() + ".svn-base");
     }
 
@@ -115,7 +108,7 @@ public class SvnWcUtils {
         return returnValue;        
     }
 
-    static File getEntriesFile(File file) throws IOException {
+    static VCSFileProxy getEntriesFile(VCSFileProxy file) throws IOException {
         return getSvnFile(!file.isDirectory() ? file.getParentFile() : file, ENTRIES);        
     }
     

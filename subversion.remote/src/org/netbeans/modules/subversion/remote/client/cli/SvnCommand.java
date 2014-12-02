@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,27 +34,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.client.cli;
+package org.netbeans.modules.subversion.remote.client.cli;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.cli.CommandlineClient.NotificationHandler;
-import org.netbeans.modules.subversion.client.cli.Parser.Line;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.versioning.util.Utils;
-import org.tigris.subversion.svnclientadapter.SVNBaseDir;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNBaseDir;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient.NotificationHandler;
+import org.netbeans.modules.subversion.remote.client.cli.Parser.Line;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Encapsulates a command given to a svn client. 
@@ -93,7 +91,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
     private boolean commandExecuted;
     private Arguments arguments;
     private CommandlineClient.NotificationHandler notificationHandler;
-    private File configDir;
+    private VCSFileProxy configDir;
     private String username;
     private String password;
     private File tmpFolder;
@@ -102,7 +100,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         arguments = new Arguments();        
     }
 
-    public void setConfigDir(File configDir) {
+    public void setConfigDir(VCSFileProxy configDir) {
         this.configDir = configDir;
     }
 
@@ -141,9 +139,9 @@ public abstract class SvnCommand implements CommandNotificationListener {
      */
     public abstract void prepareCommand(Arguments arguments) throws IOException;
 
-    protected abstract int getCommand();  
+    protected abstract ISVNNotifyListener.Command getCommand();  
 
-    public void setCommandWorkingDirectory(File... files) {
+    public void setCommandWorkingDirectory(VCSFileProxy... files) {
         notificationHandler.setBaseDir(SVNBaseDir.getBaseDir(files));        
     }
         
@@ -308,7 +306,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return targetFile.getAbsolutePath();
     }
 
-    protected void config(File configDir, String username, String password, Arguments arguments) {
+    protected void config(VCSFileProxy configDir, String username, String password, Arguments arguments) {
         arguments.addConfigDir(configDir);
         arguments.add("--non-interactive");
         arguments.addCredentials(username, password);
@@ -347,14 +345,14 @@ public abstract class SvnCommand implements CommandNotificationListener {
             args.add(argument);
         }
 
-        public void add(File... files) {
-            for (File file : files) {
+        public void add(VCSFileProxy ... files) {
+            for (VCSFileProxy file : files) {
                 add(file);
             }            
         }
         
-        public void add(File file) {
-            String absolutePath = file.getAbsolutePath();
+        public void add(VCSFileProxy file) {
+            String absolutePath = file.getPath();
             if (absolutePath.indexOf('@') == -1) {
                 add(absolutePath);
             } else {
@@ -397,7 +395,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
             add(createTempCommandFile(paths));
         }
         
-        public void addFileArguments(File... files) throws IOException {        
+        public void addFileArguments(VCSFileProxy... files) throws IOException {        
             add("--targets");
             add(createTempCommandFile(files));
         }
@@ -438,7 +436,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
             add(msgFile);                               		
         }
         
-        public void addConfigDir(File configDir) {            
+        public void addConfigDir(VCSFileProxy configDir) {            
             if (configDir != null) {
                 arguments.add("--config-dir");
                 arguments.add(configDir);

@@ -39,26 +39,29 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.history.HistoryAction;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.util.*;
-import org.tigris.subversion.svnclientadapter.*;
 
 /**
  *
@@ -84,17 +87,17 @@ public class HistoryProvider implements VCSHistoryProvider {
     }
     
     @Override
-    public HistoryEntry[] getHistory(File[] files, Date fromDate) {
+    public HistoryEntry[] getHistory(VCSFileProxy[] files, Date fromDate) {
         
         try {
             SvnClient client = Subversion.getInstance().getClient(files[0]);
 
             List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
-            Map<String, Set<File>> rev2FileMap = new HashMap<String, Set<File>>();
+            Map<String, Set<VCSFileProxy>> rev2FileMap = new HashMap<String, Set<VCSFileProxy>>();
             Map<String, ISVNLogMessage> rev2LMMap = new HashMap<String, ISVNLogMessage>();
-            Map<File, SVNUrl> file2Copy = new HashMap<File, SVNUrl>();
+            Map<VCSFileProxy, SVNUrl> file2Copy = new HashMap<VCSFileProxy, SVNUrl>();
             SVNUrl repoUrl = null;
-            for (File file : files) {
+            for (VCSFileProxy file : files) {
                 FileInformation fi = Subversion.getInstance().getStatusCache().getStatus(file);
                 if ((fi.getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
                     continue;
@@ -134,9 +137,9 @@ public class HistoryProvider implements VCSHistoryProvider {
                 for (ISVNLogMessage m : messages) {
                     String r = m.getRevision().toString();
                     rev2LMMap.put(r, m);
-                    Set<File> s = rev2FileMap.get(r);
+                    Set<VCSFileProxy> s = rev2FileMap.get(r);
                     if(s == null) {
-                        s = new HashSet<File>();
+                        s = new HashSet<VCSFileProxy>();
                         rev2FileMap.put(r, s);
                     }
                     s.add(file);
@@ -144,8 +147,8 @@ public class HistoryProvider implements VCSHistoryProvider {
             }
 
             for(ISVNLogMessage m : rev2LMMap.values()) {
-                Set<File> s = rev2FileMap.get(m.getRevision().toString());
-                File[] involvedFiles = s.toArray(new File[s.size()]);
+                Set<VCSFileProxy> s = rev2FileMap.get(m.getRevision().toString());
+                VCSFileProxy[] involvedFiles = s.toArray(new VCSFileProxy[s.size()]);
                 HistoryEntry e = new HistoryEntry(
                     involvedFiles, 
                     m.getDate(), 
@@ -172,11 +175,11 @@ public class HistoryProvider implements VCSHistoryProvider {
     }
 
     @Override
-    public Action createShowHistoryAction(File[] files) {
+    public Action createShowHistoryAction(VCSFileProxy[] files) {
         return new OpenHistoryAction(files);
     }
 
-    public void fireHistoryChange(final File[] files) {
+    public void fireHistoryChange(final VCSFileProxy[] files) {
         final HistoryChangeListener[] la;
         synchronized(listeners) {
             la = listeners.toArray(new HistoryChangeListener[listeners.size()]);
@@ -193,19 +196,19 @@ public class HistoryProvider implements VCSHistoryProvider {
     
     private static class RevisionProviderImpl implements RevisionProvider {
         private final SVNRevision revision;
-        private final Map<File, SVNUrl> file2Copy;
+        private final Map<VCSFileProxy, SVNUrl> file2Copy;
         private final SVNUrl repoUrl;
 
-        public RevisionProviderImpl(SVNRevision svnRevision, SVNUrl repoUrl, Map<File, SVNUrl> file2Copy) {
+        public RevisionProviderImpl(SVNRevision svnRevision, SVNUrl repoUrl, Map<VCSFileProxy, SVNUrl> file2Copy) {
             this.revision = svnRevision;
             this.file2Copy = file2Copy;
             this.repoUrl = repoUrl;
         }
         
         @Override
-        public void getRevisionFile(File originalFile, File revisionFile) {
+        public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
             try {
-                File file;
+                VCSFileProxy file;
                 SVNUrl copyUrl = repoUrl != null ? file2Copy.get(originalFile) : null;
                 if(copyUrl != null) {
                     file = VersionsCache.getInstance().getFileRevision(repoUrl, copyUrl, revision.toString(), originalFile.getName());
@@ -228,8 +231,8 @@ public class HistoryProvider implements VCSHistoryProvider {
     }
 
     private static class OpenHistoryAction extends AbstractAction {
-        private final File[] files;
-        public OpenHistoryAction(File[] files) {
+        private final VCSFileProxy[] files;
+        public OpenHistoryAction(VCSFileProxy[] files) {
             this.files = files;
         }
         
@@ -238,12 +241,12 @@ public class HistoryProvider implements VCSHistoryProvider {
             openHistory(files);
         }
 
-        public void openHistory(final File[] files) {
+        public void openHistory(final VCSFileProxy[] files) {
             if(files == null || files.length == 0) {
                 return;
             }
-            if(!org.netbeans.modules.subversion.api.Subversion.isClientAvailable(true)) {
-                org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+            if(!Subversion.isClientAvailable(true)) {
+                Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
                 return;
             }
 
@@ -251,6 +254,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             * Open in AWT
             */
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     SearchHistoryAction.openHistory(files);
                 }
@@ -273,10 +277,10 @@ public class HistoryProvider implements VCSHistoryProvider {
         public ViewAction() {
             super(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_View"));
         }
-            @Override
-        protected void perform(HistoryEntry entry, Set<File> files) {
+        @Override
+        protected void perform(HistoryEntry entry, Set<VCSFileProxy> files) {
             SVNRevision.Number svnRevision = new SVNRevision.Number(Long.parseLong(entry.getRevision()));
-            view(svnRevision, false, files.toArray(new File[files.size()]));
+            view(svnRevision, false, files.toArray(new VCSFileProxy[files.size()]));
         }
     }
 
@@ -285,16 +289,16 @@ public class HistoryProvider implements VCSHistoryProvider {
             super(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_ShowAnnotations"));
         }
         @Override
-        protected void perform(HistoryEntry entry, Set<File> files) {
+        protected void perform(HistoryEntry entry, Set<VCSFileProxy> files) {
             SVNRevision.Number svnRevision = new SVNRevision.Number(Long.parseLong(entry.getRevision()));
-            view(svnRevision, true, files.toArray(new File[files.size()]));
+            view(svnRevision, true, files.toArray(new VCSFileProxy[files.size()]));
         }
     }
     
     private class RollbackAction extends HistoryAction {
         @Override
-        protected void perform(final HistoryEntry entry, final Set<File> files) {
-            final File file = files.iterator().next();
+        protected void perform(final HistoryEntry entry, final Set<VCSFileProxy> files) {
+            final VCSFileProxy file = files.iterator().next();
             SVNUrl repository;
             try {
                 repository = SvnUtils.getRepositoryRootUrl(file);
@@ -308,7 +312,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                 public void perform() {
                     try {
                         SVNUrl repoUrl = SvnUtils.getRepositoryRootUrl(file);
-                        for(File file : files) {
+                        for(VCSFileProxy file : files) {
                             SvnClient client = Subversion.getInstance().getClient(false);
                             ISVNInfo info = client.getInfo(file);
                             SVNUrl fileUrl = info.getUrl();
@@ -340,7 +344,7 @@ public class HistoryProvider implements VCSHistoryProvider {
         }
     }
     
-    private void view(final SVNRevision revision, final boolean showAnnotations, final File... files) {
+    private void view(final SVNRevision revision, final boolean showAnnotations, final VCSFileProxy... files) {
         if(files == null || files.length == 0) {
             return;
         }
@@ -349,7 +353,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             public void run() {
                 try {
                     SVNUrl repoUrl = SvnUtils.getRepositoryRootUrl(files[0]);
-                    for (File file : files) {
+                    for (VCSFileProxy file : files) {
                         SvnClient client = Subversion.getInstance().getClient(false);
                         ISVNInfo info = client.getInfo(file);
                         SVNUrl fileUrl = info.getUrl();

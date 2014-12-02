@@ -42,14 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.subversion.remote.ui.commit;
 
 import java.awt.Color;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.TableSorter;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.Subversion;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -66,10 +63,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.File;
 import java.util.*;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.subversion.FileInformation;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.openide.awt.Mnemonics;
 
@@ -103,7 +103,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     private String[]            columns;
     private Map<String, Integer>            sortByColumns;
     private CommitPanel commitPanel;
-    private Set<File> modifiedFiles = Collections.<File>emptySet();
+    private Set<VCSFileProxy> modifiedFiles = Collections.<VCSFileProxy>emptySet();
     
     
     public CommitTable(JLabel label, String[] columns, Map<String, Integer> sortByColumns) {
@@ -157,8 +157,12 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     private void setDefaultColumnSizes() {
         int width = table.getWidth();
         TableColumnModel columnModel = table.getColumnModel();
-        if (columns == null || columnModel == null) return; // unsure when this methed will be called (component realization) 
-        if (columnModel.getColumnCount() != columns.length) return; 
+        if (columns == null || columnModel == null) {
+            return; // unsure when this methed will be called (component realization) 
+        }
+        if (columnModel.getColumnCount() != columns.length) {
+            return;
+        } 
         if (columns.length == 4) {
             for (int i = 0; i < columns.length; i++) {
                 String col = columns[i];                                
@@ -248,7 +252,9 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     }
     
     void setColumns(String[] cols) {
-        if (Arrays.equals(columns, cols)) return;
+        if (Arrays.equals(columns, cols)) {
+            return;
+        }
         columns = cols;
         tableModel.setColumns(cols);
         setDefaultColumnSizes();
@@ -279,7 +285,9 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     void dataChanged() {
         int idx = table.getSelectedRow();
         tableModel.fireTableDataChanged();
-        if (idx != -1) table.getSelectionModel().addSelectionInterval(idx, idx);
+        if (idx != -1) {
+            table.getSelectionModel().addSelectionInterval(idx, idx);
+        }
     }
 
     public TableModel getTableModel() {
@@ -508,13 +516,13 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         this.commitPanel = panel;
     }
 
-    void setModifiedFiles(Set<File> modifiedFiles) {
+    void setModifiedFiles(Set<VCSFileProxy> modifiedFiles) {
         this.modifiedFiles = modifiedFiles;
     }
 
     private class CommitStringsCellRenderer extends DefaultTableCellRenderer {
 
-        private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
+        private final FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

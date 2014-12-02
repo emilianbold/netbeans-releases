@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
@@ -48,14 +48,14 @@ import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.JButton;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -64,8 +64,8 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
 public class UpdateTo implements PropertyChangeListener {
 
     private UpdateToPanel panel;
-    private JButton okButton;
-    private JButton cancelButton;
+    private final JButton okButton;
+    private final JButton cancelButton;
     private final RepositoryPaths revisionPath;
 
     /** Creates a new instance of UpdateTo */

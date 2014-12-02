@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
 import java.awt.*;
 import java.util.*;
@@ -106,11 +106,13 @@ public class DiffTopComponent extends TopComponent implements DiffSetupSource {
         panel.requestActive();
     }
 
+    @Override
     public Collection<Setup> getSetups() {
         DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
         return mainPanel.getSetups();
     }
 
+    @Override
     public String getSetupDisplayName() {
         DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
         return mainPanel.getSetupDisplayName();

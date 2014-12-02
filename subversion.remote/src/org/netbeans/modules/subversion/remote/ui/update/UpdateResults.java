@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.util.NbBundle;
@@ -51,9 +51,9 @@ import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.text.DateFormat;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 
 /**
  * Displays files that have been updated.
@@ -74,9 +74,11 @@ class UpdateResults extends JComponent {
         } else {
             final UpdateResultsTable urt = new UpdateResultsTable();
             Subversion.getInstance().getRequestProcessor().post(new Runnable () {
+                @Override
                 public void run() {
                     final UpdateResultNode[] nodes = createNodes();
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             urt.setTableModel(nodes);
                             add(urt.getComponent());
