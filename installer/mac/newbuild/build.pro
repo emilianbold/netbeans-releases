@@ -96,7 +96,7 @@
         <equals arg1="${build.jdk7}" arg2="1"/>
     </condition>
     
-    <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk_builds_path}/fcs/b17/bundles/macosx-x64"/>
+    <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk_builds_path}/latest/bundles/macosx-x64"/>
     <!-- e.g. 1.7.0_55 - jdk-7u55-fcs-bin-b07-macosx-x64-04_feb_2014.dmg -->
     <!-- e.g. 1.8.0 - jdk-8-fcs-bin-b129-macosx-x64-06_feb_2014.dmg -->
     <loadresource property="jdk.version.number">
