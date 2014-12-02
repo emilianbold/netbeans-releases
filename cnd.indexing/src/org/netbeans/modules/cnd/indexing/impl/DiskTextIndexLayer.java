@@ -181,14 +181,9 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
     
     @Override
     public void shutdown() {
+        closed.set(true);
         store();
         scheduleAtFixedRate.cancel(false);
-        try {
-            closed.set(true);
-            index.close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
 
     private static class StoreQueueEntry {
@@ -220,13 +215,15 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
         }
         try {
             index.store(false);
-        } catch (Index.IndexClosedException ex) {
-          if (!closed.get()) {
-              //closed
-              Exceptions.printStackTrace(ex);
-          }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+        if (closed.get()) {
+            try {
+                index.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         LOG.log(Level.FINE, "Cnd Text Index store took {0}ms", System.currentTimeMillis() - start);
     }
