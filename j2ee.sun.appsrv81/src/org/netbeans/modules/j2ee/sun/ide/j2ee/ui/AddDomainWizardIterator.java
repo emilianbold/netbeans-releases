@@ -58,7 +58,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.glassfish.spi.RegisterDatabase;
 import org.netbeans.modules.glassfish.spi.ExecSupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
@@ -517,7 +516,7 @@ public class AddDomainWizardIterator implements
                     ExecSupport ee= new ExecSupport();
                     process= Runtime.getRuntime().exec(arrnd);
                     pdcan = new PDCancel(process, domainDir+File.separator+domain);
-                    ph  = ProgressHandleFactory.createHandle(
+                    ph  = ProgressHandle.createHandle(
                             NbBundle.getMessage(AddDomainWizardIterator.class,"LBL_Creating_personal_domain"),
                             pdcan);
                     ph.start();
