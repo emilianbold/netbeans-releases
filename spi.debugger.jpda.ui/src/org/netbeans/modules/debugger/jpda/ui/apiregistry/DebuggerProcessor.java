@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.apiregistry;
+package org.netbeans.modules.debugger.jpda.ui.apiregistry;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -62,13 +62,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter;
-import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.debugger.jpda.Evaluator;
-import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
-import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.netbeans.spi.debugger.jpda.VariablesFilter;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -86,12 +81,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
 
     public @Override Set<String> getSupportedAnnotationTypes() {
         return new HashSet<String>(Arrays.asList(
-            JPDADebugger.Registration.class.getCanonicalName(),
-            SmartSteppingCallback.Registration.class.getCanonicalName(),
-            SourcePathProvider.Registration.class.getCanonicalName(),
-            EditorContext.Registration.class.getCanonicalName(),
-            Evaluator.Registration.class.getCanonicalName(),
-            BreakpointsClassFilter.Registration.class.getCanonicalName()
+            VariablesFilter.Registration.class.getCanonicalName()
         ));
     }
 
@@ -105,46 +95,11 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         }
 
         int cnt = 0;
-        for (Element e : env.getElementsAnnotatedWith(JPDADebugger.Registration.class)) {
-            JPDADebugger.Registration reg = e.getAnnotation(JPDADebugger.Registration.class);
+        for (Element e : env.getElementsAnnotatedWith(VariablesFilter.Registration.class)) {
+            VariablesFilter.Registration reg = e.getAnnotation(VariablesFilter.Registration.class);
 
             final String path = reg.path();
-            handleProviderRegistration(e, JPDADebugger.class, path);
-            cnt++;
-        }
-        for (Element e : env.getElementsAnnotatedWith(SmartSteppingCallback.Registration.class)) {
-            SmartSteppingCallback.Registration reg = e.getAnnotation(SmartSteppingCallback.Registration.class);
-
-            final String path = reg.path();
-            handleProviderRegistration(e, SmartSteppingCallback.class, path);
-            cnt++;
-        }
-        for (Element e : env.getElementsAnnotatedWith(SourcePathProvider.Registration.class)) {
-            SourcePathProvider.Registration reg = e.getAnnotation(SourcePathProvider.Registration.class);
-
-            final String path = reg.path();
-            handleProviderRegistration(e, SourcePathProvider.class, path);
-            cnt++;
-        }
-        for (Element e : env.getElementsAnnotatedWith(EditorContext.Registration.class)) {
-            EditorContext.Registration reg = e.getAnnotation(EditorContext.Registration.class);
-
-            final String path = reg.path();
-            handleProviderRegistration(e, EditorContext.class, path);
-            cnt++;
-        }
-        for (Element e : env.getElementsAnnotatedWith(Evaluator.Registration.class)) {
-            Evaluator.Registration reg = e.getAnnotation(Evaluator.Registration.class);
-
-            final String language = reg.language();
-            handleEvaluatorRegistration(e, language);
-            cnt++;
-        }
-        for (Element e : env.getElementsAnnotatedWith(BreakpointsClassFilter.Registration.class)) {
-            BreakpointsClassFilter.Registration reg = e.getAnnotation(BreakpointsClassFilter.Registration.class);
-
-            final String path = reg.path();
-            handleProviderRegistration(e, BreakpointsClassFilter.class, path);
+            handleProviderRegistration(e, VariablesFilter.class, path);
             cnt++;
         }
         return cnt == annotations.size();
@@ -167,23 +122,6 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
           stringvalue("serviceClass", providerClass.getName()).
           stringvalue("instanceOf", providerClass.getName()).
           methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
-          write();
-    }
-
-    private void handleEvaluatorRegistration(Element e, String language) throws IllegalArgumentException, LayerGenerationException {
-        String className = instantiableClassOrMethod(e);
-        if (!implementsInterface(e, Evaluator.class.getName())) {
-            throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + Evaluator.class);
-        }
-        String path = "Debugger/netbeans-JPDASession/"+language; // NOI18N
-        LayerBuilder lb = layer(e);
-        String basename = className.replace('.', '-');
-        LayerBuilder.File f = lb.file(path + "/" + basename + ".instance");
-        //LayerBuilder.File f = lb.instanceFile(path, null, Evaluator.class);
-        f.stringvalue(SERVICE_NAME, className).
-          stringvalue("serviceClass", Evaluator.class.getName()).
-          stringvalue("instanceOf", Evaluator.class.getName()).
-          methodvalue("instanceCreate", "org.netbeans.spi.debugger.ContextAwareSupport", "createService").
           write();
     }
 
@@ -221,43 +159,6 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             default:
                 throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
         }
-    }
-
-    private boolean implementsInterface(Element e, String interfaceName) {
-        switch (e.getKind()) {
-            case CLASS: {
-                TypeElement te = (TypeElement) e;
-                List<? extends TypeMirror> interfs = te.getInterfaces();
-                for (TypeMirror tm : interfs) {
-                    e = ((DeclaredType) tm).asElement();
-                    String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
-                    if (interfaceName.equals(clazz)) {
-                        return true;
-                    }
-                }
-                break;
-            }
-            case METHOD: {
-                TypeMirror retType = ((ExecutableElement) e).getReturnType();
-                if (retType.getKind().equals(TypeKind.NONE)) {
-                    return false;
-                } else {
-                    TypeElement te = (TypeElement) ((DeclaredType) retType).asElement();
-                    List<? extends TypeMirror> interfs = te.getInterfaces();
-                    for (TypeMirror tm : interfs) {
-                        e = ((DeclaredType) tm).asElement();
-                        String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
-                        if (interfaceName.equals(clazz)) {
-                            return true;
-                        }
-                    }
-                }
-                break;
-            }
-            default:
-                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
-        }
-        return false;
     }
 
     private String instantiableClassOrMethod(Element e) throws IllegalArgumentException, LayerGenerationException {
