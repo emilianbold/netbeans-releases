@@ -266,11 +266,11 @@ public class PerfIDEValidation extends JellyTestCase {
         npwo.selectProject("HTML5/JS Application");
         npwo.next();
         NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
-        npnlso.txtProjectName().setText("HTML5" + SAMPLE_PROJECT_NAME);
+        npnlso.txtProjectName().setText("HTML5Project");
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npwo.finish();        
         // wait project appear in projects view
-        new ProjectsTabOperator().getProjectRootNode("HTML5" + SAMPLE_PROJECT_NAME);
+        new ProjectsTabOperator().getProjectRootNode("HTML5Project");
         // wait classpath scanning finished
         PerfWatchProjects.waitScanFinished();
     }
