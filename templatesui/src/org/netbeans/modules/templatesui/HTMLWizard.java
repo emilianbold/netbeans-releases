@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.templates;
+package org.netbeans.modules.templatesui;
 
 import java.awt.Dimension;
 import java.io.IOException;
@@ -69,8 +69,6 @@ import javax.swing.event.ChangeListener;
 import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import net.java.html.json.Models;
-import netscape.javascript.JSObject;
-import org.netbeans.api.templates.FileBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -102,9 +100,9 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     }
 
     @Override
-    public Set instantiate() throws IOException {
+    public Set<? extends Object> instantiate() throws IOException {
         try {
-            FutureTask t = new FutureTask(new Callable<Map<String,Object>>() {
+            FutureTask<?> t = new FutureTask<>(new Callable<Map<String,Object>>() {
                 @Override
                 public Map<String,Object> call() throws Exception {
                     Object[] namesAndValues = rawProps(data);
@@ -317,7 +315,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     }
     
     final Object evaluateProp(final String prop) throws InterruptedException, ExecutionException {
-        FutureTask t = new FutureTask(new Callable<Object>() {
+        FutureTask<?> t = new FutureTask<Object>(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 return getPropertyValue(data, prop);
@@ -328,7 +326,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     }
     
     final void setProp(final String prop, final Object value) throws InterruptedException, ExecutionException {
-        FutureTask t = new FutureTask(new Callable<Object>() {
+        FutureTask<?> t = new FutureTask<Object>(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 return changeProperty(data, prop, value);
@@ -364,13 +362,13 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
     @JavaScriptBody(args = {"data", "onChange", "p" }, javacall = true, body = ""
         + "if (typeof data[p] !== 'function') {\n"
-        + "  onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, null);\n"
+        + "  onChange.@org.netbeans.modules.templatesui.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, null);\n"
         + "  return false;\n"
         + "}\n"
         + "data[p].subscribe(function(value) {\n"
-        + "  onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, value);\n"
+        + "  onChange.@org.netbeans.modules.templatesui.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, value);\n"
         + "});\n"
-        + "onChange.@org.netbeans.modules.templates.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, data[p]());\n"
+        + "onChange.@org.netbeans.modules.templatesui.HTMLWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, data[p]());\n"
         + "return true;\n"
     )
     static native boolean listenOnProp(Object raw, HTMLWizard onChange, String propName);

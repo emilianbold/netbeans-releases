@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.templates;
+package org.netbeans.modules.templatesui;
 
+import org.netbeans.modules.templatesui.HTMLPanel;
 import java.awt.Component;
 import java.util.Arrays;
 import java.util.Set;
@@ -48,9 +49,6 @@ import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
 import javax.swing.JComponent;
 import static junit.framework.Assert.*;
-import net.java.html.json.ComputedProperty;
-import net.java.html.json.Model;
-import net.java.html.json.Property;
 import org.junit.Test;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.WizardDescriptor;
@@ -60,28 +58,19 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
-@Model(className = "XModel", properties = {
-    @Property(name = "errorCode", type = int.class),
-    @Property(name = "steps", type = String.class, array = true),
-    @Property(name = "current", type = String.class)
-})
-public class HTMLJavaTemplateTest {
-    @ComputedProperty static String message(String current) {
-        return "Three".equals(current) ? "Finished" : null;
-    }
-    
+public class HTMLTemplateTest {
     @TemplateRegistration(
         scriptEngine = "js",
-        folder = "JavaTest", iconBase = "org/netbeans/modules/templates/x.png",
-        page = "org/netbeans/modules/templates/x.html",
+        folder = "Test", iconBase = "org/netbeans/modules/templatesui/x.png",
+        page = "org/netbeans/modules/templatesui/x.html",
         content = "x.js"
     )
-    static XModel myMethod() {
-        return new XModel(0, "One", "One", "Two", "Three").applyBindings();
+    static String myMethod() {
+        return "init()";
     }
     
     @Test public void checkTheIterator() throws Exception {
-        final String path = "Templates/JavaTest/x.js";
+        final String path = "Templates/Test/x.js";
         FileObject fo = FileUtil.getConfigFile(path);
         assertNotNull(fo);
         
