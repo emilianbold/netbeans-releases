@@ -872,8 +872,7 @@ public class BinaryAnalyser {
             }
         };
 
-        private final List<Pair<ElementHandle<TypeElement>,Long>> result =
-                new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
+        private final List<Pair<ElementHandle<TypeElement>,Long>> result;
         private final Context ctx;
         private boolean changed;
         private byte preBuildArgsState;
@@ -881,10 +880,12 @@ public class BinaryAnalyser {
         RootProcessor(@NonNull final Context ctx) {
             assert ctx != null;
             this.ctx = ctx;
+            this.result  = new ArrayList<>();
         }
 
         private RootProcessor() {
             this.ctx = null;
+            this.result = Collections.emptyList();
         }
 
         @NonNull
