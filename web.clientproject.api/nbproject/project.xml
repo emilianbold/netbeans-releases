@@ -283,6 +283,7 @@
                 <friend>org.netbeans.modules.cordova.platforms.ios</friend>
                 <friend>org.netbeans.modules.html.ojet</friend>
                 <friend>org.netbeans.modules.javascript.cdnjs</friend>
+                <friend>org.netbeans.modules.javascript.grunt</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.javascript.karma</friend>
                 <friend>org.netbeans.modules.javascript.nodejs</friend>
@@ -297,6 +298,7 @@
                 <friend>org.netbeans.modules.web.livehtml</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.clientproject.api</package>
+                <package>org.netbeans.modules.web.clientproject.api.build</package>
                 <package>org.netbeans.modules.web.clientproject.api.jstesting</package>
                 <package>org.netbeans.modules.web.clientproject.api.network</package>
                 <package>org.netbeans.modules.web.clientproject.api.platform</package>
@@ -305,6 +307,7 @@
                 <package>org.netbeans.modules.web.clientproject.api.util</package>
                 <package>org.netbeans.modules.web.clientproject.api.validation</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
+                <package>org.netbeans.modules.web.clientproject.spi.build</package>
                 <package>org.netbeans.modules.web.clientproject.spi.jstesting</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
             </friend-packages>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.api.build;
 
-package org.netbeans.modules.web.clientproject;
-
-import java.io.IOException;
 import java.util.Collection;
-import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.html.editor.api.index.HtmlIndex;
-import org.netbeans.modules.web.common.api.FileReference;
-import org.netbeans.modules.web.common.spi.DependentFileQueryImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 
-@ServiceProvider(service=DependentFileQueryImplementation.class)
-public class DependentFileQueryImpl implements DependentFileQueryImplementation {
+/**
+ * Support for build tools.
+ * @since 1.81
+ */
+public final class BuildTools {
 
-    @Override
-    public Dependency isDependent(FileObject master, FileObject dependent) {
-        Project p = FileOwnerQuery.getOwner(master);
-        if (p == null) {
-            return Dependency.UNKNOWN;
-        }
-        try {
-            HtmlIndex.AllDependenciesMaps all = HtmlIndex.get(p).getAllDependencies();
-            Collection<FileReference> c = all.getSource2dest().get(master);
-            if (c != null) {
-                for (FileReference fr : c) {
-                    if (dependent.equals(fr.target())) {
-                        return Dependency.YES;
-                    }
-                }
+    private static final BuildTools INSTANCE = new BuildTools();
+
+
+    private BuildTools() {
+    }
+
+    public static BuildTools getDefault() {
+        return INSTANCE;
+    }
+
+    /**
+     * Run "build" for the given project and command identifier.
+     * <p>
+     * If the are more build tools available, all the tools are run (in random order).
+     * @param project project to be used for the command
+     * @param commandId command identifier (build, rebuild, run etc.)
+     * @param waitFinished wait till the command finishes?
+     * @param showCustomizer show customizer if any problem occurs (e.g. command is not known/set to this build tool)
+     * @return {@code true} if command was run (at least by one build tool), {@code false} otherwise
+     */
+    public boolean run(@NonNull Project project, @NonNull String commandId, boolean waitFinished, boolean showCustomizer) {
+        Collection<? extends BuildToolImplementation> buildTools = project.getLookup()
+                .lookupAll(BuildToolImplementation.class);
+        boolean run = false;
+        for (BuildToolImplementation buildTool : buildTools) {
+            if (buildTool.run(commandId, waitFinished, showCustomizer)) {
+                run = true;
             }
-            return Dependency.NO;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        return null;
+        return run;
     }
 
 }

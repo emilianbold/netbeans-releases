@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui;
 
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
@@ -62,6 +67,7 @@ import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
@@ -132,6 +138,7 @@ public final class NodeJsPathPanel extends JPanel {
         nodeBrowseButton.setEnabled(enabled);
         nodeSearchButton.setEnabled(enabled);
         nodeHintLabel.setEnabled(enabled);
+        nodeInstallLabel.setVisible(enabled);
         versionLabel.setEnabled(enabled);
         nodeVersionLabel.setEnabled(enabled);
         versionInfoLabel.setEnabled(enabled);
@@ -238,6 +245,7 @@ public final class NodeJsPathPanel extends JPanel {
         nodeBrowseButton = new JButton();
         nodeSearchButton = new JButton();
         nodeHintLabel = new JLabel();
+        nodeInstallLabel = new JLabel();
         versionLabel = new JLabel();
         nodeVersionLabel = new JLabel();
         downloadSourcesButton = new JButton();
@@ -260,6 +268,16 @@ public final class NodeJsPathPanel extends JPanel {
         });
 
         Mnemonics.setLocalizedText(nodeHintLabel, "HINT"); // NOI18N
+
+        Mnemonics.setLocalizedText(nodeInstallLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.nodeInstallLabel.text")); // NOI18N
+        nodeInstallLabel.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent evt) {
+                nodeInstallLabelMousePressed(evt);
+            }
+            public void mouseEntered(MouseEvent evt) {
+                nodeInstallLabelMouseEntered(evt);
+            }
+        });
 
         Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NodeJsPathPanel.class, "NodeJsPathPanel.versionLabel.text")); // NOI18N
 
@@ -299,7 +317,8 @@ public final class NodeJsPathPanel extends JPanel {
                         .addComponent(nodeSearchButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(nodeHintLabel)
-                        .addContainerGap())))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(nodeInstallLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -309,7 +328,9 @@ public final class NodeJsPathPanel extends JPanel {
                     .addComponent(nodeBrowseButton)
                     .addComponent(nodeSearchButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(nodeHintLabel)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(nodeHintLabel)
+                    .addComponent(nodeInstallLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(versionLabel)
@@ -347,11 +368,24 @@ public final class NodeJsPathPanel extends JPanel {
         downloadSources();
     }//GEN-LAST:event_downloadSourcesButtonActionPerformed
 
+    private void nodeInstallLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_nodeInstallLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_nodeInstallLabelMouseEntered
+
+    private void nodeInstallLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_nodeInstallLabelMousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://nodejs.org/")); // NOI18N
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+    }//GEN-LAST:event_nodeInstallLabelMousePressed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton downloadSourcesButton;
     private JButton nodeBrowseButton;
     private JLabel nodeHintLabel;
+    private JLabel nodeInstallLabel;
     private JLabel nodeLabel;
     private JButton nodeSearchButton;
     private JTextField nodeTextField;

@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.javascript.grunt.legacy;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
