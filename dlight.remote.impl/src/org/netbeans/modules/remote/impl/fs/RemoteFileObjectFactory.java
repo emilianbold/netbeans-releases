@@ -71,9 +71,9 @@ public class RemoteFileObjectFactory {
     /** lockImpl for both fileObjectsCache and pendingListeners */
     private final Object lock = new Object();
 
-    private final Map<String, List<FileChangeListener>> pendingListeners = 
+    private final Map<String, List<FileChangeListener>> pendingListeners =
             new HashMap<String, List<FileChangeListener>>();
-    
+
     private int cacheRequests = 0;
     private int cacheHits = 0;
 
@@ -85,18 +85,18 @@ public class RemoteFileObjectFactory {
     /*package*/ Collection<RemoteFileObjectBase> getCachedFileObjects() {
         return fileObjectsCache.values(); // WeakCache returns a copy => no need to copy here
     }
-    
+
     /**
      * Path <code>path</path> will be normalized as we will keep in cache only normalized paths as a key
      * @param path
-     * @return 
+     * @return
      */
     public RemoteFileObjectBase getCachedFileObject(String path) {
         String normalizedPath = PathUtilities.normalizeUnixPath(path);
         return fileObjectsCache.get(normalizedPath);
     }
 
-    public void changeImplementor(RemoteDirectory parent, DirEntry oldEntry, DirEntry newEntry) {        
+    public void changeImplementor(RemoteDirectory parent, DirEntry oldEntry, DirEntry newEntry) {
         String path = parent.getPath() + '/' + oldEntry.getName();
         synchronized (lock) {
             RemoteFileObject owner = invalidate(path);
@@ -107,7 +107,7 @@ public class RemoteFileObjectFactory {
     public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry) {
         return createFileObject(parent, entry, null);
     }
-    
+
     public RemoteFileObjectBase createFileObject(RemoteDirectory parent, DirEntry entry, RemoteFileObject owner) {
         File childCache = new File(parent.getCache(), entry.getCache());
         String childPath = parent.getPath() + '/' + entry.getName();
@@ -223,7 +223,7 @@ public class RemoteFileObjectFactory {
         if (result instanceof RemoteLink) {
             // (result == fo) means that result was placed into cache => we need to init listeners,
             // otherwise there already was an object in cache => listener has been already initialized
-            if (result == fo) { 
+            if (result == fo) {
                 ((RemoteLink) result).initListeners(true);
             }
         }
@@ -237,12 +237,12 @@ public class RemoteFileObjectFactory {
         if (result instanceof RemoteLinkChild) {
             // (result == fo) means that result was placed into cache => we need to init listeners,
             // otherwise there already was an object in cache => listener has been already initialized
-            if (result == fo) { 
+            if (result == fo) {
                 ((RemoteLinkChild) result).initListeners(true);
             } else {
                 RemoteFileObjectBase oldDelegate = ((RemoteLinkChild) result).getCanonicalDelegate();
                 if (oldDelegate != delegate) {
-                    // delegate has changed     
+                    // delegate has changed
                     RemoteFileObject ownerFileObject = result.getOwnerFileObject();
                     result.invalidate();
                     fileObjectsCache.remove(normalizedRemotePath, result);
@@ -283,7 +283,7 @@ public class RemoteFileObjectFactory {
             }
         }
     }
-    
+
     public void addFileChangeListener(String path, FileChangeListener listener) {
         String normalizedPath = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase fo = getCachedFileObject(normalizedPath);
@@ -303,7 +303,7 @@ public class RemoteFileObjectFactory {
             fo.addFileChangeListener(listener);
         }
     }
-    
+
     public void removeFileChangeListener(String path, FileChangeListener listener) {
         String normalizedPath = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase fo = getCachedFileObject(normalizedPath);
@@ -322,7 +322,7 @@ public class RemoteFileObjectFactory {
         }
     }
 
-    /** 
+    /**
      * Removes file object from cache and invalidates it.
      * @return an invalidated object or null
      */
@@ -335,30 +335,23 @@ public class RemoteFileObjectFactory {
         }
         return null;
     }
-    
+
     public void rename(String path2Rename, String newPath, RemoteFileObjectBase fo2Rename) {
+        RemoteFileObjectBase[] existentChildren = (fo2Rename.isFolder()) ? fo2Rename.getExistentChildren() : null;
         String normalizedPath2Rename = PathUtilities.normalizeUnixPath(path2Rename);
         String normalizedNewPath = PathUtilities.normalizeUnixPath(newPath);
-        Collection<RemoteFileObjectBase> toRename = new HashSet<RemoteFileObjectBase>();
-        addAllExistingChildren(fo2Rename, toRename);
-        for (RemoteFileObjectBase fo : toRename) {
-            String curPath = fo.getPath();
-            String changedPath = curPath.replaceFirst(normalizedPath2Rename, normalizedNewPath);
-            fileObjectsCache.remove(curPath, fo);
-            fo.renamePath(changedPath);
-            putIfAbsent(changedPath, fo);
-        }
-    }
-        
-    private void addAllExistingChildren(RemoteFileObjectBase fo, Collection<RemoteFileObjectBase> bag) {
-        bag.add(fo);
-        if (fo.isFolder()) {
-            for (RemoteFileObjectBase child : fo.getExistentChildren()) {
-                addAllExistingChildren(child, bag);
+        fileObjectsCache.remove(normalizedPath2Rename, fo2Rename);
+        fo2Rename.renamePath(normalizedNewPath);
+        putIfAbsent(normalizedNewPath, fo2Rename);
+        if (existentChildren != null && existentChildren.length > 0) {
+            for (RemoteFileObjectBase fo : existentChildren) {
+                String curPath = fo.getPath();
+                String changedPath = normalizedNewPath + '/' + fo.getNameExt();
+                rename(curPath, changedPath, fo);
             }
         }
     }
-    
+
     public void setLink(RemoteDirectory parent, String linkRemotePath, String linkTarget) {
         String normalizedPath = PathUtilities.normalizeUnixPath(linkRemotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedPath);
