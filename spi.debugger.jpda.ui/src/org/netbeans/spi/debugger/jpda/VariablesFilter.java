@@ -51,7 +51,7 @@ import java.lang.annotation.Target;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.apiregistry.DebuggerProcessor;
+import org.netbeans.modules.debugger.jpda.ui.apiregistry.DebuggerProcessor;
 import org.netbeans.spi.debugger.ContextAwareService;
 import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.netbeans.spi.debugger.ContextProvider;

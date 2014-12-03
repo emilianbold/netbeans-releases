@@ -52,6 +52,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
@@ -59,14 +61,12 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -106,6 +106,8 @@ public class LineBreakpoint extends JPDABreakpoint {
     /** Property name constant */
     public static final String          PROP_THREAD_FILTERS = "threadFilters"; // NOI18N
     
+    private static final Logger LOG = Logger.getLogger(LineBreakpoint.class.getName());
+
     private String                      url = ""; // NOI18N
     private int                         lineNumber;
     private String                      condition = ""; // NOI18N
@@ -462,13 +464,15 @@ public class LineBreakpoint extends JPDABreakpoint {
                     if (fo != null) {
                         fileListener = WeakListeners.create(FileChangeListener.class, this, fo);
                         fo.addFileChangeListener(fileListener);
+                        /*
                         registryListener = WeakListeners.change(this, DataObject.getRegistry());
                         DataObject.getRegistry().addChangeListener(registryListener);
+                                */
                     }
                 } catch (MalformedURLException ex) {
-                    ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
+                    LOG.log(Level.WARNING, "URL = '"+url+"'", ex);
                 } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
+                    LOG.log(Level.WARNING, "URL = '"+url+"'", ex);
                 }
             }
         }
@@ -487,11 +491,12 @@ public class LineBreakpoint extends JPDABreakpoint {
                         fo.addFileChangeListener(fileListener);
                     }
                 } catch (MalformedURLException ex) {
-                    ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
+                    LOG.log(Level.WARNING, "URL = '"+url+"'", ex);
                 } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
+                    LOG.log(Level.WARNING, "URL = '"+url+"'", ex);
                 }
             }
+            firePropertyChange(PROP_GROUP_PROPERTIES, null, null);
         }
 
         public void setPreferredClassType(JPDAClassType classType) {
@@ -582,7 +587,7 @@ public class LineBreakpoint extends JPDABreakpoint {
             Object source = chev.getSource();
             if (source instanceof Breakpoint.VALIDITY) {
                 setValidity((Breakpoint.VALIDITY) source, chev.toString());
-            } else if (source instanceof Collection) {
+            /*} else if (source instanceof Collection) {
                 for (Object obj : ((Collection) source)) {
                     DataObject dobj = (DataObject) obj;
                     if (registryListener != null) {
@@ -599,7 +604,7 @@ public class LineBreakpoint extends JPDABreakpoint {
                             registryListener = null;
                         }
                     }
-                }
+                }*/
             } else {
                 throw new UnsupportedOperationException(chev.toString());
             }
@@ -607,7 +612,7 @@ public class LineBreakpoint extends JPDABreakpoint {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+            /*if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
                 if (fo != null) {
                     fo.removeFileChangeListener(fileListener);
                 }
@@ -622,7 +627,7 @@ public class LineBreakpoint extends JPDABreakpoint {
                     wasRegisteredWhenFileDeleted = false;
                 }
                 firePropertyChange(PROP_GROUP_PROPERTIES, null, null);
-            } else if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
+            } else*/ if (DebuggerEngine.class.getName().equals(evt.getPropertyName())) {
                 enginePropertyChange(evt);
             }
         }
