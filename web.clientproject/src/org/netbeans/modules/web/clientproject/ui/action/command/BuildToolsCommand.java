@@ -39,46 +39,50 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
-import java.util.Collection;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
-import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
+import java.util.logging.Logger;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-public final class ImportantFilesImpl implements ImportantFilesImplementation {
+public class BuildToolsCommand extends Command {
 
-    private final ImportantFilesSupport support;
-    private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
-        @Override
-        public FileInfo create(FileObject fileObject) {
-            return new FileInfo(fileObject, fileObject.getName(), null);
-        }
-    };
+    private static final Logger LOGGER = Logger.getLogger(BuildToolsCommand.class.getName());
+
+    private final String commandId;
 
 
-    public ImportantFilesImpl(Project project) {
-        assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), "Gruntfile.js"); // NOI18N
+    public BuildToolsCommand(ClientSideProject project, String commandId) {
+        super(project);
+        assert commandId != null;
+        this.commandId = commandId;
     }
 
     @Override
-    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
-        return support.getFiles(fileInfoCreator);
+    public String getCommandId() {
+        return commandId;
     }
 
     @Override
-    public void addChangeListener(ChangeListener listener) {
-        support.addChangeListener(listener);
+    boolean isActionEnabledInternal(Lookup context) {
+        return true;
     }
 
     @Override
-    public void removeChangeListener(ChangeListener listener) {
-        support.removeChangeListener(listener);
+    void invokeActionInternal(Lookup context) {
+        tryBuild(true, false);
+    }
+
+    @NbBundle.Messages({
+        "BuildToolsCommand.notFound=No Gruntfile.js found; create it and rerun the action.",
+        "BuildToolsCommand.configure=Do you want to configure project actions to call Grunt tasks?",
+    })
+    public boolean tryBuild(boolean showCustomizer, boolean waitFinished) {
+        return BuildTools.getDefault().run(project, commandId, waitFinished,
+                showCustomizer && !ClientSideProjectUtilities.isCordovaProject(project));
     }
 
 }

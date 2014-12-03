@@ -7,6 +7,14 @@
                 <file name="org-netbeans-modules-javascript2-requirejs-editor-index-RequireJsIndexer$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
                 </file>
+                <!-- code templates -->
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-javascript2-requirejs-codetemplates.xml" url="resources/codetemplates.xml">
+                            
+                        </file>
+                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

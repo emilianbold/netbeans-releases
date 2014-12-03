@@ -41,10 +41,17 @@
  */
 package org.netbeans.modules.javascript.bower.ui.options;
 
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -57,6 +64,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.javascript.bower.exec.BowerExecutable;
 import org.netbeans.modules.javascript.bower.util.FileUtils;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
@@ -64,6 +72,8 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 public class BowerOptionsPanel extends JPanel {
+
+    private static final Logger LOGGER = Logger.getLogger(BowerOptionsPanel.class.getName());
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -130,6 +140,7 @@ public class BowerOptionsPanel extends JPanel {
         bowerBrowseButton = new JButton();
         bowerSearchButton = new JButton();
         bowerHintLabel = new JLabel();
+        installLabel = new JLabel();
         errorLabel = new JLabel();
 
         bowerjLabel.setLabelFor(bowerTextField);
@@ -151,6 +162,16 @@ public class BowerOptionsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(bowerHintLabel, "HINT"); // NOI18N
 
+        Mnemonics.setLocalizedText(installLabel, NbBundle.getMessage(BowerOptionsPanel.class, "BowerOptionsPanel.installLabel.text")); // NOI18N
+        installLabel.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent evt) {
+                installLabelMousePressed(evt);
+            }
+            public void mouseEntered(MouseEvent evt) {
+                installLabelMouseEntered(evt);
+            }
+        });
+
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -162,7 +183,8 @@ public class BowerOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bowerHintLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(installLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bowerTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -181,7 +203,9 @@ public class BowerOptionsPanel extends JPanel {
                     .addComponent(bowerSearchButton)
                     .addComponent(bowerBrowseButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bowerHintLabel)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(bowerHintLabel)
+                    .addComponent(installLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
@@ -210,6 +234,18 @@ public class BowerOptionsPanel extends JPanel {
         StatusDisplayer.getDefault().setStatusText(Bundle.BowerOptionsPanel_bower_none());
     }//GEN-LAST:event_bowerSearchButtonActionPerformed
 
+    private void installLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_installLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_installLabelMouseEntered
+
+    private void installLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_installLabelMousePressed
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://bower.io/")); // NOI18N
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+    }//GEN-LAST:event_installLabelMousePressed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton bowerBrowseButton;
     private JLabel bowerHintLabel;
@@ -217,6 +253,7 @@ public class BowerOptionsPanel extends JPanel {
     private JTextField bowerTextField;
     private JLabel bowerjLabel;
     private JLabel errorLabel;
+    private JLabel installLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

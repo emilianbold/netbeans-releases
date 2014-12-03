@@ -40,19 +40,12 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.javascript.grunt.legacy;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
-import org.netbeans.modules.web.clientproject.env.Values;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.EditableProperties;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,8 +57,8 @@ public class GruntCustomizerPanel extends javax.swing.JPanel {
     private static final String PROP_CLEAN_ACTION = "grunt.action.clean";
     private static final String PROP_BUILD_ACTION = "grunt.action.build";
     private static final String PROP_REBUILD_ACTION = "grunt.action.rebuild";
-    
-    GruntCustomizerPanel(final ClientSideProject project, ProjectCustomizer.Category category) {
+
+    GruntCustomizerPanel(final Project project, ProjectCustomizer.Category category) {
         initComponents();
         loadFromProperties(project, category);
         category.setStoreListener(new ActionListener() {
@@ -77,7 +70,7 @@ public class GruntCustomizerPanel extends javax.swing.JPanel {
 
         });
     }
-    
+
     private void setPanelEnabled(boolean enabled) {
         buildCheckBox.setEnabled(enabled);
         rebuildCheckBox.setEnabled(enabled);
@@ -88,24 +81,21 @@ public class GruntCustomizerPanel extends javax.swing.JPanel {
         label.setEnabled(enabled);
     }
 
-    private void loadFromProperties(ClientSideProject project, ProjectCustomizer.Category category) {
-        Values eval = project.getEvaluator();
-        Preferences prefs = NbPreferences.forModule(GruntCustomizerPanel.class);
-        
-        String pref = eval.getProperty(PROP_BUILD_ACTION);
+    private void loadFromProperties(Project project, ProjectCustomizer.Category category) {
+        String pref = GruntPreferences.getValue(project, PROP_BUILD_ACTION);
         buildCheckBox.setSelected(pref!=null);
         buildTextField.setEnabled(pref!=null);
-        buildTextField.setText(pref!=null?pref:prefs.get(PROP_BUILD_ACTION, "build"));//NOI18N
-        
-        pref = eval.getProperty(PROP_CLEAN_ACTION);
+        buildTextField.setText(pref!=null?pref:"build");//NOI18N
+
+        pref = GruntPreferences.getValue(project, PROP_CLEAN_ACTION);
         cleanCheckBox.setSelected(pref!=null);
         cleanTextField.setEnabled(pref!=null);
-        cleanTextField.setText(pref!=null?pref:prefs.get(PROP_CLEAN_ACTION, "clean"));//NOI18N
+        cleanTextField.setText(pref!=null?pref:"clean");//NOI18N
 
-        pref = eval.getProperty(PROP_REBUILD_ACTION);
+        pref = GruntPreferences.getValue(project, PROP_REBUILD_ACTION);
         rebuildCheckBox.setSelected(pref!=null);
         rebuildTextField.setEnabled(pref!=null);
-        rebuildTextField.setText(pref!=null?pref:prefs.get(PROP_REBUILD_ACTION, "clean build"));//NOI18N
+        rebuildTextField.setText(pref!=null?pref:"clean build");//NOI18N
         boolean gruntFound = project.getProjectDirectory().getFileObject("Gruntfile.js")!=null;//NOI18N
         if (!gruntFound) {
             setPanelEnabled(false);
@@ -117,41 +107,12 @@ public class GruntCustomizerPanel extends javax.swing.JPanel {
         }
     }
 
-    private void storeToProperties(ClientSideProject project) {
-        try {
-            EditableProperties projectProperties = project.getProjectHelper().getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
-            
-            
-            Preferences prefs = NbPreferences.forModule(GruntCustomizerPanel.class);
-            
-            if (buildCheckBox.isSelected()) {
-                projectProperties.put(PROP_BUILD_ACTION, buildTextField.getText());
-            } else {
-                projectProperties.remove(PROP_BUILD_ACTION);
-                prefs.put(PROP_BUILD_ACTION, buildTextField.getText());
-            }
-            
-            if (cleanCheckBox.isSelected()) {
-                projectProperties.put(PROP_CLEAN_ACTION, cleanTextField.getText());
-            } else {
-                projectProperties.remove(PROP_CLEAN_ACTION);
-                prefs.put(PROP_CLEAN_ACTION, cleanTextField.getText());
-            }
-            
-            if (rebuildCheckBox.isSelected()) {
-                projectProperties.put(PROP_REBUILD_ACTION, rebuildTextField.getText());
-            } else {
-                projectProperties.remove(PROP_REBUILD_ACTION);
-                prefs.put(PROP_REBUILD_ACTION, rebuildTextField.getText());
-            }
-            
-            project.getProjectHelper().putProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-            prefs.sync();
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    private void storeToProperties(Project project) {
+        GruntPreferences.setValue(project, PROP_BUILD_ACTION, buildCheckBox.isSelected() ? buildTextField.getText() : null);
+        GruntPreferences.setValue(project, PROP_CLEAN_ACTION, cleanCheckBox.isSelected() ? cleanTextField.getText() : null);
+        GruntPreferences.setValue(project, PROP_REBUILD_ACTION, rebuildCheckBox.isSelected() ? rebuildTextField.getText() : null);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

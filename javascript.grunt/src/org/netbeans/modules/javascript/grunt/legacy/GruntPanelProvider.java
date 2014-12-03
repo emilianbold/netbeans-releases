@@ -39,10 +39,10 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.javascript.grunt.legacy;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -63,7 +63,7 @@ public class GruntPanelProvider implements ProjectCustomizer.CompositeCategoryPr
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        return new GruntCustomizerPanel(context.lookup(ClientSideProject.class), category);
+        return new GruntCustomizerPanel(context.lookup(Project.class), category);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
