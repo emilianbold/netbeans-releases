@@ -157,6 +157,27 @@ public class AbstractLookupBaseHid extends NbTestCase {
         new Integer (10), 
         new Object ()
     };
+    
+    public void testReplaceByEqualInstance() {
+        Lookup.Result<Integer> res = lookup.lookupResult(Integer.class);
+        Listener listener = new Listener();
+        res.addLookupListener(listener);
+        
+        final Integer i1 = Integer.valueOf(432432);
+        ic.add(i1);
+        
+        assertSame("i1 is returned", i1, lookup.lookup(Integer.class));
+        assertTrue("One change", listener.listenerCalled);
+        listener.listenerCalled = false;
+        
+        Integer i2 = new Integer(i1);
+        assertNotSame(i2, i1);
+        
+        ic.add(i2);
+        assertSame("new instance is in the lookup", i2, lookup.lookup(Integer.class));
+        assertFalse("No additional change notified", listener.listenerCalled);
+    }
+    
 
     public void testSlowIterate() {
         InstanceContent ic1 = new InstanceContent();
