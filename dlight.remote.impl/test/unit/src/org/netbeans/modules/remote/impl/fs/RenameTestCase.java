@@ -107,6 +107,79 @@ public class RenameTestCase extends RemoteFileTestBase  {
             FileObject newFO = tmpDirFO.getFileObject(newName);
             assertNotNull(newFO);
             assertTrue(newFO == oldFO);
+            assertTrue(newFO.getPath().endsWith(newName));
+        } finally {
+            removeRemoteDirIfNotNull(tmpDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testRemoteRenameWithPlus() throws Exception {
+        String tmpDir = null;
+        try {
+            tmpDir = mkTempAndRefreshParent(true);
+            FileObject tmpDirFO = getFileObject(tmpDir);
+            FileObject oldFO = tmpDirFO.createData("file+1");
+            String newName = "file+1_renamed";
+            FileLock lock = oldFO.lock();
+            oldFO.rename(lock, newName, null);
+            lock.releaseLock();
+            FileObject newFO = tmpDirFO.getFileObject(newName);
+            assertNotNull(newFO);
+            assertTrue(newFO == oldFO);
+            assertTrue(newFO.getPath().endsWith(newName));
+        } finally {
+            removeRemoteDirIfNotNull(tmpDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testRemoteRenameDir() throws Exception {
+        String tmpDir = null;
+        try {
+            tmpDir = mkTempAndRefreshParent(true);
+            FileObject tmpDirFO = getFileObject(tmpDir);
+            FileObject oldFO = tmpDirFO.createFolder("dir_1");
+            FileObject child = oldFO.createData("child");
+            FileObject subdir = oldFO.createFolder("sub_dir_1");
+            FileObject grandchild = subdir.createData("grand_child");
+            String newName = "dir_1_renamed";
+            FileLock lock = oldFO.lock();
+            oldFO.rename(lock, newName, null);
+            lock.releaseLock();
+            FileObject newFO = tmpDirFO.getFileObject(newName);
+            assertNotNull(newFO);
+            assertTrue(newFO == oldFO);
+            assertTrue(newFO.getPath().endsWith(newName));
+            assertTrue(child.getPath().contains("renamed"));
+            assertTrue(subdir.getPath().contains("renamed"));
+            assertTrue(grandchild.getPath().contains("renamed"));
+        } finally {
+            removeRemoteDirIfNotNull(tmpDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testRemoteRenameDirWithPlus() throws Exception {
+        String tmpDir = null;
+        try {
+            tmpDir = mkTempAndRefreshParent(true);
+            FileObject tmpDirFO = getFileObject(tmpDir);
+            FileObject oldFO = tmpDirFO.createFolder("dir+1");
+            FileObject child = oldFO.createData("child");
+            FileObject subdir = oldFO.createFolder("sub_dir_1");
+            FileObject grandchild = subdir.createData("grand_child");
+            String newName = "dir+1_renamed";
+            FileLock lock = oldFO.lock();
+            oldFO.rename(lock, newName, null);
+            lock.releaseLock();
+            FileObject newFO = tmpDirFO.getFileObject(newName);
+            assertNotNull(newFO);
+            assertTrue(newFO == oldFO);
+            assertTrue(newFO.getPath().endsWith(newName));
+            assertTrue(child.getPath().contains("renamed"));
+            assertTrue(subdir.getPath().contains("renamed"));
+            assertTrue(grandchild.getPath().contains("renamed"));
         } finally {
             removeRemoteDirIfNotNull(tmpDir);
         }
