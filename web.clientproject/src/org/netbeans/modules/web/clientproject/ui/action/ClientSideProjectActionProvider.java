@@ -52,10 +52,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ui.action.command.BrowserCommand;
+import org.netbeans.modules.web.clientproject.ui.action.command.BuildToolsCommand;
 import org.netbeans.modules.web.clientproject.ui.action.command.Command;
 import org.netbeans.modules.web.clientproject.ui.action.command.CopyCommand;
 import org.netbeans.modules.web.clientproject.ui.action.command.DeleteCommand;
-import org.netbeans.modules.web.clientproject.ui.action.command.GruntCommand;
 import org.netbeans.modules.web.clientproject.ui.action.command.MoveCommand;
 import org.netbeans.modules.web.clientproject.ui.action.command.PlatformCommand;
 import org.netbeans.modules.web.clientproject.ui.action.command.RenameCommand;
@@ -89,9 +89,9 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             new BrowserCommand(project, COMMAND_RUN),
             new TestProjectCommand(project),
 
-            new GruntCommand(project, COMMAND_BUILD),
-            new GruntCommand(project, COMMAND_REBUILD),
-            new GruntCommand(project, COMMAND_CLEAN),
+            new BuildToolsCommand(project, COMMAND_BUILD),
+            new BuildToolsCommand(project, COMMAND_REBUILD),
+            new BuildToolsCommand(project, COMMAND_CLEAN),
 
             new CopyCommand(project),
             new MoveCommand(project),
@@ -153,7 +153,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
             @Override
             public void run() {
                 AtomicBoolean warnUser = new AtomicBoolean(true);
-                tryGrunt(commandId);
+                tryBuildTools(commandId);
                 tryPlatform(commandId, lookup, warnUser);
                 command.invokeAction(lookup, warnUser);
                 tryBrowser(commandId, lookup, warnUser);
@@ -171,12 +171,12 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         return command.isActionEnabled(context);
     }
 
-    void tryGrunt(String commandId) {
-        if (getCommand(commandId) instanceof GruntCommand) {
+    void tryBuildTools(String commandId) {
+        if (getCommand(commandId) instanceof BuildToolsCommand) {
             return;
         }
-        new GruntCommand(project, commandId)
-                .tryTask(false, true);
+        new BuildToolsCommand(project, commandId)
+                .tryBuild(false, true);
     }
 
     void tryPlatform(String commandId, Lookup context, AtomicBoolean warnUser) {

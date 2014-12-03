@@ -22,7 +22,8 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="bowerHintLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="installLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Component id="bowerTextField" max="32767" attributes="0"/>
@@ -49,7 +50,10 @@
                   <Component id="bowerBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="bowerHintLabel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="bowerHintLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="installLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="32767" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -93,6 +97,17 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="HINT" noResource="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="installLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/bower/ui/options/Bundle.properties" key="BowerOptionsPanel.installLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="installLabelMousePressed"/>
+        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="installLabelMouseEntered"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">
       <Properties>

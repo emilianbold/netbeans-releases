@@ -195,8 +195,7 @@ public final class SassOptionsPanel extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(sassPathLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -220,8 +219,7 @@ public final class SassOptionsPanel extends JPanel {
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {sassPathBrowseButton, sassPathSearchButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(sassPathLabel)
