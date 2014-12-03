@@ -162,11 +162,11 @@ public class CommitAction extends ContextAction {
 
     /** Run commit action. Shows UI */
     public static void commit(String contentTitle, Context ctx, boolean deepScanEnabled) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
-            return;
-        }
         if (ctx.getRoots().size() < 1) {
             Subversion.LOG.info("Svn context contains no files");       //NOI18N
+            return;
+        }
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {
             return;
         }
         commitChanges(contentTitle, ctx, deepScanEnabled && !isDeepRefreshDisabledGlobally());
@@ -645,7 +645,7 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected void performContextAction(final Node[] nodes) {
-        ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+        ClientCheckSupport.getInstance().runInAWTIfAvailable(nodes, ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
             @Override
             public void run() {
                 Context ctx = getContext(nodes);

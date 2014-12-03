@@ -67,6 +67,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.text.NbDocument;
@@ -130,9 +131,6 @@ public class BlameAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }        
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);
             AnnotationBarManager.hideAnnotationBar(pane);
@@ -143,7 +141,9 @@ public class BlameAction extends ContextAction {
             }
             
             final VCSFileProxy file = activatedFile(nodes);
-
+            if(!Subversion.getInstance().checkClientAvailable(new Context(file))) {            
+                return;
+            }        
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes == null) {
                 ec.open();

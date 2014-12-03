@@ -89,7 +89,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
      * Internal check mechanism to prevent commands reuse.
      */
     private boolean commandExecuted;
-    private Arguments arguments;
+    private final Arguments arguments;
     private CommandlineClient.NotificationHandler notificationHandler;
     private VCSFileProxy configDir;
     private String username;
@@ -451,9 +451,6 @@ public abstract class SvnCommand implements CommandNotificationListener {
             add(user);
             if(psswd == null) {
                 psswd = "";
-            }
-            if (org.openide.util.Utilities.isWindows() && psswd.trim().equals("")) {
-                psswd = "\"" + psswd + "\"";
             }
             add("--password");                               		
             add(psswd);                      		

@@ -66,6 +66,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -326,8 +327,8 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
             Subversion subversion = Subversion.getInstance();
             SVNUrl svnUrl = this.repositoryRoot.getRepositoryUrl();
             SvnClient client = (username != null)
-                               ? subversion.getClient(svnUrl, username, password, support)
-                               : subversion.getClient(svnUrl, support);
+                               ? subversion.getClient(null, svnUrl, username, password, support)
+                               : subversion.getClient(null, svnUrl, support);
             if(support.isCanceled()) {
                 return null;
             }

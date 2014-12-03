@@ -118,7 +118,7 @@ public class MoveCommand extends SvnCommand {
                 if(force) {
                     arguments.add("--force");                    
                 }
-                setCommandWorkingDirectory(new File[] {fromFile, toFile});                
+                setCommandWorkingDirectory(new VCSFileProxy[] {fromFile, toFile});                
                 break;
             default :    
                 throw new IllegalStateException("Illegal copytype: " + type);                             

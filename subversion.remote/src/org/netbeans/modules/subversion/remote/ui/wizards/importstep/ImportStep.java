@@ -69,7 +69,9 @@ import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.remote.ui.checkout.CheckoutAction;
 import org.netbeans.modules.subversion.remote.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.StringSelector;
@@ -265,7 +267,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
 
                 SvnClient client;
                 try {
-                    client = Subversion.getInstance().getClient(repositoryPaths.getRepositoryUrl(), this);
+                    client = Subversion.getInstance().getClient(new Context(importDirectory), repositoryPaths.getRepositoryUrl(), this);
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, true, true);
                     invalidMsg = new AbstractStep.WizardMessage(SvnClientExceptionHandler.parseExceptionMessage(ex), false);
@@ -282,7 +284,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     try {
                         // if the user came back from the last step and changed the repository folder name,
                         // then this could be already a working copy ...    
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + SvnUtils.SVN_ADMIN_DIR)); // NOI18N
+                        SvnUtils.deleteRecursively(VCSFileProxy.createFileProxy(importDirectory, SvnUtils.SVN_ADMIN_DIR)); // NOI18N
                         File importDummyFolder = new File(Utils.getTempFolder(), importDirectory.getName());
                         importDummyFolder.mkdirs();                     
                         importDummyFolder.deleteOnExit();
@@ -305,7 +307,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     // XXX this is ugly and expensive! the client should notify (onNotify()) the cache. find out why it doesn't work...
                     Subversion.getInstance().getStatusCache().refreshRecursively(importDirectory);
                     if(isCanceled()) {                        
-                        FileUtils.deleteRecursively(new File(importDirectory.getAbsoluteFile() + "/" + SvnUtils.SVN_ADMIN_DIR)); // NOI18N
+                        SvnUtils.deleteRecursively(VCSFileProxy.createFileProxy(importDirectory, SvnUtils.SVN_ADMIN_DIR)); // NOI18N
                         return;
                     }
                 } catch (SVNClientException ex) {
@@ -339,11 +341,11 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                      if(files[i].isDirectory()) {
                          deleteDirectory(files[i]);
                      } else {
-                        files[i].delete();
+                        VCSFileProxySupport.delete(files[i]);
                      }
                  }
              }
-             file.delete();
+             VCSFileProxySupport.delete(file);
         }
 
         /**

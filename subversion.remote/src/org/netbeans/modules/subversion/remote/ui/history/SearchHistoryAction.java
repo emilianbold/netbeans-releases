@@ -100,10 +100,11 @@ public class SearchHistoryAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        final Context context = getContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(context)) {            
             return;
         }        
-        openHistory(getContext(nodes).getFiles(), NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes)));
+        openHistory(context.getFiles(), NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes)));
     }
 
     public static void openHistory(final String title, VCSFileProxy [] files) {

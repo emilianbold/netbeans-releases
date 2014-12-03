@@ -59,7 +59,6 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 
@@ -98,12 +97,10 @@ public class MergeAction extends ContextAction {
     
     @Override
     protected void performContextAction(final Node[] nodes) {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        Context ctx = getContext(nodes);        
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {            
             return;
         }
-        
-        Context ctx = getContext(nodes);        
         final VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx);
         if(roots == null || roots.length == 0) {
             return;
@@ -151,7 +148,7 @@ public class MergeAction extends ContextAction {
      * @param partOfMultiFile 
      */
     private void performMerge(final Merge merge, RepositoryFile repositoryRoot, final VCSFileProxy file, SvnProgressSupport support, boolean partOfMultiFile) {
-        VCSFileProxy[][] split = Utils.splitFlatOthers(new VCSFileProxy[] {file} );
+        VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(new VCSFileProxy[] {file} );
         final boolean recursive;
         // there can be only 1 root file
         if(split[0].length > 0) {
@@ -163,7 +160,7 @@ public class MergeAction extends ContextAction {
         try {
             final SvnClient client;
             try {
-                client = Subversion.getInstance().getClient(repositoryRoot.getRepositoryUrl());
+                client = Subversion.getInstance().getClient(new Context(file), repositoryRoot.getRepositoryUrl());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, true, true);
                 return;

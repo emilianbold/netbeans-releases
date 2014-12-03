@@ -72,7 +72,9 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
@@ -223,7 +225,7 @@ public final class SvnProperties implements ActionListener {
         txtValue.append(NbBundle.getMessage(SvnProperties.class, "Binary_Content"));
         txtValue.append("\n");
         try {
-            txtValue.append(source.getCanonicalPath());
+            txtValue.append(VCSFileProxySupport.getCanonicalPath(source));
         } catch (IOException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);
         }
@@ -267,7 +269,7 @@ public final class SvnProperties implements ActionListener {
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
                     File source = chooser.getSelectedFile();
 
-                    if (Utils.isFileContentText(source)) {
+                    if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(source)) {
                         if (source.canRead()) {
                             StringWriter sw = new StringWriter();
                             try {
@@ -304,7 +306,7 @@ public final class SvnProperties implements ActionListener {
                 @Override
                 protected void perform() {
                     try {
-                        SvnClient client = Subversion.getInstance().getClient(false);
+                        SvnClient client = Subversion.getInstance().getClient(false, new Context(roots));
                         properties = new HashMap<String, String>();
                         for (VCSFileProxy f : roots) {
                             ISVNStatus status = SvnUtils.getSingleStatus(client, f);
@@ -382,7 +384,7 @@ public final class SvnProperties implements ActionListener {
                 protected void perform() {
                     SvnClient client;
                     try {
-                        client = Subversion.getInstance().getClient(false);
+                        client = Subversion.getInstance().getClient(false, new Context(roots));
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
@@ -494,7 +496,7 @@ public final class SvnProperties implements ActionListener {
                 protected void perform() {
                     SvnClient client;
                     try {
-                        client = Subversion.getInstance().getClient(false);
+                        client = Subversion.getInstance().getClient(false, new Context(roots));
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;

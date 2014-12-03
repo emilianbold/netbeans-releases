@@ -40,44 +40,62 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.remote.util;
+package org.netbeans.modules.subversion.remote.versioning.util;
 
-import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.remote.Subversion;
-import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
-import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.remote.versioning.util.SearchHistorySupport;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Should be implemented by a particular VCS system and returned on a {@link FileObject#getAttribute(java.lang.String)}
+ * call with the {@link #PROVIDED_EXTENSIONS_SEARCH_HISTORY} argument.
+ * 
  * @author Tomas Stupka
  */
-public class SvnSearchHistorySupport extends SearchHistorySupport {
+public abstract class SearchHistorySupport {
 
-    public SvnSearchHistorySupport(VCSFileProxy file) {
-        super(file);
+    public static final String PROVIDED_EXTENSIONS_SEARCH_HISTORY = "ProvidedExtensions.SearchHistorySupport";
+
+    private static final Logger LOG = Logger.getLogger(SearchHistorySupport.class.getName());
+
+    private final VCSFileProxy file;
+
+    protected SearchHistorySupport(VCSFileProxy file) {
+        this.file = file;
     }
 
-    @Override
-    protected boolean searchHistoryImpl(final int line) throws IOException {
-        if(!SvnClientFactory.isClientAvailable(new Context(getFile()))) {
-            Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+    public static SearchHistorySupport getInstance(VCSFileProxy file) {
+        FileObject fo = file.toFileObject();
+        if(fo == null) {
+            return null;
+        }
+        SearchHistorySupport support = (SearchHistorySupport) fo.getAttribute(PROVIDED_EXTENSIONS_SEARCH_HISTORY);
+        return support;
+    }
+
+    protected VCSFileProxy getFile() {
+        return file;
+    }
+
+    /**
+     * @see org.netbeans.modules.bugtracking.spi.VCSAccessor#searchHistory(File, int)
+     */
+    public boolean searchHistory(int line) throws IOException {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in  awt!";
+        if (!file.exists()) {
+            LOG.log(Level.WARNING, "Trying to show history for non-existent file {0}", file.getPath());
             return false;
         }
-
-        /**
-         * Open in AWT
-         */
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                SearchHistoryAction.openSearch(getFile(), line);
-            }
-        });
-        return true;
+        if (!file.isFile()) {
+            LOG.log(Level.WARNING, "Trying to show history for a folder {0}", file.getPath());
+            return false;
+        }
+        return searchHistoryImpl(line);
     }
+
+    protected abstract boolean searchHistoryImpl(int line) throws IOException;
 
 }

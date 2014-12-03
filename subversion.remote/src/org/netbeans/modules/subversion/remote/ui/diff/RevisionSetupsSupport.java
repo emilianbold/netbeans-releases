@@ -121,9 +121,9 @@ class RevisionSetupsSupport {
             return new Setup[0];
         }
         try {
-            SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
-            List<Setup> setups = new ArrayList<Setup>();
             VCSFileProxy[] roots = getRoots();
+            SvnClient client = Subversion.getInstance().getClient(new Context(roots), repositoryUrl);
+            List<Setup> setups = new ArrayList<Setup>();
             for (VCSFileProxy root : roots) {
                 boolean flatFile = VersioningSupport.isFlat(root);
                 final SVNUrl leftUrl = roots.length > 1

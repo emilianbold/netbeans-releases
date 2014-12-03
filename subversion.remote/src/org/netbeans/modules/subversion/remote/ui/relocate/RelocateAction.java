@@ -195,7 +195,7 @@ public class RelocateAction extends ContextAction {
             @Override
             protected void perform() {                    
                 try {
-                    client = Subversion.getInstance().getClient(url);
+                    client = Subversion.getInstance().getClient(ctx, url);
                     client.relocate(url.toString(), newUrl, wc, true);
                     patchCache();
                 } catch (SVNClientException ex) {

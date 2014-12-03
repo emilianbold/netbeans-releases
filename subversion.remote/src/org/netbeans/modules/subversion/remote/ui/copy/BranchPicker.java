@@ -139,7 +139,7 @@ class BranchPicker {
             @Override
             protected void perform () {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(repositoryFile.getRepositoryUrl());
+                    SvnClient client = Subversion.getInstance().getClient(null, repositoryFile.getRepositoryUrl());
                     final Map<String, ISVNDirEntry[]> entries = new HashMap<String, ISVNDirEntry[]>(2);
                     for (String pathName : new String[] { PREFIX_BRANCHES, PREFIX_TAGS }) {
                         if (isCanceled()) {

@@ -116,11 +116,13 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public boolean beforeDelete(VCSFileProxy file) {
         Subversion.LOG.log(Level.FINE, "beforeDelete {0}", file);
-        if(!SvnClientFactory.isClientAvailable()) {
+        if(!SvnClientFactory.isClientAvailable(new Context(file))) {
             Subversion.LOG.fine(" skipping delete due to missing client");
             return false;
         }
-        if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
+        if (SvnUtils.isPartOfSubversionMetadata(file)) {
+            return true;
+        }
         // calling cache results in SOE, we must check manually
         return isVersioned(file.getParentFile());
     }
@@ -135,7 +137,7 @@ class FilesystemHandler extends VCSInterceptor {
         Subversion.LOG.log(Level.FINE, "doDelete {0}", file);
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
-                SvnClient client = Subversion.getInstance().getClient(false);
+                SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                 try {
                     client.remove(new VCSFileProxy [] { file }, true); // delete all files recursively
                     return;
@@ -193,7 +195,7 @@ class FilesystemHandler extends VCSInterceptor {
                         return;
                     }
                     try {
-                        SvnClient client = Subversion.getInstance().getClient(false);
+                        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                         if (shallRemove(client, file)) {
                             client.remove(new VCSFileProxy [] { file }, true);
                         }
@@ -280,7 +282,7 @@ class FilesystemHandler extends VCSInterceptor {
                 Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
                 retval = false;
             } else if (Utilities.isMac() || Utilities.isWindows()) {
-                String existingFilename = FileUtils.getExistingFilenameInParent(file);
+                String existingFilename = VCSFileProxySupport.getExistingFilenameInParent(file);
                 if (existingFilename != null) {
                     retval = false;
                 }
@@ -292,7 +294,7 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public boolean beforeMove(VCSFileProxy from, VCSFileProxy to) {
         Subversion.LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[]{from, to});
-        if(!SvnClientFactory.isClientAvailable()) {
+        if(!SvnClientFactory.isClientAvailable(new Context(from))) {
             Subversion.LOG.fine(" skipping move due to missing client");
             return false;
         }
@@ -337,7 +339,7 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public boolean beforeCopy(VCSFileProxy from, VCSFileProxy to) {
         Subversion.LOG.log(Level.FINE, "beforeCopy {0} -> {1}", new Object[]{from, to});
-        if(!SvnClientFactory.isClientAvailable()) {
+        if(!SvnClientFactory.isClientAvailable(new Context(from))) {
             Subversion.LOG.fine(" skipping copy due to missing client");
             return false;
         }
@@ -392,7 +394,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     private void svnCopyImplementation(final VCSFileProxy from, final VCSFileProxy to) throws IOException {
         try {
-            SvnClient client = Subversion.getInstance().getClient(false);
+            SvnClient client = Subversion.getInstance().getClient(false, new Context(from));
 
             // prepare destination, it must be under Subversion control
             removeInvalidMetadata();
@@ -511,7 +513,7 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public boolean beforeCreate(VCSFileProxy file, boolean isDirectory) {
         Subversion.LOG.log(Level.FINE, "beforeCreate {0}", file);
-        if(!SvnClientFactory.isClientAvailable()) {
+        if(!SvnClientFactory.isClientAvailable(new Context(file))) {
             Subversion.LOG.fine(" skipping create due to missing client");
             return false;
         }
@@ -528,7 +530,7 @@ class FilesystemHandler extends VCSInterceptor {
         } else {
             if (!file.exists()) {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(false);
+                    SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                     // check if the file wasn't just deleted in this session
                     revertDeleted(client, file, true);
                 } catch (SVNClientException ex) {
@@ -567,12 +569,12 @@ class FilesystemHandler extends VCSInterceptor {
                     cache.directoryContentChanged(file);
                 } else if ((status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 && file.exists()) {
                     // file exists but it's status is set to deleted
-                    VCSFileProxy temporary = FileUtils.generateTemporaryFile(file.getParentFile(), file.getName());
+                    VCSFileProxy temporary = VCSFileProxySupport.generateTemporaryFile(file.getParentFile(), file.getName());
                     try {
-                        SvnClient client = Subversion.getInstance().getClient(false);
-                        if (file.renameTo(temporary)) {
+                        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
+                        if (VCSFileProxySupport.renameTo(file, temporary)) {
                             client.revert(file, false);
-                            file.delete();
+                            VCSFileProxySupport.delete(file);
                         } else {
                             Subversion.LOG.log(Level.WARNING, "FileSystemHandler.afterCreate: cannot rename {0} to {1}", new Object[] { file, temporary }); //NOI18N
                             client.addFile(file); // at least add the file so it is not deleted
@@ -582,14 +584,14 @@ class FilesystemHandler extends VCSInterceptor {
                     } finally {
                         if (temporary.exists()) {
                             try {
-                                if (!temporary.renameTo(file)) {
+                                if (!VCSFileProxySupport.renameTo(temporary, file)) {
                                     Subversion.LOG.log(Level.WARNING, "FileSystemHandler.afterCreate: cannot rename {0} back to {1}, {1} exists={2}", new Object[] { temporary, file, file.exists() }); //NOI18N
-                                    FileUtils.copyFile(temporary, file);
+                                    VCSFileProxySupport.copyFile(temporary, file);
                                 }
                             } catch (IOException ex) {
                                 Subversion.LOG.log(Level.INFO, "FileSystemHandler.afterCreate: cannot copy {0} back to {1}", new Object[] { temporary, file }); //NOI18N
                             } finally {
-                                temporary.delete();
+                                VCSFileProxySupport.delete(temporary);
                             }
                         }
                         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
@@ -601,7 +603,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterChange(final VCSFileProxy file) {
-        if(!SvnClientFactory.isClientAvailable()) {
+        if(!SvnClientFactory.isClientAvailable(new Context(file))) {
             Subversion.LOG.fine(" skipping afterChange due to missing client");
             return;
         }
@@ -624,7 +626,7 @@ class FilesystemHandler extends VCSInterceptor {
             return new Runnable() {
                 @Override
                 public void run() {
-                    if (!SvnClientFactory.isClientAvailable()) {
+                    if (!SvnClientFactory.isClientAvailable(new Context(file))) {
                         Subversion.LOG.fine(" skipping ProvidedExtensions.Refresh due to missing client"); //NOI18N
                         return;
                     }
@@ -651,7 +653,7 @@ class FilesystemHandler extends VCSInterceptor {
                 return null;
             }
 
-            if (!SvnClientFactory.isClientAvailable()) {
+            if (!SvnClientFactory.isClientAvailable(new Context(file))) {
                 Subversion.LOG.fine(" skipping ProvidedExtensions.VCSIsModified due to missing client"); //NOI18N
                 return null;
             }
@@ -735,7 +737,7 @@ class FilesystemHandler extends VCSInterceptor {
     // private methods ---------------------------
 
     private boolean hasMetadata(VCSFileProxy file) {
-        return VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR).canRead();
+        return VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR));
     }
 
     private boolean isVersioned(VCSFileProxy file) {
@@ -744,7 +746,7 @@ class FilesystemHandler extends VCSInterceptor {
             return true;
         }
         try {
-            SVNStatusKind statusKind = SvnUtils.getSingleStatus(Subversion.getInstance().getClient(false), file).getTextStatus();
+            SVNStatusKind statusKind = SvnUtils.getSingleStatus(Subversion.getInstance().getClient(false, new Context(file)), file).getTextStatus();
             return statusKind != SVNStatusKind.UNVERSIONED && statusKind != SVNStatusKind.IGNORED;
         } catch (SVNClientException ex) {
             return false;
@@ -803,7 +805,7 @@ class FilesystemHandler extends VCSInterceptor {
                 // our goal was ony to fix the metadata ->
                 //  -> get rid of the reverted file
                 internalyDeletedFiles.add(file); // prevents later removal in afterDelete if the file is recreated
-                file.delete();
+                VCSFileProxySupport.delete(file);
             }
         } catch (SVNClientException ex) {
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
@@ -815,7 +817,7 @@ class FilesystemHandler extends VCSInterceptor {
     private void svnMoveImplementation(final VCSFileProxy from, final VCSFileProxy to) throws IOException {        
         try {
             boolean force = true; // file with local changes must be forced
-            SvnClient client = Subversion.getInstance().getClient(false);
+            SvnClient client = Subversion.getInstance().getClient(false, new Context(from));
 
             // prepare destination, it must be under Subversion control
             removeInvalidMetadata();
@@ -864,7 +866,7 @@ class FilesystemHandler extends VCSInterceptor {
                             VCSFileProxy temp = from;
                             if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
                                 Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
-                                temp = FileUtils.generateTemporaryFile(from.getParentFile(), from.getName());
+                                temp = VCSFileProxySupport.generateTemporaryFile(from.getParentFile(), from.getName());
                                 Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
                                 client.move(from, temp, force);
                             }
@@ -872,7 +874,7 @@ class FilesystemHandler extends VCSInterceptor {
                             // check if the file wasn't just deleted in this session
                             revertDeleted(client, toStatus, to, true);
 
-                            moved = temp.renameTo(to);
+                            moved = VCSFileProxySupport.renameTo(temp, to);
                             if (moved) {
                                 // indeed just ADDED, not REPLACED
                                 if (status.getTextStatus().equals(SVNStatusKind.ADDED)) {
@@ -886,10 +888,10 @@ class FilesystemHandler extends VCSInterceptor {
                             // check if the file wasn't just deleted in this session
                             revertDeleted(client, toStatus, to, true);
 
-                            moved = from.renameTo(to);
+                            moved = VCSFileProxySupport.renameTo(from, to);
                         } else if (parentIgnored) {
                             // parent is ignored so do not add the file
-                            moved = from.renameTo(to);
+                            moved = VCSFileProxySupport.renameTo(from, to);
                             client.remove(new VCSFileProxy[] { from }, true);
                         } else {
                             SVNUrl repositorySource = SvnUtils.getRepositoryRootUrl(from);
@@ -901,7 +903,7 @@ class FilesystemHandler extends VCSInterceptor {
                                 } catch (SVNClientException ex) {
                                     if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
                                         Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
-                                        VCSFileProxy temp = FileUtils.generateTemporaryFile(to.getParentFile(), from.getName());
+                                        VCSFileProxy temp = VCSFileProxySupport.generateTemporaryFile(to.getParentFile(), from.getName());
                                         Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
                                         client.move(from, temp, force);
                                         Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 2: {0} -> {1}", new Object[] { temp, to }); //NOI18N
@@ -917,7 +919,7 @@ class FilesystemHandler extends VCSInterceptor {
                                     // tree should be moved separately, otherwise the metadata from the source WC will be copied too
                                     moveFolderToDifferentRepository(from, to);
                                     remove = true;
-                                } else if (from.renameTo(to)) {
+                                } else if (VCSFileProxySupport.renameTo(from, to)) {
                                     remove = true;
                                 } else {
                                     Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
@@ -981,7 +983,7 @@ class FilesystemHandler extends VCSInterceptor {
      * under Subversion (so it contains metadata),
      */
     private boolean addDirectories(final VCSFileProxy dir) throws SVNClientException  {
-        SvnClient client = Subversion.getInstance().getClient(false);
+        SvnClient client = Subversion.getInstance().getClient(false, new Context(dir));
         ISVNStatus s = getStatus(client, dir);
         if(s.getTextStatus().equals(SVNStatusKind.IGNORED)) {
             return false;
@@ -1013,7 +1015,7 @@ class FilesystemHandler extends VCSInterceptor {
 
     private boolean copyFile(VCSFileProxy from, VCSFileProxy to) {
         try {
-            FileUtils.copyFile(from, to);
+            VCSFileProxySupport.copyFile(from, to);
         } catch (IOException ex) {
             SvnClientExceptionHandler.notifyException(ex, false, false); // log this
             return false;
@@ -1030,7 +1032,7 @@ class FilesystemHandler extends VCSInterceptor {
                     try {
                         // unlock files that...
                         // ... have svn:needs-lock prop set
-                        SvnClient client = Subversion.getInstance().getClient(false);
+                        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                         boolean hasPropSet = false;
                         for (ISVNProperty prop : client.getProperties(file)) {
                             if ("svn:needs-lock".equals(prop.getName())) { //NOI18N
@@ -1044,7 +1046,7 @@ class FilesystemHandler extends VCSInterceptor {
                             if (status != null && status.getTextStatus() != SVNStatusKind.ADDED) {
                                 SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
                                 if (url != null) {
-                                    client = Subversion.getInstance().getClient(url);
+                                    client = Subversion.getInstance().getClient(new Context(file), url);
                                     if (status.getLockOwner() != null) {
                                         // the file is locked yet it's still read-only, it may be a result of:
                                         // 1. svn lock A

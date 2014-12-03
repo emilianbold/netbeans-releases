@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.remote.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -91,6 +92,21 @@ public final class VCSFileProxySupport {
         File javaFile = file.toFile();
         if (javaFile != null) {
             return javaFile.mkdir();
+        } else {
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
+            if (!status.isOK()) {
+                ProcessUtils.LOG.log(Level.INFO, status.toString());
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+    
+    public static boolean mkdirs(VCSFileProxy file) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            return javaFile.mkdirs();
         } else {
             ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
             if (!status.isOK()) {
@@ -193,5 +209,77 @@ public final class VCSFileProxySupport {
                 throw new FileNotFoundException();
             }
         }
+    }
+    
+    public static boolean isSymlink(VCSFileProxy file, VCSFileProxy root) {
+        boolean symlink = false;
+        //Path path, checkoutRoot;
+        //path = file.toPath().normalize();
+        //checkoutRoot = root.toPath().normalize();
+        //symlink = isSymlink(path, checkoutRoot);
+        return symlink;
+    }
+    
+    public static boolean canRead(VCSFileProxy file) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static long length(VCSFileProxy file) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static String getCanonicalPath(VCSFileProxy file) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    public static VCSFileProxy getCanonicalFile(VCSFileProxy file) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static VCSFileProxy generateTemporaryFile(VCSFileProxy file, String name) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static boolean renameTo(VCSFileProxy from, VCSFileProxy to){
+        throw new UnsupportedOperationException();
+    }
+
+    public static boolean copyFile(VCSFileProxy from, VCSFileProxy to) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Returns the first found file whose filename is the same (in a case insensitive way) as given <code>file</code>'s.
+     * @param file
+     * @return the first found file with the same name, but ignoring case, or <code>null</code> if no such file is found.
+     */
+    public static String getExistingFilenameInParent(VCSFileProxy file) {
+        String filename = null;
+        if (file == null) {
+            return filename;
+        }
+        VCSFileProxy parent = file.getParentFile();
+        if (parent == null) {
+            return filename;
+        }
+        VCSFileProxy[] children = parent.listFiles();
+        if (children == null) {
+            return filename;
+        }
+        for (VCSFileProxy child : children) {
+            if (file.getName().equalsIgnoreCase(child.getName())) {
+                filename = child.getName();
+                break;
+            }
+        }
+        return filename;
+    }
+    
+    /**
+     * Copies the specified sourceFile to the specified targetFile.
+     * It <b>closes</b> the input stream.
+     */
+    public static void copyStreamToFile(InputStream inputStream, VCSFileProxy targetFile) throws IOException {
+        throw new UnsupportedOperationException();
     }
 }

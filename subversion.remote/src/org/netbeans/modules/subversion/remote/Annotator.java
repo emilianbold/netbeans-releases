@@ -71,6 +71,7 @@ import org.netbeans.modules.subversion.remote.ui.properties.VersioningInfoAction
 import org.netbeans.modules.subversion.remote.ui.status.StatusAction;
 import org.netbeans.modules.subversion.remote.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -673,20 +674,21 @@ public class Annotator extends VCSAnnotator {
     private boolean clientInitStarted;
     private boolean checkClientAvailable (String methodName, final VCSFileProxy[] files) {
         boolean available = true;
-        if (!SvnClientFactory.isInitialized() && EventQueue.isDispatchThread()) {
+        final Context context = new Context(files);
+        if (!SvnClientFactory.isInitialized(context) && EventQueue.isDispatchThread()) {
             if (!clientInitStarted) {
                 clientInitStarted = true;
                 Subversion.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
-                        SvnClientFactory.init();
+                        SvnClientFactory.getInstance(context);
                         Subversion.getInstance().refreshAllAnnotations();
                     }
                 });
             }
             Subversion.LOG.log(Level.FINE, " skipping {0} due to not yet initialized client", methodName); //NOI18N
             available = false;
-        } else if(!SvnClientFactory.isClientAvailable()) {
+        } else if(!SvnClientFactory.isClientAvailable(new Context(files))) {
             Subversion.LOG.log(Level.FINE, " skipping {0} due to missing client", methodName); //NOI18N
             available = false;
         }

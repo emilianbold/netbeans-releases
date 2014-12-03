@@ -74,7 +74,7 @@ public class CheckoutPanel extends JPanel {
      */
     public CheckoutPanel() {
         initComponents();
-        boolean newFormat = SvnClientFactory.isCLI() && !SvnClientFactory.isCLIOldFormat();
+        boolean newFormat = !SvnClientFactory.isCLIOldFormat();
         workingCopyFormat.setText(getString(newFormat ? "MSG_WorkingCopyFormat17" : "MSG_WorkingCopyFormat16")); //NOI18N
         preferOldFormatCheckBox.setSelected(false);
         preferOldFormatCheckBox.setVisible(false);

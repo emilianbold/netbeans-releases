@@ -255,5 +255,31 @@ public class Utils {
         }
         return false;
     }
+    
+    /**
+     * Searches for common filesystem parent folder for given files.
+     *
+     * @param a first file
+     * @param b second file
+     * @return File common parent for both input files with the longest
+     * filesystem path or null of these files have not a common parent
+     */
+    public static VCSFileProxy getCommonParent(VCSFileProxy a, VCSFileProxy b) {
+        for (;;) {
+            if (a.equals(b)) {
+                return a;
+            } else if (a.getPath().length() > b.getPath().length()) {
+                a = a.getParentFile();
+                if (a == null) {
+                    return null;
+                }
+            } else {
+                b = b.getParentFile();
+                if (b == null) {
+                    return null;
+                }
+            }
+        }
+    }
 
 }

@@ -100,15 +100,13 @@ public class OpenVersioningAction extends ShowAllChangesAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
-                
         SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
         if (stc.hasContext() == false) {
             super.actionPerformed(e);
         } else {
+            if(!Subversion.getInstance().checkClientAvailable(stc.getContext())) {
+                return;
+            }
             stc.open();
             stc.requestActive();
         }

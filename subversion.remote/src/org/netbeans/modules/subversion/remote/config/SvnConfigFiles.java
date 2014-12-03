@@ -61,9 +61,9 @@ import org.ini4j.Ini;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
-import org.netbeans.modules.subversion.remote.client.SvnClientFactory.ConnectionType;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileUtil;
@@ -99,9 +99,6 @@ public class SvnConfigFiles {
     private static final String UNIX_CONFIG_DIR = ".subversion/";                                                               // NOI18N
     private static final String GROUPS_SECTION = "groups";                                                                      // NOI18N
     private static final String GLOBAL_SECTION = "global";                                                                      // NOI18N
-    private static final String WINDOWS_USER_APPDATA = getAPPDATA();
-    private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Subversion";                                     // NOI18N
-    private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Subversion";                                // NOI18N
     private static final List<String> DEFAULT_GLOBAL_IGNORES = 
             parseGlobalIgnores("*.o *.lo *.la #*# .*.rej *.rej .*~ *~ .#* .DS_Store");                                          // NOI18N
     private static final boolean DO_NOT_SAVE_PASSPHRASE = Boolean.getBoolean("versioning.subversion.noPassphraseInConfig"); // NOI18N
@@ -185,7 +182,7 @@ public class SvnConfigFiles {
      *     
      * @param host the host
      */
-    public VCSFileProxy storeSvnServersSettings(SVNUrl url, ConnectionType connType) {
+    public VCSFileProxy storeSvnServersSettings(SVNUrl url) {
                         
         assert url != null : "can\'t do anything for a null host";     // NOI18N
         VCSFileProxy sensitiveConfigFile = null;
@@ -306,10 +303,6 @@ public class SvnConfigFiles {
         if (command == null) {
             return;
         }
-        if (Utilities.isWindows()) {
-            // tunnel command should contain forward slashes even on windows
-            command = command.replace("\\", "/");                       //NOI18N
-        }
         Ini.Section tunnels = getSection(config, "tunnels", true);
         tunnels.put(tunnelName, command);
         storeIni(config, "config");                                                     // NOI18N
@@ -333,7 +326,7 @@ public class SvnConfigFiles {
         BufferedOutputStream bos = null;
         VCSFileProxy file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
         try {
-            file.getParentFile().mkdirs();
+            VCSFileProxySupport.mkdirs(file.getParentFile());
             ini.store(bos = FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);            
@@ -415,8 +408,6 @@ public class SvnConfigFiles {
         if(Utilities.isUnix()) {
             String path = System.getProperty("user.home") ;                     // NOI18N
             return path + "/" + UNIX_CONFIG_DIR;                                // NOI18N
-        } else if (Utilities.isWindows()){
-            return WINDOWS_CONFIG_DIR;
         } 
         return "";                                                              // NOI18N
     }
@@ -519,7 +510,7 @@ public class SvnConfigFiles {
         VCSFileProxy file = FileUtil.normalizeFile(new File(getNBConfigPath() + File.separatorChar + fileName)); // NOI18N
         BufferedOutputStream bos = null;
         try {
-            file.getParentFile().mkdirs();
+            VCSFileProxySupport.mkdirs(file.getParentFile());
             systemIniFile.store(bos = FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
@@ -628,73 +619,7 @@ public class SvnConfigFiles {
      * Return the path for the systemwide command lines configuration directory 
      */
     private static String getGlobalConfigPath () {
-        if(Utilities.isUnix()) {
-            return "/etc/subversion";               // NOI18N
-        } else if (Utilities.isWindows()){
-            return WINDOWS_GLOBAL_CONFIG_DIR;
-        } 
-        return "";                                  // NOI18N
-    }
-
-    /**
-     * Returns the value for the %APPDATA% env variable on windows
-     *
-     */
-    private static String getAPPDATA() {
-        String appdata = "";
-        if(Utilities.isWindows()) {
-            appdata = System.getenv("APPDATA");// NOI18N
-        }
-        return appdata!= null? appdata: "";
-    }
-
-    /**
-     * Returns the value for the %ALLUSERSPROFILE% + the last foder segment from %APPDATA% env variables on windows
-     *
-     */
-    private static String getGlobalAPPDATA() {
-        if(Utilities.isWindows()) {
-            String globalProfile = System.getenv("ALLUSERSPROFILE");                                // NOI18N
-            if(globalProfile == null || globalProfile.trim().equals("")) {                          // NOI18N
-                globalProfile = "";
-            }
-            String appdataPath = WINDOWS_USER_APPDATA;
-            if(appdataPath == null || appdataPath.equals("")) {                                     // NOI18N
-                return "";                                                                          // NOI18N
-            }                                                                                       // NOI18N
-            return getWinUserAppdata(appdataPath, globalProfile);                                          // NOI18N
-        }
-        return "";                                                                                  // NOI18N
-    }
-
-    private static String getWinUserAppdata(String appdataPath, String globalProfile) {
-        appdataPath = trimBackslash(appdataPath);
-        globalProfile = trimBackslash(globalProfile);
-        String appdata = "";                                                                        // NOI18N
-        int idx = appdataPath.lastIndexOf("\\");                                                    // NOI18N
-        if (idx > -1) {
-            appdata = appdataPath.substring(idx + 1);
-            if (appdata.trim().equals("")) {                                                        // NOI18N
-                int previdx = appdataPath.lastIndexOf("\\", idx);                                   // NOI18N
-                if (idx > -1) {
-                    appdata = appdataPath.substring(previdx + 1, idx);
-                }
-            }
-        } else {
-            return "";                                                                              // NOI18N
-        }
-        if(globalProfile.endsWith("\\")) {                                                          // NOI18N
-            globalProfile = globalProfile.substring(0, globalProfile.length() - 1);
-        }
-        return globalProfile + "/" + appdata;                                                       // NOI18N
-    }
-
-    private static String trimBackslash(String appdataPath) {
-        if (appdataPath.endsWith("\\")) {
-            // NOI18N
-            appdataPath = appdataPath.substring(0, appdataPath.length() - 1);
-        }
-        return appdataPath;
+        return "/etc/subversion";               // NOI18N
     }
 
     private String getProxyPassword(String key) {

@@ -279,6 +279,10 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         return context != null && context.getRootFiles().length > 0;
     }
 
+    public Context getContext() {
+        return context;
+    }
+    
     @Override
     protected String preferredID() {
         return "synchronize";    // NOI18N       

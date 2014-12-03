@@ -55,12 +55,14 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.history.HistoryAction;
-import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.util.*;
 
 /**
@@ -215,7 +217,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                 } else {
                     file = VersionsCache.getInstance().getFileRevision(originalFile, revision.toString());
                 }
-                FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
+                VCSFileProxySupport.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {
                 Exception ex = e;
                 if (e.getCause() != null && e.getCause() instanceof SVNClientException) {
@@ -245,7 +247,8 @@ public class HistoryProvider implements VCSHistoryProvider {
             if(files == null || files.length == 0) {
                 return;
             }
-            if(!Subversion.isClientAvailable(true)) {
+            
+            if(!SvnClientFactory.isClientAvailable(new Context(files))) {
                 Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
                 return;
             }
@@ -313,7 +316,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                     try {
                         SVNUrl repoUrl = SvnUtils.getRepositoryRootUrl(file);
                         for(VCSFileProxy file : files) {
-                            SvnClient client = Subversion.getInstance().getClient(false);
+                            SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                             ISVNInfo info = client.getInfo(file);
                             SVNUrl fileUrl = info.getUrl();
                             SVNRevision.Number svnRevision = new SVNRevision.Number(Long.parseLong(entry.getRevision()));
@@ -354,7 +357,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                 try {
                     SVNUrl repoUrl = SvnUtils.getRepositoryRootUrl(files[0]);
                     for (VCSFileProxy file : files) {
-                        SvnClient client = Subversion.getInstance().getClient(false);
+                        SvnClient client = Subversion.getInstance().getClient(false, new Context(files));
                         ISVNInfo info = client.getInfo(file);
                         SVNUrl fileUrl = info.getUrl();
                         SvnUtils.openInRevision(file, repoUrl, fileUrl, revision, revision, showAnnotations);

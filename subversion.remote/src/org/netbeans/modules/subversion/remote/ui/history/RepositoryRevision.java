@@ -451,7 +451,7 @@ final class RepositoryRevision {
         @Override
         protected void perform () {
             try {
-                SvnClient client = Subversion.getInstance().getClient(repositoryRootUrl, this);
+                SvnClient client = Subversion.getInstance().getClient(new Context(selectionRoots), repositoryRootUrl, this);
                 ISVNLogMessage [] messages = new ISVNLogMessage[0];
                 if (pegRevisions == null) {
                     // searching URL

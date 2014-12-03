@@ -61,6 +61,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.client.parser.ConflictDescriptionParser.ParserConflictDescriptor;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -165,24 +166,24 @@ public class EntriesCache {
         return instance;
     }
 
-    Map<String, String> getFileAttributes(File file) throws IOException, SAXException {
+    Map<String, String> getFileAttributes(VCSFileProxy file) throws IOException, SAXException {
         return getFileAttributes(file, true);
     }
 
-    private Map<String, String> getFileAttributes(File file, boolean mergeWithParent) throws IOException, SAXException {
-        File entriesFile = file == null ? null : SvnWcUtils.getEntriesFile(file);
+    private Map<String, String> getFileAttributes(VCSFileProxy file, boolean mergeWithParent) throws IOException, SAXException {
+        VCSFileProxy entriesFile = file == null ? null : SvnWcUtils.getEntriesFile(file);
         if(entriesFile==null) {
             return null;
         }
         return getFileAttributes(entriesFile, file, mergeWithParent);
     }
 
-    private synchronized Map<String, String> getFileAttributes(final File entriesFile, final File file, boolean mergeWithParent) throws IOException, SAXException {
+    private synchronized Map<String, String> getFileAttributes(final VCSFileProxy entriesFile, final VCSFileProxy file, boolean mergeWithParent) throws IOException, SAXException {
         EntryAttributes ea = getEntryAttributes(entriesFile, file, mergeWithParent);
         return ea.get(file.isDirectory() ? SVN_THIS_DIR : file.getName());
     }
 
-    String[] getChildren (File file) throws IOException, SAXException {
+    String[] getChildren (VCSFileProxy file) throws IOException, SAXException {
         File entriesFile = SvnWcUtils.getSvnFile(file, SvnWcUtils.ENTRIES);
         String[] children = new String[0];
         if (entriesFile != null) {
@@ -202,7 +203,7 @@ public class EntriesCache {
         return children;
     }
 
-    private EntryAttributes getEntryAttributes (File entriesFile, File file, boolean mergeWithParent) throws IOException, SAXException {
+    private EntryAttributes getEntryAttributes (VCSFileProxy entriesFile, VCSFileProxy file, boolean mergeWithParent) throws IOException, SAXException {
         EntriesFile ef = getEntries().get(entriesFile.getAbsolutePath());
         long lastModified = entriesFile.lastModified();
         long fileLength = entriesFile.length();

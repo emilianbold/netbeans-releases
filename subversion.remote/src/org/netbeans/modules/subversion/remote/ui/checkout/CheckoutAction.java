@@ -57,6 +57,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.subversion.remote.util.CheckoutCompleted;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.awt.ActionID;
@@ -91,10 +92,6 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
           
     @Override
     public void actionPerformed(ActionEvent ae) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
-        
         org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("SVN");
         performCheckout(false);
     }
@@ -109,6 +106,9 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         final SVNUrl repository = wizard.getRepositoryRoot();
         final RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
         final VCSFileProxy workDir = wizard.getWorkdir();
+        if(!Subversion.getInstance().checkClientAvailable(new Context(workDir))) {
+            return null;
+        }
         final boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
         final boolean doExport = wizard.isExport();
         final boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
@@ -121,7 +121,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
                 SvnClient client;
                 try {
                     // this needs to be done in a background thread, otherwise the password won't be acquired from the keyring
-                    client = Subversion.getInstance().getClient(repository);
+                    client = Subversion.getInstance().getClient(new Context(workDir), repository);
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
                     return;

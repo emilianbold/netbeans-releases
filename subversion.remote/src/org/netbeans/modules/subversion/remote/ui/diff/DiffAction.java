@@ -166,7 +166,7 @@ public class DiffAction extends ContextAction {
     
     @Override
     protected void performContextAction(final Node[] nodes) {
-        ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+        ClientCheckSupport.getInstance().runInAWTIfAvailable(nodes, ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
             @Override
             public void run() {
                 Context ctx = getContext(nodes);
@@ -212,7 +212,7 @@ public class DiffAction extends ContextAction {
 
         @Override
         protected void performContextAction (final Node[] nodes) {
-            ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+            ClientCheckSupport.getInstance().runInAWTIfAvailable(nodes, ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
                 @Override
                 public void run() {
                     Context ctx = getContext(nodes);
@@ -242,7 +242,7 @@ public class DiffAction extends ContextAction {
 
         @Override
         protected void performContextAction (final Node[] nodes) {
-            ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+            ClientCheckSupport.getInstance().runInAWTIfAvailable(nodes, ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
                 @Override
                 public void run() {
                     Context ctx = getContext(nodes);

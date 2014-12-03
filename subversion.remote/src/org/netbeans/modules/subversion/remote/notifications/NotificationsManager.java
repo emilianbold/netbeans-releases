@@ -74,8 +74,9 @@ import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.subversion.remote.versioning.util.VCSNotificationDisplayer;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.VCSNotificationDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -251,7 +252,7 @@ public class NotificationsManager {
                 VCSFileProxy file = it.next();
                 if (!isEnabled(file, true)) {
                     if (LOG.isLoggable(Level.FINER)) {
-                        LOG.log(Level.FINER, "File {0} is probably not from kenai, notifications disabled", new Object[] { file.getAbsolutePath() } ); //NOI18N
+                        LOG.log(Level.FINER, "File {0} is probably not from kenai, notifications disabled", new Object[] { file.getPath() } ); //NOI18N
                     }
                     it.remove();
                 }
@@ -273,10 +274,11 @@ public class NotificationsManager {
                 SVNUrl repositoryUrl = entry.getKey();
                 HashMap<Long, Notification> notifications = new HashMap<Long, Notification>();
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
+                    HashSet<VCSFileProxy> files = entry.getValue();
+                    VCSFileProxy[] roots = files.toArray(new VCSFileProxy[files.size()]);
+                    SvnClient client = Subversion.getInstance().getClient(new Context(roots), repositoryUrl);
                     if (client != null) {
-                        HashSet<VCSFileProxy> files = entry.getValue();
-                        ISVNStatus[] statuses = client.getStatus(files.toArray(new VCSFileProxy[files.size()]));
+                        ISVNStatus[] statuses = client.getStatus(roots);
                         for (ISVNStatus status : statuses) {
                             if ((SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())
                                     || SVNStatusKind.IGNORED.equals(status.getTextStatus()))) {
@@ -293,7 +295,7 @@ public class NotificationsManager {
                                     String canonicalPath;
                                     try {
                                         // i suspect the file to be under a symlink folder
-                                        canonicalPath = status.getFile().getCanonicalPath();
+                                        canonicalPath = VCSFileProxySupport.getCanonicalPath(file);
                                     } catch (IOException ex) {
                                         canonicalPath = null;
                                     }

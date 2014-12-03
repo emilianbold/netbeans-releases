@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.subversion.remote.client.parser;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -247,7 +247,7 @@ public class WorkingCopyDetails {
         returnValue = propsFile != null ? propsFile.exists() : false;
         if (returnValue) {
             //A size of 4 bytes is equivalent to empty properties
-            InputStream inputStream = new java.io.FileInputStream(propsFile);
+            InputStream inputStream = propsFile.getInputStream(false);
             try {
                 int size = 0;
                 int retval = inputStream.read();
@@ -345,7 +345,7 @@ public class WorkingCopyDetails {
 	if (baseFile != null) {
             BufferedReader reader = null;
             try {
-                reader = new BufferedReader(new java.io.FileReader(baseFile));
+                reader = new BufferedReader(new InputStreamReader(baseFile.getInputStream(false)));
 	        String firstLine = reader.readLine();
 	        returnValue = firstLine.startsWith("link");     // NOI18N
             } finally {
@@ -366,8 +366,8 @@ public class WorkingCopyDetails {
         InputStream baseStream = null;
         InputStream fileStream = null;
         try {
-            baseStream = new BufferedInputStream(new java.io.FileInputStream(textBaseFile));
-            fileStream = new BufferedInputStream(new java.io.FileInputStream(file));
+            baseStream = textBaseFile.getInputStream(false);
+            fileStream = file.getInputStream(false);
 
             int baseRetVal = baseStream.read();
             int fileRetVal =  fileStream.read();
@@ -428,8 +428,8 @@ public class WorkingCopyDetails {
         BufferedReader fileReader = null;
 
         try {
-            baseReader = new BufferedReader(new java.io.FileReader(textBaseFile));
-            fileReader = new BufferedReader(new java.io.FileReader(file));
+            baseReader = new BufferedReader(new InputStreamReader(textBaseFile.getInputStream(false)));
+            fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
 
             String baseLine = baseReader.readLine();
             String fileLine = fileReader.readLine();

@@ -59,12 +59,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -149,7 +151,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
             String text = getWorkdirText();
             VCSFileProxy file = new File(text);
             if (file.exists() == false) {
-                boolean done = file.mkdirs();
+                boolean done = VCSFileProxySupport.mkdirs(file);
                 if (done == false) {
                     invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2013") + file.getPath(), false));// NOI18N
                     invalidTarget = true;
@@ -349,7 +351,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
     }
     
-    public File getWorkdir() {
+    public VCSFileProxy getWorkdir() {
         return new File(getWorkdirText());
     }        
 
