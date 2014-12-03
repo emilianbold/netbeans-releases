@@ -52,7 +52,7 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   setAlias:METHOD:[PUBLIC]:ESCAPED{setAlias}ESCAPED{(}<font color="#999999">ESCAPED{Ext.Class|String}ESCAPED{ }</font>ESCAPED{cls}ESCAPED{, }<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager</font>:
   setDefaultPostprocessorPosition:METHOD:[PRIVATE]:ESCAPED{setDefaultPostprocessorPosition}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{offset}ESCAPED{, }<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{relativeName}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManagerESCAPED{|}Manager</font>:
   setDefaultPostprocessors:METHOD:[PRIVATE]:ESCAPED{setDefaultPostprocessors}ESCAPED{(}<font color="#999999">ESCAPED{String|Array}ESCAPED{ }</font>ESCAPED{postprocessors}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManagerESCAPED{|}Manager</font>:
-  setNamespace:METHOD:[PUBLIC]:ESCAPED{setNamespace}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{value}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.setNamespace.valueESCAPED{|}setNamespace.value</font>:
+  setNamespace:METHOD:[PUBLIC]:ESCAPED{setNamespace}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{value}ESCAPED{)}:
   triggerCreated:METHOD:[PRIVATE]:ESCAPED{triggerCreated}ESCAPED{(}ESCAPED{className}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
 makeCtor:METHOD:[PRIVATE]:ESCAPED{makeCtor}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }makeCtor.constructor</font>:
   constructor:METHOD:[PRIVATE]:ESCAPED{constructor}ESCAPED{(}ESCAPED{)}:
@@ -66,36 +66,4 @@ Ext:CLASS:[PUBLIC]:ESCAPED{Ext}:
   namespace:FIELD:[PUBLIC]:ESCAPED{namespace}:
   undefine:METHOD:[PRIVATE]:ESCAPED{undefine}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{className}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   widget:METHOD:[PUBLIC]:ESCAPED{widget}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{config}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Manager.classesESCAPED{|}ObjectESCAPED{|}StringESCAPED{|}get.root</font>:
-aliases:VARIABLE:[PRIVATE]:ESCAPED{aliases}:
-i:VARIABLE:[PRIVATE]:ESCAPED{i}:
-ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
-alternates:VARIABLE:[PRIVATE]:ESCAPED{alternates}:
-i:VARIABLE:[PRIVATE]:ESCAPED{i}:
-ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
-alternate:VARIABLE:[PRIVATE]:ESCAPED{alternate}:
-cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
-  $className:FIELD:[PUBLIC]:ESCAPED{$className}:
-  displayName:FIELD:[PUBLIC]:ESCAPED{displayName}:
-prototype:CLASS:[PRIVATE]:ESCAPED{prototype}:
-xtypes:VARIABLE:[PRIVATE]:ESCAPED{xtypes}:
-aliases:VARIABLE:[PRIVATE]:ESCAPED{aliases}:
-widgetPrefix:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefix}<font color="#999999">ESCAPED{ : }String</font>:
-widgetPrefixLength:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefixLength}<font color="#999999">ESCAPED{ : }String.length</font>:
-xtypesChain:VARIABLE:[PRIVATE]:ESCAPED{xtypesChain}:
-xtypesMap:VARIABLE:[PRIVATE]:ESCAPED{xtypesMap}:
-i:VARIABLE:[PRIVATE]:ESCAPED{i}:
-ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
-alias:CLASS:[PRIVATE]:ESCAPED{alias}:
-xtype:CLASS:[PRIVATE]:ESCAPED{xtype}:
-cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
-  xtype:FIELD:[PUBLIC]:ESCAPED{xtype}:
-data:PARAMETER:[PUBLIC]:ESCAPED{data}:
-  alias:FIELD:[PUBLIC]:ESCAPED{alias}:
-  xtype:FIELD:[PUBLIC]:ESCAPED{xtype}:
-  xtypes:FIELD:[PUBLIC]:ESCAPED{xtypes}<font color="#999999">ESCAPED{ : }mixin.xtypes</font>:
-  xtypesChain:FIELD:[PUBLIC]:ESCAPED{xtypesChain}:
-  xtypesMap:FIELD:[PUBLIC]:ESCAPED{xtypesMap}<font color="#999999">ESCAPED{ : }Boolean</font>:
 UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
-mixins:VARIABLE:[PRIVATE]:ESCAPED{mixins}<font color="#999999">ESCAPED{ : }cls.prototype.mixinsESCAPED{|}prototype.mixins</font>:
-key:VARIABLE:[PRIVATE]:ESCAPED{key}:
-mixin:CLASS:[PRIVATE]:ESCAPED{mixin}:
