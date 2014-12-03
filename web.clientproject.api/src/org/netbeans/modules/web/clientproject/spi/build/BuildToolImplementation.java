@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.spi.build;
 
-package org.netbeans.modules.web.clientproject;
+import org.netbeans.api.annotations.common.NonNull;
 
-import java.io.IOException;
-import java.util.Collection;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.html.editor.api.index.HtmlIndex;
-import org.netbeans.modules.web.common.api.FileReference;
-import org.netbeans.modules.web.common.spi.DependentFileQueryImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
+/**
+ * Interface for build tool.
+ * <p>
+ * Implementations are expected to be found in project's lookup.
+ * @since 1.81
+ */
+public interface BuildToolImplementation {
 
-@ServiceProvider(service=DependentFileQueryImplementation.class)
-public class DependentFileQueryImpl implements DependentFileQueryImplementation {
+    /**
+     * Returns the <b>non-localized (usually english)</b> identifier of this build tool.
+     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
+     */
+    @NonNull
+    String getIdentifier();
 
-    @Override
-    public Dependency isDependent(FileObject master, FileObject dependent) {
-        Project p = FileOwnerQuery.getOwner(master);
-        if (p == null) {
-            return Dependency.UNKNOWN;
-        }
-        try {
-            HtmlIndex.AllDependenciesMaps all = HtmlIndex.get(p).getAllDependencies();
-            Collection<FileReference> c = all.getSource2dest().get(master);
-            if (c != null) {
-                for (FileReference fr : c) {
-                    if (dependent.equals(fr.target())) {
-                        return Dependency.YES;
-                    }
-                }
-            }
-            return Dependency.NO;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
+    /**
+     * Returns the display name of this build tool. The display name is used
+     * in the UI.
+     * @return the display name; never {@code null}
+     */
+    @NonNull
+    String getDisplayName();
+
+    /**
+     * Run "build" for the given command identifier.
+     * <p>
+     * This method can be called even if the current project does not support the given command.
+     * @param commandId command identifier
+     * @param waitFinished wait till the command finishes?
+     * @param showCustomizer show customizer if any problem occurs (e.g. command is not known/set to this build tool)
+     * @return {@code true} if command was run, {@code false} otherwise
+     */
+    boolean run(@NonNull String commandId, boolean waitFinished, boolean showCustomizer);
 
 }

@@ -218,8 +218,8 @@ public class RefreshManager {
                 fileObjects.add(fo);
             }
         }
-        scheduleRefresh(fileObjects, addExistingChildren);
-    }
+            scheduleRefresh(fileObjects, addExistingChildren);
+        }
        
     public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean addExistingChildren) {
         if (addExistingChildren) {
@@ -245,7 +245,10 @@ public class RefreshManager {
     private void scheduleRefreshImpl(Collection<RemoteFileObjectBase> fileObjects, boolean toTheHead) {
         if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
             RemoteLogger.getInstance().warning("scheduleRefresh(Collection<FileObject>) is called while host is not connected");
-        }        
+        }
+        if (fileObjects.isEmpty()) {
+            return;
+        }
         synchronized (queueLock) {
             for (RemoteFileObjectBase fo : fileObjects) {
                 String path = fo.getPath();

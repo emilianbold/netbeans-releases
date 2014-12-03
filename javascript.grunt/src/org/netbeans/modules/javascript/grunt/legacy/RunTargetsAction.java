@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.javascript.grunt.legacy;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -58,8 +58,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.grunt.TargetLister.Target;
-import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.javascript.grunt.legacy.TargetLister.Target;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -119,7 +118,8 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        ClientSideProjectUtilities.logUsage(RunTargetsAction.class, "USG_GRUNT_BUILD", null);
+                        // XXX
+                        //ClientSideProjectUtilities.logUsage(RunTargetsAction.class, "USG_GRUNT_BUILD", null);
                         new GruntfileExecutor(target.getOriginatingScript(), new String[]{target.getName()}).execute();
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);

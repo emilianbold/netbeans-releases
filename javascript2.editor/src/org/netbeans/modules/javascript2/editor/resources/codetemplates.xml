@@ -139,6 +139,37 @@ function ${name}(${parameters}) {
 }]]>
         </code>
     </codetemplate>
+    <codetemplate abbreviation="afun">
+        <code>
+<![CDATA[function(${cursor}) {
+    
+}]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="afunn">
+        <code>
+<![CDATA[function(${cursor}) {
+    
+};
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="it">
+        <code>
+<![CDATA[it('${cursor}', function() {
+    
+});
+]]>
+        </code>
+    </codetemplate>
+    <codetemplate abbreviation="des">
+        <code>
+<![CDATA[describe('${cursor}', function() {
+    
+});
+]]>
+        </code>
+    </codetemplate>
     <codetemplate abbreviation="if" descriptionId="CT_if">
         <code>
 <![CDATA[if (${expr}) {

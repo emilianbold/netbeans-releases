@@ -41,6 +41,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="nodeHintLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
+                      <Component id="nodeInstallLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -56,7 +57,10 @@
                   <Component id="nodeSearchButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="nodeHintLabel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="nodeHintLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="nodeInstallLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -103,6 +107,17 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="HINT" noResource="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="nodeInstallLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/Bundle.properties" key="NodeJsPathPanel.nodeInstallLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="nodeInstallLabelMousePressed"/>
+        <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="nodeInstallLabelMouseEntered"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="versionLabel">
       <Properties>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.grunt.legacy;
 
-@TemplateRegistration(folder = "ClientSide",
-        content = "Gruntfile.js",
-        scriptEngine = "freemarker", 
-        position = 600,
-        displayName = "#Templates.gruntfile.js",
-        description = "gruntdescription.html",
-        targetName = "Gruntfile",
-        category = "html5")
+import java.util.Collection;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
+import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 
-package org.netbeans.modules.web.clientproject.grunt;
+@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
-import org.netbeans.api.templates.TemplateRegistration;
+    private final ImportantFilesSupport support;
+    private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
+        @Override
+        public FileInfo create(FileObject fileObject) {
+            return new FileInfo(fileObject, fileObject.getName(), null);
+        }
+    };
 
+
+    public ImportantFilesImpl(Project project) {
+        assert project != null;
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), "Gruntfile.js"); // NOI18N
+    }
+
+    @Override
+    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
+        return support.getFiles(fileInfoCreator);
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        support.addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        support.removeChangeListener(listener);
+    }
+
+}
