@@ -49,6 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -56,6 +58,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Enumerations;
 import org.openide.util.test.TestFileUtils;
 
@@ -133,9 +138,28 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
 
         // After touching, X.txt will be newer than Y.txt.
         TestFileUtils.touch(FileUtil.toFile(touch), FileUtil.toFile(orig));
-        touch.refresh();
+        // It's not enough to wait only for DataFolder event
+        // because of number of RP tasks run before node children are updated
+        // must wait for reorder fired by node itself.
+        final CountDownLatch barrier = new CountDownLatch(1);
+        NodeListener nodeList = new NodeAdapter() {
 
-        waitEvents();
+            @Override
+            public void childrenReordered (NodeReorderEvent ev) {
+                barrier.countDown();
+            }
+          
+        };
+        n.addNodeListener(nodeList);
+        try {
+            touch.refresh();
+            waitEvents();
+            // wait for node reorder event
+            barrier.await(10, TimeUnit.SECONDS);
+        } finally {
+            n.removeNodeListener(nodeList);
+        }
+        assertEquals(0, barrier.getCount());
         assertTrue(DataFolder.PROP_CHILDREN + " change not fired", events.contains(DataFolder.PROP_CHILDREN));
 
         Node[] newNodes = n.getChildren().getNodes(true);
