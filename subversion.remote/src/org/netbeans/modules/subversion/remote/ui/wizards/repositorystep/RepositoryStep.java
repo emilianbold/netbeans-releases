@@ -214,7 +214,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                                             (SvnClientExceptionHandler.EX_NO_HOST_CONNECTION |          // host connection errors (misspeled host or proxy urls, ...)
                                              SvnClientExceptionHandler.EX_AUTHENTICATION |              // authentication errors
                                              SvnClientExceptionHandler.EX_SSL_NEGOTIATION_FAILED);      // client cert errors
-                    client = Subversion.getInstance().getClient(url, rc.getUsername(), rc.getPassword(), handledExceptions);
+                    client = Subversion.getInstance().getClient(null, url, rc.getUsername(), rc.getPassword(), handledExceptions);
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, true, true);
                     invalidMsg = new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Invalid", rc.getUrl()), false);

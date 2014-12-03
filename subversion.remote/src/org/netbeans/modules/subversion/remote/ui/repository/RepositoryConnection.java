@@ -247,7 +247,7 @@ public class RepositoryConnection {
     
     private SVNUrl removeEmptyPathSegments(SVNUrl url) throws MalformedURLException {
         String[] pathSegments = url.getPathSegments();
-        StringBuffer urlString = new StringBuffer();
+        StringBuilder urlString = new StringBuilder();
         urlString.append(url.getProtocol());
         urlString.append("://");                                                // NOI18N
         urlString.append(ripUserFromHost(url.getHost()));
@@ -286,7 +286,9 @@ public class RepositoryConnection {
         StringBuilder sb = new StringBuilder();        
         sb.append(url.toString());
         sb.append(RC_DELIMITER);
-        if(rc.getSavePassword()) sb.append(rc.getUsername());
+        if(rc.getSavePassword()) {
+            sb.append(rc.getUsername());
+        }
         sb.append(RC_DELIMITER);
         sb.append(RC_DELIMITER);
         sb.append(rc.getExternalCommand());

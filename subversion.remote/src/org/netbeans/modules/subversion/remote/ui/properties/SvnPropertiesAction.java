@@ -112,11 +112,11 @@ public final class SvnPropertiesAction extends ContextAction {
         if(roots == null || roots.length == 0) {
             return;
         }
-        openProperties(roots, ctxDisplayName);
+        openProperties(ctx, ctxDisplayName);
     }
 
-    public static void openProperties(VCSFileProxy[] roots, String ctxDisplayName) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+    public static void openProperties(Context ctx, String ctxDisplayName) {
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {            
             return;
         }       
 
@@ -128,7 +128,7 @@ public final class SvnPropertiesAction extends ContextAction {
         JComponent component = propTable.getComponent();
         panel.propsPanel.setLayout(new BorderLayout());
         panel.propsPanel.add(component, BorderLayout.CENTER);
-        SvnProperties svnProperties = new SvnProperties(panel, propTable, roots);
+        SvnProperties svnProperties = new SvnProperties(panel, propTable, ctx.getRootFiles());
         JButton btnClose = new JButton();
         Mnemonics.setLocalizedText(btnClose, getString("CTL_Properties_Action_Close"));   //NOI18N
         btnClose.getAccessibleContext().setAccessibleDescription(getString("CTL_Properties_Action_Close")); //NOI18N

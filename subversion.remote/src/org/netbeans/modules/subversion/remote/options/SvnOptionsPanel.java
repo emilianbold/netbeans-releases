@@ -54,7 +54,6 @@ import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -76,13 +75,8 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     /** Creates new form SvnOptionsPanel */
     public SvnOptionsPanel() {
         initComponents();
-        if(Utilities.isWindows()) {
-            jLabel5.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.windows.text"));
-            jLabel11.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.text"));
-        } else {
-            jLabel5.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.unix.text"));
-            jLabel11.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.unix.text"));
-        }
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel5.unix.text"));
+        jLabel11.setText(org.openide.util.NbBundle.getMessage(SvnOptionsPanel.class, "SvnOptionsPanel.jLabel11.unix.text"));
         Document doc = textPaneClient.getDocument();
         if (doc instanceof HTMLDocument) { // Issue 185505
             HTMLDocument htmlDoc = (HTMLDocument)doc;

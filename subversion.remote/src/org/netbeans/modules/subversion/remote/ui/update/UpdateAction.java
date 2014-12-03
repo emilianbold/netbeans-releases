@@ -68,6 +68,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ActionUtils;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.ClientCheckSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -88,7 +89,6 @@ import org.openide.util.RequestProcessor;
 public class UpdateAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/update.png"; //NOI18N
     private static final int STATUS_RECURSIVELY_TRAVERSIBLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
-    private Object ClientCheckSupport;
 
     public UpdateAction () {
         this(ICON_RESOURCE);
@@ -123,7 +123,7 @@ public class UpdateAction extends ContextAction {
     
     @Override
     protected void performContextAction(final Node[] nodes) {
-        ClientCheckSupport.getInstance().runInAWTIfAvailable(ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
+        ClientCheckSupport.getInstance().runInAWTIfAvailable(nodes, ActionUtils.cutAmpersand(getRunningName(nodes)), new Runnable() {
             @Override
             public void run() {
                 performUpdate(nodes);
@@ -213,7 +213,7 @@ public class UpdateAction extends ContextAction {
         final SvnClient client;
         UpdateOutputListener listener = new UpdateOutputListener();
         try {
-            client = Subversion.getInstance().getClient(repositoryUrl); 
+            client = Subversion.getInstance().getClient(new Context(roots), repositoryUrl); 
             // this isn't clean - the client notifies only files which realy were updated. 
             // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change =>
             // we have to explicitly force the refresh for the relevant context - see bellow in updateRoots
@@ -349,13 +349,12 @@ public class UpdateAction extends ContextAction {
     }
     
     public static void performUpdate(final Context context, final String contextDisplayName) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
-            return;
-        }
         if (context == null || context.getRoots().size() == 0) {
             return;
         }
-
+        if(!Subversion.getInstance().checkClientAvailable(context)) {
+            return;
+        }
         SVNUrl repository;
         try {
             repository = getSvnUrl(context);
@@ -366,6 +365,7 @@ public class UpdateAction extends ContextAction {
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
+            @Override
             public void perform() {
                 update(context, this, contextDisplayName, null);
             }
@@ -378,10 +378,10 @@ public class UpdateAction extends ContextAction {
      * @param file
      */
     public static void performUpdate(final VCSFileProxy file) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
+        if (file == null) {
             return;
         }
-        if (file == null) {
+        if(!Subversion.getInstance().checkClientAvailable(new Context(file))) {
             return;
         }
 

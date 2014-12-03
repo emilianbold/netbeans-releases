@@ -96,14 +96,14 @@ public class DiffToAction extends ContextAction {
         SvnProgressSupport supp = new SvnProgressSupport() {
             @Override
             protected void perform() {
-                if (!Subversion.getInstance().checkClientAvailable()) {
-                    Logger.getLogger(DiffToAction.class.getName()).log(Level.FINE, "Client is unavailable, cannot perform Diff To"); //NOI18N
-                    return;
-                }
                 if (isCanceled()) {
                     return;
                 }
                 final Context ctx = getContext(nodes);
+                if (!Subversion.getInstance().checkClientAvailable(ctx)) {
+                    Logger.getLogger(DiffToAction.class.getName()).log(Level.FINE, "Client is unavailable, cannot perform Diff To"); //NOI18N
+                    return;
+                }
                 final String contextName = getContextDisplayName(nodes);
                 SVNUrl repositoryUrl = null, fileUrl = null;
                 VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx, false);

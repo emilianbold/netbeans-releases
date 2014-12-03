@@ -47,6 +47,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
@@ -312,7 +313,7 @@ public class FileInformation implements Serializable {
     
     private void readEntry(VCSFileProxy file) {
         try {
-            entry = SvnUtils.getSingleStatus(Subversion.getInstance().getClient(false), file);
+            entry = SvnUtils.getSingleStatus(Subversion.getInstance().getClient(false, new Context(file)), file);
         } catch (SVNClientException e) {
             // at least log the exception
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {

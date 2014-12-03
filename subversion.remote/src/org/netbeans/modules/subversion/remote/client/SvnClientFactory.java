@@ -41,11 +41,12 @@
  */
 package org.netbeans.modules.subversion.remote.client;
 
-import org.netbeans.modules.subversion.remote.api.ISVNPromptUserPassword;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.remote.Subversion;
@@ -54,6 +55,11 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -65,23 +71,21 @@ import org.openide.util.Utilities;
 public class SvnClientFactory {
     
     /** the only existing SvnClientFactory instance */
-    private static SvnClientFactory instance;
+    private static final Map<FileSystem, SvnClientFactory> instance = new HashMap<FileSystem, SvnClientFactory>();
     /** the only existing ClientAdapterFactory instance */
-    private static ClientAdapterFactory factory;
+    private ClientAdapterFactory factory;
     /** if an exception occured */
-    private static SVNClientException exception = null;
+    private SVNClientException exception;
+    private final FileSystem fileSystem;
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.client.SvnClientFactory");
     public static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
     public static final String DEFAULT_FACTORY = FACTORY_TYPE_COMMANDLINE; // javahl is default
     private static boolean cli16Version;
 
-    public enum ConnectionType {
-        cli;
-    }
-
     /** Creates a new instance of SvnClientFactory */
-    private SvnClientFactory() {
+    private SvnClientFactory(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
     /**
@@ -89,20 +93,32 @@ public class SvnClientFactory {
      *
      * @return the SvnClientFactory instance
      */
-    public synchronized static SvnClientFactory getInstance() {
-        init();
-        return instance;
+    public synchronized static SvnClientFactory getInstance(Context context) {
+        return getFactory(context);
     }
 
     /**
      * Initializes the SvnClientFactory instance
      */
-    public synchronized static void init() {
-        if(instance == null) {
-            SvnClientFactory fac = new SvnClientFactory();
-            fac.setup();
-            instance = fac;
+    private synchronized static SvnClientFactory getFactory(Context context) {
+        VCSFileProxy[] rootFiles = context.getRootFiles();
+        if (rootFiles.length > 0) {
+            VCSFileProxy root = rootFiles[0];
+            FileObject fo = root.toFileObject();
+            try {
+                FileSystem fs = fo.getFileSystem();
+                SvnClientFactory fac = instance.get(fs);
+                if (fac == null) {
+                    fac = new SvnClientFactory(fs);
+                    fac.setup();
+                    instance.put(fs, fac);
+                }
+                return fac;
+            } catch (FileStateInvalidException ex) {
+                ex.printStackTrace(System.err);
+            }
         }
+        return null;
     }
 
     /**
@@ -110,14 +126,12 @@ public class SvnClientFactory {
      * Call this method if user's preferences regarding used client change.
      */
     public synchronized static void resetClient() {
-        instance = null;
+        instance.clear();
         SvnConfigFiles.getInstance().reset();
     }
     
     public static boolean isCLI() {
-        if(!isClientAvailable()) return false;
-        assert factory != null;
-        return factory.connectionType() == ConnectionType.cli;
+        return true;
     }
 
     public static boolean isCLIOldFormat () {
@@ -131,7 +145,7 @@ public class SvnClientFactory {
      *
      * @return the SvnClient
      */
-    public SvnClient createSvnClient() throws SVNClientException {
+    public SvnClient createSvnClient(Context context) throws SVNClientException {
         if(exception != null) {
             throw exception;
         }
@@ -155,12 +169,12 @@ public class SvnClientFactory {
      * @return the configured SvnClient
      *
      */
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, char[] password, int handledExceptions) throws SVNClientException {
+    public SvnClient createSvnClient(Context context, SVNUrl repositoryUrl, SvnProgressSupport support, String username, char[] password, int handledExceptions) throws SVNClientException {
         if(exception != null) {
             throw exception;
         }
         try {
-            return factory.createSvnClient(repositoryUrl, support, username, password, handledExceptions);
+            return factory.createSvnClient(context, repositoryUrl, support, username, password, handledExceptions);
         } catch (Error err) {
             throw new SVNClientException(err);
         }
@@ -188,7 +202,7 @@ public class SvnClientFactory {
             // ping config file copying
             SvnConfigFiles.getInstance();
 
-            String factoryType = getDefaultFactoryType(false);
+            String factoryType = getDefaultFactoryType();
             
             if(factoryType.trim().equals(FACTORY_TYPE_COMMANDLINE)) {
                 setupCommandline();
@@ -203,49 +217,46 @@ public class SvnClientFactory {
     /**
      * Throws an exception if no SvnClientAdapter is available.
      */
-    public static void checkClientAvailable() throws SVNClientException {
-        init();
-        if(exception != null) {
-            throw exception;
+    public static void checkClientAvailable(Context root) throws SVNClientException {
+        SvnClientFactory res = getFactory(root);
+        if (res != null && res.exception != null) {
+            throw res.exception;
         }
     }
 
-    public static boolean isClientAvailable() {
-        init();
-        return exception == null;
+    public static boolean isClientAvailable(Context root) {
+        SvnClientFactory res = getFactory(root);
+        if (res == null || res.exception != null) {
+            return false;
+        }
+        return true;
     }
 
     /**
      * Immediately returns true if the factory has been initialized, otherwise returns false.
      * @return
      */
-    public static boolean isInitialized () {
-        return instance != null;
+    public static boolean isInitialized (Context context) {
+        VCSFileProxy[] rootFiles = context.getRootFiles();
+        if (rootFiles.length > 0) {
+            VCSFileProxy root = rootFiles[0];
+            FileObject fo = root.toFileObject();
+            try {
+                FileSystem fs = fo.getFileSystem();
+                return instance.get(fs) != null;
+            } catch (FileStateInvalidException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+        return false;
     }
 
-    public void setupCommandline () {
+    private void setupCommandline () {
         if(!checkCLIExecutable()) {
             return;
         }
         
-        factory = new ClientAdapterFactory() {
-            @Override
-            protected SvnClient createAdapter() {
-                return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
-            }
-            @Override
-            protected SvnClientInvocationHandler getInvocationHandler(SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions, ConnectionType.cli);
-            }
-            @Override
-            protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
-                return null;
-            }
-            @Override
-            protected ConnectionType connectionType() {
-                return ConnectionType.cli;
-            }
-        };
+        factory = new ClientAdapterFactory(fileSystem);
         LOG.info("running on commandline");
     }
 
@@ -315,18 +326,10 @@ public class SvnClientFactory {
         }
     }
     
-    private String getDefaultFactoryType (boolean forcedCommandlineFallbackEnabled) {
+    private String getDefaultFactoryType () {
         SvnModuleConfig config = SvnModuleConfig.getDefault();
         String factoryType = config.getGlobalSvnFactory();
-        if (forcedCommandlineFallbackEnabled 
-                && (factoryType == null || factoryType.trim().isEmpty())
-                && config.isForcedCommandlineClient()) {
-            // fallback to commandline only if factoryType is not set explicitely
-            factoryType = FACTORY_TYPE_COMMANDLINE;
-            LOG.log(Level.INFO, "setup: using commandline as the client - saved in preferences");
-        } else {
-            config.setForceCommnandlineClient(false);
-        }
+        config.setForceCommnandlineClient(false);
 
         if (factoryType == null || factoryType.trim().isEmpty()) {
             factoryType = config.getPreferredFactoryType(DEFAULT_FACTORY);
@@ -334,12 +337,19 @@ public class SvnClientFactory {
         return factoryType;
     }
 
-    private abstract class ClientAdapterFactory {
+    private final class ClientAdapterFactory {
+        
+        private ClientAdapterFactory(FileSystem fs) {
+            
+        }
 
-        abstract protected SvnClient createAdapter();
-        abstract protected SvnClientInvocationHandler getInvocationHandler(SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions);
-        abstract protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions);
-        abstract protected ConnectionType connectionType();
+        protected SvnClient createAdapter() {
+            return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+        }
+
+        protected SvnClientInvocationHandler getInvocationHandler(SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+            return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
+        }
 
         SvnClient createSvnClient() {
             SvnClientInvocationHandler handler = getInvocationHandler(createAdapter(), createDescriptor(null), null, -1);
@@ -360,10 +370,10 @@ public class SvnClientFactory {
          * @return the created SvnClientInvocationHandler instance
          *
          */
-        public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, char[] password, int handledExceptions) {
+        public SvnClient createSvnClient(Context context, SVNUrl repositoryUrl, SvnProgressSupport support, String username, char[] password, int handledExceptions) {
             SvnClient adapter = createAdapter();
             SvnClientInvocationHandler handler = getInvocationHandler(adapter, createDescriptor(repositoryUrl), support, handledExceptions);
-            setupAdapter(adapter, username, password, createCallback(repositoryUrl, handledExceptions));
+            setupAdapter(adapter, username, password);
             return createSvnClient(handler);
         }
 
@@ -388,14 +398,10 @@ public class SvnClientFactory {
             return null;
         }
 
-        protected void setupAdapter(SvnClient adapter, String username, char[] password, ISVNPromptUserPassword callback) {
+        protected void setupAdapter(SvnClient adapter, String username, char[] password) {
             adapter.setUsername(username);
-            if(callback != null) {
-                adapter.addPasswordCallback(callback);
-            } else {
-                // do not set password for javahl, it seems that in that case the password is stored permanently in ~/.subversion/auth
-                adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
-            }
+            // do not set password for javahl, it seems that in that case the password is stored permanently in ~/.subversion/auth
+            adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             try {
                 File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
                 adapter.setConfigDirectory(configDir);

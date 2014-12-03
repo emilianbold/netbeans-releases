@@ -46,6 +46,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.subversion.remote.Annotator;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffToAction;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;

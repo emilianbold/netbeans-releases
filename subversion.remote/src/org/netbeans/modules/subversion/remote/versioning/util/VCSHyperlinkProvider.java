@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.api;
 
-import java.net.MalformedURLException;
+package org.netbeans.modules.subversion.remote.versioning.util;
+
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
+ * Implementations provide hyperlinking functionality in the VCS Annotatoion
+ * bar and History views
  *
- * @author Alexander Simon
+ * @author Tomas Stupka
  */
-public class SVNUrl {
-    public SVNUrl(String url) throws MalformedURLException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+public abstract class VCSHyperlinkProvider {
+
+
+    public int[] getSpans(String text) {
+        return null;
     }
 
-    public String getProtocol() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void onClick(VCSFileProxy file, String text, int offsetStart, int offsetEnd) {
+        // do nothing
     }
 
-    public String getHost() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public int getPort() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public SVNUrl appendPath(String toString) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public String[] getPathSegments() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public String getLastPathSegment() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    public SVNUrl getParent() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public String getTooltip(String text, int offsetStart, int offsetEnd) {
+        return null;
     }
 }

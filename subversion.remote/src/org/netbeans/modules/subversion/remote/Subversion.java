@@ -72,13 +72,12 @@ import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
-import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Parameters;
@@ -172,7 +171,7 @@ public class Subversion {
         }, 500);
     }
 
-    RequestProcessor.Task cleanupTask;
+    private RequestProcessor.Task cleanupTask;
     
     private void prepareCache() {
         cleanupTask = getRequestProcessor().create(new Runnable() {
@@ -222,9 +221,9 @@ public class Subversion {
         return refreshHandler;
     }
 
-    public boolean checkClientAvailable() {
+    public boolean checkClientAvailable(Context context) {
         try {
-            SvnClientFactory.checkClientAvailable();
+            SvnClientFactory.checkClientAvailable(context);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return false;
@@ -232,24 +231,13 @@ public class Subversion {
         return true;
     }
 
-    public SvnClient getClient(SVNUrl repositoryUrl,
-                               String username,
-                               char[] password)
-    throws SVNClientException
-    {
-        return getClient(repositoryUrl, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
-    }
-
-    public SvnClient getClient(SVNUrl repositoryUrl,
-                               String username,
-                               char[] password,
-                               int handledExceptions) throws SVNClientException {
-        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, username, password, handledExceptions);
+    public SvnClient getClient(Context context, SVNUrl repositoryUrl, String username, char[] password, int handledExceptions) throws SVNClientException {
+        SvnClient client = SvnClientFactory.getInstance(context).createSvnClient(context, repositoryUrl, null, username, password, handledExceptions);
         attachListeners(client);
         return client;
     }
 
-    public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport progressSupport) throws SVNClientException {
+    public SvnClient getClient(Context context, SVNUrl repositoryUrl, SvnProgressSupport progressSupport) throws SVNClientException {
         Parameters.notNull("repositoryUrl", repositoryUrl); //NOI18N
         String username = ""; // NOI18N
         char[] password = null;
@@ -275,14 +263,11 @@ public class Subversion {
                 }
             }
         }
-        return getClient(repositoryUrl, username, password, progressSupport);
+        return getClient(context, repositoryUrl, username, password, progressSupport);
     }
 
-    public SvnClient getClient(SVNUrl repositoryUrl,
-                               String username,
-                               char[] password,
-                               SvnProgressSupport support) throws SVNClientException {
-        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
+    public SvnClient getClient(Context context, SVNUrl repositoryUrl, String username, char[] password, SvnProgressSupport support) throws SVNClientException {
+        SvnClient client = SvnClientFactory.getInstance(context).createSvnClient(context, repositoryUrl, support, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);
         return client;
     }
@@ -295,7 +280,7 @@ public class Subversion {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
         assert repositoryUrl != null : "Unable to get repository: " + file.getPath() + " is probably unmanaged."; // NOI18N
 
-        return repositoryUrl == null ? null : getClient(repositoryUrl, support);
+        return repositoryUrl == null ? null : getClient(new Context(file), repositoryUrl, support);
     }
 
     public SvnClient getClient(Context ctx, SvnProgressSupport support) throws SVNClientException {
@@ -324,11 +309,11 @@ public class Subversion {
             }
             throw new SVNClientException(sb.toString());
         }
-        return getClient(repositoryUrl, support);
+        return getClient(ctx, repositoryUrl, support);
     }
 
-    public SvnClient getClient(SVNUrl repositoryUrl) throws SVNClientException {
-        return getClient(repositoryUrl, null);
+    public SvnClient getClient(Context context, SVNUrl repositoryUrl) throws SVNClientException {
+        return getClient(context, repositoryUrl, null);
     }
 
     /**
@@ -343,9 +328,9 @@ public class Subversion {
      *
      * <p>It hanldes cancellability
      */
-    public SvnClient getClient(boolean attachListeners) throws SVNClientException {
+    public SvnClient getClient(boolean attachListeners, Context context) throws SVNClientException {
         cleanupFilesystem();
-        SvnClient client = SvnClientFactory.getInstance().createSvnClient();
+        SvnClient client = SvnClientFactory.getInstance(context).createSvnClient(context);
         if(attachListeners) {
             attachListeners(client);
         }
@@ -409,7 +394,7 @@ public class Subversion {
             int pstatus = fileStatusCache.getStatus(parent).getStatus();
             if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
                 try {
-                    SvnClient client = getClient(false);
+                    SvnClient client = getClient(false, new Context(parent));
 
                     List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
                     if(gignores != null && SvnUtils.getMatchinIgnoreParterns(gignores, name, true).size() > 0) {
@@ -643,7 +628,7 @@ public class Subversion {
 
         VCSFileProxy original = null;
         try {
-            SvnClientFactory.checkClientAvailable();
+            SvnClientFactory.checkClientAvailable(new Context(originalFile));
             original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);

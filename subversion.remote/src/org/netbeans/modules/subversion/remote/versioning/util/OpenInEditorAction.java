@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.remote.ui.status;
+package org.netbeans.modules.subversion.remote.versioning.util;
 
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -53,24 +53,25 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
- * Opens the file under {@link SyncFileNode} in editor.
+ * Open files in editor.
  *
  * @author Maros Sandor
  */
 public class OpenInEditorAction extends AbstractAction {
+    
+    private final VCSFileProxy[] files;
 
-    public OpenInEditorAction() {
-        super(NbBundle.getBundle(OpenInEditorAction.class).getString("CTL_Synchronize_Popup_OpenInEditor"));
+    public OpenInEditorAction(VCSFileProxy [] files) {
+        super(NbBundle.getBundle(OpenInEditorAction.class).getString("CTL_OpenInEditor")); // NOI18N
+        this.files = files;
         setEnabled(isActionEnabled());
     }
 
     private boolean isActionEnabled() {
-        VCSFileProxy [] files = SvnUtils.getCurrentContext(null).getFiles();
         for (VCSFileProxy file : files) {
             if (VCSFileProxySupport.canRead(file)) {
                 return true;
@@ -81,9 +82,8 @@ public class OpenInEditorAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        VCSFileProxy [] files = SvnUtils.getCurrentContext(null).getFiles();
         for (VCSFileProxy file : files) {
-            FileObject fo = file.normalizeFile().toFileObject();
+            FileObject fo = file.toFileObject();
             if (fo != null) {
                 try {
                     openDataObjectByCookie(DataObject.find(fo));
@@ -96,14 +96,18 @@ public class OpenInEditorAction extends AbstractAction {
     
     private boolean openDataObjectByCookie(DataObject dataObject) {
         Node.Cookie cookie;
-        Class cookieClass;
-        if ((((     cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
-                || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null))
-                || (cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
-                || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
-                || (cookie = dataObject.getCookie(cookieClass = ViewCookie.class)) != null) {
-            return openByCookie(cookie, cookieClass);
-        }
+ 
+        if ((cookie = dataObject.getCookie(EditorCookie.Observable.class)) != null)
+            return openByCookie(cookie, EditorCookie.Observable.class);
+        if ((cookie = dataObject.getCookie(EditorCookie.class)) != null)
+            return openByCookie(cookie, EditorCookie.class);
+        if ((cookie = dataObject.getCookie(OpenCookie.class)) != null)
+            return openByCookie(cookie, OpenCookie.class);
+        if ((cookie = dataObject.getCookie(EditCookie.class)) != null)
+            return openByCookie(cookie, EditCookie.class);
+        if ((cookie = dataObject.getCookie(ViewCookie.class)) != null)
+            return openByCookie(cookie, ViewCookie.class);
+        
         return false;
     }
     

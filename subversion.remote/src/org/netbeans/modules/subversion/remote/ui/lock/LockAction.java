@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.subversion.remote.ui.lock;
 
-import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
@@ -113,10 +112,10 @@ public class LockAction extends ContextAction {
 
     @Override
     protected void performContextAction (Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
+        Context ctx = getContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {
             return;
         }
-        Context ctx = getContext(nodes);
         VCSFileProxy[] roots = ctx.getFiles();
         List<VCSFileProxy> unlocked = new LinkedList<VCSFileProxy>();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
@@ -143,7 +142,7 @@ public class LockAction extends ContextAction {
                 @Override
                 protected void perform () {
                     try {
-                        SvnClient client = Subversion.getInstance().getClient(url, this);
+                        SvnClient client = Subversion.getInstance().getClient(new Context(files), url, this);
                         Map<VCSFileProxy, String> relativePaths = new HashMap<VCSFileProxy, String>(files.length);
                         for (VCSFileProxy f : files) {
                             String path = SvnUtils.getRelativePath(f);
@@ -164,7 +163,7 @@ public class LockAction extends ContextAction {
                                 client.lock(files, msg, force);
                                 if (list.isAuthError() && (resumeAuth = SvnClientExceptionHandler.handleAuth(url))) {
                                     client.removeNotifyListener(list);
-                                    client = Subversion.getInstance().getClient(url, this);
+                                    client = Subversion.getInstance().getClient(new Context(files), url, this);
                                 } else {
                                     break;
                                 }

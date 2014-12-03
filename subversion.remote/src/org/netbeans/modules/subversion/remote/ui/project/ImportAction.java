@@ -141,11 +141,6 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
     }
 
     protected void performAction() {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
-
         if(!isEnabled()) {
             return;
         }
@@ -156,6 +151,9 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
         
         if (roots.size() == 1) {
             final VCSFileProxy importDirectory = lookupImportDirectory(roots.iterator().next());
+            if(!Subversion.getInstance().checkClientAvailable(new Context(importDirectory))) {            
+                return;
+            }
             if (importDirectory == null) {
                 LOG.log(Level.FINE, "null dir to import: {0}", roots.iterator().next()); //NOI18N
             } else {

@@ -70,6 +70,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.remote.RepositoryFile;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNUrlUtils;
 import org.netbeans.modules.versioning.core.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -147,7 +148,7 @@ public abstract class CopyDialog {
         for (JComboBox cbo : urlComboBoxes) {
             Object item = cbo.getEditor().getItem();
             if(item != null && !item.equals("")) { // NOI18N
-                Utils.insert(SvnModuleConfig.getDefault().getPreferences(), CopyDialog.class.getName(), (String) item, -1);
+                 org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), CopyDialog.class.getName(), (String) item, -1);
             }            
         }                
     }       

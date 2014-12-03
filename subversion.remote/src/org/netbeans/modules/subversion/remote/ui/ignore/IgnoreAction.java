@@ -142,15 +142,15 @@ public class IgnoreAction extends ContextAction {
 
     @Override
     public void performContextAction(final Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
         final int actionStatus = getActionStatus(nodes);
         if (actionStatus != IGNORING && actionStatus != UNIGNORING) {
             throw new RuntimeException("Invalid action status: " + actionStatus); // NOI18N
         }
 
-        Context ctx = SvnUtils.getCurrentContext(nodes);
+        final Context ctx = SvnUtils.getCurrentContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {            
+            return;
+        }
         final VCSFileProxy files[] = ctx.getRootFiles();
 
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
@@ -161,7 +161,7 @@ public class IgnoreAction extends ContextAction {
                 // in the parent directory and NONE of them interests us, see #89516
                 SvnClient client;
                 try {
-                    client = Subversion.getInstance().getClient(false);               
+                    client = Subversion.getInstance().getClient(false, ctx);               
                 } catch (SVNClientException e) {
                     SvnClientExceptionHandler.notifyException(e, true, true);
                     return;
@@ -264,7 +264,7 @@ public class IgnoreAction extends ContextAction {
      */ 
     private static void add(VCSFileProxy file) throws SVNClientException {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
-        SvnClient client = Subversion.getInstance().getClient(repositoryUrl);               
+        SvnClient client = Subversion.getInstance().getClient(new Context(file), repositoryUrl);               
         if (file.isDirectory()) {
             client.addDirectory(file, false);
         } else {
@@ -282,13 +282,13 @@ public class IgnoreAction extends ContextAction {
         ensureVersioned(parent);
         // technically, this block need not be synchronized but we want to have svn:ignore property set correctly at all times
         synchronized(IgnoreAction.class) {                        
-            List<String> patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
+            List<String> patterns = Subversion.getInstance().getClient(true, new Context(file)).getIgnoredPatterns(parent);
             if (patterns != null && patterns.contains(file.getName()) == false) {
                 patterns.add(file.getName());
                 // cannot use client.setIgnoredPatterns since there's a bug in the implementation in the svnClientAdapter
                 // which doesn't respect a svn 1.6 contract about non-cr/cr-lf line-endings
                 String value = getPatternsAsString(patterns);
-                Subversion.getInstance().getClient(true).propertySet(parent, ISVNProperty.IGNORE, value, false);
+                Subversion.getInstance().getClient(true, new Context(file)).propertySet(parent, ISVNProperty.IGNORE, value, false);
             }            
         }
     }

@@ -101,13 +101,10 @@ public class CreateCopyAction extends ContextAction {
     
     @Override
     protected void performContextAction(final Node[] nodes) {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        Context ctx = getContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {            
             return;
         }
-        
-        Context ctx = getContext(nodes);
-
         final VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx);
         if(roots == null || roots.length == 0) {
             return;
@@ -146,7 +143,7 @@ public class CreateCopyAction extends ContextAction {
         rp.post(new Runnable() {
             @Override
             public void run() {
-                String errorText = validateTargetPath(createCopy);
+                String errorText = validateTargetPath(createCopy, roots);
                 if (errorText == null) {
                     ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
                         @Override
@@ -169,11 +166,11 @@ public class CreateCopyAction extends ContextAction {
         });
     }
 
-    private String validateTargetPath(CreateCopy createCopy) {
+    private String validateTargetPath(CreateCopy createCopy, final VCSFileProxy[] roots) {
         String errorText = null;
         try {
             RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();
-            SvnClient client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+            SvnClient client = Subversion.getInstance().getClient(new Context(roots), toRepositoryFile.getRepositoryUrl());
             ISVNInfo info = null;
             try {
                 info = client.getInfo(toRepositoryFile.getFileUrl());
@@ -208,7 +205,7 @@ public class CreateCopyAction extends ContextAction {
         try {                
             SvnClient client;
             try {
-                client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+                client = Subversion.getInstance().getClient(new Context(roots), toRepositoryFile.getRepositoryUrl());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, true, true);
                 return;

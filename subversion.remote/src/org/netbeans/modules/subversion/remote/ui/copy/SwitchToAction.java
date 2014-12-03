@@ -104,13 +104,10 @@ public class SwitchToAction extends ContextAction {
 
     @Override
     protected void performContextAction(final Node[] nodes) {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        Context ctx = getContext(nodes);        
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {            
             return;
         }
-        
-        Context ctx = getContext(nodes);        
-
         VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx);
         if(roots == null || roots.length == 0) {
             return;
@@ -199,7 +196,7 @@ public class SwitchToAction extends ContextAction {
         boolean ret = false;
         SvnClient client;
         try {                   
-            client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+            client = Subversion.getInstance().getClient(new Context(root), toRepositoryFile.getRepositoryUrl());
             ISVNInfo info = client.getInfo(toRepositoryFile.getFileUrl());
             if(info.getNodeKind() == SVNNodeKind.DIR && root.isFile()) {
                 SvnClientExceptionHandler.annotate(NbBundle.getMessage(SwitchToAction.class, "LBL_SwitchFileToFolderError"));
@@ -230,7 +227,7 @@ public class SwitchToAction extends ContextAction {
         try {
             SvnClient client;
             try {
-                client = Subversion.getInstance().getClient(toRepositoryFile.getRepositoryUrl());
+                client = Subversion.getInstance().getClient(new Context(root), toRepositoryFile.getRepositoryUrl());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, true, true);
                 return;

@@ -101,6 +101,9 @@ import org.netbeans.modules.subversion.remote.client.cli.commands.StatusCommand.
 import org.netbeans.modules.subversion.remote.client.cli.commands.SwitchToCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.UpdateCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.UpgradeCommand;
+import org.netbeans.modules.subversion.remote.client.parser.EntriesCache;
+import org.netbeans.modules.subversion.remote.client.parser.LocalSubversionException;
+import org.netbeans.modules.subversion.remote.client.parser.ParserSvnStatus;
 import org.netbeans.modules.subversion.remote.client.parser.SvnWcParser;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -115,12 +118,11 @@ public class CommandlineClient implements SvnClient {
     private String user;
     private String psswd;
     private File configDir;
-    private NotificationHandler notificationHandler;
-    private SvnWcParser wcParser;
-    private Commandline cli;
+    private final NotificationHandler notificationHandler;
+    private final SvnWcParser wcParser;
+    private final Commandline cli;
 
-    public static String ERR_CLI_NOT_AVALABLE = "commandline is not available";
-    public static String ERR_JAVAHL_NOT_SUPPORTED = "unsupported javahl version";
+    public static final String ERR_CLI_NOT_AVALABLE = "commandline is not available";
     private static boolean supportedMetadataFormat;
 
     public CommandlineClient() {
@@ -199,23 +201,14 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void addFile(VCSFileProxy file) throws SVNClientException {
-        addFile(new VCSFileProxy[] { file }, false);
-    }
-
-    @Override
-    public void addFile(VCSFileProxy[] file, boolean recursive) throws SVNClientException {
-        AddCommand cmd = new AddCommand(file, recursive, false);
+        AddCommand cmd = new AddCommand(new VCSFileProxy[] { file }, false, false);
         exec(cmd);
     }
 
-    @Override
-    public void addDirectory(VCSFileProxy dir, boolean recursive) throws SVNClientException {
-        addDirectory(dir, recursive, false);
-    }
 
     @Override
-    public void addDirectory(VCSFileProxy dir, boolean recursive, boolean force) throws SVNClientException {
-        AddCommand cmd = new AddCommand(new VCSFileProxy[] { dir } , recursive, force);
+    public void addDirectory(VCSFileProxy dir, boolean recursive) throws SVNClientException {
+        AddCommand cmd = new AddCommand(new VCSFileProxy[] { dir } , recursive, false);
         exec(cmd);
     }
 

@@ -71,11 +71,7 @@ public interface SvnClient extends Cancellable {
 
     void addDirectory(VCSFileProxy dir, boolean recursive) throws SVNClientException;
 
-    void addDirectory(VCSFileProxy dir, boolean recursive, boolean force) throws SVNClientException;
-
     void addFile(VCSFileProxy file) throws SVNClientException;
-
-    void addFile(VCSFileProxy[] file, boolean recursive) throws SVNClientException;
 
     void addNotifyListener(ISVNNotifyListener l);
 

@@ -114,7 +114,7 @@ public class CleanupAction extends ContextAction {
             protected void perform() {
                 for (VCSFileProxy root : roots) {
                     try {
-                        SvnClient client = repositoryUrl == null ? Subversion.getInstance().getClient(false) : Subversion.getInstance().getClient(root);
+                        SvnClient client = repositoryUrl == null ? Subversion.getInstance().getClient(false, new Context(root)) : Subversion.getInstance().getClient(root);
                         setCancellableDelegate(client);
                         client.cleanup(root);
                     } catch (SVNClientException ex) {

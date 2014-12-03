@@ -56,6 +56,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.NotifyHtmlPanel;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
@@ -71,7 +72,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Ondra Vrabec
  */
-@ActionID(id = "org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction", category = "Subversion")
+@ActionID(id = "org.netbeans.modules.subversion.remote.ui.wcadmin.UpgradeAction", category = "Subversion")
 @ActionRegistration(displayName = "CTL_Upgrade_Title")
 public class UpgradeAction extends ContextAction {
 
@@ -145,7 +146,7 @@ public class UpgradeAction extends ContextAction {
             protected void perform() {
                 for (VCSFileProxy root : toUpgrade) {
                     try {
-                        SvnClient client = Subversion.getInstance().getClient(true);
+                        SvnClient client = Subversion.getInstance().getClient(true, new Context(root));
                         setCancellableDelegate(client);
                         boolean cont = true;
                         VCSFileProxy wcRoot = root;

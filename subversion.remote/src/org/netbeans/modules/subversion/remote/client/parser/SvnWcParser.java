@@ -298,7 +298,7 @@ public class SvnWcParser {
         return false;
     }
 
-    public ISVNInfo getInfoFromWorkingCopy(File file) throws LocalSubversionException {
+    public ISVNInfo getInfoFromWorkingCopy(VCSFileProxy file) throws LocalSubversionException {
 
         ISVNInfo returnValue = null;
         try {

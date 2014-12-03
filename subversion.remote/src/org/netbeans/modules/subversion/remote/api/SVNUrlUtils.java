@@ -43,30 +43,15 @@ package org.netbeans.modules.subversion.remote.api;
 
 /**
  *
- * @author Alexander Simon
+ * @author alsimon
  */
-public interface ISVNPromptUserPassword {
-
-    public static final int Reject = 0;
-    public static final int AcceptTemporary = 1;
-    public static final int AcceptPermanently = 2;
-    
-    int askTrustSSLServer(String certMessage, boolean allowPermanently);
-
-    String getPassword();
-
-    int getSSHPort();
-
-    String getSSHPrivateKeyPassphrase();
-
-    String getSSHPrivateKeyPath();
-
-    String getSSLClientCertPassword();
-
-    String getSSLClientCertPath();
-
-    String getUsername();
-
-    boolean userAllowedSave();
-    
+public class SVNUrlUtils {
+    private SVNUrlUtils(){
+    }
+    public static String getRelativePath(SVNUrl repositoryUrl, SVNUrl fileUrl) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    public static SVNUrl getRelativePath(SVNUrl rootUrl, SVNUrl url, boolean b) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
