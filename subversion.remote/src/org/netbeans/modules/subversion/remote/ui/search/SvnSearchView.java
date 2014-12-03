@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.search;
+package org.netbeans.modules.subversion.remote.ui.search;
 
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -54,10 +54,10 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.text.DateFormat;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * Shows Search results in a JList.
@@ -184,9 +184,13 @@ class SvnSearchView implements ComponentListener {
 
             hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
             Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
-            if(c != null) StyleConstants.setBackground(hiliteStyle, c);
+            if(c != null) {
+                StyleConstants.setBackground(hiliteStyle, c);
+            }
             c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
-            if(c != null) StyleConstants.setForeground(hiliteStyle, c);
+            if(c != null) {
+                StyleConstants.setForeground(hiliteStyle, c);
+            }
 
             setLayout(new BorderLayout());
             add(textPane);

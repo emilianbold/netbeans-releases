@@ -42,9 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
 
 /**
  *
@@ -72,7 +72,7 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
         mergeStartRepositoryFolderLabel.setLabelFor(mergeStartUrlComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(mergeStartRepositoryFolderLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_RepositoryFolder")); // NOI18N
 
-        mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png"))); // NOI18N
+        mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/ending_revision.png"))); // NOI18N
         mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EndingRev")); // NOI18N
 
@@ -95,7 +95,7 @@ public class MergeOneFolderPanel extends javax.swing.JPanel {
         mergeStartRevisionTextField.setText(SVNRevision.HEAD.toString());
         mergeStartRevisionTextField.setToolTipText(org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_EmptyHint")); // NOI18N
 
-        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png"))); // NOI18N
+        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/starting_revision.png"))); // NOI18N
         jLabel8.setLabelFor(mergeStartRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(MergeOneFolderPanel.class, "CTL_MergeOneFolder_Start")); // NOI18N
 

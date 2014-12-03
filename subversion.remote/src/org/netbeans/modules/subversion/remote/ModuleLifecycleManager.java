@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
@@ -99,7 +99,9 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                         String newModule = vcsGenericModules[i];
                         String newModuleXML = "Modules/" + newModule.replace('.', '-') + ".xml"; // NOI18N
                         FileObject fo = FileUtil.getConfigFile(newModuleXML);
-                        if (fo == null) continue;
+                        if (fo == null) {
+                            continue;
+                        }
                         Document document = readModuleDocument(fo);
 
                         NodeList list = document.getDocumentElement().getElementsByTagName("param"); // NOI18N
@@ -131,8 +133,12 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                     } catch (Exception e) {
                         Subversion.LOG.log(Level.INFO, e.getMessage(), e);                        
                     } finally {
-                        if (os != null) try { os.close(); } catch (IOException ex) {}
-                        if (lock != null) lock.releaseLock();
+                        if (os != null) {
+                            try { os.close(); } catch (IOException ex) {}
+                        }
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
                     }
                 }
             }

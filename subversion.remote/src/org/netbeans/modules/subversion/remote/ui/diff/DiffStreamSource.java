@@ -42,25 +42,26 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.PropertiesClient;
+import org.netbeans.modules.subversion.remote.VersionsCache;
+import org.netbeans.modules.subversion.remote.client.PropertiesClient;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
-
-import java.io.*;
-import java.util.*;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.util.SvnUtils;
-
-import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Stream source for diffing CVS managed files.
@@ -69,7 +70,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class DiffStreamSource extends StreamSource {
 
-    private final File      baseFile;
+    private final VCSFileProxy      baseFile;
     private final String    propertyName;
     private final String    revision;
     private final String    title;
@@ -79,7 +80,7 @@ public class DiffStreamSource extends StreamSource {
     /**
      * Null is a valid value if base file does not exist in this revision. 
      */ 
-    private File            remoteFile;
+    private VCSFileProxy            remoteFile;
     private MultiDiffPanel.Property propertyValue;
     private Boolean canWriteBaseFile;
 
@@ -90,8 +91,8 @@ public class DiffStreamSource extends StreamSource {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */ 
-    public DiffStreamSource(File baseFile, String propertyName, String revision, String title) {
-        this.baseFile = Utilities.isMac() || Utilities.isWindows() ? FileUtil.normalizeFile(baseFile) : baseFile;
+    public DiffStreamSource(VCSFileProxy baseFile, String propertyName, String revision, String title) {
+        this.baseFile = Utilities.isMac() ? baseFile.normalizeFile() : baseFile;
         this.propertyName = propertyName;
         this.revision = revision;
         this.title = title;
@@ -131,11 +132,13 @@ public class DiffStreamSource extends StreamSource {
                 return null;
             }
         } else {
-            if (revision == null || remoteFile == null) return null;
+            if (revision == null || remoteFile == null) {
+                return null;
+            }
             if (!mimeType.startsWith("text/")) {
                 return null;
             } else {
-                return Utils.createReader(remoteFile);
+                return Utils.createReader(remoteFile.toFileObject());
             }
         }
     }
@@ -152,14 +155,14 @@ public class DiffStreamSource extends StreamSource {
 
     private boolean isBaseFileWritable () {
         if (canWriteBaseFile == null) {
-            FileObject fo = FileUtil.toFileObject(baseFile);
+            FileObject fo = baseFile.toFileObject();
             canWriteBaseFile = fo != null && fo.canWrite();
         }
         return canWriteBaseFile;
     }
 
     private boolean isPrimary() {
-        FileObject fo = FileUtil.toFileObject(baseFile);
+        FileObject fo = baseFile.toFileObject();
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
@@ -178,9 +181,13 @@ public class DiffStreamSource extends StreamSource {
         } catch (IOException e) {
             return Lookups.fixed();
         }
-        if (propertyName != null || remoteFile == null || !isPrimary()) return Lookups.fixed();
-        FileObject remoteFo = FileUtil.toFileObject(remoteFile);
-        if (remoteFo == null) return Lookups.fixed();
+        if (propertyName != null || remoteFile == null || !isPrimary()) {
+            return Lookups.fixed();
+        }
+        FileObject remoteFo = remoteFile.toFileObject();
+        if (remoteFo == null) {
+            return Lookups.fixed();
+        }
 
         return Lookups.fixed(remoteFo);
     }
@@ -193,7 +200,9 @@ public class DiffStreamSource extends StreamSource {
             return;
         }
         initialized = true;
-        if (propertyValue != null || remoteFile != null || revision == null) return;
+        if (propertyValue != null || remoteFile != null || revision == null) {
+            return;
+        }
         if (propertyName != null) {
             initProperty();
             return;
@@ -244,7 +253,7 @@ public class DiffStreamSource extends StreamSource {
         } catch (Exception e) {
             throw new IOException("Can not load remote file for " + baseFile, e); //NOI18N
         }
-        FileObject fo = FileUtil.toFileObject(baseFile);
+        FileObject fo = baseFile.toFileObject();
         canWriteBaseFile = fo != null && fo.canWrite();
     }
 

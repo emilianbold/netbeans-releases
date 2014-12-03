@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -57,14 +57,14 @@ import javax.swing.JRadioButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -215,7 +215,7 @@ public class RevertModifications implements PropertyChangeListener {
     }
         
     private abstract class RevertType implements ActionListener, DocumentListener {
-        private JRadioButton button;
+        private final JRadioButton button;
 
         RevertType(JRadioButton button) {
             this.button = button;
@@ -310,7 +310,7 @@ public class RevertModifications implements PropertyChangeListener {
 
     private class OneCommitRevertType extends RevertType {
 
-        private RepositoryPaths oneRevisionPath;
+        private final RepositoryPaths oneRevisionPath;
 
         OneCommitRevertType (RepositoryFile repositoryFile, JRadioButton button) {
             super(button);
@@ -350,8 +350,8 @@ public class RevertModifications implements PropertyChangeListener {
 
     private class MoreCommitsRevertType extends RevertType {
 
-        private RepositoryPaths endPath;
-        private RepositoryPaths startPath;
+        private final RepositoryPaths endPath;
+        private final RepositoryPaths startPath;
 
         MoreCommitsRevertType (RepositoryFile repositoryFile, JRadioButton button) {
             super(button);

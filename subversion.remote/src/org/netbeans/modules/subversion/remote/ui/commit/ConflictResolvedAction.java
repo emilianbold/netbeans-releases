@@ -42,17 +42,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.subversion.remote.ui.commit;
 
-import java.io.*;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.*;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.*;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.*;
 
 /**
  * Represnts <tt>svn resolved</tt> command.
@@ -79,7 +85,7 @@ public class ConflictResolvedAction extends ContextAction {
     @Override
     protected void performContextAction(Node[] nodes) {
         final Context ctx = getContext(nodes);
-        final File[] files = ctx.getFiles();
+        final VCSFileProxy[] files = ctx.getFiles();
 
         ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
             @Override
@@ -100,7 +106,7 @@ public class ConflictResolvedAction extends ContextAction {
                     if(isCanceled()) {
                         return;
                     }
-                    File file = files[i];
+                    VCSFileProxy file = files[i];
                     try {
                         ConflictResolvedAction.perform(file, client);
                     } catch (SVNClientException ex) {
@@ -114,7 +120,7 @@ public class ConflictResolvedAction extends ContextAction {
 
 
     /** Marks as resolved or shows error dialog. */
-    public static void perform(final File file) throws SVNClientException {
+    public static void perform(final VCSFileProxy file) throws SVNClientException {
         SvnProgressSupport support = new SvnProgressSupport() {
             @Override
             protected void perform() {
@@ -132,16 +138,16 @@ public class ConflictResolvedAction extends ContextAction {
         support.start(Subversion.getInstance().getRequestProcessor(url), url, NbBundle.getMessage(ConflictResolvedAction.class, "LBL_ResolvingConflicts")); //NOI18N
     }
 
-    private static void perform(File file, SvnClient client) throws SVNClientException {
+    private static void perform(VCSFileProxy file, SvnClient client) throws SVNClientException {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
 
         client.resolved(file);
         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
 
         // auxiliary files disappear, synch with FS
-        File parent = file.getParentFile();
+        VCSFileProxy parent = file.getParentFile();
         if (parent != null) {
-            FileObject folder = FileUtil.toFileObject(parent);
+            FileObject folder = parent.toFileObject();
             if (folder != null) {
                 folder.refresh();
             }

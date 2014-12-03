@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.options;
+package org.netbeans.modules.subversion.remote.options;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -51,7 +51,7 @@ import java.util.Collections;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;

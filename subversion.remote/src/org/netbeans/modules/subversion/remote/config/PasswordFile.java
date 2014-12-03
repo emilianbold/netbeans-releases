@@ -41,15 +41,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.config;
+package org.netbeans.modules.subversion.remote.config;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.subversion.config.KVFile.Key;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Represents a file holding the username and password credentials for a realmstring.
@@ -70,7 +69,7 @@ public class PasswordFile extends SVNCredentialFile {
         super(getFile(realmString));
     }
 
-    private PasswordFile (File file) {
+    private PasswordFile (VCSFileProxy file) {
         super(file);
     }
 
@@ -104,8 +103,8 @@ public class PasswordFile extends SVNCredentialFile {
 
         if(!nbPasswordFile.getFile().exists()) {
 
-            File configDir = new File(SvnConfigFiles.getUserConfigPath() + "/auth/svn.simple"); // NOI18N
-            File[] files = configDir.listFiles();
+            VCSFileProxy configDir = new File(SvnConfigFiles.getUserConfigPath() + "/auth/svn.simple"); // NOI18N
+            VCSFileProxy[] files = configDir.listFiles();
             if(files==null) {
                 return null;
             }
@@ -133,6 +132,7 @@ public class PasswordFile extends SVNCredentialFile {
         }
     }
 
+    @Override
     public void store() throws IOException {
         store(getFile(getRealmString()));
     }
@@ -153,10 +153,12 @@ public class PasswordFile extends SVNCredentialFile {
         setValue(getUsernameKey(), username);
     }
     
+    @Override
     protected String getRealmString() {       
         return getStringValue(getRealmstringKey());
     }
 
+    @Override
     protected void setRealmString(String realm) {
         setValue(getRealmstringKey(), realm.getBytes());
     }
@@ -182,7 +184,7 @@ public class PasswordFile extends SVNCredentialFile {
         return realmStrig.substring(1).startsWith(svnUrl.getProtocol() + "://" + urlString); // NOI18N
     }
     
-    private static File getFile(String realmString) {
+    private static VCSFileProxy getFile(String realmString) {
         return new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.simple/" + getFileName(realmString)); // NOI18N
     }
     

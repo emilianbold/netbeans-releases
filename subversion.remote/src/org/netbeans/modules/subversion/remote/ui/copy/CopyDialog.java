@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -68,14 +68,13 @@ import javax.swing.JPanel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.versioning.core.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
 /**
  *
@@ -83,9 +82,9 @@ import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
  */
 public abstract class CopyDialog {
 
-    private DialogDescriptor dialogDescriptor;
-    private JButton okButton, cancelButton;
-    private JPanel panel;
+    private final DialogDescriptor dialogDescriptor;
+    private final JButton okButton, cancelButton;
+    private final JPanel panel;
     private static final Pattern TEMPLATE_PATTERN_BRANCH = Pattern.compile("^(.*/)*?((?:branches|tags)/(?:.+?))(/.*)+$"); //NOI18N
     private static final Pattern TEMPLATE_PATTERN_TRUNK = Pattern.compile("^(.*/)*?(trunk)(/.*)+$"); //NOI18N
     private static final String BRANCHES_FOLDER = "branches"; //NOI18N

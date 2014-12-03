@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.status;
+package org.netbeans.modules.subversion.remote.ui.status;
 
-import org.netbeans.modules.subversion.util.*;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.cookies.*;
@@ -55,7 +54,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Opens the file under {@link SyncFileNode} in editor.
@@ -70,18 +70,20 @@ public class OpenInEditorAction extends AbstractAction {
     }
 
     private boolean isActionEnabled() {
-        File [] files = SvnUtils.getCurrentContext(null).getFiles();
-        for (File file : files) {
-            if (file.canRead()) return true;
+        VCSFileProxy [] files = SvnUtils.getCurrentContext(null).getFiles();
+        for (VCSFileProxy file : files) {
+            if (file.canRead()) {
+                return true;
+            }
         }
         return false;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        File [] files = SvnUtils.getCurrentContext(null).getFiles();
-        for (File file : files) {
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        VCSFileProxy [] files = SvnUtils.getCurrentContext(null).getFiles();
+        for (VCSFileProxy file : files) {
+            FileObject fo = file.normalizeFile().toFileObject();
             if (fo != null) {
                 try {
                     openDataObjectByCookie(DataObject.find(fo));

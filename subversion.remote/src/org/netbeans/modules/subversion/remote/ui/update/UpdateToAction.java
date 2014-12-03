@@ -40,19 +40,19 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
-import java.io.File;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -71,11 +71,13 @@ public class UpdateToAction extends UpdateAction {
 
     @Override
     protected SVNRevision getRevision(Context ctx) {
-        File[] roots = ctx.getRootFiles();
+        VCSFileProxy[] roots = ctx.getRootFiles();
         SVNRevision revision = null;
-        if(roots == null || roots.length == 0) return null;
+        if(roots == null || roots.length == 0) {
+            return null;
+        }
 
-        File interestingFile = roots[0];
+        VCSFileProxy interestingFile = roots[0];
 
         final SVNUrl rootUrl;
         final SVNUrl url;

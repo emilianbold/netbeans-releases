@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.subversion.client.cli.commands;
+package org.netbeans.modules.subversion.remote.client.cli.commands;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -53,19 +51,21 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.tigris.subversion.svnclientadapter.Annotations.Annotation;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.subversion.remote.api.Annotations.Annotation;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.xml.XMLUtil;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+
 /**
  *
  * @author Tomas Stupka
@@ -86,10 +86,10 @@ public class BlameCommand extends SvnCommand {
     
     private final BlameType type;
     
-    private SVNUrl url;
-    private File file;    
-    private SVNRevision revStart;
-    private SVNRevision revEnd;
+    private final SVNUrl url;
+    private final VCSFileProxy file;    
+    private final SVNRevision revStart;
+    private final SVNRevision revEnd;
 
     private byte[] output;
 
@@ -101,7 +101,7 @@ public class BlameCommand extends SvnCommand {
         type = BlameType.url;
     }
     
-    public BlameCommand(File file, SVNRevision revStart, SVNRevision revEnd) {        
+    public BlameCommand(VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd) {        
         this.file = file;
         this.revStart = revStart;        
         this.revEnd = revEnd;        
@@ -120,7 +120,7 @@ public class BlameCommand extends SvnCommand {
     }    
     
     @Override
-    protected int getCommand() {
+    protected ISVNNotifyListener.Command getCommand() {
         return ISVNNotifyListener.Command.ANNOTATE;
     }
     
@@ -199,9 +199,9 @@ public class BlameCommand extends SvnCommand {
         private static final String LINE_NUMBER_ATTRIBUTE   = "line-number";    // NOI18N        
         private static final String REVISION_ATTRIBUTE      = "revision";       // NOI18N
 
-        private String REVISION_ATTR                        = "revision_attr";  // NOI18N
+        private static final String REVISION_ATTR           = "revision_attr";  // NOI18N
         
-        private List<Annotation> annotations = new ArrayList<Annotation>();        
+        private final List<Annotation> annotations = new ArrayList<Annotation>();        
         
         
         private Map<String, String> values;
@@ -276,10 +276,12 @@ public class BlameCommand extends SvnCommand {
             }
         }
                 
+        @Override
         public void error(SAXParseException e) throws SAXException {
             throw e;
         }
 
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
             throw e;
         }

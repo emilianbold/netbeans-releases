@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,10 +55,9 @@ import javax.swing.JPanel;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.options.SvnOptionsController;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.options.SvnOptionsController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;

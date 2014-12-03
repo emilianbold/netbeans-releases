@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,14 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.client.cli.commands;
 
-package org.netbeans.modules.subversion.client.cli.commands;
-
+import org.netbeans.modules.subversion.remote.api.ISVNDirEntry;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -52,15 +52,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.openide.xml.XMLUtil;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -74,7 +72,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ListCommand extends SvnCommand {
 
-    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 
     private byte[] output;
     private final SVNUrl url;
@@ -88,6 +86,7 @@ public class ListCommand extends SvnCommand {
         dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));        
     }
     
+    @Override
     protected boolean hasBinaryOutput() {
         return true;
     }
@@ -98,7 +97,7 @@ public class ListCommand extends SvnCommand {
     }    
     
     @Override
-    protected int getCommand() {
+    protected ISVNNotifyListener.Command getCommand() {
         return ISVNNotifyListener.Command.LS;
     }
     
@@ -119,7 +118,9 @@ public class ListCommand extends SvnCommand {
     }
     
     public ISVNDirEntry[] getEntries() throws SVNClientException {
-        if (output == null || output.length == 0) return new ISVNDirEntry[0];
+        if (output == null || output.length == 0) {
+            return new ISVNDirEntry[0];
+        }
         try {
             XMLReader saxReader = XMLUtil.createXMLReader();
 
@@ -153,11 +154,11 @@ public class ListCommand extends SvnCommand {
         private static final String PATH_ATTRIBUTE      = "path";   // NOI18N        
         private static final String REVISION_ATTRIBUTE  = "revision";   // NOI18N
 
-        private String REVISION_ATTR                    = "revision_attr";
-        private String KIND_ATTR                        = "kind_attr";
-        private String PATH_ATTR                        = "path_attr";;
+        private static final String REVISION_ATTR       = "revision_attr";
+        private static final String KIND_ATTR           = "kind_attr";
+        private static final String PATH_ATTR           = "path_attr";;
         
-        private List<ISVNDirEntry> entries = new ArrayList<ISVNDirEntry>();        
+        private final List<ISVNDirEntry> entries = new ArrayList<ISVNDirEntry>();        
 //        <?xml version="1.0"?>
 //        <lists>
 //        <list
@@ -212,10 +213,14 @@ public class ListCommand extends SvnCommand {
             if (ENTRY_ELEMENT_NAME.equals(qName)) {                                
                 if(values != null) {
                     String name = values.get(NAME_ELEMENT_NAME);
-                    if (name == null) throw new SAXException("'name' tag expected under 'entry'");
+                    if (name == null) {
+                        throw new SAXException("'name' tag expected under 'entry'");
+                    }
                                                                     
                     String commit = values.get(COMMIT_ELEMENT_NAME);
-                    if (commit == null) throw new SAXException("'commit' tag expected under 'entry'");
+                    if (commit == null) {
+                        throw new SAXException("'commit' tag expected under 'entry'");
+                    }
                     
                     String author = values.get(AUTHOR_ELEMENT_NAME);
                     
@@ -229,7 +234,7 @@ public class ListCommand extends SvnCommand {
                         }
                     }
                     
-                    Number revision = null;
+                    SVNRevision.Number revision = null;
                     String revisionValue = values.get(REVISION_ATTR);
                     if(revisionValue != null && !revisionValue.trim().equals("")) {
                         try {
@@ -247,7 +252,9 @@ public class ListCommand extends SvnCommand {
                         kind = SVNNodeKind.FILE;					
                         
                         String sizeValue = values.get(SIZE_ELEMENT_NAME);
-                        if (sizeValue == null) throw new SAXException("'size' tag expected under 'entry'");                        
+                        if (sizeValue == null) {
+                            throw new SAXException("'size' tag expected under 'entry'");
+                        }                        
                         try {
                             size = Long.parseLong(sizeValue);
                         } catch (NumberFormatException ex) {
@@ -264,10 +271,12 @@ public class ListCommand extends SvnCommand {
             } 
         }
                 
+        @Override
         public void error(SAXParseException e) throws SAXException {
             throw e;
         }
 
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
             throw e;
         }
@@ -285,15 +294,15 @@ public class ListCommand extends SvnCommand {
     
     private class DirEntry implements ISVNDirEntry {
 
-        private String path;
-        private Date lastChangedDate;
-        private Number lastChangedRevision;
-        private boolean hasProps;
-        private String lastCommitAuthor;
-        private SVNNodeKind kind;
-        private long size;
+        private final String path;
+        private final Date lastChangedDate;
+        private final SVNRevision.Number lastChangedRevision;
+        private final boolean hasProps;
+        private final String lastCommitAuthor;
+        private final SVNNodeKind kind;
+        private final long size;
 
-        public DirEntry(String path, Date lastChangedDate, Number lastChangedRevision, boolean hasProps, String lastCommitAuthor, SVNNodeKind kind, long size) {
+        public DirEntry(String path, Date lastChangedDate, SVNRevision.Number lastChangedRevision, boolean hasProps, String lastCommitAuthor, SVNNodeKind kind, long size) {
             this.path = path;
             this.lastChangedDate = lastChangedDate;
             this.lastChangedRevision = lastChangedRevision;
@@ -303,30 +312,37 @@ public class ListCommand extends SvnCommand {
             this.size = size;
         }
         
+        @Override
         public String getPath() {
             return path;
         }
 
+        @Override
         public Date getLastChangedDate() {
             return lastChangedDate;
         }
 
-        public Number getLastChangedRevision() {
+        @Override
+        public SVNRevision.Number getLastChangedRevision() {
             return lastChangedRevision;
         }
 
+        @Override
         public boolean getHasProps() {
             return hasProps;
         }
 
+        @Override
         public String getLastCommitAuthor() {
             return lastCommitAuthor;
         }
 
+        @Override
         public SVNNodeKind getNodeKind() {
             return kind;
         }
 
+        @Override
         public long getSize() {
             return size;
         }

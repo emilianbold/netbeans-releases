@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,20 +34,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.client.cli.commands;
 
-package org.netbeans.modules.subversion.client.cli.commands;
-
-import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -65,8 +64,8 @@ public class MoveCommand extends SvnCommand {
     
     private final SVNUrl fromUrl;
     private final SVNUrl toUrl;
-    private final File fromFile;    
-    private final File toFile;
+    private final VCSFileProxy fromFile;    
+    private final VCSFileProxy toFile;
     private final String msg;
     private final SVNRevision rev;
     private final boolean force;
@@ -84,7 +83,7 @@ public class MoveCommand extends SvnCommand {
         type = MoveType.url2url;
     }   
     
-    public MoveCommand(File fromFile, File toFile, boolean force) {        
+    public MoveCommand(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) {        
         this.fromFile = fromFile;
         this.toFile = toFile;
         this.force = force;        
@@ -98,7 +97,7 @@ public class MoveCommand extends SvnCommand {
     }
     
     @Override
-    protected int getCommand() {
+    protected ISVNNotifyListener.Command getCommand() {
         return ISVNNotifyListener.Command.MOVE;
     }
     
@@ -115,7 +114,7 @@ public class MoveCommand extends SvnCommand {
                 break;
             case file2file:                     
                 arguments.add(fromFile);
-                arguments.add(toFile.getAbsolutePath());
+                arguments.add(toFile.getPath());
                 if(force) {
                     arguments.add("--force");                    
                 }

@@ -42,24 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import java.awt.Color;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent.DiffResultsViewFactory;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.awt.Mnemonics;
-import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
-import org.netbeans.modules.subversion.ui.diff.Setup;
-import org.netbeans.modules.versioning.util.NoContentPanel;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
-import java.io.File;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.event.KeyEvent;
@@ -86,16 +78,24 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
-import org.netbeans.modules.subversion.ui.history.SummaryView.SvnLogEntry;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryTopComponent.DiffResultsViewFactory;
+import org.netbeans.modules.subversion.remote.ui.history.SummaryView.SvnLogEntry;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Contains all components of the Search History panel.
@@ -104,7 +104,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, DiffSetupSource, DocumentListener, ActionListener {
 
-    private final File[]                roots;
+    private final VCSFileProxy[]                roots;
     private final SVNUrl                repositoryUrl;
     private final SearchCriteriaPanel   criteria;
     
@@ -135,8 +135,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         USER(SearchHighlight.Kind.AUTHOR, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.User")), //NOI18N
         ID(SearchHighlight.Kind.REVISION, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.Commit")), //NOI18N
         FILE(SearchHighlight.Kind.FILE, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.File")); //NOI18N
-        private String label;
-        private Kind kind;
+        private final String label;
+        private final Kind kind;
         
         FilterKind (SearchHighlight.Kind kind, String label) {
             this.kind = kind;
@@ -151,7 +151,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private final Timer filterTimer;
 
     /** Creates new form SearchHistoryPanel */
-    public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
+    public SearchHistoryPanel(VCSFileProxy [] roots, SearchCriteriaPanel criteria) {
         this.roots = roots;
         this.repositoryUrl = null;
         this.criteria = criteria;
@@ -168,9 +168,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         refreshComponents(true);
     }
     
-    public SearchHistoryPanel(SVNUrl repositoryUrl, File localRoot, SearchCriteriaPanel criteria) {
+    public SearchHistoryPanel(SVNUrl repositoryUrl, VCSFileProxy localRoot, SearchCriteriaPanel criteria) {
         this.repositoryUrl = repositoryUrl;
-        this.roots = new File[] { localRoot };
+        this.roots = new VCSFileProxy[] { localRoot };
         this.criteria = criteria;
         this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
@@ -239,7 +239,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             tbDiff.setPreferredSize(d1);
         }
         
-        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-next.png"))) { // NOI18N
+        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-next.png"))) { // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle"). // NOI18N
                                                    getString("CTL_DiffPanel_Next_Tooltip")); // NOI18N
@@ -249,7 +249,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 diffView.onNextButton();
             }
         };
-        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-prev.png"))) { // NOI18N
+        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-prev.png"))) { // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle"). // NOI18N
                                                    getString("CTL_DiffPanel_Prev_Tooltip")); // NOI18N
@@ -277,7 +277,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
-            if (tc == null) return;
+            if (tc == null) {
+                return;
+            }
             tc.setActivatedNodes((Node[]) evt.getNewValue());
         }
     }
@@ -367,11 +369,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     public SVNUrl getSearchRepositoryRootUrl() throws SVNClientException {
-        if (repositoryUrl != null) return repositoryUrl;
+        if (repositoryUrl != null) {
+            return repositoryUrl;
+        }
         return SvnUtils.getRepositoryRootUrl(roots[0]);
     }
 
-    public File[] getRoots() {
+    public VCSFileProxy[] getRoots() {
         return roots;
     }
 
@@ -462,15 +466,19 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     Collection<Setup> getSetups(RepositoryRevision [] revisions, RepositoryRevision.Event [] events) {
         long fromRevision = Long.MAX_VALUE;
         long toRevision = Long.MIN_VALUE;
-        Set<File> filesToDiff = new HashSet<File>();
+        Set<VCSFileProxy> filesToDiff = new HashSet<VCSFileProxy>();
         
         for (RepositoryRevision revision : revisions) {
             long rev = revision.getLog().getRevision().getNumber();
-            if (rev > toRevision) toRevision = rev;
-            if (rev < fromRevision) fromRevision = rev;
+            if (rev > toRevision) {
+                toRevision = rev;
+            }
+            if (rev < fromRevision) {
+                fromRevision = rev;
+            }
             List<RepositoryRevision.Event> evs = revision.getEvents();
             for (RepositoryRevision.Event event : evs) {
-                File file = event.getFile();
+                VCSFileProxy file = event.getFile();
                 if (file != null) {
                     filesToDiff.add(file);
                 }
@@ -479,15 +487,19 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         for (RepositoryRevision.Event event : events) {
             long rev = event.getLogInfoHeader().getLog().getRevision().getNumber();
-            if (rev > toRevision) toRevision = rev;
-            if (rev < fromRevision) fromRevision = rev;
+            if (rev > toRevision) {
+                toRevision = rev;
+            }
+            if (rev < fromRevision) {
+                fromRevision = rev;
+            }
             if (event.getFile() != null) {
                 filesToDiff.add(event.getFile());
             }
         }
 
         List<Setup> setups = new ArrayList<Setup>();
-        for (File file : filesToDiff) {
+        for (VCSFileProxy file : filesToDiff) {
             Setup setup = new Setup(file, Long.toString(fromRevision - 1), Long.toString(toRevision), false);
             setups.add(setup);
         }
@@ -511,7 +523,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
             int n1 = Integer.parseInt(st1.nextToken());
             int n2 = Integer.parseInt(st2.nextToken());
-            if (n1 != n2) return n2 - n1;
+            if (n1 != n2) {
+                return n2 - n1;
+            }
         }
     }
 
@@ -580,12 +594,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         jSeparator2.setMaximumSize(new java.awt.Dimension(2, 32767));
         jToolBar1.add(jSeparator2);
 
-        bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-next.png"))); // NOI18N
+        bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-next.png"))); // NOI18N
         jToolBar1.add(bNext);
         bNext.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSN_NextDifference")); // NOI18N
         bNext.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_NextDifference")); // NOI18N
 
-        bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-prev.png"))); // NOI18N
+        bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-prev.png"))); // NOI18N
         jToolBar1.add(bPrev);
         bPrev.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSN_PrevDifference")); // NOI18N
         bPrev.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "ACSD_PrevDifference")); // NOI18N

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.client;
 
-package org.netbeans.modules.subversion.client;
-
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.openide.filesystems.FileUtil;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -57,13 +55,19 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
  */
 public class SvnClientRefreshHandler implements ISVNNotifyListener {
 
-    private final Set<File>  filesToRefresh = new HashSet<File>();
+    private final Set<VCSFileProxy>  filesToRefresh = new HashSet<VCSFileProxy>();
 
-    public void setCommand(int arg0)                { /* boring */ }
+    @Override
+    public void setCommand(ISVNNotifyListener.Command arg0)                { /* boring */ }
+    @Override
     public void logCommandLine(String arg0)         { /* boring */ }
+    @Override
     public void logMessage(String arg0)             { /* boring */ }
+    @Override
     public void logError(String arg0)               { /* boring */ }
+    @Override
     public void logRevision(long arg0, String arg1) { /* boring */ }
+    @Override
     public void logCompleted(String arg0)           { /* boring */ }
 
     /**
@@ -72,11 +76,12 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
      * @param kind
      * @see {@link #refresh()}
      */
-    public void onNotify(File file, SVNNodeKind kind) {
+    @Override
+    public void onNotify(VCSFileProxy file, SVNNodeKind kind) {
         if(file == null) {
             return;
         }
-        file = FileUtil.normalizeFile(file); // I saw "./"
+        file = file.normalizeFile(); // I saw "./"
 
         synchronized(filesToRefresh) {
             if(Subversion.LOG.isLoggable(Level.FINE)) {
@@ -102,9 +107,9 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
      * @see {@link #onNotify(java.io.File, org.tigris.subversion.svnclientadapter.SVNNodeKind)}
      */
     public void refresh() {
-        File[] fileArray;
+        VCSFileProxy[] fileArray;
         synchronized(filesToRefresh) {
-            fileArray = filesToRefresh.toArray(new File[filesToRefresh.size()]);
+            fileArray = filesToRefresh.toArray(new VCSFileProxy[filesToRefresh.size()]);
             filesToRefresh.clear();
         }
         refresh(fileArray);
@@ -114,9 +119,9 @@ public class SvnClientRefreshHandler implements ISVNNotifyListener {
      * Refresh the nb filesystem and the cache for all given files
      * @param files files to be refreshed
      */
-    private void refresh(File... files) {
+    private void refresh(VCSFileProxy... files) {
         if(Subversion.LOG.isLoggable(Level.FINE)) {
-            for (File file : files) {
+            for (VCSFileProxy file : files) {
                 Subversion.LOG.fine("refreshing: [" + file + "]"); // NOI18N
             }
         }

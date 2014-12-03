@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.wizards;
+package org.netbeans.modules.subversion.remote.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -49,9 +49,9 @@ import java.text.MessageFormat;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.subversion.ui.repository.Repository;
-import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
-import org.netbeans.modules.subversion.ui.wizards.urlpatternstep.URLPatternStep;
+import org.netbeans.modules.subversion.remote.ui.repository.Repository;
+import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.RepositoryStep;
+import org.netbeans.modules.subversion.remote.ui.wizards.urlpatternstep.URLPatternStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 
@@ -99,6 +99,7 @@ public final class URLPatternWizard implements ChangeListener {
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if(wizardIterator==null) {
             return;
@@ -129,6 +130,7 @@ public final class URLPatternWizard implements ChangeListener {
     private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
         PanelsIterator() {            
         }
+        @Override
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[2];
             repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION, RepositoryStep.URL_PATTERN_HELP_ID);
@@ -161,6 +163,7 @@ public final class URLPatternWizard implements ChangeListener {
             }
             return panels;
         }
+        @Override
         public void nextPanel() {             
             super.nextPanel();
             if(current() == urlPatternStep) {

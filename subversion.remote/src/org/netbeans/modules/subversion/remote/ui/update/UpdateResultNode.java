@@ -41,25 +41,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
 import java.awt.EventQueue;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.util.lookup.Lookups;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * The node that is rendered in the Update Results view.
@@ -100,6 +99,7 @@ class UpdateResultNode extends AbstractNode {
         return info;
     }
 
+    @Override
     public String getName() {
         String name = info.getFile().getName() + ( (info.getAction() & FileUpdateInfo.ACTION_TYPE_PROPERTY) != 0 ? " - Property" : "" );        
         return name;
@@ -110,19 +110,20 @@ class UpdateResultNode extends AbstractNode {
      * If a node represents primary file of a DataObject
      * it has respective DataObject cookies.
      */
+    @Override
     public <T extends Node.Cookie> T getCookie(Class<T> klass) {
-        FileObject fo = FileUtil.toFileObject(info.getFile());
+        FileObject fo = info.getFile().toFileObject();
         if (fo != null) {
             try {
                 DataObject dobj = DataObject.find(fo);
                 if (fo.equals(dobj.getPrimaryFile())) {
-                    return dobj.getCookie(klass);
+                    return dobj.getLookup().lookup(klass);
                 }
             } catch (DataObjectNotFoundException e) {
                 // ignore file without data objects
             }
         }
-        return super.getCookie(klass);
+        return super.getLookup().lookup(klass);
     }
 
     private void initProperties() {
@@ -163,6 +164,7 @@ class UpdateResultNode extends AbstractNode {
         fireDisplayNameChange(htmlDisplayName, htmlDisplayName);
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
@@ -188,6 +190,7 @@ class UpdateResultNode extends AbstractNode {
         protected SyncFileProperty(String name, Class<String> type, String displayName, String shortDescription) {
             super(name, type, displayName, shortDescription);
         }
+        @Override
         public String toString() {
             try {
                 return getValue();
@@ -199,12 +202,13 @@ class UpdateResultNode extends AbstractNode {
     }
     
     private class PathProperty extends UpdateResultNode.SyncFileProperty {
-        private String shortPath;
+        private final String shortPath;
         public PathProperty() {
             super(COLUMN_NAME_PATH, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Path_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Path_Desc")); // NOI18N
             shortPath = getLocation();
             setValue("sortkey", shortPath + "\t" + UpdateResultNode.this.getName()); // NOI18N
         }
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return shortPath;
         }
@@ -215,6 +219,7 @@ class UpdateResultNode extends AbstractNode {
             super(COLUMN_NAME_NAME, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Name_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Name_Desc")); // NOI18N
             setValue("sortkey", UpdateResultNode.this.getName()); // NOI18N
         }
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return UpdateResultNode.this.getDisplayName();
         }
@@ -223,13 +228,14 @@ class UpdateResultNode extends AbstractNode {
     private final String [] zeros = new String [] { "", "00", "0", "" }; // NOI18N
     
     private class FileStatusProperty extends UpdateResultNode.SyncFileProperty {        
-        private String shortPath;        
+        private final String shortPath;        
         public FileStatusProperty() {            
             super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Desc"));            
             shortPath = getLocation();
             String sortable = Integer.toString(info.getAction());
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + UpdateResultNode.this.getName());
         }
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return statusDisplayName;
         }

@@ -41,18 +41,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 import java.util.*;
-import java.io.File;
 import java.awt.BorderLayout;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * @author Maros Sandor
@@ -70,7 +70,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         this(context, null, null);
     }
 
-    SearchHistoryTopComponent(File[] files) {
+    SearchHistoryTopComponent(VCSFileProxy[] files) {
         this();
         initComponents(files, null, null);
     }
@@ -85,13 +85,13 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
      * @param file it's history shall be shown
      * @param fac factory creating a specific DiffResultsView - just override its createDiffResultsView method
      */
-    SearchHistoryTopComponent(File file, DiffResultsViewFactory fac) {
+    SearchHistoryTopComponent(VCSFileProxy file, DiffResultsViewFactory fac) {
         this();
-        initComponents(new File[] {file}, null, null);
+        initComponents(new VCSFileProxy[] {file}, null, null);
         shp.setDiffResultsViewFactory(fac);
     }
 
-    public SearchHistoryTopComponent(SVNUrl repositoryUrl, File localRoot, long revision) {
+    public SearchHistoryTopComponent(SVNUrl repositoryUrl, VCSFileProxy localRoot, long revision) {
         this();
         initComponents(repositoryUrl, localRoot, revision);
     }
@@ -105,7 +105,7 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         shp.activateDiffView(selectFirstRevision);
     }
     
-    private void initComponents(SVNUrl repositoryUrl, File localRoot, long revision) {
+    private void initComponents(SVNUrl repositoryUrl, VCSFileProxy localRoot, long revision) {
         setLayout(new BorderLayout());
         SearchCriteriaPanel scp = new SearchCriteriaPanel(repositoryUrl);
         scp.setFrom(Long.toString(revision));
@@ -114,36 +114,46 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         add(shp);
     }
 
-    private void initComponents(File[] roots, Date from, Date to) {
+    private void initComponents(VCSFileProxy[] roots, Date from, Date to) {
         setLayout(new BorderLayout());
         SearchCriteriaPanel scp = new SearchCriteriaPanel(roots);
-        if (from != null) scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
-        if (to != null) scp.setTo(SearchExecutor.simpleDateFormat.format(to));
+        if (from != null) {
+            scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
+        }
+        if (to != null) {
+            scp.setTo(SearchExecutor.simpleDateFormat.format(to));
+        }
         shp = new SearchHistoryPanel(roots, scp);
         add(shp);
     }
 
+    @Override
     public int getPersistenceType(){
        return TopComponent.PERSISTENCE_NEVER;
     }
     
+    @Override
     protected void componentClosed() {
        shp.windowClosed();
        super.componentClosed();
     }
     
+    @Override
     protected String preferredID(){
        return "Svn.SearchHistoryTopComponent";    // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
 
+    @Override
     public Collection getSetups() {
         return shp.getSetups();
     }
 
+    @Override
     public String getSetupDisplayName() {
         return getDisplayName();
     }

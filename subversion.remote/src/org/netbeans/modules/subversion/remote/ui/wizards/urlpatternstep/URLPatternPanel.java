@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.wizards.urlpatternstep;
+package org.netbeans.modules.subversion.remote.ui.wizards.urlpatternstep;
 
 /**
  *

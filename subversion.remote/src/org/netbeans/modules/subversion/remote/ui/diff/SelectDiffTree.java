@@ -41,26 +41,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.JTextField;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.ui.browser.Browser;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.copy.CopyDialog;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.ui.browser.Browser;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.remote.ui.copy.CopyDialog;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -69,7 +69,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class SelectDiffTree extends CopyDialog implements PropertyChangeListener {
 
     private final RepositoryPaths repositoryPaths;
-    private final File root;
+    private final VCSFileProxy root;
     private final RepositoryFile repositoryFile;
         
     @NbBundle.Messages({
@@ -79,7 +79,7 @@ public class SelectDiffTree extends CopyDialog implements PropertyChangeListener
         "LBL_BrowserMessageSelectDiffTreeFile=&Choose the File you want to diff",
         "LBL_BrowserMessageSelectDiffTreeFolder=&Choose the Folder you want to diff"
     })
-    public SelectDiffTree (RepositoryFile repositoryFile, File root) {
+    public SelectDiffTree (RepositoryFile repositoryFile, VCSFileProxy root) {
         super(new SelectDiffTreePanel(), Bundle.CTL_SelectDiffTree_Title(root.getName()),
                 Bundle.CTL_SelectDiffTree_okButton());
         

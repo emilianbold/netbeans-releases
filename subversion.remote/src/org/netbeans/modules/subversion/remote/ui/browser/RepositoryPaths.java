@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.browser;
+package org.netbeans.modules.subversion.remote.ui.browser;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -62,16 +62,16 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *

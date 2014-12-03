@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,15 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.client.cli.commands;
 
-package org.netbeans.modules.subversion.client.cli.commands;
-
-import java.io.File;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
@@ -53,16 +52,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
-import org.netbeans.modules.subversion.client.cli.SvnCommand.Arguments;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNScheduleKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -77,9 +75,9 @@ public class InfoCommand extends SvnCommand {
         url
     }
     
-    private List<String> output = new ArrayList<String>();
+    private final List<String> output = new ArrayList<String>();
     private final SVNUrl url;
-    private final File[] files;
+    private final VCSFileProxy[] files;
     private final SVNRevision revision;
     private final SVNRevision pegging;
 
@@ -95,7 +93,7 @@ public class InfoCommand extends SvnCommand {
         type = InfoType.url;
     }
     
-    public InfoCommand(File[] files, SVNRevision revision, SVNRevision pegging) {
+    public InfoCommand(VCSFileProxy[] files, SVNRevision revision, SVNRevision pegging) {
         this.files = files;
         this.revision = revision;
         this.pegging = pegging;
@@ -111,7 +109,7 @@ public class InfoCommand extends SvnCommand {
     }    
     
     @Override
-    protected int getCommand() {
+    protected ISVNNotifyListener.Command getCommand() {
         return ISVNNotifyListener.Command.INFO;
     }
     
@@ -149,7 +147,7 @@ public class InfoCommand extends SvnCommand {
         
         Map<String, String> map = null;
         
-        StringBuffer comment = new StringBuffer();
+        StringBuilder comment = new StringBuilder();
         for (int i = 0; i < output.size(); i++) {
 
             String outputLine = output.get(i);
@@ -182,7 +180,7 @@ public class InfoCommand extends SvnCommand {
             infos.add(new Info(map));
         }
         if (infos.size() == 0 && url != null) {
-            org.netbeans.modules.subversion.Subversion.LOG.warning("InfoCommand: Map is null for: " + output);
+            Subversion.LOG.warning("InfoCommand: Map is null for: " + output);
         }
         return infos.toArray(new Info[infos.size()]);
     }
@@ -194,101 +192,125 @@ public class InfoCommand extends SvnCommand {
             this.infoMap = infoMap;
         }
                         
+        @Override
 	public SVNRevision.Number getRevision() {
             return getNumber(infoMap.get(INFO_REVISION));
 	}
         
+        @Override
 	public Date getLastDateTextUpdate() {
             return getDate(infoMap.get(INFO_TEXT_LAST_UPDATED));	
 	}
 
+        @Override
 	public String getUuid() {
             return infoMap.get(INFO_REPOSITORY_UUID);
 	}
 
+        @Override
 	public SVNUrl getRepository() {
             return getSVNUrl(infoMap.get(INFO_REPOSITORY));
 	}
 
+        @Override
 	public SVNScheduleKind getSchedule() {
             return SVNScheduleKind.fromString(infoMap.get(INFO_SCHEDULE));
 	}
 
+        @Override
 	public Date getLastDatePropsUpdate() {
             return getDate(infoMap.get(INFO_PROPS_LAST_UPDATED));
 	}
 
+        @Override
 	public boolean isCopied() {
             return (getCopyRev() != null) || (getCopyUrl() != null);
 	}
 
-	public Number getCopyRev() {
+        @Override
+	public SVNRevision.Number getCopyRev() {
             return getNumber(infoMap.get(INFO_COPIED_FROM_REV));
 	}
 
+        @Override
 	public SVNUrl getCopyUrl() {
             return getSVNUrl(infoMap.get(INFO_COPIED_FROM_URL));
 	}
 
+        @Override
         public Date getLockCreationDate() {
             return getDate(infoMap.get(INFO_LOCK_CREATION_DATE));
         }
 
+        @Override
         public String getLockOwner() {
             return infoMap.get(INFO_LOCK_OWNER);
         }
 
+        @Override
         public String getLockComment() {
             return infoMap.get(INFO_LOCK_COMMENT);
         }
 
-        public File getConflictNew() {
+        @Override
+        public VCSFileProxy getConflictNew() {
             String path = infoMap.get(INFO_CONFLICT_CURRENT_BASE);
-            return (path != null)? new File(getFile().getParent(), path).getAbsoluteFile() : null;
+            return (path != null)? VCSFileProxy.createFileProxy(getFile().getParentFile(), path) : null;
         }
 
-        public File getConflictOld() {
+        @Override
+        public VCSFileProxy getConflictOld() {
             String path = infoMap.get(INFO_CONFLICT_PREVIOUS_BASE);
-            return (path != null)? new File(getFile().getParent(), path).getAbsoluteFile() : null;
+            return (path != null)? VCSFileProxy.createFileProxy(getFile().getParentFile(), path) : null;
         }
 
-        public File getConflictWorking() {
+        @Override
+        public VCSFileProxy getConflictWorking() {
             String path = infoMap.get(INFO_CONFLICT_PREVIOUS_WORKING);
-            return (path != null) ? new File(getFile().getParent(), path).getAbsoluteFile() : null;
+            return (path != null) ? VCSFileProxy.createFileProxy(getFile().getParentFile(), path) : null;
         }
         
+        @Override
 	public String getPath() {
             return infoMap.get(INFO_PATH);
 	}
         
-        public File getFile() {
+        @Override
+        public VCSFileProxy getFile() {
             return new File(getPath()).getAbsoluteFile();
         }
 
+        @Override
 	public SVNUrl getUrl() {
             return getSVNUrl(infoMap.get(INFO_URL));
 	}
 
+        @Override
 	public String getUrlString() {
             return infoMap.get(INFO_URL);
 	}
         
+        @Override
 	public Date getLastChangedDate() {
             return getDate(infoMap.get(INFO_LAST_CHANGED_DATE));
 	}
 
+        @Override
 	public SVNRevision.Number getLastChangedRevision() {
             return getNumber(infoMap.get(INFO_LAST_CHANGED_REVISION));
 	}
 
+        @Override
 	public String getLastCommitAuthor() {
             return infoMap.get(INFO_LAST_CHANGED_AUTHOR);
 	}
 
+        @Override
 	public SVNNodeKind getNodeKind() {
             return SVNNodeKind.fromString(infoMap.get(INFO_NODEKIND));
 	}
 
+        @Override
         public int getDepth() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

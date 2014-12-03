@@ -40,10 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.kenai;
+package org.netbeans.modules.subversion.remote.kenai;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.PasswordAuthentication;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;

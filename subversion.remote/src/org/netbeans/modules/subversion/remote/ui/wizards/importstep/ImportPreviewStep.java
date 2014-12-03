@@ -41,10 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.wizards.importstep;
+package org.netbeans.modules.subversion.remote.ui.wizards.importstep;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,19 +53,25 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.PanelProgressSupport;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.commit.CommitAction;
-import org.netbeans.modules.subversion.ui.commit.CommitOptions;
-import org.netbeans.modules.subversion.ui.commit.CommitTable;
-import org.netbeans.modules.subversion.ui.commit.CommitTableModel;
-import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.PanelProgressSupport;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.remote.ui.commit.CommitOptions;
+import org.netbeans.modules.subversion.remote.ui.commit.CommitTable;
+import org.netbeans.modules.subversion.remote.ui.commit.CommitTableModel;
+import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.openide.util.HelpCtx;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+
 
 /**
  * @author Tomas Stupka
@@ -74,7 +79,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
 public class ImportPreviewStep extends AbstractStep {
     
     private PreviewPanel previewPanel;
-    private Context context;
+    private final Context context;
     private CommitTable table;
     private PanelProgressSupport support;
     private String importMessage;
@@ -84,10 +89,12 @@ public class ImportPreviewStep extends AbstractStep {
         this.context = context;
     }
     
+    @Override
     public HelpCtx getHelp() {    
         return new HelpCtx(ImportPreviewStep.class);
     }    
 
+    @Override
     protected JComponent createComponent() {
         if (previewPanel == null) {
             previewPanel = new PreviewPanel();
@@ -105,6 +112,7 @@ public class ImportPreviewStep extends AbstractStep {
         return previewPanel;              
     }
 
+    @Override
     protected void validateBeforeNext() {
         validateUserInput();
     }       
@@ -138,7 +146,7 @@ public class ImportPreviewStep extends AbstractStep {
             @Override
             protected void perform() {
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                final File[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+                final VCSFileProxy[] files = cache.listFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
 
                 if (files.length == 0 || isCanceled()) {
                     return;
@@ -152,7 +160,7 @@ public class ImportPreviewStep extends AbstractStep {
                 SvnUtils.runWithInfoCache(new Runnable() {
                     @Override
                     public void run () {
-                        for (File file : files) {
+                        for (VCSFileProxy file : files) {
                             SvnFileNode node = new SvnFileNode(file);
                             node.initializeProperties();
                             nodesList.add(node);
@@ -164,9 +172,11 @@ public class ImportPreviewStep extends AbstractStep {
                 });
                 final SvnFileNode[] nodes = nodesList.toArray(new SvnFileNode[files.length]);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         table.setNodes(nodes);
                         table.getTableModel().addTableModelListener(new TableModelListener() {
+                            @Override
                             public void tableChanged(TableModelEvent e) {
                                 validateUserInput();
                             }
@@ -202,6 +212,7 @@ public class ImportPreviewStep extends AbstractStep {
      */
     public void startCommitTask (SVNUrl repository) {
         SvnProgressSupport commitTask = new SvnProgressSupport() {
+            @Override
             public void perform() {
                 CommitAction.performCommit(importMessage, getCommitFiles(), context, this, true);
             }

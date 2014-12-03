@@ -41,37 +41,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessageChangePath;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
-import java.io.File;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.update.RevertModifications;
-import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessageChangePath;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.update.RevertModifications;
+import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -84,7 +82,7 @@ final class RepositoryRevision {
 
     private ISVNLogMessage message;
 
-    private SVNUrl repositoryRootUrl;
+    private final SVNUrl repositoryRootUrl;
 
     /**
      * List of events associated with the revision.
@@ -95,12 +93,12 @@ final class RepositoryRevision {
     private Search currentSearch;
     private final PropertyChangeSupport support;
     public static final String PROP_EVENTS_CHANGED = "eventsChanged"; //NOI18N
-    private final File[] selectionRoots;
-    private final Map<String,File> pathToRoot;
+    private final VCSFileProxy[] selectionRoots;
+    private final Map<String,VCSFileProxy> pathToRoot;
     private final Map<String, SVNRevision> pegRevisions;
 
-    public RepositoryRevision(ISVNLogMessage message, SVNUrl rootUrl, File[] selectionRoots,
-            Map<String,File> pathToRoot, Map<String, SVNRevision> pegRevisions) {
+    public RepositoryRevision(ISVNLogMessage message, SVNUrl rootUrl, VCSFileProxy[] selectionRoots,
+            Map<String,VCSFileProxy> pathToRoot, Map<String, SVNRevision> pegRevisions) {
         this.message = message;
         this.repositoryRootUrl = rootUrl;
         this.selectionRoots = selectionRoots;
@@ -201,14 +199,14 @@ final class RepositoryRevision {
         /**
          * The file or folder that this event is about. It may be null if the File cannot be computed.
          */
-        private File    file;
+        private VCSFileProxy    file;
 
-        private ISVNLogMessageChangePath changedPath;
+        private final ISVNLogMessageChangePath changedPath;
 
-        private String name;
-        private String path;
-        private boolean underRoots;
-        private File originalFile;
+        private final String name;
+        private final String path;
+        private final boolean underRoots;
+        private VCSFileProxy originalFile;
         private final String originalPath;
         private final String action;
         private final String originalName;
@@ -235,22 +233,22 @@ final class RepositoryRevision {
         /** Getter for property file.
          * @return Value of property file.
          */
-        public File getFile() {
+        public VCSFileProxy getFile() {
             return file;
         }
 
         /** Setter for property file.
          * @param file New value of property file.
          */
-        public void setFile(File file) {
+        public void setFile(VCSFileProxy file) {
             this.file = file;
         }
 
-        public File getOriginalFile () {
+        public VCSFileProxy getOriginalFile () {
             return originalFile;
         }
 
-        public void setOriginalFile (File originalFile) {
+        public void setOriginalFile (VCSFileProxy originalFile) {
             this.originalFile = originalFile;
         }
 
@@ -342,7 +340,7 @@ final class RepositoryRevision {
                             Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Utils.openFile(FileUtil.normalizeFile(getFile()));
+                                    org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(getFile().normalizeFile());
                                 }
                             });
                         }
@@ -353,7 +351,7 @@ final class RepositoryRevision {
         }
 
         void viewFile (boolean showAnnotations) {
-            File originFile = getFile();
+            VCSFileProxy originFile = getFile();
             SVNRevision rev = getLogInfoHeader().getLog().getRevision();
             SVNUrl repoUrl = getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repoUrl.appendPath(getChangedPath().getPath());
@@ -364,7 +362,7 @@ final class RepositoryRevision {
             SvnProgressSupport support = new SvnProgressSupport() {
                 @Override
                 public void perform() {
-                    File file = getFile();
+                    VCSFileProxy file = getFile();
                     boolean wasDeleted = getChangedPath().getAction() == 'D';
                     SVNUrl repoUrl = getLogInfoHeader().getRepositoryRootUrl();
                     SVNUrl fileUrl = repoUrl.appendPath(getChangedPath().getPath());                    
@@ -412,7 +410,7 @@ final class RepositoryRevision {
 
     public void initFakeRootEvent() {
         fakeRootEvents = new LinkedList<Event>();
-        for (final File selectionRoot : selectionRoots) {
+        for (final VCSFileProxy selectionRoot : selectionRoots) {
             Event e = new Event(new ISVNLogMessageChangePath() {
                 private String path;
                 @Override
@@ -424,14 +422,14 @@ final class RepositoryRevision {
                                 path = "/" + path; //NOI18B
                             }
                         } catch (SVNClientException ex) {
-                            Subversion.LOG.log(Level.INFO, selectionRoot.getAbsolutePath(), ex);
+                            Subversion.LOG.log(Level.INFO, selectionRoot.getPath(), ex);
                             path = "/"; //NOI18B
                         }
                     }
                     return path;
                 }
                 @Override
-                public Number getCopySrcRevision() {
+                public SVNRevision.Number getCopySrcRevision() {
                     return null;
                 }
                 @Override
@@ -461,7 +459,7 @@ final class RepositoryRevision {
                 } else {
                     // do not call search history for with repo root url, some repositories
                     // may limit access to the root folder
-                    for (File f : selectionRoots) {
+                    for (VCSFileProxy f : selectionRoots) {
                         String p = SvnUtils.getRelativePath(f);
                         if (p != null && p.startsWith("/")) { //NOI18N
                             p = p.substring(1, p.length());
@@ -529,9 +527,9 @@ final class RepositoryRevision {
                 }
                 for (ISVNLogMessageChangePath path : paths) {
                     boolean underRoots = false;
-                    File f = computeFile(path.getPath());
+                    VCSFileProxy f = computeFile(path.getPath());
                     if (f != null) {
-                        for (File selectionRoot : selectionRoots) {
+                        for (VCSFileProxy selectionRoot : selectionRoots) {
                             if (VersioningSupport.isFlat(selectionRoot)) {
                                 underRoots = selectionRoot.equals(f) || selectionRoot.equals(f.getParentFile());
                             } else {
@@ -563,10 +561,10 @@ final class RepositoryRevision {
         }
     }
 
-    private File computeFile(String path) {
+    private VCSFileProxy computeFile(String path) {
         for (String s : pathToRoot.keySet()) {
             if (path.startsWith(s)) {
-                return new File(pathToRoot.get(s), path.substring(s.length()));
+                return VCSFileProxy.createFileProxy(pathToRoot.get(s), path.substring(s.length()));
             }
         }
         return null;

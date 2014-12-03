@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.repository;
+package org.netbeans.modules.subversion.remote.ui.repository;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -56,7 +56,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -78,19 +77,18 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * @author Tomas Stupka
@@ -195,11 +193,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                 (file = new ConnectionType.FileUrl(this)).getPanel(),
                 FILE_PANEL);
 
-        if(SvnClientFactory.isSvnKit()) {
-            svnSSH = new ConnectionType.SvnSSHSvnKit(this);
-        } else {
-            svnSSH = new ConnectionType.SvnSSHCli(this);
-        }
+        svnSSH = new ConnectionType.SvnSSHCli(this);
 
         repositoryPanel.connPanel.add(svnSSH.getPanel(), SSH_PANEL);
 
@@ -279,7 +273,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
 
             private void addProjects (final Set<RepositoryConnection> recentRoots) {
                 for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-                    File projectFolder = FileUtil.toFile(p.getProjectDirectory());
+                    VCSFileProxy projectFolder = VCSFileProxy.createFileProxy(p.getProjectDirectory());
                     if (projectFolder != null && SvnUtils.isManaged(projectFolder)) {
                         try {
                             SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(projectFolder);

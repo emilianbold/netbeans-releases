@@ -42,20 +42,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.export;
+package org.netbeans.modules.subversion.remote.ui.export;
 
-import java.io.File;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.CheckoutCompleted;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.CheckoutCompleted;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
@@ -97,11 +97,11 @@ public class ExportAction extends ContextAction {
         
         Context ctx = getContext(nodes);
 
-        final File[] roots = SvnUtils.getActionRoots(ctx);
+        final VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx);
         if(roots == null || roots.length != 1) return;
-        File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
+        VCSFileProxy[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         
-        File fromFile = roots[0];
+        VCSFileProxy fromFile = roots[0];
 
         final RequestProcessor rp = createRequestProcessor(ctx);
         final boolean hasChanges = files.length > 0;
@@ -111,15 +111,15 @@ public class ExportAction extends ContextAction {
         }
     }
 
-    private void performExport(final Export export, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
+    private void performExport(final Export export, final RequestProcessor rp, final Node[] nodes, final VCSFileProxy[] roots) {
         rp.post(new Runnable() {
             @Override
             public void run() {
                 ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(ExportAction.this, nodes) {
                     @Override
                     public void perform() {
-                        File fromFile = export.getFromFile();
-                        File toFile = export.getToFile();
+                        VCSFileProxy fromFile = export.getFromFile();
+                        VCSFileProxy toFile = export.getToFile();
                         toFile.mkdir();
                         if(isCanceled()) {
                             return;

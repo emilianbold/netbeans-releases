@@ -41,7 +41,7 @@
  *
  * Created on Aug 11, 2011, 12:25:52 PM
  */
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
 /**
  *

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.wizards;
+package org.netbeans.modules.subversion.remote.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -50,14 +50,14 @@ import java.text.MessageFormat;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.ui.repository.Repository;
-import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
-import org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.ui.repository.Repository;
+import org.netbeans.modules.subversion.remote.ui.wizards.checkoutstep.CheckoutStep;
+import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.RepositoryStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /*
  *
@@ -122,6 +122,7 @@ public final class CheckoutWizard implements ChangeListener {
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if(wizardIterator==null) {
             return;
@@ -175,6 +176,7 @@ public final class CheckoutWizard implements ChangeListener {
             return panels;
         }
 
+        @Override
         public void nextPanel() {          
             if(current() == repositoryStep) {
                 checkoutStep.setup(repositoryStep.getRepositoryFile());

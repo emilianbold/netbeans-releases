@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,20 +49,20 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.browser.Browser;
-import org.netbeans.modules.subversion.ui.browser.BrowserAction;
-import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.ui.browser.Browser;
+import org.netbeans.modules.subversion.remote.ui.browser.BrowserAction;
+import org.netbeans.modules.subversion.remote.ui.browser.CreateFolderAction;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,12 +74,12 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
     private final RepositoryPaths copyToRepositoryPaths;
     private final RepositoryPaths copyFromRepositoryPaths;
     
-    private final File localeFile;
+    private final VCSFileProxy localeFile;
     private final RepositoryFile repositoryFile;
     private final boolean localChanges;
     
     /** Creates a new instance of CreateCopy */
-    public CreateCopy(RepositoryFile repositoryFile, File localeFile, boolean localChanges) {        
+    public CreateCopy(RepositoryFile repositoryFile, VCSFileProxy localeFile, boolean localChanges) {        
         super(new CreateCopyPanel(), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Prompt", localeFile.getName()), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title")); // NOI18N
         
         this.localeFile = localeFile;        
@@ -92,7 +92,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         panel.remoteRadioButton.addActionListener(this);        
         panel.skipCheckBox.addActionListener(this);        
 
-        panel.copyFromLocalTextField.setText(localeFile.getAbsolutePath());
+        panel.copyFromLocalTextField.setText(localeFile.getPath());
         panel.copyFromRemoteTextField.setText(SvnUtils.decodeToString(repositoryFile.getFileUrl()));        
                         
         copyFromRepositoryPaths = 
@@ -229,7 +229,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         return getCreateCopyPanel().localRadioButton.isSelected();        
     }
     
-    File getLocalFile() {
+    VCSFileProxy getLocalFile() {
         return localeFile;
     }
     
@@ -253,32 +253,38 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         return getCreateCopyPanel().skipCheckBox.isSelected();
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validateUserInput();
         setPreview();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateUserInput();        
         setPreview();        
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         validateUserInput();        
         setPreview();        
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
         validateUserInput();        
         setPreview();        
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( evt.getPropertyName().equals(RepositoryPaths.PROP_VALID) ) {
-            boolean valid = ((Boolean)evt.getNewValue()).booleanValue();
+            boolean valid = (Boolean)evt.getNewValue();
             if(valid) {
                 // it's a bit more we have to validate
                 validateUserInput();
@@ -288,6 +294,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         }        
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == getCreateCopyPanel().localRadioButton) {
             setFromLocal();        
@@ -333,7 +340,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         } catch (MalformedURLException ex) {
             // wrong value -> we can't copy anything
             getCreateCopyPanel().previewTextField.setText("");                  // NOI18N
-        };                
+        }
     }
     
 }

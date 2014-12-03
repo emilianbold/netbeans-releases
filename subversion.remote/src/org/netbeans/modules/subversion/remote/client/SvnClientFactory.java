@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,30 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
+import org.netbeans.modules.subversion.remote.api.ISVNPromptUserPassword;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.cli.CommandlineClient;
-import org.netbeans.modules.subversion.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
+import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.Places;
 import org.openide.util.Utilities;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNPromptUserPassword;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * A SvnClient factory
@@ -79,22 +71,13 @@ public class SvnClientFactory {
     /** if an exception occured */
     private static SVNClientException exception = null;
 
-    /** indicates that something went terribly wrong with javahl init during the previous nb session */
-    private static boolean javahlCrash = false;
-    private final static int JAVAHL_INIT_NOCRASH = 1;
-    private final static int JAVAHL_INIT_STOP_REPORTING = 2;
-
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.client.SvnClientFactory");
     public static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
-    public static final String FACTORY_TYPE_JAVAHL = "javahl"; //NOI18N
-    public static final String FACTORY_TYPE_SVNKIT = "svnkit"; //NOI18N
-    public static final String DEFAULT_FACTORY = FACTORY_TYPE_JAVAHL; // javahl is default
+    public static final String DEFAULT_FACTORY = FACTORY_TYPE_COMMANDLINE; // javahl is default
     private static boolean cli16Version;
 
     public enum ConnectionType {
-        javahl,
-        cli,
-        svnkit
+        cli;
     }
 
     /** Creates a new instance of SvnClientFactory */
@@ -139,18 +122,6 @@ public class SvnClientFactory {
 
     public static boolean isCLIOldFormat () {
         return cli16Version;
-    }
-
-    public static boolean isJavaHl() {
-        if(!isClientAvailable()) return false;
-        assert factory != null;
-        return factory.connectionType() == ConnectionType.javahl;
-    }
-
-    public static boolean isSvnKit() {
-        if(!isClientAvailable()) return false;
-        assert factory != null;
-        return factory.connectionType() == ConnectionType.svnkit;
     }
 
     /**
@@ -219,27 +190,7 @@ public class SvnClientFactory {
 
             String factoryType = getDefaultFactoryType(false);
             
-            if (factoryType.trim().equals(FACTORY_TYPE_JAVAHL)) {
-                if(setupJavaHl()) {
-                    return;
-                }
-                LOG.log(Level.INFO, "JavaHL not available. Falling back on SvnKit.");
-                if(setupSvnKit()) {
-                    return;
-                }          
-                LOG.log(Level.INFO, "SvnKit not available. Falling back on commandline.");
-                setupCommandline();
-            } else if(factoryType.trim().equals(FACTORY_TYPE_SVNKIT)) {
-                if(setupSvnKit()) {
-                    return;
-                }
-                LOG.log(Level.INFO, "SvnKit not available. Falling back on javahl.");
-                if(setupJavaHl()) {
-                    return;
-                }
-                LOG.log(Level.INFO, "JavaHL not available. Falling back on comandline.");
-                setupCommandline();
-            } else if(factoryType.trim().equals(FACTORY_TYPE_COMMANDLINE)) {
+            if(factoryType.trim().equals(FACTORY_TYPE_COMMANDLINE)) {
                 setupCommandline();
             } else {              
                 throw new SVNClientException("Unknown factory: " + factoryType);
@@ -254,7 +205,9 @@ public class SvnClientFactory {
      */
     public static void checkClientAvailable() throws SVNClientException {
         init();
-        if(exception != null) throw exception;
+        if(exception != null) {
+            throw exception;
+        }
     }
 
     public static boolean isClientAvailable() {
@@ -270,165 +223,18 @@ public class SvnClientFactory {
         return instance != null;
     }
 
-    public static boolean wasJavahlCrash() {
-        init();
-        if(javahlCrash) {
-            javahlCrash = false;
-            return true;
-        }
-        return false;
-    }
-
-    private boolean setupJavaHl () {
-
-        String jhlInitFile = Places.getUserDirectory().getAbsolutePath() + "/config/svn/jhlinit";
-        File initFile = new File(jhlInitFile);
-
-        if(checkJavahlCrash(initFile)) {
-            return false;
-        }
-        try {
-            if(!initFile.exists()) initFile.createNewFile();
-        } catch (IOException ex) {
-            // should not happen
-            LOG.log(Level.INFO, null, ex);
-        }
-
-        final SvnClientAdapterFactory f;
-        try {            
-            f = SvnClientAdapterFactory.getInstance(SvnClientAdapterFactory.Client.JAVAHL);
-            if(f == null) {
-               return false;
-            }
-        } finally {
-            // write the flag even if javahl not available -
-            // we just want to now on the next run that javahl didn't crash the jvm,
-            // so we will try to init javahl again
-            writeJavahlInitFlag(initFile, JAVAHL_INIT_NOCRASH);
-        }
-        factory = new ClientAdapterFactory() {
-            @Override
-            protected ISVNClientAdapter createAdapter() {
-                return f.createClient();
-            }
-            @Override
-            protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions, ConnectionType.javahl);
-            }
-            @Override
-            protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
-                return new JhlClientCallback(repositoryUrl, handledExceptions);
-            }
-            @Override
-            protected ConnectionType connectionType() {
-                return ConnectionType.javahl;
-            }
-        };
-        LOG.info("running on javahl");
-        return true;
-    }
-        
-    private boolean checkJavahlCrash(File initFile) {
-        if(!initFile.exists()) {
-            LOG.fine("trying to init javahl first time.");
-            return false;
-        }
-        FileReader r = null;
-        try {
-            r = new FileReader(initFile);
-            int i = r.read();
-            try { r.close(); r = null; } catch(IOException e) {}
-            switch(i) {
-                case -1: // empty means we crashed
-                    writeJavahlInitFlag(initFile, JAVAHL_INIT_STOP_REPORTING);
-                    javahlCrash = true;
-                    LOG.log(Level.WARNING, "It appears that subversion java bindings initialization caused trouble in a previous Netbeans session. Please report.");
-                    return true;
-                case JAVAHL_INIT_STOP_REPORTING:
-                    LOG.fine("won't init javahl due to problem in a previous try.");
-                    return true;
-                case JAVAHL_INIT_NOCRASH:
-                    LOG.fine("will try init javahl.");
-                    return false;
-            }
-        } catch (IOException ex) {
-            LOG.log(Level.INFO, null, ex);
-        } finally {
-            try { if(r != null) r.close(); } catch (IOException ex) { }
-        }
-        return false;  // optimistic attitude
-    }
-
-    private void writeJavahlInitFlag(File initFile, int flag) {
-        FileWriter w = null;
-        try {
-            w = new FileWriter(initFile);
-            w.write(flag);
-            w.flush();
-        } catch (IOException ex) {
-            LOG.log(Level.INFO, null, ex);
-        } finally {
-            try { if(w != null) w.close(); } catch (IOException ex) { }
-        }
-    }
-
-    private boolean  setupSvnKit () {
-        final SvnClientAdapterFactory f = SvnClientAdapterFactory.getInstance(SvnClientAdapterFactory.Client.SVNKIT);
-        if(f == null) {            
-            return false;
-        }
-        factory = new ClientAdapterFactory() {
-            @Override
-            protected ISVNClientAdapter createAdapter() {
-                return f.createClient();
-            }
-            @Override
-            protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
-                return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions, ConnectionType.svnkit);
-            }
-            @Override
-            protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
-                return new SvnKitClientCallback(repositoryUrl, handledExceptions);
-            }
-            @Override
-            protected ConnectionType connectionType() {
-                return ConnectionType.svnkit;
-            }
-            
-            @Override
-            /**
-             * Slightly different from the default one
-             */
-            protected void setupAdapter(ISVNClientAdapter adapter, String username, char[] password, ISVNPromptUserPassword callback) {
-                if (callback != null) {
-                    adapter.addPasswordCallback(callback);
-                }
-                try {
-                    File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
-                    adapter.setConfigDirectory(configDir);
-                } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
-                }
-                adapter.setUsername(username);
-                adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
-            }
-        };
-        LOG.fine("Setting svnkit prop: svnkit.http.methods=Basic");
-        System.setProperty("svnkit.http.methods", "Basic"); //NOI18N
-        LOG.info("svnClientAdapter running on svnkit");
-        return true;
-    }
-
     public void setupCommandline () {
-        if(!checkCLIExecutable()) return;
+        if(!checkCLIExecutable()) {
+            return;
+        }
         
         factory = new ClientAdapterFactory() {
             @Override
-            protected ISVNClientAdapter createAdapter() {
+            protected SvnClient createAdapter() {
                 return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
             }
             @Override
-            protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+            protected SvnClientInvocationHandler getInvocationHandler(SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
                 return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions, ConnectionType.cli);
             }
             @Override
@@ -497,7 +303,7 @@ public class SvnClientFactory {
         }
     }
 
-    private void setConfigDir (ISVNClientAdapter client) {
+    private void setConfigDir (SvnClient client) {
         if (client != null) {
             File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
             try {
@@ -530,8 +336,8 @@ public class SvnClientFactory {
 
     private abstract class ClientAdapterFactory {
 
-        abstract protected ISVNClientAdapter createAdapter();
-        abstract protected SvnClientInvocationHandler getInvocationHandler(ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions);
+        abstract protected SvnClient createAdapter();
+        abstract protected SvnClientInvocationHandler getInvocationHandler(SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions);
         abstract protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions);
         abstract protected ConnectionType connectionType();
 
@@ -555,7 +361,7 @@ public class SvnClientFactory {
          *
          */
         public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, char[] password, int handledExceptions) {
-            ISVNClientAdapter adapter = createAdapter();
+            SvnClient adapter = createAdapter();
             SvnClientInvocationHandler handler = getInvocationHandler(adapter, createDescriptor(repositoryUrl), support, handledExceptions);
             setupAdapter(adapter, username, password, createCallback(repositoryUrl, handledExceptions));
             return createSvnClient(handler);
@@ -582,7 +388,7 @@ public class SvnClientFactory {
             return null;
         }
 
-        protected void setupAdapter(ISVNClientAdapter adapter, String username, char[] password, ISVNPromptUserPassword callback) {
+        protected void setupAdapter(SvnClient adapter, String username, char[] password, ISVNPromptUserPassword callback) {
             adapter.setUsername(username);
             if(callback != null) {
                 adapter.addPasswordCallback(callback);

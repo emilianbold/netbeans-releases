@@ -41,9 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
 
 /**
  *
@@ -75,7 +75,7 @@ public class UpdateToPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(revisionSearchButton, bundle.getString("CTL_UpdateToPanel_Search")); // NOI18N
 
-        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif"))); // NOI18N
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/warning.gif"))); // NOI18N
         warningLabel.setText(org.openide.util.NbBundle.getMessage(UpdateToPanel.class, "CTL_UpdateToPanel_Warning")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

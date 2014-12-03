@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
-import java.util.*;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;

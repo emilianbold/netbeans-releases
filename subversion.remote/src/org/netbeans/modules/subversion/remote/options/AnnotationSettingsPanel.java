@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.options;
+package org.netbeans.modules.subversion.remote.options;
 
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 
@@ -162,6 +162,7 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
                 java.lang.String.class, java.lang.String.class
             };
 
+            @Override
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
             }

@@ -41,9 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
 
 /**
  *

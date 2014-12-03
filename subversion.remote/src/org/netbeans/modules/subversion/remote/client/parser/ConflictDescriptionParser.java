@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.parser;
+package org.netbeans.modules.subversion.remote.client.parser;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -51,11 +51,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
-import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor.Action;
-import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor.Operation;
-import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor.Reason;
-import org.tigris.subversion.svnclientadapter.SVNConflictVersion;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor.Action;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor.Operation;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor.Reason;
+import org.netbeans.modules.subversion.remote.api.SVNConflictVersion;
 
 /**
  *
@@ -72,17 +72,17 @@ class ConflictDescriptionParser {
 
     private static final Logger LOG = Logger.getLogger(ConflictDescriptionParser.class.getName());
 
-    private static final HashMap<String, Integer> ACTIONS;
-    private static final HashMap<String, Integer> REASONS;
-    private static final HashMap<String, Integer> OPERATIONS;
-    private static final HashMap<String, Integer> NODE_KINDS;
+    private static final HashMap<String, Action> ACTIONS;
+    private static final HashMap<String, Reason> REASONS;
+    private static final HashMap<String, Operation> OPERATIONS;
+    private static final HashMap<String, SVNConflictVersion.NodeKind> NODE_KINDS;
     static {
-        ACTIONS = new HashMap<String, Integer>(3);
+        ACTIONS = new HashMap<String, Action>(3);
         ACTIONS.put("edited", Action.edit); //NOI18N
         ACTIONS.put("deleted", Action.delete); //NOI18N
         ACTIONS.put("added", Action.add); //NOI18N
 
-        REASONS = new HashMap<String, Integer>(6);
+        REASONS = new HashMap<String, Reason>(6);
         REASONS.put("edited", Reason.edited); //NOI18N
         REASONS.put("deleted", Reason.deleted); //NOI18N
         REASONS.put("missing", Reason.missing); //NOI18N
@@ -90,13 +90,13 @@ class ConflictDescriptionParser {
         REASONS.put("added", Reason.added); //NOI18N
         REASONS.put("unversioned", Reason.unversioned); //NOI18N
 
-        OPERATIONS = new HashMap<String, Integer>(4);
+        OPERATIONS = new HashMap<String, Operation>(4);
         OPERATIONS.put("none", Operation._none); //NOI18N
         OPERATIONS.put("update", Operation._update); //NOI18N
         OPERATIONS.put("switch", Operation._switch); //NOI18N
         OPERATIONS.put("merge", Operation._merge); //NOI18N
 
-        NODE_KINDS = new HashMap<String, Integer>(3);
+        NODE_KINDS = new HashMap<String, SVNConflictVersion.NodeKind>(3);
         NODE_KINDS.put("file", SVNConflictVersion.NodeKind.file); //NOI18N
         NODE_KINDS.put("directory", SVNConflictVersion.NodeKind.directory); //NOI18N
         NODE_KINDS.put("none", SVNConflictVersion.NodeKind.none); //NOI18N
@@ -257,7 +257,7 @@ class ConflictDescriptionParser {
     static final class ParserConflictDescriptor extends SVNConflictDescriptor {
         private final String fileName;
 
-        private ParserConflictDescriptor (String fileName, String path, int action, int reason, int operation, SVNConflictVersion left, SVNConflictVersion right) {
+        private ParserConflictDescriptor (String fileName, String path, SVNConflictDescriptor.Action action, SVNConflictDescriptor.Reason reason, SVNConflictDescriptor.Operation operation, SVNConflictVersion left, SVNConflictVersion right) {
             super(path, action, reason, operation, left, right);
             this.fileName = fileName;
         }

@@ -42,17 +42,17 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.menu;
+package org.netbeans.modules.subversion.remote.ui.menu;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.subversion.Annotator;
-import org.netbeans.modules.subversion.ui.copy.CreateCopyAction;
-import org.netbeans.modules.subversion.ui.copy.MergeAction;
-import org.netbeans.modules.subversion.ui.copy.SwitchToAction;
-import org.netbeans.modules.subversion.ui.export.ExportAction;
-import org.netbeans.modules.versioning.spi.VCSAnnotator.ActionDestination;
+import org.netbeans.modules.subversion.remote.Annotator;
+import org.netbeans.modules.subversion.remote.ui.copy.CreateCopyAction;
+import org.netbeans.modules.subversion.remote.ui.copy.MergeAction;
+import org.netbeans.modules.subversion.remote.ui.copy.SwitchToAction;
+import org.netbeans.modules.subversion.remote.ui.export.ExportAction;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;

@@ -42,20 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.status;
+package org.netbeans.modules.subversion.remote.ui.status;
 
 import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.ui.blame.BlameAction;
-import org.netbeans.modules.subversion.ui.commit.*;
-import org.netbeans.modules.subversion.ui.commit.CommitAction;
-import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
-import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
-import org.netbeans.modules.subversion.ui.update.UpdateAction;
-import org.netbeans.modules.subversion.ui.diff.DiffAction;
-import org.netbeans.modules.subversion.util.*;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.nodes.*;
 import org.openide.nodes.PropertySupport.ReadOnly;
@@ -64,10 +53,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.Mnemonics;
-import org.netbeans.modules.versioning.util.FilePathCellRenderer;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.Annotator;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -86,12 +71,28 @@ import java.awt.EventQueue;
 import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.util.*;
-import java.io.File;
 import java.util.logging.Level;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
-import org.netbeans.modules.subversion.ui.status.VersioningPanel.ModeKeeper;
-import org.netbeans.modules.subversion.ui.update.ResolveConflictsAction;
+import org.netbeans.modules.subversion.remote.Annotator;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.ui.blame.BlameAction;
+import org.netbeans.modules.subversion.remote.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.remote.ui.commit.DeleteLocalAction;
+import org.netbeans.modules.subversion.remote.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
+import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.remote.ui.ignore.IgnoreAction;
+import org.netbeans.modules.subversion.remote.ui.properties.VersioningInfoAction;
+import org.netbeans.modules.subversion.remote.ui.status.VersioningPanel.ModeKeeper;
+import org.netbeans.modules.subversion.remote.ui.update.ResolveConflictsAction;
+import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.remote.ui.update.UpdateAction;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
@@ -106,9 +107,9 @@ import org.netbeans.swing.etable.ETableColumnModel;
  */
 class SyncTable implements MouseListener, ListSelectionListener, AncestorListener, PropertyChangeListener {
 
-    private NodeTableModel  tableModel;
+    private final NodeTableModel  tableModel;
     private ETable          table;
-    private JScrollPane     component;
+    private final JScrollPane     component;
     private SyncFileNode [] nodes = new SyncFileNode[0];
     
     private String []   tableColumns; 
@@ -117,7 +118,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
      * Defines labels for Versioning view table columns.
      */ 
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
-    {
+    static {
         ResourceBundle loc = NbBundle.getBundle(SyncTable.class);
         columnLabels.put(SyncFileNode.COLUMN_NAME_BRANCH, new String [] {
                                           loc.getString("CTL_VersioningView_Column_Branch_Title"), 
@@ -165,7 +166,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
         Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
-        if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
+        if (borderColor == null) {
+            borderColor = UIManager.getColor("controlShadow"); // NOI18N
+        }
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         table.addMouseListener(this);
         table.setDefaultRenderer(Node.Property.class, new SyncTableCellRenderer());
@@ -252,7 +255,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.  
      */ 
     final void setColumns(String [] columns) {
-        if (Arrays.equals(columns, tableColumns)) return;
+        if (Arrays.equals(columns, tableColumns)) {
+            return;
+        }
         TableColumnModel cModel = table.getColumnModel();
         int columnCount = cModel.getColumnCount();
         Object sorted = "";
@@ -291,7 +296,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
     void setTableModel(SyncFileNode [] nodes) {
         assert EventQueue.isDispatchThread();
-        Collection<File> selectedFiles = getSelectedFiles();
+        Collection<VCSFileProxy> selectedFiles = getSelectedFiles();
         this.nodes = nodes;
         tableModel.setNodes(nodes);
         setSelectedNodes(selectedFiles);
@@ -338,16 +343,16 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         return selectedNodes.toArray(new SyncFileNode[selectedNodes.size()]);
     }
 
-    private Collection<File> getSelectedFiles () {
+    private Collection<VCSFileProxy> getSelectedFiles () {
         SyncFileNode[] selectedNodes = getSelectedNodes();
-        Collection<File> files = new HashSet<File>(selectedNodes.length);
+        Collection<VCSFileProxy> files = new HashSet<VCSFileProxy>(selectedNodes.length);
         for (SyncFileNode node : selectedNodes) {
             files.add(node.getFile());
         }
         return files;
     }
 
-    public final void setSelectedNodes (Collection<File> selectedFiles) {
+    public final void setSelectedNodes (Collection<VCSFileProxy> selectedFiles) {
         ListSelectionModel selection = table.getSelectionModel();
         selection.setValueIsAdjusting(true);
         selection.clearSelection();
@@ -474,10 +479,10 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         boolean allLocallyNew = true;
         boolean allLocallyDeleted = true;
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        File [] files = SvnUtils.getCurrentContext(null).getFiles();
+        VCSFileProxy [] files = SvnUtils.getCurrentContext(null).getFiles();
         
         for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+            VCSFileProxy file = files[i];
             FileInformation info = cache.getStatus(file);
             if ((info.getStatus() & DeleteLocalAction.LOCALLY_DELETABLE_MASK) == 0 ) {
                 allLocallyNew = false;
@@ -548,10 +553,14 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = table.rowAtPoint(e.getPoint());
-            if (row == -1) return;
+            if (row == -1) {
+                return;
+            }
             row = table.convertRowIndexToModel(row);
             Action action = nodes[row].getPreferredAction();
-            if (action == null || !action.isEnabled()) action = new OpenInEditorAction();
+            if (action == null || !action.isEnabled()) {
+                action = new OpenInEditorAction();
+            }
             if (action.isEnabled()) {
                 if (action instanceof DiffAction) {
                     modeKeeper.storeMode();
@@ -567,7 +576,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             return;
         }
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, table);
-        if (tc == null) return; // table is no longer in component hierarchy
+        if (tc == null) {
+            return; // table is no longer in component hierarchy
+        }
         // this method may be called outside of AWT if a node fires change events from some other thread, see #79174
         final Node [] nodeArray = getSelectedNodes();
         if (SwingUtilities.isEventDispatchThread()) {
@@ -584,7 +595,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     
     private class SyncTableCellRenderer extends DefaultTableCellRenderer {
         
-        private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
+        private final FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
         
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -595,7 +606,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 if (!isSelected) {
                     value = "<html>" + node.getHtmlDisplayName(); // NOI18N
                 }
-                if (SvnModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+                if (SvnModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getPath())) {
                     String nodeName = node.getDisplayName();
                     if (isSelected) {
                         value = "<html><s>" + nodeName + "</s></html>"; // NOI18N
@@ -610,7 +621,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
             if (renderer instanceof JComponent) {
-                String path = nodes[table.convertRowIndexToModel(row)].getFile().getAbsolutePath(); 
+                String path = nodes[table.convertRowIndexToModel(row)].getFile().getPath(); 
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;

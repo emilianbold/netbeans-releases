@@ -42,18 +42,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.ignore;
+package org.netbeans.modules.subversion.remote.ui.ignore;
 
 import java.util.*;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.ui.actions.*;
-import org.netbeans.modules.subversion.util.*;
 import org.openide.nodes.Node;
-import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.tigris.subversion.svnclientadapter.*;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNProperty;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Adds/removes files to svn:ignore property.
@@ -67,6 +73,7 @@ public class IgnoreAction extends ContextAction {
     public static final int IGNORING   = 1;
     public static final int UNIGNORING = 2;
     
+    @Override
     protected String getBaseName(Node [] activatedNodes) {
         int actionStatus = getActionStatus(activatedNodes);
         switch (actionStatus) {
@@ -80,10 +87,12 @@ public class IgnoreAction extends ContextAction {
         }
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
@@ -92,9 +101,11 @@ public class IgnoreAction extends ContextAction {
         return getActionStatus(getCachedContext(nodes).getFiles());
     }
 
-    public int getActionStatus(File [] files) {
+    public int getActionStatus(VCSFileProxy [] files) {
         int actionStatus = -1;
-        if (files.length == 0) return UNDEFINED; 
+        if (files.length == 0) {
+            return UNDEFINED;
+        } 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
             if (files[i].getName().equals(SvnUtils.SVN_ADMIN_DIR)) { // NOI18N
@@ -129,6 +140,7 @@ public class IgnoreAction extends ContextAction {
         return isCacheReady() && getActionStatus(nodes) != UNDEFINED;
     }
 
+    @Override
     public void performContextAction(final Node[] nodes) {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
@@ -139,11 +151,12 @@ public class IgnoreAction extends ContextAction {
         }
 
         Context ctx = SvnUtils.getCurrentContext(nodes);
-        final File files[] = ctx.getRootFiles();
+        final VCSFileProxy files[] = ctx.getRootFiles();
 
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+            @Override
             public void perform() {
-                Map<File, Set<String>> names = splitByParent(files);
+                Map<VCSFileProxy, Set<String>> names = splitByParent(files);
                 // do not attach onNotify listeners because the ignore command forcefully fires change events on ALL files
                 // in the parent directory and NONE of them interests us, see #89516
                 SvnClient client;
@@ -156,7 +169,7 @@ public class IgnoreAction extends ContextAction {
                 if (actionStatus == IGNORING) {
                     FileStatusCache cache = Subversion.getInstance().getStatusCache();
                     try {
-                        for (File file : files) {
+                        for (VCSFileProxy file : files) {
                             // revert all locally added files (svn added but not comitted)
                             // #108369 - added files cannot be ignored
                             FileInformation s = cache.getStatus(file);
@@ -172,7 +185,7 @@ public class IgnoreAction extends ContextAction {
                         return;
                     }
                 }
-                for (File parent : names.keySet()) {
+                for (VCSFileProxy parent : names.keySet()) {
                     Set<String> patterns = names.get(parent);
                     if(isCanceled()) {
                         return;
@@ -180,9 +193,9 @@ public class IgnoreAction extends ContextAction {
                     try {
                         Collection<String> c = client.getIgnoredPatterns(parent);
                         if (c == null) {
-                            Subversion.LOG.log(Level.WARNING, IgnoreAction.class.toString() + ": cannot acquire ignored patterns for " + parent.getAbsolutePath()); // NOI18N
+                            Subversion.LOG.log(Level.WARNING, IgnoreAction.class.toString() + ": cannot acquire ignored patterns for " + parent.getPath()); // NOI18N
                             if (parent.exists()) {
-                                Subversion.LOG.log(Level.WARNING, IgnoreAction.class.toString() + ": file does exist: " + parent.getAbsolutePath()); // NOI18N
+                                Subversion.LOG.log(Level.WARNING, IgnoreAction.class.toString() + ": file does exist: " + parent.getPath()); // NOI18N
                             }
                         } else {
                             Set<String> currentPatterns = new HashSet<String>(c);
@@ -199,11 +212,11 @@ public class IgnoreAction extends ContextAction {
                     }
                 }
                 // refresh files manually, we do not suppport wildcards in ignore patterns so this is sufficient
-                for (File file : files) {
+                for (VCSFileProxy file : files) {
                     Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 }
                 // refresh also the parents
-                for (File parent : names.keySet()) {
+                for (VCSFileProxy parent : names.keySet()) {
                     Subversion.getInstance().getStatusCache().refresh(parent, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 }
             }
@@ -211,11 +224,13 @@ public class IgnoreAction extends ContextAction {
         support.start(createRequestProcessor(ctx));
     }
 
-    private Map<File, Set<String>> splitByParent(File[] files) {
-        Map<File, Set<String>> map = new HashMap<File, Set<String>>(2);
-        for (File file : files) {
-            File parent = file.getParentFile();
-            if (parent == null) continue;
+    private Map<VCSFileProxy, Set<String>> splitByParent(VCSFileProxy[] files) {
+        Map<VCSFileProxy, Set<String>> map = new HashMap<VCSFileProxy, Set<String>>(2);
+        for (VCSFileProxy file : files) {
+            VCSFileProxy parent = file.getParentFile();
+            if (parent == null) {
+                continue;
+            }
             Set<String> names = map.get(parent);
             if (names == null) {
                 names = new HashSet<String>(5);
@@ -232,9 +247,11 @@ public class IgnoreAction extends ContextAction {
      * @param file file to add
      * @throws SVNClientException if something goes wrong in subversion
      */ 
-    private static void ensureVersioned(File file) throws SVNClientException {
+    private static void ensureVersioned(VCSFileProxy file) throws SVNClientException {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) != 0) return;
+        if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) != 0) {
+            return;
+        }
         ensureVersioned(file.getParentFile());
         add(file);
         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
@@ -245,7 +262,7 @@ public class IgnoreAction extends ContextAction {
      * 
      * @param file file to add
      */ 
-    private static void add(File file) throws SVNClientException {
+    private static void add(VCSFileProxy file) throws SVNClientException {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
         SvnClient client = Subversion.getInstance().getClient(repositoryUrl);               
         if (file.isDirectory()) {
@@ -255,12 +272,13 @@ public class IgnoreAction extends ContextAction {
         }
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
-    public static void ignore(File file) throws SVNClientException {
-        File parent = file.getParentFile();
+    public static void ignore(VCSFileProxy file) throws SVNClientException {
+        VCSFileProxy parent = file.getParentFile();
         ensureVersioned(parent);
         // technically, this block need not be synchronized but we want to have svn:ignore property set correctly at all times
         synchronized(IgnoreAction.class) {                        

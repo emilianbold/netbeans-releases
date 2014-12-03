@@ -42,17 +42,17 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.properties;
+package org.netbeans.modules.subversion.remote.ui.properties;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -108,14 +108,14 @@ public final class SvnPropertiesAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {       
         final Context ctx = getContext(nodes);
         String ctxDisplayName = getContextDisplayName(nodes);       
-        File[] roots = ctx.getRootFiles();
+        VCSFileProxy[] roots = ctx.getRootFiles();
         if(roots == null || roots.length == 0) {
             return;
         }
         openProperties(roots, ctxDisplayName);
     }
 
-    public static void openProperties(File[] roots, String ctxDisplayName) {
+    public static void openProperties(VCSFileProxy[] roots, String ctxDisplayName) {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }       

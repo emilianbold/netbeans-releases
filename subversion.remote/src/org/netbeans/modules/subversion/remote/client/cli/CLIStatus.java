@@ -40,28 +40,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.client.cli;
+package org.netbeans.modules.subversion.remote.client.cli;
 
-import java.io.File;
 import java.util.Date;
-import org.netbeans.modules.subversion.client.cli.commands.StatusCommand.Status;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNConflictDescriptor;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNScheduleKind;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNScheduleKind;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.commands.StatusCommand.Status;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class CLIStatus implements ISVNStatus {
-    private Status status;
-    private ISVNInfo info;
+    private final Status status;
+    private final ISVNInfo info;
 	
     CLIStatus(Status status, ISVNInfo info) {
         this.status = status;
@@ -73,66 +72,82 @@ public class CLIStatus implements ISVNStatus {
         this.info = new UnversionedInfo(path);
     }
 
+    @Override
     public SVNUrl getUrl() {
         return info.getUrl();
     }
 
+    @Override
     public String getUrlString() {
         return info.getUrlString();
     }
 
-    public Number getLastChangedRevision() {
+    @Override
+    public SVNRevision.Number getLastChangedRevision() {
         return info.getLastChangedRevision();
     }
 
+    @Override
     public Date getLastChangedDate() {
         return info.getLastChangedDate();
     }
 
+    @Override
     public String getLastCommitAuthor() {
         return info.getLastCommitAuthor();
     }
 
+    @Override
     public SVNStatusKind getTextStatus() {
         return status.getWcStatus();
     }
 
+    @Override
     public SVNStatusKind getRepositoryTextStatus() {
         return status.getRepoStatus();
     }
 
+    @Override
     public SVNStatusKind getPropStatus() {
         return status.getWcPropsStatus();
     }
 
+    @Override
     public SVNStatusKind getRepositoryPropStatus() {
         return status.getRepoPropsStatus();
     }
 
-    public Number getRevision() {
+    @Override
+    public SVNRevision.Number getRevision() {
         return info.getRevision(); 
     }
 
+    @Override
     public String getPath() {
-        return info != null ? info.getFile().getAbsolutePath() : status.getPath();
+        return info != null ? info.getFile().getPath() : status.getPath();
     }
 
-    public File getFile() {
+    @Override
+    public VCSFileProxy getFile() {
         return info.getFile();
     }
 
+    @Override
     public SVNNodeKind getNodeKind() {
         return info.getNodeKind();
     }
 
+    @Override
     public boolean isCopied() {
         return status.isWcCopied();
     }
 
+    @Override
     public boolean isWcLocked() {
         return status.isWcLocked();
     }
 
+    @Override
     public boolean isSwitched() {
         return status.isWcSwitched();
     }
@@ -141,26 +156,32 @@ public class CLIStatus implements ISVNStatus {
         return info.getCopyUrl();
     }
 
-    public File getConflictNew() {
+    @Override
+    public VCSFileProxy getConflictNew() {
         return null;
     }
 
-    public File getConflictOld() {
+    @Override
+    public VCSFileProxy getConflictOld() {
         return null;
     }
 
-    public File getConflictWorking() {
+    @Override
+    public VCSFileProxy getConflictWorking() {
         return null;
     }
 
+    @Override
     public String getLockOwner() {
         return status.getLockOwner();
     }
 
+    @Override
     public Date getLockCreationDate() {
         return status.getLockCreated();
     }
 
+    @Override
     public String getLockComment() {
         return status.getLockComment();
     }
@@ -175,6 +196,7 @@ public class CLIStatus implements ISVNStatus {
         return status.getConflictDescriptor();
     }
 
+    @Override
     public boolean isFileExternal() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -190,70 +212,110 @@ public class CLIStatus implements ISVNStatus {
     }
 
     private class UnversionedInfo implements ISVNInfo {
-        private final File file;
+        private final VCSFileProxy file;
         public UnversionedInfo(String path) {
             this.file = new File(path);
         }        
-        public File getFile() {
+        @Override
+        public VCSFileProxy getFile() {
             return file;
         }
+        @Override
         public SVNUrl getUrl() {
             return null;
         }
+        @Override
         public String getUrlString() {
             return null;
         }
+        @Override
         public String getUuid() {
             return null;
         }
+        @Override
         public SVNUrl getRepository() {
             return null;
         }
+        @Override
         public SVNScheduleKind getSchedule() {
             return null;
         }
+        @Override
         public SVNNodeKind getNodeKind() {
             return SVNNodeKind.UNKNOWN;
         }
+        @Override
         public String getLastCommitAuthor() {
             return null;
         }
-        public Number getRevision() {
+        @Override
+        public SVNRevision.Number getRevision() {
             return null;
         }
-        public Number getLastChangedRevision() {
+        @Override
+        public SVNRevision.Number getLastChangedRevision() {
             return null;
         }
+        @Override
         public Date getLastChangedDate() {
             return null;
         }
+        @Override
         public Date getLastDateTextUpdate() {
             return null;
         }
+        @Override
         public Date getLastDatePropsUpdate() {
             return null;
         }
+        @Override
         public boolean isCopied() {
             return false;
         }
-        public Number getCopyRev() {
+        @Override
+        public SVNRevision.Number getCopyRev() {
             return SVNRevision.INVALID_REVISION;
         }
+        @Override
         public SVNUrl getCopyUrl() {
             return null;
         }
+        @Override
         public String getLockOwner() {
             return null;
         }
+        @Override
         public Date getLockCreationDate() {
             return null;
         }
+        @Override
         public String getLockComment() {
             return null;
         }
 
+        @Override
         public int getDepth() {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public VCSFileProxy getConflictNew() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public VCSFileProxy getConflictOld() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public VCSFileProxy getConflictWorking() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public String getPath() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
             

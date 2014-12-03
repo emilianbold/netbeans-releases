@@ -41,19 +41,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.util;
+package org.netbeans.modules.subversion.remote.util;
 
 import org.netbeans.modules.versioning.util.ProjectUtilities;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -66,10 +64,10 @@ public class CheckoutCompleted {
         CHECKOUT
     }
 
-    private final File workingFolder;
-    private String[] checkedOutFolders;
+    private final VCSFileProxy workingFolder;
+    private final String[] checkedOutFolders;
 
-    public CheckoutCompleted(File workingFolder, String[] checkedOutFolders) {
+    public CheckoutCompleted(VCSFileProxy workingFolder, String[] checkedOutFolders) {
         this.checkedOutFolders = checkedOutFolders;
         this.workingFolder = workingFolder;
     }
@@ -78,10 +76,10 @@ public class CheckoutCompleted {
 
         Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
         checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
-        File normalizedWorkingFolder = FileUtil.normalizeFile(workingFolder);
+        VCSFileProxy normalizedWorkingFolder = workingFolder.normalizeFile();
         // checkout creates new folders and cache must be aware of them
         SvnUtils.refreshParents(normalizedWorkingFolder);
-        FileObject fo = FileUtil.toFileObject(normalizedWorkingFolder);
+        FileObject fo = normalizedWorkingFolder.toFileObject();
         if (fo != null) {
             for (int i = 0; i < checkedOutFolders.length; i++) {
                 if (support != null && support.isCanceled()) {

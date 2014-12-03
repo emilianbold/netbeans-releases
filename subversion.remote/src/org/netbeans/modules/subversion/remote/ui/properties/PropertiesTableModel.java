@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.properties;
+package org.netbeans.modules.subversion.remote.ui.properties;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -65,7 +65,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(2); 
     
-    {
+    static {
         ResourceBundle loc = NbBundle.getBundle(PropertiesTableModel.class);    
         columnLabels.put(COLUMN_NAME_NAME, new String[] {loc.getString("CTL_PropertiesTable_Column_Name"), loc.getString("CTL_PropertiesTable_Column_Name")});
         columnLabels.put(COLUMN_NAME_VALUE, new String[] {loc.getString("CTL_PropertiesTable_Column_Value"), loc.getString("CTL_PropertiesTable_Column_Value")});
@@ -73,8 +73,9 @@ public class PropertiesTableModel extends AbstractTableModel {
     
     /** Creates a new instance of PropertiesTableModel */
     public PropertiesTableModel(String[] clms) {
-        if (Arrays.equals(columns, clms))
+        if (Arrays.equals(columns, clms)) {
             return;
+        }
         setColumns(clms);
         setNodes(new SvnPropertiesNode[0]);
     }
@@ -97,14 +98,17 @@ public class PropertiesTableModel extends AbstractTableModel {
         return nodes[row];
     }
     
+    @Override
     public int getRowCount() {
         return nodes.length;
     }
 
+    @Override
     public String getColumnName(int column) {
         return columnLabels.get(columns[column])[0];
     }
     
+    @Override
     public int getColumnCount() {
         return columns.length;
     }
@@ -118,6 +122,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         return super.getColumnClass(columnIndex);
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         String clm = columns[columnIndex];
         if (clm.equals(COLUMN_NAME_NAME)) {

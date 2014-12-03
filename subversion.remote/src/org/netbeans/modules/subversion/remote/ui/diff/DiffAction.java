@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,27 +34,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
 import java.awt.EventQueue;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.*;
-import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.ui.actions.ActionUtils;
-import org.netbeans.modules.subversion.ui.status.SyncFileNode;
-import org.netbeans.modules.subversion.util.ClientCheckSupport;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.ui.actions.ActionUtils;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.ui.status.SyncFileNode;
+import org.netbeans.modules.subversion.remote.util.ClientCheckSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
-import org.openide.util.*;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.openide.util.NbBundle;
 
 /**
  * Diff action shows local changes
@@ -102,10 +102,10 @@ public class DiffAction extends ContextAction {
             public void run () {
                 SVNUrl repositoryUrl = null, fileUrl = null;
                 RepositoryFile left = null, right = null;
-                File[] roots = SvnUtils.getActionRoots(ctx, false);
+                VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx, false);
                 if (roots != null) {
                     try {
-                        File interestingFile;
+                        VCSFileProxy interestingFile;
                         if(roots.length == 1) {
                             interestingFile = roots[0];
                         } else {
@@ -148,7 +148,7 @@ public class DiffAction extends ContextAction {
         });
     }
 
-    public static void diff(File file, String rev1, String rev2) {
+    public static void diff(VCSFileProxy file, String rev1, String rev2) {
         MultiDiffPanel panel = new MultiDiffPanel(file, rev1, rev2, false); // spawns bacground DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
@@ -156,7 +156,7 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
 
-    public static void diff(File file, ISVNStatus status) {
+    public static void diff(VCSFileProxy file, ISVNStatus status) {
         MultiDiffPanel panel = new MultiDiffPanel(file, status);
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N

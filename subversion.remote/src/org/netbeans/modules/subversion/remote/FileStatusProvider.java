@@ -42,14 +42,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion;
-
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.spi.VCSContext;
+package org.netbeans.modules.subversion.remote;
 
 import javax.swing.*;
 import java.awt.Image;
 import java.util.logging.Level;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 
 /**
  * Contract specific for Filesystem <-> UI interaction, to be replaced later with something more
@@ -62,8 +61,11 @@ class FileStatusProvider extends VCSAnnotator {
     
     private boolean shutdown; 
 
+    @Override
     public String annotateName(String name, VCSContext context) {
-        if (shutdown) return null;
+        if (shutdown) {
+            return null;
+        }
         try {
             return Subversion.getInstance().getAnnotator().annotateNameHtml(name, context, INCLUDE_STATUS);
         } catch (Exception e) {
@@ -72,8 +74,11 @@ class FileStatusProvider extends VCSAnnotator {
         }
     }
 
+    @Override
     public Image annotateIcon(Image icon, VCSContext context) {
-        if (shutdown) return null;
+        if (shutdown) {
+            return null;
+        }
         try {
             return Subversion.getInstance().getAnnotator().annotateIcon(icon, context, INCLUDE_STATUS);
         } catch (Exception e) {
@@ -82,6 +87,7 @@ class FileStatusProvider extends VCSAnnotator {
         }        
     }
 
+    @Override
     public Action[] getActions(VCSContext context, VCSAnnotator.ActionDestination destination) {
         return Annotator.getActions(context, destination);
     }

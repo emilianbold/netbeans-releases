@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.util;
+package org.netbeans.modules.subversion.remote.util;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -48,7 +48,7 @@ import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
 import org.openide.awt.HtmlBrowser;
 
 /**
@@ -114,7 +114,9 @@ public class NotifyHtmlPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void msgPanelHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_msgPanelHyperlinkUpdate
-        if(evt.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
+        if(evt.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
+            return;
+        }
         URL url = evt.getURL();
         HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
         if (displayer != null) {

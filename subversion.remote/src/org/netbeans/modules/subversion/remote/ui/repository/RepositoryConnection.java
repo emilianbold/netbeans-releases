@@ -41,16 +41,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.repository;
+package org.netbeans.modules.subversion.remote.ui.repository;
 
 import java.net.MalformedURLException;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.config.Scrambler;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.config.Scrambler;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -147,6 +147,7 @@ public class RepositoryConnection {
         return svnRevision;        
     }
     
+    @Override
     public boolean equals(Object o) {
         if (o == null) {
             return false;   
@@ -163,6 +164,7 @@ public class RepositoryConnection {
         return true;
     }
     
+    @Override
     public int hashCode() {
         int hash = 3;
         hash = 61 * hash + (this.url != null ? this.url.hashCode() : 0);        
@@ -207,6 +209,7 @@ public class RepositoryConnection {
         this.certPassword = certPassword;
     }
     
+    @Override
     public String toString() {
         return url;
     }
@@ -280,7 +283,7 @@ public class RepositoryConnection {
             Subversion.LOG.log(Level.INFO, null, mue); 
             return "";                                                          // NOI18N
         }        
-        StringBuffer sb = new StringBuffer();        
+        StringBuilder sb = new StringBuilder();        
         sb.append(url.toString());
         sb.append(RC_DELIMITER);
         if(rc.getSavePassword()) sb.append(rc.getUsername());

@@ -40,22 +40,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.kenai;
+package org.netbeans.modules.subversion.remote.kenai;
 
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JTextPane;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.notifications.NotificationsManager;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.notifications.NotificationsManager;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiModification;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiNotification;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
@@ -69,7 +70,7 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
             LOG.fine("rejecting VCS notification " + notification + " because not from svn"); // NOI18N
             return;
         }
-        File projectDir = notification.getProjectDirectory();
+        VCSFileProxy projectDir = notification.getProjectDirectory();
         if(!SvnUtils.isManaged(projectDir)) {
             assert false : " project " + projectDir + " not managed"; // NOI18N
             LOG.fine("rejecting VCS notification " + notification + " for " + projectDir + " because not versioned by svn"); // NOI18N
@@ -78,17 +79,17 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
         LOG.fine("accepting VCS notification " + notification + " for " + projectDir); // NOI18N
         
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        File[] files = cache.listFiles(new File[] {projectDir}, FileInformation.STATUS_LOCAL_CHANGE);
+        VCSFileProxy[] files = cache.listFiles(new VCSFileProxy[] {projectDir}, FileInformation.STATUS_LOCAL_CHANGE);
         List<VCSKenaiModification> modifications = notification.getModifications();
 
         List<File> notifyFiles = new LinkedList<File>();
         String revision = null;
-        for (File file : files) {
+        for (VCSFileProxy file : files) {
             String path;
             try {
                 path = SvnUtils.getRepositoryPath(file);
             } catch (SVNClientException ex) {
-                LOG.log(Level.WARNING, file.getAbsolutePath(), ex); 
+                LOG.log(Level.WARNING, file.getPath(), ex); 
                 continue;
             }
             path = trim(path);
@@ -118,7 +119,7 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
     }
 
     @Override
-    protected void setupPane(JTextPane pane, final File[] files, final File projectDir, final String url, final String revision) {        
+    protected void setupPane(JTextPane pane, final VCSFileProxy[] files, final VCSFileProxy projectDir, final String url, final String revision) {        
         NotificationsManager.getInstance().setupPane(pane, files, getFileNames(files), projectDir, url, revision);
     }
 

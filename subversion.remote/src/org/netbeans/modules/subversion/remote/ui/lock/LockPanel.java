@@ -45,7 +45,7 @@
  *
  * Created on May 30, 2011, 3:26:51 PM
  */
-package org.netbeans.modules.subversion.ui.lock;
+package org.netbeans.modules.subversion.remote.ui.lock;
 
 /**
  *
@@ -82,7 +82,7 @@ public class LockPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbForce, org.openide.util.NbBundle.getMessage(LockPanel.class, "LockPanel.cbForce.text")); // NOI18N
         cbForce.setToolTipText(org.openide.util.NbBundle.getMessage(LockPanel.class, "LockPanel.cbForce.TTtext")); // NOI18N
 
-        lblInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/info.png"))); // NOI18N
+        lblInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/info.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblInfo, org.openide.util.NbBundle.getMessage(LockPanel.class, "LockPanel.lblInfo.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

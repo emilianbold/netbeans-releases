@@ -41,27 +41,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.wizards;
+package org.netbeans.modules.subversion.remote.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.io.File;
 import java.text.MessageFormat;
-import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.browser.BrowserAction;
-import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
-import org.netbeans.modules.subversion.ui.wizards.importstep.ImportPreviewStep;
-import org.netbeans.modules.subversion.ui.wizards.importstep.ImportStep;
-import org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.ui.browser.BrowserAction;
+import org.netbeans.modules.subversion.remote.ui.browser.CreateFolderAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.ui.wizards.importstep.ImportPreviewStep;
+import org.netbeans.modules.subversion.remote.ui.wizards.importstep.ImportStep;
+import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.RepositoryStep;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /*
  *
@@ -123,7 +121,7 @@ public final class ImportWizard implements ChangeListener {
         SVNUrl repository = repositoryStep.getRepositoryFile().getRepositoryUrl();
         String repositoryUrl = SvnUtils.decodeToString(repository);
         String repositoryFolderUrl = SvnUtils.decodeToString(importStep.getRepositoryFolderUrl());
-        String localPath = context.getRootFiles()[0].getAbsolutePath();
+        String localPath = context.getRootFiles()[0].getPath();
         importPreviewStep.setup(repositoryFolderUrl.substring(repositoryUrl.length()), localPath, repository, importStep.getImportMessage(), startCommitTask);
     }
     
@@ -143,6 +141,7 @@ public final class ImportWizard implements ChangeListener {
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if(wizardIterator==null) {
             return;
@@ -163,13 +162,14 @@ public final class ImportWizard implements ChangeListener {
         PanelsIterator() {            
         }
 
+        @Override
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];            
 
             repositoryStep = new RepositoryStep(RepositoryStep.IMPORT_HELP_ID);
             repositoryStep.addChangeListener(ImportWizard.this);
 
-            File file = context.getRootFiles()[0];
+            VCSFileProxy file = context.getRootFiles()[0];
             importStep = new ImportStep(new BrowserAction[] { new CreateFolderAction(file.getName())}, file);
             importStep.addChangeListener(ImportWizard.this);
 
@@ -201,6 +201,7 @@ public final class ImportWizard implements ChangeListener {
             return panels;
         }
 
+        @Override
         public void previousPanel() {
             if(current() == importStep) {
                 // just a dummy to force setting the message in
@@ -210,9 +211,10 @@ public final class ImportWizard implements ChangeListener {
             super.previousPanel();
         }
 
+        @Override
         public void nextPanel() {            
             if(current() == repositoryStep) {
-                File file = context.getRootFiles()[0];
+                VCSFileProxy file = context.getRootFiles()[0];
                 importStep.setup(repositoryStep.getRepositoryFile().appendPath(file.getName()));
             } else if(current() == importStep) {
                 setupImportPreviewStep(false);

@@ -47,7 +47,7 @@
  * Created on 03 March 2007, 11:53
  */
 
-package org.netbeans.modules.subversion.ui.relocate;
+package org.netbeans.modules.subversion.remote.ui.relocate;
 
 import javax.swing.JTextField;
 

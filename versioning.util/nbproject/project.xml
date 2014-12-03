@@ -250,7 +250,9 @@
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency><specification-version>7.61</specification-version></run-dependency>
+                    <run-dependency>
+                        <specification-version>7.61</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.modules</code-name-base>
@@ -339,13 +341,14 @@
             <friend-packages>
                 <friend>org.netbeans.modules.ade</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
-                <friend>org.netbeans.modules.team.ide</friend>
                 <friend>org.netbeans.modules.clearcase</friend>
                 <friend>org.netbeans.modules.git</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.mercurial</friend>
                 <friend>org.netbeans.modules.perforce</friend>
                 <friend>org.netbeans.modules.subversion</friend>
+                <friend>org.netbeans.modules.subversion.remote</friend>
+                <friend>org.netbeans.modules.team.ide</friend>
                 <friend>org.netbeans.modules.versioning.indexingbridge</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.versioning.system.cvss</friend>

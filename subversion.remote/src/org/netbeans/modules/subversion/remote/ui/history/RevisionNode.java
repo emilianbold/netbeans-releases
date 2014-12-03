@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
 import java.awt.Color;
 import org.openide.nodes.*;
@@ -61,7 +61,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 
 /**
@@ -77,9 +77,9 @@ class RevisionNode extends AbstractNode {
     static final String COLUMN_NAME_MESSAGE     = "message"; // NOI18N
     static final String COLUMN_NAME_PATH        = "path"; // NOI18N
         
-    private RepositoryRevision.Event    event;
-    private RepositoryRevision          container;
-    private String                      path;
+    private final RepositoryRevision.Event    event;
+    private RepositoryRevision                container;
+    private final String                      path;
     private String bgColor;
     private String fgColor;
 
@@ -120,7 +120,9 @@ class RevisionNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        if (context) return null;
+        if (context) {
+            return null;
+        }
         if (event == null) {
             return container.getActions();
         } else {

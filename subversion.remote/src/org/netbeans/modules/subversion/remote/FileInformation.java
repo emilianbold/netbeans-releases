@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,22 +34,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote;
 
-package org.netbeans.modules.subversion;
-
-import org.openide.util.NbBundle;
-
-import java.util.*;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import java.io.Serializable;
-import java.io.File;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNStatusUnversioned;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.NbBundle;
 
 /**
  * Immutable class encapsulating status of a file.
@@ -309,14 +303,14 @@ public class FileInformation implements Serializable {
      * @return Status parsed entry form the .svn/entries file or null if the file does not exist,
      * is not versioned or its entry is invalid
      */
-    public ISVNStatus getEntry(File file) {
+    public ISVNStatus getEntry(VCSFileProxy file) {
         if (file != null && (entry == null || !entry.getFile().equals(file))) {
             readEntry(file);
         }
         return entry;
     }
     
-    private void readEntry(File file) {
+    private void readEntry(VCSFileProxy file) {
         try {
             entry = SvnUtils.getSingleStatus(Subversion.getInstance().getClient(false), file);
         } catch (SVNClientException e) {

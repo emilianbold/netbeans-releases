@@ -42,24 +42,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.project;
+package org.netbeans.modules.subversion.remote.ui.project;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.subversion.Subversion;
+import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.*;
-import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.ui.wizards.ImportWizard;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -84,9 +85,9 @@ import org.openide.util.RequestProcessor;
 public final class ImportAction implements ActionListener, HelpCtx.Provider {
     
     private static final Logger LOG = Logger.getLogger(ImportAction.class.getName());
-    private final List<File> roots;
+    private final List<VCSFileProxy> roots;
 
-    public ImportAction (List<File> rootFiles) {
+    public ImportAction (List<VCSFileProxy> rootFiles) {
         this.roots = rootFiles;
     }
 
@@ -103,13 +104,13 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
                 return false;
             }
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            File dir = lookupImportDirectory(roots.iterator().next());
+            VCSFileProxy dir = lookupImportDirectory(roots.iterator().next());
             if (dir != null && dir.isDirectory()) {
                 FileInformation status = cache.getCachedStatus(dir);
                 // mutually exclusive enablement logic with commit
                 if (!SvnUtils.isManaged(dir) && (status == null || (status.getStatus() & FileInformation.STATUS_MANAGED) == 0)) {
                     // do not allow to import partial/nonatomic project, all must lie under imported common root
-                    FileObject fo = FileUtil.toFileObject(dir);
+                    FileObject fo = dir.toFileObject();
                     Project p = FileOwnerQuery.getOwner(fo);
                     if (p == null) {
                         return true;
@@ -154,12 +155,12 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
         assert roots.size() == 1; // ensured through isEnabled
         
         if (roots.size() == 1) {
-            final File importDirectory = lookupImportDirectory(roots.iterator().next());
+            final VCSFileProxy importDirectory = lookupImportDirectory(roots.iterator().next());
             if (importDirectory == null) {
                 LOG.log(Level.FINE, "null dir to import: {0}", roots.iterator().next()); //NOI18N
             } else {
                 LOG.log(Level.FINE, "Starting wizard: {0}", roots.iterator().next()); //NOI18N
-                List<File> list = new ArrayList<File>(1);
+                List<VCSFileProxy> list = new ArrayList<VCSFileProxy>(1);
                 list.add(importDirectory);
                 Context context = new Context(Context.getEmptyList(), list, Context.getEmptyList());
                 ImportWizard wizard = new ImportWizard(context);
@@ -170,8 +171,8 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
         }
     }
 
-    private File lookupImportDirectory(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
+    private VCSFileProxy lookupImportDirectory(VCSFileProxy file) {
+        FileObject fo = file.toFileObject();
         Project project = null;
         if (fo.isFolder()) {
             try {
@@ -183,15 +184,15 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
             }
         }
     
-        File importDirectory = null;
+        VCSFileProxy importDirectory = null;
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             if (groups.length == 1) {
                 FileObject root = groups[0].getRootFolder();
-                importDirectory = FileUtil.toFile(root);
+                importDirectory = VCSFileProxy.createFileProxy(root);
             } else {
-                importDirectory = FileUtil.toFile(project.getProjectDirectory());
+                importDirectory = VCSFileProxy.createFileProxy(project.getProjectDirectory());
             }
         } else if (file.isDirectory()) {
             importDirectory = file;

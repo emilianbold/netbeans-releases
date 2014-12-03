@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.options;
+package org.netbeans.modules.subversion.remote.options;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -66,13 +66,13 @@ import javax.swing.JTextField;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.subversion.Annotator;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.repository.Repository;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
+import org.netbeans.modules.subversion.remote.Annotator;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.repository.Repository;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
@@ -126,7 +126,9 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.textPaneClient.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate (HyperlinkEvent e) {
-                if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
+                if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
+                    return;
+                }
                 URL url = e.getURL();
                 assert url != null;
                 HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault ();
@@ -168,13 +170,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault().getExludeNewFiles());
         panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault().isRepositoryPathPrefixed());
         panel.cbDetermineBranches.setSelected(SvnModuleConfig.getDefault().isDetermineBranchesEnabled());
-        if (SvnClientFactory.isJavaHl()) {
-            panel.cmbPreferredClient.setSelectedItem(panel.panelJavahl);
-        } else if (SvnClientFactory.isSvnKit()) {
-            panel.cmbPreferredClient.setSelectedItem(panel.panelSvnkit);
-        } else {
-            panel.cmbPreferredClient.setSelectedItem(panel.panelCLI);
-        }
+        panel.cmbPreferredClient.setSelectedItem(panel.panelCLI);
         currentClient = panel.cmbPreferredClient.getSelectedItem();
     }
     
@@ -185,11 +181,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
         if (panel.cmbPreferredClient.getSelectedItem() == panel.panelCLI) {
             SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
             SvnModuleConfig.getDefault().setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_COMMANDLINE);
-        } else if (panel.cmbPreferredClient.getSelectedItem() == panel.panelJavahl) {
-            SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.javahlPathTextField.getText());
-            SvnModuleConfig.getDefault().setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_JAVAHL);
-        } else if (panel.cmbPreferredClient.getSelectedItem() == panel.panelSvnkit) {
-            SvnModuleConfig.getDefault().setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_SVNKIT);
         }
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
         SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
@@ -207,7 +198,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         annotationSettings.applyChanges();
         Subversion.getInstance().getAnnotator().refresh();
         Subversion.getInstance().refreshAllAnnotations();        
-        Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels((File[])null);
+        Subversion.getInstance().getStatusCache().getLabelsCache().flushFileLabels((VCSFileProxy[])null);
     }
     
     @Override
@@ -462,7 +453,9 @@ public final class SvnOptionsController extends OptionsPanelController implement
             String annotation = panel.annotationTextField.getText();
 
             int pos = panel.annotationTextField.getCaretPosition();
-            if(pos < 0) pos = annotation.length();
+            if(pos < 0) {
+                pos = annotation.length();
+            }
 
             StringBuilder sb = new StringBuilder(annotation.length() + variable.length());
             sb.append(annotation.substring(0, pos));

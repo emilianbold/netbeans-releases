@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,12 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
-import org.netbeans.modules.subversion.util.NotifyHtmlPanel;
 import java.awt.Dialog;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,40 +78,33 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import org.netbeans.modules.proxy.Base64Encoder;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientFactory.ConnectionType;
-import org.netbeans.modules.subversion.kenai.SvnKenaiAccessor;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
-import org.netbeans.modules.subversion.client.cli.CommandlineClient;
-import org.netbeans.modules.subversion.config.CertificateFile;
-import org.netbeans.modules.subversion.ui.repository.Repository;
-import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
-import org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory.ConnectionType;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
+import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.util.CommandReport;
 import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.*;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NetworkSettings;
 import org.openide.util.actions.SystemAction;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class SvnClientExceptionHandler {
-    private final ISVNClientAdapter adapter;
+    private final SvnClient adapter;
     private final SvnClient client;
     private final SvnClientDescriptor desc;    
     private final int handledExceptions;
@@ -171,7 +160,7 @@ public class SvnClientExceptionHandler {
             
     static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser");
     
-    public SvnClientExceptionHandler(SVNClientException exception, ISVNClientAdapter adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions, SvnClientFactory.ConnectionType connectionType) {
+    public SvnClientExceptionHandler(SVNClientException exception, SvnClient adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions, SvnClientFactory.ConnectionType connectionType) {
         this.exception = exception;                
         this.adapter = adapter;
         this.client = client;
@@ -208,9 +197,7 @@ public class SvnClientExceptionHandler {
         char[] password = pa.getPassword();
         
         adapter.setUsername(user != null ? user : "");
-        if (connectionType != ConnectionType.javahl) {
-            adapter.setPassword(password != null ? new String(password) : "");
-        }
+        adapter.setPassword(password != null ? new String(password) : "");
 
         return true;
     }
@@ -259,9 +246,7 @@ public class SvnClientExceptionHandler {
                 char[] password = rc.getPassword();
 
                 adapter.setUsername(username);
-                if (connectionType != ConnectionType.javahl) {
-                    adapter.setPassword(password != null ? new String(password) : ""); //NOI18N
-                }
+                adapter.setPassword(password != null ? new String(password) : ""); //NOI18N
                 SvnModuleConfig.getDefault().insertRecentUrl(rc);
             }
             return ret;

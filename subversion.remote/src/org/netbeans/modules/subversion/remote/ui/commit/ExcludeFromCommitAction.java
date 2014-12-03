@@ -42,17 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.subversion.remote.ui.commit;
 
-import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
-import org.netbeans.modules.subversion.ui.actions.*;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.*;
 
 /**
@@ -70,14 +69,17 @@ public final class ExcludeFromCommitAction extends ContextAction {
         return isCacheReady() && getActionStatus(nodes) != UNDEFINED;
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_LOCAL_CHANGE;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_LOCAL_CHANGE;
     }
 
+    @Override
     protected String getBaseName(Node [] activatedNodes) {
         int actionStatus = getActionStatus(activatedNodes);
         switch (actionStatus) {
@@ -93,10 +95,10 @@ public final class ExcludeFromCommitAction extends ContextAction {
     
     public int getActionStatus(Node[] nodes) {
         SvnModuleConfig config = SvnModuleConfig.getDefault();
-        File [] files = getCachedContext(nodes).getFiles();
+        VCSFileProxy [] files = getCachedContext(nodes).getFiles();
         int status = UNDEFINED;
         for (int i = 0; i < files.length; i++) {
-            if (config.isExcludedFromCommit(files[i].getAbsolutePath())) {
+            if (config.isExcludedFromCommit(files[i].getPath())) {
                 if (status == EXCLUDING) {
                     return UNDEFINED;
                 }
@@ -111,29 +113,33 @@ public final class ExcludeFromCommitAction extends ContextAction {
         return status;
     }
 
+    @Override
     public void performContextAction(final Node[] nodes) {
         ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+            @Override
             public void perform() {
                 SvnModuleConfig config = SvnModuleConfig.getDefault();
                 int status = getActionStatus(nodes);
-                List<File> files = new ArrayList<File>();
+                List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
                 for (Node node : nodes) {
-                    File aFile = node.getLookup().lookup(File.class);
+                    VCSFileProxy aFile = node.getLookup().lookup(VCSFileProxy.class);
                     FileObject fo = node.getLookup().lookup(FileObject.class);
                     if (aFile != null) {
                         files.add(aFile);
                     } else if (fo != null) {
-                        File f = FileUtil.toFile(fo);
+                        VCSFileProxy f = VCSFileProxy.createFileProxy(fo);
                         if (f != null) {
                             files.add(f);
                         }
                     }
                 }
                 List<String> paths = new ArrayList<String>(files.size());
-                for (File file : files) {
-                    paths.add(file.getAbsolutePath());
+                for (VCSFileProxy file : files) {
+                    paths.add(file.getPath());
                 }
-                if (isCanceled()) return;
+                if (isCanceled()) {
+                    return;
+                }
                 if (status == EXCLUDING) {
                     config.addExclusionPaths(paths);
                 } else if (status == INCLUDING) {

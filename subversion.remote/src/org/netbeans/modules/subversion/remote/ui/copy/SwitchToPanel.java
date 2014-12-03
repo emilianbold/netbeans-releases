@@ -42,9 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
 
 /**
  *
@@ -83,7 +83,7 @@ public class SwitchToPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(searchRevisionButton, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Search")); // NOI18N
 
-        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif"))); // NOI18N
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/warning.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(SwitchToPanel.class, "CTL_SwitchPanel_Warning")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

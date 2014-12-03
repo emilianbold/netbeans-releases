@@ -41,16 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.history;
+package org.netbeans.modules.subversion.remote.ui.history;
 
-import org.netbeans.modules.subversion.ui.history.RepositoryRevision.Event;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
-import org.netbeans.modules.versioning.util.NoContentPanel;
-import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
 import javax.swing.*;
@@ -59,16 +56,19 @@ import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.api.diff.DiffController;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.ui.history.RepositoryRevision.Event;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.util.Cancellable;
 import org.openide.util.WeakListeners;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Shows Search History results in a table with Diff pane below it.
@@ -80,7 +80,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     protected final SearchHistoryPanel parent;
 
     protected DiffTreeTable treeView;
-    private JSplitPane    diffView;
+    private final JSplitPane    diffView;
     
     protected SvnProgressSupport        currentTask;
     private RequestProcessor.Task       currentShowDiffTask;
@@ -353,7 +353,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
     }
 
-    private RepositoryRevision.Event getEventForRoots (RepositoryRevision container, File preferedFile) {
+    private RepositoryRevision.Event getEventForRoots (RepositoryRevision container, VCSFileProxy preferedFile) {
         RepositoryRevision.Event event = null;
         List<RepositoryRevision.Event> revs;
         if (container.isEventsInitialized()) {
@@ -363,11 +363,11 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         }
 
         //try to get the root
-        File[] roots = parent.getRoots();
+        VCSFileProxy[] roots = parent.getRoots();
         outer:
         for(RepositoryRevision.Event evt : revs) {
             if (preferedFile == null) {
-                for(File root : roots) {
+                for(VCSFileProxy root : roots) {
                     if (root.equals(evt.getFile())) {
                         event = evt;
                         break outer;
@@ -445,16 +445,16 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         treeView.refreshResults(res);
     }
 
-    private boolean similarPaths (File referenceFile, File file) {
+    private boolean similarPaths (VCSFileProxy referenceFile, VCSFileProxy file) {
         return referenceFile.getName().equals(file.getName())
-                || referenceFile.getAbsolutePath().equalsIgnoreCase(null);
+                || referenceFile.getPath().equalsIgnoreCase(null);
     }
 
     private class ShowDiffTask extends SvnProgressSupport {
         
-        private File file1;
+        private VCSFileProxy file1;
         private String revision1;
-        private boolean showLastDifference;
+        private final boolean showLastDifference;
         private final RepositoryRevision.Event event2;
         private DiffStreamSource s1;
         private DiffStreamSource s2;
@@ -533,7 +533,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                 return;
             }
 
-            if (currentTask != this) return;
+            if (currentTask != this) {
+                return;
+            }
 
             EventQueue.invokeLater(new Runnable() {
                 @Override

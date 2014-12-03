@@ -41,13 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.config;
+package org.netbeans.modules.subversion.remote.config;
 
-import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Handles the Subversion credential files.
@@ -61,7 +61,7 @@ public abstract class SVNCredentialFile extends KVFile {
     /**
      * Creates sa new instance
      */
-    protected SVNCredentialFile(File file) {
+    protected SVNCredentialFile(VCSFileProxy file) {
         super(file);
     }
 

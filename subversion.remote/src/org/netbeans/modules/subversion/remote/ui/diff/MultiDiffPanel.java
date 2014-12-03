@@ -42,23 +42,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
 import org.openide.util.Cancellable;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.NoContentPanel;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.client.PropertiesClient;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.commit.CommitAction;
-import org.netbeans.modules.subversion.ui.status.StatusAction;
-import org.netbeans.modules.subversion.ui.update.UpdateAction;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
@@ -68,10 +58,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.LifecycleManager;
 import javax.swing.*;
-import java.io.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -79,25 +67,45 @@ import java.util.*;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import org.netbeans.modules.subversion.Annotator;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.ui.blame.BlameAction;
-import org.netbeans.modules.subversion.ui.commit.DeleteLocalAction;
-import org.netbeans.modules.subversion.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
-import org.netbeans.modules.subversion.ui.properties.VersioningInfoAction;
-import org.netbeans.modules.subversion.ui.status.OpenInEditorAction;
-import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.remote.Annotator;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.PropertiesClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.ui.blame.BlameAction;
+import org.netbeans.modules.subversion.remote.ui.commit.CommitAction;
+import org.netbeans.modules.subversion.remote.ui.commit.DeleteLocalAction;
+import org.netbeans.modules.subversion.remote.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.remote.ui.ignore.IgnoreAction;
+import org.netbeans.modules.subversion.remote.ui.properties.VersioningInfoAction;
+import org.netbeans.modules.subversion.remote.ui.status.StatusAction;
+import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.remote.ui.update.UpdateAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
@@ -108,14 +116,11 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
+import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.awt.Mnemonics;
 import org.openide.util.actions.SystemAction;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  *
@@ -143,7 +148,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * Context in which to DIFF.
      */
     private final Context context;
-    private final File diffedFile;
+    private final VCSFileProxy diffedFile;
 
     private int displayStatuses;
 
@@ -244,7 +249,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
      */
-    public MultiDiffPanel (File file, String rev1, String rev2, boolean forceNonEditable) {
+    public MultiDiffPanel (VCSFileProxy file, String rev1, String rev2, boolean forceNonEditable) {
         assert EventQueue.isDispatchThread();
         context = null;
         diffedFile = file;
@@ -275,7 +280,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * @param file diffed file
      * @param status remote status of the file
      */
-    public MultiDiffPanel(File file, ISVNStatus status) {
+    public MultiDiffPanel(VCSFileProxy file, ISVNStatus status) {
         assert EventQueue.isDispatchThread();
         context = null;
         diffedFile = file;
@@ -394,12 +399,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 continue;
             }
 
-            File baseFile = setups[i].getBaseFile();
+            VCSFileProxy baseFile = setups[i].getBaseFile();
             if (baseFile == null) {
                 continue;
             }
 
-            FileObject fileObj = FileUtil.toFileObject(baseFile);
+            FileObject fileObj = baseFile.toFileObject();
             if (fileObj == null) {
                 continue;
             }
@@ -449,9 +454,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
             commitButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Commit_Tooltip"));
             updateButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Update_Tooltip"));
-            if (currentType == Setup.DIFFTYPE_LOCAL) localToggle.setSelected(true);
-            else if (currentType == Setup.DIFFTYPE_REMOTE) remoteToggle.setSelected(true);
-            else if (currentType == Setup.DIFFTYPE_ALL) allToggle.setSelected(true);
+            if (currentType == Setup.DIFFTYPE_LOCAL) {
+                localToggle.setSelected(true);
+            } else if (currentType == Setup.DIFFTYPE_REMOTE) {
+                remoteToggle.setSelected(true);
+            } else if (currentType == Setup.DIFFTYPE_ALL) {
+                allToggle.setSelected(true);
+            }
 
             commitButton.setEnabled(false);
             boolean propsVisible = SvnModuleConfig.getDefault().isFilterPropertiesEnabled();
@@ -472,7 +481,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void initNextPrevActions() {
-        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-next.png"))) {  // NOI18N
+        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-next.png"))) {  // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle").
                                                    getString("CTL_DiffPanel_Next_Tooltip"));                
@@ -482,7 +491,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 onNextButton();
             }
         };
-        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-prev.png"))) { // NOI18N
+        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-prev.png"))) { // NOI18N
             {
                 putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle").
                                                    getString("CTL_DiffPanel_Prev_Tooltip"));                
@@ -536,7 +545,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void updateSplitLocation() {
-        if (dividerSet) return;
+        if (dividerSet) {
+            return;
+        }
         JComponent parent = (JComponent) getParent();
         Dimension dim = parent == null ? new Dimension() : parent.getSize();
         if (dim.width <=0 || dim.height <=0) {
@@ -620,10 +631,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             Action revertAction;
             boolean allLocallyNew = true;
             boolean allLocallyDeleted = true;
-            File [] files = SvnUtils.getCurrentContext(null).getFiles();
+            VCSFileProxy [] files = SvnUtils.getCurrentContext(null).getFiles();
 
             for (int i = 0; i < files.length; i++) {
-                File file = files[i];
+                VCSFileProxy file = files[i];
                 FileInformation info = cache.getStatus(file);
                 if ((info.getStatus() & DeleteLocalAction.LOCALLY_DELETABLE_MASK) == 0 ) {
                     allLocallyNew = false;
@@ -677,13 +688,17 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
     
     private boolean affectsView(VersioningEvent event) {
-        File file = (File) event.getParams()[0];
+        VCSFileProxy file = (VCSFileProxy) event.getParams()[0];
         FileInformation oldInfo = (FileInformation) event.getParams()[1];
         FileInformation newInfo = (FileInformation) event.getParams()[2];
         if (oldInfo == null) {
-            if ((newInfo.getStatus() & displayStatuses) == 0) return false;
+            if ((newInfo.getStatus() & displayStatuses) == 0) {
+                return false;
+            }
         } else {
-            if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
+            if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) {
+                return false;
+            }
         }
         return context.contains(file);
     }
@@ -757,9 +772,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        if (source == commitButton) onCommitButton();
-        else if (source == localToggle || source == remoteToggle || source == allToggle) onDiffTypeChanged();
-        else if (source == cmbDiffTreeSecond) {
+        if (source == commitButton) {
+            onCommitButton();
+        } else if (source == localToggle || source == remoteToggle || source == allToggle) {
+            onDiffTypeChanged();
+        } else if (source == cmbDiffTreeSecond) {
             RepositoryFile oldSelection = repositoryTreeLeft;
             RepositoryFile newSelection = getSelectedRevision(cmbDiffTreeSecond, repositoryTreeLeft);
             if (newSelection != null) {
@@ -793,9 +810,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         Object selectedItem = cmbDiffTree.getSelectedItem();
         RepositoryFile selection = null;
         if (selectedItem == REVISION_SELECT) {
-            File[] roots = SvnUtils.getActionRoots(context, false);
+            VCSFileProxy[] roots = SvnUtils.getActionRoots(context, false);
             if (roots != null) {
-                File interestingFile;
+                VCSFileProxy interestingFile;
                 if(roots.length == 1) {
                     interestingFile = roots[0];
                 } else {
@@ -926,7 +943,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
-            if (++currentIndex >= setups.length) currentIndex = 0;
+            if (++currentIndex >= setups.length) {
+                currentIndex = 0;
+            }
             setDiffIndex(currentIndex, 0, true);
         }
         refreshComponents();
@@ -946,7 +965,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
-            if (--currentIndex < 0) currentIndex = setups.length - 1;
+            if (--currentIndex < 0) {
+                currentIndex = setups.length - 1;
+            }
             setDiffIndex(currentIndex, -1, true);
         }
         refreshComponents();
@@ -1152,7 +1173,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 RevisionSetupsSupport rdc = new RevisionSetupsSupport(
                         repositoryTreeLeft, repositoryTreeRight, repositoryUrl, context);
                 if (repositoryTreeRight.getRevision() == SVNRevision.WORKING) {
-                    File[] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+                    VCSFileProxy[] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
                     if (isCanceled()) {
                         return;
                     }
@@ -1160,7 +1181,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 }
                 localSetups = rdc.computeSetupsBetweenRevisions(this);
             } else {
-                File[] files = SvnUtils.getModifiedFiles(context, status);
+                VCSFileProxy[] files = SvnUtils.getModifiedFiles(context, status);
                 if (isCanceled()) {
                     return;
                 }
@@ -1243,14 +1264,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
         }
 
-        private Setup[] computeSetups (final File[] files, final int displayStatus, final int setupType) {
+        private Setup[] computeSetups (final VCSFileProxy[] files, final int displayStatus, final int setupType) {
             final List<Setup> newSetups = new ArrayList<Setup>(files.length);
             final int statusWithoutProperties = displayStatus & ~FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY;
             final boolean[] canceled = new boolean[1];
             SvnUtils.runWithInfoCache(new Runnable() {
                 @Override
                 public void run () {
-                    for (File file : files) {
+                    for (VCSFileProxy file : files) {
                         if (!file.isDirectory() && (cache.getStatus(file).getStatus() & statusWithoutProperties) != 0) {
                             Setup setup = new Setup(file, null, setupType);
                             setup.setNode(new DiffNode(setup, new SvnFileNode(file), displayStatus));
@@ -1278,7 +1299,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
     }
 
-    private void addPropertiesSetups(File base, List<Setup> newSetups, int displayStatus) {
+    private void addPropertiesSetups(VCSFileProxy base, List<Setup> newSetups, int displayStatus) {
         if (currentType == Setup.DIFFTYPE_REMOTE) return;
 
         DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
@@ -1325,21 +1346,27 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     selectItem(cmbDiffTreeFirst, SVNRevision.WORKING);
                     selectItem(cmbDiffTreeSecond, SVNRevision.BASE);
                 }
-                if (currentType == Setup.DIFFTYPE_LOCAL) return;
+                if (currentType == Setup.DIFFTYPE_LOCAL) {
+                    return;
+                }
                 currentType = Setup.DIFFTYPE_LOCAL;
             } else if (remoteToggle.isSelected()) {
                 if (!orig) {
                     selectItem(cmbDiffTreeFirst, SVNRevision.BASE);
                     selectItem(cmbDiffTreeSecond, SVNRevision.HEAD);
                 }
-                if (currentType == Setup.DIFFTYPE_REMOTE) return;
+                if (currentType == Setup.DIFFTYPE_REMOTE) {
+                    return;
+                }
                 currentType = Setup.DIFFTYPE_REMOTE;
             } else if (allToggle.isSelected()) {
                 if (!orig) {
                     selectItem(cmbDiffTreeFirst, SVNRevision.WORKING);
                     selectItem(cmbDiffTreeSecond, SVNRevision.HEAD);
                 }
-                if (currentType == Setup.DIFFTYPE_ALL) return;
+                if (currentType == Setup.DIFFTYPE_ALL) {
+                    return;
+                }
                 currentType = Setup.DIFFTYPE_ALL;
             }
         } finally {
@@ -1468,8 +1495,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
     private static class SetupsComparator implements Comparator<Setup> {
 
-        private SvnUtils.ByImportanceComparator delegate = new SvnUtils.ByImportanceComparator();
-        private FileStatusCache cache;
+        private final SvnUtils.ByImportanceComparator delegate = new SvnUtils.ByImportanceComparator();
+        private final FileStatusCache cache;
 
         public SetupsComparator() {
             cache = Subversion.getInstance().getStatusCache();
@@ -1518,7 +1545,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         controlsToolBar.setRollover(true);
 
         btnGroup.add(allToggle);
-        allToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/remote_vs_local.png"))); // NOI18N
+        allToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/remote_vs_local.png"))); // NOI18N
         allToggle.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_All_Tooltip")); // NOI18N
         allToggle.setFocusable(false);
         allToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1541,7 +1568,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         controlsToolBar.add(jPanel3);
 
         btnGroup.add(localToggle);
-        localToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/local_vs_local.png"))); // NOI18N
+        localToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/local_vs_local.png"))); // NOI18N
         localToggle.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Local_Tooltip")); // NOI18N
         localToggle.setFocusable(false);
         localToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1564,7 +1591,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         controlsToolBar.add(jPanel4);
 
         btnGroup.add(remoteToggle);
-        remoteToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/remote_vs_remote.png"))); // NOI18N
+        remoteToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/remote_vs_remote.png"))); // NOI18N
         remoteToggle.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Remote_Tooltip")); // NOI18N
         remoteToggle.setFocusable(false);
         remoteToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1586,14 +1613,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         controlsToolBar.add(jPanel1);
 
-        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-next.png"))); // NOI18N
+        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-next.png"))); // NOI18N
         nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Next_Tooltip")); // NOI18N
         nextButton.setFocusable(false);
         nextButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         nextButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlsToolBar.add(nextButton);
 
-        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/diff-prev.png"))); // NOI18N
+        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-prev.png"))); // NOI18N
         prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Prev_Tooltip")); // NOI18N
         prevButton.setFocusable(false);
         prevButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1615,7 +1642,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         controlsToolBar.add(jPanel2);
 
-        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/refresh.png"))); // NOI18N
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/refresh.png"))); // NOI18N
         refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "refreshButton.toolTipText")); // NOI18N
         refreshButton.setFocusable(false);
         refreshButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1627,7 +1654,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         });
         controlsToolBar.add(refreshButton);
 
-        updateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/update.png"))); // NOI18N
+        updateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/update.png"))); // NOI18N
         updateButton.setFocusable(false);
         updateButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         updateButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -1638,7 +1665,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         });
         controlsToolBar.add(updateButton);
 
-        commitButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/commit.png"))); // NOI18N
+        commitButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/commit.png"))); // NOI18N
         commitButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MSG_CommitDiff_Tooltip")); // NOI18N
         commitButton.setFocusable(false);
         commitButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1660,7 +1687,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         controlsToolBar.add(jPanel5);
 
-        filterPropertiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/properties.png"))); // NOI18N
+        filterPropertiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/properties.png"))); // NOI18N
         filterPropertiesButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.filterPropertiesButton.toolTipText")); // NOI18N
         filterPropertiesButton.setFocusable(false);
         controlsToolBar.add(filterPropertiesButton);

@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.wizards;
+package org.netbeans.modules.subversion.remote.ui.wizards;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -57,7 +57,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.awt.*;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.remote.Subversion;
 
 /**
  * Abstract wizard panel with <codE>valid</code>
@@ -185,7 +185,9 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
     }
 
     private void fireChange() {
-        if (underConstruction) return;
+        if (underConstruction) {
+            return;
+        }
         List<ChangeListener> clone;
         synchronized(listeners) {
             clone = new ArrayList<ChangeListener>(listeners);

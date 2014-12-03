@@ -41,21 +41,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.export;
+package org.netbeans.modules.subversion.remote.ui.export;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.diff.options.AccessibleJFileChooser;
-import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -70,20 +70,20 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
     private static final String EXPORT_FROM_DIRECTORY = "exportFromDirectory";  // NOI18N
 
     
-    private final File fromFile;
-    private ExportPanel panel;
+    private final VCSFileProxy fromFile;
+    private final ExportPanel panel;
     private final JButton okButton;
     private final JButton cancelButton;
     private final DialogDescriptor dialogDescriptor;
 
-    public Export(File fromFile, boolean localChanges) {
+    public Export(VCSFileProxy fromFile, boolean localChanges) {
         
         this.fromFile = fromFile;
         
         panel = new ExportPanel();
 
         panel.scanCheckBox.setSelected(SvnModuleConfig.getDefault().getPreferences().getBoolean(SCAN_AFTER_EXPORT, false));
-        panel.exportFromTextField.setText(fromFile.getAbsolutePath());
+        panel.exportFromTextField.setText(fromFile.getPath());
         panel.browseToFolderButton.addActionListener(this);
         panel.exportToTextField.getDocument().addDocumentListener(this);
 
@@ -133,7 +133,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         panel.invalidValuesLabel.setText("");        
     }
 
-    File getToFile() {
+    VCSFileProxy getToFile() {
         return new File(panel.exportToTextField.getText());
     }
 
@@ -177,7 +177,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
     }
 
     private void onBrowse() {
-        File defaultDir = defaultWorkingDirectory();
+        VCSFileProxy defaultDir = defaultWorkingDirectory();
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(Export.class, "ACSD_BrowseFolder"), defaultDir);// NOI18N
         fileChooser.setDialogTitle(NbBundle.getMessage(Export.class, "BK0010"));// NOI18N
         fileChooser.setMultiSelectionEnabled(false);
@@ -189,7 +189,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         }
         fileChooser.addChoosableFileFilter(new FileFilter() {
             @Override
-            public boolean accept(File f) {
+            public boolean accept(VCSFileProxy f) {
                 return f.isDirectory();
             }
             @Override
@@ -199,17 +199,17 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         });
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(panel, NbBundle.getMessage(Export.class, "BK0009"));// NOI18N
-        File f = fileChooser.getSelectedFile();
+        VCSFileProxy f = fileChooser.getSelectedFile();
         if (f != null) {
             panel.exportToTextField.setText(f.getAbsolutePath());
         }
     }
 
-    private File defaultWorkingDirectory() {
-        File defaultDir = null;
+    private VCSFileProxy defaultWorkingDirectory() {
+        VCSFileProxy defaultDir = null;
         String current = panel.exportFromTextField.getText();
         if (current != null && !(current.trim().equals(""))) {  // NOI18N
-            File currentFile = new File(current);
+            VCSFileProxy currentFile = new File(current);
             while (currentFile != null && currentFile.exists() == false) {
                 currentFile = currentFile.getParentFile();
             }
@@ -230,7 +230,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         }
 
         if (defaultDir == null) {
-            File projectFolder = ProjectChooser.getProjectsFolder();
+            VCSFileProxy projectFolder = ProjectChooser.getProjectsFolder();
             if (projectFolder.exists() && projectFolder.isDirectory()) {
                 defaultDir = projectFolder;
             }
@@ -243,7 +243,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         return defaultDir;
     }
 
-    File getFromFile() {
+    VCSFileProxy getFromFile() {
         return fromFile;
     }
 

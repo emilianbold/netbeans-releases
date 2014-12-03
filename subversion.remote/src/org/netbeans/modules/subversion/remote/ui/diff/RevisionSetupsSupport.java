@@ -39,9 +39,8 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,31 +55,30 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNProperty;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNDiffSummary;
+import org.netbeans.modules.subversion.remote.api.SVNDiffSummary.SVNDiffKind;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNDiffSummary;
-import org.tigris.subversion.svnclientadapter.SVNDiffSummary.SVNDiffKind;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.utils.Depth;
-import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
 /**
  *
@@ -92,7 +90,7 @@ class RevisionSetupsSupport {
     private final SVNUrl repositoryUrl;
     private final Context context;
     private final FileStatusCache cache;
-    private final Map<File, Setup> wcSetups;
+    private final Map<VCSFileProxy, Setup> wcSetups;
     private final boolean workingCopy;
     private final boolean base;
     private final Map<String, SVNDiffSummary[]> diffSummaryCache;
@@ -107,9 +105,9 @@ class RevisionSetupsSupport {
         this.repositoryUrl = repositoryUrl;
         this.context = context;
         this.cache = Subversion.getInstance().getStatusCache();
-        this.wcSetups = new LinkedHashMap<>();
-        this.diffSummaryCache = new LinkedHashMap<>();
-        this.missingURLs = new LinkedHashSet<>();
+        this.wcSetups = new LinkedHashMap<VCSFileProxy, Setup>();
+        this.diffSummaryCache = new LinkedHashMap<String, SVNDiffSummary[]>();
+        this.missingURLs = new LinkedHashSet<String>();
         workingCopy = SVNRevision.WORKING.equals(this.repositoryTreeRight.getRevision());
         base = SVNRevision.BASE.equals(this.repositoryTreeRight.getRevision())
                 || SVNRevision.BASE.equals(this.repositoryTreeLeft.getRevision());
@@ -124,9 +122,9 @@ class RevisionSetupsSupport {
         }
         try {
             SvnClient client = Subversion.getInstance().getClient(repositoryUrl);
-            List<Setup> setups = new ArrayList<>();
-            File[] roots = getRoots();
-            for (File root : roots) {
+            List<Setup> setups = new ArrayList<Setup>();
+            VCSFileProxy[] roots = getRoots();
+            for (VCSFileProxy root : roots) {
                 boolean flatFile = VersioningSupport.isFlat(root);
                 final SVNUrl leftUrl = roots.length > 1
                         ? left.replaceLastSegment(root.getName(), 0).getFileUrl()
@@ -136,7 +134,7 @@ class RevisionSetupsSupport {
                         : right.getFileUrl();
                 if (base || workingCopy) {
                     ISVNStatus[] statuses = client.getStatus(root, !flatFile, true, false, true);
-                    Map<File, ISVNStatus> statusMap = new HashMap<>(statuses.length);
+                    Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<VCSFileProxy, ISVNStatus>(statuses.length);
                     for (ISVNStatus s : statuses) {
                         statusMap.put(s.getFile(), s);
                     }                        
@@ -144,7 +142,7 @@ class RevisionSetupsSupport {
                         if (supp.isCanceled()) {
                             return null;
                         }
-                        final File f = s.getFile();
+                        final VCSFileProxy f = s.getFile();
                         if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0) {
                             continue;
                         }
@@ -192,7 +190,7 @@ class RevisionSetupsSupport {
                     List<Setup> partialSetups = buildSetups(client, leftUrl, left.getRevision(), 
                             rightUrl, right.getRevision(), 
                             supp, flatFile, flatFile ? Depth.files : Depth.infinity,
-                            root, true, Collections.<File, ISVNStatus>emptyMap());
+                            root, true, Collections.<VCSFileProxy, ISVNStatus>emptyMap());
                     if (partialSetups == null) {
                         // canceled
                         return null;
@@ -203,7 +201,7 @@ class RevisionSetupsSupport {
             }
             if (workingCopy) {
                 // and finally add just local modifications
-                for (Map.Entry<File, Setup> e : wcSetups.entrySet()) {
+                for (Map.Entry<VCSFileProxy, Setup> e : wcSetups.entrySet()) {
                     setups.add(e.getValue());
                 }
             }
@@ -216,7 +214,7 @@ class RevisionSetupsSupport {
 
     void setWCSetups (Setup[] wcSetups) {
         for (Setup s : wcSetups) {
-            File f = s.getBaseFile();
+            VCSFileProxy f = s.getBaseFile();
             if (s.getPropertyName() == null) {
                 // for now add only file's content setup, no property
                 this.wcSetups.put(f, s);
@@ -246,7 +244,7 @@ class RevisionSetupsSupport {
 
     private List<Setup> addPropertySetups (SvnClient client, SVNUrl leftFileUrl, SVNRevision leftRevision,
             SVNUrl rightFileUrl, SVNRevision rightRevision) throws SVNClientException {
-        List<Setup> propSetups = new ArrayList<>();
+        List<Setup> propSetups = new ArrayList<Setup>();
         DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         try {
             Map<String, byte[]> leftProps = leftFileUrl == null
@@ -256,7 +254,7 @@ class RevisionSetupsSupport {
                     ? Collections.<String, byte[]>emptyMap()
                     : toMap(client.getProperties(rightFileUrl, rightRevision, rightRevision));
 
-            Set<String> allProps = new TreeSet<>(leftProps.keySet());
+            Set<String> allProps = new TreeSet<String>(leftProps.keySet());
             allProps.addAll(rightProps.keySet());
             for (String key : allProps) {
                 boolean isLeft = leftProps.containsKey(key);
@@ -279,7 +277,7 @@ class RevisionSetupsSupport {
     }
 
     private Map<String, byte[]> toMap (ISVNProperty[] properties) {
-        Map<String, byte[]> map = new LinkedHashMap<>(properties.length);
+        Map<String, byte[]> map = new LinkedHashMap<String, byte[]>(properties.length);
         for (ISVNProperty prop : properties) {
             map.put(prop.getName(), prop.getData());
         }
@@ -295,7 +293,7 @@ class RevisionSetupsSupport {
         return false;
     }
 
-    private String getRelativePath (File root, File f) {
+    private String getRelativePath (VCSFileProxy root, VCSFileProxy f) {
         String path = "";
         while (f != null && !f.equals(root)) {
             path = f.getName() + "/" + path;
@@ -308,7 +306,7 @@ class RevisionSetupsSupport {
         }
     }
 
-    private Setup createSetup (SVNDiffSummary summary, File file, SVNUrl leftUrl, SVNRevision leftRevision,
+    private Setup createSetup (SVNDiffSummary summary, VCSFileProxy file, SVNUrl leftUrl, SVNRevision leftRevision,
             SVNUrl rightUrl, String rightRevision) {
         FileInformation fi = null;
         Setup localSetup = wcSetups.get(file);
@@ -345,11 +343,11 @@ class RevisionSetupsSupport {
 
     private List<Setup> buildSetups (SvnClient client, SVNUrl leftFileUrl, SVNRevision leftRevision,
             SVNUrl rightFileUrl, SVNRevision rightRevision, SvnProgressSupport supp, 
-            boolean flatFile, int depth, File root, boolean addAll, 
-            Map<File, ISVNStatus> statusMap) throws SVNClientException {
+            boolean flatFile, int depth, VCSFileProxy root, boolean addAll, 
+            Map<VCSFileProxy, ISVNStatus> statusMap) throws SVNClientException {
         boolean sameURLs = leftFileUrl != null && leftFileUrl.equals(rightFileUrl)
                 && leftRevision != null && leftRevision.equals(rightRevision);
-        List<Setup> setups = new ArrayList<>();
+        List<Setup> setups = new ArrayList<Setup>();
         if (!sameURLs) {
             SVNDiffSummary[] diffSummaries = getCachedSummaries(leftFileUrl, leftRevision, rightRevision);
             boolean leftExists, rightExists;
@@ -374,8 +372,8 @@ class RevisionSetupsSupport {
                             rightRevision, depth, true);
                     cacheSummaries(diffSummaries, leftFileUrl, leftRevision, rightRevision);
                 }
-                List<String> skippedPaths = new ArrayList<>();
-                Set<String> deletedPaths = new HashSet<>();
+                List<String> skippedPaths = new ArrayList<String>();
+                Set<String> deletedPaths = new HashSet<String>();
                 for (SVNDiffSummary summary : diffSummaries) {
                     if (summary.getDiffKind() == SVNDiffKind.DELETED) {
                         deletedPaths.add(summary.getPath());
@@ -386,12 +384,12 @@ class RevisionSetupsSupport {
                         return null;
                     }
                     String filePath = summary.getPath();
-                    File file = filePath.isEmpty() ? root : new File(root, filePath);
+                    VCSFileProxy file = filePath.isEmpty() ? root : VCSFileProxy.createFileProxy(root, filePath);
                     boolean skipItem = !filePath.isEmpty();
                     if (addAll || summary.getDiffKind() == SVNDiffSummary.SVNDiffKind.DELETED 
                             && containsAllParents(filePath, deletedPaths)
                             // diff for package but a subpackage was deleted or a file somewhere lower in the subtree
-                            && !(flatFile && (summary.getNodeKind() == SVNNodeKind.DIR.toInt() || filePath.contains("/")))
+                            && !(flatFile && (summary.getNodeKind() == SVNNodeKind.DIR || filePath.contains("/")))
                             // if skipped path contains its ancestor, it means the ancestor exists locally
                             // and the file deletion will be handled there (and correct BASE revision will be set)
                             && !isSkippedInParent(skippedPaths, filePath))
@@ -424,7 +422,7 @@ class RevisionSetupsSupport {
             } else {
                 SVNDiffSummary summary = new SVNDiffSummary("", leftExists
                         ? SVNDiffSummary.SVNDiffKind.DELETED
-                        : SVNDiffSummary.SVNDiffKind.ADDED, false, 0);
+                        : SVNDiffSummary.SVNDiffKind.ADDED, false, SVNNodeKind.NONE);
                 Setup setup = createSetup(summary, root, leftFileUrl, leftRevision,
                         workingCopy ? null : rightFileUrl,
                         workingCopy ? Setup.REVISION_CURRENT : rightRevision.toString());
@@ -437,7 +435,7 @@ class RevisionSetupsSupport {
         if (workingCopy) {
             // and local modifications for this root
             if (wcSetups.containsKey(root)) {
-                SVNDiffSummary summary = new SVNDiffSummary("", SVNDiffSummary.SVNDiffKind.NORMAL, false, 0);
+                SVNDiffSummary summary = new SVNDiffSummary("", SVNDiffSummary.SVNDiffKind.NORMAL, false, SVNNodeKind.NONE);
                 Setup setup = createSetup(summary, root, leftFileUrl, leftRevision, null, Setup.REVISION_CURRENT);
                 setups.add(setup);
             }
@@ -448,14 +446,14 @@ class RevisionSetupsSupport {
     private void cacheSummaries (SVNDiffSummary[] diffSummaries, SVNUrl leftUrl,
             SVNRevision leftRevision, SVNRevision rightRevision) {
         String revisionString = "@" + leftRevision + ":" + rightRevision;
-        Map<String, List<SVNDiffSummary>> sums = new LinkedHashMap<>();
+        Map<String, List<SVNDiffSummary>> sums = new LinkedHashMap<String, List<SVNDiffSummary>>();
         sums.put("", new ArrayList<SVNDiffSummary>(diffSummaries.length));
         for (SVNDiffSummary s : diffSummaries) {
             String path = s.getPath();
             do {
                 List<SVNDiffSummary> list = sums.get(path);
                 if (list == null) {
-                    list = new ArrayList<>();
+                    list = new ArrayList<SVNDiffSummary>();
                     sums.put(path, list);
                 }
                 String suffix = s.getPath().substring(path.length());
@@ -529,7 +527,7 @@ class RevisionSetupsSupport {
         return true;
     }
 
-    protected File[] getRoots () {
+    protected VCSFileProxy[] getRoots () {
         return SvnUtils.getActionRoots(context, false);
     }
 
@@ -538,7 +536,7 @@ class RevisionSetupsSupport {
         private final String name;
         
         public RevisionsFileInformation (SVNDiffSummary item) {
-            super(toStatus(item.getDiffKind()), 0, item.getNodeKind() == SVNNodeKind.DIR.toInt());
+            super(toStatus(item.getDiffKind()), 0, item.getNodeKind() == SVNNodeKind.DIR);
             this.name = toStatusText(item.getDiffKind());
         }
 

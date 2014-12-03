@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,93 +34,93 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
-import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.spi.queries.CollocationQueryImplementation;
-import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-
-import java.io.File;
-import java.util.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.URI;
+import java.util.Set;
+import java.util.logging.Level;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.util.logging.Level;
-import org.netbeans.modules.subversion.ui.shelve.ShelveChangesAction;
-import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
-import org.netbeans.modules.versioning.spi.*;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.spi.queries.CollocationQueryImplementation2;
 
 /**
- * @author Maros Sandor
- * 
- * Warning:
- * $FOLDER_NAME:getenv:$VARIABLE:null|notnull - private contract with Versioning to determine 
- * the metadata folder name based on 
- * System.getenv($VARIABLE) == null or System.getenv($VARIABLE) != null respectively.
- * see also arch.xml in versioning.
+ *
+ * @author Alexander Simon
  */
-@VersioningSystem.Registration(
-    displayName="#CTL_Subversion_DisplayName", 
+@VersioningSystem.Registration(displayName="#CTL_Subversion_DisplayName", 
     menuLabel="#CTL_Subversion_MainMenu", 
     metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"}, 
-    actionsCategory="Subversion"
-)
-public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
-    
-    private SubversionVisibilityQuery visibilityQuery;
+    actionsCategory="Subversion")
+public class SubversionVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener, PreferenceChangeListener {
+
+    /**
+     * Fired when textual annotations and badges have changed. The NEW value is
+     * Set<File> of files that changed or NULL if all annotations changed.
+     */
+    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
+
+    private VCSVisibilityQuery visibilityQuery;
 
     public SubversionVCS() {
-        putProperty(PROP_DISPLAY_NAME, getDisplayName());
-        putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
-    
-        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
-        Subversion.getInstance().attachListeners(this);
-        Subversion.getInstance().getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run () {
-                ShelveChangesActionsRegistry.getInstance().registerAction(SubversionVCS.this, ShelveChangesAction.getProvider());
-            }
-        });
+        Subversion.getInstance().getFileStatusCache().addVersioningListener(this);
+        Subversion.getInstance().getAnnotator().addPropertyChangeListener(this);
     }
 
     public static String getDisplayName() {
-        return NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName");
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     /**
-     * Tests whether the file is managed by this versioning system. If it is, the method should return the topmost 
-     * parent of the file that is still versioned.
-     *  
+     * Tests whether the file is managed by this versioning system. If it is,
+     * the method should return the topmost ancestor of the file that is still
+     * versioned.
+     *
      * @param file a file
-     * @return File the file itself or one of its parents or null if the supplied file is NOT managed by this versioning system
+     * @return File the file itself or one of its ancestors or null if the
+     * supplied file is NOT managed by this versioning system
      */
     @Override
-    public File getTopmostManagedAncestor(File file) {
+    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
         return Subversion.getInstance().getTopmostManagedAncestor(file);
     }
 
+    /**
+     * Coloring label, modifying icons, providing action on file
+     */
     @Override
     public VCSAnnotator getVCSAnnotator() {
-        return Subversion.getInstance().getVCSAnnotator();
+        return Subversion.getInstance().getAnnotator();
     }
 
+    /**
+     * Handle file system events such as delete, create, remove etc.
+     */
     @Override
     public VCSInterceptor getVCSInterceptor() {
-        return Subversion.getInstance().getVCSInterceptor();
+        return Subversion.getInstance().getInterceptor();
     }
 
     @Override
-    public void getOriginalFile(File workingCopy, File originalFile) {
+    public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) {
         Subversion.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
@@ -136,23 +130,29 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     }
     
     @Override
-    public CollocationQueryImplementation getCollocationQueryImplementation() {
+    public CollocationQueryImplementation2 getCollocationQueryImplementation() {
         return collocationQueryImplementation;
     }
 
     @Override
     public VCSVisibilityQuery getVisibilityQuery() {
-        if(visibilityQuery == null) {
+        if (visibilityQuery == null) {
             visibilityQuery = new SubversionVisibilityQuery();
         }
         return visibilityQuery;
     }
+    
+    private final CollocationQueryImplementation2 collocationQueryImplementation = new CollocationQueryImplementation2() {
 
-    private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
         @Override
-        public boolean areCollocated(File a, File b) {
-            File fra = getTopmostManagedAncestor(a);
-            File frb = getTopmostManagedAncestor(b);
+        public boolean areCollocated(URI file1, URI file2) {
+            VCSFileProxy a = VCSFileProxySupport.fromURI(file1);
+            VCSFileProxy b = VCSFileProxySupport.fromURI(file2);
+            if (a == null || b == null) {
+                return false;
+            }
+            VCSFileProxy fra = getTopmostManagedAncestor(a);
+            VCSFileProxy frb = getTopmostManagedAncestor(b);
             if (fra == null || !fra.equals(frb)) return false;
             try {
                 SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
@@ -177,36 +177,44 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         }
 
         @Override
-        public File findRoot(File file) {
+        public URI findRoot(URI file) {
             // TODO: we should probably return the closest common ancestor
-            return getTopmostManagedAncestor(file);
+            VCSFileProxy fromURI = VCSFileProxySupport.fromURI(file);
+            VCSFileProxy topmostManagedAncestor = getTopmostManagedAncestor(fromURI);
+            if (topmostManagedAncestor != null) {
+                return VCSFileProxySupport.toURI(topmostManagedAncestor);
+            }
+            return null;
         }
     };
-    
+
     @Override
     public void versioningEvent(VersioningEvent event) {
-        if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
-            File file = (File) event.getParams()[0];
-            fireStatusChanged(file);
+        if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(event.getPropertyName())) {
+            VCSFileProxy file = event.getFile();
+            if (file != null) {
+                fireStatusChanged(file);
+            }
         }
     }
-
+    
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
-            fireStatusChanged((Set<File>) null);
+            fireStatusChanged((Set<VCSFileProxy>) null);
         }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(Subversion.PROP_ANNOTATIONS_CHANGED)) {
-            fireAnnotationsChanged((Set<File>) evt.getNewValue());
+            fireAnnotationsChanged((Set<VCSFileProxy>) evt.getNewValue());
         } else if (evt.getPropertyName().equals(Subversion.PROP_BASE_FILE_CHANGED)) {
-            fireStatusChanged((Set<File>) evt.getNewValue());
+            fireStatusChanged((Set<VCSFileProxy>) evt.getNewValue());
         } else if (evt.getPropertyName().equals(Subversion.PROP_VERSIONED_FILES_CHANGED)) {
             Subversion.LOG.fine("cleaning unversioned parents cache");
             fireVersionedFilesChanged();
         }
     }
+
 }

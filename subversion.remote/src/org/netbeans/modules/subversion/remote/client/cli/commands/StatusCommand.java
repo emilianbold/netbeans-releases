@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.subversion.client.cli.commands;
+package org.netbeans.modules.subversion.remote.client.cli.commands;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -54,11 +52,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.cli.SvnCommand;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.xml.XMLUtil;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
-import org.tigris.subversion.svnclientadapter.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -75,13 +77,13 @@ public class StatusCommand extends SvnCommand {
     private static final String DATE_FORMAT = "yyyy-MM-dd hh:mm:ss Z"; //NOI18N
     private byte[] output;
     
-    private final File files[];
+    private final VCSFileProxy files[];
     private final boolean getAll;
     private final boolean descend;
     private final boolean checkUpdates;
     private final boolean ignoreExternals;
 
-    public StatusCommand(File[] files, boolean getAll, boolean descend, boolean checkUpdates, boolean ignoreExternals) {
+    public StatusCommand(VCSFileProxy[] files, boolean getAll, boolean descend, boolean checkUpdates, boolean ignoreExternals) {
         this.files = files;
         this.getAll = getAll;
         this.descend = descend;
@@ -100,7 +102,7 @@ public class StatusCommand extends SvnCommand {
     }    
     
     @Override
-    protected int getCommand() {
+    protected ISVNNotifyListener.Command getCommand() {
         return ISVNNotifyListener.Command.STATUS;
     }
     
@@ -130,7 +132,9 @@ public class StatusCommand extends SvnCommand {
     }
     
     public Status[] getStatusValues() throws SVNClientException {
-        if (output == null || output.length == 0) return new Status[0];
+        if (output == null || output.length == 0) {
+            return new Status[0];
+        }
         try {
             XMLReader saxReader = XMLUtil.createXMLReader();
 
@@ -152,7 +156,7 @@ public class StatusCommand extends SvnCommand {
     
     private class XmlEntriesHandler extends DefaultHandler {
                         
-        private List<Status> statusValues = new ArrayList<Status>();        
+        private final List<Status> statusValues = new ArrayList<Status>();        
 
         /*
         <!-- For "svn status" -->
@@ -306,17 +310,19 @@ public class StatusCommand extends SvnCommand {
                                     
                     String path = values.get(PATH_ATTRIBUTE);
                     
-                    if (values.get(WC_ST_ELEMENT_NAME) == null) throw new SAXException("'wc-status' tag expected under 'entry'");
+                    if (values.get(WC_ST_ELEMENT_NAME) == null) {
+                        throw new SAXException("'wc-status' tag expected under 'entry'");
+                    }
                             
                     SVNStatusKind wcStatus = SVNStatusKind.fromString(values.get(WC_ITEM_ATTR));
                     SVNStatusKind wcPropsStatus = SVNStatusKind.fromString(values.get(WC_PROPS_ATTR));
-                    Number wcRev = getRevision(values.get(WC_REVISION_ATTR));
+                    SVNRevision.Number wcRev = getRevision(values.get(WC_REVISION_ATTR));
                     boolean locked =  getBoolean(values.get(WC_LOCKED_ATTR));       
                     boolean copied =  getBoolean(values.get(WC_COPIED_ATTR));       
                     boolean switched =  getBoolean(values.get(WC_SWITCHED_ATTR));       
                     boolean treeConflict = getBoolean(values.get(WC_TREE_CONFLICT_ATTR));
                     
-                    Number ciRev = getRevision(values.get(CI_REVISION_ATTR));                    
+                    SVNRevision.Number ciRev = getRevision(values.get(CI_REVISION_ATTR));                    
                     String author = values.get(AUTHOR_ELEMENT_NAME);                    
                     Date date = getDate(values.get(DATE_ELEMENT_NAME));
                     
@@ -327,9 +333,13 @@ public class StatusCommand extends SvnCommand {
                     Date lockExpires = null;
                     if(values.get(LOCK_ELEMENT_NAME) != null) {
                         token = values.get(TOKEN_ELEMENT_NAME);
-                        if (token == null) throw new SAXException("'token' tag expected under 'lock'");
+                        if (token == null) {
+                            throw new SAXException("'token' tag expected under 'lock'");
+                        }
                         owner = values.get(OWNER_ELEMENT_NAME);
-                        if (owner == null) throw new SAXException("'owner' tag expected under 'lock'");
+                        if (owner == null) {
+                            throw new SAXException("'owner' tag expected under 'lock'");
+                        }
                         lockComment = values.get(COMMENT_ELEMENT_NAME);
                         lockCreated = getDate(values.get(CREATED_ELEMENT_NAME));
                         lockExpires = getDate(values.get(EXPIRES_ELEMENT_NAME));                    
@@ -350,10 +360,12 @@ public class StatusCommand extends SvnCommand {
             } 
         }
                 
+        @Override
         public void error(SAXParseException e) throws SAXException {
             throw e;
         }
 
+        @Override
         public void fatalError(SAXParseException e) throws SAXException {
             throw e;
         }
@@ -388,8 +400,8 @@ public class StatusCommand extends SvnCommand {
             return date;
         }
         
-        private Number getRevision(String revisionValue) {
-            Number rev = null;
+        private SVNRevision.Number getRevision(String revisionValue) {
+            SVNRevision.Number rev = null;
             if (revisionValue != null && !revisionValue.trim().equals("")) {
                 try {
                     rev = new SVNRevision.Number(Long.parseLong(revisionValue));
@@ -406,12 +418,12 @@ public class StatusCommand extends SvnCommand {
         private final String path;        
         private final SVNStatusKind wcStatus;
         private final SVNStatusKind wcPropsStatus;
-        private final Number wcRev;
+        private final SVNRevision.Number wcRev;
         private final boolean wcLocked;       
         private final boolean wcCopied;       
         private final boolean wcSwitched;                           
         private final boolean treeConflict;
-        private final Number commitRev;                    
+        private final SVNRevision.Number commitRev;                    
         private final String author;                    
         private final Date changeDate;                    
         private final String lockOwner;
@@ -420,8 +432,8 @@ public class StatusCommand extends SvnCommand {
         private final SVNStatusKind repoStatus;
         private final SVNStatusKind repoPropsStatus;        
         public Status(String path, SVNStatusKind wcStatus, SVNStatusKind wcPropsStatus, 
-                Number wcRev, boolean wcLocked, boolean wcCopied, boolean wcSwitched, 
-                Number commitRev, String author, Date changeDate, String lockOwner, 
+                SVNRevision.Number wcRev, boolean wcLocked, boolean wcCopied, boolean wcSwitched, 
+                SVNRevision.Number commitRev, String author, Date changeDate, String lockOwner, 
                 String lockComment, Date lockCreated, SVNStatusKind repoStatus, 
                 SVNStatusKind repoPropsStatus, boolean treeConflict)
         {      
@@ -448,7 +460,7 @@ public class StatusCommand extends SvnCommand {
         public Date getChangeDate() {
             return changeDate;
         }
-        public Number getCommitRev() {
+        public SVNRevision.Number getCommitRev() {
             return commitRev;
         }
         public String getLockComment() {
@@ -478,7 +490,7 @@ public class StatusCommand extends SvnCommand {
         public SVNStatusKind getWcPropsStatus() {
             return wcPropsStatus;
         }
-        public Number getWcRev() {
+        public SVNRevision.Number getWcRev() {
             return wcRev;
         }
         public SVNStatusKind getWcStatus() {

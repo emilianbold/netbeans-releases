@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,41 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.ui.actions;
 
-package org.netbeans.modules.subversion.ui.actions;
-
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.openide.util.actions.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
-import org.openide.filesystems.FileObject;
-import org.openide.LifecycleManager;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.FileInformation;
-import java.text.MessageFormat;
-import java.text.DateFormat;
-import java.io.File;
-import java.util.MissingResourceException;
-import java.util.Date;
 import java.awt.event.ActionEvent;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.LifecycleManager;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.actions.NodeAction;
+import org.openide.windows.TopComponent;
 
 /**
  * Base for all context-sensitive SVN actions.
@@ -110,7 +107,7 @@ public abstract class ContextAction extends NodeAction {
     @Override
     protected boolean enable(Node[] nodes) {
         if (isCacheReady()) {
-            File[] rootFiles = getCachedContext(nodes).getRootFiles();
+            VCSFileProxy[] rootFiles = getCachedContext(nodes).getRootFiles();
             // has at least one file as a root node -> either all rootfiles are managed or all rootfiles are unmanaged
             // should not have mixed version and unversioned files
             // -> action is disabled if any of the files is unmanaged
@@ -141,7 +138,7 @@ public abstract class ContextAction extends NodeAction {
     }
 
     public static SVNUrl getSvnUrl(Context ctx) throws SVNClientException {
-        File[] roots = ctx.getRootFiles();
+        VCSFileProxy[] roots = ctx.getRootFiles();
         return roots.length == 0 ? null : SvnUtils.getRepositoryRootUrl(roots[0]);        
     }
 
@@ -210,7 +207,7 @@ public abstract class ContextAction extends NodeAction {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = getCachedContext(activatedNodes).getFiles();
+        VCSFileProxy [] nodes = getCachedContext(activatedNodes).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -225,7 +222,9 @@ public abstract class ContextAction extends NodeAction {
                 break;
             }
         }
-        if (projectsOnly) objectCount = activatedNodes.length; 
+        if (projectsOnly) {
+            objectCount = activatedNodes.length;
+        } 
 
         if (objectCount == 0) {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
@@ -274,7 +273,7 @@ public abstract class ContextAction extends NodeAction {
      */ 
     public String getContextDisplayName(Node [] activatedNodes) {
         // TODO: reuse this code in getName() 
-        File [] nodes = getCachedContext(activatedNodes).getFiles();
+        VCSFileProxy [] nodes = getCachedContext(activatedNodes).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -289,7 +288,9 @@ public abstract class ContextAction extends NodeAction {
                 break;
             }
         }
-        if (projectsOnly) objectCount = activatedNodes.length; 
+        if (projectsOnly) {
+            objectCount = activatedNodes.length;
+        } 
 
         if (objectCount == 0) {
             return null;

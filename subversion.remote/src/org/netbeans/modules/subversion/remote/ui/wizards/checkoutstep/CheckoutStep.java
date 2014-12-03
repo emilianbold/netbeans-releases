@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.wizards.checkoutstep;
+package org.netbeans.modules.subversion.remote.ui.wizards.checkoutstep;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,7 +50,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.InputVerifier;
@@ -59,18 +58,18 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.ui.browser.Browser;
-import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
-import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.ui.browser.Browser;
+import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * @author Tomas Stupka
@@ -148,7 +147,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     protected void validateBeforeNext() {
         if (validateUserInput(true)) {
             String text = getWorkdirText();
-            File file = new File(text);
+            VCSFileProxy file = new File(text);
             if (file.exists() == false) {
                 boolean done = file.mkdirs();
                 if (done == false) {
@@ -189,10 +188,10 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         
         AbstractStep.WizardMessage errorMessage = null;
         if (full) {
-            File file = new File(text);
+            VCSFileProxy file = new File(text);
             if (file.exists() == false) {
                 // it's automaticaly create later on, check for permisions here
-                File parent = file.getParentFile();
+                VCSFileProxy parent = file.getParentFile();
                 while (parent != null) {
                     if (parent.exists()) {
                         if (parent.canWrite() == false) {
@@ -219,7 +218,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
     
     private void onBrowseWorkdir() {
-        File defaultDir = defaultWorkingDirectory();
+        VCSFileProxy defaultDir = defaultWorkingDirectory();
         JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(CheckoutStep.class, "ACSD_BrowseFolder"), defaultDir);// NOI18N
         fileChooser.setDialogTitle(NbBundle.getMessage(CheckoutStep.class, "BK0010"));// NOI18N
         fileChooser.setMultiSelectionEnabled(false);

@@ -42,9 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
 
 /**
  *
@@ -76,7 +76,7 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
 
         mergeEndUrlComboBox.setEditable(true);
 
-        mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/ending_revision.png"))); // NOI18N
+        mergeAfterRevisionLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/ending_revision.png"))); // NOI18N
         mergeAfterRevisionLabel.setLabelFor(mergeEndRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(mergeAfterRevisionLabel, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Ending")); // NOI18N
 
@@ -97,7 +97,7 @@ public class MergeTwoFoldersPanel extends javax.swing.JPanel {
         mergeStartRevisionTextField.setText(SVNRevision.HEAD.toString());
         mergeStartRevisionTextField.setToolTipText(org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_EmptyHint")); // NOI18N
 
-        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/starting_revision.png"))); // NOI18N
+        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/starting_revision.png"))); // NOI18N
         jLabel8.setLabelFor(mergeStartRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(MergeTwoFoldersPanel.class, "CTL_MergeTwoPanel_Starting")); // NOI18N
 

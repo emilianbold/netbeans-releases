@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.properties;
+package org.netbeans.modules.subversion.remote.ui.properties;
 
 import java.awt.Dialog;
 import java.awt.EventQueue;
@@ -49,7 +49,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -63,22 +62,23 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.diff.options.AccessibleJFileChooser;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNProperty;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -107,17 +107,17 @@ public final class SvnProperties implements ActionListener {
     }
 
     private PropertiesPanel panel;
-    private File[] roots;
-    private PropertiesTable propTable;
+    private final VCSFileProxy[] roots;
+    private final PropertiesTable propTable;
     private SvnProgressSupport support;
     private boolean loadedFromFile;
-    private File loadedValueFile;
-    private final Set<File> folders = new HashSet<File>();
-    private final Set<File> files = new HashSet<File>();
-    private final Map<String, Set<File>> filesPerProperty = new HashMap<String, Set<File>>();
+    private VCSFileProxy loadedValueFile;
+    private final Set<VCSFileProxy> folders = new HashSet<VCSFileProxy>();
+    private final Set<VCSFileProxy> files = new HashSet<VCSFileProxy>();
+    private final Map<String, Set<VCSFileProxy>> filesPerProperty = new HashMap<String, Set<VCSFileProxy>>();
 
     /** Creates a ew instance of SvnProperties */
-    public SvnProperties(PropertiesPanel panel, PropertiesTable propTable, File[] files) {
+    public SvnProperties(PropertiesPanel panel, PropertiesTable propTable, VCSFileProxy[] files) {
         this.panel = panel;
         this.propTable = propTable;
         this.roots = files;
@@ -127,7 +127,7 @@ public final class SvnProperties implements ActionListener {
         panel.btnRemove.addActionListener(this);
         panel.btnBrowse.addActionListener(this);
         panel.comboName.setEditable(true);
-        for (File f : files) {
+        for (VCSFileProxy f : files) {
             if (f.isDirectory()) {
                 folders.add(f);
             } else {
@@ -157,15 +157,15 @@ public final class SvnProperties implements ActionListener {
         this.panel = panel;
     }
 
-    public File[] getFiles () {
+    public VCSFileProxy[] getFiles () {
         return roots;
     }
 
-    private void setLoadedValueFile(File file) {
+    private void setLoadedValueFile(VCSFileProxy file) {
         this.loadedValueFile = file;
     }
 
-    private File getLoadedValueFile() {
+    private VCSFileProxy getLoadedValueFile() {
         return loadedValueFile;
     }
 
@@ -217,7 +217,7 @@ public final class SvnProperties implements ActionListener {
         }
     }
 
-    public void handleBinaryFile(File source) {
+    public void handleBinaryFile(VCSFileProxy source) {
         setLoadedValueFile(source);
         StringBuilder txtValue = new StringBuilder();
         txtValue.append(NbBundle.getMessage(SvnProperties.class, "Binary_Content"));
@@ -244,7 +244,7 @@ public final class SvnProperties implements ActionListener {
         chooser.setCurrentDirectory(roots[0].getParentFile()); // NOI18N
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
             @Override
-            public boolean accept(File f) {
+            public boolean accept(VCSFileProxy f) {
                 return f.exists();
             }
             @Override
@@ -306,7 +306,7 @@ public final class SvnProperties implements ActionListener {
                     try {
                         SvnClient client = Subversion.getInstance().getClient(false);
                         properties = new HashMap<String, String>();
-                        for (File f : roots) {
+                        for (VCSFileProxy f : roots) {
                             ISVNStatus status = SvnUtils.getSingleStatus(client, f);
                             if (!status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
                                 addProperties(f, client.getProperties(f));
@@ -335,7 +335,7 @@ public final class SvnProperties implements ActionListener {
                     });
                 }
 
-                private void addProperties (File file, ISVNProperty[] toAddProps) {
+                private void addProperties (VCSFileProxy file, ISVNProperty[] toAddProps) {
                     for (ISVNProperty prop : toAddProps) {
                         String propName = prop.getName();
                         String propValue;
@@ -350,9 +350,9 @@ public final class SvnProperties implements ActionListener {
                             propValue = org.openide.util.NbBundle.getMessage(SvnProperties.class, "SvnProperties.VariousValues"); //NOI18N"
                         }
                         properties.put(propName, propValue);
-                        Set<File> filesPerProp = filesPerProperty.get(propName);
+                        Set<VCSFileProxy> filesPerProp = filesPerProperty.get(propName);
                         if (filesPerProp == null) {
-                            filesPerProp = new HashSet<File>();
+                            filesPerProp = new HashSet<VCSFileProxy>();
                             filesPerProperty.put(propName, filesPerProp);
                         }
                         filesPerProp.add(file);
@@ -388,10 +388,10 @@ public final class SvnProperties implements ActionListener {
                         return;
                     }
                     boolean recursively = panel.cbxRecursively.isSelected();
-                    Set<File> toRefresh = new HashSet<File>();
+                    Set<VCSFileProxy> toRefresh = new HashSet<VCSFileProxy>();
                     try {
                         String propName = getPropertyName();
-                        for (File root : getAllowedFiles(propName, recursively)) {
+                        for (VCSFileProxy root : getAllowedFiles(propName, recursively)) {
                             addFile(client, root, recursively);
                             if (isLoadedFromFile()) {
                                 try {
@@ -410,7 +410,7 @@ public final class SvnProperties implements ActionListener {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     } finally {
-                        Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new File[toRefresh.size()]));
+                        Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new VCSFileProxy[toRefresh.size()]));
                     }
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -428,29 +428,31 @@ public final class SvnProperties implements ActionListener {
         refreshProperties();
     }
 
-    private File[] getAllowedFiles (String propertyName, boolean recursively) {
-        List<File> fileList = new LinkedList<File>();
-        for (File root : roots) {
+    private VCSFileProxy[] getAllowedFiles (String propertyName, boolean recursively) {
+        List<VCSFileProxy> fileList = new LinkedList<VCSFileProxy>();
+        for (VCSFileProxy root : roots) {
             boolean isFile = files.contains(root);
             if (!(isFile && DIR_ONLY_PROPERTIES.contains(propertyName) // do not set folder properties on files
                     || !isFile && !recursively && FILE_ONLY_PROPERTIES.contains(propertyName))) { // do not set file properties on folders
                 fileList.add(root);
             }
         }
-        return fileList.toArray(new File[fileList.size()]);
+        return fileList.toArray(new VCSFileProxy[fileList.size()]);
     }
 
-    private File[] getFilesWithProperty (String propertyName) {
-        Set<File> filesWithProperty = filesPerProperty.get(propertyName);
-        Set<File> fileList = new HashSet<File>();
+    private VCSFileProxy[] getFilesWithProperty (String propertyName) {
+        Set<VCSFileProxy> filesWithProperty = filesPerProperty.get(propertyName);
+        Set<VCSFileProxy> fileList = new HashSet<VCSFileProxy>();
         if (filesWithProperty != null) {
             fileList.addAll(filesWithProperty);
         }
-        return fileList.toArray(new File[fileList.size()]);
+        return fileList.toArray(new VCSFileProxy[fileList.size()]);
     }
 
-    private void addFile(SvnClient client, File file, boolean recursively) throws SVNClientException {
-        if(SvnUtils.isPartOfSubversionMetadata(file)) return;
+    private void addFile(SvnClient client, VCSFileProxy file, boolean recursively) throws SVNClientException {
+        if(SvnUtils.isPartOfSubversionMetadata(file)) {
+            return;
+        }
         ISVNStatus status = SvnUtils.getSingleStatus(client, file);
         if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
             boolean isDir = file.isDirectory();
@@ -460,9 +462,11 @@ public final class SvnProperties implements ActionListener {
                 client.addFile(file);
             }
             if(recursively && isDir) {
-                File[] files = file.listFiles();
-                if(files == null) return;
-                for (File f : files) {
+                VCSFileProxy[] files = file.listFiles();
+                if(files == null) {
+                    return;
+                }
+                for (VCSFileProxy f : files) {
                     addFile(client, f, recursively);
                 }
             }
@@ -497,7 +501,7 @@ public final class SvnProperties implements ActionListener {
                     }
 
                     boolean recursively = panel.cbxRecursively.isSelected();
-                    Set<File> toRefresh = new HashSet<File>();
+                    Set<VCSFileProxy> toRefresh = new HashSet<VCSFileProxy>();
                     try {
                         SvnPropertiesNode[] svnPropertiesNodes = propTable.getNodes();
                         List<SvnPropertiesNode> lstSvnPropertiesNodes = Arrays.asList(svnPropertiesNodes);
@@ -506,7 +510,7 @@ public final class SvnProperties implements ActionListener {
                         }
                         for (int i = rows.length - 1; i >= 0; i--) {
                             String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[i])].getName();
-                            for (File root : getFilesWithProperty(svnPropertyName)) {
+                            for (VCSFileProxy root : getFilesWithProperty(svnPropertyName)) {
                                 client.propertyDel(root, svnPropertyName, recursively);
                                 toRefresh.add(root);
                             }
@@ -536,11 +540,11 @@ public final class SvnProperties implements ActionListener {
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                     } finally {
-                        Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new File[toRefresh.size()]));
+                        Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new VCSFileProxy[toRefresh.size()]));
                     }
                 }
 
-                private void removePropertyRecursively (SvnClient client, Set<File> toRefresh) throws SVNClientException {
+                private void removePropertyRecursively (SvnClient client, Set<VCSFileProxy> toRefresh) throws SVNClientException {
                     String propName = getPropertyName();
                     if (!propName.trim().isEmpty()) {
                         if (JOptionPane.showConfirmDialog(panel, 
@@ -548,7 +552,7 @@ public final class SvnProperties implements ActionListener {
                                 Bundle.LBL_SvnProperties_RecursiveDelete_title(),
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-                            for (File root : roots) {
+                            for (VCSFileProxy root : roots) {
                                 client.propertyDel(root, propName, true);
                                 toRefresh.add(root);
                             }
@@ -583,8 +587,9 @@ public final class SvnProperties implements ActionListener {
             if (event.getClickCount() == 2) {
                 int[] rows = propTable.getSelectedItems();
                 SvnPropertiesNode[] svnPropertiesNodes = propTable.getNodes();
-                if (svnPropertiesNodes == null)
+                if (svnPropertiesNodes == null) {
                     return;
+                }
                 final String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[0])].getName();
                 final String svnPropertyValue = svnPropertiesNodes[propTable.getModelIndex(rows[0])].getValue();
                 EventQueue.invokeLater(new Runnable() {

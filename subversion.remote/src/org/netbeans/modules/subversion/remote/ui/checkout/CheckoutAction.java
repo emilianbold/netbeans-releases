@@ -41,34 +41,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.checkout;
+package org.netbeans.modules.subversion.remote.ui.checkout;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.subversion.util.CheckoutCompleted;
-import java.io.File;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.ui.wizards.*;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.wizards.CheckoutWizard;
+import org.netbeans.modules.subversion.remote.util.CheckoutCompleted;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -97,11 +95,11 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
             return;
         }
         
-        Utils.logVCSActionEvent("SVN");
+        org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("SVN");
         performCheckout(false);
     }
         
-    public static File performCheckout (final boolean wait) {
+    public static VCSFileProxy performCheckout (final boolean wait) {
         assert !wait || !EventQueue.isDispatchThread(); // cannot wait in AWT
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) {
@@ -110,7 +108,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         }
         final SVNUrl repository = wizard.getRepositoryRoot();
         final RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
-        final File workDir = wizard.getWorkdir();
+        final VCSFileProxy workDir = wizard.getWorkdir();
         final boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
         final boolean doExport = wizard.isExport();
         final boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
@@ -156,7 +154,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         final SVNUrl repository,
         final SvnClient client,
         final RepositoryFile[] repositoryFiles,
-        final File workingDir,
+        final VCSFileProxy workingDir,
         final boolean atWorkingDirLevel,
         final boolean doExport,
         final boolean showCheckoutCompleted)
@@ -189,20 +187,20 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
     public static void checkout(final SvnClient client,
                                 final SVNUrl repository,
                                 final RepositoryFile[] repositoryFiles,
-                                final File workingDir,
+                                final VCSFileProxy workingDir,
                                 final boolean atWorkingDirLevel,
                                 final boolean doExport,
                                 final SvnProgressSupport support)
     throws SVNClientException
     {
-        final File[] destinations = new File[repositoryFiles.length];
+        final VCSFileProxy[] destinations = new VCSFileProxy[repositoryFiles.length];
         for (int i = 0; i < repositoryFiles.length; i++) {
-            File destination;
+            VCSFileProxy destination;
             if(!atWorkingDirLevel) {
                 destination = new File(workingDir.getAbsolutePath() +
                                        "/" +  // NOI18N
                                        repositoryFiles[i].getName()); // XXX what if the whole repository is seletcted
-                destination = FileUtil.normalizeFile(destination);
+                destination = destination.normalizeFile();
                 destination.mkdir();
             } else {
                 destination = workingDir;
@@ -213,7 +211,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
             @Override
             public Void call () throws Exception {
                 for (int i = 0; i < repositoryFiles.length; i++) {
-                    File destination = destinations[i];
+                    VCSFileProxy destination = destinations[i];
                     if(support!=null && support.isCanceled()) { 
                         return null;
                     }
@@ -230,7 +228,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
 
     private static void showCheckoutCompletet(
         final RepositoryFile[] repositoryFiles,
-        final File workingDir,
+        final VCSFileProxy workingDir,
         final boolean atWorkingDirLevel,
         final boolean doExport,
         final SvnProgressSupport support)

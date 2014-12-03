@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.ui.wcadmin.UpgradeAction;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.ui.wcadmin.UpgradeAction;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.actions.SystemAction;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Keeps some information about working copies as:
@@ -89,7 +88,7 @@ public final class WorkingCopyAttributesCache {
 
     }
 
-    public void logSuppressed (SVNClientException ex, File file) throws SVNClientException {
+    public void logSuppressed (SVNClientException ex, VCSFileProxy file) throws SVNClientException {
         if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
             logUnsupportedWC(ex, file);
         } else if (SvnClientExceptionHandler.isPartOfNewerWC(ex.getMessage())) {
@@ -121,7 +120,7 @@ public final class WorkingCopyAttributesCache {
      * @param file
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
-    private void logUnsupportedWC(final SVNClientException ex, File file) throws SVNClientException {
+    private void logUnsupportedWC(final SVNClientException ex, VCSFileProxy file) throws SVNClientException {
         logWC(ex, file, unsupportedWorkingCopies);
     }
 
@@ -133,11 +132,11 @@ public final class WorkingCopyAttributesCache {
      * @param file
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
-    private void logTooOldClient (final SVNClientException ex, File file) throws SVNClientException {
+    private void logTooOldClient (final SVNClientException ex, VCSFileProxy file) throws SVNClientException {
         logWC(ex, file, tooOldClientForWorkingCopies);
     }
 
-    private void logTooOldWC (final SVNClientException ex, File file) throws SVNClientException {
+    private void logTooOldWC (final SVNClientException ex, VCSFileProxy file) throws SVNClientException {
         logWC(ex, file, tooOldWorkingCopies);
     }
 
@@ -152,12 +151,12 @@ public final class WorkingCopyAttributesCache {
         }
     }
 
-    private void logWC (final SVNClientException ex, File file, HashSet<String> loggedWCs) throws SVNClientException {
-        String fileName = file.getAbsolutePath();
+    private void logWC (final SVNClientException ex, VCSFileProxy file, HashSet<String> loggedWCs) throws SVNClientException {
+        String fileName = file.getPath();
         if (!isLogged(fileName, loggedWCs)) {
-            final File topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
+            final VCSFileProxy topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
             synchronized (loggedWCs) {
-                loggedWCs.add(topManaged.getAbsolutePath());
+                loggedWCs.add(topManaged.getPath());
             }
             Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                 @Override
@@ -194,11 +193,11 @@ public final class WorkingCopyAttributesCache {
     /**
      * Returns true if the topmost root for the given file is logged just right now and has not been already logged before, false if has been already logged.
      */
-    public boolean logAskedToUpgrade (File file) {
-        if (!isLogged(file.getAbsolutePath(), askedToUpgradeWorkingCopies)) {
-            final File topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
+    public boolean logAskedToUpgrade (VCSFileProxy file) {
+        if (!isLogged(file.getPath(), askedToUpgradeWorkingCopies)) {
+            final VCSFileProxy topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
             synchronized (askedToUpgradeWorkingCopies) {
-                askedToUpgradeWorkingCopies.add(topManaged.getAbsolutePath());
+                askedToUpgradeWorkingCopies.add(topManaged.getPath());
             }
             return true;
         } else {

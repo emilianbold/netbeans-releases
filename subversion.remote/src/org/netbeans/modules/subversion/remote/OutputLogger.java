@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,12 +34,14 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -53,17 +49,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.api.io.IOProvider;
+import org.netbeans.api.io.InputOutput;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -143,7 +140,9 @@ public class OutputLogger implements ISVNNotifyListener {
     
     @Override
     public void logError(final String message) {
-        if (message == null) return;
+        if (message == null) {
+            return;
+        }
         rp.post(new Runnable() {
             @Override
             public void run() {                
@@ -170,12 +169,12 @@ public class OutputLogger implements ISVNNotifyListener {
     }
     
     @Override
-    public void onNotify(File path, SVNNodeKind kind) {
+    public void onNotify(VCSFileProxy path, SVNNodeKind kind) {
         //logln(" file " + path + ", kind " + kind);
     }
     
     @Override
-    public void setCommand(final int command) {
+    public void setCommand(final ISVNNotifyListener.Command command) {
         rp.post(new Runnable() {
             @Override
             public void run() {        
@@ -306,9 +305,9 @@ public class OutputLogger implements ISVNNotifyListener {
         @Override
         public void logRevision(long revision, String path) { }
         @Override
-        public void onNotify(File path, SVNNodeKind kind) { }
+        public void onNotify(VCSFileProxy path, SVNNodeKind kind) { }
         @Override
-        public void setCommand(int command) { }
+        public void setCommand(ISVNNotifyListener.Command command) { }
         @Override
         public void closeLog() { }
         @Override
@@ -316,10 +315,10 @@ public class OutputLogger implements ISVNNotifyListener {
     }
 
     private static class OpenFileOutputListener implements OutputListener {
-        private final File f;
+        private final VCSFileProxy f;
         private final int filePathStartPos;
 
-        public OpenFileOutputListener(File f, int filePathStartPos) {
+        public OpenFileOutputListener(VCSFileProxy f, int filePathStartPos) {
             this.f = f;
             this.filePathStartPos = filePathStartPos;
         }
@@ -330,7 +329,7 @@ public class OutputLogger implements ISVNNotifyListener {
         @Override
         public void outputLineAction(OutputEvent ev) {
             Subversion.LOG.log(Level.FINE, "Opeining file [{0}]", f);           // NOI18N
-            new OpenInEditorAction(new File[] {f}).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, f.getAbsolutePath()));
+            new OpenInEditorAction(new VCSFileProxy[] {f}).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, f.getPath()));
         }
 
         @Override

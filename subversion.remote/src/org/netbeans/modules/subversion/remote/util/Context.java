@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,16 +34,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote.util;
 
-package org.netbeans.modules.subversion.util;
-
-import org.netbeans.modules.versioning.spi.VersioningSupport;
-
-import java.io.File;
 import java.io.Serializable;
-import java.util.*;
-import org.netbeans.modules.versioning.util.Utils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 
 /**
  * Encapsulates context of an action. There are two ways in which context may be defined:
@@ -64,23 +64,23 @@ public class Context implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private final List<File> filteredFiles;
-    private final List<File> rootFiles;
-    private final List<File> exclusions;
+    private final List<VCSFileProxy> filteredFiles;
+    private final List<VCSFileProxy> rootFiles;
+    private final List<VCSFileProxy> exclusions;
 
-    public Context(List<File> filteredFiles, List<File> rootFiles, List<File> exclusions) {
+    public Context(List<VCSFileProxy> filteredFiles, List<VCSFileProxy> rootFiles, List<VCSFileProxy> exclusions) {
         this.filteredFiles = filteredFiles;
         this.rootFiles = rootFiles;
         this.exclusions = exclusions;
         while (normalize());
     }
 
-    public Context(File file) {
-        this(new File [] { file });
+    public Context(VCSFileProxy file) {
+        this(new VCSFileProxy [] { file });
     }
 
-    public Context(File [] files) {
-        List<File> list = new ArrayList<File>(files.length);
+    public Context(VCSFileProxy [] files) {
+        List<VCSFileProxy> list = new ArrayList<VCSFileProxy>(files.length);
         list.addAll(Arrays.asList(files));
         removeDuplicates(list);
         this.filteredFiles = list;
@@ -89,10 +89,10 @@ public class Context implements Serializable {
     }
 
     private boolean normalize() {
-        for (Iterator<File> i = rootFiles.iterator(); i.hasNext();) {
-            File root = i.next();
-            for (Iterator<File> j = exclusions.iterator(); j.hasNext();) {
-                File exclusion = j.next();
+        for (Iterator<VCSFileProxy> i = rootFiles.iterator(); i.hasNext();) {
+            VCSFileProxy root = i.next();
+            for (Iterator<VCSFileProxy> j = exclusions.iterator(); j.hasNext();) {
+                VCSFileProxy exclusion = j.next();
                 if (Utils.isAncestorOrEqual(exclusion, root)) {
                     j.remove();
                     exclusionRemoved(exclusion, root);
@@ -105,13 +105,15 @@ public class Context implements Serializable {
         return false;
     }
 
-    private void removeDuplicates(List<File> files) {
-        List<File> newFiles = new ArrayList<File>();
-        outter: for (Iterator<File> i = files.iterator(); i.hasNext();) {
-            File file = i.next();
-            for (Iterator<File> j = newFiles.iterator(); j.hasNext();) {
-                File includedFile = j.next();
-                if (Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) continue outter;
+    private void removeDuplicates(List<VCSFileProxy> files) {
+        List<VCSFileProxy> newFiles = new ArrayList<VCSFileProxy>();
+        outter: for (Iterator<VCSFileProxy> i = files.iterator(); i.hasNext();) {
+            VCSFileProxy file = i.next();
+            for (Iterator<VCSFileProxy> j = newFiles.iterator(); j.hasNext();) {
+                VCSFileProxy includedFile = j.next();
+                if (Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) {
+                    continue outter;
+                }
                 if (Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
                     j.remove();
                 }
@@ -122,22 +124,24 @@ public class Context implements Serializable {
         files.addAll(newFiles);
     }
     
-    private void exclusionRemoved(File exclusion, File root) {
-        File [] exclusionChildren = exclusion.listFiles();
-        if (exclusionChildren == null) return;
+    private void exclusionRemoved(VCSFileProxy exclusion, VCSFileProxy root) {
+        VCSFileProxy [] exclusionChildren = exclusion.listFiles();
+        if (exclusionChildren == null) {
+            return;
+        }
         for (int i = 0; i < exclusionChildren.length; i++) {
-            File child = exclusionChildren[i];
+            VCSFileProxy child = exclusionChildren[i];
             if (!Utils.isAncestorOrEqual(root, child)) {
                 exclusions.add(child);
             }
         }
     }
 
-    public List<File> getRoots() {
+    public List<VCSFileProxy> getRoots() {
         return rootFiles;
     }
 
-    public List<File> getExclusions() {
+    public List<VCSFileProxy> getExclusions() {
         return exclusions;
     }
 
@@ -148,20 +152,20 @@ public class Context implements Serializable {
      *  
      * @return files to operate on
      */ 
-    public File [] getFiles() {
-        return filteredFiles.toArray(new File[filteredFiles.size()]);
+    public VCSFileProxy [] getFiles() {
+        return filteredFiles.toArray(new VCSFileProxy[filteredFiles.size()]);
     }
 
-    public File[] getRootFiles() {
-        return rootFiles.toArray(new File[rootFiles.size()]);
+    public VCSFileProxy[] getRootFiles() {
+        return rootFiles.toArray(new VCSFileProxy[rootFiles.size()]);
     }
     
-    public boolean contains(File file) {
+    public boolean contains(VCSFileProxy file) {
         outter : for (Iterator i = rootFiles.iterator(); i.hasNext();) {
-            File root = (File) i.next();
+            VCSFileProxy root = (VCSFileProxy) i.next();
             if (SvnUtils.isParentOrEqual(root, file)) {
                 for (Iterator j = exclusions.iterator(); j.hasNext();) {
-                    File excluded = (File) j.next();
+                    VCSFileProxy excluded = (VCSFileProxy) j.next();
                     if (Utils.isAncestorOrEqual(excluded, file)) {
                         continue outter;
                     }
@@ -172,7 +176,7 @@ public class Context implements Serializable {
         return false;
     }
 
-    public static final List<File> getEmptyList() {
+    public static final List<VCSFileProxy> getEmptyList() {
         return Collections.emptyList();
     }
 }

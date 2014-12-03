@@ -41,11 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.config;
+package org.netbeans.modules.subversion.remote.config;
 
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -55,8 +54,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.versioning.util.FileUtils;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Handles the credential or property files used by Subversion.
@@ -71,14 +70,14 @@ public class KVFile {
     /** a Map holding the keys*/
     private Map<String, Key> keyMap;
     /** the credential or property file */
-    private final File file;            
+    private final VCSFileProxy file;            
 
     /**
      * Creates a new instance
      * 
      * @parameter file the credential or property file
      */
-    public KVFile(File file) {
+    public KVFile(VCSFileProxy file) {
         this.file = file;
         try {
             if(file.exists()) {
@@ -207,11 +206,11 @@ public class KVFile {
             if(getMap().size() > 0) {
                 // there are already some key-value pairs ->
                 // something in the file structure seems to be wrong
-                throw new EOFException(file.getAbsolutePath());
+                throw new EOFException(file.getPath());
             }
             // otherwise skip the exception, could be just an empty file
         } catch (NumberFormatException nfe) {
-            throw new IOException(file.getAbsolutePath(), nfe);
+            throw new IOException(file.getPath(), nfe);
         } finally {
             try {                 
                 if (is != null) {        
@@ -252,10 +251,10 @@ public class KVFile {
         store(file);
     }
     
-    public void store(File file) throws IOException {
+    public void store(VCSFileProxy file) throws IOException {
         OutputStream os = null; 
         try {
-            File parent = file.getParentFile();
+            VCSFileProxy parent = file.getParentFile();
             if(parent!=null && !parent.exists()) {
                 parent.mkdirs();
             }
@@ -291,7 +290,7 @@ public class KVFile {
         }        
     }    
     
-    protected File getFile() {
+    protected VCSFileProxy getFile() {
         return file;
     }
 
@@ -318,6 +317,7 @@ public class KVFile {
         public String getName() {
             return name;
         }                
+        @Override
         public boolean equals(Object obj) {
             if( !(obj instanceof Key) ) {
                 return false;
@@ -325,12 +325,14 @@ public class KVFile {
             Key key = (Key) obj;
             return key.getIndex() == getIndex() && key.getName().equals(getName());
         }      
+        @Override
         public int hashCode() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(getName());            
             sb.append(getIndex());
             return sb.toString().hashCode();
         }
+        @Override
         public int compareTo(Object obj) {
             if( !(obj instanceof Key) ) {
                 return 0;
@@ -343,6 +345,7 @@ public class KVFile {
             }    
             return 0;
         }
+        @Override
         public String toString() {
             return name;
         }

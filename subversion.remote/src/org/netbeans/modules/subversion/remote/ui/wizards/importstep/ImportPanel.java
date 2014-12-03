@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.wizards.importstep;
+package org.netbeans.modules.subversion.remote.ui.wizards.importstep;
 
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 
@@ -92,7 +92,7 @@ public class ImportPanel extends javax.swing.JPanel {
 
         progressPanel.setLayout(null);
 
-        btnRecentMessages.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/recent_messages.png"))); // NOI18N
+        btnRecentMessages.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/recent_messages.png"))); // NOI18N
         btnRecentMessages.setToolTipText(org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_ImportPanel_RecentMessages")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

@@ -42,20 +42,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
-import java.io.*;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.parser.ParserSvnInfo;
-import org.netbeans.modules.subversion.client.parser.SvnWcUtils;
-import org.netbeans.modules.subversion.config.KVFile;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNProperty;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.client.parser.ParserSvnInfo;
+import org.netbeans.modules.subversion.remote.client.parser.SvnWcUtils;
+import org.netbeans.modules.subversion.remote.config.KVFile;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  * Implements properties access that is not supported
@@ -87,10 +88,10 @@ import org.tigris.subversion.svnclientadapter.SVNRevision;
  */
 public final class PropertiesClient {
 
-    private final File file;
+    private final VCSFileProxy file;
 
     /** Creates a new instance of PropertiesClient */
-    public PropertiesClient(File file) {
+    public PropertiesClient(VCSFileProxy file) {
         assert file != null;
         this.file = file;
     }

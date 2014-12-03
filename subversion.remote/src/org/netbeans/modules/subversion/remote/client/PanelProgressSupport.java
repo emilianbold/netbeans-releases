@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.client;
+package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.BorderLayout;
 import javax.swing.JComponent;
@@ -60,7 +60,7 @@ public abstract class PanelProgressSupport extends SvnProgressSupport implements
 
     private JPanel progressComponent;
     private JLabel progressLabel;
-    private JPanel panel;
+    private final JPanel panel;
 
     /**
      *
@@ -76,6 +76,7 @@ public abstract class PanelProgressSupport extends SvnProgressSupport implements
             super.startProgress();
         } else
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 ProgressHandle progress = getProgressHandle(); // NOI18N
                 JComponent bar = ProgressHandleFactory.createProgressComponent(progress);
@@ -99,6 +100,7 @@ public abstract class PanelProgressSupport extends SvnProgressSupport implements
             super.finnishProgress();
         } else
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 PanelProgressSupport.super.finnishProgress();
                 panel.remove(progressComponent);
@@ -111,7 +113,9 @@ public abstract class PanelProgressSupport extends SvnProgressSupport implements
 
     @Override
     public void setDisplayName(String displayName) {
-        if (progressLabel != null) progressLabel.setText(displayName);
+        if (progressLabel != null) {
+            progressLabel.setText(displayName);
+        }
         super.setDisplayName(displayName);
     }
 }

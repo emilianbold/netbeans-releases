@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.wizards.checkoutstep;
+package org.netbeans.modules.subversion.remote.ui.wizards.checkoutstep;
 
 import javax.swing.GroupLayout;
 import java.awt.Component;
@@ -60,7 +60,7 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 
 /**
  *
@@ -74,14 +74,10 @@ public class CheckoutPanel extends JPanel {
      */
     public CheckoutPanel() {
         initComponents();
-        if (SvnClientFactory.isSvnKit()) {
-            workingCopyFormat.setVisible(false);
-        } else {
-            boolean newFormat = SvnClientFactory.isJavaHl() || SvnClientFactory.isCLI() && !SvnClientFactory.isCLIOldFormat();
-            workingCopyFormat.setText(getString(newFormat ? "MSG_WorkingCopyFormat17" : "MSG_WorkingCopyFormat16")); //NOI18N
-            preferOldFormatCheckBox.setSelected(false);
-            preferOldFormatCheckBox.setVisible(false);
-        }
+        boolean newFormat = SvnClientFactory.isCLI() && !SvnClientFactory.isCLIOldFormat();
+        workingCopyFormat.setText(getString(newFormat ? "MSG_WorkingCopyFormat17" : "MSG_WorkingCopyFormat16")); //NOI18N
+        preferOldFormatCheckBox.setSelected(false);
+        preferOldFormatCheckBox.setVisible(false);
     }
 
     // <editor-fold defaultstate="collapsed" desc="UI Definition Code">

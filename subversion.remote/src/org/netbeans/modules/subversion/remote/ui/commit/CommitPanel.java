@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.subversion.remote.ui.commit;
 
 import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 import javax.swing.LayoutStyle;
@@ -51,7 +51,6 @@ import org.netbeans.modules.versioning.util.common.SectionButton;
 import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import java.awt.Component;
 import java.awt.Container;
-import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.versioning.hooks.SvnHook;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -71,7 +70,6 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -92,14 +90,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.hooks.SvnHookContext;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.ui.diff.MultiDiffPanel;
-import org.netbeans.modules.subversion.ui.diff.Setup;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.AutoResizingPanel;
-import org.netbeans.modules.versioning.util.PlaceholderPanel;
-import org.netbeans.modules.versioning.util.TemplateSelector;
-import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -115,6 +105,16 @@ import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.ui.diff.MultiDiffPanel;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.AutoResizingPanel;
+import org.netbeans.modules.versioning.util.PlaceholderPanel;
+import org.netbeans.modules.versioning.util.TemplateSelector;
+import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 import org.openide.awt.TabbedPaneFactory;
 
 /**
@@ -131,9 +131,9 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     final JLabel filesLabel = new JLabel();
     private final JPanel filesPanel = new JPanel(new GridLayout(1, 1));
-    private SectionButton filesSectionButton = new SectionButton();
+    private final SectionButton filesSectionButton = new SectionButton();
     private final JPanel filesSectionPanel = new JPanel();
-    private SectionButton hooksSectionButton = new SectionButton();
+    private final SectionButton hooksSectionButton = new SectionButton();
     private final PlaceholderPanel hooksSectionPanel = new PlaceholderPanel();
     private final JLabel jLabel1 = new JLabel();
     private final JLabel jLabel2 = new JLabel();
@@ -147,7 +147,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private Collection<SvnHook> hooks = Collections.emptyList();
     private SvnHookContext hookContext;
     private JTabbedPane tabbedPane;
-    private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
+    private final HashMap<VCSFileProxy, MultiDiffPanel> displayedDiffs = new HashMap<VCSFileProxy, MultiDiffPanel>();
     private UndoRedoSupport um;
     private final Preferences prefs;
 
@@ -365,10 +365,10 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jLabel1.setLabelFor(messageTextArea);
         Mnemonics.setLocalizedText(jLabel1, getMessage("CTL_CommitForm_Message")); // NOI18N
 
-        recentLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/recent_messages.png"))); // NOI18N
+        recentLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/recent_messages.png"))); // NOI18N
         recentLink.setToolTipText(getMessage("CTL_CommitForm_RecentMessages")); // NOI18N
 
-        templateLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/load_template.png"))); // NOI18N
+        templateLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/load_template.png"))); // NOI18N
         templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N
 
         messageTextArea.setColumns(70);    //this determines the preferred width of the whole dialog
@@ -504,7 +504,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == tabbedPane && tabbedPane.getSelectedComponent() == basePanel) {
-            commitTable.setModifiedFiles(new HashSet<File>(getModifiedFiles().keySet()));
+            commitTable.setModifiedFiles(new HashSet<VCSFileProxy>(getModifiedFiles().keySet()));
         }
     }
 
@@ -513,7 +513,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             if (tabbedPane == null) {
                 initializeTabs();
             }
-            File file = node.getFile();
+            VCSFileProxy file = node.getFile();
             MultiDiffPanel panel = displayedDiffs.get(file);
             if (panel == null) {
                 panel = new MultiDiffPanel(file, Setup.REVISION_BASE, Setup.REVISION_CURRENT, false); // switch the last parameter to true if editable diff works poorly
@@ -544,7 +544,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
      */
     EditorCookie[] getEditorCookies() {
         LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
-        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+        for (Map.Entry<VCSFileProxy, MultiDiffPanel> e : displayedDiffs.entrySet()) {
             EditorCookie[] cookies = e.getValue().getEditorCookies(true);
             if (cookies.length > 0) {
                 allCookies.add(cookies[0]);
@@ -592,9 +592,9 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
-    private HashMap<File, SaveCookie> getModifiedFiles () {
-        HashMap<File, SaveCookie> modifiedFiles = new HashMap<File, SaveCookie>();
-        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+    private HashMap<VCSFileProxy, SaveCookie> getModifiedFiles () {
+        HashMap<VCSFileProxy, SaveCookie> modifiedFiles = new HashMap<VCSFileProxy, SaveCookie>();
+        for (Map.Entry<VCSFileProxy, MultiDiffPanel> e : displayedDiffs.entrySet()) {
             SaveCookie[] cookies = e.getValue().getSaveCookies(false);
             if (cookies.length > 0) {
                 modifiedFiles.put(e.getKey(), cookies[0]);

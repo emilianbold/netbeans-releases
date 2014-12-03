@@ -42,21 +42,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffController;
-import org.netbeans.modules.subversion.*;
 import org.openide.util.NbBundle;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Represents on DIFF setup.
@@ -110,7 +111,7 @@ public final class Setup extends AbstractDiffSetup {
     public static final String REVISION_CURRENT = "LOCAL"; // NOI18N
     public static final String REVISION_HEAD    = "HEAD"; // NOI18N
     
-    private final File      baseFile;
+    private final VCSFileProxy      baseFile;
     
     /**
      * Name of the file's property if the setup represents a property diff setup, null otherwise. 
@@ -129,7 +130,7 @@ public final class Setup extends AbstractDiffSetup {
 
     private String    title;
 
-    public Setup(File baseFile, String propertyName, int type) {
+    public Setup(VCSFileProxy baseFile, String propertyName, int type) {
         this.baseFile = baseFile;
         this.propertyName = propertyName;
         info = Subversion.getInstance().getStatusCache().getStatus(baseFile);
@@ -256,7 +257,7 @@ public final class Setup extends AbstractDiffSetup {
      * @param firstRevision first revision or <code>null</code> for inital.
      * @param secondRevision second revision
      */
-    public Setup(File baseFile, String firstRevision, String secondRevision, final boolean forceNonEditable) {
+    public Setup(VCSFileProxy baseFile, String firstRevision, String secondRevision, final boolean forceNonEditable) {
         this.baseFile = baseFile;
         this.propertyName = null;
         this.firstRevision = firstRevision;
@@ -277,7 +278,7 @@ public final class Setup extends AbstractDiffSetup {
      * @param firstRevision first revision
      * @param secondRevision second revision
      */
-    public Setup (File baseFile, SVNUrl repoUrl, SVNUrl firstFileUrl, String firstRevision, String firstTitle,
+    public Setup (VCSFileProxy baseFile, SVNUrl repoUrl, SVNUrl firstFileUrl, String firstRevision, String firstTitle,
             SVNUrl secondFileUrl, String secondRevision, String secondTitle, FileInformation info) {
         this.baseFile = baseFile;
         this.propertyName = null;
@@ -300,7 +301,7 @@ public final class Setup extends AbstractDiffSetup {
      * @param baseFile
      * @param status remote status of the file
      */
-    public Setup(File baseFile, ISVNStatus status) {
+    public Setup(VCSFileProxy baseFile, ISVNStatus status) {
         this.baseFile = baseFile;
         this.propertyName = null;
         this.secondRevision = null;
@@ -328,7 +329,7 @@ public final class Setup extends AbstractDiffSetup {
         return propertyName;
     }
 
-    public File getBaseFile() {
+    public VCSFileProxy getBaseFile() {
         return baseFile;
     }
 

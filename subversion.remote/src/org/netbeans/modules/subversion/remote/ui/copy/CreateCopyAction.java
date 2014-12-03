@@ -42,27 +42,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -108,11 +108,13 @@ public class CreateCopyAction extends ContextAction {
         
         Context ctx = getContext(nodes);
 
-        final File[] roots = SvnUtils.getActionRoots(ctx);
-        if(roots == null || roots.length == 0) return;
-        File[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
+        final VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx);
+        if(roots == null || roots.length == 0) {
+            return;
+        }
+        VCSFileProxy[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         
-        File interestingFile;
+        VCSFileProxy interestingFile;
         if(roots.length == 1) {
             interestingFile = roots[0];
         } else {
@@ -137,7 +139,7 @@ public class CreateCopyAction extends ContextAction {
         performCopy(createCopy, rp, nodes, roots);
     }
 
-    private void performCopy(final CreateCopy createCopy, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
+    private void performCopy(final CreateCopy createCopy, final RequestProcessor rp, final Node[] nodes, final VCSFileProxy[] roots) {
         if (!createCopy.showDialog()) {
             return;
         }
@@ -197,7 +199,7 @@ public class CreateCopyAction extends ContextAction {
      * @param support
      * @param roots
      */
-    private void performCopy(final CreateCopy createCopy, final SvnProgressSupport support, final File[] roots) {
+    private void performCopy(final CreateCopy createCopy, final SvnProgressSupport support, final VCSFileProxy[] roots) {
         if (roots == null) {
             return;
         }
@@ -218,12 +220,12 @@ public class CreateCopyAction extends ContextAction {
 
             if(createCopy.isLocal()) {
                 if(roots.length == 1) {
-                    client.copy(new File[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, true);
+                    client.copy(new VCSFileProxy[] {createCopy.getLocalFile()}, toRepositoryFile.getFileUrl(), createCopy.getMessage(), true, true);
                 } else {
                     // more roots => copying a multifile dataobject - see getActionRoots(ctx)
-                    for (File root : roots) {
+                    for (VCSFileProxy root : roots) {
                         SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
-                        client.copy(new File[] {root}, toUrl, createCopy.getMessage(), true, true);
+                        client.copy(new VCSFileProxy[] {root}, toUrl, createCopy.getMessage(), true, true);
                     }
                 }
             } else {
@@ -235,7 +237,7 @@ public class CreateCopyAction extends ContextAction {
                             fromRepositoryFile.getRevision(), true);
                 } else {
                     // more roots => copying a multifile dataobject - see getActionRoots(ctx)
-                    for (File root : roots) {
+                    for (VCSFileProxy root : roots) {
                         SVNUrl fromUrl = SvnUtils.getRepositoryRootUrl(root).appendPath(SvnUtils.getRepositoryPath(root));
                         SVNUrl toUrl = getToRepositoryFile(toRepositoryFile, root).getFileUrl();
                         client.copy(fromUrl, toUrl, createCopy.getMessage(), SVNRevision.HEAD, true);
@@ -249,14 +251,14 @@ public class CreateCopyAction extends ContextAction {
 
             if(createCopy.switchTo()) {
                 final boolean rootsPresent = roots.length > 1;
-                File[] indexingRoots = rootsPresent ? roots : new File[] { createCopy.getLocalFile() };
+                VCSFileProxy[] indexingRoots = rootsPresent ? roots : new VCSFileProxy[] { createCopy.getLocalFile() };
                 SvnUtils.runWithoutIndexing(new Callable<Void>() {
                     @Override
                     public Void call () throws Exception {
                         if (rootsPresent) {
                             // more roots menas we copyied a multifile dataobject - see getActionRoots(ctx)
                             // lets also switch all of them
-                            for (File file : roots) {
+                            for (VCSFileProxy file : roots) {
                                 SwitchToAction.performSwitch(getToRepositoryFile(toRepositoryFile, file), file, support);
                             }
                         } else {
@@ -271,7 +273,7 @@ public class CreateCopyAction extends ContextAction {
         }
     }
 
-    private RepositoryFile getToRepositoryFile(RepositoryFile toRepositoryFile, File file) {
+    private RepositoryFile getToRepositoryFile(RepositoryFile toRepositoryFile, VCSFileProxy file) {
         return toRepositoryFile.replaceLastSegment(file.getName(), 0);
     }
 }

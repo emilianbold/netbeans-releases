@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,40 +34,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.subversion.remote;
 
-package org.netbeans.modules.subversion;
-
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.FilenameFilter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DateFormat;
-import java.util.Map.Entry;
-import java.util.regex.*;
-import org.netbeans.modules.versioning.util.ListenersSupport;
-import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.turbo.Turbo;
-import org.netbeans.modules.turbo.CustomProviders;
-import org.openide.filesystems.FileUtil;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.ISVNLock;
+import org.netbeans.modules.subversion.remote.api.ISVNProperty;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.turbo.CustomProviders;
+import org.netbeans.modules.turbo.Turbo;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
+import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
-import org.tigris.subversion.svnclientadapter.*;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNRevision.Number;
 
 /**
  * Central part of Subversion status management, deduces and caches statuses of files under version control.
@@ -99,7 +113,7 @@ public class FileStatusCache {
     /**
      * A special map saying that no file inside the folder is managed.
      */ 
-    private static final Map<File, FileInformation> NOT_MANAGED_MAP = new NotManagedMap();
+    private static final Map<VCSFileProxy, FileInformation> NOT_MANAGED_MAP = new NotManagedMap();
        
     public static final RepositoryStatus REPOSITORY_STATUS_UNKNOWN  = null;
 
@@ -152,7 +166,7 @@ public class FileStatusCache {
     private Subversion                  svn;
 
     private RequestProcessor rp = new RequestProcessor("Subversion - file status refresh", 1); // NOI18N    
-    private final LinkedHashSet<File> filesToRefresh = new LinkedHashSet<File>();
+    private final LinkedHashSet<VCSFileProxy> filesToRefresh = new LinkedHashSet<VCSFileProxy>();
     private RequestProcessor.Task refreshTask;
     private final FileLabelCache labelsCache;
 
@@ -184,11 +198,11 @@ public class FileStatusCache {
                     // logging
                     startTime = System.currentTimeMillis();
                 }
-                File fileToRefresh;
+                VCSFileProxy fileToRefresh;
                 do {
                     fileToRefresh = null;
                     synchronized(filesToRefresh) {
-                        Iterator<File> it = filesToRefresh.iterator();
+                        Iterator<VCSFileProxy> it = filesToRefresh.iterator();
                         if (it.hasNext()) {
                             fileToRefresh = it.next();
                             it.remove();
@@ -205,7 +219,7 @@ public class FileStatusCache {
                 } while (fileToRefresh != null);
                 if (logEnabled) {
                     LOG.log(Level.FINE, "refreshTask lasted {0} ms for {1} files, {2} files refreshed so far", new Object[] { //NOI18N
-                        new Long(System.currentTimeMillis() - startTime), new Long(files), new Long(refreshedFilesCount)});
+                        System.currentTimeMillis() - startTime, files, refreshedFilesCount});
                 }
             }
         });
@@ -224,7 +238,7 @@ public class FileStatusCache {
     public boolean containsFiles(Context context, int includeStatus, boolean addExcluded) {
         long ts = System.currentTimeMillis();
         try {
-            File[] roots = context.getRootFiles();
+            VCSFileProxy[] roots = context.getRootFiles();
             // check all files underneath the roots
             return containsFiles(roots, includeStatus, addExcluded);
         } finally {
@@ -241,10 +255,10 @@ public class FileStatusCache {
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return true if there are any files with the given status otherwise false
      */
-    public boolean containsFiles(Set<File> rootFiles, int includeStatus, boolean addExcluded) {
+    public boolean containsFiles(Set<VCSFileProxy> rootFiles, int includeStatus, boolean addExcluded) {
         long ts = System.currentTimeMillis();
         try {
-            File[] roots = rootFiles.toArray(new File[rootFiles.size()]);
+            VCSFileProxy[] roots = rootFiles.toArray(new VCSFileProxy[rootFiles.size()]);
             return containsFiles(roots, includeStatus, addExcluded);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
@@ -253,11 +267,11 @@ public class FileStatusCache {
         }
     }
 
-    private boolean containsFiles(File[] roots, int includeStatus, boolean addExcluded) {
+    private boolean containsFiles(VCSFileProxy[] roots, int includeStatus, boolean addExcluded) {
         // get as deep as possible, so Turbo.readEntry() - which accesses io - gets called the least times
         // in such case we may end up with just access to io - getting the status of indeed modified file
         // the other way around it would check status for all directories along the path
-        for (File root : roots) {
+        for (VCSFileProxy root : roots) {
             if(containsFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded)) {
                 return true;
             }
@@ -270,23 +284,23 @@ public class FileStatusCache {
         return false;
     }
 
-    private boolean containsFilesIntern(File[] indexRoots, int includeStatus, boolean recursively, boolean addExcluded) {
+    private boolean containsFilesIntern(VCSFileProxy[] indexRoots, int includeStatus, boolean recursively, boolean addExcluded) {
         if(indexRoots == null || indexRoots.length == 0) {
             return false;
         }
         // get as deep as possible, so Turbo.readEntry() - which accesses io - gets called the least times
         // in such case we may end up with just access to io - getting the status of indeed modified file
         // the other way around it would check status for all directories along the path
-        for (File root : indexRoots) {
-            File[] indexValues = cacheProvider.getIndexValues(root, includeStatus);
+        for (VCSFileProxy root : indexRoots) {
+            VCSFileProxy[] indexValues = cacheProvider.getIndexValues(root, includeStatus);
             if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded)) {
                 return true;
             }
         }
-        for (File root : indexRoots) {
+        for (VCSFileProxy root : indexRoots) {
             FileInformation fi = getCachedStatus(root);
             if( (fi != null && (fi.getStatus() & includeStatus) != 0) &&
-                (addExcluded || !SvnModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath())))
+                (addExcluded || !SvnModuleConfig.getDefault().isExcludedFromCommit(root.getPath())))
             {
                 return true;
             }
@@ -303,9 +317,9 @@ public class FileStatusCache {
      * @param dir folder to list
      * @return
      */
-    public File [] listFiles(File dir) {
-        Set<File> files = getScannedFiles(dir).keySet();
-        return files.toArray(new File[files.size()]);
+    public VCSFileProxy [] listFiles(VCSFileProxy dir) {
+        Set<VCSFileProxy> files = getScannedFiles(dir).keySet();
+        return files.toArray(new VCSFileProxy[files.size()]);
     }
 
     /**
@@ -318,15 +332,15 @@ public class FileStatusCache {
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */
-    public File [] listFiles(File[] roots, int includeStatus) { 
+    public VCSFileProxy [] listFiles(VCSFileProxy[] roots, int includeStatus) { 
         long ts = System.currentTimeMillis();
         try {
-            Set<File> set = new HashSet<File>();
+            Set<VCSFileProxy> set = new HashSet<VCSFileProxy>();
 
             // get all files with given status underneath the roots files;
             // do it recusively if root isn't a flat folder
-            for (File root : roots) {
-                Set<File> files =
+            for (VCSFileProxy root : roots) {
+                Set<VCSFileProxy> files =
                         listFilesIntern(
                             cacheProvider.getIndexValues(root, includeStatus),
                             includeStatus,
@@ -337,7 +351,7 @@ public class FileStatusCache {
             // check also the root files for status and add them eventualy
             set.addAll(listFilesIntern(roots, includeStatus, false));
 
-            return set.toArray(new File[set.size()]);
+            return set.toArray(new VCSFileProxy[set.size()]);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, " listFiles(File[], int, boolean) took {0}", (System.currentTimeMillis() - ts));
@@ -355,11 +369,11 @@ public class FileStatusCache {
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */
-    public File [] listFiles(Context context, int includeStatus) {
+    public VCSFileProxy [] listFiles(Context context, int includeStatus) {
         long ts = System.currentTimeMillis();
         try {
-            Set<File> set = new HashSet<File>();
-            File [] roots = context.getRootFiles();
+            Set<VCSFileProxy> set = new HashSet<VCSFileProxy>();
+            VCSFileProxy [] roots = context.getRootFiles();
 
             // list all files applying to the status with
             // root being their ancestor or equal
@@ -367,16 +381,16 @@ public class FileStatusCache {
 
             // filter exclusions
             if (context.getExclusions().size() > 0) {
-                for (File excluded : context.getExclusions()) {
+                for (VCSFileProxy excluded : context.getExclusions()) {
                     for (Iterator i = set.iterator(); i.hasNext();) {
-                        File file = (File) i.next();
+                        VCSFileProxy file = (VCSFileProxy) i.next();
                         if (SvnUtils.isParentOrEqual(excluded, file)) {
                             i.remove();
                         }
                     }
                 }
             }
-            return set.toArray(new File[set.size()]);
+            return set.toArray(new VCSFileProxy[set.size()]);
         } finally {
             if(LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, " listFiles(Context, int) took {0}", (System.currentTimeMillis() - ts));
@@ -384,12 +398,12 @@ public class FileStatusCache {
         }
     }
 
-    private Set<File> listFilesIntern(File[] roots, int includeStatus, boolean recursively) {
+    private Set<VCSFileProxy> listFilesIntern(VCSFileProxy[] roots, int includeStatus, boolean recursively) {
         if(roots == null || roots.length == 0) {
             return Collections.emptySet();
         }
-        Set<File> ret = new HashSet<File>();
-        for (File root : roots) {
+        Set<VCSFileProxy> ret = new HashSet<VCSFileProxy>();
+        for (VCSFileProxy root : roots) {
             if(recursively) {
                 ret.addAll(listFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, recursively));
             }
@@ -409,19 +423,25 @@ public class FileStatusCache {
      * @return FileInformation structure containing the file status
      * @see FileInformation
      */ 
-    public FileInformation getStatus(File file) {
-        if (SvnUtils.isAdministrative(file)) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
-        File dir = file.getParentFile();
+    public FileInformation getStatus(VCSFileProxy file) {
+        if (SvnUtils.isAdministrative(file)) {
+            return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        }
+        VCSFileProxy dir = file.getParentFile();
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
         }
         Map files = getScannedFiles(dir);
-        if (files == NOT_MANAGED_MAP) return FILE_INFORMATION_NOTMANAGED;
+        if (files == NOT_MANAGED_MAP) {
+            return FILE_INFORMATION_NOTMANAGED;
+        }
         FileInformation fi = (FileInformation) files.get(file);
         if (fi != null) {
             return fi;            
         }
-        if (!exists(file)) return FILE_INFORMATION_UNKNOWN;
+        if (!exists(file)) {
+            return FILE_INFORMATION_UNKNOWN;
+        }
         if (file.isDirectory()) {
             return refresh(file, REPOSITORY_STATUS_UNKNOWN);
         } else {
@@ -435,10 +455,12 @@ public class FileStatusCache {
      * @param file file to check
      * @return give file's status or null if the file's status is not in cache
      */ 
-    public FileInformation getCachedStatus(File file) {
-        File parent = file.getParentFile();
-        if (parent == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
-        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
+    public FileInformation getCachedStatus(VCSFileProxy file) {
+        VCSFileProxy parent = file.getParentFile();
+        if (parent == null) {
+            return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        }
+        Map<VCSFileProxy, FileInformation> files = (Map<VCSFileProxy, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
         return files != null ? files.get(file) : null;
     }
 
@@ -448,8 +470,8 @@ public class FileStatusCache {
      * 
      * @param files files to be refreshed
      */
-    public void refreshAsync(List<File> files) {
-        refreshAsync(false, files.toArray(new File[files.size()]));
+    public void refreshAsync(List<VCSFileProxy> files) {
+        refreshAsync(false, files.toArray(new VCSFileProxy[files.size()]));
     }
     
     /**
@@ -458,7 +480,7 @@ public class FileStatusCache {
      * 
      * @param files files to be refreshed
      */
-    public void refreshAsync(File... files) {
+    public void refreshAsync(VCSFileProxy... files) {
         refreshAsync(false, files);
     }
     
@@ -469,7 +491,7 @@ public class FileStatusCache {
      * @param files files to be refreshed
      * @param recursively if true all children are also refreshed
      */
-    public void refreshAsync(final boolean recursively, final File... files) {
+    public void refreshAsync(final boolean recursively, final VCSFileProxy... files) {
         if (files == null || files.length == 0) {
             return;
         }
@@ -477,7 +499,7 @@ public class FileStatusCache {
             @Override
             public void run() {
                 synchronized (filesToRefresh) {
-                    for (File file : files) {
+                    for (VCSFileProxy file : files) {
                         if (recursively) {
                             filesToRefresh.addAll(SvnUtils.listManagedRecursively(file));
                         } else {
@@ -497,7 +519,7 @@ public class FileStatusCache {
      * @param file
      * @param repositoryStatus
      */ 
-    public FileInformation refresh(File file, RepositoryStatus repositoryStatus) {
+    public FileInformation refresh(VCSFileProxy file, RepositoryStatus repositoryStatus) {
         return refresh(file, repositoryStatus, false);
     }
     
@@ -509,9 +531,9 @@ public class FileStatusCache {
      * @param ctx context to refresh
      */ 
     public void refreshCached(Context ctx) {
-        File [] files = listFiles(ctx, ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
+        VCSFileProxy [] files = listFiles(ctx, ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED);
         for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+            VCSFileProxy file = files[i];
             refresh(file, REPOSITORY_STATUS_UNKNOWN);
         }
     }
@@ -521,36 +543,38 @@ public class FileStatusCache {
      * 
      * @param root
      */
-    public void refreshRecursively (File root) {
+    public void refreshRecursively (VCSFileProxy root) {
         // refresh the root itself
         FileInformation info = refresh(root, REPOSITORY_STATUS_UNKNOWN);
         // for unignored files, refresh recursively its direct children too
         if (info == null || (info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
-            List<File> files = SvnUtils.listChildren(root);
-            for (File file : files) {
+            List<VCSFileProxy> files = SvnUtils.listChildren(root);
+            for (VCSFileProxy file : files) {
                 refreshRecursively(file);
             }
         }
     }    
     
-    private FileInformation refresh (File file, RepositoryStatus repositoryStatus, boolean forceChangeEvent) {
+    private FileInformation refresh (VCSFileProxy file, RepositoryStatus repositoryStatus, boolean forceChangeEvent) {
         
         boolean refreshDone = false;
         FileInformation current = null;
         FileInformation fi = null;
-        File [] content = null; 
+        VCSFileProxy [] content = null; 
                 
         synchronized (this) {
-            File dir = file.getParentFile();
+            VCSFileProxy dir = file.getParentFile();
             if (dir == null) {
                 return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
             }
-            Map<File, FileInformation> files = getScannedFiles(dir);
-            if (files == NOT_MANAGED_MAP && repositoryStatus == REPOSITORY_STATUS_UNKNOWN) return FILE_INFORMATION_NOTMANAGED;
+            Map<VCSFileProxy, FileInformation> files = getScannedFiles(dir);
+            if (files == NOT_MANAGED_MAP && repositoryStatus == REPOSITORY_STATUS_UNKNOWN) {
+                return FILE_INFORMATION_NOTMANAGED;
+            }
             current = files.get(file);
-            for (Map.Entry<File, FileInformation> e : files.entrySet()) {
-                File fKey = e.getKey();
-                if (fKey.getAbsolutePath().equals(file.getAbsolutePath())) {
+            for (Map.Entry<VCSFileProxy, FileInformation> e : files.entrySet()) {
+                VCSFileProxy fKey = e.getKey();
+                if (fKey.getPath().equals(file.getPath())) {
                     current = e.getValue();
                     break;
                 }
@@ -559,7 +583,7 @@ public class FileStatusCache {
             ISVNStatus status = null;
             boolean symlink = false;
             try {
-                File topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
+                VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
                 symlink = topmost != null && isSymlink(file, topmost);
                 if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
                     SvnClient client = Subversion.getInstance().getClient(false);
@@ -602,15 +626,15 @@ public class FileStatusCache {
                     // - if the file was deleted then all it's children have to be refreshed.
                     // - we have to list the children before the turbo.writeEntry() call 
                     //   as that unfortunatelly tends to purge them from the cache 
-                    content = listFiles(new File[] {file}, ~0);
+                    content = listFiles(new VCSFileProxy[] {file}, ~0);
                     if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, "refresh: will need recursive refresh for deleted folder {0}", file.getAbsolutePath()); //NOI18N
+                        LOG.log(Level.FINE, "refresh: will need recursive refresh for deleted folder {0}", file.getPath()); //NOI18N
                     }
                 } 
 
-                dir = FileUtil.normalizeFile(dir);
-                file = new File(dir, file.getName());
-                Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
+                dir = dir.normalizeFile();
+                file = VCSFileProxy.createFileProxy(dir, file.getName());
+                Map<VCSFileProxy, FileInformation> newFiles = new HashMap<VCSFileProxy, FileInformation>(files);
                 if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
                     newFiles.remove(file);
                     turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
@@ -629,7 +653,7 @@ public class FileStatusCache {
         if(!refreshDone) {
             if(content == null && file.isDirectory() && needRecursiveRefresh(fi, current)) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "refresh: need recursive refresh for {0}", file.getAbsolutePath()); //NOI18N
+                    LOG.log(Level.FINE, "refresh: need recursive refresh for {0}", file.getPath()); //NOI18N
                 }
                 content = listFiles(file);
             }
@@ -638,7 +662,7 @@ public class FileStatusCache {
                 for (int i = 0; i < content.length; i++) {
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "refresh: recursive refresh for {0}, child of {1}", //NOI18N
-                                new Object[] { content[i].getAbsolutePath(), file.getAbsolutePath() });
+                                new Object[] { content[i].getPath(), file.getPath() });
                     }
                     refresh(content[i], REPOSITORY_STATUS_UNKNOWN);
                 }
@@ -658,19 +682,21 @@ public class FileStatusCache {
         return fi;
     }    
 
-    public void patchRevision(File[] fileArray, Number revision) {        
-        for (File file : fileArray) {            
+    public void patchRevision(VCSFileProxy[] fileArray, SVNRevision.Number revision) {        
+        for (VCSFileProxy file : fileArray) {            
             synchronized(this) {        
                 FileInformation status = getCachedStatus(file);
                 ISVNStatus entry = status != null ? status.getEntry(file) : null;
                 if(entry != null) {
-                    Number rev = entry.getRevision();
-                    if(rev == null) continue;
+                    SVNRevision.Number rev = entry.getRevision();
+                    if(rev == null) {
+                        continue;
+                    }
                     if(rev.getNumber() != revision.getNumber()) {
                         FileInformation info = createFileInformation(file, new FakeRevisionStatus(entry, revision), REPOSITORY_STATUS_UNKNOWN);
-                        File dir = file.getParentFile();
-                        Map<File, FileInformation> files = getScannedFiles(dir);
-                        Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
+                        VCSFileProxy dir = file.getParentFile();
+                        Map<VCSFileProxy, FileInformation> files = getScannedFiles(dir);
+                        Map<VCSFileProxy, FileInformation> newFiles = new HashMap<VCSFileProxy, FileInformation>(files);
                         newFiles.put(file, info);
                         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.isEmpty() ? null : newFiles);
                     }
@@ -687,7 +713,9 @@ public class FileStatusCache {
      * @return true if status constants of both object are equal, false otherwise
      */ 
     private static boolean equivalent(FileInformation main, FileInformation other) {
-        if (other == null || main.getStatus() != other.getStatus() || main.isDirectory() != other.isDirectory()) return false;
+        if (other == null || main.getStatus() != other.getStatus() || main.isDirectory() != other.isDirectory()) {
+            return false;
+        }
         
         ISVNStatus e1 = main.getEntry(null);
         ISVNStatus e2 = other.getEntry(null);
@@ -732,11 +760,17 @@ public class FileStatusCache {
     private boolean needRecursiveRefresh(FileInformation fi, FileInformation current) {
         //     looks like the same thing is done at diferent places in a different way but the same result.
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED || 
-                current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return true;
+                current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+            return true;
+        }
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED ||
-                current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) return true;
+                current != null && current.getStatus() == FileInformation.STATUS_NOTVERSIONED_NOTMANAGED) {
+            return true;
+        }
         if (fi.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
-                current != null && current.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) return true;        
+                current != null && current.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
+            return true;
+        }        
         return false;
     }
 
@@ -773,11 +807,11 @@ public class FileStatusCache {
      * WARNING: index has to be computed first
      */
     void cleanUp() {
-        File[] modifiedFiles = cacheProvider.getAllIndexValues();
+        VCSFileProxy[] modifiedFiles = cacheProvider.getAllIndexValues();
         if (modifiedFiles.length > CACHE_SIZE_WARNING_THRESHOLD) {
             LOG.log(Level.WARNING, "Cache contains too many entries: {0}", (Integer) modifiedFiles.length); //NOI18N
         }
-        for (File file : modifiedFiles) {
+        for (VCSFileProxy file : modifiedFiles) {
             FileInformation info = getCachedStatus(file);
             if (info != null && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
                 refresh(file, REPOSITORY_STATUS_UNKNOWN);
@@ -796,31 +830,31 @@ public class FileStatusCache {
      *
      * @param dir directory to refresh
      */
-    void directoryContentChanged(File dir) {
+    void directoryContentChanged(VCSFileProxy dir) {
         Map originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (originalFiles != null) {
             for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
-                File file = (File) i.next();
+                VCSFileProxy file = (VCSFileProxy) i.next();
                 refresh(file, REPOSITORY_STATUS_UNKNOWN);
             }
         }
     }
     
     // --- Private methods ---------------------------------------------------
-    private Map<File, FileInformation> getScannedFiles(File dir) {
-        Map<File, FileInformation> files;
+    private Map<VCSFileProxy, FileInformation> getScannedFiles(VCSFileProxy dir) {
+        Map<VCSFileProxy, FileInformation> files;
 
         // there are 2nd level nested admin dirs (.svn/tmp, .svn/prop-base, ...)
 
         if (SvnUtils.isAdministrative(dir)) {
             return NOT_MANAGED_MAP;
         }
-        File parent = dir.getParentFile();
+        VCSFileProxy parent = dir.getParentFile();
         if (parent != null && SvnUtils.isAdministrative(parent)) {
             return NOT_MANAGED_MAP;
         }
 
-        files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
+        files = (Map<VCSFileProxy, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (files != null) {
             if (files.containsKey(dir)) {
                 LOG.log(Level.WARNING, "Corrupted cached entry for folder {0}, it contains {1}", new Object[] {dir, files}); //NOI18N
@@ -834,13 +868,12 @@ public class FileStatusCache {
         }
 
         // scan and populate cache with results
-
-        dir = FileUtil.normalizeFile(dir);
+        dir = dir.normalizeFile();
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
         assert files.containsKey(dir) == false : "Dir " + dir + "contains " + files.toString(); //NOI18N
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
+            VCSFileProxy file = (VCSFileProxy) i.next();
             FileInformation info = files.get(file);
             if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                 fireFileStatusChanged(file, null, info);
@@ -849,7 +882,7 @@ public class FileStatusCache {
         return files;
     }
 
-    private boolean isNotManagedByDefault(File dir) {
+    private boolean isNotManagedByDefault(VCSFileProxy dir) {
         return !(dir.exists() || SvnUtils.isManaged(dir)); // cannot just test dir for existence, deleted folders now no longer exist on disk
     }
 
@@ -859,10 +892,12 @@ public class FileStatusCache {
      * @param dir directory to scan
      * @return Map map to be included in the status cache (File => FileInformation)
      */ 
-    private Map<File, FileInformation> scanFolder(File dir) {
-        File [] files = dir.listFiles();
-        if (files == null) files = new File[0];
-        Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
+    private Map<VCSFileProxy, FileInformation> scanFolder(VCSFileProxy dir) {
+        VCSFileProxy [] files = dir.listFiles();
+        if (files == null) {
+            files = new VCSFileProxy[0];
+        }
+        Map<VCSFileProxy, FileInformation> folderFiles = new HashMap<VCSFileProxy, FileInformation>(files.length);
 
         ISVNStatus [] entries = null;
         try {
@@ -872,7 +907,7 @@ public class FileStatusCache {
             }
         } catch (SVNClientException e) {
             // no or damaged entries
-            //LOG.getDefault().annotate(e, "Can not status " + dir.getAbsolutePath() + ", guessing it...");  // NOI18N
+            //LOG.getDefault().annotate(e, "Can not status " + dir.getPath() + ", guessing it...");  // NOI18N
             if (!SvnClientExceptionHandler.isUnversionedResource(e.getMessage())
                     && !WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                 // missing or damaged entries
@@ -883,18 +918,20 @@ public class FileStatusCache {
 
         if (entries == null) {
             for (int i = 0; i < files.length; i++) {
-                File file = files[i];
-                if (SvnUtils.isAdministrative(file)) continue;
+                VCSFileProxy file = files[i];
+                if (SvnUtils.isAdministrative(file)) {
+                    continue;
+                }
                 FileInformation fi = createFileInformation(file, null, REPOSITORY_STATUS_UNKNOWN);
                 if (fi.isDirectory() || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE) {
                     folderFiles.put(file, fi);
                 }
             }
         } else {
-            Set<File> localFiles = new HashSet<File>(Arrays.asList(files));
+            Set<VCSFileProxy> localFiles = new HashSet<VCSFileProxy>(Arrays.asList(files));
             for (int i = 0; i < entries.length; i++) {
                 ISVNStatus entry = entries[i];
-                File file = new File(entry.getPath());
+                VCSFileProxy file = entry.getFile();
                 if (file.equals(dir)) {
                     continue;
                 }
@@ -910,9 +947,9 @@ public class FileStatusCache {
 
             Iterator it = localFiles.iterator();
             while (it.hasNext()) {
-                File localFile = (File) it.next();
+                VCSFileProxy localFile = (VCSFileProxy) it.next();
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
-                File topmost = Subversion.getInstance().getTopmostManagedAncestor(localFile);
+                VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(localFile);
                 if (fi.isDirectory() || topmost == null || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE
                         && !isSymlink(localFile, topmost)) {
                     folderFiles.put(localFile, fi);
@@ -929,7 +966,7 @@ public class FileStatusCache {
      * @param status entry for this file or null if the file is unknown to subversion
      * @return FileInformation file/folder status bean
      */ 
-    private FileInformation createFileInformation(File file, ISVNStatus status, RepositoryStatus repositoryStatus) {
+    private FileInformation createFileInformation(VCSFileProxy file, ISVNStatus status, RepositoryStatus repositoryStatus) {
         if (status == null || status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
             if (!SvnUtils.isManaged(file)) {
                 return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
@@ -947,7 +984,7 @@ public class FileStatusCache {
      * @param status status of the file/folder as reported by the CVS server 
      * @return FileInformation file/folder status bean
      */ 
-    private FileInformation createVersionedFileInformation(File file, ISVNStatus status, RepositoryStatus repositoryStatus) {
+    private FileInformation createVersionedFileInformation(VCSFileProxy file, ISVNStatus status, RepositoryStatus repositoryStatus) {
 
         SVNStatusKind kind = status.getTextStatus();
         SVNStatusKind pkind = status.getPropStatus();
@@ -974,7 +1011,7 @@ public class FileStatusCache {
                 // so far above were observed....
                 Subversion.LOG.log(Level.WARNING,"SVN.FSC: unhandled repository status: {0}" + "\n" +   // NOI18N
                                        "\ttext: " + "{1}" + "\n" +             // NOI18N
-                                       "\tprop: " + "{2}", new Object[] { file.getAbsolutePath(), repositoryStatus.getStatus().getRepositoryTextStatus(), //NOI18N
+                                       "\tprop: " + "{2}", new Object[] { file.getPath(), repositoryStatus.getStatus().getRepositoryTextStatus(), //NOI18N
                                            repositoryStatus.getStatus().getRepositoryPropStatus() });
             }
             if (repositoryStatus.getLock() != null) {
@@ -1050,20 +1087,20 @@ public class FileStatusCache {
      * @param file file/folder to examine
      * @return FileInformation file/folder status bean
      */ 
-    private FileInformation createMissingEntryFileInformation(final File file, RepositoryStatus repositoryStatus) {
+    private FileInformation createMissingEntryFileInformation(final VCSFileProxy file, RepositoryStatus repositoryStatus) {
         
         // ignored status applies to whole subtrees
         boolean exists = file.exists();
-        File parent = file.getParentFile();
+        VCSFileProxy parent = file.getParentFile();
         if (parent == null) {
             LOG.log(Level.WARNING, "createMissingEntryFileInformation for root folder: {0}, isManaged={1}", //NOI18N
                     new Object[] { file, SvnUtils.isManaged(file) });
         }
         if(exists && Utilities.isMac() && parent != null) {
             // handle case on mac, "fileA".exists() is the same as "filea".exists but svn client understands the difference
-            File[] files = parent.listFiles(new FilenameFilter() {
+            VCSFileProxy[] files = parent.listFiles(new FilenameFilter() {
                 @Override
-                public boolean accept (File dir, String name) {
+                public boolean accept (VCSFileProxy dir, String name) {
                     return name.equals(file.getName());
                 }
             });
@@ -1108,7 +1145,7 @@ public class FileStatusCache {
         if (exists && m.matches()) {
             if (parent != null) {
                 String masterName = m.group(1);
-                File master = new File(parent, masterName);
+                VCSFileProxy master = VCSFileProxy.createFileProxy(parent, masterName);
                 if (master.isFile()) {
                     return FILE_INFORMATION_EXCLUDED;
                 }
@@ -1135,9 +1172,11 @@ public class FileStatusCache {
     }
 
     
-    private boolean exists(File file) {
-        if (!file.exists()) return false;
-        return file.getAbsolutePath().equals(FileUtil.normalizeFile(file).getAbsolutePath());
+    private boolean exists(VCSFileProxy file) {
+        if (!file.exists()) {
+            return false;
+        }
+        return file.getPath().equals(file.normalizeFile().getPath());
     }
 
     ListenersSupport listenerSupport = new ListenersSupport(this);
@@ -1149,19 +1188,19 @@ public class FileStatusCache {
         listenerSupport.removeListener(listener);
     }
     
-    private void fireFileStatusChanged(File file, FileInformation oldInfo, FileInformation newInfo) {
+    private void fireFileStatusChanged(VCSFileProxy file, FileInformation oldInfo, FileInformation newInfo) {
         getLabelsCache().remove(file); // remove info from label cache, it could change
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
     }
 
     private final LinkedHashMap<Path, Boolean> symlinks = new LinkedHashMap<Path, Boolean>() {
         @Override
-        protected boolean removeEldestEntry (Entry<Path, Boolean> eldest) {
+        protected boolean removeEldestEntry (Map.Entry<Path, Boolean> eldest) {
             return size() >= 500;
         }
     };
 
-    private boolean isSymlink (File file, File root) {
+    private boolean isSymlink (VCSFileProxy file, VCSFileProxy root) {
         boolean symlink = false;
         if (EXCLUDE_SYMLINKS) {
             Path path, checkoutRoot;
@@ -1201,17 +1240,17 @@ public class FileStatusCache {
         return symlink;
     }
 
-    private static final class NotManagedMap extends AbstractMap<File, FileInformation> {
+    private static final class NotManagedMap extends AbstractMap<VCSFileProxy, FileInformation> {
         @Override
-        public Set<Entry<File, FileInformation>> entrySet() {
+        public Set<Map.Entry<VCSFileProxy, FileInformation>> entrySet() {
             return Collections.emptySet();
         }
     }
 
     private class FakeRevisionStatus implements ISVNStatus {
-        private ISVNStatus value;
-        private Number revision;
-        public FakeRevisionStatus(ISVNStatus value, Number revision) {
+        private final ISVNStatus value;
+        private final SVNRevision.Number revision;
+        public FakeRevisionStatus(ISVNStatus value, SVNRevision.Number revision) {
             this.value = value;
             this.revision = revision;           
         }
@@ -1240,7 +1279,7 @@ public class FileStatusCache {
             return value.getTextStatus();
         }
         @Override
-        public Number getRevision() {                        
+        public SVNRevision.Number getRevision() {                        
             return revision;
         }
         @Override
@@ -1280,7 +1319,7 @@ public class FileStatusCache {
             return value.getLastCommitAuthor();
         }
         @Override
-        public Number getLastChangedRevision() {
+        public SVNRevision.Number getLastChangedRevision() {
             return value.getLastChangedRevision();
         }
         @Override
@@ -1288,19 +1327,19 @@ public class FileStatusCache {
             return value.getLastChangedDate();
         }
         @Override
-        public File getFile() {
+        public VCSFileProxy getFile() {
             return value.getFile();
         }
         @Override
-        public File getConflictWorking() {
+        public VCSFileProxy getConflictWorking() {
             return value.getConflictWorking();
         }
         @Override
-        public File getConflictOld() {
+        public VCSFileProxy getConflictOld() {
             return value.getConflictOld();
         }
         @Override
-        public File getConflictNew() {
+        public VCSFileProxy getConflictNew() {
             return value.getConflictNew();
         }
         @Override
@@ -1336,10 +1375,10 @@ public class FileStatusCache {
      */
     public static class FileLabelCache {
         private static final Logger LABELS_CACHE_LOG = Logger.getLogger("org.netbeans.modules.subversion.FileLabelsCache"); //NOI18N
-        private final LinkedHashMap<File, FileLabelInfo> fileLabels;
+        private final LinkedHashMap<VCSFileProxy, FileLabelInfo> fileLabels;
         private static final long VALID_LABEL_PERIOD = 20000; // 20 seconds
         private static final FileLabelInfo FAKE_LABEL_INFO = new FileLabelInfo("", "", "", "", "", ""); //NOI18N
-        private final Set<File> filesForLabelRefresh = new HashSet<File>();
+        private final Set<VCSFileProxy> filesForLabelRefresh = new HashSet<VCSFileProxy>();
         private final RequestProcessor.Task labelInfoRefreshTask;
         private boolean mimeTypeFlag;
         private final FileStatusCache master;
@@ -1348,18 +1387,18 @@ public class FileStatusCache {
         private FileLabelCache(FileStatusCache master) {
             this.master = master;
             labelInfoRefreshTask = master.rp.create(new LabelInfoRefreshTask());
-            fileLabels = new LinkedHashMap<File, FileLabelInfo>(100);
+            fileLabels = new LinkedHashMap<VCSFileProxy, FileLabelInfo>(100);
         }
 
-        public void flushFileLabels(File... files) {
+        public void flushFileLabels(VCSFileProxy... files) {
             synchronized (fileLabels) {
                 if (files == null) {
                     fileLabels.clear();
                     return;
                 }
-                for (File f : files) {
+                for (VCSFileProxy f : files) {
                     if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
-                        LABELS_CACHE_LOG.log(Level.FINE, "Removing from cache: {0}", f.getAbsolutePath()); //NOI18N
+                        LABELS_CACHE_LOG.log(Level.FINE, "Removing from cache: {0}", f.getPath()); //NOI18N
                     }
                     fileLabels.remove(f);
                 }
@@ -1376,7 +1415,7 @@ public class FileStatusCache {
          * @param mimeTypeFlag mime label is needed?
          * @return a cache item or a fake one if the original is null or invalid
          */
-        public FileLabelInfo getLabelInfo(File file, boolean mimeTypeFlag) {
+        public FileLabelInfo getLabelInfo(VCSFileProxy file, boolean mimeTypeFlag) {
             FileLabelInfo labelInfo;
             boolean refreshInfo = false;
             synchronized (fileLabels) {
@@ -1384,9 +1423,9 @@ public class FileStatusCache {
                 if (labelInfo == null || !labelInfo.isValid(mimeTypeFlag, true)) {
                     if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
                         if (labelInfo == null && LABELS_CACHE_LOG.isLoggable(Level.FINER)) {
-                            LABELS_CACHE_LOG.log(Level.FINER, "No item in cache for : {0}", file.getAbsolutePath()); //NOI18N
+                            LABELS_CACHE_LOG.log(Level.FINER, "No item in cache for : {0}", file.getPath()); //NOI18N
                         } else if (labelInfo != null) {
-                            LABELS_CACHE_LOG.log(Level.FINE, "Too old item in cache for : {0}", file.getAbsolutePath()); //NOI18N
+                            LABELS_CACHE_LOG.log(Level.FINE, "Too old item in cache for : {0}", file.getPath()); //NOI18N
                         }
                     }
                     if (labelInfo == null) {
@@ -1400,7 +1439,7 @@ public class FileStatusCache {
             }
             if (VERSIONING_ASYNC_ANNOTATOR) {
                 labelInfo = fileLabels.get(file);
-                assert labelInfo != null : "null label info for " + file.getAbsolutePath();
+                assert labelInfo != null : "null label info for " + file.getPath();
                 if (labelInfo == null) {
                     labelInfo = FAKE_LABEL_INFO;
                 }
@@ -1412,7 +1451,7 @@ public class FileStatusCache {
          * schedules file's label info refresh or run the refresh immediately depending on the async status of the versioning annotator
          * @param file
          */
-        private void refreshLabelFor(File file) {
+        private void refreshLabelFor(VCSFileProxy file) {
             synchronized (filesForLabelRefresh) {
                 filesForLabelRefresh.add(file);
             }
@@ -1423,7 +1462,7 @@ public class FileStatusCache {
             }
         }
 
-        private void remove(File file) {
+        private void remove(VCSFileProxy file) {
             synchronized (fileLabels) {
                 fileLabels.remove(file);
             }
@@ -1433,18 +1472,18 @@ public class FileStatusCache {
 
             @Override
             public void run() {
-                Set<File> filesToRefresh;
+                Set<VCSFileProxy> filesToRefresh;
                 synchronized (filesForLabelRefresh) {
                     // pick up files for refresh
-                    filesToRefresh = new HashSet<File>(filesForLabelRefresh);
+                    filesToRefresh = new HashSet<VCSFileProxy>(filesForLabelRefresh);
                     filesForLabelRefresh.clear();
                 }
                 if (!filesToRefresh.isEmpty()) {
                     // labels are accummulated in a temporary map so their timestamp can be later set to a more accurate value
                     // initialization for many files can be time-consuming and labels initialized in first cycles can grow old even before
                     // their annotations are refreshed through refreshAnnotations()
-                    HashMap<File, FileLabelInfo> labels = new HashMap<File, FileLabelInfo>(filesToRefresh.size());
-                    for (File file : filesToRefresh) {
+                    HashMap<VCSFileProxy, FileLabelInfo> labels = new HashMap<VCSFileProxy, FileLabelInfo>(filesToRefresh.size());
+                    for (VCSFileProxy file : filesToRefresh) {
                         try {
                             SvnClient client = Subversion.getInstance().getClient(false);
                             // get status for all files
@@ -1488,7 +1527,7 @@ public class FileStatusCache {
                                 }
                             } else {
                                 if (!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
-                                    LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting info and info for {0}", file.getAbsolutePath());
+                                    LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting info and info for {0}", file.getPath());
                                     LABELS_CACHE_LOG.log(Level.INFO, null, ex);
                                 }
                             }
@@ -1496,7 +1535,7 @@ public class FileStatusCache {
                         }
                     }
                     synchronized (fileLabels) {
-                        for (Map.Entry<File, FileLabelInfo> e : labels.entrySet()) {
+                        for (Map.Entry<VCSFileProxy, FileLabelInfo> e : labels.entrySet()) {
                             e.getValue().updateTimestamp(); // after a possible slow initialization for many files update all timestamps, so they remain in cache longer
                             FileLabelInfo oldInfo = fileLabels.remove(e.getKey()); // fileLabels is a LinkedHashSet, so in order to move the item to the back in the chain, it must be removed before inserting
                             fileLabels.put(e.getKey(), e.getValue());
@@ -1506,15 +1545,15 @@ public class FileStatusCache {
                         }
                     }
                     if (!VERSIONING_ASYNC_ANNOTATOR) {
-                        Subversion.getInstance().refreshAnnotations(filesToRefresh.toArray(new File[filesToRefresh.size()]));
+                        Subversion.getInstance().refreshAnnotations(filesToRefresh.toArray(new VCSFileProxy[filesToRefresh.size()]));
                     }
                     synchronized (fileLabels) {
                         if (fileLabels.size() > 50) {
                             if (LABELS_CACHE_LOG.isLoggable(Level.FINE)) {
                                 LABELS_CACHE_LOG.log(Level.FINE, "Cache contains : {0} entries before a cleanup", fileLabels.size()); //NOI18N
                             }
-                            for (Iterator<File> it = fileLabels.keySet().iterator(); it.hasNext();) {
-                                File f = it.next();
+                            for (Iterator<VCSFileProxy> it = fileLabels.keySet().iterator(); it.hasNext();) {
+                                VCSFileProxy f = it.next();
                                 if (!fileLabels.get(f).isValid(mimeTypeFlag, false)) {
                                     it.remove();
                                 } else {
@@ -1529,7 +1568,7 @@ public class FileStatusCache {
                 }
             }
 
-            private String getMimeType(SvnClient client, File file) {
+            private String getMimeType(SvnClient client, VCSFileProxy file) {
                 try {
                     ISVNProperty prop = client.propertyGet(file, ISVNProperty.MIME_TYPE);
                     if (prop != null) {

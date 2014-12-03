@@ -42,17 +42,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.turbo.CacheIndex;
-import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.turbo.TurboProvider;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.proxy.Base64Encoder;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 
@@ -81,7 +82,7 @@ class DiskMapTurboProvider implements TurboProvider {
         initCacheStore();
     }
 
-    File[] getIndexValues(File file, int includeStatus) {
+    VCSFileProxy[] getIndexValues(VCSFileProxy file, int includeStatus) {
         if (includeStatus == FileInformation.STATUS_VERSIONED_CONFLICT) {
             return conflictedIndex.get(file);
         } else if (includeStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
@@ -95,21 +96,21 @@ class DiskMapTurboProvider implements TurboProvider {
         }
     }
 
-    File[] getAllIndexValues() {
-        File[] files = index.getAllValues();
-        File[] ignores = ignoresIndex.getAllValues();
+    VCSFileProxy[] getAllIndexValues() {
+        VCSFileProxy[] files = index.getAllValues();
+        VCSFileProxy[] ignores = ignoresIndex.getAllValues();
         return mergeArrays(files, ignores);
     }
 
-    private File[] mergeArrays (File[] arr1, File[] arr2) {
+    private VCSFileProxy[] mergeArrays (VCSFileProxy[] arr1, VCSFileProxy[] arr2) {
         if (arr1.length == 0) {
             return arr2;
         } else if (arr2.length == 0) {
             return arr1;
         } else {
-            Set<File> merged = new HashSet<>(Arrays.asList(arr2));
+            Set<VCSFileProxy> merged = new HashSet<VCSFileProxy>(Arrays.asList(arr2));
             merged.addAll(Arrays.asList(arr1));
-            return merged.toArray(new File[merged.size()]);
+            return merged.toArray(new VCSFileProxy[merged.size()]);
         }
     }
 
@@ -555,7 +556,7 @@ class DiskMapTurboProvider implements TurboProvider {
     private static CacheIndex createCacheIndex() {
         return new CacheIndex() {
             @Override
-            protected boolean isManaged(File file) {
+            protected boolean isManaged(VCSFileProxy file) {
                 return SvnUtils.isManaged(file);
 }
         };

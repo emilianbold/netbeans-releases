@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.ui.repository;
+package org.netbeans.modules.subversion.remote.ui.repository;
 
 /**
  *

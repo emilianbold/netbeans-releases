@@ -26,39 +26,37 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="1">
-                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                      <Component id="jLabel4" min="-2" pref="126" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="oneRevisionTextField" pref="137" max="32767" attributes="2"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="oneRevisionSearchButton" min="-2" pref="98" max="-2" attributes="0"/>
-                  </Group>
                   <Component id="oneCommitRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="localChangesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="moreCommitsRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="17" pref="17" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="1">
+                              <Component id="jLabel4" min="-2" pref="126" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="oneRevisionTextField" pref="137" max="32767" attributes="2"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="oneRevisionSearchButton" min="-2" pref="98" max="-2" attributes="0"/>
+                          </Group>
                           <Component id="revertNewFilesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="cbRecursiveRevert" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="jLabel3" alignment="0" max="32767" attributes="1"/>
-                          <Component id="jLabel2" alignment="0" max="32767" attributes="1"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="endRevisionTextField" pref="137" max="32767" attributes="2"/>
-                          <Component id="startRevisionTextField" alignment="0" pref="137" max="32767" attributes="2"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="endSearchButton" min="-2" max="-2" attributes="0"/>
-                          <Component id="startSearchButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="jLabel3" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="jLabel2" alignment="0" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="endRevisionTextField" pref="137" max="32767" attributes="2"/>
+                                  <Component id="startRevisionTextField" alignment="0" pref="137" max="32767" attributes="2"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="endSearchButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="startSearchButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
                   </Group>
               </Group>

@@ -42,30 +42,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.copy;
+package org.netbeans.modules.subversion.remote.ui.copy;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.util.List;
 import java.util.concurrent.Callable;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNInfo;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.tigris.subversion.svnclientadapter.ISVNInfo;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -112,10 +111,12 @@ public class SwitchToAction extends ContextAction {
         
         Context ctx = getContext(nodes);        
 
-        File[] roots = SvnUtils.getActionRoots(ctx);
-        if(roots == null || roots.length == 0) return;
+        VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx);
+        if(roots == null || roots.length == 0) {
+            return;
+        }
 
-        File interestingFile;
+        VCSFileProxy interestingFile;
         if(roots.length == 1) {
             interestingFile = roots[0];
         } else {
@@ -149,7 +150,7 @@ public class SwitchToAction extends ContextAction {
      * @param nodes
      * @param roots
      */
-    private void performSwitch(final SwitchTo switchTo, final RequestProcessor rp, final Node[] nodes, final File[] roots) {
+    private void performSwitch(final SwitchTo switchTo, final RequestProcessor rp, final Node[] nodes, final VCSFileProxy[] roots) {
         if(!switchTo.showDialog()) {
            return;
         }
@@ -172,7 +173,7 @@ public class SwitchToAction extends ContextAction {
                                 SvnUtils.runWithoutIndexing(new Callable<Void>() {
                                     @Override
                                     public Void call () throws Exception {
-                                        for (File root : roots) {
+                                        for (VCSFileProxy root : roots) {
                                             RepositoryFile toRepositoryFile = switchTo.getRepositoryFile();
                                             if (root.isFile() && roots.length > 1) {
                                                 // change the filename ONLY for multi-file data objects, not for folders
@@ -194,7 +195,7 @@ public class SwitchToAction extends ContextAction {
         });
     }
     
-    private boolean validateInput(File root, RepositoryFile toRepositoryFile) {
+    private boolean validateInput(VCSFileProxy root, RepositoryFile toRepositoryFile) {
         boolean ret = false;
         SvnClient client;
         try {                   
@@ -216,8 +217,8 @@ public class SwitchToAction extends ContextAction {
         return ret;
     }        
 
-    static void performSwitch(final RepositoryFile toRepositoryFile, final File root, final SvnProgressSupport support) {
-        File[][] split = Utils.splitFlatOthers(new File[] {root} );
+    static void performSwitch(final RepositoryFile toRepositoryFile, final VCSFileProxy root, final SvnProgressSupport support) {
+        VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(new VCSFileProxy[] {root} );
         boolean recursive;
         // there can be only 1 root file
         if(split[0].length > 0) {
@@ -237,8 +238,8 @@ public class SwitchToAction extends ContextAction {
             // ... and switch
             client.switchToUrl(root, toRepositoryFile.getFileUrl(), toRepositoryFile.getRevision(), recursive);
             // the client doesn't notify as there is no output rom the cli. Lets emulate onNotify as from the client
-            List<File> switchedFiles = SvnUtils.listManagedRecursively(root);
-            File[] fileArray = switchedFiles.toArray(new File[switchedFiles.size()]);
+            List<VCSFileProxy> switchedFiles = SvnUtils.listManagedRecursively(root);
+            VCSFileProxy[] fileArray = switchedFiles.toArray(new VCSFileProxy[switchedFiles.size()]);
             // the cache fires status change events to trigger the annotation refresh
             // unfortunatelly - we have to call the refresh explicitly for each file also
             // from this place as the branch label was changed evern if the files status didn't

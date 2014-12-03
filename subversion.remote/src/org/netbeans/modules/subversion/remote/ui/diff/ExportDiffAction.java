@@ -42,16 +42,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffProvider;
@@ -63,14 +66,20 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
-import java.io.*;
 import java.util.*;
 import java.util.List;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.proxy.Base64Encoder;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
-import org.openide.filesystems.FileUtil;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Exports diff to file:
@@ -161,7 +170,7 @@ public class ExportDiffAction extends ContextAction {
 
         ExportDiffSupport exportDiffSupport = new ExportDiffSupport(context.getRootFiles(), SvnModuleConfig.getDefault().getPreferences()) {
             @Override
-            public void writeDiffFile(final File toFile) {
+            public void writeDiffFile(final VCSFileProxy toFile) {
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
                 SvnProgressSupport ps = new SvnProgressSupport() {
                     @Override
@@ -180,10 +189,10 @@ public class ExportDiffAction extends ContextAction {
         return false;
     }
 
-    private void async(SvnProgressSupport progress, Node[] nodes, File destination, boolean singleDiffSetup) {
+    private void async(SvnProgressSupport progress, Node[] nodes, VCSFileProxy destination, boolean singleDiffSetup) {
         // prepare setups and common parent - root
 
-        File root;
+        VCSFileProxy root;
         List<Setup> setups;
 
         TopComponent activated = TopComponent.getRegistry().getActivated();
@@ -197,19 +206,19 @@ public class ExportDiffAction extends ContextAction {
                     return;
                 }
             }
-            List<File> setupFiles = new ArrayList<File>(setups.size());
+            List<VCSFileProxy> setupFiles = new ArrayList<VCSFileProxy>(setups.size());
             for (Iterator i = setups.iterator(); i.hasNext();) {
                 Setup setup = (Setup) i.next();
                 setupFiles.add(setup.getBaseFile()); 
             }
-            root = getCommonParent(setupFiles.toArray(new File[setupFiles.size()]));
+            root = getCommonParent(setupFiles.toArray(new VCSFileProxy[setupFiles.size()]));
         } else {
             Context context = getContext(nodes);
-            File [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            VCSFileProxy [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             root = getCommonParent(context.getRootFiles());
             setups = new ArrayList<Setup>(files.length);
             for (int i = 0; i < files.length; i++) {
-                File file = files[i];
+                VCSFileProxy file = files[i];
                 if (!Subversion.getInstance().getStatusCache().getStatus(file).isDirectory()) {
                     Setup setup = new Setup(file, null, Setup.DIFFTYPE_LOCAL);
                     setups.add(setup);
@@ -219,7 +228,7 @@ public class ExportDiffAction extends ContextAction {
         exportDiff(setups, destination, root, progress);
     }
 
-    public void exportDiff (List<Setup> setups, File destination, File root, SvnProgressSupport progress) {
+    public void exportDiff (List<Setup> setups, VCSFileProxy destination, VCSFileProxy root, SvnProgressSupport progress) {
         if (root == null) {
             NotifyDescriptor nd = new NotifyDescriptor(
                     NbBundle.getMessage(ExportDiffAction.class, "MSG_BadSelection_Prompt"), 
@@ -237,7 +246,7 @@ public class ExportDiffAction extends ContextAction {
             out = new BufferedOutputStream(new FileOutputStream(destination));
             // Used by PatchAction as MAGIC to detect right encoding
             out.write(("# This patch file was generated by NetBeans IDE" + sep).getBytes("utf8"));  // NOI18N
-            out.write(("# Following Index: paths are relative to: " + root.getAbsolutePath() + sep).getBytes("utf8"));  // NOI18N
+            out.write(("# Following Index: paths are relative to: " + root.getPath() + sep).getBytes("utf8"));  // NOI18N
             out.write(("# This patch can be applied using context Tools: Patch action on respective folder." + sep).getBytes("utf8"));  // NOI18N
             out.write(("# It uses platform neutral UTF-8 encoding and \\n newlines." + sep).getBytes("utf8"));  // NOI18N
             out.write(("# Above lines and this line are ignored by the patching process." + sep).getBytes("utf8"));  // NOI18N
@@ -253,7 +262,7 @@ public class ExportDiffAction extends ContextAction {
             int i = 0;
             while (it.hasNext()) {
                 Setup setup = it.next();
-                File file = setup.getBaseFile();                
+                VCSFileProxy file = setup.getBaseFile();                
                 if (file.isDirectory()) continue;
                 try {            
                     progress.setRepositoryRoot(SvnUtils.getRepositoryRootUrl(file));
@@ -264,11 +273,11 @@ public class ExportDiffAction extends ContextAction {
                 progress.setDisplayName(file.getName());
 
                 String index = "Index: ";   // NOI18N
-                String rootPath = root.getAbsolutePath();
-                String filePath = file.getAbsolutePath();
+                String rootPath = root.getPath();
+                String filePath = file.getPath();
                 String relativePath = filePath;
                 if (filePath.startsWith(rootPath)) {
-                    relativePath = filePath.substring(rootPath.length() + 1).replace(File.separatorChar, '/');
+                    relativePath = filePath.substring(rootPath.length() + 1).replace('\\', '/');
                     index += relativePath + sep;
                     out.write(index.getBytes("utf8")); // NOI18N
                 }
@@ -294,7 +303,7 @@ public class ExportDiffAction extends ContextAction {
                 if (exportedFiles == 0) {
                     destination.delete();
                 } else {
-                    Utils.openFile(FileUtil.normalizeFile(destination));
+                    org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(destination.normalizeFile());
                 }
             } else {
                 destination.delete();
@@ -303,8 +312,8 @@ public class ExportDiffAction extends ContextAction {
         }
     }
 
-    private static File getCommonParent(File [] files) {
-        File root = files[0];
+    private static VCSFileProxy getCommonParent(VCSFileProxy [] files) {
+        VCSFileProxy root = files[0];
         if (!root.exists() || root.isFile()) root = root.getParentFile();
         for (int i = 1; i < files.length; i++) {
             root = Utils.getCommonParent(root, files[i]);
@@ -333,7 +342,7 @@ public class ExportDiffAction extends ContextAction {
             if (r2 != null) try { r2.close(); } catch (Exception e) {}
         }
 
-        File file = setup.getBaseFile();
+        VCSFileProxy file = setup.getBaseFile();
         try {
             InputStream is;
             if (!SvnUtils.getMimeType(file).startsWith("text/") && differences.length == 0) {
@@ -368,7 +377,7 @@ public class ExportDiffAction extends ContextAction {
         }
     }
         
-    private String exportBinaryFile(File file) throws IOException {
+    private String exportBinaryFile(VCSFileProxy file) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         StringBuilder sb = new StringBuilder((int) file.length());
         if (file.canRead()) {

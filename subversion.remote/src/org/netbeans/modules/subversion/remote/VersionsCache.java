@@ -42,21 +42,30 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion;
+package org.netbeans.modules.subversion.remote;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.client.*;
-import org.netbeans.modules.subversion.ui.diff.Setup;
-import org.netbeans.modules.subversion.util.*;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
+import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
-import org.tigris.subversion.svnclientadapter.*;
 
 /**
  * File revisions cache. It can access pristine files.
@@ -87,7 +96,7 @@ public class VersionsCache {
      * @return a temporary file with given file's content
      * @throws java.io.IOException
      */
-    public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String fileName) throws IOException {
+    public VCSFileProxy getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String fileName) throws IOException {
         return getFileRevision(repoUrl, url, revision, revision, fileName);
     }
     /**
@@ -139,7 +148,7 @@ public class VersionsCache {
      *
      * @return null if the file does not exit in given revision
      */
-    public File getFileRevision(File base, String revision) throws IOException {
+    public VCSFileProxy getFileRevision(VCSFileProxy base, String revision) throws IOException {
         return getFileRevision(base, revision, Setup.REVISION_BASE);
     }
 
@@ -151,7 +160,7 @@ public class VersionsCache {
      *
      * @return null if the file does not exit in given revision
      */
-    public File getFileRevision(File base, String revision, String pegRevision) throws IOException {
+    public VCSFileProxy getFileRevision(VCSFileProxy base, String revision, String pegRevision) throws IOException {
         try {
             SvnClientFactory.checkClientAvailable();
         } catch (SVNClientException e) {
@@ -162,10 +171,10 @@ public class VersionsCache {
         } else if (Setup.REVISION_PRISTINE.equals(revision)) {
             // should not be used, will not work with 1.7
             String name = base.getName();
-            File svnDir = getMetadataDir(base.getParentFile());
+            VCSFileProxy svnDir = getMetadataDir(base.getParentFile());
             if (svnDir != null) {
-                File text_base = new File(svnDir, "text-base"); // NOI18N
-                File pristine = new File(text_base, name + ".svn-base"); // NOI18N
+                VCSFileProxy text_base = VCSFileProxy.createFileProxy(svnDir, "text-base"); // NOI18N
+                VCSFileProxy pristine = VCSFileProxy.createFileProxy(text_base, name + ".svn-base"); // NOI18N
                 if (pristine.isFile()) {
                     return pristine;
                 } else {
@@ -224,7 +233,7 @@ public class VersionsCache {
                 }
                 return createContent(base.getName(), in);
             } catch (SVNClientException ex) {
-                throw new IOException("Can not load: " + base.getAbsolutePath() + " in revision: " + revision, ex);
+                throw new IOException("Can not load: " + base.getPath() + " in revision: " + revision, ex);
             }
         }
     }
@@ -241,13 +250,13 @@ public class VersionsCache {
      * @return  file holding content of the unmodified version of the given file
      * @exception  java.io.IOException  if some file handling operation failed
      */
-    File getBaseRevisionFile(File referenceFile) throws IOException {
+    VCSFileProxy getBaseRevisionFile(VCSFileProxy referenceFile) throws IOException {
         try {
             boolean newMetadataFormat = false;
-            File svnDir = getMetadataDir(referenceFile.getParentFile());
+            VCSFileProxy svnDir = getMetadataDir(referenceFile.getParentFile());
             if (svnDir == null) {
                 // try to check 1.7 metadata
-                File topmost = Subversion.getInstance().getTopmostManagedAncestor(referenceFile);
+                VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(referenceFile);
                     File newMetadataFolder;
                     if (topmost != null && (newMetadataFolder = new File(topmost, SvnUtils.SVN_ADMIN_DIR)).exists()) {
                         svnDir = newMetadataFolder;
@@ -285,7 +294,7 @@ public class VersionsCache {
         }
     }
 
-    private File getContentBase (File referenceFile, File output) throws SVNClientException, IOException {
+    private VCSFileProxy getContentBase (VCSFileProxy referenceFile, VCSFileProxy output) throws SVNClientException, IOException {
         SvnClient client = Subversion.getInstance().getClient(false); // local call, does not need to be instantiated with the file instance
         InputStream in;
         try {
@@ -299,7 +308,7 @@ public class VersionsCache {
                 throw ex;
             }
         }
-        output = FileUtil.normalizeFile(output);
+        output = output.normalizeFile();
         FileUtils.copyStreamToFile(new BufferedInputStream(in), output);
         return output;
     }
@@ -335,7 +344,7 @@ public class VersionsCache {
      * @return created temporary file
      * @throws java.io.IOException
      */
-    private File createContent (String fileName, InputStream in) throws IOException {
+    private VCSFileProxy createContent (String fileName, InputStream in) throws IOException {
         // keep original extension so MIME can be guessed by the extension
         File tmp = new File(Utils.getTempFolder(), fileName);  // NOI18N
         tmp = FileUtil.normalizeFile(tmp);
@@ -344,7 +353,7 @@ public class VersionsCache {
         return tmp;
     }
 
-    private File getMetadataDir(File dir) {
+    private VCSFileProxy getMetadataDir(VCSFileProxy dir) {
         File svnDir = new File(dir, SvnUtils.SVN_ADMIN_DIR);  // NOI18N
         if (!svnDir.isDirectory()) {
             return null;

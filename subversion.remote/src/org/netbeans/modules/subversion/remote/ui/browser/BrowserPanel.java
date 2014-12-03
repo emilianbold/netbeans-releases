@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.browser;
+package org.netbeans.modules.subversion.remote.ui.browser;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -73,7 +73,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
     private final BrowserOutlineView outlineView;
     private final ExplorerManager manager;
 
-    private ControlPanel controlPanel;
+    private final ControlPanel controlPanel;
     
     /** Creates new form BrowserPanel */
     public BrowserPanel(String labelText, String browserAcsn, String browserAcsd, boolean singleSelection) {      
@@ -94,10 +94,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             outlineView.getOutline().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         }
         outlineView.setPopupAllowed(true);
-        
-        GridBagConstraints c = new GridBagConstraints();
-        int gridY = 0;
-                
+                 
         // title label        
         JLabel label = new JLabel();        
         label.setLabelFor(outlineView);
@@ -107,7 +104,8 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         } else {
             org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BK2003"));                          // NOI18N
         }        
-        c = new GridBagConstraints();
+        int gridY = 0;
+        GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = gridY++;
         c.insets = new Insets(4,0,4,4);
@@ -187,8 +185,9 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             setupColumns();
         }
         
-        public void startEditingAtPath(TreePath path) {            
-            startEditingAtPath(path);
+        public void startEditingAtPath(TreePath path) {
+            // infinite recursion
+            //startEditingAtPath(path);
         }         
         
         @Override

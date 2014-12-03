@@ -41,22 +41,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.subversion.ui.diff;
+package org.netbeans.modules.subversion.remote.ui.diff;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.openide.cookies.EditorCookie;
@@ -78,7 +78,7 @@ public class DiffNode extends AbstractNode {
         
     private final Setup     setup;
     private String          htmlDisplayName;
-    private int displayStatuses;
+    private final int displayStatuses;
     
     DiffNode(Setup setup, SvnFileNode node, int displayStatuses) {
         super(Children.LEAF, getLookupFor(setup, node.getLookupObjects()));
@@ -112,7 +112,9 @@ public class DiffNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        if (context) return null;
+        if (context) {
+            return null;
+        }
         return new Action [0];
     }
     
@@ -203,6 +205,7 @@ public class DiffNode extends AbstractNode {
             super(COLUMN_NAME_PROPERTY, COLUMN_NAME_PROPERTY, COLUMN_NAME_PROPERTY);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return setup.getPropertyName();
         }
@@ -244,6 +247,7 @@ public class DiffNode extends AbstractNode {
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + DiffNode.this.getName().toUpperCase()); // NOI18N
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             FileInformation finfo =  setup.getInfo();
             finfo.getEntry(setup.getBaseFile());  // XXX not interested in return value, side effect loads ISVNStatus structure

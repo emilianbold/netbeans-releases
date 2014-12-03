@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.ui.lock;
+package org.netbeans.modules.subversion.remote.ui.lock;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -52,24 +52,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.subversion.FileInformation;
-import org.netbeans.modules.subversion.FileStatusCache;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  *
@@ -99,7 +100,7 @@ public class LockAction extends ContextAction {
         if (super.enable(nodes)) {
             Context ctx = getCachedContext(nodes);
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            for (File f : ctx.getFiles()) {
+            for (VCSFileProxy f : ctx.getFiles()) {
                 FileInformation status = cache.getCachedStatus(f);
                 if (status == null || (status.getStatus() & FileInformation.STATUS_LOCKED) == 0) {
                     // contains unlocked file
@@ -116,10 +117,10 @@ public class LockAction extends ContextAction {
             return;
         }
         Context ctx = getContext(nodes);
-        File[] roots = ctx.getFiles();
-        List<File> unlocked = new LinkedList<File>();
+        VCSFileProxy[] roots = ctx.getFiles();
+        List<VCSFileProxy> unlocked = new LinkedList<VCSFileProxy>();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        for (File f : roots) {
+        for (VCSFileProxy f : roots) {
             FileInformation status = cache.getStatus(f);
             if ((status.getStatus() & FileInformation.STATUS_LOCKED) == 0) {
                 unlocked.add(f);
@@ -128,10 +129,10 @@ public class LockAction extends ContextAction {
         if (unlocked.isEmpty()) {
             return;
         }
-        final LockParams lock = new LockParams(cache.containsFiles(new HashSet<File>(unlocked), FileInformation.STATUS_LOCKED_REMOTELY, true));
+        final LockParams lock = new LockParams(cache.containsFiles(new HashSet<VCSFileProxy>(unlocked), FileInformation.STATUS_LOCKED_REMOTELY, true));
         if (lock.show()) {
             final SVNUrl url;
-            final File[] files = unlocked.toArray(new File[unlocked.size()]);
+            final VCSFileProxy[] files = unlocked.toArray(new VCSFileProxy[unlocked.size()]);
             try {
                 url = SvnUtils.getRepositoryRootUrl(files[0]);
             } catch (SVNClientException ex) {
@@ -143,8 +144,8 @@ public class LockAction extends ContextAction {
                 protected void perform () {
                     try {
                         SvnClient client = Subversion.getInstance().getClient(url, this);
-                        Map<File, String> relativePaths = new HashMap<File, String>(files.length);
-                        for (File f : files) {
+                        Map<VCSFileProxy, String> relativePaths = new HashMap<VCSFileProxy, String>(files.length);
+                        for (VCSFileProxy f : files) {
                             String path = SvnUtils.getRelativePath(f);
                             if (path != null) {
                                 relativePaths.put(f, path);
@@ -187,9 +188,9 @@ public class LockAction extends ContextAction {
                     }
                 }
 
-                private Collection<File> lockedByOther (SvnClient client, Set<File> lockedFiles) throws SVNClientException {
-                    List<File> lockedByOtherFiles = new LinkedList<File>();
-                    ISVNStatus[] statuses = client.getStatus(lockedFiles.toArray(new File[lockedFiles.size()]));
+                private Collection<VCSFileProxy> lockedByOther (SvnClient client, Set<VCSFileProxy> lockedFiles) throws SVNClientException {
+                    List<VCSFileProxy> lockedByOtherFiles = new LinkedList<VCSFileProxy>();
+                    ISVNStatus[] statuses = client.getStatus(lockedFiles.toArray(new VCSFileProxy[lockedFiles.size()]));
                     for (ISVNStatus status : statuses) {
                         if (status.getLockOwner() == null) {
                             // not locked in this WC
@@ -204,16 +205,16 @@ public class LockAction extends ContextAction {
     
     private static class LockedFilesListener implements ISVNNotifyListener {
         private String msg;
-        private final Map<File, String> relativePaths;
-        private final Set<File> lockedFiles = new HashSet<File>();
+        private final Map<VCSFileProxy, String> relativePaths;
+        private final Set<VCSFileProxy> lockedFiles = new HashSet<VCSFileProxy>();
         private boolean authError;
 
-        public LockedFilesListener (Map<File, String> relativePaths) {
+        public LockedFilesListener (Map<VCSFileProxy, String> relativePaths) {
             this.relativePaths = relativePaths;
         }
         
         @Override
-        public void setCommand (int i) {
+        public void setCommand (ISVNNotifyListener.Command i) {
         }
 
         @Override
@@ -244,7 +245,7 @@ public class LockAction extends ContextAction {
         }
 
         @Override
-        public void onNotify (File file, SVNNodeKind svnnk) {
+        public void onNotify (VCSFileProxy file, SVNNodeKind svnnk) {
             if (msg != null) {
                 String relPath = relativePaths.get(file);
                 if (relPath != null && msg.contains(MessageFormat.format("Path ''{0}'' is already locked", relPath))) { //NOI18N

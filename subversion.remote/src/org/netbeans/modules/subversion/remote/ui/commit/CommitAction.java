@@ -42,27 +42,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.commit;
+package org.netbeans.modules.subversion.remote.ui.commit;
 
 import java.io.IOException;
 import java.text.ParseException;
-import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
-import org.tigris.subversion.svnclientadapter.SVNBaseDir;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.File;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
@@ -72,35 +64,45 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.client.PanelProgressSupport;
-import org.netbeans.modules.subversion.ui.actions.ActionUtils;
-import org.netbeans.modules.versioning.hooks.SvnHook;
-import org.netbeans.modules.versioning.hooks.SvnHookContext;
-import org.netbeans.modules.subversion.ui.diff.DiffNode;
-import org.netbeans.modules.subversion.ui.status.SyncFileNode;
-import org.netbeans.modules.subversion.util.ClientCheckSupport;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
+import org.netbeans.modules.subversion.remote.api.ISVNProperty;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNBaseDir;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.PanelProgressSupport;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ActionUtils;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.ui.diff.DiffNode;
+import org.netbeans.modules.subversion.remote.ui.status.SyncFileNode;
+import org.netbeans.modules.subversion.remote.util.ClientCheckSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
+import org.netbeans.modules.versioning.hooks.SvnHook;
+import org.netbeans.modules.versioning.hooks.SvnHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
+import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.versioning.util.TableSorter;
-import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
-import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Commit action
@@ -208,8 +210,8 @@ public class CommitAction extends ContextAction {
     private static void commitChanges(String contentTitle, final Context ctx, boolean deepScanEnabled) {
         final CommitPanel panel = new CommitPanel();
         Collection<SvnHook> hooks = VCSHooks.getInstance().getHooks(SvnHook.class);
-        File file = ctx.getRootFiles()[0];
-        panel.setHooks(hooks, new SvnHookContext(new File[] { file }, null, null));
+        VCSFileProxy file = ctx.getRootFiles()[0];
+        panel.setHooks(hooks, new SvnHookContext(new VCSFileProxy[] { file }, null, null));
 
         Map<String, Integer> sortingStatus = SvnModuleConfig.getDefault().getSortingStatus(PANEL_PREFIX);
         if (sortingStatus == null) {
@@ -227,7 +229,7 @@ public class CommitAction extends ContextAction {
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
         }
-        List<File> roots = ctx.getRoots();
+        List<VCSFileProxy> roots = ctx.getRoots();
         SvnProgressSupport prepareSupport = getProgressSupport(ctx, roots, data, panel.progressPanel, deepScanEnabled);
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         prepareSupport.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "BK1009")); // NOI18N
@@ -241,18 +243,18 @@ public class CommitAction extends ContextAction {
         SvnModuleConfig.getDefault().setSortingStatus(PANEL_PREFIX, data.getSortingState());
         if (startCommit) {
             // if OK setup sequence of add, remove and commit calls
-            startCommitTask(panel, data, ctx, roots.toArray(new File[roots.size()]), hooks);
+            startCommitTask(panel, data, ctx, roots.toArray(new VCSFileProxy[roots.size()]), hooks);
         } else {
             prepareSupport.cancel();
         }
     }
 
-    private static Set<File> getUnversionedParents(Collection<File> files, boolean onlyCached) {
-        Set<File> checked = new HashSet<File>();
-        Set<File> ret = new HashSet<File>();
+    private static Set<VCSFileProxy> getUnversionedParents(Collection<VCSFileProxy> files, boolean onlyCached) {
+        Set<VCSFileProxy> checked = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> ret = new HashSet<VCSFileProxy>();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        for (File file : files) {
-            File parent = file;
+        for (VCSFileProxy file : files) {
+            VCSFileProxy parent = file;
             while((parent = parent.getParentFile()) != null) {
                 if (checked.contains(parent)) {
                     break;
@@ -285,18 +287,18 @@ public class CommitAction extends ContextAction {
      * @param supp running progress support
      * @return
      */
-    private static SvnFileNode[] getFileNodes(final Collection<File> files, final SvnProgressSupport supp) {
+    private static SvnFileNode[] getFileNodes(final Collection<VCSFileProxy> files, final SvnProgressSupport supp) {
         SvnFileNode[] nodes;
         final ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.size());
 
         SvnUtils.runWithInfoCache(new Runnable() {
             @Override
             public void run () {
-                for (Iterator<File> it = files.iterator(); it.hasNext();) {
+                for (Iterator<VCSFileProxy> it = files.iterator(); it.hasNext();) {
                     if (supp.isCanceled()) {
                         break;
                     }
-                    File file = it.next();
+                    VCSFileProxy file = it.next();
                     SvnFileNode node = new SvnFileNode(file);
                     // initialize node properties
                     node.initializeProperties();
@@ -394,7 +396,7 @@ public class CommitAction extends ContextAction {
         return dd.getValue();
     }
 
-    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final File[] rootFiles, final Collection<SvnHook> hooks) {
+    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final VCSFileProxy[] rootFiles, final Collection<SvnHook> hooks) {
         final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
         final String message = panel.getCommitMessage();
         SvnModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
@@ -416,30 +418,30 @@ public class CommitAction extends ContextAction {
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
     }
 
-    private static SvnProgressSupport getProgressSupport (final Context ctx, final List<File> roots, final CommitTable data, JPanel progressPanel, final boolean deepScanEnabled) {
+    private static SvnProgressSupport getProgressSupport (final Context ctx, final List<VCSFileProxy> roots, final CommitTable data, JPanel progressPanel, final boolean deepScanEnabled) {
         SvnProgressSupport support = new PanelProgressSupport(progressPanel) {
             
             @Override
             public void perform() {
                 // get files without exclusions
-                File[] contextFiles = ctx.getFiles();
+                VCSFileProxy[] contextFiles = ctx.getFiles();
                 if (contextFiles.length == 0) {
                     return;
                 }
 
                 // The commits are made non recursively, so
                 // add also the roots to the to be commited list.
-                Set<File> filesSet = new HashSet<File>();
+                Set<VCSFileProxy> filesSet = new HashSet<VCSFileProxy>();
                 filesSet.addAll(Arrays.asList(contextFiles));
-                for (File file : roots) {
+                for (VCSFileProxy file : roots) {
                     filesSet.add(file);
                 }
-                contextFiles = filesSet.toArray(new File[filesSet.size()]);
+                contextFiles = filesSet.toArray(new VCSFileProxy[filesSet.size()]);
 
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 if (deepScanEnabled) {
                     // make a deep refresh to get the not yet notified external changes
-                    for (File f : contextFiles) {
+                    for (VCSFileProxy f : contextFiles) {
                         if (isCanceled()) {
                             return;
                         }
@@ -447,13 +449,13 @@ public class CommitAction extends ContextAction {
                     }
                 }
                 // get all changed files while honoring the flat folder logic
-                File[][] split = Utils.splitFlatOthers(contextFiles);
-                Set<File> fileSet = new LinkedHashSet<File>();
+                VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(contextFiles);
+                Set<VCSFileProxy> fileSet = new LinkedHashSet<VCSFileProxy>();
                 for (int c = 0; c < split.length; c++) {
                     contextFiles = split[c];
                     boolean recursive = c == 1;
                     if (recursive) {
-                        File[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
+                        VCSFileProxy[] files = cache.listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);
                         for (int i = 0; i < files.length; i++) {
                             for (int r = 0; r < contextFiles.length; r++) {
                                 if (isCanceled()) {
@@ -470,7 +472,7 @@ public class CommitAction extends ContextAction {
                         if (isCanceled()) {
                             return;
                         }
-                        File[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
+                        VCSFileProxy[] files = SvnUtils.flatten(contextFiles, FileInformation.STATUS_LOCAL_CHANGE);
                         for (int i = 0; i < files.length; i++) {
                             if (!fileSet.contains(files[i])) {
                                 fileSet.add(files[i]);
@@ -493,11 +495,11 @@ public class CommitAction extends ContextAction {
                 });
             }
 
-            private Collection<File> addDeletedFiles (Set<File> fileSet, FileStatusCache cache) {
-                List<File> added = new LinkedList<File>();
+            private Collection<VCSFileProxy> addDeletedFiles (Set<VCSFileProxy> fileSet, FileStatusCache cache) {
+                List<VCSFileProxy> added = new LinkedList<VCSFileProxy>();
                 // at first fill with already scheduled deletes
-                Map<SVNUrl, File> deletedCandidates = new HashMap<SVNUrl, File>();
-                for (File f : fileSet) {
+                Map<SVNUrl, VCSFileProxy> deletedCandidates = new HashMap<SVNUrl, VCSFileProxy>();
+                for (VCSFileProxy f : fileSet) {
                     FileInformation fi = cache.getCachedStatus(f);
                     ISVNStatus st;
                     if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0 && (st = fi.getEntry(null)) != null) {
@@ -506,7 +508,7 @@ public class CommitAction extends ContextAction {
                         }
                     }
                 }
-                for (File f : fileSet) {
+                for (VCSFileProxy f : fileSet) {
                     // try to locate a deleted source
                     FileInformation fi = cache.getCachedStatus(f);
                     ISVNStatus st;
@@ -515,7 +517,7 @@ public class CommitAction extends ContextAction {
                             && st.isCopied() && (copiedUrl = SvnUtils.getCopiedUrl(f)) != null && !deletedCandidates.containsKey(copiedUrl)) {
                         if (checkUrl(st, f)) {
                             // file is copied, it means it has a source file copied from
-                            File copiedFrom = getCopiedFromFile(st, f, copiedUrl); 
+                            VCSFileProxy copiedFrom = getCopiedFromFile(st, f, copiedUrl); 
                             fi = cache.getCachedStatus(copiedFrom);
                             // if the source is deleted add it into the candidate list
                             if (fi != null && (fi.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) != 0) {
@@ -525,7 +527,7 @@ public class CommitAction extends ContextAction {
                     }
                 }
                 // add deletes not yet scheduled
-                for (File f : deletedCandidates.values()) {
+                for (VCSFileProxy f : deletedCandidates.values()) {
                     if (!fileSet.contains(f)) {
                         added.add(f);
                         fileSet.add(f);
@@ -534,7 +536,7 @@ public class CommitAction extends ContextAction {
                 return added;
             }
 
-            private File getCopiedFromFile (ISVNStatus st, File f, SVNUrl copiedUrl) {
+            private VCSFileProxy getCopiedFromFile (ISVNStatus st, VCSFileProxy f, SVNUrl copiedUrl) {
                 String relativized = "."; //NOI18N
                 String[] urlSegments = SvnUtils.decode(st.getUrl()).getPathSegments();
                 String[] copiedUrlSegments = SvnUtils.decode(copiedUrl).getPathSegments();
@@ -550,13 +552,13 @@ public class CommitAction extends ContextAction {
                 for (int j = i; j < copiedUrlSegments.length; ++j) {
                     relativized += "/" + copiedUrlSegments[j]; //NOI18N
                 }
-                File copiedFrom = FileUtil.normalizeFile(new File(f, relativized.replace("/", File.separator))); //NOI18N
+                VCSFileProxy copiedFrom = VCSFileProxy.createFileProxy(f, relativized).normalizeFile(); //NOI18N
                 return copiedFrom;
             }
 
-            private boolean checkUrl (ISVNStatus st, File f) {
+            private boolean checkUrl (ISVNStatus st, VCSFileProxy f) {
                 if (st.getUrl() == null) {
-                    Subversion.LOG.log(Level.INFO, null, new IllegalStateException("Null URL for: " + f.getAbsolutePath() + ", " + st));
+                    Subversion.LOG.log(Level.INFO, null, new IllegalStateException("Null URL for: " + f.getPath() + ", " + st));
                     return false;
                 }
                 return true;
@@ -652,7 +654,7 @@ public class CommitAction extends ContextAction {
         });
     }
 
-    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, File[] rootFiles, SvnProgressSupport support, Collection<SvnHook> hooks) {
+    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, VCSFileProxy[] rootFiles, SvnProgressSupport support, Collection<SvnHook> hooks) {
         SvnClient client = getClient(ctx, support);
         if(client == null) {
             return;
@@ -668,17 +670,17 @@ public class CommitAction extends ContextAction {
         performCommit(client, message, commitFiles, ctx.getRootFiles(), support, rootUpdate, new ArrayList<SvnHook>(0));
     }
 
-    public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, File[] rootFiles, SvnProgressSupport support, boolean rootUpdate, Collection<SvnHook> hooks) {
+    public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, VCSFileProxy[] rootFiles, SvnProgressSupport support, boolean rootUpdate, Collection<SvnHook> hooks) {
         try {
             support.setCancellableDelegate(client);
             client.addNotifyListener(support);
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
 
             List<SvnFileNode> addCandidates = new ArrayList<SvnFileNode>();
-            List<File> removeCandidates = new ArrayList<File>();
-            List<File> missingFiles = new ArrayList<File>();
-            Set<File> commitCandidates = new LinkedHashSet<File>();
-            Set<File> binnaryCandidates = new HashSet<File>();
+            List<VCSFileProxy> removeCandidates = new ArrayList<VCSFileProxy>();
+            List<VCSFileProxy> missingFiles = new ArrayList<VCSFileProxy>();
+            Set<VCSFileProxy> commitCandidates = new LinkedHashSet<VCSFileProxy>();
+            Set<VCSFileProxy> binnaryCandidates = new HashSet<VCSFileProxy>();
 
             Iterator<SvnFileNode> it = commitFiles.keySet().iterator();
             // XXX refactor the olowing loop. there seem to be redundant blocks
@@ -689,13 +691,13 @@ public class CommitAction extends ContextAction {
                 SvnFileNode node = it.next();
                 CommitOptions option = commitFiles.get(node);
                 if (CommitOptions.ADD_BINARY == option) {
-                    List<File> l = listUnmanagedParents(node);
-                    Iterator<File> dit = l.iterator();
+                    List<VCSFileProxy> l = listUnmanagedParents(node);
+                    Iterator<VCSFileProxy> dit = l.iterator();
                     while (dit.hasNext()) {
                         if(support.isCanceled()) {
                             return;
                         }
-                        File file = dit.next();
+                        VCSFileProxy file = dit.next();
                         addCandidates.add(new SvnFileNode(file));
                         commitCandidates.add(file);
                     }
@@ -709,13 +711,13 @@ public class CommitAction extends ContextAction {
                     commitCandidates.add(node.getFile());
                 } else if (CommitOptions.ADD_TEXT == option || CommitOptions.ADD_DIRECTORY == option) {
                     // assute no MIME property or startin gwith text
-                    List<File> l = listUnmanagedParents(node);
-                    Iterator<File> dit = l.iterator();
+                    List<VCSFileProxy> l = listUnmanagedParents(node);
+                    Iterator<VCSFileProxy> dit = l.iterator();
                     while (dit.hasNext()) {
                         if(support.isCanceled()) {
                             return;
                         }
-                        File file = dit.next();
+                        VCSFileProxy file = dit.next();
                         addCandidates.add(new SvnFileNode(file));
                         commitCandidates.add(file);
                     }
@@ -759,17 +761,17 @@ public class CommitAction extends ContextAction {
             // metadata must be replied from SvnMetadata (hold by FileSyatemHandler)
 
             // set binary mimetype and group commitCandidates by managed trees
-            List<List<File>> managedTrees = getManagedTrees(client, support, commitCandidates, binnaryCandidates);
+            List<List<VCSFileProxy>> managedTrees = getManagedTrees(client, support, commitCandidates, binnaryCandidates);
             if(support.isCanceled()) {
                 return;
             }
 
             List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();
-            List<File> hookFiles = new ArrayList<File>();
+            List<VCSFileProxy> hookFiles = new ArrayList<VCSFileProxy>();
             boolean handleHooks = false;
             String originalMessage = message;
             if(hooks.size() > 0) {
-                for (List<File> l : managedTrees) {
+                for (List<VCSFileProxy> l : managedTrees) {
                     hookFiles.addAll(l);
                 }
                 SvnHookContext context = new SvnHookContext(hookFiles.toArray(new File[hookFiles.size()]), message, null);
@@ -795,15 +797,15 @@ public class CommitAction extends ContextAction {
             }
             // finally commit
             Logger.getLogger(CommitAction.class.getName()).log(Level.FINEST, "All commit managed trees: {0} - {1}", new Object[] { managedTrees.size(), managedTrees } ); //NOI18N
-            for (Iterator<List<File>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
+            for (Iterator<List<VCSFileProxy>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
 
                 // one commit for each wc
-                List<File> commitList = itCandidates.next();
-                File[] commitedFiles = commitList.toArray(new File[commitList.size()]);
+                List<VCSFileProxy> commitList = itCandidates.next();
+                VCSFileProxy[] commitedFiles = commitList.toArray(new VCSFileProxy[commitList.size()]);
 
                 CommitCmd cmd = new CommitCmd(client, support, message, handleHooks ? logs : null);
                 // handle recursive commits - deleted and copied folders can't be commited non recursively
-                List<File> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);
+                List<VCSFileProxy> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);
                 Logger.getLogger(CommitAction.class.getName()).log(Level.FINEST, "Committing files: {0}", commitList); //NOI18N
                 if(recursiveCommits.size() > 0) {
                     // remove from the commits list all files which are supposed to be commited recursively
@@ -857,7 +859,7 @@ public class CommitAction extends ContextAction {
                     return;
                 }
             }
-            SvnUtils.refreshFS(commitCandidates.toArray(new File[commitCandidates.size()]));
+            SvnUtils.refreshFS(commitCandidates.toArray(new VCSFileProxy[commitCandidates.size()]));
         } catch (SVNClientException ex) {
             support.annotate(ex);
         } finally {
@@ -879,8 +881,8 @@ public class CommitAction extends ContextAction {
             this.message = message;
         }
         
-        private void commitFiles (List<File> commitFiles, boolean recursive) throws SVNClientException {
-            File[] files = commitFiles.toArray(new File[commitFiles.size()]);
+        private void commitFiles (List<VCSFileProxy> commitFiles, boolean recursive) throws SVNClientException {
+            VCSFileProxy[] files = commitFiles.toArray(new VCSFileProxy[commitFiles.size()]);
             long revision = client.commit(files, message, recursive);
             if (files.length > 0 && !supp.isCanceled() && revision > -1) {
                 ISVNLogMessage revisionLog = getLogMessage (files, revision);
@@ -899,20 +901,20 @@ public class CommitAction extends ContextAction {
             }
         }
 
-        private SVNUrl getRepositoryRootUrl(File file) throws SVNClientException {
+        private SVNUrl getRepositoryRootUrl(VCSFileProxy file) throws SVNClientException {
             if (repositoryRootUrl == null) {
                 repositoryRootUrl = SvnUtils.getRepositoryRootUrl(file);
             }
             return repositoryRootUrl;
         }
 
-        private ISVNLogMessage getLogMessage (File[] files, long revision) throws SVNClientException {
+        private ISVNLogMessage getLogMessage (VCSFileProxy[] files, long revision) throws SVNClientException {
             ISVNLogMessage revisionLog = null;
             long maxPause = COMMIT_PAUSE;
             long nextPause = 500;
             for (int i = 0; i < files.length && revisionLog == null; ++i) {
                 try {
-                    File f = files[i];
+                    VCSFileProxy f = files[i];
                     // an existing file needs to be found, log over a deleted file fails
                     while (!f.exists()) {
                         f = f.getParentFile();
@@ -944,7 +946,7 @@ public class CommitAction extends ContextAction {
         }
     }
 
-    private static void afterCommit(Collection<SvnHook> hooks, List<File> files, String message, List<ISVNLogMessage> logs) {
+    private static void afterCommit(Collection<SvnHook> hooks, List<VCSFileProxy> files, String message, List<ISVNLogMessage> logs) {
         if(hooks.isEmpty()) {
             return;
         }
@@ -971,7 +973,7 @@ public class CommitAction extends ContextAction {
      * @return log message
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
-    private static ISVNLogMessage getLogMessage (ISVNClientAdapter client, File file, long revision) throws SVNClientException {
+    private static ISVNLogMessage getLogMessage (SvnClient client, VCSFileProxy file, long revision) throws SVNClientException {
         SVNRevision rev = SVNRevision.HEAD;
         ISVNLogMessage log = null;
         try {
@@ -996,11 +998,11 @@ public class CommitAction extends ContextAction {
     /**
      * Groups files by distinct working copies and sets the binary mimetypes
      */
-    private static List<List<File>> getManagedTrees(SvnClient client, SvnProgressSupport support, Set<File> commitCandidates, Set<File> binnaryCandidates) throws SVNClientException {
+    private static List<List<VCSFileProxy>> getManagedTrees(SvnClient client, SvnProgressSupport support, Set<VCSFileProxy> commitCandidates, Set<VCSFileProxy> binnaryCandidates) throws SVNClientException {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        List<List<File>> managedTrees = new ArrayList<List<File>>();
-        for (Iterator<File> itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
-            File commitCandidateFile = itCommitCandidates.next();
+        List<List<VCSFileProxy>> managedTrees = new ArrayList<List<VCSFileProxy>>();
+        for (Iterator<VCSFileProxy> itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
+            VCSFileProxy commitCandidateFile = itCommitCandidates.next();
 
             // set MIME property application/octet-stream
             if(binnaryCandidates.contains(commitCandidateFile)) {
@@ -1018,12 +1020,12 @@ public class CommitAction extends ContextAction {
                 return null;
             }
 
-            List<File> managedTreesList = null;
-            for (Iterator<List<File>> itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
-                List<File> list = itManagedTrees.next();
-                File managedTreeFile = list.get(0);
+            List<VCSFileProxy> managedTreesList = null;
+            for (Iterator<List<VCSFileProxy>> itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
+                List<VCSFileProxy> list = itManagedTrees.next();
+                VCSFileProxy managedTreeFile = list.get(0);
 
-                File base = SVNBaseDir.getRootDir(new File[] {commitCandidateFile, managedTreeFile});
+                VCSFileProxy base = SVNBaseDir.getRootDir(new VCSFileProxy[] {commitCandidateFile, managedTreeFile});
                 if(base != null) {
                     FileInformation status = cache.getStatus(base);
                     if ((status.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
@@ -1038,7 +1040,7 @@ public class CommitAction extends ContextAction {
             }
             if(managedTreesList == null) {
                 // no list for files from the same wc as commitCandidateFile created yet
-                managedTreesList = new ArrayList<File>();
+                managedTreesList = new ArrayList<VCSFileProxy>();
                 managedTrees.add(managedTreesList);
             }
             managedTreesList.add(commitCandidateFile);
@@ -1051,8 +1053,8 @@ public class CommitAction extends ContextAction {
      * Calls the svn add command on not yet added files
      */
     private static void performAdds(SvnClient client, SvnProgressSupport support, List<SvnFileNode> addCandidates) throws SVNClientException {
-        List<File> addFiles = new ArrayList<File>();
-        List<File> addDirs = new ArrayList<File>();
+        List<VCSFileProxy> addFiles = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> addDirs = new ArrayList<VCSFileProxy>();
         // XXX waht if user denied directory add but wants to add a file in it?
         Iterator<SvnFileNode> it = addCandidates.iterator();
         while (it.hasNext()) {
@@ -1060,7 +1062,7 @@ public class CommitAction extends ContextAction {
                 return;
             }
             SvnFileNode svnFileNode = it.next();
-            File file = svnFileNode.getFile();
+            VCSFileProxy file = svnFileNode.getFile();
             if (file.isDirectory()) {
                 addDirs.add(file);
             } else if (file.isFile()) {
@@ -1071,16 +1073,16 @@ public class CommitAction extends ContextAction {
             return;
         }
 
-        Iterator<File> itFiles = addDirs.iterator();
-        List<File> dirsToAdd = new ArrayList<File>();
+        Iterator<VCSFileProxy> itFiles = addDirs.iterator();
+        List<VCSFileProxy> dirsToAdd = new ArrayList<VCSFileProxy>();
         while (itFiles.hasNext()) {
-            File dir = itFiles.next();
+            VCSFileProxy dir = itFiles.next();
             if (!dirsToAdd.contains(dir)) {
                 dirsToAdd.add(dir);
             }
         }
         if(dirsToAdd.size() > 0) {
-            for (File file : dirsToAdd) {
+            for (VCSFileProxy file : dirsToAdd) {
                 client.addDirectory(file, false);
             }
         }
@@ -1089,7 +1091,7 @@ public class CommitAction extends ContextAction {
         }
 
         if(addFiles.size() > 0) {
-            for (File file : addFiles) {
+            for (VCSFileProxy file : addFiles) {
                 client.addFile(file);
             }
         }
@@ -1105,15 +1107,15 @@ public class CommitAction extends ContextAction {
      */
     private static void setIgnoredProperties(SvnClient client, SvnProgressSupport support, List<SvnFileNode> addCandidates) {
         for (SvnFileNode fileNode : addCandidates) {
-            File file = fileNode.getFile();
+            VCSFileProxy file = fileNode.getFile();
             if(file.isDirectory()) {
-                File[] children = file.listFiles();
+                VCSFileProxy[] children = file.listFiles();
                 if(children != null || children.length > 0) {
-                    for (File child : children) {
+                    for (VCSFileProxy child : children) {
                         final FileStatusCache cache = Subversion.getInstance().getStatusCache();
                         FileInformation info = cache.getStatus(child);
                         if(info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                            File parent = child.getParentFile();
+                            VCSFileProxy parent = child.getParentFile();
                             if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
                                 // ensure parents added status is set
                                 cache.refresh(parent, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
@@ -1129,14 +1131,14 @@ public class CommitAction extends ContextAction {
     /**
      * Returns all files which have to be commited recursively (deleted and copied folders)
      */
-    private static List<File> getRecursiveCommits(List<File> nonRecursiveComits, List<File> removeCandidates) {
+    private static List<VCSFileProxy> getRecursiveCommits(List<VCSFileProxy> nonRecursiveComits, List<VCSFileProxy> removeCandidates) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        List<File> recursiveCommits = new ArrayList<File>();
+        List<VCSFileProxy> recursiveCommits = new ArrayList<VCSFileProxy>();
 
         // 1. if there is at least one directory which isn't removed or copied
         //    we have to commit it nonrecursively ...
         boolean nonRecursiveDirs = false;
-        for(File file : nonRecursiveComits) {
+        for(VCSFileProxy file : nonRecursiveComits) {
             ISVNStatus st = null;
             if( file.isDirectory() &&
                 !( removeCandidates.contains(file) ||
@@ -1157,7 +1159,7 @@ public class CommitAction extends ContextAction {
             //        could cause that the commit would also apply to files which because of exclusion or
             //        the (bloody) flat-folder loginc aren't supposed to be commited at all =>
             //        => the commit has to be split in two parts.
-            for(File file : nonRecursiveComits) {
+            for(VCSFileProxy file : nonRecursiveComits) {
                 ISVNStatus st = null;
                 FileInformation fi = cache.getStatus(file);
                 if((file.isDirectory() || fi.isDirectory()) &&
@@ -1173,11 +1175,11 @@ public class CommitAction extends ContextAction {
     /**
      * Returns all files from the children list which have a parent in or are equal to a folder from the parents list
      */
-    private static List<File> getAllChildren(List<File> parents, List<File> children) {
-        List<File> ret = new ArrayList<File>();
+    private static List<VCSFileProxy> getAllChildren(List<VCSFileProxy> parents, List<VCSFileProxy> children) {
+        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
         if(parents.size() > 0) {
-            for(File child : children) {
-                File parent = child;
+            for(VCSFileProxy child : children) {
+                VCSFileProxy parent = child;
                 while(parent != null) {
                     if(parents.contains(parent)) {
                         ret.add(child);
@@ -1189,16 +1191,16 @@ public class CommitAction extends ContextAction {
         return ret;
     }
 
-    private static void refreshFiles(FileStatusCache cache, List<File> files) {
-        for (File file : files) {
+    private static void refreshFiles(FileStatusCache cache, List<VCSFileProxy> files) {
+        for (VCSFileProxy file : files) {
             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
         }
     }
 
-    private static List<File> listUnmanagedParents(SvnFileNode node) {
-        List<File> unmanaged = new ArrayList<File>();
-        File file = node.getFile();
-        File parent = file.getParentFile();
+    private static List<VCSFileProxy> listUnmanagedParents(SvnFileNode node) {
+        List<VCSFileProxy> unmanaged = new ArrayList<VCSFileProxy>();
+        VCSFileProxy file = node.getFile();
+        VCSFileProxy parent = file.getParentFile();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         while (true) {
             // added parent does not have metadata in 1.7, now, does it?
@@ -1213,10 +1215,10 @@ public class CommitAction extends ContextAction {
             }
         }
 
-        List<File> ret = new ArrayList<File>();
-        Iterator<File> it = unmanaged.iterator();
+        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        Iterator<VCSFileProxy> it = unmanaged.iterator();
         while (it.hasNext()) {
-            File un = it.next();
+            VCSFileProxy un = it.next();
             ret.add(un);
         }
 
@@ -1232,11 +1234,11 @@ public class CommitAction extends ContextAction {
         }
     }
 
-    private static List<File> filterChildren (List<File> files) {
-        Set<File> filteredFiles = new LinkedHashSet<File>(files);
-        for (File parent : files) {
-            Set<File> toRemove = new HashSet<File>(filteredFiles.size());
-            for (File f : filteredFiles) {
+    private static List<VCSFileProxy> filterChildren (List<VCSFileProxy> files) {
+        Set<VCSFileProxy> filteredFiles = new LinkedHashSet<VCSFileProxy>(files);
+        for (VCSFileProxy parent : files) {
+            Set<VCSFileProxy> toRemove = new HashSet<VCSFileProxy>(filteredFiles.size());
+            for (VCSFileProxy f : filteredFiles) {
                 if (Utils.isAncestorOrEqual(f, parent)) {
                     continue;
                 } else if (Utils.isAncestorOrEqual(parent, f)) {
@@ -1245,10 +1247,10 @@ public class CommitAction extends ContextAction {
             }
             filteredFiles.removeAll(toRemove);
         }
-        return new ArrayList<File>(filteredFiles);
+        return new ArrayList<VCSFileProxy>(filteredFiles);
     }
 
-    private static void deleteMissingFiles (List<File> removeCandidates, SvnClient client) throws SVNClientException {
-        client.remove(removeCandidates.toArray(new File[removeCandidates.size()]), true);
+    private static void deleteMissingFiles (List<VCSFileProxy> removeCandidates, SvnClient client) throws SVNClientException {
+        client.remove(removeCandidates.toArray(new VCSFileProxy[removeCandidates.size()]), true);
     }
 }

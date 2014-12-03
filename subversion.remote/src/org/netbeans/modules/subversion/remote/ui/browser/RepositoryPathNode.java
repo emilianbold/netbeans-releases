@@ -42,14 +42,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.browser;
+package org.netbeans.modules.subversion.remote.ui.browser;
 
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
-import org.netbeans.modules.subversion.RepositoryFile;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -68,15 +66,17 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.RepositoryFile;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
+import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
-import org.tigris.subversion.svnclientadapter.SVNRevision;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Represents a path in the repository.
@@ -98,7 +98,7 @@ public class RepositoryPathNode extends AbstractNode {
     private boolean isListed = false;
 
     static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryFile file) {
-        return createRepositoryPathNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""));
+        return createRepositoryPathNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision.Number(0), null, ""));
     }
 
     static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {
@@ -115,7 +115,7 @@ public class RepositoryPathNode extends AbstractNode {
     }
 
     private static RepositoryPathNode createDelayedExpandNode(BrowserClient client, RepositoryFile file) {
-        return new DelayedExpandNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""), true);
+        return new DelayedExpandNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision.Number(0), null, ""), true);
     }
 
     private RepositoryPathNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {

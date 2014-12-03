@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.ui.update;
+package org.netbeans.modules.subversion.remote.ui.update;
 
-import java.io.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,19 +52,22 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.subversion.*;
-import org.netbeans.modules.subversion.client.SvnClient;
-import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.ui.commit.ConflictResolvedAction;
-import org.netbeans.modules.subversion.util.Context;
-import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.FileInformation;
+import org.netbeans.modules.subversion.remote.FileStatusCache;
+import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.api.ISVNStatus;
+import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.subversion.remote.client.SvnClient;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.ui.commit.ConflictResolvedAction;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
-import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 
 /**
  * Show basic conflict resolver UI (provided by the diff module) and resolves tree conflicts.
@@ -110,18 +112,18 @@ public class ResolveConflictsAction extends ContextAction {
         }
         Context ctx = getContext(nodes);
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        File[] files = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);
+        VCSFileProxy[] files = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);
 
         resolveConflicts(files);
     }
 
-    static void resolveConflicts(final File[] files) {
+    static void resolveConflicts(final VCSFileProxy[] files) {
         Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                final Map<File, ISVNStatus> treeConflicts = getTreeConflicts(files);
-                final Map<File, ISVNStatus> propertyConflicts = getPropertyConflicts(files);
-                final List<File> filteredFiles = removeFolders(files, treeConflicts.keySet());
+                final Map<VCSFileProxy, ISVNStatus> treeConflicts = getTreeConflicts(files);
+                final Map<VCSFileProxy, ISVNStatus> propertyConflicts = getPropertyConflicts(files);
+                final List<VCSFileProxy> filteredFiles = removeFolders(files, treeConflicts.keySet());
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -131,7 +133,7 @@ public class ResolveConflictsAction extends ContextAction {
                         } else {
                             resolveTreeConflicts(treeConflicts);
                             resolvePropertyConflicts(propertyConflicts, filteredFiles);
-                            for (File file : filteredFiles) {
+                            for (VCSFileProxy file : filteredFiles) {
                                 ResolveConflictsExecutor executor = new ResolveConflictsExecutor(file);
                                 executor.exec();
                             }
@@ -140,9 +142,9 @@ public class ResolveConflictsAction extends ContextAction {
                 });
             }
 
-            private void resolveTreeConflicts (Map<File, ISVNStatus> treeConflicts) {
-                for (Map.Entry<File, ISVNStatus> e : treeConflicts.entrySet()) {
-                    File file = e.getKey();
+            private void resolveTreeConflicts (Map<VCSFileProxy, ISVNStatus> treeConflicts) {
+                for (Map.Entry<VCSFileProxy, ISVNStatus> e : treeConflicts.entrySet()) {
+                    VCSFileProxy file = e.getKey();
                     ISVNStatus status = e.getValue();
                     if (acceptLocalChanges(status)) {
                         try {
@@ -155,16 +157,16 @@ public class ResolveConflictsAction extends ContextAction {
             }
 
             private boolean acceptLocalChanges (ISVNStatus status) {
-                File file = status.getFile();
+                VCSFileProxy file = status.getFile();
                 NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolveTreeConflict.message", file.getName()), //NOI18N
                         NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolveTreeConflict.title"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
                         NotifyDescriptor.QUESTION_MESSAGE, new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION}, NotifyDescriptor.NO_OPTION);
                 return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION;
             }
 
-            private void resolvePropertyConflicts (Map<File, ISVNStatus> propertyConflicts, List<File> filesToResolve) {
-                for (Map.Entry<File, ISVNStatus> e : propertyConflicts.entrySet()) {
-                    File file = e.getKey();
+            private void resolvePropertyConflicts (Map<VCSFileProxy, ISVNStatus> propertyConflicts, List<VCSFileProxy> filesToResolve) {
+                for (Map.Entry<VCSFileProxy, ISVNStatus> e : propertyConflicts.entrySet()) {
+                    VCSFileProxy file = e.getKey();
                     ISVNStatus status = e.getValue();
                     if (acceptPropertyLocalChanges(status)) {
                         if (!filesToResolve.contains(file)) {
@@ -181,7 +183,7 @@ public class ResolveConflictsAction extends ContextAction {
             }
 
             private boolean acceptPropertyLocalChanges (ISVNStatus status) {
-                File file = status.getFile();
+                VCSFileProxy file = status.getFile();
                 NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolvePropertyConflict.message", file.getName()), //NOI18N
                         NbBundle.getMessage(ResolveConflictsAction.class, "MSG_ResolveConflictsAction.ResolvePropertyConflict.title"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
                         NotifyDescriptor.QUESTION_MESSAGE, new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION}, NotifyDescriptor.NO_OPTION);
@@ -197,9 +199,9 @@ public class ResolveConflictsAction extends ContextAction {
      * @param treeConflicts set of files that will not be included in the returned list
      * @return
      */
-    private static List<File> removeFolders (File[] files, Set<File> treeConflicts) {
-        LinkedList<File> filteredFiles = new LinkedList<File>();
-        for (File file : files) {
+    private static List<VCSFileProxy> removeFolders (VCSFileProxy[] files, Set<VCSFileProxy> treeConflicts) {
+        LinkedList<VCSFileProxy> filteredFiles = new LinkedList<VCSFileProxy>();
+        for (VCSFileProxy file : files) {
             if (!treeConflicts.contains(file) && file.isFile()) {
                 filteredFiles.add(file);
             }
@@ -207,13 +209,13 @@ public class ResolveConflictsAction extends ContextAction {
         return filteredFiles;
     }
 
-    private static Map<File, ISVNStatus> getTreeConflicts (File[] files) {
-        Map<File, ISVNStatus> treeConflicts = new HashMap<File, ISVNStatus>(files.length);
+    private static Map<VCSFileProxy, ISVNStatus> getTreeConflicts (VCSFileProxy[] files) {
+        Map<VCSFileProxy, ISVNStatus> treeConflicts = new HashMap<VCSFileProxy, ISVNStatus>(files.length);
         if (files.length > 0) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                for (File file : files) {
+                for (VCSFileProxy file : files) {
                     if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT_TREE) != 0) {
                         ISVNStatus status = SvnUtils.getSingleStatus(client, file);
                         if (status.hasTreeConflict()) {
@@ -228,13 +230,13 @@ public class ResolveConflictsAction extends ContextAction {
         return treeConflicts;
     }
 
-    private static Map<File, ISVNStatus> getPropertyConflicts (File[] files) {
-        Map<File, ISVNStatus> propertyConflicts = new HashMap<File, ISVNStatus>(files.length);
+    private static Map<VCSFileProxy, ISVNStatus> getPropertyConflicts (VCSFileProxy[] files) {
+        Map<VCSFileProxy, ISVNStatus> propertyConflicts = new HashMap<VCSFileProxy, ISVNStatus>(files.length);
         if (files.length > 0) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
-                for (File file : files) {
+                for (VCSFileProxy file : files) {
                     if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT) != 0) {
                         ISVNStatus status = SvnUtils.getSingleStatus(client, file);
                         if (status.getPropStatus() == SVNStatusKind.CONFLICTED) {
