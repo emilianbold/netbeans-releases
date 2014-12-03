@@ -861,8 +861,8 @@ public class NbModuleSuite {
             }
             modules.add("org.openide.filesystems");
             modules.add("org.openide.modules");
-            modules.add("org.openide.util.base");
             modules.add("org.openide.util");
+            modules.add("org.openide.util.ui");
             modules.remove("org.netbeans.insane");
             modules.add("org.netbeans.core.startup");
             modules.add("org.netbeans.bootstrap");
