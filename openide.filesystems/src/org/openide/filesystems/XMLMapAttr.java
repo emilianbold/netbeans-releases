@@ -977,7 +977,7 @@ final class XMLMapAttr implements Map {
                     ExternalUtil.annotate(exc, "value = " + value); //NOI18N
                     throw exc;
                 } catch (LinkageError e) {
-                    throw (ClassNotFoundException) ExternalUtil.annotate(new ClassNotFoundException(value), e);
+                    throw (Exception)ExternalUtil.annotate(new ClassNotFoundException(value), e);
                 }
             }
 
