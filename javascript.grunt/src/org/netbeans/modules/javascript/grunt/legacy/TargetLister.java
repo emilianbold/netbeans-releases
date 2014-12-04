@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.javascript.grunt.legacy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -105,7 +105,8 @@ public class TargetLister {
 
         });
     }
-    
+
+    // XXX invalidate cache on node_modules directory change
     public static void invalidateCache(final FileObject gruntFile) {
         if (gruntFile == null) {
             return;

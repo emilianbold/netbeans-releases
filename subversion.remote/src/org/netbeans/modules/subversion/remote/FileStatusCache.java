@@ -78,6 +78,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -586,7 +587,7 @@ public class FileStatusCache {
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
                 symlink = topmost != null && isSymlink(file, topmost);
                 if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
-                    SvnClient client = Subversion.getInstance().getClient(false);
+                    SvnClient client = Subversion.getInstance().getClient(false, new Context(topmost));
                     status = SvnUtils.getSingleStatus(client, file);
                     if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
                         status = null;
@@ -902,7 +903,7 @@ public class FileStatusCache {
         ISVNStatus [] entries = null;
         try {
             if (SvnUtils.isManaged(dir)) {                
-                SvnClient client = Subversion.getInstance().getClient(true);
+                SvnClient client = Subversion.getInstance().getClient(true, new Context(dir));
                 entries = client.getStatus(dir, false, true); 
             }
         } catch (SVNClientException e) {
@@ -1203,14 +1204,7 @@ public class FileStatusCache {
     private boolean isSymlink (VCSFileProxy file, VCSFileProxy root) {
         boolean symlink = false;
         if (EXCLUDE_SYMLINKS) {
-            Path path, checkoutRoot;
-            try {
-                path = file.toPath().normalize();
-                checkoutRoot = root.toPath().normalize();
-                symlink = isSymlink(path, checkoutRoot);
-            } catch (java.nio.file.InvalidPathException ex) {
-                LOG.log(Level.INFO, null, ex);
-            }
+            symlink = VCSFileProxySupport.isSymlink(file, root);
         }
         return symlink;
     }
@@ -1485,7 +1479,7 @@ public class FileStatusCache {
                     HashMap<VCSFileProxy, FileLabelInfo> labels = new HashMap<VCSFileProxy, FileLabelInfo>(filesToRefresh.size());
                     for (VCSFileProxy file : filesToRefresh) {
                         try {
-                            SvnClient client = Subversion.getInstance().getClient(false);
+                            SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                             // get status for all files
                             ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, file);
                             SVNRevision rev = info.getRevision();

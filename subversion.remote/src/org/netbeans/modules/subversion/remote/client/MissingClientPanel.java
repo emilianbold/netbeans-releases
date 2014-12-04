@@ -47,8 +47,7 @@ import java.awt.Font;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
-import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.util.Utilities;
+import org.netbeans.modules.subversion.remote.util.SvnUtils;
 
 /**
  * @author Tomas Stupka
@@ -59,11 +58,7 @@ public class MissingClientPanel extends javax.swing.JPanel {
     /** Creates new form MissingClientPanel */
     public MissingClientPanel() {
         initComponents();
-        if(Utilities.isWindows()) {
-            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.windows.text")); // NOI18N
-        } else {
-            tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text")); // NOI18N
-        }
+        tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text")); // NOI18N
         String text = org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.text"); // NOI18N
         textPane.setText(text);
         Document doc = textPane.getDocument();

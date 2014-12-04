@@ -97,10 +97,6 @@ public class UpdateWithDependenciesAction extends ContextAction {
     
     @Override
     protected void performContextAction(final Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
-        
         running = true;
         Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
@@ -135,6 +131,9 @@ public class UpdateWithDependenciesAction extends ContextAction {
             }
         }
         Context context = SvnUtils.getProjectsContext(projectsToUpdate.toArray(new Project[projectsToUpdate.size()]));
+        if(!Subversion.getInstance().checkClientAvailable(context)) {
+            return;
+        }
         UpdateAction.performUpdate(context, getContextDisplayName(nodes));
     }
 }

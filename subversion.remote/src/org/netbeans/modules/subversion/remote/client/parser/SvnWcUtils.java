@@ -48,6 +48,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -63,7 +64,7 @@ public class SvnWcUtils {
            
     public static VCSFileProxy getSvnFile(VCSFileProxy file, String svnFileName) {
         VCSFileProxy svnFile = VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ADMIN_DIR + "/" + svnFileName);
-        if(svnFile.canRead()) {
+        if(VCSFileProxySupport.canRead(svnFile)) {
             return svnFile;
         }
         return null;                

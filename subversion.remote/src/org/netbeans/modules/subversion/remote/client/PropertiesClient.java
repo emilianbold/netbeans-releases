@@ -55,7 +55,9 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.client.parser.ParserSvnInfo;
 import org.netbeans.modules.subversion.remote.client.parser.SvnWcUtils;
 import org.netbeans.modules.subversion.remote.config.KVFile;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -103,7 +105,7 @@ public final class PropertiesClient {
     public Map<String, byte[]> getBaseProperties (boolean contactServer) throws IOException {
         // XXX: refactor code, join with getProperties()
         if (hasOldMetadata(file)) {
-            File store;
+            VCSFileProxy store;
             try {
                 store = getPropertyFile(true);
             } catch (SVNClientException ex) {
@@ -151,7 +153,7 @@ public final class PropertiesClient {
      */
     public Map<String, byte[]> getProperties() throws IOException {
         if (hasOldMetadata(file)) {
-            File store;
+            VCSFileProxy store;
             try {
                 store = getPropertyFile(false);
                 if (store == null) {
@@ -170,7 +172,7 @@ public final class PropertiesClient {
             }
         } else {
             try {
-                SvnClient client = Subversion.getInstance().getClient(false);
+                SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                 Map<String, byte[]> map = new HashMap<String, byte[]>();
                 if (client != null) {
                     ISVNProperty[] props = client.getProperties(file);
@@ -185,8 +187,8 @@ public final class PropertiesClient {
         }
     }
 
-    private File getPropertyFile(boolean base) throws SVNClientException {
-        SvnClient client = Subversion.getInstance().getClient(false);
+    private VCSFileProxy getPropertyFile(boolean base) throws SVNClientException {
+        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
         ISVNInfo info = null;
         try {
             info = SvnUtils.getInfoFromWorkingCopy(client, file);
@@ -209,11 +211,11 @@ public final class PropertiesClient {
         throw new UnsupportedOperationException();
     }
 
-    public static boolean hasOldMetadata (File file) {
-        File parent;
-        return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead()
+    private static boolean hasOldMetadata (VCSFileProxy file) {
+        VCSFileProxy parent;
+        return VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR))
                 || (parent = file.getParentFile()) != null 
-                && new File(parent, SvnUtils.SVN_ENTRIES_DIR).canRead()
-                && !new File(parent, SvnUtils.SVN_WC_DB).exists();
+                && VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(parent, SvnUtils.SVN_ENTRIES_DIR))
+                && !VCSFileProxy.createFileProxy(parent, SvnUtils.SVN_WC_DB).exists();
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.grunt;
 
-import java.util.Collection;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
-import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.subversion.remote.versioning.util;
 
-@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-public final class ImportantFilesImpl implements ImportantFilesImplementation {
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
-    private final ImportantFilesSupport support;
-    private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
-        @Override
-        public FileInfo create(FileObject fileObject) {
-            return new FileInfo(fileObject, fileObject.getName(), null);
-        }
-    };
+/**
+ * Implementations provide hyperlinking functionality in the VCS Annotatoion
+ * bar and History views
+ *
+ * @author Tomas Stupka
+ */
+public abstract class VCSHyperlinkProvider {
 
 
-    public ImportantFilesImpl(Project project) {
-        assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), "Gruntfile.js"); // NOI18N
+    public int[] getSpans(String text) {
+        return null;
     }
 
-    @Override
-    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
-        return support.getFiles(fileInfoCreator);
+    public void onClick(VCSFileProxy file, String text, int offsetStart, int offsetEnd) {
+        // do nothing
     }
 
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        support.addChangeListener(listener);
+    public String getTooltip(String text, int offsetStart, int offsetEnd) {
+        return null;
     }
-
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        support.removeChangeListener(listener);
-    }
-
 }

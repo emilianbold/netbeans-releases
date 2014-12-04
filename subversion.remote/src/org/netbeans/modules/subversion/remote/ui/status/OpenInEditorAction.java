@@ -48,13 +48,13 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -72,7 +72,7 @@ public class OpenInEditorAction extends AbstractAction {
     private boolean isActionEnabled() {
         VCSFileProxy [] files = SvnUtils.getCurrentContext(null).getFiles();
         for (VCSFileProxy file : files) {
-            if (file.canRead()) {
+            if (VCSFileProxySupport.canRead(file)) {
                 return true;
             }
         }

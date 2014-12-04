@@ -41,13 +41,15 @@
  */
 package org.netbeans.modules.subversion.remote.api;
 
+import java.net.MalformedURLException;
+
 /**
  *
  * @author Alexander Simon
  */
 public class SVNUrl {
-    public SVNUrl(String url){
-        
+    public SVNUrl(String url) throws MalformedURLException{
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public String getProtocol() {
@@ -58,7 +60,23 @@ public class SVNUrl {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public String getPort() {
+    public int getPort() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public SVNUrl appendPath(String toString) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public String[] getPathSegments() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public String getLastPathSegment() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public SVNUrl getParent() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -76,12 +77,13 @@ public class ClientCheckSupport {
      * @param progressName name of a progress displayed in the progress bar, may be null
      * @param runnable runnable started if a client is available
      */
-    public void runInAWTIfAvailable (final String progressName, final Runnable runnable) {
+    public void runInAWTIfAvailable (final Node[] nodes, final String progressName, final Runnable runnable) {
         SvnProgressSupport supp = new SvnProgressSupport() {
             @Override
             protected void perform() {
                 setDisplayName(NbBundle.getMessage(ClientCheckSupport.class, "MSG_ClientCheckSupport.progressDescription")); //NOI18N
-                if (!Subversion.getInstance().checkClientAvailable()) {
+                Context ctx = SvnUtils.getCurrentContext(nodes);
+                if (!Subversion.getInstance().checkClientAvailable(ctx)) {
                     LOG.log(Level.FINE, "Client is unavailable, cannot perform {0}", progressName); //NOI18N
                     return;
                 }

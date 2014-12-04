@@ -88,9 +88,11 @@ import org.netbeans.modules.subversion.remote.api.ISVNInfo;
 import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
 import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
+import org.netbeans.modules.subversion.remote.api.SVNInfoUnversioned;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNStatusUnversioned;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.api.SVNUrlUtils;
 import org.netbeans.modules.subversion.remote.client.PropertiesClient;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
@@ -105,6 +107,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
+import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
@@ -151,7 +154,9 @@ public class SvnUtils {
     private static final VCSContext.FileFilter svnFileFilter = new VCSContext.FileFilter() {
         @Override
         public boolean accept(VCSFileProxy pathname) {
-            if (isAdministrative(pathname)) return false;
+            if (isAdministrative(pathname)) {
+                return false;
+            }
             return SharabilityQuery.getSharability(VCSFileProxySupport.toURI(pathname)) != SharabilityQuery.Sharability.NOT_SHARABLE;
         }
     };
@@ -229,7 +234,7 @@ public class SvnUtils {
             if (ctx != null) return ctx;
         }
         VCSContext vcsCtx = VCSContext.forNodes(nodes);
-        Context ctx = new Context(new ArrayList<VCSFileProxy>(vcsCtx.computeFiles(svnFileFilter)), new ArrayList<File>(vcsCtx.getRootFiles()), new ArrayList<File>(vcsCtx.getExclusions()));
+        Context ctx = new Context(new ArrayList<VCSFileProxy>(vcsCtx.computeFiles(svnFileFilter)), new ArrayList<VCSFileProxy>(vcsCtx.getRootFiles()), new ArrayList<VCSFileProxy>(vcsCtx.getExclusions()));
         contextCached = new WeakReference<Context>(ctx);
         contextNodesCached = new WeakReference<Node []>(nodes);
         return ctx;
@@ -266,9 +271,13 @@ public class SvnUtils {
                 status = FileInformation.STATUS_VERSIONED_UPTODATE;
             }
             if (Boolean.TRUE.equals(isDirectory) || (isDirectory == null && file.isDirectory())) {
-                if ((status & includingFolderStatus) == 0) return Context.Empty;
+                if ((status & includingFolderStatus) == 0) {
+                    return Context.Empty;
+                }
             } else {
-                if ((status & includingFileStatus) == 0) return Context.Empty;
+                if ((status & includingFileStatus) == 0) {
+                    return Context.Empty;
+                }
             }
         }
         return context;
@@ -506,7 +515,7 @@ public class SvnUtils {
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
         VCSFileProxy lastManaged = file;
-        SvnClient client = Subversion.getInstance().getClient(false);
+        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
         while (isManaged(file)) {
             fileIsManaged = true;
 
@@ -568,7 +577,7 @@ public class SvnUtils {
             // get the URL from the server, it's just that it could be quite a performance killer.
             // XXX and now i'm just currious how we will handle this if there will be some javahl or
             // pure java client suport -> without dispatching to our metadata parser
-            if (new File(lastManaged, SvnUtils.SVN_WC_DB).canRead()) {
+            if (VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(lastManaged, SvnUtils.SVN_WC_DB))) {
                 throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_client", lastManaged));
             } else {
                 throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
@@ -589,7 +598,7 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */
     public static SVNUrl getRepositoryRootUrl(VCSFileProxy file) throws SVNClientException {
-        SvnClient client = Subversion.getInstance().getClient(false);
+        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
 
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
@@ -635,7 +644,7 @@ public class SvnUtils {
                 throw e;
             }
             Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] { lastManaged });
-            if (new File(lastManaged, SvnUtils.SVN_WC_DB).canRead()) {
+            if (VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(lastManaged, SvnUtils.SVN_WC_DB))) {
                 throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_client", lastManaged));
             } else {
                 throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
@@ -669,7 +678,7 @@ public class SvnUtils {
         SVNUrl fileURL = null;
         SvnClient client = null;
         try {
-            client = Subversion.getInstance().getClient(false);
+            client = Subversion.getInstance().getClient(false, new Context(file));
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, false, false);
             return null;
@@ -736,7 +745,7 @@ public class SvnUtils {
                 throw e;
             }
             Subversion.LOG.log(Level.WARNING, "no repository url found for managed file {0}", new Object[] { lastManaged });
-            if (new File(lastManaged, SvnUtils.SVN_WC_DB).canRead()) {
+            if (VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(lastManaged, SvnUtils.SVN_WC_DB))) {
                 throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_client", lastManaged));
             } else {
                 throw new SVNClientException(NbBundle.getMessage(SvnUtils.class, "MSG_too_old_WC"));
@@ -744,7 +753,9 @@ public class SvnUtils {
         } else if(!fileIsManaged) {
             Subversion.LOG.log(Level.INFO, "no repository url found for not managed file {0}", new Object[] { lastManaged });
         }
-        if (path.length() > 0) fileURL = fileURL.appendPath(path.toString());
+        if (path.length() > 0) {
+            fileURL = fileURL.appendPath(path.toString());
+        }
         return fileURL;
     }
 
@@ -759,7 +770,7 @@ public class SvnUtils {
         SVNUrl fileURL = null;
         SvnClient client = null;
         try {
-            client = Subversion.getInstance().getClient(false);
+            client = Subversion.getInstance().getClient(false, new Context(root));
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, false, false);
             return null;
@@ -926,7 +937,7 @@ public class SvnUtils {
 
     public static SVNUrl getCopiedUrl (VCSFileProxy f) {
         try {
-            ISVNInfo info = getInfoFromWorkingCopy(Subversion.getInstance().getClient(false), f);
+            ISVNInfo info = getInfoFromWorkingCopy(Subversion.getInstance().getClient(false, new Context(f)), f);
             if (info != null) {
                 return info.getCopyUrl();
             }
@@ -949,7 +960,7 @@ public class SvnUtils {
     }
 
     public static boolean hasMetadata (VCSFileProxy file) {
-        return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead() || new File(file, SvnUtils.SVN_WC_DB).canRead();
+        return VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR)) || VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_WC_DB));
     }
 
     private static final ThreadLocal<Map<VCSFileProxy, ISVNInfo>> infoCache = new ThreadLocal<Map<VCSFileProxy, ISVNInfo>>();
@@ -1001,7 +1012,7 @@ public class SvnUtils {
         if (info == null) {
             try {
                 // this might be a symlink
-                info = client.getInfoFromWorkingCopy(file.getCanonicalFile());
+                info = client.getInfoFromWorkingCopy(VCSFileProxySupport.getCanonicalFile(file));
             } catch (IOException ex) {
                 Subversion.LOG.log(Level.INFO, "getInfoFromWorkingCopy", ex); //NOI18N
                 // pfff, don't know what now
@@ -1024,7 +1035,7 @@ public class SvnUtils {
             // it was deleted, lets delete it again
             if (file.exists()) {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(false);
+                    SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                     client.remove(new VCSFileProxy[]{file}, true);
                 } catch (SVNClientException ex) {
                     Subversion.LOG.log(Level.SEVERE, null, ex);
@@ -1034,7 +1045,7 @@ public class SvnUtils {
             return;
         }
         VCSFileProxy parent = file.getParentFile();
-        parent.mkdirs();
+        VCSFileProxySupport.mkdirs(parent);
 
         OutputStream os = null;
         InputStream is = null;
@@ -1593,7 +1604,9 @@ public class SvnUtils {
 
     private static Logger TY9_LOG = null;
     public static void logT9Y(String msg) {
-        if(TY9_LOG == null) TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y");
+        if(TY9_LOG == null) {
+            TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y");
+        }
         TY9_LOG.log(Level.FINEST, msg);
     }
 
@@ -1681,10 +1694,7 @@ public class SvnUtils {
             return false;
         }
 
-        if (javaVMName.toLowerCase().contains("64-bit")) { // NOI18N
-            return true;
-        }
-        return false;
+        return javaVMName.toLowerCase().contains("64-bit");
     }
 
     public static CommitOptions[] createDefaultCommitOptions(SvnFileNode[] nodes, boolean excludeNew) {
@@ -1743,9 +1753,7 @@ public class SvnUtils {
             ces = org.netbeans.modules.versioning.util.Utils.openFile(fo, rev);
         }
         if (showAnnotations) {
-            if (ces == null) {
-                return;
-            } else {
+            if (ces != null) {
                 final org.openide.text.CloneableEditorSupport support = ces;
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -1843,7 +1851,7 @@ public class SvnUtils {
             Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
-                    FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                    VersioningSupport.refreshFor(parents.toArray(new VCSFileProxy[parents.size()]));
                 }
             }, 100);
         }

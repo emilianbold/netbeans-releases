@@ -96,10 +96,10 @@ public class UnlockAction extends ContextAction {
 
     @Override
     protected void performContextAction (Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
+        Context ctx = getContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {
             return;
         }
-        Context ctx = getContext(nodes);
         final VCSFileProxy[] files = ctx.getFiles();
         if (files.length == 0) {
             return;
@@ -115,7 +115,7 @@ public class UnlockAction extends ContextAction {
             @Override
             protected void perform () {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(url, this);
+                    SvnClient client = Subversion.getInstance().getClient(new Context(files), url, this);
                     Map<VCSFileProxy, String> paths = new HashMap<VCSFileProxy, String>();
                     for (VCSFileProxy f : files) {
                         paths.put(f, f.getPath());
@@ -132,7 +132,7 @@ public class UnlockAction extends ContextAction {
                                 client.unlock(files, force);
                                 if (list.isAuthError() && (resumeAuth = SvnClientExceptionHandler.handleAuth(url))) {
                                     client.removeNotifyListener(list);
-                                    client = Subversion.getInstance().getClient(url, this);
+                                    client = Subversion.getInstance().getClient(new Context(files), url, this);
                                 } else {
                                     break;
                                 }

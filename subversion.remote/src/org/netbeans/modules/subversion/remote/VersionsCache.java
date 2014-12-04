@@ -59,7 +59,9 @@ import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
@@ -117,7 +119,7 @@ public class VersionsCache {
         } catch (ParseException ex) { }
         try {
             if (!canUseRevisionsCache || "false".equals(System.getProperty("versioning.subversion.historycache.enable", "true"))) { //NOI18N
-                SvnClient client = Subversion.getInstance().getClient(repoUrl);
+                SvnClient client = Subversion.getInstance().getClient(null, repoUrl);
                 InputStream in = getInputStream(client, url, revision, pegRevision);
                 return createContent(fileName, in);
             } else {
@@ -126,7 +128,7 @@ public class VersionsCache {
                 Storage cachedVersions = StorageManager.getInstance().getStorage(rootUrl);
                 File cachedFile = cachedVersions.getContent(resourceUrl, fileName, revision);
                 if (cachedFile.length() == 0) { // not yet cached
-                    SvnClient client = Subversion.getInstance().getClient(repoUrl);
+                    SvnClient client = Subversion.getInstance().getClient(null, repoUrl);
                     InputStream in = getInputStream(client, url, revision, pegRevision);
                     cachedFile = createContent(fileName, in);
                     if (cachedFile.length() != 0) {
@@ -162,7 +164,7 @@ public class VersionsCache {
      */
     public VCSFileProxy getFileRevision(VCSFileProxy base, String revision, String pegRevision) throws IOException {
         try {
-            SvnClientFactory.checkClientAvailable();
+            SvnClientFactory.checkClientAvailable(new Context(base));
         } catch (SVNClientException e) {
             return null;
         }
@@ -295,7 +297,7 @@ public class VersionsCache {
     }
 
     private VCSFileProxy getContentBase (VCSFileProxy referenceFile, VCSFileProxy output) throws SVNClientException, IOException {
-        SvnClient client = Subversion.getInstance().getClient(false); // local call, does not need to be instantiated with the file instance
+        SvnClient client = Subversion.getInstance().getClient(false, new Context(referenceFile)); // local call, does not need to be instantiated with the file instance
         InputStream in;
         try {
             in = client.getContent(referenceFile, SVNRevision.BASE);
@@ -309,7 +311,7 @@ public class VersionsCache {
             }
         }
         output = output.normalizeFile();
-        FileUtils.copyStreamToFile(new BufferedInputStream(in), output);
+        VCSFileProxySupport.copyStreamToFile(new BufferedInputStream(in), output);
         return output;
     }
 

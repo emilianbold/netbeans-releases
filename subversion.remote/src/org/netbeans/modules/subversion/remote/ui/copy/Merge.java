@@ -67,6 +67,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 
@@ -197,7 +198,6 @@ public class Merge extends CopyDialog implements ItemListener {
 
         private boolean startPathValid = false;
         private boolean endPathValid = false;
-        private Object SvnSearch;
     
         MergeType (RepositoryFile repositoryFile) {
             this.repositoryFile = repositoryFile;

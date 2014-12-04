@@ -58,6 +58,7 @@ import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -91,12 +92,13 @@ public class IndentScriptEngineHack extends AbstractScriptEngine {
             if (text.length() > 0) {
                 try {
                     doc.insertString(0, text, null);
-                    Position endPos = doc.createPosition(text.length());
+                    Position endPos = doc.createPosition(doc.getLength());
                     reformat.reformat(0, endPos.getOffset());
                     int len = endPos.getOffset();
                     String reformattedText = doc.getText(0, len);
                     getContext().getWriter().write(reformattedText);
                 } catch (BadLocationException e) {
+                    Exceptions.printStackTrace(e);
                 } catch (IOException ex) {
                     throw new ScriptException(ex);
                 }

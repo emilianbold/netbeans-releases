@@ -57,10 +57,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLKeyException;
 import org.netbeans.modules.subversion.remote.Subversion;
-import org.netbeans.modules.subversion.remote.client.SvnClientFactory.ConnectionType;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
@@ -138,13 +139,12 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private SvnProgressSupport support;
     private final int handledExceptions;
     private static boolean metricsAlreadyLogged = false;
-    private final ConnectionType connectionType;
     private volatile boolean disposed;
     private static final Map<String, Mutex> locks = new HashMap<String, Mutex>(5);
     private static final ConfigFiles SENSITIVE_CONFIG_FILES = new ConfigFiles();
     private static final boolean KEEP_SERVERS_FILE = Boolean.getBoolean("versioning.subversion.keepServersFile");
     
-    public SvnClientInvocationHandler (SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
+    public SvnClientInvocationHandler (SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
         
         assert adapter  != null;
         assert desc     != null;
@@ -165,7 +165,6 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 return true;
             }
         };
-        this.connectionType = connType;
     }
 
     private static String print(Object[] args) {
@@ -304,19 +303,11 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             return;
         }
         try {
-            SvnClientFactory.checkClientAvailable();
+            SvnClientFactory.checkClientAvailable(null);
         } catch (SVNClientException e) {
             return;
         }
-        String client = null;
-        if(SvnClientFactory.isCLI()) {
-            client = "CLI";
-        } else {
-            Subversion.LOG.warning("Unknown client type!");            
-        }
-        if(client != null) {
-            Utils.logVCSClientEvent("SVN", client);   
-        }
+        Utils.logVCSClientEvent("SVN", "CLI");   
         metricsAlreadyLogged = true;
     }
     
@@ -426,7 +417,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if(support != null) {
                 support.setCancellableDelegate(cancellable);
             }            
-            File serversConfigFile = null;
+            VCSFileProxy serversConfigFile = null;
             try {
                 // save the proxy settings into the svn servers file                
                 if(desc != null && desc.getSvnUrl() != null) {
@@ -434,7 +425,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                         // prepare a config file. If the return value is not null
                         // it means the file should be deleted eventually because it 
                         // contains sensitive private data.
-                        serversConfigFile = SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl(), connectionType);
+                        serversConfigFile = SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl());
                         if (serversConfigFile != null) {
                             SENSITIVE_CONFIG_FILES.add(serversConfigFile);
                         }
@@ -486,7 +477,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             throw t;
         }
 
-        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions, connectionType);
+        SvnClientExceptionHandler eh = new SvnClientExceptionHandler((SVNClientException) t, adapter, client, desc, handledExceptions);
         eh.setMethod(methodName);
         return eh.handleException();        
     }
@@ -523,7 +514,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if (currentCounter == 0) {
                 remove(file);
                 if (!KEEP_SERVERS_FILE) {
-                    file.delete();
+                    VCSFileProxySupport.delete(file);
                 }
             } else {
                 put(file, currentCounter);

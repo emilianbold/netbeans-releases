@@ -59,9 +59,11 @@ import org.netbeans.modules.subversion.remote.api.ISVNLogMessage;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.api.SVNUrlUtils;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -140,7 +142,7 @@ class SearchExecutor extends SvnProgressSupport {
                     LOG.log(Level.FINE, "populatePathToRoot: rootUrl: {0}, url: {1}, probably svn:externals", new String[] {rootUrl.toString(), url.toString()});
                     continue;
                 }
-                String fileAbsPath = e.getKey().getPath().replace(File.separatorChar, '/');
+                String fileAbsPath = e.getKey().getPath();
                 int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
                 pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
                                new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
@@ -217,7 +219,7 @@ class SearchExecutor extends SvnProgressSupport {
     private void search(SVNUrl rootUrl, Set<VCSFileProxy> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths, int limit) {
         SvnClient client;
         try {
-            client = Subversion.getInstance().getClient(rootUrl, progressSupport);
+            client = Subversion.getInstance().getClient(new Context(files.toArray(new VCSFileProxy[files.size()])), rootUrl, progressSupport);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;

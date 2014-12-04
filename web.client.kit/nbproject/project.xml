@@ -25,6 +25,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javascript.grunt</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.javascript.jstestdriver</code-name-base>
                     <run-dependency>
                         <specification-version>0.1</specification-version>

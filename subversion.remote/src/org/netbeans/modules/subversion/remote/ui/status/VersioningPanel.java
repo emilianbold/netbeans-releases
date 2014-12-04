@@ -405,9 +405,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * and refreshing file nodes.
      */ 
     private void onRefreshAction() {
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }          
         LifecycleManager.getDefault().saveAll();
         if(context == null || context.getRootFiles().length < 1) {
             return;
@@ -416,6 +413,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         if (!SvnUtils.isManaged(context.getRootFiles()[0])) {
             Subversion.LOG.warning("VersioningPanel.onRefreshAction: context contains unmanaged file " + context.getRootFiles()[0].getPath()); //NOI18N
         }
+        if(!Subversion.getInstance().checkClientAvailable(context)) {
+            return;
+        }          
         refreshStatuses();
     }
 
@@ -481,7 +481,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
     private void onDiffAction() {   
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        if(!Subversion.getInstance().checkClientAvailable(context)) {            
             return;
         }          
         String title = parentTopComponent.getContentTitle();

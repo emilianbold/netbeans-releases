@@ -95,12 +95,10 @@ public class StatusAction extends ContextAction {
 
     @Override
     public void performContextAction(Node[] nodes) {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        Context ctx = SvnUtils.getCurrentContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {            
             return;
         }
-        
-        Context ctx = SvnUtils.getCurrentContext(nodes);
         final SvnVersioningTopComponent stc = SvnVersioningTopComponent.getInstance();
         stc.setContentTitle(getContextDisplayName(nodes));
         stc.setContext(ctx);

@@ -45,7 +45,6 @@ package org.netbeans.modules.subversion.remote.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.io.File;
 import java.text.MessageFormat;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -56,6 +55,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
 import org.netbeans.modules.subversion.remote.ui.wizards.checkoutstep.CheckoutStep;
 import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.RepositoryStep;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 
@@ -189,7 +189,7 @@ public final class CheckoutWizard implements ChangeListener {
         return checkoutStep.getRepositoryFiles();
     }
     
-    public File getWorkdir() {
+    public VCSFileProxy getWorkdir() {
         return checkoutStep.getWorkdir();
     }
 

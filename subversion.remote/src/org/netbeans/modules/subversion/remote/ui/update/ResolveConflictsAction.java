@@ -107,10 +107,10 @@ public class ResolveConflictsAction extends ContextAction {
 
     @Override
     protected void performContextAction(Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
+        Context ctx = getContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {
             return;
         }
-        Context ctx = getContext(nodes);
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         VCSFileProxy[] files = cache.listFiles(ctx, FileInformation.STATUS_VERSIONED_CONFLICT);
 
@@ -213,7 +213,7 @@ public class ResolveConflictsAction extends ContextAction {
         Map<VCSFileProxy, ISVNStatus> treeConflicts = new HashMap<VCSFileProxy, ISVNStatus>(files.length);
         if (files.length > 0) {
             try {
-                SvnClient client = Subversion.getInstance().getClient(false);
+                SvnClient client = Subversion.getInstance().getClient(false, new Context(files));
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 for (VCSFileProxy file : files) {
                     if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT_TREE) != 0) {
@@ -234,7 +234,7 @@ public class ResolveConflictsAction extends ContextAction {
         Map<VCSFileProxy, ISVNStatus> propertyConflicts = new HashMap<VCSFileProxy, ISVNStatus>(files.length);
         if (files.length > 0) {
             try {
-                SvnClient client = Subversion.getInstance().getClient(false);
+                SvnClient client = Subversion.getInstance().getClient(false, new Context(files));
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 for (VCSFileProxy file : files) {
                     if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT) != 0) {

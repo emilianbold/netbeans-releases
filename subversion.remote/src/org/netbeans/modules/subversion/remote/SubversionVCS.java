@@ -153,7 +153,9 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
             }
             VCSFileProxy fra = getTopmostManagedAncestor(a);
             VCSFileProxy frb = getTopmostManagedAncestor(b);
-            if (fra == null || !fra.equals(frb)) return false;
+            if (fra == null || !fra.equals(frb)) {
+                return false;
+            }
             try {
                 SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
                 if(ra == null) {

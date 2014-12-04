@@ -52,7 +52,6 @@ import org.openide.nodes.Node;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.*;
 import java.util.List;
 import java.text.DateFormat;
@@ -67,12 +66,10 @@ import org.netbeans.modules.subversion.remote.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 /**

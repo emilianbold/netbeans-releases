@@ -47,7 +47,6 @@ package org.netbeans.modules.subversion.remote.ui.diff;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,6 +77,7 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 
@@ -149,13 +149,11 @@ public class ExportDiffAction extends ContextAction {
 
     void performContextAction (final Node[] nodes, final boolean singleDiffSetup) {
         // reevaluate fast enablement logic guess
-
-        if(!Subversion.getInstance().checkClientAvailable()) {            
-            return;
-        }
-        
         boolean noop;
         Context context = getContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(context)) {            
+            return;
+        }
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
@@ -255,7 +253,7 @@ public class ExportDiffAction extends ContextAction {
             Collections.sort(setups, new Comparator<Setup>() {
                 @Override
                 public int compare(Setup o1, Setup o2) {
-                    return o1.getBaseFile().compareTo(o2.getBaseFile());
+                    return o1.getBaseFile().getPath().compareTo(o2.getBaseFile().getPath());
                 }
             });
             Iterator<Setup> it = setups.iterator();
@@ -301,12 +299,12 @@ public class ExportDiffAction extends ContextAction {
             if (success) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExportDiffAction.class, "BK3004", new Integer(exportedFiles)));
                 if (exportedFiles == 0) {
-                    destination.delete();
+                    VCSFileProxySupport.delete(destination);
                 } else {
                     org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(destination.normalizeFile());
                 }
             } else {
-                destination.delete();
+                VCSFileProxySupport.delete(destination);
             }
 
         }
@@ -314,10 +312,14 @@ public class ExportDiffAction extends ContextAction {
 
     private static VCSFileProxy getCommonParent(VCSFileProxy [] files) {
         VCSFileProxy root = files[0];
-        if (!root.exists() || root.isFile()) root = root.getParentFile();
+        if (!root.exists() || root.isFile()) {
+            root = root.getParentFile();
+        }
         for (int i = 1; i < files.length; i++) {
-            root = Utils.getCommonParent(root, files[i]);
-            if (root == null) return null;
+            root = org.netbeans.modules.subversion.remote.versioning.util.Utils.getCommonParent(root, files[i]);
+            if (root == null) {
+                return null;
+            }
         }
         return root;
     }
@@ -379,11 +381,11 @@ public class ExportDiffAction extends ContextAction {
         
     private String exportBinaryFile(VCSFileProxy file) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StringBuilder sb = new StringBuilder((int) file.length());
-        if (file.canRead()) {
-            Utils.copyStreamsCloseAll(baos, new FileInputStream(file));
+        StringBuilder sb = new StringBuilder((int) VCSFileProxySupport.length(file));
+        if (VCSFileProxySupport.canRead(file)) {
+            Utils.copyStreamsCloseAll(baos, file.getInputStream(false));
         }
-        sb.append("MIME: application/octet-stream; encoding: Base64; length: ").append(file.canRead() ? file.length() : -1); // NOI18N
+        sb.append("MIME: application/octet-stream; encoding: Base64; length: ").append(VCSFileProxySupport.canRead(file) ? VCSFileProxySupport.length(file) : -1); // NOI18N
         sb.append(System.getProperty("line.separator")); // NOI18N
         sb.append(Base64Encoder.encode(baos.toByteArray(), true));
         sb.append(System.getProperty("line.separator")); // NOI18N

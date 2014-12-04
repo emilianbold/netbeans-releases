@@ -46,9 +46,10 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.remote.versioning.util.SearchHistorySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.SearchHistorySupport;
 
 /**
  *
@@ -62,7 +63,7 @@ public class SvnSearchHistorySupport extends SearchHistorySupport {
 
     @Override
     protected boolean searchHistoryImpl(final int line) throws IOException {
-        if(!Subversion.isClientAvailable(true)) {
+        if(!SvnClientFactory.isClientAvailable(new Context(getFile()))) {
             Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
             return false;
         }

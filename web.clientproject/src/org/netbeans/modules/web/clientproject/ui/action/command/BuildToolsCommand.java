@@ -39,38 +39,50 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.grunt;
+package org.netbeans.modules.web.clientproject.ui.action.command;
 
-import javax.swing.JComponent;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Jan Becicka
- */
-public class GruntPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public class BuildToolsCommand extends Command {
 
-    @Override
-    public Category createCategory(Lookup context) {
-            return ProjectCustomizer.Category.create(
-                    "grunt",//NOI18N
-                    "Grunt",//NOI18N
-                    null);
+    private static final Logger LOGGER = Logger.getLogger(BuildToolsCommand.class.getName());
+
+    private final String commandId;
+
+
+    public BuildToolsCommand(ClientSideProject project, String commandId) {
+        super(project);
+        assert commandId != null;
+        this.commandId = commandId;
     }
 
     @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        return new GruntCustomizerPanel(context.lookup(ClientSideProject.class), category);
+    public String getCommandId() {
+        return commandId;
     }
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org.netbeans.modules.web.clientproject",//NOI18N
-            position = 365)
-    public static GruntPanelProvider createRunConfigs() {
-        return new GruntPanelProvider();
+    @Override
+    boolean isActionEnabledInternal(Lookup context) {
+        return true;
     }
-    
+
+    @Override
+    void invokeActionInternal(Lookup context) {
+        tryBuild(true, false);
+    }
+
+    @NbBundle.Messages({
+        "BuildToolsCommand.notFound=No Gruntfile.js found; create it and rerun the action.",
+        "BuildToolsCommand.configure=Do you want to configure project actions to call Grunt tasks?",
+    })
+    public boolean tryBuild(boolean showCustomizer, boolean waitFinished) {
+        return BuildTools.getDefault().run(project, commandId, waitFinished,
+                showCustomizer && !ClientSideProjectUtilities.isCordovaProject(project));
+    }
+
 }

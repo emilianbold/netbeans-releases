@@ -64,6 +64,7 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
@@ -104,10 +105,10 @@ public class RevertModificationsAction extends ContextAction {
     
     @Override
     protected void performContextAction(final Node[] nodes) {
-        if(!Subversion.getInstance().checkClientAvailable()) {
+        final Context ctx = getContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {
             return;
         }
-        final Context ctx = getContext(nodes);
         VCSFileProxy[] roots = ctx.getRootFiles();
         // filter managed roots
         List<VCSFileProxy> l = new ArrayList<VCSFileProxy>();
@@ -265,10 +266,10 @@ public class RevertModificationsAction extends ContextAction {
                             ISVNStatus entry = fi.getEntry(f);
                             if (entry.isCopied()) {
                                 // file exists but it's status is set to deleted
-                                File temporary = FileUtils.generateTemporaryFile(f.getParentFile(), f.getName());
+                                VCSFileProxy temporary = VCSFileProxySupport.generateTemporaryFile(f.getParentFile(), f.getName());
                                 try {
-                                    if (f.renameTo(temporary)) {
-                                        client.remove(new File[] { f }, true);
+                                    if (VCSFileProxySupport.renameTo(f, temporary)) {
+                                        client.remove(new VCSFileProxy[] { f }, true);
                                     } else {
                                         Subversion.LOG.log(Level.WARNING, "RevertModifications.handleCopiedFiles: cannot rename {0} to {1}", new Object[] { f, temporary }); //NOI18N
                                     }
@@ -277,13 +278,13 @@ public class RevertModificationsAction extends ContextAction {
                                 } finally {
                                     if (temporary.exists()) {
                                         try {
-                                            if (!temporary.renameTo(f)) {
-                                                FileUtils.copyFile(temporary, f);
+                                            if (!VCSFileProxySupport.renameTo(temporary, f)) {
+                                                VCSFileProxySupport.copyFile(temporary, f);
                                             }
                                         } catch (IOException ex) {
                                             Subversion.LOG.log(Level.INFO, "RevertModifications.handleCopiedFiles: cannot copy {0} back to {1}", new Object[] { temporary, f }); //NOI18N
                                         } finally {
-                                            temporary.delete();
+                                            VCSFileProxySupport.delete(temporary);
                                         }
                                     }
                                 }

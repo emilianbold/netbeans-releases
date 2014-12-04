@@ -67,7 +67,7 @@ public class DependentFileQueryImpl implements DependentFileQueryImplementation 
             Collection<FileReference> c = all.getSource2dest().get(master);
             if (c != null) {
                 for (FileReference fr : c) {
-                    if (fr.target().equals(dependent)) {
+                    if (dependent.equals(fr.target())) {
                         return Dependency.YES;
                     }
                 }

@@ -85,7 +85,7 @@ public class RepositoryFile {
             int fileSegmentsLength = fileUrlSegments.length;
             int repositorySegmentsLength = repositoryUrl.getPathSegments().length;
             pathSegments = new String[fileSegmentsLength - repositorySegmentsLength];
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = repositorySegmentsLength; i < fileSegmentsLength; i++) {
                 pathSegments[i-repositorySegmentsLength] = fileUrlSegments[i];
                 sb.append(fileUrlSegments[i]);
@@ -103,7 +103,7 @@ public class RepositoryFile {
         repositoryRoot = pathSegments == null;        
         
         if(!repositoryRoot) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < pathSegments.length; i++) {
                 sb.append(pathSegments[i]);
                 if(i<pathSegments.length-1) {
@@ -175,9 +175,10 @@ public class RepositoryFile {
         return name;
     }
     
+    @Override
     public String toString() {
         if(toString == null) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append(fileUrl);
             sb.append("@"); // NOI18N
             sb.append(revision);    

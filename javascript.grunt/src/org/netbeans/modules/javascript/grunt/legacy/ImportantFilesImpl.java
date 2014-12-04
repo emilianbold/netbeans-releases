@@ -39,34 +39,46 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.api;
+package org.netbeans.modules.javascript.grunt.legacy;
 
-/**
- *
- * @author Alexander Simon
- */
-public interface ISVNPromptUserPassword {
+import java.util.Collection;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
+import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileObject;
 
-    public static final int Reject = 0;
-    public static final int AcceptTemporary = 1;
-    public static final int AcceptPermanently = 2;
-    
-    int askTrustSSLServer(String certMessage, boolean allowPermanently);
+@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
-    String getPassword();
+    private final ImportantFilesSupport support;
+    private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
+        @Override
+        public FileInfo create(FileObject fileObject) {
+            return new FileInfo(fileObject, fileObject.getName(), null);
+        }
+    };
 
-    int getSSHPort();
 
-    String getSSHPrivateKeyPassphrase();
+    public ImportantFilesImpl(Project project) {
+        assert project != null;
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), "Gruntfile.js"); // NOI18N
+    }
 
-    String getSSHPrivateKeyPath();
+    @Override
+    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
+        return support.getFiles(fileInfoCreator);
+    }
 
-    String getSSLClientCertPassword();
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        support.addChangeListener(listener);
+    }
 
-    String getSSLClientCertPath();
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        support.removeChangeListener(listener);
+    }
 
-    String getUsername();
-
-    boolean userAllowedSave();
-    
 }

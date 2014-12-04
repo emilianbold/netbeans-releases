@@ -727,7 +727,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             @Override
             public void perform() {
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(repositoryRoot);
+                    SvnClient client = Subversion.getInstance().getClient(new Context(file), repositoryRoot);
                     ISVNInfo info = client.getInfo(repositoryUrl, svnRevision, SVNRevision.HEAD);
                 } catch (SVNClientException ex) {
                     if (SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {

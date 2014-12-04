@@ -79,11 +79,11 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.subversion.remote.Subversion;
-import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
-import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
+import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkProvider;
+import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkSupport;
+import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkSupport.AuthorLinker;
+import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkSupport.IssueLinker;
+import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 
 /**

@@ -70,7 +70,9 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.FileStatusCache;
 import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.remote.ui.status.OpenInEditorAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.VersioningEvent;
@@ -99,7 +101,6 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
      * Defines labels for Versioning view table columns.
      */ 
     private final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
-    private Object SvnPropertiesAction;
     {
         ResourceBundle loc = NbBundle.getBundle(UpdateResultsTable.class);
         columnLabels.put(UpdateResultNode.COLUMN_NAME_NAME, new String [] { 
@@ -386,14 +387,16 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     private void performOpenInEditorAction(Node node) {
         // XXX how is this supposed to work ???
         Action action = node.getPreferredAction();
-        if (action == null || !action.isEnabled()) action = new OpenInEditorAction();
+        if (action == null || !action.isEnabled()) {
+            action = new OpenInEditorAction();
+        }
         if (action.isEnabled()) {
             action.actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
         }
     }
 
     private void performOpenSvnProperties(VCSFileProxy file) {        
-        SvnPropertiesAction.openProperties(new VCSFileProxy[] {file}, file.getName());
+        SvnPropertiesAction.openProperties(new Context(file), file.getName());
     }
     
     private VCSFileProxy[] getSelectedFiles(int[] selection) {

@@ -53,6 +53,7 @@ import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.CheckoutCompleted;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -90,15 +91,14 @@ public class ExportAction extends ContextAction {
 
     @Override    
     protected void performContextAction(final Node[] nodes) {
-        
-        if(!Subversion.getInstance().checkClientAvailable()) {            
+        Context ctx = getContext(nodes);
+        if(!Subversion.getInstance().checkClientAvailable(ctx)) {            
             return;
         }
-        
-        Context ctx = getContext(nodes);
-
         final VCSFileProxy[] roots = SvnUtils.getActionRoots(ctx);
-        if(roots == null || roots.length != 1) return;
+        if(roots == null || roots.length != 1) {
+            return;
+        }
         VCSFileProxy[] files = Subversion.getInstance().getStatusCache().listFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE);       
         
         VCSFileProxy fromFile = roots[0];
@@ -120,7 +120,7 @@ public class ExportAction extends ContextAction {
                     public void perform() {
                         VCSFileProxy fromFile = export.getFromFile();
                         VCSFileProxy toFile = export.getToFile();
-                        toFile.mkdir();
+                        VCSFileProxySupport.mkdir(toFile);
                         if(isCanceled()) {
                             return;
                         }

@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -256,7 +257,7 @@ public class KVFile {
         try {
             VCSFileProxy parent = file.getParentFile();
             if(parent!=null && !parent.exists()) {
-                parent.mkdirs();
+                VCSFileProxySupport.mkdirs(parent);
             }
             os = FileUtils.createOutputStream(file);            
             for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {

@@ -77,7 +77,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Ondra Vrabec
  */
-@ActionID(id = "org.netbeans.modules.subversion.ui.shelve.ShelveChangesAction", category = "Subversion")
+@ActionID(id = "org.netbeans.modules.subversion.remote.ui.shelve.ShelveChangesAction", category = "Subversion")
 @ActionRegistration(displayName = "#CTL_ShelveChanges_Title")
 public class ShelveChangesAction extends ContextAction {
 
