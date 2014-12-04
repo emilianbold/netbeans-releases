@@ -43,13 +43,24 @@ package org.netbeans.modules.javascript.grunt.exec;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.print.ConvertedLine;
+import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.options.GruntOptions;
@@ -63,10 +74,16 @@ import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 public class GruntExecutable {
 
+    static final Logger LOGGER = Logger.getLogger(GruntExecutable.class.getName());
+
     public static final String GRUNT_NAME;
+
+    private static final String HELP_PARAM = "--help"; // NOI18N
+    private static final String NO_COLOR_PARAM = "--no-color"; // NOI18N
 
     protected final Project project;
     protected final String gruntPath;
@@ -127,6 +144,23 @@ public class GruntExecutable {
         return task;
     }
 
+    public Future<List<String>> listTasks() {
+        final GruntTasksLineConvertor gruntTasksLineConvertor = new GruntTasksLineConvertor();
+        ExecutionDescriptor descriptor = getSilentDescriptor()
+                .outConvertorFactory(new ExecutionDescriptor.LineConvertorFactory() {
+                    @Override
+                    public LineConvertor newLineConvertor() {
+                        return gruntTasksLineConvertor;
+                    }
+                });
+        Future<Integer> task = getExecutable("list grunt tasks") // NOI18N
+                .additionalParameters(Arrays.asList(NO_COLOR_PARAM, HELP_PARAM))
+                .redirectErrorStream(false)
+                .run(descriptor);
+        assert task != null : gruntPath;
+        return new TaskList(task, gruntTasksLineConvertor);
+    }
+
     private ExternalExecutable getExecutable(String title) {
         assert title != null;
         return new ExternalExecutable(getCommand())
@@ -142,6 +176,16 @@ public class GruntExecutable {
                 .optionsPath(GruntOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
+    }
+
+    private static ExecutionDescriptor getSilentDescriptor() {
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .inputVisible(false)
+                .frontWindow(false)
+                .showProgress(false)
+                .charset(StandardCharsets.UTF_8)
+                .outLineBased(true);
     }
 
     private File getWorkDir() {
@@ -199,6 +243,108 @@ public class GruntExecutable {
             sb.append(StringUtils.implode(super.getParams(params), "\" \"")); // NOI18N
             sb.append("\""); // NOI18N
             return Collections.singletonList(sb.toString());
+        }
+
+    }
+
+    private static final class GruntTasksLineConvertor implements LineConvertor {
+
+        private static final String AVAILABLE_TASKS = "Available tasks"; // NOI18N
+
+        final List<String> tasks = new ArrayList<>();
+
+        private int state = 0;
+
+
+        @Override
+        public List<ConvertedLine> convert(String line) {
+            switch (state) {
+                case 0:
+                    if (AVAILABLE_TASKS.equals(line)) {
+                        state = 1;
+                    }
+                    break;
+                case 1:
+                    if (!StringUtils.hasText(line)) {
+                        state = 2;
+                    } else {
+                        List<String> parts = StringUtils.explode(line.trim(), " "); // NOI18N
+                        tasks.add(parts.get(0));
+                    }
+                    break;
+                default:
+                    // noop
+            }
+            return Collections.emptyList();
+        }
+
+        public List<String> getTasks() {
+            return Collections.unmodifiableList(tasks);
+        }
+
+    }
+
+    private static final class TaskList implements Future<List<String>> {
+
+        private final Future<Integer> task;
+        private final GruntTasksLineConvertor convertor;
+
+        // @GuardedBy("this")
+        private List<String> gruntTasks = null;
+
+
+        TaskList(Future<Integer> task, GruntTasksLineConvertor convertor) {
+            assert task != null;
+            assert convertor != null;
+            this.task = task;
+            this.convertor = convertor;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return task.cancel(mayInterruptIfRunning);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return task.isCancelled();
+        }
+
+        @Override
+        public boolean isDone() {
+            return task.isDone();
+        }
+
+        @Override
+        public List<String> get() throws InterruptedException, ExecutionException {
+            try {
+                task.get();
+            } catch (CancellationException ex) {
+                // cancelled by user
+                LOGGER.log(Level.FINE, null, ex);
+            }
+            return getGruntTasks();
+        }
+
+        @Override
+        public List<String> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            try {
+                task.get(timeout, unit);
+            } catch (CancellationException ex) {
+                // cancelled by user
+                LOGGER.log(Level.FINE, null, ex);
+            }
+            return getGruntTasks();
+        }
+
+        private synchronized List<String> getGruntTasks() {
+            if (gruntTasks != null) {
+                return Collections.unmodifiableList(gruntTasks);
+            }
+            List<String> tasks = new ArrayList<>(convertor.getTasks());
+            Collections.sort(tasks);
+            gruntTasks = new CopyOnWriteArrayList<>(tasks);
+            return Collections.unmodifiableList(gruntTasks);
         }
 
     }
