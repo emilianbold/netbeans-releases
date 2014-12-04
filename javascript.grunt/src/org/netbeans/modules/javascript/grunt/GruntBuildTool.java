@@ -41,18 +41,19 @@
  */
 package org.netbeans.modules.javascript.grunt;
 
-import java.io.IOException;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.legacy.GruntPreferences;
-import org.netbeans.modules.javascript.grunt.legacy.GruntfileExecutor;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -95,21 +96,32 @@ public final class GruntBuildTool implements BuildToolImplementation {
 
     @NbBundle.Messages("GruntBuildTool.configure=Do you want to configure project actions to call Grunt tasks?")
     @Override
-    public boolean run(String commandId, boolean waitFinished, boolean showCustomizer) {
+    public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
         assert isEnabled() : project.getProjectDirectory().getNameExt();
         FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js"); // NOI18N
         assert gruntFile != null : project.getProjectDirectory().getNameExt();
         String gruntBuild = GruntPreferences.getValue(project, "grunt.action." + commandId); // NOI18N
         if (gruntBuild != null) {
-            try {
-                ExecutorTask execute = new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute(); // NOI18N
+            GruntExecutable grunt = GruntExecutable.getDefault(project, warnUser);
+            if (grunt != null) {
+                Future<Integer> result = grunt.run(gruntBuild.split(" ")); // NOI18N
                 if (waitFinished) {
-                    execute.result();
+                    try {
+                        result.get();
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } catch (CancellationException ex) {
+                        // cancelled by user
+                        LOGGER.log(Level.FINE, null, ex);
+                    } catch (ExecutionException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                        if (warnUser) {
+                            // XXX open customizer? show error dialog?
+                        }
+                    }
                 }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
             }
-        } else if (showCustomizer) {
+        } else if (warnUser) {
             NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION);
             Object option = DialogDisplayer.getDefault().notify(desc);
             if (option == NotifyDescriptor.YES_OPTION) {
