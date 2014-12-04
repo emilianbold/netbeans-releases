@@ -41,9 +41,166 @@
  */
 package org.netbeans.modules.javascript.grunt.exec;
 
-public final class GruntExecutable {
+import java.awt.EventQueue;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Future;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.grunt.options.GruntOptions;
+import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
+import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
+import org.netbeans.modules.javascript.grunt.util.FileUtils;
+import org.netbeans.modules.javascript.grunt.util.GruntUtils;
+import org.netbeans.modules.javascript.grunt.util.StringUtils;
+import org.netbeans.modules.web.common.api.ExternalExecutable;
+import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
-    // XXX
-    public static final String GRUNT_NAME = "grunt"; // NOI18N
+public class GruntExecutable {
+
+    public static final String GRUNT_NAME;
+
+    protected final Project project;
+    protected final String gruntPath;
+
+
+    static {
+        if (Utilities.isWindows()) {
+            GRUNT_NAME = "grunt.cmd"; // NOI18N
+        } else {
+            GRUNT_NAME = "grunt"; // NOI18N
+        }
+    }
+
+
+    GruntExecutable(String gruntPath, @NullAllowed Project project) {
+        assert gruntPath != null;
+        this.gruntPath = gruntPath;
+        this.project = project;
+    }
+
+    @CheckForNull
+    public static GruntExecutable getDefault(@NullAllowed Project project, boolean showOptions) {
+        ValidationResult result = new GruntOptionsValidator()
+                .validateGrunt()
+                .getResult();
+        if (validateResult(result) != null) {
+            if (showOptions) {
+                OptionsDisplayer.getDefault().open(GruntOptionsPanelController.OPTIONS_PATH);
+            }
+            return null;
+        }
+        return createExecutable(GruntOptions.getInstance().getGrunt(), project);
+    }
+
+    private static GruntExecutable createExecutable(String grunt, Project project) {
+        if (Utilities.isMac()) {
+            return new MacGruntExecutable(grunt, project);
+        }
+        return new GruntExecutable(grunt, project);
+    }
+
+    String getCommand() {
+        return gruntPath;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "GruntExecutable.run=Grunt ({0})",
+    })
+    public Future<Integer> run(String... args) {
+        assert !EventQueue.isDispatchThread();
+        assert project != null;
+        String projectName = GruntUtils.getProjectDisplayName(project);
+        Future<Integer> task = getExecutable(Bundle.GruntExecutable_run(projectName))
+                .additionalParameters(getRunParams(args))
+                .run(getDescriptor());
+        assert task != null : gruntPath;
+        return task;
+    }
+
+    private ExternalExecutable getExecutable(String title) {
+        assert title != null;
+        return new ExternalExecutable(getCommand())
+                .workDir(getWorkDir())
+                .displayName(title)
+                .optionsPath(GruntOptionsPanelController.OPTIONS_PATH)
+                .noOutput(false);
+    }
+
+    private ExecutionDescriptor getDescriptor() {
+        assert project != null;
+        return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(GruntOptionsPanelController.OPTIONS_PATH)
+                .outLineBased(true)
+                .errLineBased(true);
+    }
+
+    private File getWorkDir() {
+        if (project == null) {
+            return FileUtils.TMP_DIR;
+        }
+        // XXX use gruntfile
+        File workDir = FileUtil.toFile(project.getProjectDirectory());
+        assert workDir != null : project.getProjectDirectory();
+        return workDir;
+    }
+
+    private List<String> getRunParams(String... args) {
+        return getParams(Arrays.asList(args));
+    }
+
+    List<String> getParams(List<String> params) {
+        assert params != null;
+        return params;
+    }
+
+    @CheckForNull
+    private static String validateResult(ValidationResult result) {
+        if (result.isFaultless()) {
+            return null;
+        }
+        if (result.hasErrors()) {
+            return result.getFirstErrorMessage();
+        }
+        return result.getFirstWarningMessage();
+    }
+
+    //~ Inner classes
+
+    private static final class MacGruntExecutable extends GruntExecutable {
+
+        private static final String BASH_COMMAND = "/bin/bash -lc"; // NOI18N
+
+
+        MacGruntExecutable(String gruntPath, Project project) {
+            super(gruntPath, project);
+        }
+
+        @Override
+        String getCommand() {
+            return BASH_COMMAND;
+        }
+
+        @Override
+        List<String> getParams(List<String> params) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("\""); // NOI18N
+            sb.append(gruntPath);
+            sb.append("\" \""); // NOI18N
+            sb.append(StringUtils.implode(super.getParams(params), "\" \"")); // NOI18N
+            sb.append("\""); // NOI18N
+            return Collections.singletonList(sb.toString());
+        }
+
+    }
 
 }
