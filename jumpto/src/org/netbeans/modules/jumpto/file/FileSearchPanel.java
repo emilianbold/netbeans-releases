@@ -226,13 +226,13 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                         setWarning(NbBundle.getMessage(
                             FileSearchPanel.class,
                             "TXT_PartialResults"));
-                        final int index = resultList.getSelectedIndex();
-                        if (index == -1) {
-                            LOG.log(
-                                Level.FINE,
-                                "Select first item.");  //NOI18N
-                            resultList.setSelectedIndex(0);
-                        }
+                    }
+                    final int index = resultList.getSelectedIndex();
+                    if (index == -1) {
+                        LOG.log(
+                            Level.FINE,
+                            "Select first item.");  //NOI18N
+                        resultList.setSelectedIndex(0);
                     } else if (selectedItems != null && !selectedItems.isEmpty()) {
                         LOG.log(
                             Level.FINE,
@@ -262,9 +262,8 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                if (resultList.getModel().getSize() > 0) {
-                    setWarning(null);
-                } else {
+                setWarning(null);
+                if (resultList.getModel().getSize() == 0) {
                     try {
                        Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
                        setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N
