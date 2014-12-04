@@ -556,7 +556,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() == rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         } else if (left instanceof Boolean && right instanceof Boolean) {
                             return left.equals(right);
@@ -586,7 +586,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() != rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         } else if (left instanceof Boolean && right instanceof Boolean) {
                             return left.equals(right);
@@ -613,7 +613,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() < rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -630,7 +630,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() <= rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -647,7 +647,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() > rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -664,7 +664,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() >= rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -682,7 +682,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() * rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -700,14 +700,14 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() / rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         boolean a = true;
                         boolean b = false;
                         boolean c = a & b;
                         break;
-
+                        
                     case REMAINDER:
                         if (left instanceof Number && right instanceof Number) {
                             Number ln = (Number)left;
@@ -721,7 +721,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() % rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -739,7 +739,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() - rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -753,7 +753,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() << rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -767,7 +767,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() >> rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -781,7 +781,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() >>> rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + ln.getClass() + ", right=" + rn.getClass());
+                                return null;
                             }
                         }
                         break;
@@ -801,7 +801,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() + rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + left.getClass() + ", right=" + right.getClass());
+                                return null;
                             }
                         } else if (left instanceof String) {
                             if (right != NOT_NULL) {
@@ -834,7 +834,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() ^ rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + ln.getClass() + ", right=" + rn.getClass());
+                                return null;
                             }
                         } else if (left instanceof Boolean && right instanceof Boolean) {
                             result = ((Boolean)left) ^ ((Boolean)right);
@@ -850,7 +850,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() & rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + ln.getClass() + ", right=" + rn.getClass());
+                                return null;
                             }
                         } else if (left instanceof Boolean && right instanceof Boolean) {
                             result = ((Boolean)left) & ((Boolean)right);
@@ -866,7 +866,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(ln) || integerLike(rn)) {
                                 result = ln.intValue() | rn.intValue();
                             } else {
-                                throw new IllegalStateException("left=" + ln.getClass() + ", right=" + rn.getClass());
+                                return null;
                             }
                         } else if (left instanceof Boolean && right instanceof Boolean) {
                             result = ((Boolean)left) | ((Boolean)right);
@@ -913,7 +913,7 @@ public class ArithmeticUtilities {
                             } else if (integerLike(nop)) {
                                 result = -nop.intValue();
                             } else {
-                                throw new IllegalStateException("op=" + op.getClass());
+                                return null;
                             }
                         }
                         break;
