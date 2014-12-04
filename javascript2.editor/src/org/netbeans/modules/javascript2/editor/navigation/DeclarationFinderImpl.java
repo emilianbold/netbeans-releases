@@ -60,6 +60,8 @@ import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
+import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -70,6 +72,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.SemiTypeResolverVisito
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -259,6 +262,18 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     ts.move(caretOffset);
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         value[0] = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+                    } else if (ts.token().id() == JsTokenId.DOC_COMMENT) {
+                        TokenSequence<? extends JsDocumentationTokenId> tsDoc = LexerUtils.getTokenSequence(doc, caretOffset, JsDocumentationTokenId.language(), true);
+                        if (tsDoc != null) {
+                            if (tsDoc.token().id() == JsDocumentationTokenId.OTHER) {
+                                if (tsDoc.moveNext() && tsDoc.token().id() == JsDocumentationTokenId.BRACKET_RIGHT_CURLY
+                                        && tsDoc.movePrevious() && tsDoc.movePrevious() && tsDoc.token().id() == JsDocumentationTokenId.BRACKET_LEFT_CURLY) {
+                                    tsDoc.moveNext();
+                                    value[0] = new OffsetRange(tsDoc.offset(), tsDoc.offset() + tsDoc.token().length());
+                                }
+                            }
+                        }
+                        
                     }
                 }
             }

@@ -91,6 +91,7 @@ public enum JsDocElementType {
     SYNTAX("@syntax", JsDocElement.Category.DESCRIPTION), //NOI18N
     THROWS("@throws", JsDocElement.Category.UNNAMED_PARAMETER), //NOI18N
     TYPE("@type", JsDocElement.Category.DECLARATION), //NOI18N
+    TYPEDEF("@typedef", JsDocElement.Category.NAMED_PARAMETER), //NOI18N
     VERSION("@version", JsDocElement.Category.DESCRIPTION);
     //NOI18N
     private final String value;

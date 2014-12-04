@@ -284,4 +284,18 @@ public class JsDocComment extends JsComment {
         }
         return properties;
     }
+
+    @Override
+    public DocParameter getDefinedType() {
+        List<DocParameter> definedTypes = new LinkedList<DocParameter>();
+        for (JsDocElement jsDocElement : getTagsForType(JsDocElementType.TYPEDEF)) {
+            definedTypes.add((NamedParameterElement) jsDocElement);
+        }
+        if (definedTypes.isEmpty()) {
+            return null;
+        }
+        return definedTypes.get(0);
+    }
+    
+    
 }

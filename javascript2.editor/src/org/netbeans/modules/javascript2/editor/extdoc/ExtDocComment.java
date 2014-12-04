@@ -222,4 +222,9 @@ public class ExtDocComment extends JsComment {
         return properties;
     }
 
+    @Override
+    public DocParameter getDefinedType() {
+        return null;
+    }
+    
 }

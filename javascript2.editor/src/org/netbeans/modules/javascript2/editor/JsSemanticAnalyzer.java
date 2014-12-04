@@ -181,8 +181,10 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     case OBJECT:
                     case OBJECT_LITERAL:
                         if(!"UNKNOWN".equals(object.getName())) {
-                            if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
-                                addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                             if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
+                                 if (!isInComment(result,  object.getDeclarationName().getOffsetRange())) {
+                                    addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                                 }
                                 for (Occurrence occurence : object.getOccurrences()) {
                                     if (!isCommentOccurence(result, occurence)) {
                                         addColoring(result, highlights, occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
@@ -208,7 +210,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                         break;
                     case PROPERTY:
                         if(object.isDeclared()) {
-                            highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.FIELD_SET);
+                            if (!isInComment(result, object.getDeclarationName().getOffsetRange())) {
+                                highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.FIELD_SET);
+                            }
                             for(Occurrence occurence: object.getOccurrences()) {
                                 if (!isCommentOccurence(result, occurence)) {
                                     highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), ColoringAttributes.FIELD_SET);
@@ -335,12 +339,16 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
 
     private boolean isCommentOccurence(JsParserResult result, Occurrence occurence) {
         // Comment blocks are cached by holders so this is faster than calls to token sequences.
+        return isInComment(result, occurence.getOffsetRange());
+    }
+    
+    private boolean isInComment(JsParserResult result, OffsetRange range) {
         for (JsComment comment : result.getDocumentationHolder().getCommentBlocks().values()) {
-            if (comment.getOffsetRange().containsInclusive(occurence.getOffsetRange().getStart())) {
+            if (comment.getOffsetRange().containsInclusive(range.getStart())) {
                 return true;
             }
         }
-        if (globalJsHintInlines.contains(occurence.getOffsetRange())) {
+        if (globalJsHintInlines.contains(range)) {
             return true;
         }
         return false;

@@ -155,4 +155,10 @@ public abstract class JsComment {
      */
     public abstract List<DocParameter> getProperties();
     
+    /**
+     * If there is defined an object (type) inside the comment. Like @typedef in JsDoc
+     * @return the type defined in the comment or null, if there is not defined any type.
+     */
+    public abstract DocParameter getDefinedType();
+    
 }
