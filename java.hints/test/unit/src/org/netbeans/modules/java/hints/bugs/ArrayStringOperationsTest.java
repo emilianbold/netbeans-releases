@@ -333,4 +333,25 @@ public class ArrayStringOperationsTest extends NbTestCase {
                 "}"
                 );
     }
+
+
+    /**
+     * Checks that null concatenated with String does not produce any warning
+     */
+    public void testNullConcatenation() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    \n" +
+                "    public void test() {\n" +
+                "        String s = \"ahoj\";\n" +
+                "        System.err.println(s + null);\n" +
+                "    }\n" +
+                "}"
+                )
+                .run(ArrayStringConversions.class).
+                assertWarnings();
+    }
 }
