@@ -47,28 +47,67 @@ package org.netbeans.modules.subversion.remote.api;
  */
 public class SVNConflictDescriptor {
     public enum Operation {
-        _none,
-        _update,
-        _switch,
-        _merge;
+        _none("none"),
+        _update("update"),
+        _switch("switch"),
+        _merge("merge");
+        
+        private final String value;
+        private Operation(String value) {
+            this.value = value;
+        }
+        public static Operation fromString(String s) {
+            for(Operation o : Operation.values()) {
+                if (o.value.equals(s)) {
+                    return o;
+                }
+            }
+            return null;
+        }
     }
 
     public enum Reason {
-        edited,
-        obstructed,
-        deleted,
-        missing,
-        unversioned,
-        added,
-        replaced,
-        moved_away,
-        moved_here;
+        edited("edited"),
+        obstructed("obstructed"),
+        deleted("deleted"),
+        missing("missing"),
+        unversioned("unversioned"),
+        added("added"),
+        replaced("replaced"),
+        moved_away("moved_away"),
+        moved_here("moved_here");
+        
+        private final String value;
+        private Reason(String value) {
+            this.value = value;
+        }
+        public static Reason fromString(String s) {
+            for(Reason r : Reason.values()) {
+                if (r.value.equals(s)) {
+                    return r;
+                }
+            }
+            return null;
+        }
     }
 
     public enum Action {
-        edit,
-        add,
-        delete;
+        edit("edited"),
+        add("added"),
+        delete("deleted");
+        
+        private final String value;
+        private Action(String value) {
+            this.value = value;
+        }
+        public static Action fromString(String s) {
+            for(Action r : Action.values()) {
+                if (r.value.equals(s)) {
+                    return r;
+                }
+            }
+            return null;
+        }
     }
 
     public enum Kind {

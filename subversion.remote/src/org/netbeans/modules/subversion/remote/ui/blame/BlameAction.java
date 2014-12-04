@@ -89,7 +89,7 @@ import org.openide.windows.TopComponent;
     "CTL_MenuItem_ShowAnnotations_Projects=Show A&nnotations"
 })
 public class BlameAction extends ContextAction {
-    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/annotate.png"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/annotate.png"; //NOI18N
     
     public BlameAction () {
         super(ICON_RESOURCE);

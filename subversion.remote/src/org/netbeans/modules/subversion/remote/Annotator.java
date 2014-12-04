@@ -93,8 +93,8 @@ import org.openide.util.lookup.Lookups;
  * @author Maros Sandor
  */
 public class Annotator extends VCSAnnotator {
-    private static final String badgeModified = "org/netbeans/modules/subversion/resources/icons/modified-badge.png"; //NOI18N
-    private static final String badgeConflicts = "org/netbeans/modules/subversion/resources/icons/conflicts-badge.png"; //NOI18N
+    private static final String badgeModified = "org/netbeans/modules/subversion/remote/resources/icons/modified-badge.png"; //NOI18N
+    private static final String badgeConflicts = "org/netbeans/modules/subversion/remote/resources/icons/conflicts-badge.png"; //NOI18N
 
     private static final String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally"); //NOI18N

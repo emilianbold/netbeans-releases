@@ -199,21 +199,21 @@ public class SvnWcParser {
                     urlCopiedFrom = wcDetails.getValue("copyfrom-url");  // NOI18N  
                 }
 
-                File conflictNew = null;
-                File conflictOld = null;
-                File conflictWorking = null;
+                VCSFileProxy conflictNew = null;
+                VCSFileProxy conflictOld = null;
+                VCSFileProxy conflictWorking = null;
                 value = wcDetails.getValue("conflict-wrk");  // NOI18N
                 if (value != null && ((String)value).length() > 0) {
-                    conflictWorking = new File(file.getParentFile(), value);
+                    conflictWorking = VCSFileProxy.createFileProxy(file.getParentFile(), value);
                 }
 
                 value = wcDetails.getValue("conflict-new");  // NOI18N
                 if (value != null && ((String)value).length() > 0) {
-                    conflictNew = new File(file.getParentFile(), value);
+                    conflictNew = VCSFileProxy.createFileProxy(file.getParentFile(), value);
                 }
                 value = wcDetails.getValue("conflict-old");  // NOI18N
                 if (value != null && ((String)value).length() > 0) {
-                    conflictOld = new File(file.getParentFile(), value);
+                    conflictOld = VCSFileProxy.createFileProxy(file.getParentFile(), value);
                 }
                 if ((conflictNew != null) || (conflictOld != null)) {
                     finalTextStatus = SVNStatusKind.CONFLICTED.toString();                

@@ -87,7 +87,7 @@ import org.openide.util.RequestProcessor;
  * @author Petr Kuzel
  */ 
 public class UpdateAction extends ContextAction {
-    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/update.png"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/update.png"; //NOI18N
     private static final int STATUS_RECURSIVELY_TRAVERSIBLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
 
     public UpdateAction () {

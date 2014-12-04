@@ -45,16 +45,12 @@ package org.netbeans.modules.subversion.remote.client.parser;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
-import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor.Action;
-import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor.Operation;
-import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor.Reason;
 import org.netbeans.modules.subversion.remote.api.SVNConflictVersion;
 
 /**
@@ -71,36 +67,6 @@ class ConflictDescriptionParser {
     private static final char DELIMITER_CLOSING_BRACKET = ')';
 
     private static final Logger LOG = Logger.getLogger(ConflictDescriptionParser.class.getName());
-
-    private static final HashMap<String, Action> ACTIONS;
-    private static final HashMap<String, Reason> REASONS;
-    private static final HashMap<String, Operation> OPERATIONS;
-    private static final HashMap<String, SVNConflictVersion.NodeKind> NODE_KINDS;
-    static {
-        ACTIONS = new HashMap<String, Action>(3);
-        ACTIONS.put("edited", Action.edit); //NOI18N
-        ACTIONS.put("deleted", Action.delete); //NOI18N
-        ACTIONS.put("added", Action.add); //NOI18N
-
-        REASONS = new HashMap<String, Reason>(6);
-        REASONS.put("edited", Reason.edited); //NOI18N
-        REASONS.put("deleted", Reason.deleted); //NOI18N
-        REASONS.put("missing", Reason.missing); //NOI18N
-        REASONS.put("obstructed", Reason.obstructed); //NOI18N
-        REASONS.put("added", Reason.added); //NOI18N
-        REASONS.put("unversioned", Reason.unversioned); //NOI18N
-
-        OPERATIONS = new HashMap<String, Operation>(4);
-        OPERATIONS.put("none", Operation._none); //NOI18N
-        OPERATIONS.put("update", Operation._update); //NOI18N
-        OPERATIONS.put("switch", Operation._switch); //NOI18N
-        OPERATIONS.put("merge", Operation._merge); //NOI18N
-
-        NODE_KINDS = new HashMap<String, SVNConflictVersion.NodeKind>(3);
-        NODE_KINDS.put("file", SVNConflictVersion.NodeKind.file); //NOI18N
-        NODE_KINDS.put("directory", SVNConflictVersion.NodeKind.directory); //NOI18N
-        NODE_KINDS.put("none", SVNConflictVersion.NodeKind.none); //NOI18N
-    }
 
     private ConflictDescriptionParser() {
         conflicts = new LinkedList<ParserConflictDescriptor>();
@@ -149,12 +115,15 @@ class ConflictDescriptionParser {
         if (TOKEN_CONFLICT.equals(startToken)) { // prefix of a conflict
             String fileName = readString(input);
             String nodeKind = readToken(input, DELIMITER_SPACE); // prop or file?
-            int operation = readToken(input, OPERATIONS, DELIMITER_SPACE); // update, merge, switch?
-            int action = readToken(input, ACTIONS, DELIMITER_SPACE); // action on server
-            int reason = readToken(input, REASONS, DELIMITER_SPACE); // local action
+            String operation = readToken(input, DELIMITER_SPACE); // update, merge, switch?
+            String action = readToken(input, DELIMITER_SPACE); // action on server
+            String reason = readToken(input, DELIMITER_SPACE); // local action
             SVNConflictVersion versionLeft = readVersion(input); // version in repo
             SVNConflictVersion versionRight = readVersion(input); // local base? version
-            conflict = new ParserConflictDescriptor(fileName, null, action, reason, operation, versionLeft, versionRight);
+            conflict = new ParserConflictDescriptor(fileName, null,
+                    SVNConflictDescriptor.Action.fromString(action),
+                    SVNConflictDescriptor.Reason.fromString(reason),
+                    SVNConflictDescriptor.Operation.fromString(operation), versionLeft, versionRight);
             readUntil(input, DELIMITER_CLOSING_BRACKET);
         } else {
             throw new IOException("token 'conflict' expected"); //NOI18N
@@ -217,21 +186,12 @@ class ConflictDescriptionParser {
                 throw new IOException("Unexpected token, should be a number: " + s, ex); //NOI18N
             }
             String repoPath = readString(input); // path in repository
-            int nodeKind = readToken(input, NODE_KINDS, DELIMITER_CLOSING_BRACKET); // file or dir
-            version = new SVNConflictVersion(url, pegRevision, repoPath, nodeKind);
+            String nodeKind = readToken(input, DELIMITER_CLOSING_BRACKET); // file or dir
+            version = new SVNConflictVersion(url, pegRevision, repoPath, SVNConflictVersion.NodeKind.fromString(nodeKind));
         } else {
             throw new IOException("token 'version' expected"); //NOI18N
         }
         return version;
-    }
-
-    /**
-     * Reads next token and return its integer value in a given map or <code>0</code> if no such mapping exists
-     */
-    private int readToken (Reader input, Map<String, Integer> mapping, char delimiter) throws IOException {
-        String token = readToken(input, delimiter);
-        Integer retval = mapping.get(token);
-        return retval == null ? 0 : retval;
     }
 
     /**

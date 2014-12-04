@@ -47,9 +47,22 @@ package org.netbeans.modules.subversion.remote.api;
  */
 public class SVNConflictVersion {
     public enum NodeKind {
-        none,
-        file,
-        directory;
+        none("none"),
+        file("file"),
+        directory("directory");
+
+        private final String value;
+        private NodeKind(String value) {
+            this.value = value;
+        }
+        public static NodeKind fromString(String s) {
+            for(NodeKind r : NodeKind.values()) {
+                if (r.value.equals(s)) {
+                    return r;
+                }
+            }
+            return null;
+        }
     }
     
     private final String reposURL;
