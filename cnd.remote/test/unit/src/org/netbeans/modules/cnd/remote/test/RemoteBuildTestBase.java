@@ -363,9 +363,21 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         buildSample(sync, toolchain, sampleName, projectDirBase, count, timeout, timeout);
     }
 
+    protected interface ProjectProcessor {
+        void processProject(MakeProject project) throws Exception;
+    }
+
     protected void buildSample(Sync sync, Toolchain toolchain, String sampleName, String projectDirBase,
             int count, int firstTimeout, int subsequentTimeout) throws Exception {
+        buildSample(sync, toolchain, sampleName, projectDirBase, count, firstTimeout, subsequentTimeout, null);
+    }
+
+    protected void buildSample(Sync sync, Toolchain toolchain, String sampleName, String projectDirBase,
+            int count, int firstTimeout, int subsequentTimeout, ProjectProcessor projectProcessor) throws Exception {
         MakeProject makeProject = prepareSampleProject(sync, toolchain, sampleName, projectDirBase);
+        if (projectProcessor != null) {
+            projectProcessor.processProject(makeProject);
+        }
         for (int i = 0; i < count; i++) {
             if (count > 0) {
                 System.err.printf("BUILDING %s, PASS %d\n", sampleName, i);
