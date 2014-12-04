@@ -76,7 +76,8 @@ public class BuildToolsCommand extends Command {
     @NbBundle.Messages("BuildToolsCommand.buildTool.none=No build tool (e.g. Grunt) used in project.")
     @Override
     void invokeActionInternal(Lookup context) {
-        if (!tryBuild(true, false)) {
+        if (!tryBuild(true, false)
+                && !ClientSideProjectUtilities.isCordovaProject(project)) {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.BuildToolsCommand_buildTool_none()));
         }
     }
