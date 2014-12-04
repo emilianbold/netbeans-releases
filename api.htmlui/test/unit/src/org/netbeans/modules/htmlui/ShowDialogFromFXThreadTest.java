@@ -39,49 +39,79 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.build;
+package org.netbeans.modules.htmlui;
 
-import org.netbeans.api.annotations.common.NonNull;
+import java.awt.EventQueue;
+import java.util.concurrent.CountDownLatch;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javax.swing.JFrame;
+import org.netbeans.api.htmlui.HTMLDialog;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
- * Interface for build tool.
- * <p>
- * Implementations are expected to be found in project's lookup.
- * @since 1.81
+ *
+ * @author Jaroslav Tulach
  */
-public interface BuildToolImplementation {
+public class ShowDialogFromFXThreadTest implements Runnable {
+    private volatile boolean returned;
+    
+    @BeforeClass public static void initFX() {
+        JFXPanel p = new JFXPanel();
+        JFrame f = new JFrame();
+        f.getContentPane().add(p);
+        f.setVisible(true);
+    }
+    
+    @BeforeClass public void initNbResLoc() {
+        NbResloc.init();
+    }
+    
+    
+    private volatile CountDownLatch cdl;
+    @Test public void showDialog() throws Exception {
+        cdl = new CountDownLatch(1);
+        Platform.runLater(this);
+        cdl.await();
+        assertFalse(returned, "displayedOK method has not returned yet");
+        cdl = new CountDownLatch(1);
+        
+        waitAWT();
+        
+        closeAllDialogs();
+        cdl.await();
+        assertTrue(returned, "now the method returned OK");
+    }
+    
+    @HTMLDialog(url = "simple.html", className = "TestPages") 
+    static void displayedOK(CountDownLatch cdl) {
+        cdl.countDown();
+    }
 
-    /**
-     * Returns the <b>non-localized (usually english)</b> identifier of this build tool.
-     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
-     */
-    @NonNull
-    String getIdentifier();
-
-    /**
-     * Returns the display name of this build tool. The display name is used
-     * in the UI.
-     * @return the display name; never {@code null}
-     */
-    @NonNull
-    String getDisplayName();
-
-    /**
-     * Checks whether this build tool supports the current project.
-     * @return {@code true} if this build tool supports the current project, {@code false} otherwise
-     * @since 1.82
-     */
-    boolean isEnabled();
-
-    /**
-     * Run "build" for the given command identifier.
-     * <p>
-     * This method is called only if this build tool is {@link #isEnabled() enabled} in the current project.
-     * @param commandId command identifier
-     * @param waitFinished wait till the command finishes?
-     * @param warnUser warn user (show dialog, customizer) if any problem occurs (e.g. command is not known/set to this build tool)
-     * @return {@code true} if command was run, {@code false} otherwise
-     */
-    boolean run(@NonNull String commandId, boolean waitFinished, boolean warnUser);
-
+    @Override
+    public void run() {
+        TestPages.displayedOK(cdl);
+        returned = true;
+        cdl.countDown();
+    }
+    
+    private void closeAllDialogs() throws InterruptedException {
+        while (!returned) {
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                w.setVisible(false);
+            }
+            Thread.sleep(100);
+        }
+    }
+    
+    private static void waitAWT() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
+    }
 }

@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.web.clientproject.api.build;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
+import org.openide.util.Parameters;
 
 /**
  * Support for build tools.
@@ -69,19 +72,43 @@ public final class BuildTools {
      * @param project project to be used for the command
      * @param commandId command identifier (build, rebuild, run etc.)
      * @param waitFinished wait till the command finishes?
-     * @param showCustomizer show customizer if any problem occurs (e.g. command is not known/set to this build tool)
+     * @param warnUser warn user (show dialog, customizer) if any problem occurs (e.g. command is not known/set to this build tool)
      * @return {@code true} if command was run (at least by one build tool), {@code false} otherwise
      */
-    public boolean run(@NonNull Project project, @NonNull String commandId, boolean waitFinished, boolean showCustomizer) {
-        Collection<? extends BuildToolImplementation> buildTools = project.getLookup()
-                .lookupAll(BuildToolImplementation.class);
+    public boolean run(@NonNull Project project, @NonNull String commandId, boolean waitFinished, boolean warnUser) {
+        Parameters.notNull("project", project); // NOI18N
+        Parameters.notNull("commandId", commandId); // NOI18N
         boolean run = false;
-        for (BuildToolImplementation buildTool : buildTools) {
-            if (buildTool.run(commandId, waitFinished, showCustomizer)) {
+        for (BuildToolImplementation buildTool : getEnabledBuildTools(project)) {
+            if (buildTool.run(commandId, waitFinished, warnUser)) {
                 run = true;
             }
         }
         return run;
+    }
+
+    /**
+     * Check whether any build tool supports (is enabled in) the given project.
+     * @param project project to be checked
+     * @return {@code true} if any build tool supports the given project, {@code false} otherwise
+     * @since 1.82
+     */
+    public boolean hasBuildTools(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        return !getEnabledBuildTools(project).isEmpty();
+    }
+
+    private Collection<BuildToolImplementation> getEnabledBuildTools(Project project) {
+        assert project != null;
+        Collection<? extends BuildToolImplementation> allBuildTools = project.getLookup()
+                .lookupAll(BuildToolImplementation.class);
+        List<BuildToolImplementation> enabledBuildTools = new ArrayList<>(allBuildTools.size());
+        for (BuildToolImplementation buildTool : allBuildTools) {
+            if (buildTool.isEnabled()) {
+                enabledBuildTools.add(buildTool);
+            }
+        }
+        return enabledBuildTools;
     }
 
 }

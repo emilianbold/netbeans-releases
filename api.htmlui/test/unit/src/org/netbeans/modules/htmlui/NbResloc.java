@@ -39,49 +39,23 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.build;
+package org.netbeans.modules.htmlui;
 
-import org.netbeans.api.annotations.common.NonNull;
+import java.net.URL;
+import java.net.URLStreamHandlerFactory;
+import org.openide.util.Lookup;
+import static org.testng.Assert.assertNotNull;
 
 /**
- * Interface for build tool.
- * <p>
- * Implementations are expected to be found in project's lookup.
- * @since 1.81
+ *
+ * @author Jaroslav Tulach
  */
-public interface BuildToolImplementation {
-
-    /**
-     * Returns the <b>non-localized (usually english)</b> identifier of this build tool.
-     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
-     */
-    @NonNull
-    String getIdentifier();
-
-    /**
-     * Returns the display name of this build tool. The display name is used
-     * in the UI.
-     * @return the display name; never {@code null}
-     */
-    @NonNull
-    String getDisplayName();
-
-    /**
-     * Checks whether this build tool supports the current project.
-     * @return {@code true} if this build tool supports the current project, {@code false} otherwise
-     * @since 1.82
-     */
-    boolean isEnabled();
-
-    /**
-     * Run "build" for the given command identifier.
-     * <p>
-     * This method is called only if this build tool is {@link #isEnabled() enabled} in the current project.
-     * @param commandId command identifier
-     * @param waitFinished wait till the command finishes?
-     * @param warnUser warn user (show dialog, customizer) if any problem occurs (e.g. command is not known/set to this build tool)
-     * @return {@code true} if command was run, {@code false} otherwise
-     */
-    boolean run(@NonNull String commandId, boolean waitFinished, boolean warnUser);
-
+final class NbResloc {
+    static {
+        URLStreamHandlerFactory f = Lookup.getDefault().lookup(URLStreamHandlerFactory.class);
+        assertNotNull(f, "Factory found");
+        URL.setURLStreamHandlerFactory(f);
+    }
+    static void init() {
+    }
 }
