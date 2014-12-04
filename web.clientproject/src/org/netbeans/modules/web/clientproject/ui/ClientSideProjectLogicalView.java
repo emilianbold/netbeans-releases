@@ -70,6 +70,7 @@ import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.BadgeIcon;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
@@ -328,7 +329,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         @Override
         public Action[] getActions(boolean arg0) {
             List<Action> actions = new LinkedList<>(Arrays.asList(CommonProjectActions.forType("org-netbeans-modules-web-clientproject"))); // NOI18N
-            addGruntActions(actions);
+            addBuildActions(actions);
             addCodeCoverageAction(actions);
             return actions.toArray(new Action[actions.size()]);
         }
@@ -445,7 +446,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             });
         }
 
-        private void addGruntActions(List<Action> actions) {
+        private void addBuildActions(List<Action> actions) {
             ClientProjectEnhancedBrowserImplementation cfg = project.getEnhancedBrowserImpl();
             if (cfg == null) {
                 return;
@@ -455,10 +456,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 return;
             }
             Set<String> supportedActions = new HashSet<>(Arrays.asList(actionProvider.getSupportedActions()));
-            boolean grunt = project.getProjectDirectory().getFileObject("Gruntfile.js") !=null;
-            boolean buildSupported = supportedActions.contains(ActionProvider.COMMAND_BUILD) || grunt;
-            boolean rebuildSupported = supportedActions.contains(ActionProvider.COMMAND_REBUILD) || grunt;
-            boolean cleanSupported = supportedActions.contains(ActionProvider.COMMAND_CLEAN) || grunt;
+            boolean hasBuildTools = BuildTools.getDefault().hasBuildTools(project);
+            boolean buildSupported = hasBuildTools
+                    || supportedActions.contains(ActionProvider.COMMAND_BUILD);
+            boolean rebuildSupported = hasBuildTools
+                    || supportedActions.contains(ActionProvider.COMMAND_REBUILD);
+            boolean cleanSupported = hasBuildTools
+                    || supportedActions.contains(ActionProvider.COMMAND_CLEAN);
             int index = 1; // right after New... action
             if (buildSupported
                     || rebuildSupported

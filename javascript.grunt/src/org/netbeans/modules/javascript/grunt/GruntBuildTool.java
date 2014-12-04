@@ -87,38 +87,37 @@ public final class GruntBuildTool implements BuildToolImplementation {
         return Bundle.GruntBuildTool_name();
     }
 
-    @NbBundle.Messages({
-        "GruntBuildTool.notFound=No Gruntfile.js found; create it and rerun the action.",
-        "GruntBuildTool.configure=Do you want to configure project actions to call Grunt tasks?",
-    })
+    @Override
+    public boolean isEnabled() {
+        // XXX
+        return project.getProjectDirectory().getFileObject("Gruntfile.js") != null; // NOI18N
+    }
+
+    @NbBundle.Messages("GruntBuildTool.configure=Do you want to configure project actions to call Grunt tasks?")
     @Override
     public boolean run(String commandId, boolean waitFinished, boolean showCustomizer) {
+        assert isEnabled() : project.getProjectDirectory().getNameExt();
         FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js"); // NOI18N
-        if (gruntFile != null) {
-            String gruntBuild = GruntPreferences.getValue(project, "grunt.action." + commandId); // NOI18N
-            if (gruntBuild != null) {
-                try {
-                    ExecutorTask execute = new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute(); // NOI18N
-                    if (waitFinished) {
-                        execute.result();
-                    }
-                    return true;
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
+        assert gruntFile != null : project.getProjectDirectory().getNameExt();
+        String gruntBuild = GruntPreferences.getValue(project, "grunt.action." + commandId); // NOI18N
+        if (gruntBuild != null) {
+            try {
+                ExecutorTask execute = new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute(); // NOI18N
+                if (waitFinished) {
+                    execute.result();
                 }
-            } else if (showCustomizer) {
-                NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION);
-                Object option = DialogDisplayer.getDefault().notify(desc);
-                if (option == NotifyDescriptor.YES_OPTION) {
-                    // XXX
-                    project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("grunt", null); // NOI18N
-                }
-                return true;
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
         } else if (showCustomizer) {
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.GruntBuildTool_notFound()));
+            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION);
+            Object option = DialogDisplayer.getDefault().notify(desc);
+            if (option == NotifyDescriptor.YES_OPTION) {
+                // XXX
+                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("grunt", null); // NOI18N
+            }
         }
-        return false;
+        return true;
     }
 
 }

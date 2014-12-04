@@ -39,49 +39,58 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.build;
 
-import org.netbeans.api.annotations.common.NonNull;
+package org.netbeans.api.htmlui;
 
-/**
- * Interface for build tool.
- * <p>
- * Implementations are expected to be found in project's lookup.
- * @since 1.81
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Locale;
+import javax.swing.JComponent;
+import javafx.scene.Node;
+
+/** Generates factory method in class specified by {@link #className()}
+ * that will return a component of requested {@link #type()} which can
+ * later be embedded into Swing or JavaFX UI elements. When the factory
+ * method is called, it returns immediatelly and starts loading of
+ * the {@link #url() specified HTML page}. Once the page is ready
+ * it calls back method annotated by this annotation to finish 
+ * initialization. The method is supposed to make the page live, preferrably 
+ * by using {@link net.java.html.json.Model} generated class and calling 
+ * <code>applyBindings()</code> on it.
+ *
+ * @author Jaroslav Tulach
  */
-public interface BuildToolImplementation {
-
-    /**
-     * Returns the <b>non-localized (usually english)</b> identifier of this build tool.
-     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.METHOD)
+public @interface HTMLComponent {
+    /** URL of the page to display. Usually relative to the annotated class.
+     * Will be resolved by the annotation processor and converted into
+     * <code>nbresloc</code> protocol - as such the HTML page can be L10Ned
+     * later by adding classical L10N suffixes. E.g. <code>index_cs.html</code>
+     * will take preceedence over <code>index.html</code> if the user is 
+     * running in Czech {@link Locale}.
+     * 
+     * @return relative path the HTML page
      */
-    @NonNull
-    String getIdentifier();
-
-    /**
-     * Returns the display name of this build tool. The display name is used
-     * in the UI.
-     * @return the display name; never {@code null}
+    String url();
+    
+    /** The type of component to generate. Currently supports 
+     * two types: <em>Swing</em> and <em>JavaFX</em>. 
+     * To request Swing component
+     * return {@link JComponent}.<b>class</b>. To request JavaFX 
+     * component, return {@link Node}.<b>class</b>.
+     * 
+     * @return either {@link JComponent} or {@link Node} class
      */
-    @NonNull
-    String getDisplayName();
-
+    Class<?> type();
+    
     /**
-     * Checks whether this build tool supports the current project.
-     * @return {@code true} if this build tool supports the current project, {@code false} otherwise
-     * @since 1.82
+     * Name of the file to generate the method that opens the dialog into. Class
+     * of such name will be generated into the same package.
+     *
+     * @return name of class to generate
      */
-    boolean isEnabled();
-
-    /**
-     * Run "build" for the given command identifier.
-     * <p>
-     * This method is called only if this build tool is {@link #isEnabled() enabled} in the current project.
-     * @param commandId command identifier
-     * @param waitFinished wait till the command finishes?
-     * @param warnUser warn user (show dialog, customizer) if any problem occurs (e.g. command is not known/set to this build tool)
-     * @return {@code true} if command was run, {@code false} otherwise
-     */
-    boolean run(@NonNull String commandId, boolean waitFinished, boolean warnUser);
-
+    String className() default "Pages";
 }

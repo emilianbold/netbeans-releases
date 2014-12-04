@@ -1,7 +1,7 @@
-/*
+/**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Oracle. Portions Copyright 2013-2014 Oracle. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,54 +39,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.build;
+package org.netbeans.api.htmlui;
 
-import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.htmlui.OpenHTMLRegistration;
+import javax.swing.Action;
+import org.openide.awt.ActionID;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import static org.testng.Assert.*;
+import org.testng.annotations.Test;
 
 /**
- * Interface for build tool.
- * <p>
- * Implementations are expected to be found in project's lookup.
- * @since 1.81
+ *
+ * @author jtulach
  */
-public interface BuildToolImplementation {
+public class OpenHTMLRegistrationTest {
+    
+    public OpenHTMLRegistrationTest() {
+    }
 
-    /**
-     * Returns the <b>non-localized (usually english)</b> identifier of this build tool.
-     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
-     */
-    @NonNull
-    String getIdentifier();
-
-    /**
-     * Returns the display name of this build tool. The display name is used
-     * in the UI.
-     * @return the display name; never {@code null}
-     */
-    @NonNull
-    String getDisplayName();
-
-    /**
-     * Checks whether this build tool supports the current project.
-     * @return {@code true} if this build tool supports the current project, {@code false} otherwise
-     * @since 1.82
-     */
-    boolean isEnabled();
-
-    /**
-     * Run "build" for the given command identifier.
-     * <p>
-     * This method is called only if this build tool is {@link #isEnabled() enabled} in the current project.
-     * @param commandId command identifier
-     * @param waitFinished wait till the command finishes?
-     * @param warnUser warn user (show dialog, customizer) if any problem occurs (e.g. command is not known/set to this build tool)
-     * @return {@code true} if command was run, {@code false} otherwise
-     */
-    boolean run(@NonNull String commandId, boolean waitFinished, boolean warnUser);
-
+    @ActionID(category = "Test", id="html.test")
+    @OpenHTMLRegistration(displayName = "Open me!", iconBase = "x.png", url = "empty.html")
+    public static void main() {
+        
+    }
+    
+    @Test public void verifyRegistered() {
+        final String path = "Actions/Test/html-test.instance";
+        FileObject fo = FileUtil.getConfigFile(path);
+        assertNotNull(fo, "Registration found");
+        Action a = FileUtil.getConfigObject(path, Action.class);
+        assertNotNull(a, "Action found");
+        assertEquals(a.getValue(Action.NAME), "Open me!");
+        
+        assertEquals(fo.getAttribute("class"), OpenHTMLRegistrationTest.class.getCanonicalName(), "Fully qualified name");
+        assertEquals(fo.getAttribute("method"), "main");
+    }
 }
