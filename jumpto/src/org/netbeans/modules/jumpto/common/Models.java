@@ -289,6 +289,7 @@ public final class Models {
                 return invokeInEDT(new Callable<Pair<List<T>,List<T>>>() {
                     @Override
                     public Pair<List<T>, List<T>> call() throws Exception {
+                        assert SwingUtilities.isEventDispatchThread();
                         final List<T> copy = new ArrayList<>(items);
                         return Pair.<List<T>,List<T>>of(items, copy);
                     }
@@ -303,6 +304,7 @@ public final class Models {
                 return invokeInEDT(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
+                        assert SwingUtilities.isEventDispatchThread();
                         if (items == expected) {
                             int oldSize = items.size();
                             items = update;
