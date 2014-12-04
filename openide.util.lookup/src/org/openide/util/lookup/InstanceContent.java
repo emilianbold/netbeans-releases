@@ -83,7 +83,13 @@ public final class InstanceContent extends AbstractLookup.Content {
     public InstanceContent(Executor notifyIn) {
         super(notifyIn);
     }
-    /** The method to add instance to the lookup with.
+    
+    /** Adds an instance to the lookup. If <code>inst</code> already exists 
+     * in the lookup (equality is determined by object's {@link Object#equals(java.lang.Object)}
+     * method) then the new instance replaces the old one 
+     * in the lookup but listener notifications are <i>not</i> delivered in 
+     * such case.
+     * 
      * @param inst instance
      */
     public final void add(Object inst) {
