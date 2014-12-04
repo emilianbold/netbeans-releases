@@ -53,14 +53,14 @@ import org.openide.util.Lookup;
  *
  * @author akrasny
  */
-public final class TextLayerProvider {
+final class TextLayerProvider {
 
-    private static final Map<LayerDescriptor, TextIndexLayer> cache = new HashMap<LayerDescriptor, TextIndexLayer>();
+    private final Map<LayerDescriptor, TextIndexLayer> cache = new HashMap<LayerDescriptor, TextIndexLayer>();
 
-    private TextLayerProvider() {
+    TextLayerProvider() {
     }
 
-    public static TextIndexLayer getLayer(LayerDescriptor layerDescriptor) {
+    public TextIndexLayer getLayer(LayerDescriptor layerDescriptor) {
         TextIndexLayer layer;
         synchronized (cache) {
             layer = cache.get(layerDescriptor);
@@ -76,5 +76,11 @@ public final class TextLayerProvider {
             }
         }
         return layer;
+    }
+    
+    public void shutdown() {
+        synchronized (cache) {
+            cache.clear();
+        }
     }
 }

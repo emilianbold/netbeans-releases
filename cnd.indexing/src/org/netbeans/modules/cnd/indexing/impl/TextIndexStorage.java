@@ -61,9 +61,11 @@ public final class TextIndexStorage implements LayerListener{
 
     private final List<TextIndexLayer> layers;
     private final LayeringSupport layeringSupport;
+    private final TextLayerProvider textLayerProvider;
 
     TextIndexStorage(LayeringSupport layeringSupport) {
         this.layeringSupport = layeringSupport;
+        this.textLayerProvider = new TextLayerProvider();
         layers = Collections.unmodifiableList(createLayers(layeringSupport.getLayerDescriptors()));
     }
 
@@ -102,7 +104,7 @@ public final class TextIndexStorage implements LayerListener{
         List<TextIndexLayer> result = new ArrayList<TextIndexLayer>();
 
         for (LayerDescriptor layerDescriptor : layerDescriptors) {
-            TextIndexLayer layer = TextLayerProvider.getLayer(layerDescriptor);
+            TextIndexLayer layer = textLayerProvider.getLayer(layerDescriptor);
             if (layer != null) {
                 result.add(layer);
             }
@@ -151,6 +153,7 @@ public final class TextIndexStorage implements LayerListener{
                 layer.shutdown();
             }
         }
+        textLayerProvider.shutdown();
     }
 
     void unitRemoved(int unitId) {
