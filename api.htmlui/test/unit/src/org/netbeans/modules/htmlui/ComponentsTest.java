@@ -39,49 +39,80 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.build;
+package org.netbeans.modules.htmlui;
 
-import org.netbeans.api.annotations.common.NonNull;
+import java.util.concurrent.CountDownLatch;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import org.netbeans.api.htmlui.HTMLComponent;
+import static org.testng.Assert.*;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
- * Interface for build tool.
- * <p>
- * Implementations are expected to be found in project's lookup.
- * @since 1.81
+ *
+ * @author Jaroslav Tulach
  */
-public interface BuildToolImplementation {
+public class ComponentsTest {
+    public ComponentsTest() {
+    }
+    
+    @BeforeClass public void initNbResLoc() {
+        NbResloc.init();
+    }
 
-    /**
-     * Returns the <b>non-localized (usually english)</b> identifier of this build tool.
-     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}.
-     */
-    @NonNull
-    String getIdentifier();
+    @Test public void loadSwing() throws Exception {
+        CountDownLatch cdl = new CountDownLatch(1);
+        JComponent p = TestPages.getSwing(10, cdl);
+        JFrame f = new JFrame();
+        f.getContentPane().add(p);
+        f.pack();
+        f.setVisible(true);
+        cdl.await();
+    }
 
-    /**
-     * Returns the display name of this build tool. The display name is used
-     * in the UI.
-     * @return the display name; never {@code null}
-     */
-    @NonNull
-    String getDisplayName();
+    @Test public void loadFX() throws Exception {
+        final CountDownLatch cdl = new CountDownLatch(1);
+        final CountDownLatch done = new CountDownLatch(1);
+        final JFXPanel p = new JFXPanel();
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Node wv = TestPages.getFX(10, cdl);
+                Scene s = new Scene(new Group(wv));
+                p.setScene(s);
+                done.countDown();
+            }
+        });
+        done.await();
+        JFrame f = new JFrame();
+        f.getContentPane().add(p);
+        f.pack();
+        f.setVisible(true);
+        cdl.await();
+    }
 
-    /**
-     * Checks whether this build tool supports the current project.
-     * @return {@code true} if this build tool supports the current project, {@code false} otherwise
-     * @since 1.82
-     */
-    boolean isEnabled();
+    @HTMLComponent(
+        url = "simple.html", className = "TestPages",
+        type = JComponent.class
+    ) 
+    static void getSwing(int param, CountDownLatch called) {
+        assertEquals(param, 10, "Correct value passed in");
+        called.countDown();
+    }
 
-    /**
-     * Run "build" for the given command identifier.
-     * <p>
-     * This method is called only if this build tool is {@link #isEnabled() enabled} in the current project.
-     * @param commandId command identifier
-     * @param waitFinished wait till the command finishes?
-     * @param warnUser warn user (show dialog, customizer) if any problem occurs (e.g. command is not known/set to this build tool)
-     * @return {@code true} if command was run, {@code false} otherwise
-     */
-    boolean run(@NonNull String commandId, boolean waitFinished, boolean warnUser);
+    @HTMLComponent(
+        url = "simple.html", className = "TestPages",
+        type = Node.class
+    ) 
+    static void getFX(int param, CountDownLatch called) {
+        assertEquals(param, 10, "Correct value passed in");
+        called.countDown();
+    }
 
 }
