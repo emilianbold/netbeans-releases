@@ -58,8 +58,6 @@ import org.netbeans.modules.subversion.remote.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.remote.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.remote.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.remote.ui.lock.LockAction;
-import org.netbeans.modules.subversion.remote.ui.lock.UnlockAction;
 import org.netbeans.modules.subversion.remote.ui.menu.CopyMenu;
 import org.netbeans.modules.subversion.remote.ui.menu.DiffMenu;
 import org.netbeans.modules.subversion.remote.ui.menu.IgnoreMenu;
@@ -477,12 +475,6 @@ public class Annotator extends VCSAnnotator {
                 if(a != null) actions.add(a);
                 actions.add(null);
                 
-                SystemAction unlockAction = SystemAction.get(UnlockAction.class);
-                if (unlockAction.isEnabled()) {
-                    actions.add(unlockAction);
-                } else {
-                    actions.add(SystemAction.get(LockAction.class));
-                }
                 actions.add(new WorkingCopyMenu(destination, null));
                 actions.add(SystemAction.get(VersioningInfoAction.class));
                 actions.add(SystemAction.get(SvnPropertiesAction.class));
@@ -525,12 +517,6 @@ public class Annotator extends VCSAnnotator {
                 }
                 actions.add(null);
                 
-                SystemActionBridge unlockAction = SystemActionBridge.createAction(SystemAction.get(UnlockAction.class), loc.getString("CTL_PopupMenuItem_Unlock"), context);
-                if (unlockAction.isEnabled()) {
-                    actions.add(unlockAction);
-                } else {
-                    actions.add(SystemActionBridge.createAction(SystemAction.get(LockAction.class), loc.getString("CTL_PopupMenuItem_Lock"), context));
-                }
                 actions.add(new WorkingCopyMenu(destination, context));
                 actions.add(SystemActionBridge.createAction(
                                 SystemAction.get(VersioningInfoAction.class),

@@ -49,8 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,7 +62,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.ISVNProperty;
 import org.netbeans.modules.subversion.remote.api.ISVNStatus;
@@ -75,7 +74,6 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -234,7 +232,8 @@ public final class SvnProperties implements ActionListener {
     }
 
     public void loadFromFile() {
-        final JFileChooser chooser = new AccessibleJFileChooser(NbBundle.getMessage(SvnProperties.class, "ACSD_Properties"));
+        final JFileChooser chooser = VCSFileProxySupport.createFileChooser(roots[0].getParentFile());
+        //final JFileChooser chooser = new AccessibleJFileChooser(NbBundle.getMessage(SvnProperties.class, "ACSD_Properties"));
         chooser.setDialogTitle(NbBundle.getMessage(SvnProperties.class, "CTL_Load_Value_Title"));
         chooser.setMultiSelectionEnabled(false);
         javax.swing.filechooser.FileFilter[] fileFilters = chooser.getChoosableFileFilters();
@@ -242,19 +241,6 @@ public final class SvnProperties implements ActionListener {
             javax.swing.filechooser.FileFilter fileFilter = fileFilters[i];
             chooser.removeChoosableFileFilter(fileFilter);
         }
-
-        chooser.setCurrentDirectory(roots[0].getParentFile()); // NOI18N
-        chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
-            @Override
-            public boolean accept(VCSFileProxy f) {
-                return f.exists();
-            }
-            @Override
-            public String getDescription() {
-                return "";
-            }
-        });
-
         chooser.setDialogType(JFileChooser.OPEN_DIALOG);
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(SvnProperties.class, "MNE_LoadValue").charAt(0));
         chooser.setApproveButtonText(NbBundle.getMessage(SvnProperties.class, "CTL_LoadValue"));
@@ -267,13 +253,12 @@ public final class SvnProperties implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 String state = e.getActionCommand();
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
-                    File source = chooser.getSelectedFile();
-
+                    VCSFileProxy source = VCSFileProxySupport.getSelectedFile(chooser);
                     if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(source)) {
-                        if (source.canRead()) {
+                        if (VCSFileProxySupport.canRead(source)) {
                             StringWriter sw = new StringWriter();
                             try {
-                                Utils.copyStreamsCloseAll(sw, new FileReader(source));
+                                org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(sw, new InputStreamReader(source.getInputStream(false)));
                                 panel.txtAreaValue.setText(sw.toString());
                             } catch (IOException ex) {
                                 Subversion.LOG.log(Level.SEVERE, null, ex);

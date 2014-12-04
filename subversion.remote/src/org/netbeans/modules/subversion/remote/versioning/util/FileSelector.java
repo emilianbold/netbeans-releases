@@ -59,6 +59,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -194,7 +195,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         }
         String path = getFileSelectorPreset(hash);
         if(path != null && !path.trim().equals("")) {
-            VCSFileProxy f = new File(path);
+            VCSFileProxy f = VCSFileProxySupport.fromString(path);
             filesList.setSelectedValue(f, true);
         }
     }
@@ -206,7 +207,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         }
         VCSFileProxy file = getSelectedFile();
         if(file != null) {
-            setFileSelectorPreset(hash, file.getPath());
+            setFileSelectorPreset(hash, VCSFileProxySupport.toString(file));
         }
     }
 
@@ -214,7 +215,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         Arrays.sort(files);
         StringBuilder sb = new StringBuilder();
         for (VCSFileProxy file : files) {
-            sb.append(file.getPath());
+            sb.append(VCSFileProxySupport.toString(file));
         }
         String hash = null;
         try {
