@@ -67,14 +67,21 @@ public interface BuildToolImplementation {
     String getDisplayName();
 
     /**
+     * Checks whether this build tool supports the current project.
+     * @return {@code true} if this build tool supports the current project, {@code false} otherwise
+     * @since 1.82
+     */
+    boolean isEnabled();
+
+    /**
      * Run "build" for the given command identifier.
      * <p>
-     * This method can be called even if the current project does not support the given command.
+     * This method is called only if this build tool is {@link #isEnabled() enabled} in the current project.
      * @param commandId command identifier
      * @param waitFinished wait till the command finishes?
-     * @param showCustomizer show customizer if any problem occurs (e.g. command is not known/set to this build tool)
+     * @param warnUser warn user (show dialog, customizer) if any problem occurs (e.g. command is not known/set to this build tool)
      * @return {@code true} if command was run, {@code false} otherwise
      */
-    boolean run(@NonNull String commandId, boolean waitFinished, boolean showCustomizer);
+    boolean run(@NonNull String commandId, boolean waitFinished, boolean warnUser);
 
 }
