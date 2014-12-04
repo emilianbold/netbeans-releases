@@ -241,3 +241,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-openide-filesystems-nb@" value="${javadoc.docs.org-openide-filesystems-nb}"/>
 <replacefilter token="@org-netbeans-api-templates@" value="${javadoc.docs.org-netbeans-api-templates}"/>
 <replacefilter token="@org-netbeans-api-io@" value="${javadoc.docs.org-netbeans-api-io}"/>
+<replacefilter token="@org-netbeans-api-htmlui@" value="${javadoc.docs.org-netbeans-api-htmlui}"/>
