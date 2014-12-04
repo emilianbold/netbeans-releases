@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
-
+import java.util.concurrent.Executor;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
-
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
+import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 
 /**
- * @author   Daniel Prusa
+ *
+ * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
-                             types=TreeModel.class,
-                             position=15000)
-public class EvaluatorTreeModel extends LocalsTreeModel {
-
-
-    public EvaluatorTreeModel (ContextProvider lookupProvider) {
-        super(lookupProvider);
-    }
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession",
+                                 types=AsynchronousModelFilter.class),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                                 types=AsynchronousModelFilter.class,
+                                 position=13000)
+})
+public class JPDAAsynchronousModel implements AsynchronousModelFilter {
     
-    @Override
-    public Object[] getChildren (Object o, int from, int to) throws UnknownTypeException {
-        if (o == TreeModel.ROOT) {
-            return new Object[]{};
-        } else {
-            return super.getChildren(o, from, to);
+    private Executor rp;
+
+    public JPDAAsynchronousModel(ContextProvider lookupProvider) {
+        JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
+            lookupFirst (null, JPDADebugger.class);
+        rp = debugger.getRequestProcessor();
+    }
+
+    public Executor asynchronous(Executor exec, CALL asynchCall, Object object) {
+        switch (asynchCall) {
+            case VALUE:
+            case CHILDREN:
+                return rp;
+            case SHORT_DESCRIPTION:
+            case DISPLAY_NAME:
+                return CURRENT_THREAD;
         }
+        return null; // ??
     }
 
 }

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.util.List;
 import java.util.Set;
@@ -81,6 +81,27 @@ public class BreakpointsHitCountModel implements TableModelFilter, BreakpointImp
         this.lookupProvider = lookupProvider;
     }
 
+    @NbBundle.Messages({"# {0} and {1} represent two numbers.",
+                        "# {0} - breakpoint hit count,",
+                        "# {1} - break count (how many times the breakpoint actually broke the execution)",
+                        "MSG_HitCountWithBreakCount={0} / {1}",
+                        "# {0}, {1} and {2} represent numbers:",
+                        "# {0} - breakpoint hit count," +
+                        "# {1} - break count (how many times the breakpoint actually broke the execution),",
+                        "# {2} - remaining number of hits till the execution is broken.",
+                        "MSG_HitCountWithBreakCountToBreak={0} / {1}, {2} hits to break",
+                        "MSG_HitCountUnknown=?",
+                        "# {0} and {1} represent two numbers.",
+                        "# {0} - breakpoint hit count,",
+                        "# {1} - break count (how many times the breakpoint actually broke the execution)",
+                        "TT_HitCount=Current hit count = {0}, actual break count = {1}",
+                        "# {0}, {1} and {2} represent numbers:",
+                        "# {0} - breakpoint hit count,",
+                        "# {1} - break count (how many times the breakpoint actually broke the execution),",
+                        "# {2} - remaining number of hits till the execution is broken.",
+                        "TT_HitCountToBreak=Current hit count = {0}, actual break count = {1}, number of hits remaining to the next break = {2}",
+                        "TT_HitCountUnknown=Unknown"
+                       })
     @Override
     public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
         if (HC_COLUMN_ID.equals(columnID)) {
@@ -88,7 +109,7 @@ public class BreakpointsHitCountModel implements TableModelFilter, BreakpointImp
                 JPDABreakpoint b = (JPDABreakpoint) node;
                 BreakpointImpl bpImpl = getBPImpl(b);
                 if (bpImpl == null) {
-                    return NbBundle.getMessage(BreakpointsHitCountModel.class, "MSG_HitCountUnknown");
+                    return Bundle.MSG_HitCountUnknown();
                 }
                 int hc = bpImpl.getCurrentHitCount();
                 int bc = bpImpl.getCurrentBreakCounts();
@@ -96,17 +117,15 @@ public class BreakpointsHitCountModel implements TableModelFilter, BreakpointImp
                 int hctb = bpImpl.getHitCountsTillBreak();
                 if (isHCFilterSet && hctb >= 0) {
                     //return hc2String(hc) + " / " + hc2String(bc) + " / " + hc2String(hctb);
-                    return NbBundle.getMessage(BreakpointsHitCountModel.class,
-                                               "MSG_HitCountWithBreakCountToBreak",
-                                               hc2String(hc), hc2String(bc), hc2String(hctb));
+                    return Bundle.MSG_HitCountWithBreakCountToBreak(
+                                    hc2String(hc), hc2String(bc), hc2String(hctb));
                 } else {
                     if (hc == bc) {
                         return hc2String(hc);
                     } else {
                         //return hc2String(hc) + " / " + hc2String(bc);
-                        return NbBundle.getMessage(BreakpointsHitCountModel.class,
-                                                   "MSG_HitCountWithBreakCount",
-                                                   hc2String(hc), hc2String(bc));
+                        return Bundle.MSG_HitCountWithBreakCount(
+                                        hc2String(hc), hc2String(bc));
                     }
                 }
             } else if (node instanceof JToolTip) {
@@ -115,20 +134,18 @@ public class BreakpointsHitCountModel implements TableModelFilter, BreakpointImp
                     JPDABreakpoint b = (JPDABreakpoint) node;
                     BreakpointImpl bpImpl = getBPImpl(b);
                     if (bpImpl == null) {
-                        return NbBundle.getMessage(BreakpointsHitCountModel.class, "TT_HitCountUnknown");
+                        return Bundle.TT_HitCountUnknown();
                     }
                     int hc = bpImpl.getCurrentHitCount();
                     int bc = bpImpl.getCurrentBreakCounts();
                     int hctb = bpImpl.getHitCountsTillBreak();
                     String tt;
                     if (hctb >= 0) {
-                        tt = NbBundle.getMessage(BreakpointsHitCountModel.class,
-                                                 "TT_HitCountToBreak",
-                                                 hc2String(hc), hc2String(bc), hc2String(hctb));
+                        tt = Bundle.TT_HitCountToBreak(
+                                        hc2String(hc), hc2String(bc), hc2String(hctb));
                     } else {
-                        tt = NbBundle.getMessage(BreakpointsHitCountModel.class,
-                                                 "TT_HitCount",
-                                                 hc2String(hc), hc2String(bc));
+                        tt = Bundle.TT_HitCount(
+                                        hc2String(hc), hc2String(bc));
                     }
                     return tt;
                 } else {
@@ -221,6 +238,8 @@ public class BreakpointsHitCountModel implements TableModelFilter, BreakpointImp
     }
     
     
+    @NbBundle.Messages({ "TTL_HC_Column=Hit Count",
+                         "TTL_HC_Column_Tooltip=<Current hit count>/<Actual Break Count>/<Number of Hits remaining to the next break>" })
     @ColumnModelRegistration(path="netbeans-JPDASession/BreakpointsView")
     public static final class HCColumn extends ColumnModel {
         

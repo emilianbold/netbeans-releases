@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 
@@ -70,6 +71,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
+import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
+import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
+import org.netbeans.modules.debugger.jpda.models.JPDAWatchFactory;
 
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.NbBundle;
@@ -147,9 +151,6 @@ public class WatchesModel implements TreeModel {
                 listener = new Listener (this, debugger);
             return jws;
         }
-        if (parent instanceof JPDAWatchImpl) {
-            return getLocalsTreeModel ().getChildren (parent, from, to);
-        }
         return getLocalsTreeModel ().getChildren (parent, from, to);
     }
     
@@ -170,9 +171,6 @@ public class WatchesModel implements TreeModel {
             return Integer.MAX_VALUE;
             //return DebuggerManager.getDebuggerManager ().getWatches ().length;
         }
-        if (node instanceof JPDAWatchImpl) {
-            return getLocalsTreeModel ().getChildrenCount (node);
-        }
         return getLocalsTreeModel ().getChildrenCount (node);
     }
     
@@ -187,8 +185,8 @@ public class WatchesModel implements TreeModel {
                 return false; // When not yet evaluated, suppose that it's not leaf
             }
             JPDAWatch jw = jwe.getEvaluatedWatch();
-            if (jw instanceof JPDAWatchImpl) {
-                return ((JPDAWatchImpl) jw).isPrimitive ();
+            if (jw instanceof AbstractVariable) {
+                return !(((AbstractVariable) jw).getInnerValue() instanceof ObjectReference);
             }
         }
         if (node == EMPTY_WATCH) return true;
@@ -266,6 +264,7 @@ public class WatchesModel implements TreeModel {
 
     // innerclasses ............................................................
     
+    @NbBundle.Messages("CTL_WatchDisabled=>disabled<")
     public /*private*/ static class JPDAWatchEvaluating extends AbstractObjectVariable
                                              implements JPDAWatch, Variable,
                                                         Refreshable, //.Lazy {
@@ -314,11 +313,7 @@ public class WatchesModel implements TreeModel {
                 this.evaluatedWatch = evaluatedWatch;
             }
             if (evaluatedWatch != null) {
-                if (evaluatedWatch instanceof JPDAWatchImpl) {
-                    setInnerValue(((JPDAWatchImpl) evaluatedWatch).getInnerValue());
-                } else if (evaluatedWatch instanceof JPDAObjectWatchImpl) {
-                    setInnerValue(((JPDAObjectWatchImpl) evaluatedWatch).getInnerValue());
-                }
+                setInnerValue(((AbstractVariable) evaluatedWatch).getInnerValue());
                 //propSupp.firePropertyChange(PROP_INITIALIZED, null, Boolean.TRUE);
             } else {
                 setInnerValue(null);
@@ -362,7 +357,7 @@ public class WatchesModel implements TreeModel {
         @Override
         public String getToStringValue() throws InvalidExpressionException {
             if (!w.isEnabled()) {
-                return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
+                return Bundle.CTL_WatchDisabled();
             }
             JPDAWatch evaluatedWatch;
             synchronized (this) {
@@ -406,7 +401,7 @@ public class WatchesModel implements TreeModel {
         
         private String getValue(JPDAWatch[] watchRef) {
             if (!w.isEnabled()) {
-                return NbBundle.getMessage(WatchesModel.class, "CTL_WatchDisabled");
+                return Bundle.CTL_WatchDisabled();
             }
             synchronized (evaluating) {
                 if (evaluating[0]) {
@@ -433,44 +428,31 @@ public class WatchesModel implements TreeModel {
                     expr = getParsedExpression();
                 }
                 Value v = debugger.evaluateIn (expr);
-                //if (v instanceof ObjectReference)
-                //    jw = new JPDAObjectWatchImpl (debugger, w, (ObjectReference) v);
-                if (v instanceof PrimitiveValue) {
-                    JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, (PrimitiveValue) v, this);
-                    jwi.addPropertyChangeListener(this);
-                    jw = jwi;
-                } else { // ObjectReference or VoidValue
-                    JPDAObjectWatchImpl jwi = new JPDAObjectWatchImpl (debugger, w, v);
-                    jwi.addPropertyChangeListener(this);
-                    jw = jwi;
-                    /* Uncomment if evaluator returns variables with disabled collection
-                    if (v instanceof ObjectReference) {
-                        // Returned variable with disabled collection. When not used any more,
-                        // it's collection must be enabled again.
-                        try {
-                            ObjectReferenceWrapper.enableCollection((ObjectReference) v);
-                        } catch (Exception ex) {}
-                    }*/
-                }
+                jw = JPDAWatchFactory.createJPDAWatch(debugger, w, v);
+                /* Uncomment if evaluator returns variables with disabled collection
+                if (v instanceof ObjectReference) {
+                    // Returned variable with disabled collection. When not used any more,
+                    // it's collection must be enabled again.
+                    try {
+                        ObjectReferenceWrapper.enableCollection((ObjectReference) v);
+                    } catch (Exception ex) {}
+                }*/
             } catch (InvalidExpressionException e) {
-                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, e, this);
-                jwi.addPropertyChangeListener(this);
-                jw = jwi;
+                jw = JPDAWatchFactory.createJPDAWatch(debugger, w, e);
             } catch (RuntimeException ex) {
                 // Any exception that occurs during evaluation - probably our bug
                 // Assure that we have some result so that we do not re-evaluate in an endless loop.
-                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, ex, this);
-                jwi.addPropertyChangeListener(this);
-                jw = jwi;
+                jw = JPDAWatchFactory.createJPDAWatch(debugger, w, ex);
                 throw ex;
             } catch (Error err) {
                 // Any error that occurs during evaluation - probably our bug
                 // Assure that we have some result so that we do not re-evaluate in an endless loop.
-                JPDAWatchImpl jwi = new JPDAWatchImpl (debugger, w, err, this);
-                jwi.addPropertyChangeListener(this);
-                jw = jwi;
+                jw = JPDAWatchFactory.createJPDAWatch(debugger, w, err);
                 throw err;
             } finally {
+                if (jw instanceof AbstractVariable) {
+                    ((AbstractVariable) jw).addPropertyChangeListener(this);
+                }
                 setEvaluated(jw);
                 if (watchRef != null) watchRef[0] = jw;
                 synchronized (evaluating) {

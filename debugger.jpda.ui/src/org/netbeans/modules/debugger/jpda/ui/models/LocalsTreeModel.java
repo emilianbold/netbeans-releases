@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
@@ -86,6 +86,11 @@ import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
+import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
+import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
+import org.netbeans.modules.debugger.jpda.models.FieldVariable;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.openide.util.RequestProcessor;
@@ -220,7 +225,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     }
                 }
                 boolean isNotDone = currentOperation != lastOperation;
-                if (isNotDone && CallStackFrameImpl.canFindOperationArguments()) {
+                if (isNotDone) {
                     ret[0] = "operationArguments " + currentOperation.getMethodName(); // NOI18N
                 }
                 List<Operation> operations = frame.getThread().getLastOperations();
@@ -732,17 +737,6 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         }
     }
     
-    public Variable getVariable (Value v) {
-        if (v instanceof ObjectReference || v == null)
-            return new AbstractObjectVariable (
-                debugger,
-                (ObjectReference) v,
-                null
-            );
-        return new AbstractVariable (debugger, v, null);
-    }
-    
-    
     JPDADebuggerImpl getDebugger () {
         return debugger;
     }
@@ -869,7 +863,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             if (maxIndex < 0) {
                 maxIndex = from + length - 1;
             }
-            this.maxIndexLog = ArrayFieldVariable.log10(maxIndex);
+            this.maxIndexLog = log10(maxIndex);
         }
         
         private static int pow(int a, int b) {
@@ -924,24 +918,43 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         
         @Override
         public String toString() {
-            int num0 = maxIndexLog - ArrayFieldVariable.log10(from);
+            int num0 = maxIndexLog - log10(from);
             String froms;
             if (num0 > 0) {
-                froms = ArrayFieldVariable.zeros(2*num0) + from; // One space is roughly 1/2 of width of a number
+                froms = zeros(2*num0) + from; // One space is roughly 1/2 of width of a number
             } else {
                 froms = Integer.toString(from);
             }
             int last = from + length - 1;
-            num0 = maxIndexLog - ArrayFieldVariable.log10(last);
+            num0 = maxIndexLog - log10(last);
             String lasts;
             if (num0 > 0) {
-                lasts = ArrayFieldVariable.zeros(2*num0) + last; // One space is roughly 1/2 of width of a number
+                lasts = zeros(2*num0) + last; // One space is roughly 1/2 of width of a number
             } else {
                 lasts = Integer.toString(last);
             }
             return "SubArray"+froms+"-"+lasts; // NOI18N
         }
         
+        private static int log10(int n) {
+            int l = 1;
+            while ((n = n / 10) > 0) l++;
+            return l;
+        }
+
+        //private static final String ZEROS = "000000000000"; // NOI18N
+        private static final String ZEROS = "            "; // NOI18N
+
+        private static String zeros(int n) {
+            if (n < ZEROS.length()) {
+                return ZEROS.substring(0, n);
+            } else {
+                String z = ZEROS;
+                while (z.length() < n) z += " "; // NOI18N
+                return z;
+            }
+        }
+
     }
 
 }
