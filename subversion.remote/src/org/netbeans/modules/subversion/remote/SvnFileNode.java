@@ -52,7 +52,6 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Represents real or virtual (non-local) file.
@@ -77,12 +76,10 @@ public class SvnFileNode {
     public SvnFileNode(VCSFileProxy file) {
         this.file = file;
         VCSFileProxy norm = file.normalizeFile();
-        if (Utilities.isMac() || Utilities.isUnix()) {
-            FileInformation fi = Subversion.getInstance().getStatusCache().getStatus(file);
-            FileInformation fiNorm = Subversion.getInstance().getStatusCache().getStatus(norm);
-            if (fi.getStatus() != fiNorm.getStatus()) {
-                norm = null;
-            }
+        FileInformation fi = Subversion.getInstance().getStatusCache().getStatus(file);
+        FileInformation fiNorm = Subversion.getInstance().getStatusCache().getStatus(norm);
+        if (fi.getStatus() != fiNorm.getStatus()) {
+            norm = null;
         }
         normalizedFile = norm;
     }

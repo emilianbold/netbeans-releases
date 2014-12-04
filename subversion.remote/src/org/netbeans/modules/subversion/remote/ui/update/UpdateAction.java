@@ -71,6 +71,7 @@ import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.ClientCheckSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningOutputManager;
@@ -78,7 +79,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -211,9 +211,10 @@ public class UpdateAction extends ContextAction {
                         
         
         final SvnClient client;
-        UpdateOutputListener listener = new UpdateOutputListener();
+        final Context context = new Context(roots); 
+        UpdateOutputListener listener = new UpdateOutputListener(context);
         try {
-            client = Subversion.getInstance().getClient(new Context(roots), repositoryUrl); 
+            client = Subversion.getInstance().getClient(context, repositoryUrl); 
             // this isn't clean - the client notifies only files which realy were updated. 
             // The problem here is that the revision in the metadata is set to HEAD even if the file didn't change =>
             // we have to explicitly force the refresh for the relevant context - see bellow in updateRoots
@@ -227,7 +228,7 @@ public class UpdateAction extends ContextAction {
         }
 
         try {                    
-            UpdateNotifyListener l = new UpdateNotifyListener();            
+            UpdateNotifyListener l = new UpdateNotifyListener(context);            
             client.addNotifyListener(l);            
             try {
                 SvnUtils.runWithoutIndexing(new Callable<Void>() {
@@ -437,7 +438,11 @@ public class UpdateAction extends ContextAction {
     
     private static class UpdateOutputListener implements ISVNNotifyListener {
 
-        private List<FileUpdateInfo> results;        
+        private List<FileUpdateInfo> results;
+        private final VCSFileProxy root;
+        private UpdateOutputListener(Context context) {
+            this.root = context.getRootFiles()[0];
+        }
         
         @Override
         public void setCommand(ISVNNotifyListener.Command command) {
@@ -480,7 +485,7 @@ public class UpdateAction extends ContextAction {
         }
 
         private void catchMessage(String logMsg) {
-            FileUpdateInfo[] fuis = FileUpdateInfo.createFromLogMsg(logMsg);
+            FileUpdateInfo[] fuis = FileUpdateInfo.createFromLogMsg(root, logMsg);
             if(fuis != null) {
                 for(FileUpdateInfo fui : fuis) {
                     if(fui != null) {
@@ -497,6 +502,12 @@ public class UpdateAction extends ContextAction {
         private static final Pattern existedFilePattern = Pattern.compile("E    ?(.+)"); //NOI18N
         HashSet<VCSFileProxy> conflictedFiles = new HashSet<VCSFileProxy>();
         HashSet<VCSFileProxy> existedFiles = new HashSet<VCSFileProxy>();
+        private final VCSFileProxy root;
+        
+        private UpdateNotifyListener(Context context) {
+            root = context.getRootFiles()[0];
+        }
+        
         @Override
         public void logMessage(String msg) {
             catchMessage(msg);
@@ -523,12 +534,12 @@ public class UpdateAction extends ContextAction {
             Matcher m = conflictFilePattern.matcher(message);
             if (m.matches() && m.groupCount() > 1) {
                 String filePath = m.group(2);
-                conflictedFiles.add(FileUtil.normalizeFile(new File(filePath)));
+                conflictedFiles.add(VCSFileProxySupport.getResource(root, filePath).normalizeFile());
             } else {
                 m = existedFilePattern.matcher(message);
                 if (m.matches() && m.groupCount() > 0) {
                     String filePath = m.group(1);
-                    existedFiles.add(FileUtil.normalizeFile(new File(filePath)));
+                    existedFiles.add(VCSFileProxySupport.getResource(root, filePath).normalizeFile());
                 }
             }
         }

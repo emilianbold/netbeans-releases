@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.NotifyHtmlPanel;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -165,7 +166,7 @@ public class UpgradeAction extends ContextAction {
                                         Pattern p = Pattern.compile(s, Pattern.DOTALL);
                                         Matcher m = p.matcher(ex.getMessage());
                                         if (m.matches()) {
-                                            VCSFileProxy rootCandidate = new File(m.group(1));
+                                            VCSFileProxy rootCandidate = VCSFileProxySupport.getResource(root, m.group(1));
                                             if (!wcRoot.equals(rootCandidate)) {
                                                 wcRoot = rootCandidate;
                                                 cont = true;

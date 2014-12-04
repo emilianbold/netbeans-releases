@@ -50,6 +50,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.ui.shelve.ShelveChangesAction;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -58,6 +59,7 @@ import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
+import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
@@ -81,8 +83,15 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
     private VCSVisibilityQuery visibilityQuery;
 
     public SubversionVCS() {
-        Subversion.getInstance().getFileStatusCache().addVersioningListener(this);
-        Subversion.getInstance().getAnnotator().addPropertyChangeListener(this);
+        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        Subversion.getInstance().attachListeners(this);
+        Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                ShelveChangesActionsRegistry.getInstance().registerAction(SubversionVCS.this, ShelveChangesAction.getProvider());
+            }
+        });
+        
     }
 
     public static String getDisplayName() {

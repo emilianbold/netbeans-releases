@@ -96,7 +96,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         performCheckout(false);
     }
         
-    public static VCSFileProxy performCheckout (final boolean wait) {
+    private VCSFileProxy performCheckout (final boolean wait) {
         assert !wait || !EventQueue.isDispatchThread(); // cannot wait in AWT
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) {

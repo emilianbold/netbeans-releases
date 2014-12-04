@@ -88,7 +88,6 @@ import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-import org.openide.util.Utilities;
 
 /**
  * Central part of Subversion status management, deduces and caches statuses of files under version control.
@@ -1097,7 +1096,7 @@ public class FileStatusCache {
             LOG.log(Level.WARNING, "createMissingEntryFileInformation for root folder: {0}, isManaged={1}", //NOI18N
                     new Object[] { file, SvnUtils.isManaged(file) });
         }
-        if(exists && Utilities.isMac() && parent != null) {
+        if(exists && VCSFileProxySupport.isMac(file) && parent != null) {
             // handle case on mac, "fileA".exists() is the same as "filea".exists but svn client understands the difference
             VCSFileProxy[] files = parent.listFiles(new FilenameFilter() {
                 @Override

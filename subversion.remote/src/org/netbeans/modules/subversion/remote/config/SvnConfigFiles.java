@@ -69,7 +69,6 @@ import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.NetworkSettings;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -405,7 +404,7 @@ public class SvnConfigFiles {
             return t9yUserConfigPath;
         }
         
-        if(Utilities.isUnix()) {
+        if(VCSFileProxySupport.isUnix()) {
             String path = System.getProperty("user.home") ;                     // NOI18N
             return path + "/" + UNIX_CONFIG_DIR;                                // NOI18N
         } 

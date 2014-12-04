@@ -48,8 +48,6 @@ import java.util.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -72,7 +70,8 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.commit.ConflictResolvedAction;
-import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -155,12 +154,10 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                                 final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
         String ext = "."+fo.getExt(); // NOI18N
-        File f1 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
-        File f2 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
-        File f3 = FileUtil.normalizeFile(File.createTempFile(TMP_PREFIX, ext));
-        f1.deleteOnExit();
-        f2.deleteOnExit();
-        f3.deleteOnExit();
+        
+        VCSFileProxy f1 = VCSFileProxySupport.createTempFile(file, TMP_PREFIX, ext, true);
+        VCSFileProxy f2 = VCSFileProxySupport.createTempFile(file, TMP_PREFIX, ext, true);
+        VCSFileProxy f3 = VCSFileProxySupport.createTempFile(file, TMP_PREFIX, ext, true);
         
         Charset encoding = FileEncodingQuery.getEncoding(fo);
         final Difference[] diffs = copyParts(true, file, f1, true, encoding);
@@ -203,8 +200,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         final StreamSource s2;
         Utils.associateEncoding(file, f1);
         Utils.associateEncoding(file, f2);
-        s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, f1);
-        s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, f2);
+        s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, new BufferedReader(new InputStreamReader(f1.getInputStream(false), encoding)));
+        s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, new BufferedReader(new InputStreamReader(f2.getInputStream(false), encoding)));
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,
                                                               originalLeftFileRevision,
                                                               originalRightFileRevision,
@@ -227,7 +224,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     private Difference[] copyParts(boolean generateDiffs, VCSFileProxy source,
                                    VCSFileProxy dest, boolean leftPart, Charset charset) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(source.getInputStream(false), charset));
-        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
+        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(dest.toFileObject().getOutputStream(), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
             diffList = new ArrayList<Difference>();
@@ -485,7 +482,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             if (fo != null) {
                 w = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
             } else {
-                w = new OutputStreamWriter(new FileOutputStream(outputFile), encoding);
+                w = new OutputStreamWriter(outputFile.toFileObject().getOutputStream(), encoding);
             }
             if (conflicts == null || conflicts.length == 0) {
                 fileToRepairEntriesOf = outputFile;
@@ -502,9 +499,9 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
          */
         @Override
         public void close() {
-            tempf1.delete();
-            tempf2.delete();
-            tempf3.delete();
+            VCSFileProxySupport.delete(tempf1);
+            VCSFileProxySupport.delete(tempf2);
+            VCSFileProxySupport.delete(tempf3);
             if (lock != null) {
                 lock.releaseLock();
                 lock = null;
@@ -580,7 +577,9 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         @Override
         public void close() throws IOException {
             super.close();
-            if (fo != null) fo.refresh(true);
+            if (fo != null) {
+                fo.refresh(true);
+            }
         }
     }
 }

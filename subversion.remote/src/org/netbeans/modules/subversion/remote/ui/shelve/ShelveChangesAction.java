@@ -129,11 +129,12 @@ public class ShelveChangesAction extends ContextAction {
             Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{ root }); //NOI18N
             return;
         }
-        SvnShelveChangesSupport supp = new SvnShelveChangesSupport(roots);
-        if (supp.prepare("org.netbeans.modules.subversion.ui.shelve.ShelveChangesPanel")) { //NOI18N
-            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
-            supp.startAsync(rp, repositoryUrl);
-        }
+        throw new UnsupportedOperationException();
+        //SvnShelveChangesSupport supp = new SvnShelveChangesSupport(roots);
+        //if (supp.prepare("org.netbeans.modules.subversion.ui.shelve.ShelveChangesPanel")) { //NOI18N
+        //    RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
+        //    supp.startAsync(rp, repositoryUrl);
+        //}
     }
 
     private static class SvnShelveChangesSupport extends ShelveChangesSupport {
