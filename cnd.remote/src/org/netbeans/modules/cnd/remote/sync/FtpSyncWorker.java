@@ -420,7 +420,7 @@ import org.openide.util.RequestProcessor;
                         if (cancelled) {
                             throw new InterruptedIOException();
                         }
-                        requestWriter.append(dir).append(' ');
+                        requestWriter.append('"').append(dir).append('"').append(' ');
                     }
                 }
             };
