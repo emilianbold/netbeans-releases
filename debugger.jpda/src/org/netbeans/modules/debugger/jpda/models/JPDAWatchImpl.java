@@ -85,10 +85,9 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch/*, Watch.Provi
     private JPDADebuggerImpl    debugger;
     private Watch               watch;
     private String              exceptionDescription;
-    private java.lang.ref.Reference<Object> nodeRef;
     
     
-    JPDAWatchImpl (JPDADebuggerImpl debugger, Watch watch, PrimitiveValue v, Object node) {
+    JPDAWatchImpl (JPDADebuggerImpl debugger, Watch watch, PrimitiveValue v) {
         super (
             debugger,
             v, 
@@ -97,14 +96,12 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch/*, Watch.Provi
         );
         this.debugger = debugger;
         this.watch = watch;
-        this.nodeRef = new java.lang.ref.WeakReference<Object>(node);
     }
     
     JPDAWatchImpl (
         JPDADebuggerImpl debugger, 
         Watch watch, 
-        Throwable exception,
-        Object node
+        Throwable exception
     ) {
         super (
             debugger, 
@@ -124,7 +121,6 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch/*, Watch.Provi
             p.close();
             exceptionDescription += " \n"+s.toString();
         }
-        this.nodeRef = new java.lang.ref.WeakReference<Object>(node);
     }
 
     public Watch getWatch() {
@@ -269,16 +265,12 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch/*, Watch.Provi
         this.exceptionDescription = exceptionDescription;
     }
     
-    boolean isPrimitive () {
-        return !(getInnerValue () instanceof ObjectReference);
-    }
-
     public JPDAWatchImpl clone() {
         JPDAWatchImpl clon;
         if (exceptionDescription == null) {
-            clon = new JPDAWatchImpl(getDebugger(), watch, (PrimitiveValue) getJDIValue(), nodeRef.get());
+            clon = new JPDAWatchImpl(getDebugger(), watch, (PrimitiveValue) getJDIValue());
         } else {
-            clon = new JPDAWatchImpl(getDebugger(), watch, new Exception(exceptionDescription), nodeRef.get());
+            clon = new JPDAWatchImpl(getDebugger(), watch, new Exception(exceptionDescription));
         }
         return clon;
     }

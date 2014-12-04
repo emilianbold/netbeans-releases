@@ -219,7 +219,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
     }
     
     @Override
-    protected Value getInnerValue() {
+    public Value getInnerValue() {
         if (valueSet) {
             return super.getInnerValue();
         }

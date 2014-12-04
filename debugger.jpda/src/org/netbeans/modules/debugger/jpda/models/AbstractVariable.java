@@ -428,7 +428,7 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
     
     // other methods............................................................
     
-    protected Value getInnerValue () {
+    public Value getInnerValue () {
         return value;
     }
     

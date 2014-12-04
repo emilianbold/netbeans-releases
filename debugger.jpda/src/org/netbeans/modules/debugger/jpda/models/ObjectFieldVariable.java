@@ -263,7 +263,7 @@ public class ObjectFieldVariable extends AbstractObjectVariable
     }
     
     @Override
-    protected Value getInnerValue() {
+    public Value getInnerValue() {
         if (valueSet) {
             return super.getInnerValue();
         }
