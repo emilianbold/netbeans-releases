@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.grunt.options;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.util.FileUtils;
 import org.openide.util.NbPreferences;
 
@@ -75,7 +76,7 @@ public final class GruntOptions {
         if (path == null
                 && !gruntSearched) {
             gruntSearched = true;
-            List<String> files = FileUtils.findFileOnUsersPath("grunt"); // XXX
+            List<String> files = FileUtils.findFileOnUsersPath(GruntExecutable.GRUNT_NAME);
             if (!files.isEmpty()) {
                 path = files.get(0);
                 setGrunt(path);
