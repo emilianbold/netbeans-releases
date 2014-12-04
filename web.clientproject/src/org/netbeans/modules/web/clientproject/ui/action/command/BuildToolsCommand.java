@@ -45,6 +45,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -71,15 +73,14 @@ public class BuildToolsCommand extends Command {
         return true;
     }
 
+    @NbBundle.Messages("BuildToolsCommand.buildTool.none=No build tool (e.g. Grunt) used in project.")
     @Override
     void invokeActionInternal(Lookup context) {
-        tryBuild(true, false);
+        if (!tryBuild(true, false)) {
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.BuildToolsCommand_buildTool_none()));
+        }
     }
 
-    @NbBundle.Messages({
-        "BuildToolsCommand.notFound=No Gruntfile.js found; create it and rerun the action.",
-        "BuildToolsCommand.configure=Do you want to configure project actions to call Grunt tasks?",
-    })
     public boolean tryBuild(boolean showCustomizer, boolean waitFinished) {
         return BuildTools.getDefault().run(project, commandId, waitFinished,
                 showCustomizer && !ClientSideProjectUtilities.isCordovaProject(project));
