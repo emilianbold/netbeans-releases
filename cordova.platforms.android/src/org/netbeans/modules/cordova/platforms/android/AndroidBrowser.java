@@ -161,7 +161,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                             null);
                     Object value = DialogDisplayer.getDefault().notify(not);
                     if (NotifyDescriptor.CANCEL_OPTION != value) {
-                        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
+                        OptionsDisplayer.getDefault().open("Html5/MobilePlatforms"); // NOI18N
                     }
                 }
             });

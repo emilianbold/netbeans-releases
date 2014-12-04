@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cordova.platforms.ios;
 
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;

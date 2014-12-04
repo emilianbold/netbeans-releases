@@ -98,7 +98,7 @@ public class MobilePlatformsSetup extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void mobilePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mobilePlatformsActionPerformed
-        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");//NOI18N
+        OptionsDisplayer.getDefault().open("Html5/MobilePlatforms");//NOI18N
     }//GEN-LAST:event_mobilePlatformsActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
