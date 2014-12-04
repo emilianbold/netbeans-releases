@@ -130,7 +130,6 @@ import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
@@ -150,13 +149,13 @@ import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
+import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
 import org.netbeans.modules.debugger.jpda.models.ClassVariableImpl;
 import org.netbeans.modules.debugger.jpda.models.VariableMirrorTranslator;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.debugger.jpda.Evaluator;
-import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -988,7 +987,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
             vr = result.getVariable();
             if (vr == null) {
-                vr = getLocalsTreeModel ().getVariable (result.getValue());
+                vr = createVariable(result.getValue());
             }
         } finally {
             lock.unlock();
@@ -1982,7 +1981,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
         if (value instanceof ClassObjectReference) {
             return new ClassVariableImpl(this, (ClassObjectReference) value, null);
         }
-        return getLocalsTreeModel ().getVariable (value);
+        return createVariable(value);
+    }
+    
+    private Variable createVariable(Value v) {
+        if (v instanceof ObjectReference || v == null) {
+            return new AbstractObjectVariable (
+                this,
+                (ObjectReference) v,
+                null
+            );
+        } else {
+            return new AbstractVariable (this, v, null);
+        }
     }
 
     @Override
@@ -2195,15 +2206,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             engineContext = lookupProvider.lookupFirst(null, SourcePath.class);
         }
         return engineContext;
-    }
-
-    private LocalsTreeModel localsTreeModel;
-    private LocalsTreeModel getLocalsTreeModel () {
-        if (localsTreeModel == null) {
-            localsTreeModel = (LocalsTreeModel) lookupProvider.
-                lookupFirst ("LocalsView", TreeModel.class);
-        }
-        return localsTreeModel;
     }
 
     private ThreadReference getEvaluationThread () {

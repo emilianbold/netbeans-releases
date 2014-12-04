@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
 import javax.swing.Action;
 
@@ -69,8 +69,9 @@ import org.openide.util.RequestProcessor;
                              position=300)
 public class DebuggingActionsProviderFilter implements NodeActionsProviderFilter {
 
+    @NbBundle.Messages("CTL_ThreadAction_Suspend_All_Label=&Suspend All Threads")
     private Action SUSPEND_ALL_ACTION = Models.createAction (
-        NbBundle.getBundle(DebuggingActionsProviderFilter.class).getString("CTL_ThreadAction_Suspend_All_Label"),
+        Bundle.CTL_ThreadAction_Suspend_All_Label(),
         new Models.ActionPerformer () {
             RequestProcessor.Task task;
             public boolean isEnabled (Object node) {
@@ -93,8 +94,9 @@ public class DebuggingActionsProviderFilter implements NodeActionsProviderFilter
         Models.MULTISELECTION_TYPE_ALL
     );
 
+    @NbBundle.Messages("CTL_ThreadAction_Resume_All_Label=&Resume All Threads")
     private Action RESUME_ALL_ACTION = Models.createAction (
-        NbBundle.getBundle(DebuggingActionsProviderFilter.class).getString("CTL_ThreadAction_Resume_All_Label"),
+        Bundle.CTL_ThreadAction_Resume_All_Label(),
         new Models.ActionPerformer () {
             RequestProcessor.Task task;
             public boolean isEnabled (Object node) {

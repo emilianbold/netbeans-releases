@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
 
 import java.awt.datatransfer.Transferable;
@@ -126,8 +126,11 @@ public class LabelVarsFilter implements NodeActionsProviderFilter, ExtendedNodeM
         return actions;
     }
 
+    @NbBundle.Messages({"CTL_MarkObject_Label=Mark Object...",
+                        "CTL_MarkObject_DLG_Title=Mark Object",
+                        "CTL_MarkObject_DLG_Label=&Label:"})
     private final Action MARK_OBJECT_ACTION = Models.createAction (
-        NbBundle.getBundle(LabelVarsFilter.class).getString("CTL_MarkObject_Label"),
+        Bundle.CTL_MarkObject_Label(),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 if ((node == null) || (!(node instanceof ObjectVariable))) {
@@ -139,8 +142,8 @@ public class LabelVarsFilter implements NodeActionsProviderFilter, ExtendedNodeM
             public void perform (Object[] nodes) {
                 ObjectVariable var = (ObjectVariable) nodes[0];
                 if (var.getUniqueID() == 0L) return ;
-                String title = NbBundle.getBundle(LabelVarsFilter.class).getString("CTL_MarkObject_DLG_Title");
-                String label = NbBundle.getBundle(LabelVarsFilter.class).getString("CTL_MarkObject_DLG_Label");
+                String title = Bundle.CTL_MarkObject_DLG_Title();
+                String label = Bundle.CTL_MarkObject_DLG_Label();
                 NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(label, title);
                 Object ret = DialogDisplayer.getDefault().notify(nd);
                 if (nd.OK_OPTION == ret) {
