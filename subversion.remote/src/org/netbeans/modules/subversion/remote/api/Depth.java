@@ -39,53 +39,13 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.client.cli.commands;
-
-import java.io.IOException;
-import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
-import org.netbeans.modules.subversion.remote.api.SVNRevision;
-import org.netbeans.modules.subversion.remote.api.SVNUrl;
-import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+package org.netbeans.modules.subversion.remote.api;
 
 /**
  *
- * @author Tomas Stupka
+ * @author alsimon
  */
-public class MoveCommand extends SvnCommand {
-
-    private final SVNUrl fromUrl;
-    private final SVNUrl toUrl;
-    private final VCSFileProxy fromFile;    
-    private final VCSFileProxy toFile;
-    private final String msg;
-    private final SVNRevision rev;
-    private final boolean force;
-    
-    public MoveCommand(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) {        
-        this.fromFile = fromFile;
-        this.toFile = toFile;
-        this.force = force;        
-        
-        this.toUrl = null;        
-        this.fromUrl = null;        
-        this.msg = null;                  
-        this.rev = null;                  
-    }
-    
-    @Override
-    protected ISVNNotifyListener.Command getCommand() {
-        return ISVNNotifyListener.Command.MOVE;
-    }
-    
-    @Override
-    public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("move");        
-        arguments.add(fromFile);
-        arguments.add(toFile.getPath());
-        if(force) {
-            arguments.add("--force");                    
-        }
-        setCommandWorkingDirectory(new VCSFileProxy[] {fromFile, toFile});                
-    }    
+public enum Depth {
+    files,
+    infinity;
 }

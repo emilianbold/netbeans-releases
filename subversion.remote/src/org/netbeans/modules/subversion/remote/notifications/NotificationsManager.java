@@ -276,7 +276,8 @@ public class NotificationsManager {
                 try {
                     HashSet<VCSFileProxy> files = entry.getValue();
                     VCSFileProxy[] roots = files.toArray(new VCSFileProxy[files.size()]);
-                    SvnClient client = Subversion.getInstance().getClient(new Context(roots), repositoryUrl);
+                    final Context context = new Context(roots);
+                    SvnClient client = Subversion.getInstance().getClient(context, repositoryUrl);
                     if (client != null) {
                         ISVNStatus[] statuses = client.getStatus(roots);
                         for (ISVNStatus status : statuses) {
@@ -302,7 +303,7 @@ public class NotificationsManager {
                                     LOG.log(Level.WARNING, "scanFiles: though versioned it has no svn url: {0}, {1}, {2}, {3}, {4}", //NOI18N
                                             new Object[] { file, status.getFile(), status.getTextStatus(), status.getUrlString(), canonicalPath });
                                 } else {
-                                    info = client.getInfo(url, SVNRevision.HEAD, rev);
+                                    info = client.getInfo(context, url, SVNRevision.HEAD, rev);
                                 }
                             } catch (SVNClientException ex) {
                                 LOG.log(Level.FINE, null, ex);

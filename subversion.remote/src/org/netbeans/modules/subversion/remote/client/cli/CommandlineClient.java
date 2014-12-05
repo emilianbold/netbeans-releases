@@ -43,6 +43,7 @@ package org.netbeans.modules.subversion.remote.client.cli;
 
 import org.netbeans.modules.subversion.remote.client.cli.commands.VersionCommand;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,6 +56,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.api.Annotations;
 import org.netbeans.modules.subversion.remote.api.Annotations.Annotation;
+import org.netbeans.modules.subversion.remote.api.Depth;
 import org.netbeans.modules.subversion.remote.api.ISVNAnnotations;
 import org.netbeans.modules.subversion.remote.api.ISVNDirEntry;
 import org.netbeans.modules.subversion.remote.api.ISVNDirEntryWithLock;
@@ -105,8 +107,10 @@ import org.netbeans.modules.subversion.remote.client.parser.EntriesCache;
 import org.netbeans.modules.subversion.remote.client.parser.LocalSubversionException;
 import org.netbeans.modules.subversion.remote.client.parser.ParserSvnStatus;
 import org.netbeans.modules.subversion.remote.client.parser.SvnWcParser;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -117,18 +121,20 @@ public class CommandlineClient implements SvnClient {
 
     private String user;
     private String psswd;
-    private File configDir;
+    private VCSFileProxy configDir;
     private final NotificationHandler notificationHandler;
     private final SvnWcParser wcParser;
     private final Commandline cli;
+    private final FileSystem fileSystem;
 
     public static final String ERR_CLI_NOT_AVALABLE = "commandline is not available";
     private static boolean supportedMetadataFormat;
 
-    public CommandlineClient() {
+    public CommandlineClient(FileSystem fileSystem) {
         this.notificationHandler = new NotificationHandler();
         wcParser = new SvnWcParser();
-        cli = new Commandline();
+        this.fileSystem = fileSystem;
+        cli = new Commandline(fileSystem);
     }
 
     /**
@@ -190,7 +196,7 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public void setConfigDirectory(File file) throws SVNClientException {
+    public void setConfigDirectory(VCSFileProxy file) throws SVNClientException {
         this.configDir = file;
     }
 
@@ -298,8 +304,8 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public ISVNInfo getInfo(SVNUrl url, SVNRevision revision, SVNRevision pegging) throws SVNClientException {
-        InfoCommand cmd = new InfoCommand(url, revision, pegging);
+    public ISVNInfo getInfo(Context context, SVNUrl url, SVNRevision revision, SVNRevision pegging) throws SVNClientException {
+        InfoCommand cmd = new InfoCommand(context, url, revision, pegging);
         exec(cmd);
         ISVNInfo[] infos = cmd.getInfo();
         ISVNInfo info = null;
@@ -371,12 +377,6 @@ public class CommandlineClient implements SvnClient {
     @Override
     public void move(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) throws SVNClientException {
         MoveCommand cmd = new MoveCommand(fromFile, toFile, force);
-        exec(cmd);
-    }
-
-    @Override
-    public void move(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) throws SVNClientException {
-        MoveCommand cmd = new MoveCommand(fromUrl, toUrl, msg, rev);
         exec(cmd);
     }
 
@@ -818,8 +818,8 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public void relocate(String from, String to, String path, boolean rec) throws SVNClientException {
-        RelocateCommand cmd = new RelocateCommand(from, to, path, rec);
+    public void relocate(Context context, String from, String to, String path, boolean rec) throws SVNClientException {
+        RelocateCommand cmd = new RelocateCommand(null, from, to, path, rec);
         exec(cmd);
     }
 
@@ -1043,6 +1043,21 @@ public class CommandlineClient implements SvnClient {
         exec(cmd);
     }
 
+    @Override
+    public void unlock(VCSFileProxy[] vcsFileProxy, boolean b) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean cancel() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     class NotificationHandler extends SVNNotificationHandler {
 
    }
@@ -1093,7 +1108,7 @@ public class CommandlineClient implements SvnClient {
         "MSG_Error.diffSummaryWithCLI.CLIforced=Diffing between revision trees is not supported with commandline client.",
         "MSG_Error.diffSummaryWithCLI=Diffing between revision trees is not supported with commandline client.\nPlease switch to SVNKit or JavaHL."
     })
-    public SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, int arg4, boolean arg5) throws SVNClientException {
+    public SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, Depth arg4, boolean arg5) throws SVNClientException {
         throw new SVNClientException(SvnModuleConfig.getDefault().isForcedCommandlineClient()
                 ? Bundle.MSG_Error_diffSummaryWithCLI_CLIforced()
                 : Bundle.MSG_Error_diffSummaryWithCLI());

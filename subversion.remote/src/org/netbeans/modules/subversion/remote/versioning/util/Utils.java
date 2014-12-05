@@ -344,5 +344,27 @@ public class Utils {
         }
     }
 
+    /**
+     * @param file
+     * @return Set<File> all files that belong to the same DataObject as the
+     * argument
+     */
+    public static Set<VCSFileProxy> getAllDataObjectFiles(VCSFileProxy file) {
+        Set<VCSFileProxy> filesToCheckout = new HashSet<VCSFileProxy>(2);
+        filesToCheckout.add(file);
+        FileObject fo = file.toFileObject();
+        if (fo != null) {
+            try {
+                DataObject dao = DataObject.find(fo);
+                Set<FileObject> fileObjects = dao.files();
+                for (FileObject fileObject : fileObjects) {
+                    filesToCheckout.add(VCSFileProxy.createFileProxy(fileObject));
+                }
+            } catch (DataObjectNotFoundException e) {
+                // no dataobject, never mind
+            }
+        }
+        return filesToCheckout;
+    }
     
 }

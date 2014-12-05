@@ -45,9 +45,6 @@ import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.FilenameFilter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.DateFormat;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -1098,13 +1095,13 @@ public class FileStatusCache {
         }
         if(exists && VCSFileProxySupport.isMac(file) && parent != null) {
             // handle case on mac, "fileA".exists() is the same as "filea".exists but svn client understands the difference
-            VCSFileProxy[] files = parent.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept (VCSFileProxy dir, String name) {
-                    return name.equals(file.getName());
+            exists = false;
+            for(VCSFileProxy child : parent.listFiles()) {
+                if (child.getName().equals(file.getName())) {
+                    exists = true;
+                    break;
                 }
-            });
-            exists = files != null && files.length > 0;
+            }
         } 
         boolean isDirectory = exists && file.isDirectory();
         int parentStatus = parent == null || isNotManagedByDefault(parent)
@@ -1193,42 +1190,10 @@ public class FileStatusCache {
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
     }
 
-    private final LinkedHashMap<Path, Boolean> symlinks = new LinkedHashMap<Path, Boolean>() {
-        @Override
-        protected boolean removeEldestEntry (Map.Entry<Path, Boolean> eldest) {
-            return size() >= 500;
-        }
-    };
-
     private boolean isSymlink (VCSFileProxy file, VCSFileProxy root) {
         boolean symlink = false;
         if (EXCLUDE_SYMLINKS) {
             symlink = VCSFileProxySupport.isSymlink(file, root);
-        }
-        return symlink;
-    }
-
-    private boolean isSymlink (Path path, Path checkoutRoot) {
-        boolean symlink = false;
-        if (path == null) {
-            return false;
-        }
-        if (EXCLUDE_SYMLINKS) {
-            Boolean cached = symlinks.get(path);
-            if (cached == null) {
-                symlink = Files.isSymbolicLink(path);
-                if (symlink) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.INFO, "isSymlink(): File {0} will be treated as a symlink", path); //NOI18N
-                    }
-                } else if (checkoutRoot != null && !path.equals(checkoutRoot)) {
-                    // check if under symlinked parent
-                    symlink = isSymlink(path.getParent(), checkoutRoot);
-                }
-                symlinks.put(path, symlink);
-            } else {
-                symlink = cached;
-            }
         }
         return symlink;
     }

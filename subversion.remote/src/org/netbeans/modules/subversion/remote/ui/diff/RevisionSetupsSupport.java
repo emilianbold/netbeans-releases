@@ -60,6 +60,7 @@ import org.netbeans.modules.subversion.remote.FileStatusCache;
 import org.netbeans.modules.subversion.remote.RepositoryFile;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnFileNode;
+import org.netbeans.modules.subversion.remote.api.Depth;
 import org.netbeans.modules.subversion.remote.api.ISVNInfo;
 import org.netbeans.modules.subversion.remote.api.ISVNProperty;
 import org.netbeans.modules.subversion.remote.api.ISVNStatus;
@@ -69,13 +70,13 @@ import org.netbeans.modules.subversion.remote.api.SVNDiffSummary.SVNDiffKind;
 import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.api.SVNUrlUtils;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -125,7 +126,8 @@ class RevisionSetupsSupport {
             SvnClient client = Subversion.getInstance().getClient(new Context(roots), repositoryUrl);
             List<Setup> setups = new ArrayList<Setup>();
             for (VCSFileProxy root : roots) {
-                boolean flatFile = VersioningSupport.isFlat(root);
+                // TODO: support flat folder? CND not support it.
+                boolean flatFile = false;
                 final SVNUrl leftUrl = roots.length > 1
                         ? left.replaceLastSegment(root.getName(), 0).getFileUrl()
                         : left.getFileUrl();
@@ -222,7 +224,7 @@ class RevisionSetupsSupport {
         }
     }
 
-    private ISVNInfo checkUrlExistance (SvnClient client, SVNUrl url, SVNRevision revision) throws SVNClientException {
+    private ISVNInfo checkUrlExistance (Context context, SvnClient client, SVNUrl url, SVNRevision revision) throws SVNClientException {
         if (url == null) {
             // local file, not yet in the repository
             return null;
@@ -231,7 +233,7 @@ class RevisionSetupsSupport {
             return null;
         }
         try {
-            return client.getInfo(url, revision, revision);
+            return client.getInfo(context, url, revision, revision);
         } catch (SVNClientException ex) {
             if (SvnClientExceptionHandler.isWrongURLInRevision(ex.getMessage())){
                 cacheParentMissing(url, revision);
@@ -343,7 +345,7 @@ class RevisionSetupsSupport {
 
     private List<Setup> buildSetups (SvnClient client, SVNUrl leftFileUrl, SVNRevision leftRevision,
             SVNUrl rightFileUrl, SVNRevision rightRevision, SvnProgressSupport supp, 
-            boolean flatFile, int depth, VCSFileProxy root, boolean addAll, 
+            boolean flatFile, Depth depth, VCSFileProxy root, boolean addAll, 
             Map<VCSFileProxy, ISVNStatus> statusMap) throws SVNClientException {
         boolean sameURLs = leftFileUrl != null && leftFileUrl.equals(rightFileUrl)
                 && leftRevision != null && leftRevision.equals(rightRevision);
@@ -353,8 +355,9 @@ class RevisionSetupsSupport {
             boolean leftExists, rightExists;
             ISVNInfo infoLeft = null, infoRight = null;
             if (diffSummaries == null) {
-                infoLeft = checkUrlExistance(client, leftFileUrl, leftRevision);
-                infoRight = checkUrlExistance(client, rightFileUrl, rightRevision);
+                Context context = new Context(root);
+                infoLeft = checkUrlExistance(context, client, leftFileUrl, leftRevision);
+                infoRight = checkUrlExistance(context, client, rightFileUrl, rightRevision);
                 leftExists = infoLeft != null;
                 rightExists = infoRight != null;
             } else {
