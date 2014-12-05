@@ -98,3 +98,9 @@ _8.spell();//gt;7;ins.js;50;9
 
 var _9 = o9;
 _9.witch.origin;//gt;6;insref.js;54;9
+
+
+var Auto = require('../complexModule').Car;//gt;41;complexModule.js;163;9
+var sedan = new Auto();
+sedan.ride();//gt;9;complexModule.js;155;15
+sedan.speed;//gt;10;complexModule.js;150;10
