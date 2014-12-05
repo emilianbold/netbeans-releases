@@ -49,7 +49,6 @@ import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
@@ -80,17 +79,19 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingViewSupportImpl;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThread;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThreadGroup;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -144,6 +145,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     public static final String SHOW_PACKAGE_NAMES = "show.packageNames";
 
     private final JPDADebugger debugger;
+    private final DebuggingViewSupportImpl dvSupport;
     
     private final List<ModelListener> listeners = new ArrayList<ModelListener>();
     
@@ -161,6 +163,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     
     public DebuggingNodeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        dvSupport = (DebuggingViewSupportImpl) lookupProvider.lookupFirst(null, DebuggingView.DVSupport.class);
         currentThreadListener = new CurrentThreadListener();
         debugger.addPropertyChangeListener(WeakListeners.propertyChange(currentThreadListener, debugger));
         deadlockDetector = debugger.getThreadsCollector().getDeadlockDetector();
@@ -193,8 +196,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 c = Color.RED;
             }
         }
-        if (node instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) node;
+        if (node instanceof JPDADVThread) {
+            JPDAThread t = ((JPDADVThread) node).getKey();
             watch(t);
             JPDAThread currentThread = debugger.getCurrentThread();
             if (t == currentThread && (!DebuggingTreeExpansionModelFilter.isExpanded(debugger, node) ||
@@ -212,16 +215,17 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 }
             }
         }
-        if (node instanceof JPDAThreadGroup) {
-            if (isCurrent((JPDAThreadGroup) node) && !DebuggingTreeExpansionModelFilter.isExpanded(debugger, node)) {
+        if (node instanceof JPDADVThreadGroup) {
+            JPDAThreadGroup group = ((JPDADVThreadGroup) node).getKey();
+            if (isCurrent(group) && !DebuggingTreeExpansionModelFilter.isExpanded(debugger, node)) {
                 return BoldVariablesTableModelFilter.toHTML (
-                    ((JPDAThreadGroup) node).getName (),
+                    group.getName (),
                     true,
                     false,
                     null
                 );
             } else {
-                return ((JPDAThreadGroup) node).getName ();
+                return group.getName ();
             }
         }
         if (node instanceof CallStackFrame) {
@@ -282,7 +286,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     private static String getDisplayName(JPDAThread t, boolean showPackageNames, DebuggingNodeModel model) throws UnknownTypeException {
         String name = t.getName();
         JPDABreakpoint breakpoint = t.getCurrentBreakpoint();
-        if (DebuggingTreeModel.isMethodInvoking(t)) {
+        if (((JPDAThreadImpl) t).isMethodInvoking()) {
             return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_Invoking_Method", name);
         }
         if (breakpoint != null) {
@@ -564,6 +568,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
     }
     
+    @Override
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node instanceof CallStackFrame) {
             CallStackFrame ccsf = debugger.getCurrentCallStackFrame ();
@@ -572,11 +577,12 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             }
             return CALL_STACK;
         }
-        if (node instanceof JPDAThread) {
-            if (node == debugger.getCurrentThread ()) {
+        if (node instanceof JPDADVThread) {
+            JPDADVThread dvt = (JPDADVThread) node;
+            if (dvt.getKey() == debugger.getCurrentThread ()) {
                 return CURRENT_THREAD;
             }
-            return ((JPDAThread) node).isSuspended () ? SUSPENDED_THREAD : RUNNING_THREAD;
+            return dvt.isSuspended () ? SUSPENDED_THREAD : RUNNING_THREAD;
         }
         if (node == TreeModel.ROOT) {
             return CALL_STACK; // will not be displayed
@@ -584,16 +590,17 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         throw new UnknownTypeException (node);
     }
 
+    @Override
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
-        if (node instanceof JPDAThread) {
-            return getIconBase((JPDAThread)node);
+        if (node instanceof JPDADVThread) {
+            return getIconBase(((JPDADVThread)node).getKey());
         }
         if (node instanceof CallStackFrame) {
             return CALL_STACK2;
         }
-        if (node instanceof JPDAThreadGroup) {
+        if (node instanceof JPDADVThreadGroup) {
             boolean[] flags = new boolean[] {false, false};
-            computeGroupStatus((JPDAThreadGroup)node, flags);
+            computeGroupStatus(((JPDADVThreadGroup) node).getKey(), flags);
             if (flags[0]) {
                 // at least one thread suspended
                 if (flags[1]) {
@@ -610,9 +617,10 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         return getIconBase(node) + ".gif"; // NOI18N
     }
 
+    @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
-        if (node instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) node;
+        if (node instanceof JPDADVThread) {
+            JPDAThread t = ((JPDADVThread) node).getKey();
             int i = t.getState ();
             String s = "";
             switch (i) {
@@ -686,7 +694,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) node;
-            if (DebuggingTreeModel.isMethodInvoking(sf.getThread())) {
+            if (((JPDAThreadImpl) sf.getThread()).isMethodInvoking()) {
                 return "";
             }
             return CallStackNodeModel.getCSFToolTipText(session, sf);
@@ -741,6 +749,11 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     private void fireNodeChanged (Object node) {
+        if (node instanceof JPDAThread) {
+            node = dvSupport.get((JPDAThread) node);
+        } else if (node instanceof JPDAThreadGroup) {
+            node = dvSupport.get((JPDAThreadGroup) node);
+        }
         List<ModelListener> ls;
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
@@ -880,7 +893,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                         ThreadStateUpdater.this.shouldExpand = false;
                     }
                     if (shouldExpand) {
-                        DebuggingTreeExpansionModelFilter.expand(debugger, thread);
+                        DebuggingTreeExpansionModelFilter.expand(debugger, dvSupport.get(thread));
                     }
                     if (preferences.getBoolean(DebuggingTreeModel.SHOW_THREAD_GROUPS, false)) {
                         JPDAThreadGroup group = thread.getParentThreadGroup();
@@ -965,7 +978,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             Set deadlockedElements = new HashSet();
             for (Deadlock deadlock : deadlocks) {
                 for (JPDAThread t : deadlock.getThreads()) {
-                    deadlockedElements.add(t);
+                    deadlockedElements.add(dvSupport.get(t));
                     deadlockedElements.add(t.getContendedMonitor());
                 }
             }

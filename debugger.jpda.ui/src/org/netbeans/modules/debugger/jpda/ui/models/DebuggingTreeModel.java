@@ -68,19 +68,23 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingViewSupportImpl;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThread;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThreadGroup;
 import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
-
+import org.netbeans.spi.debugger.ui.DebuggingView;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThreadGroup;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.CachedChildrenTreeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -121,6 +125,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private final Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private final Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
     private final Preferences preferences = DebuggingViewSupportImpl.getFilterPreferences();
+    private final DebuggingViewSupportImpl dvSupport;
 
     private final DebuggingMonitorModel.Children monitorChildrenFilter;
     private final TreeModel childrenModelImpl;
@@ -129,6 +134,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        dvSupport = (DebuggingViewSupportImpl) lookupProvider.lookupFirst(null, DebuggingView.DVSupport.class);
         debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
         if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
             debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, debuggerListener);
@@ -136,7 +142,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             prefListener = new DebuggingPreferenceChangeListener();
             preferences.addPreferenceChangeListener(prefListener);
         }
-        monitorChildrenFilter = new DebuggingMonitorModel.Children(debugger,
+        monitorChildrenFilter = new DebuggingMonitorModel.Children(debugger, dvSupport,
                 new ModelListener() {
                     @Override
                     public void modelChanged(ModelEvent event) {
@@ -169,11 +175,12 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                     for (JPDAThread t : threads) {
                         watchState(t);
                     }
-                    return threads;
+                    return dvSupport.get(threads);
                 }
             }
-            if (parent instanceof JPDAThread) {
-                JPDAThread t = (JPDAThread) parent;
+            if (parent instanceof JPDADVThread) {
+                JPDADVThread dvt = (JPDADVThread) parent;
+                JPDAThread t = dvt.getKey();
                 watchState(t);
                 try {
                     return t.getCallStack();
@@ -181,15 +188,17 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                     return new Object[0];
                 }
             }
-            if (parent instanceof JPDAThreadGroup) {
-                JPDAThread[] threads = ((JPDAThreadGroup)parent).getThreads();
+            if (parent instanceof JPDADVThreadGroup) {
+                JPDAThreadGroup group = ((JPDADVThreadGroup) parent).getKey();
+                JPDAThread[] threads = group.getThreads();
                 for (JPDAThread t : threads) {
                     watchState(t);
                 }
-                Object[] groups = ((JPDAThreadGroup)parent).getThreadGroups();
+                JPDAThreadGroup[] groups = group.getThreadGroups();
+                
                 Object[] result = new Object[threads.length + groups.length];
-                System.arraycopy(threads, 0, result, 0, threads.length);
-                System.arraycopy(groups, 0, result, threads.length, groups.length);
+                System.arraycopy(dvSupport.get(threads), 0, result, 0, threads.length);
+                System.arraycopy(dvSupport.get(groups), 0, result, threads.length, groups.length);
                 return result;
             }
             if (parent instanceof CallStackFrame) {
@@ -203,8 +212,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (node instanceof CallStackFrame) {
                 return 0;
             }
-            if (node instanceof JPDAThread) {
-                if (!((JPDAThread) node).isSuspended()) {
+            if (node instanceof JPDADVThread) {
+                if (!((JPDADVThread) node).isSuspended()) {
                     return 0;
                 }
             }
@@ -221,8 +230,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             if (node instanceof CallStackFrame) {
                 return true;
             }
-            if (node instanceof JPDAThread) {
-                if (!((JPDAThread) node).isSuspended() && !isMethodInvoking((JPDAThread) node)) {
+            if (node instanceof JPDADVThread) {
+                JPDAThreadImpl t = ((JPDADVThread) node).getKey();
+                if (!t.isSuspended() && !t.isMethodInvoking()) {
                     return true;
                 }
             }
@@ -267,8 +277,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         List list = null;
         JPDAThread currentThread = debugger.getCurrentThread();
         for (Object node : nodes) {
-            if (node instanceof JPDAThread) {
-                JPDAThread t = (JPDAThread)node;
+            if (node instanceof JPDADVThread) {
+                JPDAThread t = ((JPDADVThread) node).getKey();
                 watchState(t);
                 if (!t.isSuspended() && (filterSystem && isSystem(t) ||
                         (filterRunning && t != currentThread))) {
@@ -277,8 +287,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                     }
                     list.remove(node);
                 } // if
-            } else if (filterRunning && node instanceof JPDAThreadGroup) {
-                if (!containsThread((JPDAThreadGroup)node, currentThread)) {
+            } else if (filterRunning && node instanceof JPDADVThreadGroup) {
+                if (!containsThread((JPDADVThreadGroup) node, dvSupport.get(currentThread))) {
                     if (list == null) {
                         list = new ArrayList(Arrays.asList(nodes));
                     }
@@ -289,14 +299,14 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         return (list != null) ? list.toArray() : nodes;
     }
 
-    private boolean containsThread(JPDAThreadGroup group, JPDAThread currentThread) {
-        JPDAThread[] threads = group.getThreads();
+    private boolean containsThread(DVThreadGroup group, DVThread currentThread) {
+        DVThread[] threads = group.getThreads();
         for (int x = 0; x < threads.length; x++) {
             if (threads[x].isSuspended() || threads[x] == currentThread) {
                 return true;
             }
         }
-        JPDAThreadGroup[] groups = group.getThreadGroups();
+        DVThreadGroup[] groups = group.getThreadGroups();
         for (int x = 0; x < groups.length; x++) {
             if (containsThread(groups[x], currentThread)) {
                 return true;
@@ -311,12 +321,12 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         for (JPDAThread thread : debugger.getThreadsCollector().getAllThreads()) {
             JPDAThreadGroup group = thread.getParentThreadGroup();
             if (group == null) {
-                result.add(thread);
+                result.add(dvSupport.get(thread));
             } else {
                 while (group.getParentThreadGroup() != null) {
                     group = group.getParentThreadGroup();
                 } // while
-                groups.add(group);
+                groups.add(dvSupport.get(group));
             } // if
         } // for
         result.addAll(groups);
@@ -508,11 +518,12 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                 return ;
             }
             List nodes = new ArrayList();
+            DebuggingTreeModel tm = getModel();
             if (tg == null || !showThreadGroups) {
                 nodes.add(ROOT);
-            } else if (tg != null) {
+            } else if (tg != null && tm != null) {
                 do {
-                    nodes.add(0, tg);
+                    nodes.add(0, tm.dvSupport.get(tg));
                     tg = tg.getParentThreadGroup();
                 } while (tg != null);
                 if (showThreadGroups) {
@@ -551,11 +562,12 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
     
     private void fireThreadStateChanged (JPDAThread node) {
+        JPDADVThread dvnode = dvSupport.get(node);
         boolean showThreadGroups = preferences.getBoolean(SHOW_THREAD_GROUPS, false);
         if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false)) {
             Object parent = null;
             if (showThreadGroups) {
-                parent = node.getParentThreadGroup();
+                parent = dvSupport.get(node.getParentThreadGroup());
             }
             if (parent == null) parent = ROOT;
             fireNodeChildrenChanged(parent);
@@ -564,17 +576,17 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
             Object parent = null;
             if (showThreadGroups) {
-                parent = node.getParentThreadGroup();
+                parent = dvSupport.get(node.getParentThreadGroup());
             }
             if (parent == null) parent = ROOT;
             fireNodeChildrenChanged(parent);
         }
         try {
-            recomputeChildren(node);
+            recomputeChildren(dvnode);
         } catch (UnknownTypeException ex) {
-            refreshCache(node);
+            refreshCache(dvnode);
         }
-        ModelEvent event = new ModelEvent.NodeChanged(this, node,
+        ModelEvent event = new ModelEvent.NodeChanged(this, dvnode,
                 ModelEvent.NodeChanged.CHILDREN_MASK |
                 ModelEvent.NodeChanged.EXPANSION_MASK);
         fireModelChange(event);
@@ -645,23 +657,6 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
     }
 
-    public static boolean isMethodInvoking(JPDAThread t) {
-        try {
-            return (Boolean) t.getClass().getMethod("isMethodInvoking").invoke(t);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return false;
-    }
-    
     
     /**
      * Defines model for one table view column. Can be used together with 
@@ -771,21 +766,21 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private static final class ThreadAlphabetComparator implements Comparator {
 
         public int compare(Object o1, Object o2) {
-            if (o1 instanceof JPDAThreadGroup) {
-                if (o2 instanceof JPDAThreadGroup) {
-                    String tgn1 = ((JPDAThreadGroup) o1).getName();
-                    String tgn2 = ((JPDAThreadGroup) o2).getName();
+            if (o1 instanceof JPDADVThreadGroup) {
+                if (o2 instanceof JPDADVThreadGroup) {
+                    String tgn1 = ((JPDADVThreadGroup) o1).getName();
+                    String tgn2 = ((JPDADVThreadGroup) o2).getName();
                     return java.text.Collator.getInstance().compare(tgn1, tgn2);
                 }
                 return 1;
-            } else if (o2 instanceof JPDAThreadGroup) {
+            } else if (o2 instanceof JPDADVThreadGroup) {
                 return -1;
             }
-            if (!(o1 instanceof JPDAThread) && !(o2 instanceof JPDAThread)) {
+            if (!(o1 instanceof JPDADVThread) && !(o2 instanceof JPDADVThread)) {
                 return 0;
             }
-            String n1 = ((JPDAThread) o1).getName();
-            String n2 = ((JPDAThread) o2).getName();
+            String n1 = ((JPDADVThread) o1).getName();
+            String n2 = ((JPDADVThread) o2).getName();
             return java.text.Collator.getInstance().compare(n1, n2);
         }
         
@@ -794,19 +789,19 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private static final class ThreadSuspendComparator implements Comparator {
 
         public int compare(Object o1, Object o2) {
-            if (o1 instanceof JPDAThreadGroup) {
-                if (o2 instanceof JPDAThreadGroup) {
+            if (o1 instanceof JPDADVThreadGroup) {
+                if (o2 instanceof JPDADVThreadGroup) {
                     return 0;
                 }
                 return 1;
-            } else if (o2 instanceof JPDAThreadGroup) {
+            } else if (o2 instanceof JPDADVThreadGroup) {
                 return -1;
             }
-            if (!(o1 instanceof JPDAThread) && !(o2 instanceof JPDAThread)) {
+            if (!(o1 instanceof JPDADVThread) && !(o2 instanceof JPDADVThread)) {
                 return 0;
             }
-            boolean s1 = ((JPDAThread) o1).isSuspended();
-            boolean s2 = ((JPDAThread) o2).isSuspended();
+            boolean s1 = ((JPDADVThread) o1).isSuspended();
+            boolean s2 = ((JPDADVThread) o2).isSuspended();
             if (s1 && !s2) return -1;
             if (!s1 && s2) return +1;
             return 0;

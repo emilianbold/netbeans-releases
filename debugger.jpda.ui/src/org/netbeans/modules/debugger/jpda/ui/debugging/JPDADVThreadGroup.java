@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,51 +34,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.models;
+package org.netbeans.modules.debugger.jpda.ui.debugging;
 
-import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThread;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadGroupImpl;
+import org.netbeans.modules.debugger.jpda.util.WeakCacheMap;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThread;
+import org.netbeans.spi.debugger.ui.DebuggingView.DVThreadGroup;
 
 /**
  *
- * @author martin
+ * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
-                             types=TableModel.class,
-                             position=500)
-public class DebuggingTableModel implements TableModel {
+public class JPDADVThreadGroup implements DVThreadGroup, WeakCacheMap.KeyedValue<JPDAThreadGroupImpl> {
+    
+    private final DebuggingViewSupportImpl dvSupport;
+    private final JPDAThreadGroupImpl tg;
 
-    public boolean isReadOnly(Object node, String columnID) throws UnknownTypeException {
-        return true;
+    JPDADVThreadGroup(DebuggingViewSupportImpl dvSupport, JPDAThreadGroupImpl tg) {
+        this.dvSupport = dvSupport;
+        this.tg = tg;
     }
 
-    public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
-        if (columnID.equals("suspend")) {
-            if (node instanceof JPDADVThread) {
-                return new Boolean(((JPDADVThread) node).isSuspended());
-            }
-            return null;
-        }
-        throw new UnknownTypeException(node.toString());
+    @Override
+    public String getName() {
+        return tg.getName();
     }
 
-    public void setValueAt(Object node, String columnID, Object value) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public DVThreadGroup getParentThreadGroup() {
+        return dvSupport.get(tg.getParentThreadGroup());
     }
 
-    public void addModelListener(ModelListener l) {
+    @Override
+    public DVThread[] getThreads() {
+        return dvSupport.get(tg.getThreads());
     }
 
-    public void removeModelListener(ModelListener l) {
+    @Override
+    public DVThreadGroup[] getThreadGroups() {
+        return dvSupport.get(tg.getThreadGroups());
     }
 
+    @Override
+    public JPDAThreadGroupImpl getKey() {
+        return tg;
+    }
+    
 }

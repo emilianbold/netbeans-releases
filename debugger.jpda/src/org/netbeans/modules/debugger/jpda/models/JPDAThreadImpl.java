@@ -127,7 +127,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.netbeans.spi.debugger.ui.DebuggingView;
 
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -136,7 +135,7 @@ import org.openide.util.NbBundle;
 /**
  * The implementation of JPDAThread.
  */
-public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContextChild, DebuggingView.DVThread {
+public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContextChild {
 
     private static final String PROP_LOCKER_THREADS = "lockerThreads"; // NOI18N
     private static final String PROP_STEP_SUSPENDED_BY_BREAKPOINT = "stepSuspendedByBreakpoint"; // NOI18N
@@ -1944,7 +1943,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         }
     }
 
-    public synchronized List getLockerThreads() {
+    public synchronized List<JPDAThread> getLockerThreads() {
         return lockerThreadsList;
     }
 
@@ -2195,11 +2194,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             }
         }
         return var;
-    }
-
-    @Override
-    public DebuggingView.DVSupport getDVSupport() {
-        return getDebugger().getSession().lookupFirst(null, DebuggingView.DVSupport.class);
     }
 
     private static class ThreadListDelegate extends AbstractList<JPDAThread> {

@@ -347,7 +347,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         }
         doAction(debugger, methodName, methodClassType, isNative, bpLocation,
                   expressionLines, false, doResume,
-                  MethodChooserSupport.MethodEntry.SELECTED);
+                  JPDAMethodChooserUtils.MethodEntry.SELECTED);
     }
 
     static boolean doAction(final JPDADebuggerImpl debugger,
@@ -358,7 +358,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             Interval expressionLines,
                             // If it's important not to run far from the expression
                             boolean setBoundaryStep,
-                            MethodChooserSupport.MethodEntry methodEntry) {
+                            JPDAMethodChooserUtils.MethodEntry methodEntry) {
         
         return doAction(debugger, methodName, methodClassType, isNative, bpLocation, expressionLines, setBoundaryStep, true, methodEntry);
     }
@@ -372,7 +372,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                     Interval expressionLines,
                                     boolean setBoundaryStep,
                                     boolean doResume,
-                                    final MethodChooserSupport.MethodEntry methodEntry) {
+                                    final JPDAMethodChooserUtils.MethodEntry methodEntry) {
         final VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return false;
         final int line = LocationWrapper.lineNumber0(bpLocation, "Java");
@@ -572,7 +572,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                            final boolean isNative,
                                            final int methodLine,
                                            final boolean finishWhenNotFound,
-                                           final MethodChooserSupport.MethodEntry methodEntry) {
+                                           final JPDAMethodChooserUtils.MethodEntry methodEntry) {
         //ThreadReference tr = jtr.getThreadReference();
         final int depth = jtr.getStackDepth();
         //System.err.println("traceLineForMethod: stepping into native method "+methodClassType+"."+method+" = "+isNative);
@@ -604,7 +604,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         step.setHidden(true);
         logger.log(Level.FINE, "Will traceLineForMethod({0}, {1}, {2})",
                    new Object[]{method, methodLine, finishWhenNotFound});
-        if (MethodChooserSupport.MethodEntry.SELECTED.equals(methodEntry)) {
+        if (JPDAMethodChooserUtils.MethodEntry.SELECTED.equals(methodEntry)) {
             // The user has explicitly set the method they want to step into.
             // Therefore, ignore any stepping filters.
             ((JPDAStepImpl) step).setIgnoreStepFilters(true);

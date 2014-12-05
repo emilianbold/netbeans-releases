@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,175 +34,90 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
-import com.sun.jdi.ReferenceType;
-
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-
-import javax.swing.JEditorPane;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import org.openide.util.NbBundle;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
-import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.debugger.ui.MethodChooser;
 import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Annotation;
 import org.openide.util.Exceptions;
 
-public class MethodChooserSupport implements PropertyChangeListener {
-
-    private final JPDADebuggerImpl debugger;
-    private final JPDAThread currentThread;
-    private final String url;
-    private final ReferenceType clazzRef;
-    private MethodChooser chooser;
-
-    ArrayList<Annotation> annotations;
-    private int startLine;
-    private int endLine;
-    private int selectedIndex = -1;
-    private Operation[] operations;
-    private Location[] locations;
-    private ExpressionPool.Interval expressionLines;
-    private boolean[] isCertainlyReachable;
+/**
+ * UI-independent method chooser utilities.
+ * 
+ * @author Martin Entlicher
+ */
+public final class JPDAMethodChooserUtils {
     
-    static enum MethodEntry {
+    private JPDAMethodChooserUtils() {}
+    
+    public static enum MethodEntry {
         SELECTED,
         DIRECT
     }
-
-    MethodChooserSupport(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine) {
-        this.debugger = debugger;
-        this.currentThread = debugger.getCurrentThread();
-        this.url = url;
-        this.clazzRef = clazz;
-    }
-
-    public int getSelectedIndex() {
-        return selectedIndex;
-    }
-
-    public MethodChooser.Segment[] getSegments() {
-        MethodChooser.Segment[] segments = new MethodChooser.Segment[operations.length];
-        for (int x = 0; x < segments.length; x++) {
-            int start = operations[x].getMethodStartPosition().getOffset();
-            int end = operations[x].getMethodEndPosition().getOffset();
-            if (isCertainlyReachable[x]) {
-                segments[x] = new MethodChooser.Segment(start, end);
-            } else {
-                segments[x] = new UncertainSegment(start, end);
-            }
-        }
-        return segments;
-    }
-
-    public int getSegmentsCount() {
-        return operations.length;
-    }
-
-    public String getHint() {
-        return NbBundle.getMessage(MethodChooserSupport.class, "MSG_RunIntoMethod_Status_Line_Help");
-    }
-
-    public KeyStroke[] getStopEvents() {
-        return new KeyStroke[] {
-            KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0),
-            KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.SHIFT_DOWN_MASK),
-            KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.CTRL_DOWN_MASK)
-        };
-    }
-
-    public KeyStroke[] getConfirmEvents() {
-        return new KeyStroke[] {
-            KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)
-        };
-    }
-
-    public MethodChooser createChooser() {
-        return new MethodChooser(
-                    url, getSegments(), selectedIndex,
-                    getHint(), getStopEvents(), getConfirmEvents()
-                );
-    }
-
-    public void tearUp(MethodChooser selector) {
-        // hack - disable org.netbeans.modules.debugger.jpda.projects.ToolTipAnnotation
-        System.setProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips", "true"); // NOI18N
-        this.chooser = selector;
-        debugger.addPropertyChangeListener(this);
-        debugger.getThreadsCollector().addPropertyChangeListener(this);
-        annotateLines();
-    }
-
-    public void tearDown() {
-        // hack - enable org.netbeans.modules.debugger.jpda.projects.ToolTipAnnotation
-        System.clearProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips"); // NOI18N
-        debugger.removePropertyChangeListener(this);
-        debugger.getThreadsCollector().removePropertyChangeListener(this);
-        clearAnnotations();
-    }
-
-    public void doStepInto() {
-        final int index = chooser.getSelectedIndex();
-        final String name = operations[index].getMethodName();
-        final boolean isNative = operations[index].isNative();
-        final String methodClassType = operations[index].getMethodClassType();
+    
+    public static void doStepInto(final JPDADebuggerImpl debugger,
+                                  final EditorContext.Operation operation,
+                                  final Location location,
+                                  final ExpressionPool.Interval expressionLines) {
+        final String name = operation.getMethodName();
+        final boolean isNative = operation.isNative();
+        final String methodClassType = operation.getMethodClassType();
         debugger.getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 RunIntoMethodActionProvider.doAction(debugger, name, methodClassType, isNative,
-                                                     locations[index], expressionLines, true,
+                                                     location, expressionLines, true,
                                                      MethodEntry.SELECTED);
             }
         });
     }
-
-    public boolean init() {
-        operations = new Operation[0];
+    
+    public static Params init(JPDADebuggerImpl debugger, JPDAThread currentThread,
+                              String url, ReleaseUIListener ruil) {
+        Params params = new Params();
+        return init(debugger, currentThread, url, params, ruil);
+    }
+    
+    public static Params init(JPDADebuggerImpl debugger, JPDAThread currentThread,
+                              String url, Params params, ReleaseUIListener ruil) {
+        params.operations = new EditorContext.Operation[0];
         int methodLine = currentThread.getLineNumber(null);
         
         Method method = ((JPDAThreadImpl) currentThread).getTopMethod();
@@ -219,35 +128,35 @@ public class MethodChooserSupport implements PropertyChangeListener {
             }
         } catch (InternalExceptionWrapper aiex) {
         } catch (VMDisconnectedExceptionWrapper aiex) {
-            return false;
+            return params;
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
         }
         if (locs.isEmpty()) {
-            return false;
+            return params;
         }
-        Expression expr = debugger.getExpressionPool().getExpressionAt(locs.get(0), url);
+        ExpressionPool.Expression expr = debugger.getExpressionPool().getExpressionAt(locs.get(0), url);
         if (expr == null) {
-            return false;
+            return params;
         }
-        expressionLines = expr.getInterval();
-        Operation currOp = currentThread.getCurrentOperation();
-        List<Operation> lastOpsList = currentThread.getLastOperations();
-        Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
-        Operation selectedOp;
-        Operation[] tempOps = expr.getOperations();
+        params.expressionLines = expr.getInterval();
+        EditorContext.Operation currOp = currentThread.getCurrentOperation();
+        List<EditorContext.Operation> lastOpsList = currentThread.getLastOperations();
+        EditorContext.Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
+        EditorContext.Operation selectedOp;
+        EditorContext.Operation[] tempOps = expr.getOperations();
         if (tempOps.length == 0) {
-            return false;
+            return params;
         }
         Location[] tempLocs = expr.getLocations();
-        operations = new Operation[tempOps.length];
-        locations = new Location[tempOps.length];
+        params.operations = new EditorContext.Operation[tempOps.length];
+        params.locations = new Location[tempOps.length];
         int l1 = Integer.MAX_VALUE;
         int l2 = 0;
         for (int x = 0; x < tempOps.length; x++) {
-            Operation op = tempOps[x];
-            operations[x] = op;
-            locations[x] = tempLocs[x];
+            EditorContext.Operation op = tempOps[x];
+            params.operations[x] = op;
+            params.locations[x] = tempLocs[x];
             int sl = op.getMethodStartPosition().getLine();
             int el = op.getMethodEndPosition().getLine();
             if (sl < l1) {
@@ -257,8 +166,8 @@ public class MethodChooserSupport implements PropertyChangeListener {
                 l2 = el;
             }
         }
-        startLine = l1;
-        endLine = l2;
+        params.startLine = l1;
+        params.endLine = l2;
         /*
         for (int i = 1; i < (operations.length - 1); i++) {
             int line = operations[i].getMethodStartPosition().getLine();
@@ -273,10 +182,11 @@ public class MethodChooserSupport implements PropertyChangeListener {
         int currOpIndex = -1;
         int lastOpIndex = -1;
 
+        int operationsLength = params.operations.length;
         if (currOp != null) {
             int index = currOp.getBytecodeIndex();
-            for (int x = 0; x < operations.length; x++) {
-                if (operations[x].getBytecodeIndex() == index) {
+            for (int x = 0; x < operationsLength; x++) {
+                if (params.operations[x].getBytecodeIndex() == index) {
                     currOpIndex = x;
                     break;
                 }
@@ -284,155 +194,134 @@ public class MethodChooserSupport implements PropertyChangeListener {
         }
         if (lastOp != null) {
             int index = lastOp.getBytecodeIndex();
-            for (int x = 0; x < operations.length; x++) {
-                if (operations[x].getBytecodeIndex() == index) {
+            for (int x = 0; x < operationsLength; x++) {
+                if (params.operations[x].getBytecodeIndex() == index) {
                     lastOpIndex = x;
                     break;
                 }
             }
         }
 
-        Operation opToExecute = null;
+        EditorContext.Operation opToExecute = null;
         if (currOpIndex == -1) {
-            selectedOp = operations[operations.length - 1];
-            opToExecute = operations[0];
+            selectedOp = params.operations[operationsLength - 1];
+            opToExecute = params.operations[0];
         } else {
             int splitIndex = currOpIndex == lastOpIndex ? currOpIndex : currOpIndex - 1;
-            if (splitIndex + 1 < operations.length) {
-                opToExecute = operations[splitIndex + 1];
+            if (splitIndex + 1 < operationsLength) {
+                opToExecute = params.operations[splitIndex + 1];
             }
-            tempOps = new Operation[operations.length - 1 - splitIndex];
-            tempLocs = new Location[operations.length - 1 - splitIndex];
+            tempOps = new EditorContext.Operation[operationsLength - 1 - splitIndex];
+            tempLocs = new Location[operationsLength - 1 - splitIndex];
             for (int x = 0; x < tempOps.length; x++) {
-                tempOps[x] = operations[x + splitIndex + 1];
-                tempLocs[x] = locations[x + splitIndex + 1];
+                tempOps[x] = params.operations[x + splitIndex + 1];
+                tempLocs[x] = params.locations[x + splitIndex + 1];
             }
-            operations = tempOps;
-            locations = tempLocs;
-            if (operations.length == 0) {
-                return false;
+            params.operations = tempOps;
+            params.locations = tempLocs;
+            operationsLength = params.operations.length;
+            if (operationsLength == 0) {
+                return params;
             }
-            selectedOp = operations[0];
+            selectedOp = params.operations[0];
         }
 
-        Object[][] elems = new Object[operations.length][2];
-        for (int i = 0; i < operations.length; i++) {
-            elems[i][0] = operations[i];
-            elems[i][1] = locations[i];
+        Object[][] elems = new Object[operationsLength][2];
+        for (int i = 0; i < operationsLength; i++) {
+            elems[i][0] = params.operations[i];
+            elems[i][1] = params.locations[i];
         }
         Arrays.sort(elems, new OperatorsComparator());
-        isCertainlyReachable = new boolean[operations.length];
-        for (int i = 0; i < operations.length; i++) {
-            operations[i] = (Operation)elems[i][0];
-            locations[i] = (Location)elems[i][1];
-            isCertainlyReachable[i] = true;
+        params.isCertainlyReachable = new boolean[operationsLength];
+        for (int i = 0; i < operationsLength; i++) {
+            params.operations[i] = (EditorContext.Operation)elems[i][0];
+            params.locations[i] = (Location)elems[i][1];
+            params.isCertainlyReachable[i] = true;
         }
-        int[] flags = new int[operations.length];
+        int[] flags = new int[operationsLength];
         for (int i = 0; i < flags.length; i++) {
             flags[i] = 0;
         }
-        detectUnreachableOps(flags, currOp);
+        detectUnreachableOps(url, params.operations, flags, currOp);
         int count = 0;
         for (int i = 0; i < flags.length; i++) {
             if (flags[i] < 2) {
                 count++;
             }
         }
-        tempOps = operations;
-        tempLocs = locations;
-        operations = new Operation[count];
-        locations = new Location[count];
-        isCertainlyReachable = new boolean[count];
+        tempOps = params.operations;
+        tempLocs = params.locations;
+        params.operations = new EditorContext.Operation[count];
+        params.locations = new Location[count];
+        params.isCertainlyReachable = new boolean[count];
+        operationsLength = count;
         int index = 0;
         int opToExecuteIndex = -1;
         for (int i = 0; i < flags.length; i++) {
             if (flags[i] < 2) {
-                operations[index] = tempOps[i];
-                locations[index] = tempLocs[i];
-                isCertainlyReachable[index] = flags[i] == 0;
-                if (opToExecute == operations[index]) {
+                params.operations[index] = tempOps[i];
+                params.locations[index] = tempLocs[i];
+                params.isCertainlyReachable[index] = flags[i] == 0;
+                if (opToExecute == params.operations[index]) {
                     opToExecuteIndex = index;
                 }
                 index++;
             }
         }
 
-        selectedIndex = 0;
-        for (int i = 0; i < operations.length; i++) {
-            if (operations[i].equals(selectedOp) && isCertainlyReachable[i]) {
-                selectedIndex = i;
+        params.selectedIndex = 0;
+        for (int i = 0; i < operationsLength; i++) {
+            if (params.operations[i].equals(selectedOp) && params.isCertainlyReachable[i]) {
+                params.selectedIndex = i;
             }
         }
 
-        if (opToExecuteIndex >= 0 && !isCertainlyReachable[opToExecuteIndex]) {
+        if (opToExecuteIndex >= 0 && !params.isCertainlyReachable[opToExecuteIndex]) {
             // perform step over expression and run init() again
-            synchronized(this) {
-                StepOperationActionProvider.doAction(debugger, this);
+            PropertyChangeListener pcl;
+            if (params.chooserPropertyChangeListener == null) {
+                pcl = new StepOpActionListener(debugger, currentThread, ruil);
+                params.chooserPropertyChangeListener = pcl;
+            } else {
+                pcl = params.chooserPropertyChangeListener;
+            }
+            synchronized(pcl) {
+                StepOperationActionProvider.doAction(debugger, pcl);
                 try {
-                    wait();
+                    pcl.wait();
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
-            return init();
+            return init(debugger, currentThread, url, params, ruil);
         }
 
-        if (operations.length == 1) {
+        if (operationsLength == 1) {
             // do not show UI, continue directly using the selection
-            Operation op = operations[selectedIndex];
+            EditorContext.Operation op = params.operations[params.selectedIndex];
             String name = op.getMethodName();
             if ("<init>".equals(name)) {
                 name = op.getMethodClassType();
             }
             RunIntoMethodActionProvider.doAction(debugger, name, op.getMethodClassType(), op.isNative(),
-                                                 locations[selectedIndex], expr.getInterval(),
+                                                 params.locations[params.selectedIndex], expr.getInterval(),
                                                  true, MethodEntry.DIRECT);
-            return true;
+            params.continuedDirectly = true;
         }
-        return false;
+        params.continuedDirectly = false;
+        return params;
     }
 
-    private void detectUnreachableOps(final int[] flags, final Operation currOp) {
+    private static void detectUnreachableOps(String url, final EditorContext.Operation[] operations,
+                                             final int[] flags, final EditorContext.Operation currOp) {
         FileObject fileObj = null;
         try {
             fileObj = URLMapper.findFileObject(new URL(url));
         } catch (MalformedURLException e) {
         }
         if (fileObj == null) return;
-        DataObject dobj = null;
-        try {
-            dobj = DataObject.find(fileObj);
-        } catch (DataObjectNotFoundException ex) {
-        }
-        if (dobj == null) return;
-        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-        if (ec == null) return;
         JavaSource js = JavaSource.forFileObject(fileObj);
         if (js == null) return;
-
-        final JEditorPane[] editorPane = new JEditorPane[1];
-        if (SwingUtilities.isEventDispatchThread()) {
-            JEditorPane[] openedPanes = ec.getOpenedPanes();
-            if (openedPanes != null && openedPanes.length > 0) {
-                editorPane[0] = openedPanes[0];
-            }
-        } else {
-            try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        JEditorPane[] openedPanes = ec.getOpenedPanes();
-                        if (openedPanes != null && openedPanes.length > 0) {
-                            editorPane[0] = openedPanes[0];
-                        }
-                    }
-                });
-            } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
 
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -441,9 +330,9 @@ public class MethodChooserSupport implements PropertyChangeListener {
                 }
                 @Override
                 public void run(CompilationController ci) throws Exception {
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
                                 "\nDiagnostics = "+ci.getDiagnostics()+
                                 "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
@@ -509,71 +398,102 @@ public class MethodChooserSupport implements PropertyChangeListener {
         }
     }
 
-    private void annotateLines() {
-        annotations = new ArrayList<Annotation>();
-        EditorContext context = EditorContextBridge.getContext();
-        JPDAThread thread = debugger.getCurrentThread();
-        Operation currOp = thread.getCurrentOperation();
-        int currentLine = currOp != null ? currOp.getStartPosition().getLine() : thread.getLineNumber(null);
-        String annoType = currOp != null ?
-            EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE :
-            EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
-        for (int lineNum = startLine; lineNum <= endLine; lineNum++) {
-            if (lineNum != currentLine) {
-                Object anno = context.annotate(url, lineNum, annoType, null);
-                if (anno instanceof Annotation) {
-                    annotations.add((Annotation)anno);
-                }
-            } // if
-        } // for
-    }
-
-    private void clearAnnotations() {
-        if (annotations != null) {
-            for (Annotation anno : annotations) {
-                anno.detach();
-            }
-        }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (JPDAStep.PROP_STATE_EXEC.equals(evt.getPropertyName())) {
-            synchronized(this) {
-                notifyAll();
-            }
-        } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED ||
-                currentThread != debugger.getCurrentThread() || !currentThread.isSuspended()) {
-            synchronized(this) {
-                notifyAll();
-            }
-            chooser.releaseUI(false);
-        }
-    }
-
-    // **************************************************************************
-    // inner classes
-    // **************************************************************************
-    
     private static final class OperatorsComparator implements Comparator {
 
         @Override
         public int compare(Object o1, Object o2) {
             Object[] a1 = (Object[])o1;
             Object[] a2 = (Object[])o2;
-            Operation op1 = (Operation)a1[0];
-            Operation op2 = (Operation)a2[0];
+            EditorContext.Operation op1 = (EditorContext.Operation)a1[0];
+            EditorContext.Operation op2 = (EditorContext.Operation)a2[0];
             return op1.getMethodStartPosition().getOffset() - op2.getMethodStartPosition().getOffset();
         }
         
     }
 
-    private static class UncertainSegment extends MethodChooser.Segment {
-
-        public UncertainSegment(int start, int end) {
-            super(start, end);
+    public static final class Params {
+        
+        Params() {}
+        
+        EditorContext.Operation[] operations;
+        ExpressionPool.Interval expressionLines;
+        Location[] locations;
+        int startLine;
+        int endLine;
+        private boolean[] isCertainlyReachable;
+        private int selectedIndex;
+        private boolean continuedDirectly;
+        private PropertyChangeListener chooserPropertyChangeListener;
+        
+        public EditorContext.Operation[] getOperations() {
+            return operations;
         }
 
+        public ExpressionPool.Interval getExpressionLines() {
+            return expressionLines;
+        }
+
+        public Location[] getLocations() {
+            return locations;
+        }
+
+        public int getStartLine() {
+            return startLine;
+        }
+
+        public int getEndLine() {
+            return endLine;
+        }
+
+        public boolean[] getIsCertainlyReachable() {
+            return isCertainlyReachable;
+        }
+
+        public int getSelectedIndex() {
+            return selectedIndex;
+        }
+
+        public boolean isContinuedDirectly() {
+            return continuedDirectly;
+        }
+
+        public PropertyChangeListener getChoosertPropertyChangeListener() {
+            return chooserPropertyChangeListener;
+        }
+    }
+
+    private static class StepOpActionListener implements PropertyChangeListener {
+        
+        private final JPDADebugger debugger;
+        private final JPDAThread currentThread;
+        private final ReleaseUIListener ruil;
+
+        public StepOpActionListener(JPDADebugger debugger, JPDAThread currentThread,
+                                    ReleaseUIListener ruil) {
+            this.debugger = debugger;
+            this.currentThread = currentThread;
+            this.ruil = ruil;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JPDAStep.PROP_STATE_EXEC.equals(evt.getPropertyName())) {
+                synchronized(this) {
+                    notifyAll();
+                }
+            } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED ||
+                       currentThread != debugger.getCurrentThread() || !currentThread.isSuspended()) {
+                synchronized(this) {
+                    notifyAll();
+                }
+                ruil.releaseUI();
+            }
+        }
     }
     
+    public interface ReleaseUIListener {
+        
+        void releaseUI();
+        
+    }
 }
