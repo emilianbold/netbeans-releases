@@ -101,7 +101,11 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         LOG.log(Level.FINE, "contentLength: {0}", contentLength);
         // #189806: could be resumed due to FNFE in DefaultIndexUpdater (*.gz -> *.zip)
         this.units = (int) contentLength / 1024;
-        handle.switchToDeterminate(units);
+        if(units < 0) {
+            units = 0;
+        } else {
+            handle.switchToDeterminate(units);
+        }
     }
 
     public @Override boolean cancel() {
@@ -126,7 +130,9 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         checkCancel();
         LOG.log(Level.FINER, "progress: {0}", length);
         int work = length / 1024;
-        handle.progress(Math.min(units, lastunit += work));
+        if(units > 0) {
+            handle.progress(Math.min(units, lastunit += work));
+        }
     }
 
     public @Override void transferCompleted(TransferEvent e) {
