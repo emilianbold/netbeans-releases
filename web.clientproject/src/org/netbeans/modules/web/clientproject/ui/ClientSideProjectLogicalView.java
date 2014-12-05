@@ -507,6 +507,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         SiteRoot,
         SourcesAndSiteRoot,
         Tests,
+        TestsSelenium,
     }
 
     // TODO: all three nodes are registered at the same time - could be refactored and
@@ -578,11 +579,22 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             projectDirectory.addRecursiveListener(
                     WeakListeners.create(FileChangeListener.class, listener, projectDirectory));
             addTestsListener();
+            addTestsSeleniumListener();
         }
 
         private void addTestsListener() {
             FileObject projectDirectory = project.getProjectDirectory();
             FileObject testsFolder = project.getTestsFolder(false);
+            if (testsFolder != null
+                    && !ClientSideProjectUtilities.isParentOrItself(projectDirectory, testsFolder)) {
+                testsFolder.addRecursiveListener(
+                        WeakListeners.create(FileChangeListener.class, listener, testsFolder));
+            }
+        }
+
+        private void addTestsSeleniumListener() {
+            FileObject projectDirectory = project.getProjectDirectory();
+            FileObject testsFolder = project.getTestsSeleniumFolder(false);
             if (testsFolder != null
                     && !ClientSideProjectUtilities.isParentOrItself(projectDirectory, testsFolder)) {
                 testsFolder.addRecursiveListener(
@@ -596,12 +608,14 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             private volatile boolean siteRootNodeHidden;
             private volatile boolean sourcesAndSiteRootNodeHidden;
             private volatile boolean testsNodeHidden;
+            private volatile boolean testsSeleniumNodeHidden;
 
             public Listener() {
                 sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
                 siteRootNodeHidden = isNodeHidden(BasicNodes.SiteRoot);
                 sourcesAndSiteRootNodeHidden = isNodeHidden(BasicNodes.SourcesAndSiteRoot);
                 testsNodeHidden = isNodeHidden(BasicNodes.Tests);
+                testsSeleniumNodeHidden = isNodeHidden(BasicNodes.TestsSelenium);
             }
 
             @Override
@@ -636,6 +650,10 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     testsNodeHidden = isNodeHidden(BasicNodes.Tests);
                     refreshKey(BasicNodes.Tests);
                     addTestsListener();
+                } else if (ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER.equals(evt.getPropertyName())) {
+                    testsSeleniumNodeHidden = isNodeHidden(BasicNodes.TestsSelenium);
+                    refreshKey(BasicNodes.TestsSelenium);
+                    addTestsListener();
                 }
             }
 
@@ -660,6 +678,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     testsNodeHidden = nodeHidden;
                     refreshKey(BasicNodes.Tests);
                 }
+                nodeHidden = isNodeHidden(BasicNodes.TestsSelenium);
+                if (nodeHidden != testsSeleniumNodeHidden) {
+                    testsSeleniumNodeHidden = nodeHidden;
+                    refreshKey(BasicNodes.TestsSelenium);
+            }
             }
 
         }
@@ -687,6 +710,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 case SiteRoot:
                 case SourcesAndSiteRoot:
                 case Tests:
+                case TestsSelenium:
                     return createNodeForFolder(k.getNode());
                 default:
                     assert false : "Unknown node type: " + k.getNode();
@@ -703,6 +727,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 case SiteRoot:
                 case SourcesAndSiteRoot:
                 case Tests:
+                case TestsSelenium:
                     addIgnoredFile(ignoredFiles, nbprojectFolder);
                     addIgnoredFile(ignoredFiles, buildFolder);
                     break;
@@ -760,6 +785,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     return null;
                 case Tests:
                     return project.getTestsFolder(false);
+                case TestsSelenium:
+                    return project.getTestsSeleniumFolder(false);
                 default:
                     assert false : "Unknown node: " + node;
                     return null;
@@ -808,6 +835,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
             if (canCreateNodeFor(BasicNodes.Tests)) {
                 keys.add(getKey(BasicNodes.Tests));
+            }
+            if (canCreateNodeFor(BasicNodes.TestsSelenium)) {
+                keys.add(getKey(BasicNodes.TestsSelenium));
             }
             return keys;
         }
@@ -939,6 +969,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             switch (nodeType) {
                 case Sources:
                 case Tests:
+                case TestsSelenium:
                     badge = SOURCES_FILES_BADGE;
                     break;
                 case SiteRoot:
@@ -968,6 +999,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("SOURCES_SITE_ROOT");
                 case Tests:
                     return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("UNIT_TESTS");
+                case TestsSelenium:
+                    return java.util.ResourceBundle.getBundle("org/netbeans/modules/web/clientproject/ui/Bundle").getString("SELENIUM_TESTS");
                 default:
                     throw new AssertionError(nodeType.name());
             }

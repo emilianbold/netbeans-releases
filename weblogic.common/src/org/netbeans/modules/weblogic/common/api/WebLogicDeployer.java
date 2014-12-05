@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -113,7 +114,7 @@ public final class WebLogicDeployer {
     }
 
     @NonNull
-    public Future<Collection<Application>> list() {
+    public Future<Collection<Application>> list(@NullAllowed final InetAddress publicAddress) {
         return DEPLOYMENT_RP.submit(new Callable<Collection<Application>>() {
 
             @Override
@@ -160,8 +161,13 @@ public final class WebLogicDeployer {
                                     }
                                 }
                                 if (contextRoot != null) {
-                                    result.add(new Application(name, moduleType,
-                                            new URL("http://" + config.getHost() + ":" + config.getPort() + contextRoot), contextRoot)); // NOI18N
+                                    URL url;
+                                    if (publicAddress != null) {
+                                        url = new URL("http://" + publicAddress.getCanonicalHostName() + ":" + config.getPort() + contextRoot); // NOI18N
+                                    } else {
+                                        url = new URL("http://" + config.getHost() + ":" + config.getPort() + contextRoot); // NOI18N
+                                    }
+                                    result.add(new Application(name, moduleType, url, contextRoot));
                                 } else {
                                     result.add(new Application(name, moduleType, null, null));
                                 }

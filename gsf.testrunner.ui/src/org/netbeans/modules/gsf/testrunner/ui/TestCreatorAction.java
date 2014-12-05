@@ -46,12 +46,16 @@ package org.netbeans.modules.gsf.testrunner.ui;
 
 import org.netbeans.modules.gsf.testrunner.ui.api.TestCreatorPanelDisplayer;
 import java.util.Collection;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.gsf.testrunner.ui.api.UICommonUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -93,6 +97,18 @@ public class TestCreatorAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 0) {
             return false;
+        }
+        if (activatedNodes.length == 1) {
+            FileObject fo = UICommonUtils.getFileObjectFromNode(activatedNodes[0]);
+            Project p = FileOwnerQuery.getOwner(fo);
+            if(p == null) {
+                return false;
+            }
+            // do not display the action when user selects a node under project's node
+            // that is identical to project's root (e.g. web.clientproject's Sources node)
+            if(p.getProjectDirectory().equals(fo) && !ProjectUtils.getInformation(p).getDisplayName().equals(activatedNodes[0].getDisplayName())) {
+                return false;
+            }
         }
         Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
         boolean enable;

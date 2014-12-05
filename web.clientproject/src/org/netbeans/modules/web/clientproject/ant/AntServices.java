@@ -128,6 +128,10 @@ public final class AntServices extends Env {
                 .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "UNIT_TESTS"))
                 .add() // adding as principal root, continuing configuration
                 .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST).add(); // adding as typed root
+        sourcesHelper.sourceRoot("${" + ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER + "}") //NOI18N
+                .displayName(org.openide.util.NbBundle.getMessage(ClientSideProjectSources.class, "SELENIUM_TESTS"))
+                .add() // adding as principal root, continuing configuration
+                .type(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST_SELENIUM).add(); // adding as typed root
         sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         return sourcesHelper.createSources();
     }

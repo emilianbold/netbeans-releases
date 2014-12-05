@@ -11,7 +11,7 @@ function RefPerson() {
     this.rdob = new Date();
     this.rorigin = new RefMammal();
     this.rprops = {
-        a: 2,
+        a: 2,a3:21,
         b: {
             b1: 1, b2: 3
         }

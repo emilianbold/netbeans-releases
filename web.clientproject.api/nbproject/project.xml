@@ -290,6 +290,8 @@
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.platforms.android</friend>
+                <friend>org.netbeans.modules.selenium2.webclient</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
                 <friend>org.netbeans.modules.web.client.rest</friend>
                 <friend>org.netbeans.modules.web.client.samples</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
