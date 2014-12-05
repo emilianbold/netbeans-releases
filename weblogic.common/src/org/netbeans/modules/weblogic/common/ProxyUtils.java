@@ -69,7 +69,7 @@ public final class ProxyUtils {
     @CheckForNull
     public static String getNonProxyHosts(@NullAllowed Callable<String> nonProxy) {
         String originalNonProxyHosts = System.getProperty(HTTP_NON_PROXY_HOSTS);
-        String configuredNonProxyHosts = "";
+        String configuredNonProxyHosts = null;
         if (nonProxy != null) {
             try {
                 configuredNonProxyHosts = nonProxy.call();
@@ -78,7 +78,7 @@ public final class ProxyUtils {
             }
         }
 
-        if (!configuredNonProxyHosts.isEmpty()) {
+        if (configuredNonProxyHosts != null && !configuredNonProxyHosts.isEmpty()) {
             String nonProxyHosts;
             if (originalNonProxyHosts != null) {
                 nonProxyHosts = ProxyUtils.compactNonProxyHosts(
