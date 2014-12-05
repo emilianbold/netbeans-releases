@@ -598,7 +598,7 @@ public class FileStatusCache {
                         && !WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                     // missing or damaged entries
                     // or ignored file
-                    SvnClientExceptionHandler.notifyException(e, false, false);
+                    SvnClientExceptionHandler.notifyException(new Context(file), e, false, false);
                 }
             }
 
@@ -897,9 +897,10 @@ public class FileStatusCache {
         Map<VCSFileProxy, FileInformation> folderFiles = new HashMap<VCSFileProxy, FileInformation>(files.length);
 
         ISVNStatus [] entries = null;
+        final Context context = new Context(dir);
         try {
             if (SvnUtils.isManaged(dir)) {                
-                SvnClient client = Subversion.getInstance().getClient(true, new Context(dir));
+                SvnClient client = Subversion.getInstance().getClient(true, context);
                 entries = client.getStatus(dir, false, true); 
             }
         } catch (SVNClientException e) {
@@ -909,7 +910,7 @@ public class FileStatusCache {
                     && !WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
                 // missing or damaged entries
                 // or ignored file
-                SvnClientExceptionHandler.notifyException(e, false, false);
+                SvnClientExceptionHandler.notifyException(context, e, false, false);
             }
         }
 

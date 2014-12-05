@@ -64,6 +64,7 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.remote.ui.update.ResolveConflictsAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -253,7 +254,7 @@ public class SyncFileNode extends AbstractNode {
                                     WorkingCopyAttributesCache.getInstance().logSuppressed(ex, node.getFile());
                                 } catch (SVNClientException e) { }
                             } else {
-                                SvnClientExceptionHandler.notifyException(ex, false, false);
+                                SvnClientExceptionHandler.notifyException(new Context(node.getFile()), ex, false, false);
                             }
                         }
                         if (shortPath == null) {

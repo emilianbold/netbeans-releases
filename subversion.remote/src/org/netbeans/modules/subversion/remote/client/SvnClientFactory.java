@@ -341,11 +341,11 @@ public class SvnClientFactory {
             fileSystem = fs;
         }
 
-        protected SvnClient createAdapter() {
+        protected CommandlineClient createAdapter() {
             return new CommandlineClient(fileSystem); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
         }
 
-        protected SvnClientInvocationHandler getInvocationHandler(SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+        protected SvnClientInvocationHandler getInvocationHandler(CommandlineClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
             return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
         }
 
@@ -369,7 +369,7 @@ public class SvnClientFactory {
          *
          */
         public SvnClient createSvnClient(Context context, SVNUrl repositoryUrl, SvnProgressSupport support, String username, char[] password, int handledExceptions) {
-            SvnClient adapter = createAdapter();
+            CommandlineClient adapter = createAdapter();
             SvnClientInvocationHandler handler = getInvocationHandler(adapter, createDescriptor(repositoryUrl), support, handledExceptions);
             setupAdapter(adapter, username, password);
             return createSvnClient(handler);
@@ -404,7 +404,7 @@ public class SvnClientFactory {
                 File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
                 adapter.setConfigDirectory(configDir);
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                SvnClientExceptionHandler.notifyException(new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot())), ex, false, false);
             }
         }
     }

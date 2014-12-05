@@ -121,7 +121,7 @@ public class StatusAction extends ContextAction {
             try {
                 client = Subversion.getInstance().getClient(context, support);
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
+                SvnClientExceptionHandler.notifyException(context, ex, true, true);
                 return;
             }
             Subversion.getInstance().getStatusCache().refreshCached(context);

@@ -225,7 +225,7 @@ public class Subversion {
         try {
             SvnClientFactory.checkClientAvailable(context);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return false;
         }
         return true;
@@ -392,9 +392,10 @@ public class Subversion {
         final VCSFileProxy parent = file.getParentFile();
         if (parent != null) {
             int pstatus = fileStatusCache.getStatus(parent).getStatus();
+            final Context context = new Context(parent);
             if ((pstatus & FileInformation.STATUS_VERSIONED) != 0) {
                 try {
-                    SvnClient client = getClient(false, new Context(parent));
+                    SvnClient client = getClient(false, context);
 
                     List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
                     if(gignores != null && SvnUtils.getMatchinIgnoreParterns(gignores, name, true).size() > 0) {
@@ -411,7 +412,7 @@ public class Subversion {
                        !SvnClientExceptionHandler.isCancelledAction(ex.getMessage()) &&
                        !WorkingCopyAttributesCache.getInstance().isSuppressed(ex))
                     {
-                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                        SvnClientExceptionHandler.notifyException(context, ex, false, false);
                     }
                 }
             }
@@ -432,7 +433,7 @@ public class Subversion {
                 }
             } catch (SVNClientException ex) {
                 if(!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
                 }
             }
             return true;

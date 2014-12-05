@@ -120,11 +120,12 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
                 final String oldPreference = System.getProperty(WORKING_COPY_FORMAT_PROP);
                 System.setProperty(WORKING_COPY_FORMAT_PROP, Boolean.toString(!old16Format));
                 SvnClient client;
+                final Context context = new Context(workDir);
                 try {
                     // this needs to be done in a background thread, otherwise the password won't be acquired from the keyring
-                    client = Subversion.getInstance().getClient(new Context(workDir), repository);
+                    client = Subversion.getInstance().getClient(context, repository);
                 } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
+                    SvnClientExceptionHandler.notifyException(context, ex, true, true); // should not happen
                     return;
                 }
                 Task t = performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted);

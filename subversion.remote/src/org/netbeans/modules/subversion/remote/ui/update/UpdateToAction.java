@@ -86,7 +86,7 @@ public class UpdateToAction extends UpdateAction {
             rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
             url = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return null;
         }
         

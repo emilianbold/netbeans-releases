@@ -554,7 +554,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         try {
             url = master.getSearchRepositoryRootUrl();
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(master.getRoots()), ex, true, true);
             return;
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
