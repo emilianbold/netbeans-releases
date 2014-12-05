@@ -83,10 +83,6 @@ public final class Gruntfile {
         return getGruntfile();
     }
 
-    public String getPath() {
-        return getGruntfile().getAbsolutePath();
-    }
-
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
@@ -109,19 +105,23 @@ public final class Gruntfile {
         return gruntfile;
     }
 
-    synchronized void reset() {
-        if (gruntfile != null) {
-            try {
-                FileUtil.removeFileChangeListener(gruntfileListener, gruntfile);
-                LOGGER.log(Level.FINE, "Stopped listening to {0}", gruntfile);
-            } catch (IllegalArgumentException ex) {
-                // not listeneing yet, ignore
-                LOGGER.log(Level.FINE, "Not listening yet to {0}", gruntfile);
+    void reset(boolean newFile) {
+        if (newFile) {
+            synchronized (this) {
+                if (gruntfile != null) {
+                    try {
+                        FileUtil.removeFileChangeListener(gruntfileListener, gruntfile);
+                        LOGGER.log(Level.FINE, "Stopped listening to {0}", gruntfile);
+                    } catch (IllegalArgumentException ex) {
+                        // not listeneing yet, ignore
+                        LOGGER.log(Level.FINE, "Not listening yet to {0}", gruntfile);
+                    }
+                    gruntfile = null;
+                }
             }
-            gruntfile = null;
-            // fire change
-            changeSupport.fireChange();
         }
+        // fire change
+        changeSupport.fireChange();
     }
 
     //~ Inner classes
@@ -130,7 +130,7 @@ public final class Gruntfile {
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            reset();
+            reset(true);
         }
 
     }
@@ -139,22 +139,22 @@ public final class Gruntfile {
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            reset();
+            reset(true);
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            reset();
+            reset(false);
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            reset();
+            reset(true);
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            reset();
+            reset(true);
         }
 
     }
