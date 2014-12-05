@@ -48,13 +48,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
+import org.netbeans.modules.javascript.grunt.file.GruntTasks;
+import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.legacy.GruntPreferences;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 
@@ -65,16 +66,26 @@ public final class GruntBuildTool implements BuildToolImplementation {
     private static final String IDENTIFIER = "Grunt"; // NOI18N
 
     private final Project project;
+    private final Gruntfile gruntfile;
+    private final GruntTasks gruntTasks;
 
 
     private GruntBuildTool(Project project) {
         assert project != null;
         this.project = project;
+        gruntfile = new Gruntfile(project.getProjectDirectory());
+        gruntTasks = GruntTasks.create(project, gruntfile);
     }
 
     @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
     public static BuildToolImplementation forHtml5Project(Project project) {
         return new GruntBuildTool(project);
+    }
+
+    public static GruntBuildTool forProject(Project project) {
+        GruntBuildTool buildTool = project.getLookup().lookup(GruntBuildTool.class);
+        assert buildTool != null : "GruntBuildTool should be found in project " + project.getClass().getName() + " (lookup: " + project.getLookup() + ")";
+        return buildTool;
     }
 
     @Override
@@ -88,18 +99,25 @@ public final class GruntBuildTool implements BuildToolImplementation {
         return Bundle.GruntBuildTool_name();
     }
 
+    public Gruntfile getGruntfile() {
+        return gruntfile;
+    }
+
+    public GruntTasks getGruntTasks() {
+        return gruntTasks;
+    }
+
     @Override
     public boolean isEnabled() {
-        // XXX
-        return project.getProjectDirectory().getFileObject("Gruntfile.js") != null; // NOI18N
+        return gruntfile.exists();
     }
 
     @NbBundle.Messages("GruntBuildTool.configure=Do you want to configure project actions to call Grunt tasks?")
     @Override
     public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
         assert isEnabled() : project.getProjectDirectory().getNameExt();
-        FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js"); // NOI18N
-        assert gruntFile != null : project.getProjectDirectory().getNameExt();
+        assert gruntfile.exists() : project.getProjectDirectory().getNameExt();
+        // XXX
         String gruntBuild = GruntPreferences.getValue(project, "grunt.action." + commandId); // NOI18N
         if (gruntBuild != null) {
             GruntExecutable grunt = GruntExecutable.getDefault(project, warnUser);
