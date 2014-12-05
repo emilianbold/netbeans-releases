@@ -141,3 +141,23 @@ exports.justCallObj = function(){
 exports.justCallLit = function(){
     return {oo : 1, oo1: 2};
 };
+
+
+var events = require('events');
+
+function Car(){
+    events.EventEmitter.call(this);
+    this.speed = 0;
+}
+
+Car.prototype = Object.create(events.EventEmitter.prototype);
+
+Car.prototype.ride = function(){
+    this.emit("riding");
+};
+
+Car.prototype.stop = function(){
+    this.emit("stopping");
+};
+
+exports.Car = Car;
