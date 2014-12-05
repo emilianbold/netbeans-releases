@@ -94,4 +94,9 @@ var oo = new modul.constr();
 
 //cc;1;require("../complexModule").constr.;0;nest,today,num,something,hasOwnProperty;num;require("../complexModule").constr.num;getDate,fakeOrigin
 
+//cc;1;require("../complexModule").justCall().;0;getDate,getDay,getHours,hasOwnProperty;getDate;require("../complexModule").justCall().getDate();fakeOrigin
+
+//cc;1;require("../complexModule").justCallObj().;0;attempt,getSomething,ale,ale2,hasOwnProperty;getSomething;require("../complexModule").justCallObj().getSomething();fakeOrigin,getDate
+
+//cc;1;require("../complexModule").justCallLit().;0;oo,oo2,hasOwnProperty;oo2;require("../complexModule").justCallLit().oo2;fakeOrigin,getDate
 

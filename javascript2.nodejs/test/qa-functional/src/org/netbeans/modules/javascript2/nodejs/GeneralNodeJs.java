@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -64,6 +65,7 @@ import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -204,7 +206,9 @@ public class GeneralNodeJs extends JellyTestCase {
         }
         setProxy();
         OptionsOperator optionsOper = OptionsOperator.invoke();
-        optionsOper.selectMiscellaneous();
+        evt.waitNoEvent(300);  // prevent clicking on category button when panel not initialized
+        new JLabelOperator(optionsOper, "HTML/JS").clickMouse();
+        evt.waitNoEvent(300);
         Component findComponent = optionsOper.findSubComponent(new JTabbedPaneOperator.JTabbedPaneFinder());
         JTabbedPaneOperator tabbedPane = new JTabbedPaneOperator((JTabbedPane) findComponent);
         tabbedPane.selectPage("Node.js");

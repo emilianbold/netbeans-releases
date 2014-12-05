@@ -60,6 +60,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -99,7 +100,8 @@ public class LogCommand extends SvnCommand {
     private final String[] paths;
     
         
-    public LogCommand(VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd, SVNRevision pegRevision, boolean stopOnCopy, boolean fetchChangePath, long limit) {
+    public LogCommand(FileSystem fileSystem, VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd, SVNRevision pegRevision, boolean stopOnCopy, boolean fetchChangePath, long limit) {
+        super(fileSystem);
         this.file = file;
         this.revStart = revStart;
         this.revEnd = revEnd;
@@ -114,7 +116,8 @@ public class LogCommand extends SvnCommand {
         paths = null;
     }
 
-    public LogCommand(SVNUrl url, String[] paths, SVNRevision revStart, SVNRevision revEnd, SVNRevision pegRevision, boolean stopOnCopy, boolean fetchChangePath, long limit) {        
+    public LogCommand(FileSystem fileSystem, SVNUrl url, String[] paths, SVNRevision revStart, SVNRevision revEnd, SVNRevision pegRevision, boolean stopOnCopy, boolean fetchChangePath, long limit) {        
+        super(fileSystem);
         this.revStart = revStart;
         this.revEnd = revEnd;
         this.pegRevision = pegRevision;

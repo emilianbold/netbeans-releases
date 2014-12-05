@@ -42,10 +42,10 @@
 package org.netbeans.modules.subversion.remote.client;
 
 import org.netbeans.modules.subversion.remote.api.SVNNotificationHandler;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import org.netbeans.modules.subversion.remote.api.Depth;
 import org.netbeans.modules.subversion.remote.api.ISVNAnnotations;
 import org.netbeans.modules.subversion.remote.api.ISVNDirEntry;
 import org.netbeans.modules.subversion.remote.api.ISVNDirEntryWithLock;
@@ -60,6 +60,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.CatCommand;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Cancellable;
 
@@ -122,7 +123,7 @@ public interface SvnClient extends Cancellable {
 
     void copy(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev, boolean makeParents) throws SVNClientException;
 
-    SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, int arg4, boolean arg5) throws SVNClientException;
+    SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, Depth arg4, boolean arg5) throws SVNClientException;
 
     void dispose();
 
@@ -144,7 +145,7 @@ public interface SvnClient extends Cancellable {
 
     ISVNInfo getInfo(VCSFileProxy file) throws SVNClientException;
 
-    ISVNInfo getInfo(SVNUrl url, SVNRevision revision, SVNRevision pegging) throws SVNClientException;
+    ISVNInfo getInfo(Context context, SVNUrl url, SVNRevision revision, SVNRevision pegging) throws SVNClientException;
 
     ISVNInfo getInfoFromWorkingCopy(VCSFileProxy file) throws SVNClientException;
 
@@ -212,8 +213,6 @@ public interface SvnClient extends Cancellable {
 
     void move(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) throws SVNClientException;
 
-    void move(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) throws SVNClientException;
-
     void propertyDel(VCSFileProxy file, String name, boolean rec) throws SVNClientException;
 
     ISVNProperty propertyGet(final VCSFileProxy file, final String name) throws SVNClientException;
@@ -226,7 +225,7 @@ public interface SvnClient extends Cancellable {
 
     void propertySet(VCSFileProxy file, String name, VCSFileProxy propFile, boolean rec) throws SVNClientException, IOException;
 
-    void relocate(String from, String to, String path, boolean rec) throws SVNClientException;
+    void relocate(Context context, String from, String to, String path, boolean rec) throws SVNClientException;
 
     void remove(VCSFileProxy[] files, boolean force) throws SVNClientException;
 
@@ -238,7 +237,7 @@ public interface SvnClient extends Cancellable {
 
     void revert(VCSFileProxy[] files, boolean recursivelly) throws SVNClientException;
 
-    void setConfigDirectory(File file) throws SVNClientException;
+    void setConfigDirectory(VCSFileProxy file) throws SVNClientException;
 
     void setIgnoredPatterns(VCSFileProxy file, List l) throws SVNClientException;
 
@@ -251,5 +250,9 @@ public interface SvnClient extends Cancellable {
     long update(VCSFileProxy file, SVNRevision rev, boolean recursivelly) throws SVNClientException;
 
     void upgrade(VCSFileProxy wcRoot) throws SVNClientException;
+
+    public void unlock(VCSFileProxy[] vcsFileProxy, boolean b);
+
+    public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b);
     
 }

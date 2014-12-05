@@ -56,7 +56,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
@@ -148,7 +148,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         if (!mimeType.startsWith("text/")) {
             return null;
         } else {
-            return Utils.createReader(remoteFile);
+            return org.netbeans.modules.versioning.util.Utils.createReader(remoteFile.toFileObject());
         }
     }
 

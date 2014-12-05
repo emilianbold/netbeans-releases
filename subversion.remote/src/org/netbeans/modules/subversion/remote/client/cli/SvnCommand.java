@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.subversion.remote.client.cli;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -58,7 +57,9 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient.NotificationHandler;
 import org.netbeans.modules.subversion.remote.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Encapsulates a command given to a svn client. 
@@ -94,9 +95,11 @@ public abstract class SvnCommand implements CommandNotificationListener {
     private VCSFileProxy configDir;
     private String username;
     private String password;
-    private File tmpFolder;
+    private VCSFileProxy tmpFolder;
+    private final FileSystem fileSystem;
 
-    protected SvnCommand() {
+    protected SvnCommand(FileSystem fs) {
+        this.fileSystem = fs;
         arguments = new Arguments();        
     }
 
@@ -209,11 +212,15 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     @Override
     public final void commandFinished() {
-        File f = getTempCommandFolder(false);
-        if (f != null) {
-            FileUtils.deleteRecursively(f);
+        try {
+            VCSFileProxy f = getTempCommandFolder(false);
+            if (f != null) {
+                SvnUtils.deleteRecursively(f);
+            }
+            notificationHandler.logCompleted("");
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
         }
-        notificationHandler.logCompleted("");        
     }
     
     public boolean hasFailed() {
@@ -251,9 +258,8 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return toString(arguments, false).toString();        
     }
 
-    String[] getCliArguments(String executable) {
-        List<String> l = new ArrayList<String>(arguments.size() + 1);
-        l.add(executable);
+    String[] getCliArguments() {
+        List<String> l = new ArrayList<String>(arguments.size());
         for (String arg : arguments.toArray()) {
             l.add(arg);
         }
@@ -276,11 +282,11 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return createTempCommandFile(new String[] {value});
     }   
     
-    protected String createTempCommandFile(File[] files) throws IOException {
+    protected String createTempCommandFile(VCSFileProxy[] files) throws IOException {
         String[] lines = new String[files.length];
         for (int i = 0; i < files.length; i++) {
-            lines[i] = files[i].getAbsolutePath();            
-            if (files[i].getAbsolutePath().indexOf('@') != -1) {
+            lines[i] = files[i].getPath();            
+            if (files[i].getPath().indexOf('@') != -1) {
                 lines[i] += '@';
             }
         }
@@ -288,12 +294,11 @@ public abstract class SvnCommand implements CommandNotificationListener {
     }
     
     protected String createTempCommandFile(String[] lines) throws IOException {
-        File targetFile = File.createTempFile("svn_", "", getTempCommandFolder(true));
-        targetFile.deleteOnExit();
+        VCSFileProxy targetFile = VCSFileProxySupport.createTempFile(getTempCommandFolder(true), "svn_", "", true);
 
         PrintWriter writer = null; 
         try {
-            writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(targetFile))); // NOI18N           
+            writer = new PrintWriter(new OutputStreamWriter(targetFile.toFileObject().getOutputStream()));
             for (int i = 0; i < lines.length; i++) {
                 writer.print(i < lines.length -1 ? lines[i] + "\n" : lines[i]);
             }
@@ -303,7 +308,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
                 writer.close();    
             }
         }
-        return targetFile.getAbsolutePath();
+        return targetFile.getPath();
     }
 
     protected void config(VCSFileProxy configDir, String username, String password, Arguments arguments) {
@@ -327,9 +332,9 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return url;
     }
 
-    private File getTempCommandFolder (boolean forceCreation) {
+    private VCSFileProxy getTempCommandFolder (boolean forceCreation) throws IOException {
         if (tmpFolder == null && forceCreation) {
-            tmpFolder = Utils.getTempFolder(true);
+            tmpFolder = VCSFileProxySupport.getTempFolder(VCSFileProxy.createFileProxy(fileSystem.getRoot()), true);
         }
         return tmpFolder;
     }

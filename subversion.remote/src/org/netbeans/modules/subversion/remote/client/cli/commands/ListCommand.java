@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.openide.filesystems.FileSystem;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -79,7 +80,8 @@ public class ListCommand extends SvnCommand {
     private final SVNRevision revision;
     private final boolean recursive;
 
-    public ListCommand(SVNUrl url, SVNRevision revision, boolean recursive) {
+    public ListCommand(FileSystem fileSystem, SVNUrl url, SVNRevision revision, boolean recursive) {
+        super(fileSystem);
         this.url = url;
         this.revision = revision;
         this.recursive = recursive;

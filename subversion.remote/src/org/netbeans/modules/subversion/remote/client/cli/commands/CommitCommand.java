@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -60,7 +61,8 @@ public class CommitCommand extends SvnCommand {
     private final VCSFileProxy[] files;
     private long revision = SVNRevision.INVALID_REVISION.getNumber();
 
-    public CommitCommand(VCSFileProxy[] files, boolean keepLocks, boolean recursive, String message) {
+    public CommitCommand(FileSystem fileSystem, VCSFileProxy[] files, boolean keepLocks, boolean recursive, String message) {
+        super(fileSystem);
         this.keepLocks = keepLocks;
         this.recursive = recursive;
         this.message = message;

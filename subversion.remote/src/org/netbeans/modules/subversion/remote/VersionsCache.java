@@ -259,36 +259,36 @@ public class VersionsCache {
             if (svnDir == null) {
                 // try to check 1.7 metadata
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(referenceFile);
-                    File newMetadataFolder;
-                    if (topmost != null && (newMetadataFolder = new File(topmost, SvnUtils.SVN_ADMIN_DIR)).exists()) {
-                        svnDir = newMetadataFolder;
-                        newMetadataFormat = new File(svnDir, "pristine").exists(); //NOI18N
-                        if (!newMetadataFormat) {
-                            Logger.getLogger(VersionsCache.class.getName()).log(Level.FINE,
-                                    "No 1.7 metadata in {0}", svnDir); //NOI18N
-                        }
+                VCSFileProxy newMetadataFolder;
+                if (topmost != null && (newMetadataFolder = VCSFileProxy.createFileProxy(topmost, SvnUtils.SVN_ADMIN_DIR)).exists()) {
+                    svnDir = newMetadataFolder;
+                    newMetadataFormat = VCSFileProxy.createFileProxy(svnDir, "pristine").exists(); //NOI18N
+                    if (!newMetadataFormat) {
+                        Logger.getLogger(VersionsCache.class.getName()).log(Level.FINE,
+                                "No 1.7 metadata in {0}", svnDir); //NOI18N
                     }
                 }
+            }
             if (svnDir == null) {
                 return null;
             }
             if (newMetadataFormat) {
                 return getContentBase(referenceFile, new File(Utils.getTempFolder(), referenceFile.getName() + ".netbeans-base")); //NOI18N
             } else {
-                File svnBase = new File(svnDir, "text-base/" + referenceFile.getName() + ".svn-base"); //NOI18N
+                VCSFileProxy svnBase = VCSFileProxy.createFileProxy(svnDir, "text-base/" + referenceFile.getName() + ".svn-base"); //NOI18N
                 if (!svnBase.exists()) {
-                    if (new File(svnDir, "pristine").exists()) { //NOI18N - svn1.7, file is directly in the root of a checkout
+                    if (VCSFileProxy.createFileProxy(svnDir, "pristine").exists()) { //NOI18N - svn1.7, file is directly in the root of a checkout
                         return getContentBase(referenceFile, new File(Utils.getTempFolder(), referenceFile.getName() + ".netbeans-base")); //NOI18N
                     }
                     return null;
                 }
-                File expanded = new File(svnDir, "text-base/" + referenceFile.getName() + ".netbeans-base"); //NOI18N
-                if (expanded.canRead() && svnBase.isFile() && expanded.length() == svnBase.length()
+                VCSFileProxy expanded = VCSFileProxy.createFileProxy(svnDir, "text-base/" + referenceFile.getName() + ".netbeans-base"); //NOI18N
+                if (VCSFileProxySupport.canRead(expanded) && svnBase.isFile() && VCSFileProxySupport.length(expanded) == VCSFileProxySupport.length(svnBase)
                         && (expanded.lastModified() >= svnBase.lastModified())) {
                     return expanded;
                 }
                 expanded = getContentBase(referenceFile, expanded);
-                expanded.setLastModified(svnBase.lastModified());
+                VCSFileProxySupport.setLastModified(expanded, svnBase.lastModified());
                 return expanded;
             }
         } catch (SVNClientException e) {
@@ -356,7 +356,7 @@ public class VersionsCache {
     }
 
     private VCSFileProxy getMetadataDir(VCSFileProxy dir) {
-        File svnDir = new File(dir, SvnUtils.SVN_ADMIN_DIR);  // NOI18N
+        VCSFileProxy svnDir = VCSFileProxy.createFileProxy(dir, SvnUtils.SVN_ADMIN_DIR);  // NOI18N
         if (!svnDir.isDirectory()) {
             return null;
         }

@@ -39,56 +39,13 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.client.cli.commands;
-
-import java.io.IOException;
-import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
-import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileSystem;
+package org.netbeans.modules.subversion.remote.api;
 
 /**
  *
- * @author Tomas Stupka
+ * @author alsimon
  */
-public class AddCommand extends SvnCommand {
-
-    private final boolean recursive;
-    private final boolean force;
-    private final VCSFileProxy[] files;
-
-    public AddCommand(FileSystem fileSystem, VCSFileProxy[] files, boolean recursive, boolean force) {        
-        super(fileSystem);
-        this.recursive = recursive;
-        this.force = force;
-        this.files = files;
-    }
-
-    @Override
-    protected ISVNNotifyListener.Command getCommand() {
-        return ISVNNotifyListener.Command.ADD;
-    }
-    
-    @Override
-    public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("add");
-        if (!recursive) {
-            arguments.add("-N");
-        }			
-        arguments.addFileArguments(files);        
-        setCommandWorkingDirectory(files);        
-    }
-
-    @Override
-    protected void config(VCSFileProxy configDir, String username, String password, Arguments arguments) {
-        arguments.addConfigDir(configDir);        
-    }
-    
-    @Override
-    public void errorText(String line) {
-        if (line.startsWith("svn: warning:")) { // ignore warnings           
-            return;
-        }
-        super.errorText(line);
-    }    
+public enum Depth {
+    files,
+    infinity;
 }

@@ -48,7 +48,6 @@ import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
-import org.netbeans.modules.subversion.remote.api.SVNScheduleKind;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.commands.StatusCommand.Status;
@@ -66,35 +65,35 @@ public class CLIStatus implements ISVNStatus {
         this.status = status;
         this.info = info;
     }
-    
-    CLIStatus(Status status, String path) {
-        this.status = status;
-        this.info = new UnversionedInfo(path);
-    }
 
+    CLIStatus(Status status) {
+        this.status = status;
+        this.info = null;
+    }
+    
     @Override
     public SVNUrl getUrl() {
-        return info.getUrl();
+        return info == null ? null : info.getUrl();
     }
 
     @Override
     public String getUrlString() {
-        return info.getUrlString();
+        return info == null ? null : info.getUrlString();
     }
 
     @Override
     public SVNRevision.Number getLastChangedRevision() {
-        return info.getLastChangedRevision();
+        return info == null ? null : info.getLastChangedRevision();
     }
 
     @Override
     public Date getLastChangedDate() {
-        return info.getLastChangedDate();
+        return info == null ? null : info.getLastChangedDate();
     }
 
     @Override
     public String getLastCommitAuthor() {
-        return info.getLastCommitAuthor();
+        return info == null ? null : info.getLastCommitAuthor();
     }
 
     @Override
@@ -119,22 +118,22 @@ public class CLIStatus implements ISVNStatus {
 
     @Override
     public SVNRevision.Number getRevision() {
-        return info.getRevision(); 
+        return info == null ? null : info.getRevision(); 
     }
 
     @Override
     public String getPath() {
-        return info != null ? info.getFile().getPath() : status.getPath();
+        return info != null ? info.getFile().getPath() : status.getPath().getPath();
     }
 
     @Override
     public VCSFileProxy getFile() {
-        return info.getFile();
+        return info == null ? status.getPath() : info.getFile();
     }
 
     @Override
     public SVNNodeKind getNodeKind() {
-        return info.getNodeKind();
+        return info == null ? null : info.getNodeKind();
     }
 
     @Override
@@ -210,113 +209,4 @@ public class CLIStatus implements ISVNStatus {
     public String getMovedToAbspath () {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    private class UnversionedInfo implements ISVNInfo {
-        private final VCSFileProxy file;
-        public UnversionedInfo(String path) {
-            this.file = new File(path);
-        }        
-        @Override
-        public VCSFileProxy getFile() {
-            return file;
-        }
-        @Override
-        public SVNUrl getUrl() {
-            return null;
-        }
-        @Override
-        public String getUrlString() {
-            return null;
-        }
-        @Override
-        public String getUuid() {
-            return null;
-        }
-        @Override
-        public SVNUrl getRepository() {
-            return null;
-        }
-        @Override
-        public SVNScheduleKind getSchedule() {
-            return null;
-        }
-        @Override
-        public SVNNodeKind getNodeKind() {
-            return SVNNodeKind.UNKNOWN;
-        }
-        @Override
-        public String getLastCommitAuthor() {
-            return null;
-        }
-        @Override
-        public SVNRevision.Number getRevision() {
-            return null;
-        }
-        @Override
-        public SVNRevision.Number getLastChangedRevision() {
-            return null;
-        }
-        @Override
-        public Date getLastChangedDate() {
-            return null;
-        }
-        @Override
-        public Date getLastDateTextUpdate() {
-            return null;
-        }
-        @Override
-        public Date getLastDatePropsUpdate() {
-            return null;
-        }
-        @Override
-        public boolean isCopied() {
-            return false;
-        }
-        @Override
-        public SVNRevision.Number getCopyRev() {
-            return SVNRevision.INVALID_REVISION;
-        }
-        @Override
-        public SVNUrl getCopyUrl() {
-            return null;
-        }
-        @Override
-        public String getLockOwner() {
-            return null;
-        }
-        @Override
-        public Date getLockCreationDate() {
-            return null;
-        }
-        @Override
-        public String getLockComment() {
-            return null;
-        }
-
-        @Override
-        public int getDepth() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public VCSFileProxy getConflictNew() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public VCSFileProxy getConflictOld() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public VCSFileProxy getConflictWorking() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getPath() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-    }
-            
 }
