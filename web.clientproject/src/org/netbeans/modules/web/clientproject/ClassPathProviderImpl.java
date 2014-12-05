@@ -78,7 +78,8 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         if (SOURCE_CP.equals(type)) {
             if (ClientSideProjectUtilities.isParentOrItself(project.getSourcesFolder(), file)
                     || ClientSideProjectUtilities.isParentOrItself(project.getSiteRootFolder(), file)
-                    || ClientSideProjectUtilities.isParentOrItself(project.getTestsFolder(false), file)) {
+                    || ClientSideProjectUtilities.isParentOrItself(project.getTestsFolder(false), file)
+                    || ClientSideProjectUtilities.isParentOrItself(project.getTestsSeleniumFolder(false), file)) {
                 return project.getSourceClassPath();
             }
         }
@@ -151,6 +152,12 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                     && !ClientSideProjectUtilities.isParentOrItself(sourcesFolder, testsFolder)
                     && !ClientSideProjectUtilities.isParentOrItself(siteRootFolder, testsFolder)) {
                 roots.add(testsFolder.toURL());
+            }
+            FileObject testsSeleniumFolder = project.getTestsSeleniumFolder(false);
+            if (testsSeleniumFolder != null
+                    && !ClientSideProjectUtilities.isParentOrItself(sourcesFolder, testsSeleniumFolder)
+                    && !ClientSideProjectUtilities.isParentOrItself(siteRootFolder, testsSeleniumFolder)) {
+                roots.add(testsSeleniumFolder.toURL());
             }
             for (PlatformProvider provider : project.getPlatformProviders()) {
                 roots.addAll(provider.getSourceRoots(project));

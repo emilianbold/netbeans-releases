@@ -201,13 +201,19 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                         if (conURL ==null) {
                             //phonegap
                             setBaseUrl(urlFromBrowser);
-                            return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
+                            if (object.containsKey("webSocketDebuggerUrl")) { // NOI18N
+                                return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
+                            } else {
+                                continue;
+                            }
                         }
                         final String connectionUrl = conURL.toExternalForm();
                         final String shortenedUrl = connectionUrl.replace(":80/", "/"); // NOI18N
 
                         if (connectionUrl.equals(urlFromBrowser) || shortenedUrl.equals(urlFromBrowser)) {
-                            return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
+                            if (object.containsKey("webSocketDebuggerUrl")) { // NOI18N
+                                return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
+                            }
                         }
                     }
                 }

@@ -63,4 +63,14 @@ public interface ProjectDirectoriesProvider {
     @CheckForNull
     FileObject getTestDirectory(boolean showFileChooser);
 
+    /**
+     * Get selenium test directory. If the selenium test directory is not set yet, user will be asked for selecting it
+     * if {@code showFileChooser} is {@code true}.
+     * @param showFileChooser show file chooser if there is no selenium test directory set yet
+     * @return selenium test directory; can be {@code null} for none, corrupted etc. folder
+     * @since 1.83
+     */
+    @CheckForNull
+    FileObject getTestSeleniumDirectory(boolean showFileChooser);
+
 }

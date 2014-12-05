@@ -379,6 +379,40 @@ public class ClientSideProject implements Project {
         return getProjectDirectory().getFileObject(tests);
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "ClientSideProject.chooser.tests.selenium.title=Select Selenium Tests folder ({0})",
+    })
+    @CheckForNull
+    public FileObject getTestsSeleniumFolder(boolean showFileChooser) {
+        String tests = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER);
+        if (tests == null || tests.trim().length() == 0) {
+            if (showFileChooser) {
+                final File folder = new FileChooserBuilder(ClientSideProject.class)
+                        .setTitle(Bundle.ClientSideProject_chooser_tests_selenium_title(ProjectUtils.getInformation(this).getDisplayName()))
+                        .setDirectoriesOnly(true)
+                        .setDefaultWorkingDirectory(FileUtil.toFile(getProjectDirectory()))
+                        .forceUseOfDefaultWorkingDirectory(true)
+                        .showOpenDialog();
+                if (folder != null) {
+                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(ClientSideProject.this);
+                            projectProperties.setTestSeleniumFolder(folder.getAbsolutePath());
+                            projectProperties.save();
+                        }
+                    }, Bundle.ClientSideProject_props_saving(), new AtomicBoolean(), false);
+                    FileObject fo = FileUtil.toFileObject(folder);
+                    assert fo != null : "FileObject should be found for " + folder;
+                    return fo;
+                }
+            }
+            return null;
+        }
+        return getProjectDirectory().getFileObject(tests);
+    }
+
     public String getStartFile() {
         String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
         if (s == null) {
@@ -646,6 +680,7 @@ public class ClientSideProject implements Project {
             checkAutoconfigured();
             // usage logging
             FileObject testsFolder = project.getTestsFolder(false);
+            FileObject testsSeleniumFolder = project.getTestsSeleniumFolder(false);
 
             boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
             boolean hasBower = projectDirectory.getFileObject("bower.json") !=null;
@@ -903,7 +938,7 @@ public class ClientSideProject implements Project {
             List<FileObject> roots = new ArrayList<>();
             FileObject projectDir = project.getProjectDirectory();
             roots.add(projectDir);
-            addRoots(roots, projectDir, project.getSourcesFolder(), project.getSiteRootFolder(), project.getTestsFolder(false));
+            addRoots(roots, projectDir, project.getSourcesFolder(), project.getSiteRootFolder(), project.getTestsFolder(false), project.getTestsSeleniumFolder(false));
             return roots.toArray(new FileObject[roots.size()]);
         }
 
@@ -998,6 +1033,11 @@ public class ClientSideProject implements Project {
         public FileObject getTestDirectory(boolean showFileChooser) {
             return ClientSideProject.this.getTestsFolder(showFileChooser);
         }
+
+        @Override
+        public FileObject getTestSeleniumDirectory(boolean showFileChooser) {
+            return ClientSideProject.this.getTestsSeleniumFolder(showFileChooser);
+    }
 
     }
 

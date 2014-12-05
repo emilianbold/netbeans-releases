@@ -82,6 +82,7 @@ public final class ClientSideProjectProperties {
     private volatile AtomicReference<String> sourceFolder = null;
     private volatile AtomicReference<String> siteRootFolder = null;
     private volatile AtomicReference<String> testFolder = null;
+    private volatile AtomicReference<String> testSeleniumFolder = null;
     private volatile String jsLibFolder = null;
     private volatile String encoding = null;
     private volatile Boolean runBrowser = null;
@@ -131,6 +132,7 @@ public final class ClientSideProjectProperties {
         String sourceFolderReference = createForeignFileReference(sourceFolder, true);
         String siteRootFolderReference = createForeignFileReference(siteRootFolder, true);
         String testFolderReference = createForeignFileReference(testFolder, false);
+        String testSeleniumFolderReference = createForeignFileReference(testSeleniumFolder, false);
         // save properties
         EditableProperties privateProperties = project.getProjectHelper().getProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = project.getProjectHelper().getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -161,6 +163,14 @@ public final class ClientSideProjectProperties {
             } else {
                 // tests dir removed
                 projectProperties.remove(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
+            }
+        }
+        if (testSeleniumFolder != null) {
+            if (testSeleniumFolderReference != null) {
+                putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER, testSeleniumFolderReference);
+            } else {
+                // tests dir removed
+                projectProperties.remove(ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER);
             }
         }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
@@ -265,6 +275,17 @@ public final class ClientSideProjectProperties {
 
     public void setTestFolder(String testFolder) {
         this.testFolder = new AtomicReference<>(testFolder);
+    }
+
+    public AtomicReference<String> getTestSeleniumFolder() {
+        if (testSeleniumFolder == null) {
+            testSeleniumFolder = new AtomicReference<>(getProjectProperty(ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER, null));
+        }
+        return testSeleniumFolder;
+    }
+
+    public void setTestSeleniumFolder(String testSeleniumFolder) {
+        this.testSeleniumFolder = new AtomicReference<>(testSeleniumFolder);
     }
 
     public String getEncoding() {

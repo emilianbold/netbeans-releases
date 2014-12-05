@@ -100,6 +100,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         setSiteRootFolder(beautifyPath(uiProperties.getSiteRootFolder().get()), false);
         setSourceFolder(beautifyPath(uiProperties.getSourceFolder().get()), false);
         setTestFolder(beautifyPath(uiProperties.getTestFolder().get()), false);
+        setTestSeleniumFolder(beautifyPath(uiProperties.getTestSeleniumFolder().get()), false);
         encodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         encodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
     }
@@ -124,7 +125,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void validateData() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(getSourceFolder(), getSiteRootFolder(), getTestFolder())
+                .validate(getSourceFolder(), getSiteRootFolder(), getTestFolder(), getTestSeleniumFolder())
                 .getResult();
         // errors
         if (result.hasErrors()) {
@@ -150,6 +151,8 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         uiProperties.setSourceFolder(sourceFolder != null ? sourceFolder.getAbsolutePath() : null);
         File testFolder = getTestFolder();
         uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : null);
+        File testSeleniumFolder = getTestSeleniumFolder();
+        uiProperties.setTestSeleniumFolder(testSeleniumFolder != null ? testSeleniumFolder.getAbsolutePath() : null);
         uiProperties.setEncoding(getEncoding().name());
     }
 
@@ -189,6 +192,16 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         testFolderInfoLabel.setText(Bundle.SourcesPanel_tests_info());
     }
 
+    private void setTestSeleniumFolder(String tests) {
+        setTestSeleniumFolder(tests, true);
+    }
+
+    @NbBundle.Messages("SourcesPanel.tests.selenium.info=Empty value means no Selenium Tests folder")
+    private void setTestSeleniumFolder(String tests, boolean validate) {
+        setFolder(tests, testSeleniumFolderTextField, testSeleniumFolderRemoveButton, validate);
+        testSeleniumFolderInfoLabel.setText(Bundle.SourcesPanel_tests_selenium_info());
+    }
+
     private void setFolder(String folder, JTextField textField, JButton removeButton, boolean validate) {
         textField.setText(folder);
         textField.setEnabled(folder != null);
@@ -224,6 +237,10 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private File getTestFolder() {
         return resolveFile(testFolderTextField.getText(), false);
+    }
+
+    private File getTestSeleniumFolder() {
+        return resolveFile(testSeleniumFolderTextField.getText(), false);
     }
 
     private Charset getEncoding() {
@@ -305,6 +322,11 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         testFolderRemoveButton = new JButton();
         encodingLabel = new JLabel();
         encodingComboBox = new JComboBox();
+        testSeleniumFolderLabel = new JLabel();
+        testSeleniumFolderTextField = new JTextField();
+        testSeleniumFolderBrowseButton = new JButton();
+        testSeleniumFolderRemoveButton = new JButton();
+        testSeleniumFolderInfoLabel = new JLabel();
 
         projectFolderLabel.setLabelFor(projectFolderTextField);
         Mnemonics.setLocalizedText(projectFolderLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.projectFolderLabel.text")); // NOI18N
@@ -371,17 +393,36 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         encodingLabel.setLabelFor(encodingComboBox);
         Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.encodingLabel.text")); // NOI18N
 
+        testSeleniumFolderLabel.setLabelFor(testFolderTextField);
+        Mnemonics.setLocalizedText(testSeleniumFolderLabel, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testSeleniumFolderLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(testSeleniumFolderBrowseButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testSeleniumFolderBrowseButton.text")); // NOI18N
+        testSeleniumFolderBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                testSeleniumFolderBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(testSeleniumFolderRemoveButton, NbBundle.getMessage(SourcesPanel.class, "SourcesPanel.testSeleniumFolderRemoveButton.text")); // NOI18N
+        testSeleniumFolderRemoveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                testSeleniumFolderRemoveButtonActionPerformed(evt);
+            }
+        });
+
+        Mnemonics.setLocalizedText(testSeleniumFolderInfoLabel, "HINT"); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(siteRootLabel)
                     .addComponent(projectFolderLabel)
                     .addComponent(testFolderLabel)
                     .addComponent(encodingLabel)
-                    .addComponent(sourceFolderLabel))
+                    .addComponent(sourceFolderLabel)
+                    .addComponent(testSeleniumFolderLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(projectFolderTextField)
@@ -404,20 +445,26 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                             .addComponent(sourceFolderInfoLabel)
                             .addComponent(siteRootFolderInfoLabel)
-                            .addComponent(testFolderInfoLabel))
+                            .addComponent(testFolderInfoLabel)
+                            .addComponent(testSeleniumFolderInfoLabel))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testFolderTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(testFolderBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(testFolderRemoveButton))))
+                        .addComponent(testFolderRemoveButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(testSeleniumFolderTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(testSeleniumFolderBrowseButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(testSeleniumFolderRemoveButton))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {siteRootFolderBrowseButton, testFolderBrowseButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(projectFolderLabel)
@@ -446,6 +493,14 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(testFolderRemoveButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(testFolderInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(testSeleniumFolderLabel)
+                    .addComponent(testSeleniumFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testSeleniumFolderBrowseButton)
+                    .addComponent(testSeleniumFolderRemoveButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(testSeleniumFolderInfoLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(encodingLabel)
@@ -489,6 +544,18 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         }
     }//GEN-LAST:event_sourceFolderBrowseButtonActionPerformed
 
+    @NbBundle.Messages("SourcesPanel.browse.testSeleniumFolder=Select Selenium Tests")
+    private void testSeleniumFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testSeleniumFolderBrowseButtonActionPerformed
+        String filePath = browseFolder(Bundle.SourcesPanel_browse_testSeleniumFolder(), getTestSeleniumFolder());
+        if (filePath != null) {
+            setTestSeleniumFolder(filePath);
+        }
+    }//GEN-LAST:event_testSeleniumFolderBrowseButtonActionPerformed
+
+    private void testSeleniumFolderRemoveButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_testSeleniumFolderRemoveButtonActionPerformed
+        setTestSeleniumFolder(null);
+    }//GEN-LAST:event_testSeleniumFolderRemoveButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JComboBox encodingComboBox;
     private JLabel encodingLabel;
@@ -509,6 +576,11 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     private JLabel testFolderLabel;
     private JButton testFolderRemoveButton;
     private JTextField testFolderTextField;
+    private JButton testSeleniumFolderBrowseButton;
+    private JLabel testSeleniumFolderInfoLabel;
+    private JLabel testSeleniumFolderLabel;
+    private JButton testSeleniumFolderRemoveButton;
+    private JTextField testSeleniumFolderTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
