@@ -513,6 +513,11 @@ class OutWriter extends PrintWriter {
             }
         } catch (IOException ioe) {
             onWriteException();
+        } catch (RuntimeException ex) {
+            LOG.log(Level.INFO, "Cannot write text: off={0}, "          //NOI18N
+                    + "len={1}, lineStart={2}",                         //NOI18N
+                    new Object[]{off, len, lineStart});
+            throw ex;
         }
         lines.delayedFire();
         return;
