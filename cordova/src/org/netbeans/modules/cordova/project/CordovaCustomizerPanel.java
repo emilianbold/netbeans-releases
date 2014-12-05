@@ -222,7 +222,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     }//GEN-LAST:event_createConfigsActionPerformed
 
     private void mobilePlatformsSetupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mobilePlatformsSetupActionPerformed
-        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");//NOI18N
+        OptionsDisplayer.getDefault().open("Html5/MobilePlatforms");//NOI18N
     }//GEN-LAST:event_mobilePlatformsSetupActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
