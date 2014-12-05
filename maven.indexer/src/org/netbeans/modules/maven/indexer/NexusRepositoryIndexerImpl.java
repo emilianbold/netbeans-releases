@@ -44,8 +44,10 @@ package org.netbeans.modules.maven.indexer;
 
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,9 +82,9 @@ import org.apache.maven.settings.Server;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
-import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
+import org.apache.maven.wagon.events.TransferListener;
 import org.apache.maven.wagon.providers.http.HttpWagon;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.codehaus.plexus.ContainerConfiguration;
@@ -455,7 +457,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             removeIndexingContext(ic, false);
         }
     }
-
+    
     private void indexLoadedRepo(final RepositoryInfo repo, boolean updateLocal) throws IOException {
         Mutex mutex = getRepoMutex(repo);
         assert mutex.isWriteAccess();
@@ -463,6 +465,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             indexingMutexes.add(mutex);
         }
         boolean fetchFailed = false;
+        long t = System.currentTimeMillis();
         try {
             IndexingContext indexingContext = getIndexingContexts().get(repo.getId());
             if (indexingContext == null) {
@@ -509,7 +512,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         httpwagon.setHttpHeaders(p);
                     }
                             
-                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(wagon, listener, wagonAuth, wagonProxy);
+                    ResourceFetcher fetcher = createFetcher(wagon, listener, wagonAuth, wagonProxy);
                     listener.setFetcher(fetcher);
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
                     
@@ -555,6 +558,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         } catch (ComponentLookupException x) {
             throw new IOException("could not find protocol handler for " + repo.getRepositoryUrl(), x);
         } finally {
+            if(isDiag()) {
+                LOGGER.log(Level.INFO, "Indexing of {0} took {1} millis.", new Object[]{repo.getId(), System.currentTimeMillis() - t});
+            }
             synchronized (indexingMutexes) {
                 indexingMutexes.remove(mutex);
             }
@@ -563,6 +569,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 fireChangeIndex(repo);
             }
         }
+    }
+
+    private static boolean isDiag() {
+        return Boolean.getBoolean("org.netbeans.modules.maven.indexing.diag");
     }
 
     //spawn the indexing into a separate thread..
@@ -1727,7 +1737,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         private SkippedAction(Result<?> result) {
             this.result = result;
-}
+        }
         
         @Override
         public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
@@ -1743,10 +1753,30 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         public boolean accepts(IndexingContext ctx, ArtifactInfo ai) {
             if ("javadoc".equals(ai.classifier) || "sources".equals(ai.classifier)) {
                 return false;
-}
+            }
             return true;
         }
         
     }
-
+    
+    private WagonHelper.WagonFetcher createFetcher(Wagon wagon, TransferListener listener, AuthenticationInfo authenticationInfo, ProxyInfo proxyInfo) {
+        if(isDiag()) {
+            return new WagonHelper.WagonFetcher(wagon, listener, authenticationInfo, proxyInfo) {
+                @Override
+                public InputStream retrieve(String name) throws IOException, FileNotFoundException {
+                    if(name.contains("properties") && System.getProperty("maven.diag.index.properties") != null) { // NOI18N
+                        LOGGER.log(Level.INFO, "maven indexer will use local properties file: {0}", System.getProperty("maven.diag.index.properties")); // NOI18N
+                        return new FileInputStream(new File(System.getProperty("maven.diag.index.properties"))); // NOI18N
+                    } else if(name.contains(".gz") && System.getProperty("maven.diag.index.gz") != null) { // NOI18N
+                        LOGGER.log(Level.INFO, "maven indexer will use gz file: {0}", System.getProperty("maven.diag.index.gz")); // NOI18N
+                        return new FileInputStream(new File(System.getProperty("maven.diag.index.gz"))); // NOI18N
+                    }
+                    return super.retrieve(name);
+                }
+            };
+        } else {
+            return new WagonHelper.WagonFetcher(wagon, listener, authenticationInfo, proxyInfo);
+        }
+    }
+    
 }
