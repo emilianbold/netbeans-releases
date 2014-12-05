@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider;
 import org.openide.filesystems.FileObject;
@@ -78,12 +79,25 @@ public final class CacheFolder {
         return getDataFolder(root, false);
     }
 
+    @CheckForNull
     public static FileObject getDataFolder (final URL root, final boolean onlyIfAlreadyExists) throws IOException {
-        return CacheFolderProvider.getCacheFolderForRoot(root,
-                EVERYTHING,
-                onlyIfAlreadyExists ?
-                    CacheFolderProvider.Mode.EXISTENT:
-                    CacheFolderProvider.Mode.CREATE);
+        return getDataFolder(
+            root,
+            EVERYTHING,
+            onlyIfAlreadyExists ?
+                CacheFolderProvider.Mode.EXISTENT:
+                CacheFolderProvider.Mode.CREATE);
+    }
+
+    @CheckForNull
+    public static FileObject getDataFolder (
+            @NonNull final URL root,
+            @NonNull final Set<CacheFolderProvider.Kind> kinds,
+            @NonNull final CacheFolderProvider.Mode mode) throws IOException {
+        return CacheFolderProvider.getCacheFolderForRoot(
+                root,
+                kinds,
+                mode);
     }
 
     @NonNull
