@@ -61,7 +61,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 /**
  * A SvnClient factory
@@ -279,24 +278,22 @@ public class SvnClientFactory {
             LOG.log(Level.WARNING, "executable binary path set to {0} yet client not available.", new Object[] { execPath });
             return false; 
         }
-        if(Utilities.isUnix()) {
-            LOG.fine("svn client isn't set on path yet. Will check known locations...");
-            String[] locations = new String[] {"/usr/local/bin/", "/usr/bin/"};
-            String name = "svn";
-            for (String loc : locations) {
-                File file = new File(loc, name);
-                LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
-                if (file.exists()) {                
-                    SvnModuleConfig.getDefault().setExecutableBinaryPath(loc);
-                    try {
-                        checkVersion();
-                    } catch (SVNClientException e) {
-                        ex = e;
-                        continue;
-                    }
-                    LOG.log(Level.INFO, "found svn executable binary. Setting executable binary path to {0}", new Object[] { loc });
-                    return true;
+        LOG.fine("svn client isn't set on path yet. Will check known locations...");
+        String[] locations = new String[] {"/usr/local/bin/", "/usr/bin/"};
+        String name = "svn";
+        for (String loc : locations) {
+            File file = new File(loc, name);
+            LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
+            if (file.exists()) {                
+                SvnModuleConfig.getDefault().setExecutableBinaryPath(loc);
+                try {
+                    checkVersion();
+                } catch (SVNClientException e) {
+                    ex = e;
+                    continue;
                 }
+                LOG.log(Level.INFO, "found svn executable binary. Setting executable binary path to {0}", new Object[] { loc });
+                return true;
             }
         }
         exception = ex;

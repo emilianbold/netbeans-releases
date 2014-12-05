@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  * @author Petr Kuzel
  */
 public class DiffAction extends ContextAction {
-    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/diff.png"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/diff.png"; //NOI18N
 
     public DiffAction () {
         super(ICON_RESOURCE);

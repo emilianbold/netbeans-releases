@@ -65,10 +65,8 @@ import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
 /**
@@ -77,7 +75,7 @@ import org.openide.nodes.Node;
  * @author Petr Kuzel
  */
 public class RevertModificationsAction extends ContextAction {
-    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/get_clean.png"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/get_clean.png"; //NOI18N
     
     public RevertModificationsAction () {
         super(ICON_RESOURCE);

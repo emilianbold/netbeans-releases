@@ -73,6 +73,9 @@ public final class CheckoutWizard implements ChangeListener {
     private AbstractStep.WizardMessage errorMessage;
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
+    
+    public CheckoutWizard() {
+    }
         
     public boolean show() {
         wizardIterator = new PanelsIterator();

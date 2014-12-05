@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
+import javax.swing.JFileChooser;
 import org.netbeans.modules.subversion.remote.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -115,16 +116,6 @@ public final class VCSFileProxySupport {
             } else {
                 return true;
             }
-        }
-    }
-    
-    public static VCSFileProxy createTempFile(VCSFileProxy file, String prefix, String suffix) throws IOException {
-        File javaFile = file.toFile();
-        if (javaFile != null) {
-            return VCSFileProxy.createFileProxy(File.createTempFile(prefix, suffix));
-        } else {
-            // TODO
-            return null;
         }
     }
     
@@ -239,6 +230,18 @@ public final class VCSFileProxySupport {
     public static VCSFileProxy generateTemporaryFile(VCSFileProxy file, String name) {
         throw new UnsupportedOperationException();
     }
+
+    public static VCSFileProxy createTempFile(VCSFileProxy file, String prefix, String suffix, boolean deleteOnExit) throws IOException {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            File res = File.createTempFile(prefix, suffix);
+            res.deleteOnExit();
+            return VCSFileProxy.createFileProxy(res);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
     
     public static boolean renameTo(VCSFileProxy from, VCSFileProxy to){
         throw new UnsupportedOperationException();
@@ -280,6 +283,55 @@ public final class VCSFileProxySupport {
      * It <b>closes</b> the input stream.
      */
     public static void copyStreamToFile(InputStream inputStream, VCSFileProxy targetFile) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static boolean isRemoteFileSystem(VCSFileProxy file) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static VCSFileProxy getResource(VCSFileProxy file, String absPath) {
+        VCSFileProxy parent = file;
+        while (true) {
+            parent = file.getParentFile();
+            if (parent == null) {
+                parent = file;
+                break;
+            }
+            file = parent;
+        }
+        return VCSFileProxy.createFileProxy(parent, absPath);
+    }
+    
+    public static VCSFileProxy getHome(VCSFileProxy file){
+        throw new UnsupportedOperationException();
+    }
+    
+    public static boolean isMac(VCSFileProxy file) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static boolean isUnix(VCSFileProxy file){
+        throw new UnsupportedOperationException();
+    }
+    
+    public static String getFileSystemKey(VCSFileProxy file) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static String toString(VCSFileProxy file) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static VCSFileProxy fromString(String file) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public static JFileChooser createFileChooser(VCSFileProxy proxy) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static VCSFileProxy getSelectedFile(JFileChooser chooser) {
         throw new UnsupportedOperationException();
     }
 }

@@ -67,7 +67,7 @@ public class SearchHistoryAction extends ContextAction {
 
     static final int DIRECTORY_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     static final int FILE_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
-    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/search_history.png"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/search_history.png"; //NOI18N
 
     public SearchHistoryAction () {
         super(ICON_RESOURCE);

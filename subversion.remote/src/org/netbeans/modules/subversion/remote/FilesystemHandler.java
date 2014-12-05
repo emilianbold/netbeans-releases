@@ -72,7 +72,6 @@ import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * Handles events fired from the filesystem such as file/folder create/delete/move.
@@ -281,7 +280,7 @@ class FilesystemHandler extends VCSInterceptor {
             if (!SVNStatusKind.MISSING.equals(status.getTextStatus())) {
                 Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
                 retval = false;
-            } else if (Utilities.isMac() || Utilities.isWindows()) {
+            } else if (VCSFileProxySupport.isMac(file)) {
                 String existingFilename = VCSFileProxySupport.getExistingFilenameInParent(file);
                 if (existingFilename != null) {
                     retval = false;
@@ -864,7 +863,7 @@ class FilesystemHandler extends VCSInterceptor {
                             // otherwise svn move should be invoked
 
                             VCSFileProxy temp = from;
-                            if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
+                            if (VCSFileProxySupport.isMac(from) && from.getPath().equalsIgnoreCase(to.getPath())) {
                                 Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
                                 temp = VCSFileProxySupport.generateTemporaryFile(from.getParentFile(), from.getName());
                                 Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
@@ -901,7 +900,7 @@ class FilesystemHandler extends VCSInterceptor {
                                 try {
                                     client.move(from, to, force);
                                 } catch (SVNClientException ex) {
-                                    if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
+                                    if (VCSFileProxySupport.isMac(from) && from.getPath().equalsIgnoreCase(to.getPath())) {
                                         Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
                                         VCSFileProxy temp = VCSFileProxySupport.generateTemporaryFile(to.getParentFile(), from.getName());
                                         Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N

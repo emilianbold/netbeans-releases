@@ -84,6 +84,9 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     private RepositoryPaths repositoryPaths;
     private boolean invalidTarget;
 
+    public CheckoutStep() {
+    }
+    
     @Override
     public HelpCtx getHelp() {    
         return new HelpCtx(CheckoutStep.class);

@@ -81,8 +81,8 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
     private VCSVisibilityQuery visibilityQuery;
 
     public SubversionVCS() {
-        Subversion.getInstance().getFileStatusCache().addVersioningListener(this);
-        Subversion.getInstance().getAnnotator().addPropertyChangeListener(this);
+        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        Subversion.getInstance().attachListeners(this);
     }
 
     public static String getDisplayName() {

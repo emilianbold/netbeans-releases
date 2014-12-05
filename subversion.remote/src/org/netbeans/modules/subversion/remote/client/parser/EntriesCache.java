@@ -44,7 +44,6 @@
 package org.netbeans.modules.subversion.remote.client.parser;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,6 +60,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.client.parser.ConflictDescriptionParser.ParserConflictDescriptor;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -184,7 +184,7 @@ public class EntriesCache {
     }
 
     String[] getChildren (VCSFileProxy file) throws IOException, SAXException {
-        File entriesFile = SvnWcUtils.getSvnFile(file, SvnWcUtils.ENTRIES);
+        VCSFileProxy entriesFile = SvnWcUtils.getSvnFile(file, SvnWcUtils.ENTRIES);
         String[] children = new String[0];
         if (entriesFile != null) {
             synchronized (this) {
@@ -204,13 +204,13 @@ public class EntriesCache {
     }
 
     private EntryAttributes getEntryAttributes (VCSFileProxy entriesFile, VCSFileProxy file, boolean mergeWithParent) throws IOException, SAXException {
-        EntriesFile ef = getEntries().get(entriesFile.getAbsolutePath());
+        EntriesFile ef = getEntries().get(entriesFile.getPath());
         long lastModified = entriesFile.lastModified();
-        long fileLength = entriesFile.length();
+        long fileLength = VCSFileProxySupport.length(entriesFile);
         if(ef == null || ef.ts != lastModified || ef.size != fileLength) {
             EntryAttributes ea = getAttributesFromEntriesFile(entriesFile);
             ef = new EntriesFile(getMergedAttributes(ea), lastModified, fileLength);
-            getEntries().put(entriesFile.getAbsolutePath(), ef);
+            getEntries().put(entriesFile.getPath(), ef);
         }
         boolean isDirectory = file.isDirectory();
         if(ef.attributes.get(file.getName()) == null && !isDirectory) { // do not keep directory itself among its entries - it's kept rather as svn:this_dir
@@ -226,7 +226,7 @@ public class EntriesCache {
         return ef.attributes;
     }
 
-    private void mergeDirWithParent (Map<String, String> folderAttributes, File folder) throws IOException, SAXException {
+    private void mergeDirWithParent (Map<String, String> folderAttributes, VCSFileProxy folder) throws IOException, SAXException {
         Map<String, String> parentAttributes = getFileAttributes(folder.getParentFile(), false);
         if (parentAttributes != null) {
             String treeConflicts = parentAttributes.get(ATTR_TREE_CONFLICTS);
@@ -307,12 +307,12 @@ public class EntriesCache {
         return attributes;
     }
 
-    private EntryAttributes getAttributesFromEntriesFile(File entriesFile) throws IOException, SAXException {
+    private EntryAttributes getAttributesFromEntriesFile(VCSFileProxy entriesFile) throws IOException, SAXException {
         //We need to check the first line of the File.
         //If it is a number, its the new format.
         //Otherwise, treat it as XML
         boolean isXml = false;
-        BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(entriesFile), "UTF8"));
+        BufferedReader fileReader = new BufferedReader(new InputStreamReader(entriesFile.getInputStream(false), "UTF8"));
         try {
             String firstLine = fileReader.readLine();
             try {
@@ -332,13 +332,13 @@ public class EntriesCache {
         }
     }
 
-    private EntryAttributes loadAttributesFromXml(File entriesFile) throws IOException, SAXException {
+    private EntryAttributes loadAttributesFromXml(VCSFileProxy entriesFile) throws IOException, SAXException {
         //Parse the entries file
         XMLReader saxReader = XMLUtil.createXMLReader();
         XmlEntriesHandler xmlEntriesHandler = new XmlEntriesHandler();
         saxReader.setContentHandler(xmlEntriesHandler);
         saxReader.setErrorHandler(xmlEntriesHandler);
-        InputStream inputStream = new java.io.FileInputStream(entriesFile);
+        InputStream inputStream = entriesFile.getInputStream(false);
 
         try {
             saxReader.parse(new InputSource(inputStream));
@@ -351,8 +351,8 @@ public class EntriesCache {
     }
 
     //New entries file format, as of SVN 1.4.0
-    private EntryAttributes loadAttributesFromPlainText(BufferedReader entriesReader, File entryFile) throws IOException {
-        String entryFilePath = entryFile.getAbsolutePath();
+    private EntryAttributes loadAttributesFromPlainText(BufferedReader entriesReader, VCSFileProxy entryFile) throws IOException {
+        String entryFilePath = entryFile.getPath();
         EntryAttributes returnValue = new EntryAttributes();
 
         int attrIndex = 0;
@@ -361,7 +361,7 @@ public class EntriesCache {
         Map<String, String> attributes = new HashMap<String, String>();
 
         String nextLine = attributePool.get(entriesReader.readLine());
-        if (nextLine == null && new File(entryFile.getParentFile().getParentFile(), SvnUtils.SVN_WC_DB).exists()) {
+        if (nextLine == null && VCSFileProxy.createFileProxy(entryFile.getParentFile().getParentFile(), SvnUtils.SVN_WC_DB).exists()) {
             throw new IOException(WC17FORMAT);
         }
         while (nextLine != null) {

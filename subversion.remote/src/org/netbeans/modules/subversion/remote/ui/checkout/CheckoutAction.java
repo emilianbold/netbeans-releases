@@ -59,6 +59,7 @@ import org.netbeans.modules.subversion.remote.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.subversion.remote.util.CheckoutCompleted;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -96,7 +97,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         performCheckout(false);
     }
         
-    public static VCSFileProxy performCheckout (final boolean wait) {
+    private VCSFileProxy performCheckout (final boolean wait) {
         assert !wait || !EventQueue.isDispatchThread(); // cannot wait in AWT
         CheckoutWizard wizard = new CheckoutWizard();
         if (!wizard.show()) {
@@ -197,11 +198,9 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         for (int i = 0; i < repositoryFiles.length; i++) {
             VCSFileProxy destination;
             if(!atWorkingDirLevel) {
-                destination = new File(workingDir.getAbsolutePath() +
-                                       "/" +  // NOI18N
-                                       repositoryFiles[i].getName()); // XXX what if the whole repository is seletcted
+                destination = VCSFileProxy.createFileProxy(workingDir, repositoryFiles[i].getName()); // XXX what if the whole repository is seletcted
                 destination = destination.normalizeFile();
-                destination.mkdir();
+                VCSFileProxySupport.mkdir(destination);
             } else {
                 destination = workingDir;
             }

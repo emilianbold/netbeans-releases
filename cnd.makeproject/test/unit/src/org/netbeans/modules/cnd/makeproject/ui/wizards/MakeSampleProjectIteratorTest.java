@@ -81,6 +81,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
@@ -337,7 +338,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(mainProjectDirFO);
         assertNotNull(makeProject);
         MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
-        makeActionProvider.invokeAction("build", null);
+        makeActionProvider.invokeAction("build", Lookup.EMPTY);
 
 //        File makefile = new File(mainProjectDir, "Makefile");
 //        FileObject makefileFileObject = CndFileUtils.toFileObject(makefile);

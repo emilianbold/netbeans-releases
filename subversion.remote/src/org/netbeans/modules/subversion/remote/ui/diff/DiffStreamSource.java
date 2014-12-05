@@ -53,6 +53,7 @@ import org.netbeans.modules.subversion.remote.VersionsCache;
 import org.netbeans.modules.subversion.remote.client.PropertiesClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.lookup.Lookups;
@@ -61,7 +62,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Stream source for diffing CVS managed files.
@@ -92,7 +92,7 @@ public class DiffStreamSource extends StreamSource {
      * @param title title to use in diff panel
      */ 
     public DiffStreamSource(VCSFileProxy baseFile, String propertyName, String revision, String title) {
-        this.baseFile = Utilities.isMac() ? baseFile.normalizeFile() : baseFile;
+        this.baseFile = VCSFileProxySupport.isMac(baseFile) ? baseFile.normalizeFile() : baseFile;
         this.propertyName = propertyName;
         this.revision = revision;
         this.title = title;

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.subversion.remote.ui.commit;
 
-import java.io.IOException;
 import java.text.ParseException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -120,7 +119,7 @@ public class CommitAction extends ContextAction {
 
     public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
     private static final String PANEL_PREFIX = "commit"; //NOI18N
-    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/commit.png"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/commit.png"; //NOI18N
     private static final long COMMIT_PAUSE = Long.getLong("versioning.subversion.commit.pause", 5000); //NOI18N
     private static final String ERROR_COLOR;
     private static final String INFO_COLOR;
@@ -211,7 +210,10 @@ public class CommitAction extends ContextAction {
         final CommitPanel panel = new CommitPanel();
         Collection<SvnHook> hooks = VCSHooks.getInstance().getHooks(SvnHook.class);
         VCSFileProxy file = ctx.getRootFiles()[0];
-        panel.setHooks(hooks, new SvnHookContext(new VCSFileProxy[] { file }, null, null));
+        // SvnHookContext is java.io.File oriented.
+        // TODO pass file in hook
+        //panel.setHooks(hooks, new SvnHookContext(new VCSFileProxy[] { file }, null, null));
+        panel.setHooks(hooks, new SvnHookContext(null, null, null));
 
         Map<String, Integer> sortingStatus = SvnModuleConfig.getDefault().getSortingStatus(PANEL_PREFIX);
         if (sortingStatus == null) {
@@ -770,24 +772,26 @@ public class CommitAction extends ContextAction {
             List<VCSFileProxy> hookFiles = new ArrayList<VCSFileProxy>();
             boolean handleHooks = false;
             String originalMessage = message;
-            if(hooks.size() > 0) {
-                for (List<VCSFileProxy> l : managedTrees) {
-                    hookFiles.addAll(l);
-                }
-                SvnHookContext context = new SvnHookContext(hookFiles.toArray(new File[hookFiles.size()]), message, null);
-                for (SvnHook hook : hooks) {
-                    try {
-                        // XXX handle returned context
-                        context = hook.beforeCommit(context);
-                        if(context != null) {
-                            handleHooks = true;
-                            message = context.getMessage();
-                        }
-                    } catch (IOException ex) {
-                        // XXX handle veto
-                    }
-                }
-            }
+            // SvnHookContext is java.io.File oriented.
+            // TODO process hooks
+            //if(hooks.size() > 0) {
+            //    for (List<VCSFileProxy> l : managedTrees) {
+            //        hookFiles.addAll(l);
+            //    }
+            //    SvnHookContext context = new SvnHookContext(hookFiles.toArray(new File[hookFiles.size()]), message, null);
+            //    for (SvnHook hook : hooks) {
+            //        try {
+            //            // XXX handle returned context
+            //            context = hook.beforeCommit(context);
+            //            if(context != null) {
+            //                handleHooks = true;
+            //                message = context.getMessage();
+            //            }
+            //        } catch (IOException ex) {
+            //            // XXX handle veto
+            //        }
+            //    }
+            //}
             if (!missingFiles.isEmpty()) {
                 // we need to correct metadata for externally deleted files and folders
                 deleteMissingFiles(missingFiles, client);
@@ -959,10 +963,12 @@ public class CommitAction extends ContextAction {
                         logs.get(i).getRevision().getNumber(),
                         logs.get(i).getDate()));
         }
-        SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, entries);
-        for (SvnHook hook : hooks) {
-            hook.afterCommit(context);
-        }
+        // SvnHookContext is java.io.File oriented.
+        // TODO process hooks
+        //SvnHookContext context = new SvnHookContext(files.toArray(new File[files.size()]), message, entries);
+        //for (SvnHook hook : hooks) {
+        //    hook.afterCommit(context);
+        //}
     }
 
     /**

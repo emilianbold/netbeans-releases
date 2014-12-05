@@ -32,6 +32,7 @@ package org.netbeans.modules.subversion.remote.ui.update;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileUtil;
 
@@ -81,7 +82,7 @@ public class FileUpdateInfo {
         return action;
     }
     
-    public static FileUpdateInfo[] createFromLogMsg(String log) {
+    public static FileUpdateInfo[] createFromLogMsg(VCSFileProxy root, String log) {
         Matcher m = pattern.matcher(log);
         if(!m.matches()) {
             return null;
@@ -92,17 +93,16 @@ public class FileUpdateInfo {
         String broken                = m.group(3);
         String filePath              = m.group(5);
         if( KNOWN_ACTIONS.indexOf(fileActionValue)     < 0 || 
-            KNOWN_ACTIONS.indexOf(propertyActionValue) < 0 ) 
-        {
+            KNOWN_ACTIONS.indexOf(propertyActionValue) < 0 ) {
             return null;
         }
 
         FileUpdateInfo[] fui = new FileUpdateInfo[2];
         int fileAction = parseAction(fileActionValue.charAt(0)) | (broken.equals("B") ? ACTION_LOCK_BROKEN : 0);
         int propertyAction = parseAction(propertyActionValue.charAt(0));
-        final VCSFileProxy file = FileUtil.normalizeFile(new File(filePath));
-        fui[0] = fileAction != 0 ? new FileUpdateInfo(file, fileAction | ACTION_TYPE_FILE) : null;
-        fui[1] = propertyAction != 0 ? new FileUpdateInfo(file, propertyAction | ACTION_TYPE_PROPERTY) : null;
+        final VCSFileProxy aFile = VCSFileProxySupport.getResource(root, filePath).normalizeFile();
+        fui[0] = fileAction != 0 ? new FileUpdateInfo(aFile, fileAction | ACTION_TYPE_FILE) : null;
+        fui[1] = propertyAction != 0 ? new FileUpdateInfo(aFile, propertyAction | ACTION_TYPE_PROPERTY) : null;
         return fui;
     }
     

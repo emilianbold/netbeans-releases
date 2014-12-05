@@ -46,8 +46,21 @@ package org.netbeans.modules.subversion.remote.api;
  * @author Alexander Simon
  */
 public enum SVNNodeKind {
-    NONE,
-    FILE,
-    DIR,
-    UNKNOWN;
+    NONE("none"),
+    FILE("file"),
+    DIR("dir"),
+    UNKNOWN("unknown");
+    
+    private final String value;
+    private SVNNodeKind(String value) {
+        this.value = value;
+    }
+    public static SVNNodeKind fromString(String s) {
+        for(SVNNodeKind r : SVNNodeKind.values()) {
+            if (r.value.equals(s)) {
+                return r;
+            }
+        }
+        return null;
+    }
 }

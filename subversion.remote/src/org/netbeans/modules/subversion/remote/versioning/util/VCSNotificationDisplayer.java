@@ -43,7 +43,6 @@
 package org.netbeans.modules.subversion.remote.versioning.util;
 
 import java.awt.Color;
-import java.io.File;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;

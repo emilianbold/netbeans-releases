@@ -46,8 +46,21 @@ package org.netbeans.modules.subversion.remote.api;
  * @author Alexander Simon
  */
 public enum SVNScheduleKind {
-    NORMAL,
-    ADD,
-    DELETE,
-    REPLACE;
+    NORMAL("normal"),
+    ADD("add"),
+    DELETE("delete"),
+    REPLACE("replace");
+    
+    private final String value;
+    private SVNScheduleKind(String value) {
+        this.value = value;
+    }
+    public static SVNScheduleKind fromString(String s) {
+        for(SVNScheduleKind r : SVNScheduleKind.values()) {
+            if (r.value.equals(s)) {
+                return r;
+            }
+        }
+        return null;
+    }
 }

@@ -82,6 +82,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.windows.IOProvider;
 
 /**
@@ -301,7 +302,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         try {
             ((CndTestIOProvider) iop).addListener(listener);
             MakeActionProvider makeActionProvider = new MakeActionProvider(makeProject);
-            makeActionProvider.invokeAction(command, null);
+            makeActionProvider.invokeAction(command, Lookup.EMPTY);
             if (timeout <= 0) {
                 done.await();
             } else {

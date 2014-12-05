@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
 })
 public class ResolveConflictsAction extends ContextAction {
 
-    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/conflict-resolve.png"; //NOI18N
+    private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/conflict-resolve.png"; //NOI18N
     
     public ResolveConflictsAction () {
         super(ICON_RESOURCE);
