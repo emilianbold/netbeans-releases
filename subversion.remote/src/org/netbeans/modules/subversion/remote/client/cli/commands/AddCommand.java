@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -56,7 +57,8 @@ public class AddCommand extends SvnCommand {
     private final boolean force;
     private final VCSFileProxy[] files;
 
-    public AddCommand(VCSFileProxy[] files, boolean recursive, boolean force) {        
+    public AddCommand(FileSystem fileSystem, VCSFileProxy[] files, boolean recursive, boolean force) {        
+        super(fileSystem);
         this.recursive = recursive;
         this.force = force;
         this.files = files;

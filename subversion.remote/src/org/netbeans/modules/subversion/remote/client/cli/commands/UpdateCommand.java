@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -60,7 +61,8 @@ public class UpdateCommand extends SvnCommand {
     private final boolean ignoreExternals;
     private long revision;
 
-    public UpdateCommand(VCSFileProxy[] files, SVNRevision rev, boolean recursive, boolean ignoreExternals) {
+    public UpdateCommand(FileSystem fileSystem, VCSFileProxy[] files, SVNRevision rev, boolean recursive, boolean ignoreExternals) {
+        super(fileSystem);
         this.files = files;
         this.recursive = recursive;
         this.rev = rev;

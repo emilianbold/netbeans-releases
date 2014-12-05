@@ -49,6 +49,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -70,7 +71,8 @@ public class CatCommand extends SvnCommand {
     
     private byte[] bytes;
     
-    public CatCommand(SVNUrl url, SVNRevision rev, SVNRevision pegRevision) {
+    public CatCommand(FileSystem fileSystem, SVNUrl url, SVNRevision rev, SVNRevision pegRevision) {
+        super(fileSystem);
         this.url = url;                
         this.rev = rev;        
         this.file = null;
@@ -79,7 +81,8 @@ public class CatCommand extends SvnCommand {
 
     }
     
-    public CatCommand(VCSFileProxy file, SVNRevision rev) {
+    public CatCommand(FileSystem fileSystem, VCSFileProxy file, SVNRevision rev) {
+        super(fileSystem);
         this.file = file;
         this.rev = rev;        
         this.url = null;
