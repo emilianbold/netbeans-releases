@@ -67,6 +67,11 @@ public final class WebClientProjectConstants {
     public static final String SOURCES_TYPE_HTML5_TEST = "HTML5-Tests"; // NOI18N
 
     /**
+     * Constant for Test Selenium Files sources group.
+     */
+    public static final String SOURCES_TYPE_HTML5_TEST_SELENIUM = "HTML5-Tests-Selenium"; // NOI18N
+
+    /**
      * Constant for Project Properties > Sources panel.
      * @since 1.73
      */

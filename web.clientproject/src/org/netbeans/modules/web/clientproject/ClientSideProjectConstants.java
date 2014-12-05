@@ -52,6 +52,7 @@ public class ClientSideProjectConstants {
     public static final String PROJECT_SOURCE_FOLDER = "source.folder"; //NOI18N
     public static final String PROJECT_SITE_ROOT_FOLDER = "site.root.folder"; //NOI18N
     public static final String PROJECT_TEST_FOLDER = "test.folder"; //NOI18N
+    public static final String PROJECT_TEST_SELENIUM_FOLDER = "test.selenium.folder"; //NOI18N
     public static final String PROJECT_SERVER = "server"; //NOI18N
     public static final String PROJECT_START_FILE = "start.file"; //NOI18N
     public static final String PROJECT_WEB_ROOT = "web.context.root"; //NOI18N
@@ -67,6 +68,7 @@ public class ClientSideProjectConstants {
     public static final String DEFAULT_SOURCE_FOLDER = "src"; //NOI18N
     public static final String DEFAULT_SITE_ROOT_FOLDER = "public_html"; //NOI18N
     public static final String DEFAULT_TEST_FOLDER = "test"; //NOI18N
+    public static final String DEFAULT_TEST_SELENIUM_FOLDER = "selenium"; //NOI18N
     
     // template's descriptor file
     public static final String TEMPLATE_DESCRIPTOR = "netbeans-project.properties"; //NOI18N

@@ -73,7 +73,8 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<>(Arrays.asList(
             ClientSideProjectConstants.PROJECT_SOURCE_FOLDER,
             ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
-            ClientSideProjectConstants.PROJECT_TEST_FOLDER));
+            ClientSideProjectConstants.PROJECT_TEST_FOLDER,
+            ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER));
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private final ClientSideProject project;
@@ -113,6 +114,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                 checkSourceDir(currentProblems);
                 checkSiteRootDir(currentProblems);
                 checkTestDir(currentProblems);
+                checkTestSeleniumDir(currentProblems);
                 return currentProblems;
             }
         });
@@ -162,6 +164,22 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
                     new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, ClientSideProjectConstants.PROJECT_TEST_FOLDER));
+            currentProblems.add(problem);
+        }
+    }
+
+    @NbBundle.Messages({
+        "ProjectPropertiesProblemProvider.invalidTestSeleniumDir.title=Invalid Selenium Tests",
+        "# {0} - test dir path",
+        "ProjectPropertiesProblemProvider.invalidTestSeleniumDir.description=The directory \"{0}\" does not exist and cannot be used for Selenium Tests."
+    })
+    private void checkTestSeleniumDir(Collection<ProjectProblem> currentProblems) {
+        File invalidDirectory = getInvalidDirectory(project.getTestsFolder(false), ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER);
+        if (invalidDirectory != null) {
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.ProjectPropertiesProblemProvider_invalidTestSeleniumDir_title(),
+                    Bundle.ProjectPropertiesProblemProvider_invalidTestSeleniumDir_description(invalidDirectory.getAbsolutePath()),
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER));
             currentProblems.add(problem);
         }
     }
