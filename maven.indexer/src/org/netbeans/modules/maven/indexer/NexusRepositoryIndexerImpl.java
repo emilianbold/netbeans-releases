@@ -572,7 +572,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }
 
     private static boolean isDiag() {
-        return Boolean.getBoolean("org.netbeans.modules.maven.indexing.diag");
+        return Boolean.getBoolean("maven.indexing.diag");
     }
 
     //spawn the indexing into a separate thread..

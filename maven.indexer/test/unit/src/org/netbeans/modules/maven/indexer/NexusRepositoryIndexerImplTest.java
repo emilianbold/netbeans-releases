@@ -96,7 +96,7 @@ public class NexusRepositoryIndexerImplTest extends NexusTestBase {
 //    
 //    public void testUnpack() throws DuplicateRealmException, NoSuchRealmException, PlexusContainerException, ComponentLookupException, URISyntaxException, IOException {
 //        // HEY! probably needs test.timeout=[very many minutes] to be set in project.properties 
-//        System.setProperty("org.netbeans.modules.maven.indexing.diag", "true");
+//        System.setProperty("maven.indexing.diag", "true");
 //        System.setProperty("maven.diag.index.properties", "/work/tmp/nexus-maven-repository-index.properties1115421058305181525");
 //        System.setProperty("maven.diag.index.gz", "/work/tmp/nexus-maven-repository-index.gz7121431417826212064");
 //        int c = 3;
