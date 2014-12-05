@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -93,7 +94,8 @@ public class BlameCommand extends SvnCommand {
 
     private byte[] output;
 
-    public BlameCommand(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) {        
+    public BlameCommand(FileSystem fileSystem, SVNUrl url, SVNRevision revStart, SVNRevision revEnd) {        
+        super(fileSystem);
         this.url = url;                
         this.revStart = revStart;        
         this.revEnd = revEnd;        
@@ -101,7 +103,8 @@ public class BlameCommand extends SvnCommand {
         type = BlameType.url;
     }
     
-    public BlameCommand(VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd) {        
+    public BlameCommand(FileSystem fileSystem, VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd) {        
+        super(fileSystem);
         this.file = file;
         this.revStart = revStart;        
         this.revEnd = revEnd;        

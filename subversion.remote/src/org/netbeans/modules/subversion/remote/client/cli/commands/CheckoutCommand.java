@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -59,7 +60,8 @@ public class CheckoutCommand extends SvnCommand {
     private final SVNRevision revision;
     private final boolean recursive;
 
-    public CheckoutCommand(SVNUrl url, VCSFileProxy path, SVNRevision revision, boolean recursive) {
+    public CheckoutCommand(FileSystem fileSystem, SVNUrl url, VCSFileProxy path, SVNRevision revision, boolean recursive) {
+        super(fileSystem);
         this.url = url;
         this.file = path;
         this.revision = revision;

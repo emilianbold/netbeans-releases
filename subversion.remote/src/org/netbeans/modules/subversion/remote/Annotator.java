@@ -432,6 +432,10 @@ public class Annotator extends VCSAnnotator {
      */
     @Override
     public Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
+        return getStaticActions(ctx, destination);
+    }
+    
+    public static Action [] getStaticActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
         List<Action> actions = new ArrayList<Action>(20);
         VCSFileProxy[] files = ctx.getRootFiles().toArray(new VCSFileProxy[ctx.getRootFiles().size()]);
         boolean noneVersioned;

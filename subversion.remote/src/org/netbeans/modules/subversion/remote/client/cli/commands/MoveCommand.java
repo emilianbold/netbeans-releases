@@ -47,21 +47,14 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class MoveCommand extends SvnCommand {
-    
 
-    private enum MoveType {
-        url2url,
-        file2file,
-    }
-    
-    private final MoveType type;
-    
     private final SVNUrl fromUrl;
     private final SVNUrl toUrl;
     private final VCSFileProxy fromFile;    
@@ -70,20 +63,8 @@ public class MoveCommand extends SvnCommand {
     private final SVNRevision rev;
     private final boolean force;
     
-    public MoveCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) {        
-        this.fromUrl = fromUrl;
-        this.toUrl = toUrl;
-        this.msg = msg;
-        this.rev = rev;    
-        
-        this.fromFile = null;
-        this.toFile = null;                
-        this.force = false;                
-        
-        type = MoveType.url2url;
-    }   
-    
-    public MoveCommand(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) {        
+    public MoveCommand(FileSystem fileSystem, VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) {        
+        super(fileSystem);
         this.fromFile = fromFile;
         this.toFile = toFile;
         this.force = force;        
@@ -92,8 +73,6 @@ public class MoveCommand extends SvnCommand {
         this.fromUrl = null;        
         this.msg = null;                  
         this.rev = null;                  
-        
-        type = MoveType.file2file;
     }
     
     @Override
@@ -104,24 +83,11 @@ public class MoveCommand extends SvnCommand {
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
         arguments.add("move");        
-        switch(type) {
-            case url2url: 
-                arguments.add(fromUrl);
-                arguments.addNonExistent(toUrl);
-                arguments.add(rev);                        
-                arguments.addMessage(msg);  
-                setCommandWorkingDirectory(new File("."));                
-                break;
-            case file2file:                     
-                arguments.add(fromFile);
-                arguments.add(toFile.getPath());
-                if(force) {
-                    arguments.add("--force");                    
-                }
-                setCommandWorkingDirectory(new VCSFileProxy[] {fromFile, toFile});                
-                break;
-            default :    
-                throw new IllegalStateException("Illegal copytype: " + type);                             
-        }        
+        arguments.add(fromFile);
+        arguments.add(toFile.getPath());
+        if(force) {
+            arguments.add("--force");                    
+        }
+        setCommandWorkingDirectory(new VCSFileProxy[] {fromFile, toFile});                
     }    
 }

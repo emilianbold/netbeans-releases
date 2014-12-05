@@ -107,7 +107,7 @@ public class SearchHistoryAction extends ContextAction {
         openHistory(context.getFiles(), NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes)));
     }
 
-    public static void openHistory(final String title, VCSFileProxy [] files) {
+    public static void openHistory(VCSFileProxy [] files) {
         openHistory(files, NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", files[0].getName()));
     }
     

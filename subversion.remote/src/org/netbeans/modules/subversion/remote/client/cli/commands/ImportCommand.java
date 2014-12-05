@@ -46,6 +46,7 @@ import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -58,7 +59,8 @@ public class ImportCommand extends SvnCommand {
     private final VCSFileProxy file;
     private final SVNUrl url;
 
-    public ImportCommand(VCSFileProxy file, SVNUrl url, boolean recursive, String message) {
+    public ImportCommand(FileSystem fileSystem, VCSFileProxy file, SVNUrl url, boolean recursive, String message) {
+        super(fileSystem);
         this.recursive = recursive;
         this.message = message;
         this.file = file;

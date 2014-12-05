@@ -41,18 +41,18 @@
  */
 package org.netbeans.modules.subversion.remote.client.cli;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.util.ProcessUtils;
+import org.netbeans.modules.subversion.remote.util.ProcessUtils.Canceler;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Encapsulates svn shell process. 
@@ -61,25 +61,18 @@ import org.netbeans.modules.subversion.remote.SvnModuleConfig;
  */
 class Commandline {
 
-    private Process           cli;
-    private BufferedReader    ctOutput;
-    private BufferedReader    ctError;
-
     private String executable;
-    private boolean canceled = false;
+    private Canceler canceled = new Canceler();
+    private final FileSystem fileSystem;
     
     /**
      * Creates a new cleartool shell process.
      */
-    Commandline() {
+    Commandline(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
         executable = SvnModuleConfig.getDefault().getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
             executable = "svn";                                                 // NOI18N
-        } else {
-            File f = new File(executable);
-            if(f.isDirectory()) {
-                executable = executable + "/svn";                               // NOI18N
-            } 
         }                      
     }
 
@@ -95,10 +88,7 @@ class Commandline {
     }
    
     private void destroy() throws IOException {
-        canceled = true;
-        if(cli != null) {
-            cli.destroy();
-        }        
+        canceled.cancel();
         Subversion.LOG.fine("cli: Process destroyed");                          // NOI18N
     }
 
@@ -106,7 +96,7 @@ class Commandline {
     // so it may (and it does) happen that two commands run simultaneously and eventually a wrong output is read (because cli is an instance field)
     // this is a hotfix, cli should probably be turned into a local var, but how would we interrupt the command in that case???
     synchronized void exec(SvnCommand command) throws IOException {
-        canceled = false;
+        canceled = new Canceler();;
         command.prepareCommand();        
         
         String cmd = executable + " " + command.getStringCommand();
@@ -115,60 +105,33 @@ class Commandline {
         Subversion.LOG.fine("cli: Creating process...");                        // NOI18N
         command.commandStarted();
         try {
-            cli = Runtime.getRuntime().exec(command.getCliArguments(executable), getEnvVar());
-            if(canceled) {
-                return;
-            }
-            ctError = new BufferedReader(new InputStreamReader(cli.getErrorStream()));
-
+            ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
+            String[] args = command.getCliArguments();
             Subversion.LOG.fine("cli: process created");                        // NOI18N
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(cmd, getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args);
 
-            String line = null;                
             if(command.hasBinaryOutput()) {
-                ByteArrayOutputStream b = new ByteArrayOutputStream();
-                int i = -1;
-                if(canceled) {
-                    return;
-                }
                 Subversion.LOG.fine("cli: ready for binary OUTPUT \"");         // NOI18N          
-                while(!canceled && (i = cli.getInputStream().read()) != -1) {
-                    b.write(i);
-                }
                 if(Subversion.LOG.isLoggable(Level.FINER)) {
-                    Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", (new String(b.toByteArray()))); // NOI18N
+                    Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", new String(exitStatus.bytes)); // NOI18N
                 }
-                command.output(b.toByteArray());
+                command.output(exitStatus.bytes);
             } else {             
-                if(canceled) {
-                    return;
-                }
                 Subversion.LOG.fine("cli: ready for OUTPUT \"");                // NOI18N     
-                ctOutput = new BufferedReader(new InputStreamReader(cli.getInputStream()));
-                while (!canceled && (line = ctOutput.readLine()) != null) {                                        
-                    Subversion.LOG.log(Level.FINE, "cli: OUTPUT \"{0}\"", line);// NOI18N
+                Subversion.LOG.log(Level.FINE, "cli: OUTPUT \"{0}\"", exitStatus.output);// NOI18N
+                for(String line : exitStatus.output.split("\n")) {
                     command.outputText(line);
-                }    
-            }
-            
-            while (!canceled && (line = ctError.readLine()) != null) {                                    
-                if (!line.isEmpty()) {
-                    Subversion.LOG.log(Level.INFO, "cli: ERROR \"{0}\"", line); //NOI18N
-                    command.errorText(line);
                 }
-            }     
-            if(canceled) {
+            }
+            for(String line : exitStatus.error.split("\n")) {
+                command.outputText(line);
+            }
+            if(canceled.canceled()) {
                 return;
             }
-            cli.waitFor();
-            command.commandCompleted(cli.exitValue());
-        } catch (InterruptedException ie) {
-            Subversion.LOG.log(Level.INFO, " command interrupted"); //NOI18N
-            Subversion.LOG.log(Level.FINE, " command interrupted: [" + command.getStringCommand() + "]", ie); // should be logged with a lower level, password is printed, too // NOI18N
-        } catch (InterruptedIOException ie) {
-            Subversion.LOG.log(Level.INFO, " command interrupted"); //NOI18N
-            Subversion.LOG.log(Level.FINE, " command interrupted: [" + command.getStringCommand() + "]", ie); // should be logged with a lower level, password is printed, too // NOI18N 
+            command.commandCompleted(exitStatus.exitCode);
         } catch (Throwable t) {
-            if(canceled) {
+            if(canceled.canceled()) {
                 Subversion.LOG.fine(t.getMessage());
             } else {
                 if(t instanceof IOException) {
@@ -178,43 +141,16 @@ class Commandline {
                 }
             }
         } finally {
-            if(cli != null) {
-                try { cli.getErrorStream().close(); } catch (IOException iOException) { }
-                try { cli.getInputStream().close(); } catch (IOException iOException) { }
-                try { cli.getOutputStream().close(); } catch (IOException iOException) { }
-            }            
-            ctError = null;
-            ctOutput = null;
             Subversion.LOG.fine("cli: process finnished");                      // NOI18N
             command.commandFinished();
         }        
     }    
 
-    private String[] getEnvVar() {
-        Map vars = System.getenv();            
-        List<String> ret = new ArrayList<String>(vars.keySet().size());
-        for (Iterator it = vars.keySet().iterator(); it.hasNext();) {
-            String key = (String) it.next();                
-            if(key.equals("LC_ALL")) {                                          // NOI18N
-                ret.add("LC_ALL=");                                             // NOI18N    
-            } else if(key.equals("LC_MESSAGES")) {                              // NOI18N    
-                ret.add("LC_MESSAGES=C");                                       // NOI18N
-            } else if(key.equals("LC_TIME")) {                                  // NOI18N
-                ret.add("LC_TIME=C");                                           // NOI18N    
-            } else {
-                ret.add(key + "=" + vars.get(key));                             // NOI18N    
-            }		                
-        }                       
-        if(!vars.containsKey("LC_ALL")) {
-            ret.add("LC_ALL=");                // NOI18N    
-        }
-        if(!vars.containsKey("LC_MESSAGES")) {
-            ret.add("LC_MESSAGES=C");          // NOI18N
-        }
-        if(!vars.containsKey("LC_TIME")) {
-            ret.add("LC_TIME=C");              // NOI18N
-        }
-        return (String[]) ret.toArray(new String[ret.size()]);
+    private Map<String, String> getEnvVar() {
+        Map<String,String> ret = new HashMap<String, String>();
+        ret.put("LC_ALL", null);                // NOI18N    
+        ret.put("LC_MESSAGES", "C");                // NOI18N    
+        ret.put("LC_TIME", "C");                // NOI18N    
+        return ret;
     }	    
-    
 }

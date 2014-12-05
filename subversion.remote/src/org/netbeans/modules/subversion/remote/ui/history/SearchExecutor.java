@@ -65,6 +65,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 
@@ -145,7 +146,7 @@ class SearchExecutor extends SvnProgressSupport {
                 String fileAbsPath = e.getKey().getPath();
                 int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
                 pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
-                               new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
+                               VCSFileProxySupport.getResource(file, fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
 
             }
         }

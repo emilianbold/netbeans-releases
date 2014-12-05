@@ -71,7 +71,10 @@ public class AnonymousModuleTest extends GeneralNodeJs {
                         "testAnonymous7",
                         "testAnonymous8",
                         "testAnonymous9",
-                        "testAnonymous10"
+                        "testAnonymous10",
+                        "testAnonymous11",
+                        "testAnonymous12",
+                        "testAnonymous13"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
@@ -141,6 +144,24 @@ public class AnonymousModuleTest extends GeneralNodeJs {
     public void testAnonymous10() throws Exception {
         startTest();
         testCompletion(new EditorOperator("cc3.js"), 95);
+        endTest();
+    }
+
+    public void testAnonymous11() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("cc3.js"), 97);
+        endTest();
+    }
+
+    public void testAnonymous12() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("cc3.js"), 99);
+        endTest();
+    }
+
+    public void testAnonymous13() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("cc3.js"), 101);
         endTest();
     }
 

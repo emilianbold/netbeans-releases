@@ -44,6 +44,7 @@
 package org.netbeans.modules.subversion.remote.config;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -65,6 +66,7 @@ import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
@@ -321,11 +323,11 @@ public class SvnConfigFiles {
         return section;
     }
     
-    private VCSFileProxy storeIni (Ini ini, String iniFile) {
+    private File storeIni (Ini ini, String iniFile) {
         BufferedOutputStream bos = null;
-        VCSFileProxy file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
+        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
         try {
-            VCSFileProxySupport.mkdirs(file.getParentFile());
+            file.getParentFile().mkdirs();
             ini.store(bos = FileUtils.createOutputStream(file));
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);            
@@ -340,6 +342,7 @@ public class SvnConfigFiles {
         }
         return file;
     }    
+
 
     /**
      * Returns the miscellany/global-ignores setting from the config file.

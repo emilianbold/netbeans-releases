@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.remote.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -82,19 +83,27 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             javaFile.delete();
         } else {
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), VersioningSupport.createProcessBuilder(file), "rm", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, VersioningSupport.createProcessBuilder(file), "rm", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
             }
         }
     }
+    
+    public static void deleteOnExit(VCSFileProxy file) {
+        throw new UnsupportedOperationException();
+    }
 
+    public static void setLastModified(VCSFileProxy file, long time) {
+        throw new UnsupportedOperationException();
+    }
+    
     public static boolean mkdir(VCSFileProxy file) {
         File javaFile = file.toFile();
         if (javaFile != null) {
             return javaFile.mkdir();
         } else {
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
@@ -109,7 +118,7 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             return javaFile.mkdirs();
         } else {
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
@@ -242,6 +251,22 @@ public final class VCSFileProxySupport {
         }
     }
     
+    /**
+     * Creates a temporary folder. The folder will have deleteOnExit flag set to <code>deleteOnExit</code>.
+     * @return
+     */
+    public static VCSFileProxy getTempFolder(VCSFileProxy file, boolean deleteOnExit) throws FileStateInvalidException, IOException {
+        FileObject tmpDir = file.toFileObject().getFileSystem().getTempFolder();
+        for (;;) {
+            try {
+                //TODO: support delete on exit
+                FileObject dir = tmpDir.createFolder("vcs-" + Long.toString(System.currentTimeMillis())); // NOI18N
+                return VCSFileProxy.createFileProxy(dir).normalizeFile();
+            } catch (IOException ex) {
+                continue;
+            }
+        }
+    }
     
     public static boolean renameTo(VCSFileProxy from, VCSFileProxy to){
         throw new UnsupportedOperationException();
@@ -327,6 +352,11 @@ public final class VCSFileProxySupport {
         throw new UnsupportedOperationException();
     }
     
+    /**
+     * 
+     * @param proxy defines FS and initial selection
+     * @return 
+     */
     public static JFileChooser createFileChooser(VCSFileProxy proxy) {
         throw new UnsupportedOperationException();
     }

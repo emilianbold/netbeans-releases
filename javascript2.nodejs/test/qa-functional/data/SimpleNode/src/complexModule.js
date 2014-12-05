@@ -129,3 +129,15 @@ SampleClass.prototype.getSomething = function () {
     return {aa: 1, ab: 2};
 };
 exports.constr = SampleClass;
+
+exports.justCall = function(){
+    return new Date();
+};
+
+exports.justCallObj = function(){
+    return new SampleClass();
+};
+
+exports.justCallLit = function(){
+    return {oo : 1, oo1: 2};
+};

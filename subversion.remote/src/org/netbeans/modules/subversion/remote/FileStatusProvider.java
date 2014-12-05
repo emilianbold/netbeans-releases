@@ -89,7 +89,7 @@ class FileStatusProvider extends VCSAnnotator {
 
     @Override
     public Action[] getActions(VCSContext context, VCSAnnotator.ActionDestination destination) {
-        return Annotator.getActions(context, destination);
+        return Annotator.getStaticActions(context, destination);
     }
 
     void shutdown() {

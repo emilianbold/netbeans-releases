@@ -46,6 +46,7 @@ import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -63,14 +64,16 @@ public class MkdirCommand extends SvnCommand {
     private final VCSFileProxy file;
     private final MkdirType type;
     
-    public MkdirCommand(SVNUrl url, String message) {
+    public MkdirCommand(FileSystem fileSystem, SVNUrl url, String message) {
+        super(fileSystem);
         this.message = message;
         this.url = url;
         file = null;
         type = MkdirType.url;
     }
     
-    public MkdirCommand(VCSFileProxy file) {
+    public MkdirCommand(FileSystem fileSystem, VCSFileProxy file) {
+        super(fileSystem);
         this.file = file;
         message = null;        
         url = null;

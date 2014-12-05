@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -55,7 +56,8 @@ public class RemoveCommand extends SvnCommand {
     private final VCSFileProxy[] files;    
     private final boolean force;
 
-    public RemoveCommand(VCSFileProxy[] files, boolean force) {        
+    public RemoveCommand(FileSystem fileSystem, VCSFileProxy[] files, boolean force) {        
+        super(fileSystem);
         this.files = files;
         this.force = force;
     }

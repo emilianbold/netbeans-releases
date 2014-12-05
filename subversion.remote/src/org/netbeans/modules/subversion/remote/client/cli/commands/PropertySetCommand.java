@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -65,7 +66,8 @@ public class PropertySetCommand extends SvnCommand {
     private final VCSFileProxy propFile;    
     private final boolean recursivelly;
     
-    public PropertySetCommand(String propName, String propValue, VCSFileProxy file, boolean recursivelly) {        
+    public PropertySetCommand(FileSystem fileSystem, String propName, String propValue, VCSFileProxy file, boolean recursivelly) {        
+        super(fileSystem);
         this.file = file;
         this.propName = propName;
         this.propValue = propValue;
@@ -74,7 +76,8 @@ public class PropertySetCommand extends SvnCommand {
         type = PropType.string;
     }
     
-    public PropertySetCommand(String propName, VCSFileProxy propFile, VCSFileProxy file, boolean recursivelly) {        
+    public PropertySetCommand(FileSystem fileSystem, String propName, VCSFileProxy propFile, VCSFileProxy file, boolean recursivelly) {        
+        super(fileSystem);
         this.file = file;
         this.propName = propName;
         this.propFile = propFile;
