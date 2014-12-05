@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.remote.client.cli.commands;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -53,7 +54,8 @@ public class UpgradeCommand extends SvnCommand {
     
     private final VCSFileProxy wcRoot;
 
-    public UpgradeCommand (VCSFileProxy wcRoot) {
+    public UpgradeCommand (FileSystem fileSystem, VCSFileProxy wcRoot) {
+        super(fileSystem);
         this.wcRoot = wcRoot;
     }
 

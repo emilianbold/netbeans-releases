@@ -47,6 +47,7 @@ package org.netbeans.modules.subversion.remote.ui.diff;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Set;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.subversion.remote.VersionsCache;
@@ -54,8 +55,8 @@ import org.netbeans.modules.subversion.remote.client.PropertiesClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -138,7 +139,7 @@ public class DiffStreamSource extends StreamSource {
             if (!mimeType.startsWith("text/")) {
                 return null;
             } else {
-                return Utils.createReader(remoteFile.toFileObject());
+                return org.netbeans.modules.versioning.util.Utils.createReader(remoteFile.toFileObject());
             }
         }
     }
@@ -217,22 +218,22 @@ public class DiffStreamSource extends StreamSource {
                 // we cannot move editable documents because that would break Document sharing
                 remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
             } else {
-                File tempFolder = Utils.getTempFolder();
+                VCSFileProxy tempFolder = VCSFileProxySupport.getTempFolder(baseFile, true);
                 // To correctly get content of the base file, we need to checkout all files that belong to the same
                 // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
                 // if it also finds associate .form file in the same directory
-                Set<File> allFiles = Utils.getAllDataObjectFiles(baseFile);
-                for (File file : allFiles) {
+                Set<VCSFileProxy> allFiles = Utils.getAllDataObjectFiles(baseFile);
+                for (VCSFileProxy file : allFiles) {
                     boolean isBase = file.equals(baseFile);
                     try {
-                        File rf = VersionsCache.getInstance().getFileRevision(file, revision);
+                        VCSFileProxy rf = VersionsCache.getInstance().getFileRevision(file, revision);
                         if(rf == null) {
                             remoteFile = null;
                             return;
                         }
-                        File newRemoteFile = new File(tempFolder, file.getName());
-                        newRemoteFile.deleteOnExit();
-                        Utils.copyStreamsCloseAll(new FileOutputStream(newRemoteFile), new FileInputStream(rf));
+                        VCSFileProxy newRemoteFile = VCSFileProxy.createFileProxy(tempFolder, file.getName());
+                        VCSFileProxySupport.deleteOnExit(newRemoteFile);
+                        org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(newRemoteFile.toFileObject().getOutputStream(), rf.getInputStream(false));
                         if (isBase) {
                             remoteFile = newRemoteFile;
                             Utils.associateEncoding(file, newRemoteFile);                            

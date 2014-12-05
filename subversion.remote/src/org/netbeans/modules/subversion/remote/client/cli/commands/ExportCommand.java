@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -61,7 +62,8 @@ public class ExportCommand extends SvnCommand {
     private final VCSFileProxy destination;
 
 
-    public ExportCommand(SVNUrl url, VCSFileProxy destination, SVNRevision revision, boolean force) {
+    public ExportCommand(FileSystem fileSystem, SVNUrl url, VCSFileProxy destination, SVNRevision revision, boolean force) {
+        super(fileSystem);
         this.url = url;
         this.destination = destination;
         this.revision = revision;
@@ -70,7 +72,8 @@ public class ExportCommand extends SvnCommand {
         this.file = null;
     }
 
-    public ExportCommand(VCSFileProxy file, VCSFileProxy destination, boolean force) {
+    public ExportCommand(FileSystem fileSystem, VCSFileProxy file, VCSFileProxy destination, boolean force) {
+        super(fileSystem);
         this.file = file;
         this.destination = destination;
         this.force = force;

@@ -286,12 +286,12 @@ public final class Setup extends AbstractDiffSetup {
         this.secondRevision = secondRevision;
         this.info = info;
         title = baseFile.getName();
-        firstSource = new org.netbeans.modules.subversion.ui.history.DiffStreamSource(baseFile, 
+        firstSource = new org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource(baseFile, 
                 repoUrl, firstFileUrl, firstRevision, firstTitle);
         if (Setup.REVISION_CURRENT.equals(secondRevision)) {
             secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondTitle);
         } else {
-            secondSource = new org.netbeans.modules.subversion.ui.history.DiffStreamSource(baseFile, 
+            secondSource = new org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource(baseFile, 
                     repoUrl, secondFileUrl, secondRevision, secondTitle);
         }
     }
@@ -374,13 +374,13 @@ public final class Setup extends AbstractDiffSetup {
     void initSources() throws IOException {
         if (firstSource instanceof DiffStreamSource) {
             ((DiffStreamSource) firstSource).init();
-        } else if (firstSource instanceof org.netbeans.modules.subversion.ui.history.DiffStreamSource) {
-            ((org.netbeans.modules.subversion.ui.history.DiffStreamSource) firstSource).init();
+        } else if (firstSource instanceof org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource) {
+            ((org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource) firstSource).init();
         }
         if (secondSource instanceof DiffStreamSource) {
             ((DiffStreamSource) secondSource).init();
-        } else if (secondSource instanceof org.netbeans.modules.subversion.ui.history.DiffStreamSource) {
-            ((org.netbeans.modules.subversion.ui.history.DiffStreamSource) secondSource).init();
+        } else if (secondSource instanceof org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource) {
+            ((org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource) secondSource).init();
         }
     }
 

@@ -301,7 +301,7 @@ public class SvnClientFactory {
     }
 
     private void checkVersion() throws SVNClientException {
-        CommandlineClient cc = new CommandlineClient();
+        CommandlineClient cc = new CommandlineClient(null);
         try {
             setConfigDir(cc);
             cli16Version = cc.checkSupportedVersion();
@@ -335,13 +335,14 @@ public class SvnClientFactory {
     }
 
     private final class ClientAdapterFactory {
+        private final FileSystem fileSystem;
         
         private ClientAdapterFactory(FileSystem fs) {
-            
+            fileSystem = fs;
         }
 
         protected SvnClient createAdapter() {
-            return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
+            return new CommandlineClient(fileSystem); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
         }
 
         protected SvnClientInvocationHandler getInvocationHandler(SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {

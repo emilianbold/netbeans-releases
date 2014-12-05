@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -73,7 +74,8 @@ public class CopyCommand extends SvnCommand {
 
     public static final String MAKE_PARENTS_ARGUMENT = "--parents";
 
-    public CopyCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) {
+    public CopyCommand(FileSystem fileSystem, SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) {
+        super(fileSystem);
         this.fromUrl = fromUrl;
         this.toUrl = toUrl;
         this.msg = msg;
@@ -81,7 +83,8 @@ public class CopyCommand extends SvnCommand {
         type = CopyType.url2url;
     }
 
-    public CopyCommand(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev, boolean makeParents) {
+    public CopyCommand(FileSystem fileSystem, SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev, boolean makeParents) {
+        super(fileSystem);
         this.fromUrl = fromUrl;
         this.toUrl = toUrl;
         this.msg = msg;
@@ -90,27 +93,31 @@ public class CopyCommand extends SvnCommand {
         type = CopyType.url2url;
     }
 
-    public CopyCommand(SVNUrl fromUrl, VCSFileProxy toFile, SVNRevision rev) {        
+    public CopyCommand(FileSystem fileSystem, SVNUrl fromUrl, VCSFileProxy toFile, SVNRevision rev) {        
+        super(fileSystem);
         this.fromUrl = fromUrl;
         this.toFile = toFile;
         this.rev = rev;        
         type = CopyType.url2file;
     }
     
-    public CopyCommand(VCSFileProxy fromFile, SVNUrl toUrl, String msg) {
+    public CopyCommand(FileSystem fileSystem, VCSFileProxy fromFile, SVNUrl toUrl, String msg) {
+        super(fileSystem);
         this.fromFile = fromFile;
         this.toUrl = toUrl;
         this.msg = msg;
         type = CopyType.file2url;
     }
 
-    public CopyCommand(VCSFileProxy fromFile, VCSFileProxy toFile) {
+    public CopyCommand(FileSystem fileSystem, VCSFileProxy fromFile, VCSFileProxy toFile) {
+        super(fileSystem);
         this.fromFile = fromFile;
         this.toFile = toFile;
         type = CopyType.file2file;
     }
 
-    public CopyCommand(VCSFileProxy fromFile, SVNUrl toUrl, String msg, boolean makeParents) {
+    public CopyCommand(FileSystem fileSystem, VCSFileProxy fromFile, SVNUrl toUrl, String msg, boolean makeParents) {
+        super(fileSystem);
         this.fromFile = fromFile;
         this.toUrl = toUrl;
         this.msg = msg;

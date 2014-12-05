@@ -84,6 +84,14 @@ public class SVNNotificationHandler {
             }
         }
     }
+    
+    public void logCompleted(String string) {
+        if (logEnabled) {
+            for(ISVNNotifyListener l: notifylisteners) {
+                l.logCompleted(string);
+            }
+        }
+    }
 
     public void add(ISVNNotifyListener l) {
         notifylisteners.add(l);

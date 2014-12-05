@@ -78,6 +78,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.modules.jumpto.common.UiUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
@@ -140,10 +141,11 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         if ( currentProject == null ) {
             mainProjectCheckBox.setEnabled(false);
             mainProjectCheckBox.setSelected(false);
-        }
-        else {
-            ProjectInformation pi = currentProject.getLookup().lookup(ProjectInformation.class);
-            mainProjectCheckBox.setText(NbBundle.getMessage(FileSearchPanel.class, "FMT_CurrentProjectLabel", pi.getDisplayName())); // NOI18N
+        } else {
+            mainProjectCheckBox.setText(NbBundle.getMessage(
+                FileSearchPanel.class,
+                "FMT_CurrentProjectLabel",
+                ProjectUtils.getInformation(currentProject).getDisplayName()));
         }
         
         mainProjectCheckBox.addActionListener(this);
@@ -226,13 +228,13 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                         setWarning(NbBundle.getMessage(
                             FileSearchPanel.class,
                             "TXT_PartialResults"));
-                        final int index = resultList.getSelectedIndex();
-                        if (index == -1) {
-                            LOG.log(
-                                Level.FINE,
-                                "Select first item.");  //NOI18N
-                            resultList.setSelectedIndex(0);
-                        }
+                    }
+                    final int index = resultList.getSelectedIndex();
+                    if (index == -1) {
+                        LOG.log(
+                            Level.FINE,
+                            "Select first item.");  //NOI18N
+                        resultList.setSelectedIndex(0);
                     } else if (selectedItems != null && !selectedItems.isEmpty()) {
                         LOG.log(
                             Level.FINE,
@@ -262,9 +264,8 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                if (resultList.getModel().getSize() > 0) {
-                    setWarning(null);
-                } else {
+                setWarning(null);
+                if (resultList.getModel().getSize() == 0) {
                     try {
                        Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
                        setListPanelContent( NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound") ,false ); // NOI18N

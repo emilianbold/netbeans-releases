@@ -48,6 +48,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -69,7 +70,8 @@ public class PropertyGetCommand extends SvnCommand {
     
     private byte[] bytes;
     
-    public PropertyGetCommand(VCSFileProxy file, String name) {        
+    public PropertyGetCommand(FileSystem fileSystem, VCSFileProxy file, String name) {        
+        super(fileSystem);
         this.file = file;                
         this.name = name; 
         url = null;
@@ -78,7 +80,8 @@ public class PropertyGetCommand extends SvnCommand {
         type = GetType.file;
     }
     
-    public PropertyGetCommand(SVNUrl url, SVNRevision rev, SVNRevision peg, String name) {        
+    public PropertyGetCommand(FileSystem fileSystem, SVNUrl url, SVNRevision rev, SVNRevision peg, String name) {        
+        super(fileSystem);
         this.url = url;                
         this.name = name; 
         this.rev = rev; 
