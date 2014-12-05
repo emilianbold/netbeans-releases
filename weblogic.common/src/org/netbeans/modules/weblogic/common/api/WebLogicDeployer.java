@@ -413,10 +413,28 @@ public final class WebLogicDeployer {
                     parameters.add("-upload"); // NOI18N
                     parameters.add("-remote"); // NOI18N
                 }
-                if (name != null) {
-                    parameters.add("-name"); // NOI18N
-                    parameters.add(name);
+
+                // #249066
+                // during the remote deployment from windows to linux file is
+                // properly uploaded but the name of the app is set to the whole
+                // path using windows separator (WLS bug?)
+                // this causes java.lang.IllegalArgumentException: Unexpected character
+                // when the server is starting the app
+                // to prevent that we always compute a default name - should be
+                // the same way WLS is using
+                String realName = name;
+                if (realName == null) {
+                    realName = file.getName();
+                    if (!file.isDirectory()) {
+                        int dot = realName.lastIndexOf('.'); // NOI18N
+                        if (dot > 0) {
+                            realName = realName.substring(0, dot);
+                        }
+                    }
                 }
+                parameters.add("-name"); // NOI18N
+                parameters.add(realName);
+
                 if (file.isDirectory()) {
                     parameters.add("-nostage"); // NOI18N
                 }
