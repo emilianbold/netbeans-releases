@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -71,8 +72,7 @@ public final class GruntTasks implements ChangeListener {
     private final Project project;
     final FileChangeListener nodeModulesListener = new NodeModulesListener();
 
-    // @GuardedBy("this")
-    private Future<List<String>> tasks;
+    private volatile List<String> tasks;
 
 
     private GruntTasks(Project project) {
@@ -90,48 +90,56 @@ public final class GruntTasks implements ChangeListener {
         return gruntTasks;
     }
 
+    @CheckForNull
+    public List<String> getTasks() {
+        List<String> tasksRef = tasks;
+        return tasksRef == null ? null : Collections.unmodifiableList(tasksRef);
+    }
+
     public void processTasks(final TasksProcessor processor) {
         assert processor != null;
+        List<String> tasksRef = tasks;
+        if (tasksRef != null) {
+            processor.process(Collections.unmodifiableList(tasksRef));
+            return;
+        }
         RP.post(new Runnable() {
             @Override
             public void run() {
-                processTasksInternal(processor);
+                readTasksInternal(processor);
             }
         });
     }
 
-    void processTasksInternal(TasksProcessor processor) {
+    void readTasksInternal(TasksProcessor processor) {
         assert !EventQueue.isDispatchThread();
-        Future<List<String>> tasksRef = getTasks();
-        if (tasksRef == null) {
+        Future<List<String>> tasksJob = getTasksJob();
+        if (tasksJob == null) {
             // some error
             processor.process(null);
             return;
         }
-        List<String> taskNames = null;
         try {
-            taskNames = Collections.unmodifiableList(tasksRef.get());
+            tasks = new CopyOnWriteArrayList<>(tasksJob.get());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {
             // XXX warn user?
             LOGGER.log(Level.INFO, null, ex);
         }
-        processor.process(taskNames);
+        processor.process(getTasks());
     }
 
     @CheckForNull
-    private synchronized Future<List<String>> getTasks() {
-        if (tasks == null) {
-            GruntExecutable grunt = GruntExecutable.getDefault(project, false);
-            if (grunt != null) {
-                tasks = grunt.listTasks();
-            }
+    private Future<List<String>> getTasksJob() {
+        GruntExecutable grunt = GruntExecutable.getDefault(project, false);
+        if (grunt == null) {
+            return null;
         }
-        return tasks;
+        return grunt.listTasks();
     }
 
-    synchronized void reset() {
+    void reset() {
         tasks = null;
     }
 
