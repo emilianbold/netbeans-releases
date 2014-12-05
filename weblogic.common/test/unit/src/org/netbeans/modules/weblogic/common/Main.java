@@ -87,7 +87,7 @@ public class Main {
         System.out.println("Started again");
 
         WebLogicDeployer deployer = WebLogicDeployer.getInstance(config, null, null);
-        Collection<WebLogicDeployer.Application> apps = deployer.list().get();
+        Collection<WebLogicDeployer.Application> apps = deployer.list(null).get();
         for (WebLogicDeployer.Application app : apps) {
             System.out.println("Application " + app);
         }
