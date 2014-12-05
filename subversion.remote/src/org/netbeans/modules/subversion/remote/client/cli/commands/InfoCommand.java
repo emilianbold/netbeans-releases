@@ -60,6 +60,8 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNScheduleKind;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -80,10 +82,12 @@ public class InfoCommand extends SvnCommand {
     private final VCSFileProxy[] files;
     private final SVNRevision revision;
     private final SVNRevision pegging;
+    private final Context context;
 
     private final InfoType type;
     
-    public InfoCommand(SVNUrl url, SVNRevision revision, SVNRevision pegging) {
+    public InfoCommand(Context context, SVNUrl url, SVNRevision revision, SVNRevision pegging) {
+        this.context = context;
         this.url = url;
         this.revision = revision;
         this.pegging = pegging;
@@ -95,6 +99,7 @@ public class InfoCommand extends SvnCommand {
     
     public InfoCommand(VCSFileProxy[] files, SVNRevision revision, SVNRevision pegging) {
         this.files = files;
+        this.context = null;
         this.revision = revision;
         this.pegging = pegging;
         
@@ -277,7 +282,11 @@ public class InfoCommand extends SvnCommand {
         
         @Override
         public VCSFileProxy getFile() {
-            return new File(getPath()).getAbsoluteFile();
+            if (context != null) {
+                return VCSFileProxySupport.getResource(context.getRootFiles()[0], getPath());
+            } else {
+                return VCSFileProxySupport.getResource(files[0], getPath());
+            }
         }
 
         @Override

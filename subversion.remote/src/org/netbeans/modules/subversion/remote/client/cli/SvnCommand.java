@@ -251,9 +251,8 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return toString(arguments, false).toString();        
     }
 
-    String[] getCliArguments(String executable) {
-        List<String> l = new ArrayList<String>(arguments.size() + 1);
-        l.add(executable);
+    String[] getCliArguments() {
+        List<String> l = new ArrayList<String>(arguments.size());
         for (String arg : arguments.toArray()) {
             l.add(arg);
         }
@@ -327,7 +326,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return url;
     }
 
-    private File getTempCommandFolder (boolean forceCreation) {
+    private VCSFileProxy getTempCommandFolder (boolean forceCreation) {
         if (tmpFolder == null && forceCreation) {
             tmpFolder = Utils.getTempFolder(true);
         }

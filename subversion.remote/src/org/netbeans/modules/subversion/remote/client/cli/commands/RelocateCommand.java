@@ -44,6 +44,8 @@ package org.netbeans.modules.subversion.remote.client.cli.commands;
 import java.io.IOException;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 
 /**
  *
@@ -55,8 +57,10 @@ public class RelocateCommand extends SvnCommand {
     private final String to;
     private final String path;
     private final boolean rec;
+    private final Context context;
 
-    public RelocateCommand(String from, String to, String path, boolean rec) {
+    public RelocateCommand(Context context, String from, String to, String path, boolean rec) {
+        this.context = context;
         this.from = from;
         this.to = to;
         this.path = path;
@@ -83,7 +87,7 @@ public class RelocateCommand extends SvnCommand {
         arguments.add(from);
         arguments.add(to);
         arguments.add(path);    
-        setCommandWorkingDirectory(new File(path));                
+        setCommandWorkingDirectory(VCSFileProxySupport.getResource(context.getRootFiles()[0], path));                
     }
     
 }

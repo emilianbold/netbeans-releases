@@ -61,7 +61,6 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -326,7 +325,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             if (mimeType == null || !mimeType.startsWith("text/")) {
                 return null;
             } else {
-                return Utils.createReader(file);
+                return org.netbeans.modules.versioning.util.Utils.createReader(file.toFileObject());
             }
         }
 

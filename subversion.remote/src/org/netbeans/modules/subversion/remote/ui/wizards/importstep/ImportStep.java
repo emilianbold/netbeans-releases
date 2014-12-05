@@ -47,6 +47,7 @@ package org.netbeans.modules.subversion.remote.ui.wizards.importstep;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.JComponent;
@@ -285,10 +286,12 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                         // if the user came back from the last step and changed the repository folder name,
                         // then this could be already a working copy ...    
                         SvnUtils.deleteRecursively(VCSFileProxy.createFileProxy(importDirectory, SvnUtils.SVN_ADMIN_DIR)); // NOI18N
-                        File importDummyFolder = new File(Utils.getTempFolder(), importDirectory.getName());
-                        importDummyFolder.mkdirs();                     
-                        importDummyFolder.deleteOnExit();
-                        client.doImport(importDummyFolder, repositoryFile.getFileUrl(), getImportMessage(), false);
+                        try {
+                            VCSFileProxy importDummyFolder = VCSFileProxySupport.getTempFolder(importDirectory, true);
+                            client.doImport(importDummyFolder, repositoryFile.getFileUrl(), getImportMessage(), false);
+                        } catch (IOException ex) {
+                            throw new SVNClientException(ex);
+                        }
                     } catch (SVNClientException ex) {
                         if (isCanceled() || SvnClientExceptionHandler.isFileAlreadyExists(ex.getMessage())) {
                             // ignore

@@ -53,10 +53,9 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -134,7 +133,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
     }
 
     VCSFileProxy getToFile() {
-        return new File(panel.exportToTextField.getText());
+        return VCSFileProxySupport.getResource(fromFile, panel.exportToTextField.getText());
     }
 
     @Override
@@ -178,7 +177,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
 
     private void onBrowse() {
         VCSFileProxy defaultDir = defaultWorkingDirectory();
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(Export.class, "ACSD_BrowseFolder"), defaultDir);// NOI18N
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(defaultDir);
         fileChooser.setDialogTitle(NbBundle.getMessage(Export.class, "BK0010"));// NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
@@ -187,29 +186,17 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
-        fileChooser.addChoosableFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(VCSFileProxy f) {
-                return f.isDirectory();
-            }
-            @Override
-            public String getDescription() {
-                return NbBundle.getMessage(Export.class, "BK0008");// NOI18N
-            }
-        });
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(panel, NbBundle.getMessage(Export.class, "BK0009"));// NOI18N
-        VCSFileProxy f = fileChooser.getSelectedFile();
-        if (f != null) {
-            panel.exportToTextField.setText(f.getAbsolutePath());
-        }
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
+        panel.exportToTextField.setText(f.getPath());
     }
 
     private VCSFileProxy defaultWorkingDirectory() {
         VCSFileProxy defaultDir = null;
         String current = panel.exportFromTextField.getText();
         if (current != null && !(current.trim().equals(""))) {  // NOI18N
-            VCSFileProxy currentFile = new File(current);
+            VCSFileProxy currentFile = VCSFileProxySupport.getResource(fromFile, current);
             while (currentFile != null && currentFile.exists() == false) {
                 currentFile = currentFile.getParentFile();
             }
@@ -225,19 +212,21 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         if (defaultDir == null) {
             String coDir = SvnModuleConfig.getDefault().getPreferences().get(EXPORT_FROM_DIRECTORY, null);
             if(coDir != null) {
-                defaultDir = new File(coDir);
+                defaultDir = VCSFileProxySupport.getResource(fromFile, coDir);
             }
         }
+        
+        // TODO: Is it posssible to export between different FS?
+        // TODO: Allow to select full rmote projects
+        //if (defaultDir == null) {
+        //    VCSFileProxy projectFolder = ProjectChooser.getProjectsFolder();
+        //    if (projectFolder.exists() && projectFolder.isDirectory()) {
+        //        defaultDir = projectFolder;
+        //    }
+        //}
 
         if (defaultDir == null) {
-            VCSFileProxy projectFolder = ProjectChooser.getProjectsFolder();
-            if (projectFolder.exists() && projectFolder.isDirectory()) {
-                defaultDir = projectFolder;
-            }
-        }
-
-        if (defaultDir == null) {
-            defaultDir = new File(System.getProperty("user.home"));  // NOI18N
+            defaultDir = VCSFileProxySupport.getHome(fromFile);
         }
 
         return defaultDir;

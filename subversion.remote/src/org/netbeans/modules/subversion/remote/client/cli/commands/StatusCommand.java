@@ -59,6 +59,8 @@ import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -352,8 +354,8 @@ public class StatusCommand extends SvnCommand {
                         repoPropsStatus = SVNStatusKind.fromString(values.get(REPO_PROPS_ATTR));
                     }                    
                     
-                    statusValues.add(new Status(
-                        path, wcStatus, wcPropsStatus, wcRev, locked, copied, switched, 
+                    statusValues.add(new Status(VCSFileProxySupport.getResource(files[0], path),
+                        wcStatus, wcPropsStatus, wcRev, locked, copied, switched, 
                         ciRev, author, date, owner, lockComment, lockCreated, repoStatus, repoPropsStatus, treeConflict));
                 }
                 values = null;           
@@ -415,7 +417,7 @@ public class StatusCommand extends SvnCommand {
     }       
 
     public class Status {
-        private final String path;        
+        private final VCSFileProxy path;        
         private final SVNStatusKind wcStatus;
         private final SVNStatusKind wcPropsStatus;
         private final SVNRevision.Number wcRev;
@@ -430,8 +432,8 @@ public class StatusCommand extends SvnCommand {
         private final String lockComment;
         private final Date lockCreated;
         private final SVNStatusKind repoStatus;
-        private final SVNStatusKind repoPropsStatus;        
-        public Status(String path, SVNStatusKind wcStatus, SVNStatusKind wcPropsStatus, 
+        private final SVNStatusKind repoPropsStatus;    
+        public Status(VCSFileProxy path, SVNStatusKind wcStatus, SVNStatusKind wcPropsStatus, 
                 SVNRevision.Number wcRev, boolean wcLocked, boolean wcCopied, boolean wcSwitched, 
                 SVNRevision.Number commitRev, String author, Date changeDate, String lockOwner, 
                 String lockComment, Date lockCreated, SVNStatusKind repoStatus, 
@@ -472,7 +474,7 @@ public class StatusCommand extends SvnCommand {
         public String getLockOwner() {
             return lockOwner;
         }
-        public String getPath() {
+        public VCSFileProxy getPath() {
             return path;
         }
         public SVNStatusKind getRepoPropsStatus() {

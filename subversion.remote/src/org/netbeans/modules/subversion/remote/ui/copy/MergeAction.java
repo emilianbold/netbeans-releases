@@ -159,8 +159,9 @@ public class MergeAction extends ContextAction {
 
         try {
             final SvnClient client;
+            final Context context = new Context(file);
             try {
-                client = Subversion.getInstance().getClient(new Context(file), repositoryRoot.getRepositoryUrl());
+                client = Subversion.getInstance().getClient(context, repositoryRoot.getRepositoryUrl());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ex, true, true);
                 return;
@@ -188,7 +189,7 @@ public class MergeAction extends ContextAction {
                     if (startRevision.getKind() == SVNRevision.Kind.number) {
                         startRevision = new SVNRevision.Number(((SVNRevision.Number) startRevision).getNumber() - 1);
                     } else {
-                        ISVNInfo info = client.getInfo(startUrl, startRevision, startRevision);
+                        ISVNInfo info = client.getInfo(context, startUrl, startRevision, startRevision);
                         if (info != null) {
                             startRevision = new SVNRevision.Number(info.getRevision().getNumber() - 1);
                         }
