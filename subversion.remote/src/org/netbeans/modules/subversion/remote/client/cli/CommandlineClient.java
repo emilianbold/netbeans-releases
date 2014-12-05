@@ -43,7 +43,6 @@ package org.netbeans.modules.subversion.remote.client.cli;
 
 import org.netbeans.modules.subversion.remote.client.cli.commands.VersionCommand;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -142,7 +141,7 @@ public class CommandlineClient implements SvnClient {
      */
     @Override
     public boolean checkSupportedVersion() throws SVNClientException {
-        VersionCommand cmd = new VersionCommand();
+        VersionCommand cmd = new VersionCommand(fileSystem);
         try {
             config(cmd);
             cli.exec(cmd);
@@ -163,7 +162,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public String getVersion() throws SVNClientException {
-        VersionCommand cmd = new VersionCommand();
+        VersionCommand cmd = new VersionCommand(fileSystem);
         try {
             config(cmd);
             cli.exec(cmd);
@@ -207,32 +206,32 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void addFile(VCSFileProxy file) throws SVNClientException {
-        AddCommand cmd = new AddCommand(new VCSFileProxy[] { file }, false, false);
+        AddCommand cmd = new AddCommand(fileSystem, new VCSFileProxy[] { file }, false, false);
         exec(cmd);
     }
 
 
     @Override
     public void addDirectory(VCSFileProxy dir, boolean recursive) throws SVNClientException {
-        AddCommand cmd = new AddCommand(new VCSFileProxy[] { dir } , recursive, false);
+        AddCommand cmd = new AddCommand(fileSystem, new VCSFileProxy[] { dir } , recursive, false);
         exec(cmd);
     }
 
     @Override
     public void checkout(SVNUrl url, VCSFileProxy file, SVNRevision revision, boolean recurse) throws SVNClientException {
-        CheckoutCommand cmd = new CheckoutCommand(url, file, revision, recurse);
+        CheckoutCommand cmd = new CheckoutCommand(fileSystem, url, file, revision, recurse);
         exec(cmd);
     }
 
     @Override
     public void doExport(SVNUrl url, VCSFileProxy destination, SVNRevision revision, boolean force) throws SVNClientException {
-        ExportCommand cmd = new ExportCommand(url, destination, revision, force);
+        ExportCommand cmd = new ExportCommand(fileSystem, url, destination, revision, force);
         exec(cmd);
     }
 
     @Override
     public void doExport(VCSFileProxy fileFrom, VCSFileProxy fileTo, boolean force) throws SVNClientException {
-        ExportCommand cmd = new ExportCommand(fileFrom, fileTo, force);
+        ExportCommand cmd = new ExportCommand(fileSystem, fileFrom, fileTo, force);
         exec(cmd);
     }
 
@@ -247,7 +246,7 @@ public class CommandlineClient implements SvnClient {
         CommitCommand cmd = null;
         while (true) {
             try {
-                cmd = new CommitCommand(files, keep, recursive, message); // prevent cmd reuse
+                cmd = new CommitCommand(fileSystem, files, keep, recursive, message); // prevent cmd reuse
                 exec(cmd);
                 break;
             } catch (SVNClientException e) {
@@ -272,7 +271,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNDirEntry[] getList(SVNUrl url, SVNRevision revision, boolean recursivelly) throws SVNClientException {
-        ListCommand cmd = new ListCommand(url, revision, recursivelly);
+        ListCommand cmd = new ListCommand(fileSystem, url, revision, recursivelly);
         exec(cmd);
         return cmd.getEntries();
     }
@@ -296,7 +295,7 @@ public class CommandlineClient implements SvnClient {
         if(files == null || files.length == 0) {
             return new ISVNInfo[0];
         }
-        InfoCommand infoCmd = new InfoCommand(files, revision, pegging);
+        InfoCommand infoCmd = new InfoCommand(fileSystem, files, revision, pegging);
         exec(infoCmd);
         ISVNInfo[] infos = infoCmd.getInfo();
 
@@ -305,7 +304,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNInfo getInfo(Context context, SVNUrl url, SVNRevision revision, SVNRevision pegging) throws SVNClientException {
-        InfoCommand cmd = new InfoCommand(context, url, revision, pegging);
+        InfoCommand cmd = new InfoCommand(fileSystem, context, url, revision, pegging);
         exec(cmd);
         ISVNInfo[] infos = cmd.getInfo();
         ISVNInfo info = null;
@@ -317,19 +316,19 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void copy(VCSFileProxy fileFrom, VCSFileProxy fileTo) throws SVNClientException {
-        CopyCommand cmd = new CopyCommand(fileFrom, fileTo);
+        CopyCommand cmd = new CopyCommand(fileSystem, fileFrom, fileTo);
         exec(cmd);
     }
 
     @Override
     public void copy(VCSFileProxy file, SVNUrl url, String msg) throws SVNClientException {
-        CopyCommand cmd = new CopyCommand(file, url, msg);
+        CopyCommand cmd = new CopyCommand(fileSystem, file, url, msg);
         exec(cmd);
     }
 
     @Override
     public void copy(SVNUrl url, VCSFileProxy file, SVNRevision rev) throws SVNClientException {
-        CopyCommand cmd = new CopyCommand(url, file, rev);
+        CopyCommand cmd = new CopyCommand(fileSystem, url, file, rev);
         exec(cmd);
     }
 
@@ -340,19 +339,19 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void remove(VCSFileProxy[] files, boolean force) throws SVNClientException {
-        RemoveCommand cmd = new RemoveCommand(files, force);
+        RemoveCommand cmd = new RemoveCommand(fileSystem, files, force);
         exec(cmd);
     }
 
     @Override
     public void doImport(VCSFileProxy File, SVNUrl url, String msg, boolean recursivelly) throws SVNClientException {
-        ImportCommand cmd = new ImportCommand(File, url, recursivelly, msg);
+        ImportCommand cmd = new ImportCommand(fileSystem, File, url, recursivelly, msg);
         exec(cmd);
     }
 
     @Override
     public void mkdir(SVNUrl url, String msg) throws SVNClientException {
-        MkdirCommand cmd = new MkdirCommand(url, msg);
+        MkdirCommand cmd = new MkdirCommand(fileSystem, url, msg);
         exec(cmd);
     }
 
@@ -370,19 +369,19 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void mkdir(VCSFileProxy file) throws SVNClientException {
-        MkdirCommand cmd = new MkdirCommand(file);
+        MkdirCommand cmd = new MkdirCommand(fileSystem, file);
         exec(cmd);
     }
 
     @Override
     public void move(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) throws SVNClientException {
-        MoveCommand cmd = new MoveCommand(fromFile, toFile, force);
+        MoveCommand cmd = new MoveCommand(fileSystem, fromFile, toFile, force);
         exec(cmd);
     }
 
     @Override
     public long update(VCSFileProxy file, SVNRevision rev, boolean recursivelly) throws SVNClientException {
-        UpdateCommand cmd = new UpdateCommand(new VCSFileProxy[] { file }, rev, recursivelly, false);
+        UpdateCommand cmd = new UpdateCommand(fileSystem, new VCSFileProxy[] { file }, rev, recursivelly, false);
         exec(cmd);
         return cmd.getRevision();
     }
@@ -397,7 +396,7 @@ public class CommandlineClient implements SvnClient {
         if(files == null || files.length == 0) {
             return;
         }
-        RevertCommand cmd = new RevertCommand(files, recursivelly);
+        RevertCommand cmd = new RevertCommand(fileSystem, files, recursivelly);
         exec(cmd);
     }
 
@@ -417,13 +416,13 @@ public class CommandlineClient implements SvnClient {
 
         Status[] statusValues = new Status[] {};
         if (!filesForStatus.isEmpty()) {
-            StatusCommand statusCmd = new StatusCommand(filesForStatus.toArray(new VCSFileProxy[filesForStatus.size()]), true, false, false, false);
+            StatusCommand statusCmd = new StatusCommand(fileSystem, filesForStatus.toArray(new VCSFileProxy[filesForStatus.size()]), true, false, false, false);
             exec(statusCmd);
             statusValues = statusCmd.getStatusValues();
         }
         for (Status status : statusValues) {
             if(isManaged(status.getWcStatus())) {
-                filesForInfo.add(new File(status.getPath()));
+                filesForInfo.add(status.getPath());
             }
         }
         Map<VCSFileProxy, ISVNInfo> infoMap = new HashMap<VCSFileProxy, ISVNInfo>();
@@ -434,10 +433,10 @@ public class CommandlineClient implements SvnClient {
 
         Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<VCSFileProxy, ISVNStatus>();
         for (Status status : statusValues) {
-            File file = new File(status.getPath());
+            VCSFileProxy file = status.getPath();
             if (status == null || !isManaged(status.getWcStatus())) {
                 if (!SVNStatusKind.UNVERSIONED.equals(status.getRepoStatus())) {
-                    statusMap.put(file, new CLIStatus(status, status.getPath()));
+                    statusMap.put(file, new CLIStatus(status));
                 } else {
                     statusMap.put(file, new SVNStatusUnversioned(file, SVNStatusKind.IGNORED.equals(status.getWcStatus())));
                 }
@@ -475,7 +474,7 @@ public class CommandlineClient implements SvnClient {
             if(!isManaged(file)) {
                 return new ISVNStatus[] {new SVNStatusUnversioned(file)};
             }
-            StatusCommand statusCmd = new StatusCommand(new VCSFileProxy[] { file }, getAll, descend, contactServer, ignoreExternals);
+            StatusCommand statusCmd = new StatusCommand(fileSystem, new VCSFileProxy[] { file }, getAll, descend, contactServer, ignoreExternals);
             exec(statusCmd);
             statusValues = statusCmd.getStatusValues();
         } catch (SVNClientException e) {
@@ -489,7 +488,7 @@ public class CommandlineClient implements SvnClient {
         List<VCSFileProxy> filesForInfo = new ArrayList<VCSFileProxy>();
         for (Status status : statusValues) {
             if(isManaged(status.getWcStatus())) {
-                filesForInfo.add(new File(status.getPath()));
+                filesForInfo.add(status.getPath());
             }
         }
         ISVNInfo[] infos = getInfo(filesForInfo.toArray(new VCSFileProxy[filesForInfo.size()]), null, null);
@@ -499,10 +498,10 @@ public class CommandlineClient implements SvnClient {
 
         Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<VCSFileProxy, ISVNStatus>();
         for (Status status : statusValues) {
-            VCSFileProxy f = new File(status.getPath());
+            VCSFileProxy f = status.getPath();
             if (status == null || !isManaged(status.getWcStatus())) {
                 if (!SVNStatusKind.UNVERSIONED.equals(status.getRepoStatus())) {
-                    statusMap.put(f, new CLIStatus(status, status.getPath()));
+                    statusMap.put(f, new CLIStatus(status));
                 } else {
                     statusMap.put(f, new SVNStatusUnversioned(f, SVNStatusKind.IGNORED.equals(status.getWcStatus())));
                 }
@@ -516,7 +515,7 @@ public class CommandlineClient implements SvnClient {
 
         List<ISVNStatus> ret = new ArrayList<ISVNStatus>();
         for (Status status : statusValues) {
-            VCSFileProxy f = new File(status.getPath());
+            VCSFileProxy f = status.getPath();
             ISVNStatus s = statusMap.get(f);
             if(s == null) {
                 s = new SVNStatusUnversioned(f);
@@ -538,13 +537,13 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNLogMessage[] getLogMessages(SVNUrl url, String[] paths, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath) throws SVNClientException {
-        LogCommand cmd = new LogCommand(url, paths, revStart, revEnd, SVNRevision.HEAD, stopOnCopy, fetchChangePath, 0);
+        LogCommand cmd = new LogCommand(fileSystem, url, paths, revStart, revEnd, SVNRevision.HEAD, stopOnCopy, fetchChangePath, 0);
         return getLog(cmd);
     }
 
     @Override
     public ISVNLogMessage[] getLogMessages(SVNUrl url, SVNRevision revPeg, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit) throws SVNClientException {
-        LogCommand cmd = new LogCommand(url, null, revStart, revEnd, revPeg, stopOnCopy, fetchChangePath, limit);
+        LogCommand cmd = new LogCommand(fileSystem, url, null, revStart, revEnd, revPeg, stopOnCopy, fetchChangePath, limit);
         return getLog(cmd);
     }
 
@@ -575,9 +574,9 @@ public class CommandlineClient implements SvnClient {
         if (info.getSchedule().equals(SVNScheduleKind.ADD) &&
             info.getCopyUrl() != null)
         {
-            logCmd = new LogCommand(info.getCopyUrl(), null, revStart, revEnd, pegRevision, stopOnCopy, fetchChangePath, limit);
+            logCmd = new LogCommand(fileSystem, info.getCopyUrl(), null, revStart, revEnd, pegRevision, stopOnCopy, fetchChangePath, limit);
         } else {
-            logCmd = new LogCommand(file, revStart, revEnd, pegRevision, stopOnCopy, fetchChangePath, limit);
+            logCmd = new LogCommand(fileSystem, file, revStart, revEnd, pegRevision, stopOnCopy, fetchChangePath, limit);
         }
         return getLog(logCmd);
     }
@@ -594,7 +593,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public InputStream getContent(VCSFileProxy file, SVNRevision rev) throws SVNClientException {
-        CatCommand cmd = new CatCommand(file, rev);
+        CatCommand cmd = new CatCommand(fileSystem, file, rev);
         exec(cmd);
         return cmd.getOutput();
     }
@@ -602,7 +601,7 @@ public class CommandlineClient implements SvnClient {
     @Override
     public void propertySet(VCSFileProxy file, String name, String value, boolean rec) throws SVNClientException {
         ISVNStatus[] oldStatus = getStatus(file, rec, true);
-        PropertySetCommand cmd = new PropertySetCommand(name, value, file, rec);
+        PropertySetCommand cmd = new PropertySetCommand(fileSystem, name, value, file, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
     }
@@ -610,7 +609,7 @@ public class CommandlineClient implements SvnClient {
     @Override
     public void propertySet(VCSFileProxy file, String name, VCSFileProxy propFile, boolean rec) throws SVNClientException, IOException {
         ISVNStatus[] oldStatus = getStatus(file, rec, true);
-        PropertySetCommand cmd = new PropertySetCommand(name, propFile, file, rec);
+        PropertySetCommand cmd = new PropertySetCommand(fileSystem, name, propFile, file, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
     }
@@ -618,14 +617,14 @@ public class CommandlineClient implements SvnClient {
     @Override
     public void propertyDel(VCSFileProxy file, String name, boolean rec) throws SVNClientException {
         ISVNStatus[] oldStatus = getStatus(file, rec, true);
-        PropertyDelCommand cmd = new PropertyDelCommand(file, name, rec);
+        PropertyDelCommand cmd = new PropertyDelCommand(fileSystem, file, name, rec);
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
     }
 
     @Override
     public ISVNProperty propertyGet(final VCSFileProxy file, final String name) throws SVNClientException {
-        return propertyGet(new PropertyGetCommand(file, name), name, null, file);
+        return propertyGet(new PropertyGetCommand(fileSystem, file, name), name, null, file);
     }
 
     @Override
@@ -635,7 +634,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNProperty propertyGet(final SVNUrl url, SVNRevision rev, SVNRevision peg, final String name) throws SVNClientException {
-        return propertyGet(new PropertyGetCommand(url, rev, peg, name), name, url, null);
+        return propertyGet(new PropertyGetCommand(fileSystem, url, rev, peg, name), name, url, null);
     }
 
     ISVNProperty propertyGet(PropertyGetCommand cmd, final String name, final SVNUrl url, final VCSFileProxy file) throws SVNClientException {
@@ -685,7 +684,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNAnnotations annotate(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
-        return annotate(new BlameCommand(url, revStart, revEnd), new CatCommand(url, revEnd, null));
+        return annotate(new BlameCommand(fileSystem, url, revStart, revEnd), new CatCommand(fileSystem, url, revEnd, null));
     }
 
     @Override
@@ -695,11 +694,11 @@ public class CommandlineClient implements SvnClient {
         if (info.getSchedule().equals(SVNScheduleKind.ADD) &&
             info.getCopyUrl() != null)
         {
-            blameCommand = new BlameCommand(info.getCopyUrl(), revStart, revEnd);
+            blameCommand = new BlameCommand(fileSystem, info.getCopyUrl(), revStart, revEnd);
         } else {
-            blameCommand = new BlameCommand(file, revStart, revEnd);
+            blameCommand = new BlameCommand(fileSystem, file, revStart, revEnd);
         }
-        return annotate(blameCommand, new CatCommand(file, revEnd));
+        return annotate(blameCommand, new CatCommand(fileSystem, file, revEnd));
     }
 
     @Override
@@ -733,7 +732,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNProperty[] getProperties (final VCSFileProxy file) throws SVNClientException {
-        ListPropertiesCommand cmd = new ListPropertiesCommand(file, false);
+        ListPropertiesCommand cmd = new ListPropertiesCommand(fileSystem, file, false);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
@@ -771,7 +770,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNProperty[] getProperties(SVNUrl url) throws SVNClientException {
-        ListPropertiesCommand cmd = new ListPropertiesCommand(url, false);
+        ListPropertiesCommand cmd = new ListPropertiesCommand(fileSystem, url, false);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
@@ -786,7 +785,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void resolved(VCSFileProxy file) throws SVNClientException {
-        ResolvedCommand cmd = new ResolvedCommand(file, false);
+        ResolvedCommand cmd = new ResolvedCommand(fileSystem, file, false);
         exec(cmd);
     }
 
@@ -797,7 +796,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void switchToUrl(VCSFileProxy file, SVNUrl url, SVNRevision rev, boolean rec) throws SVNClientException {
-        SwitchToCommand cmd = new SwitchToCommand(file, url, rev, rec);
+        SwitchToCommand cmd = new SwitchToCommand(fileSystem, file, url, rev, rec);
         exec(cmd);
     }
 
@@ -813,13 +812,13 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void merge(SVNUrl startUrl, SVNRevision startRev, SVNUrl endUrl, SVNRevision endRev, VCSFileProxy file, boolean force, boolean recurse, boolean dryRun, boolean ignoreAncestry) throws SVNClientException {
-        MergeCommand cmd = new MergeCommand(startUrl, endUrl, startRev, endRev, file, recurse, force, ignoreAncestry, dryRun);
+        MergeCommand cmd = new MergeCommand(fileSystem, startUrl, endUrl, startRev, endRev, file, recurse, force, ignoreAncestry, dryRun);
         exec(cmd);
     }
 
     @Override
     public void relocate(Context context, String from, String to, String path, boolean rec) throws SVNClientException {
-        RelocateCommand cmd = new RelocateCommand(null, from, to, path, rec);
+        RelocateCommand cmd = new RelocateCommand(fileSystem, null, from, to, path, rec);
         exec(cmd);
     }
 
@@ -990,7 +989,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void cleanup(VCSFileProxy file) throws SVNClientException {
-        CleanupCommand cmd = new CleanupCommand(file);
+        CleanupCommand cmd = new CleanupCommand(fileSystem, file);
         exec(cmd);
     }
 
@@ -1024,7 +1023,7 @@ public class CommandlineClient implements SvnClient {
     
     @Override
     public ISVNProperty[] getProperties(SVNUrl url, SVNRevision revision, SVNRevision pegRevision, boolean recursive) throws SVNClientException {
-        ListPropertiesCommand cmd = new ListPropertiesCommand(url, revision.toString(), recursive);
+        ListPropertiesCommand cmd = new ListPropertiesCommand(fileSystem, url, revision.toString(), recursive);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
         List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
@@ -1039,7 +1038,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void upgrade (VCSFileProxy wcRoot) throws SVNClientException {
-        UpgradeCommand cmd = new UpgradeCommand(wcRoot);
+        UpgradeCommand cmd = new UpgradeCommand(fileSystem, wcRoot);
         exec(cmd);
     }
 
@@ -1074,20 +1073,20 @@ public class CommandlineClient implements SvnClient {
     @Override
     public void copy(VCSFileProxy[] files, SVNUrl targetUrl, String message, boolean addAsChild, boolean makeParents) throws SVNClientException {
         for (VCSFileProxy file : files) {
-            CopyCommand cmd = new CopyCommand(file, targetUrl, message, makeParents);
+            CopyCommand cmd = new CopyCommand(fileSystem, file, targetUrl, message, makeParents);
             exec(cmd);
         }
     }
 
     @Override
     public void copy(SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev, boolean makeParents) throws SVNClientException {
-        CopyCommand cmd = new CopyCommand(fromUrl, toUrl, msg, rev, makeParents);
+        CopyCommand cmd = new CopyCommand(fileSystem, fromUrl, toUrl, msg, rev, makeParents);
         exec(cmd);
     }
 
     @Override
     public InputStream getContent(SVNUrl url, SVNRevision rev, SVNRevision pegRevision) throws SVNClientException {
-        CatCommand cmd = new CatCommand(url, rev, pegRevision);
+        CatCommand cmd = new CatCommand(fileSystem, url, rev, pegRevision);
         exec(cmd);
         return cmd.getOutput();
     }

@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -62,7 +63,8 @@ public class MoveCommand extends SvnCommand {
     private final SVNRevision rev;
     private final boolean force;
     
-    public MoveCommand(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) {        
+    public MoveCommand(FileSystem fileSystem, VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) {        
+        super(fileSystem);
         this.fromFile = fromFile;
         this.toFile = toFile;
         this.force = force;        

@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -64,7 +65,8 @@ public class MergeCommand extends SvnCommand {
     private final SVNRevision endRev;
     private final VCSFileProxy file;
 
-    public MergeCommand(SVNUrl startUrl, SVNUrl endUrl, SVNRevision startRev, SVNRevision endRev, VCSFileProxy file, boolean rec, boolean force, boolean ignoreAncestry, boolean dry) {
+    public MergeCommand(FileSystem fileSystem, SVNUrl startUrl, SVNUrl endUrl, SVNRevision startRev, SVNRevision endRev, VCSFileProxy file, boolean rec, boolean force, boolean ignoreAncestry, boolean dry) {
+        super(fileSystem);
         this.rec = rec;
         this.force = force;
         this.ignoreAncestry = ignoreAncestry;

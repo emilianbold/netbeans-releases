@@ -47,6 +47,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -59,7 +60,8 @@ public class SwitchToCommand extends SvnCommand {
     private final SVNRevision rev;
     private final boolean rec;
 
-    public SwitchToCommand(VCSFileProxy file, SVNUrl url, SVNRevision rev, boolean rec) {
+    public SwitchToCommand(FileSystem fileSystem, VCSFileProxy file, SVNUrl url, SVNRevision rev, boolean rec) {
+        super(fileSystem);
         this.file = file;
         this.url = url;
         this.rev = rev;

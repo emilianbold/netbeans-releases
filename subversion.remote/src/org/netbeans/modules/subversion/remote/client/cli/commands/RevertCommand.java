@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -55,7 +56,8 @@ public class RevertCommand extends SvnCommand {
     private final VCSFileProxy[] files;
     private final boolean recursive;
 
-    public RevertCommand(VCSFileProxy[] files, boolean recursive) {
+    public RevertCommand(FileSystem fileSystem, VCSFileProxy[] files, boolean recursive) {
+        super(fileSystem);
         this.files = files;
         this.recursive = recursive;
     }

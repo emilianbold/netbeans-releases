@@ -52,6 +52,7 @@ import org.openide.nodes.Node;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.*;
 import java.util.List;
 import java.text.DateFormat;
@@ -65,6 +66,9 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.options.AnnotationColorProvider;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
+import org.netbeans.modules.subversion.remote.ui.update.RevertModifications;
+import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
@@ -328,8 +332,15 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             }
 
             @Override
-            public VCSFileProxy[] getRoots () {
-                return master.getRoots();
+            public File[] getRoots(){
+                List<File> files = new ArrayList<File>();
+                for(VCSFileProxy proxy : master.getRoots()) {
+                    File file = proxy.toFile();
+                    if (file != null) {
+                        files.add(file);
+                    }
+                }
+                return files.toArray(new File[files.size()]);
             }
 
             @Override

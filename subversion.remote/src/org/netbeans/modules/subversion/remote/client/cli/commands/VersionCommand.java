@@ -49,12 +49,17 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class VersionCommand extends SvnCommand {
+
+    public VersionCommand(FileSystem fileSystem) {
+        super(fileSystem);
+    }
 
     private final List<String> output = new ArrayList<String>();
     private boolean unsupportedVersion = false;

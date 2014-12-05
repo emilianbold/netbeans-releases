@@ -59,9 +59,9 @@ import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
-import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -85,7 +85,8 @@ public class StatusCommand extends SvnCommand {
     private final boolean checkUpdates;
     private final boolean ignoreExternals;
 
-    public StatusCommand(VCSFileProxy[] files, boolean getAll, boolean descend, boolean checkUpdates, boolean ignoreExternals) {
+    public StatusCommand(FileSystem fileSystem, VCSFileProxy[] files, boolean getAll, boolean descend, boolean checkUpdates, boolean ignoreExternals) {
+        super(fileSystem);
         this.files = files;
         this.getAll = getAll;
         this.descend = descend;

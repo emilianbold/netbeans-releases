@@ -49,6 +49,7 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -68,7 +69,8 @@ public class ListPropertiesCommand extends SvnCommand {
     private final String rev;
     private final ListType type;
     
-    public ListPropertiesCommand(VCSFileProxy file, boolean rec) {
+    public ListPropertiesCommand(FileSystem fileSystem, VCSFileProxy file, boolean rec) {
+        super(fileSystem);
         this.file = file;
         this.rec = rec;
         url = null;
@@ -76,11 +78,12 @@ public class ListPropertiesCommand extends SvnCommand {
         type = ListType.file;
     }
     
-    public ListPropertiesCommand(SVNUrl url, boolean rec) {
-        this(url, null, rec);
+    public ListPropertiesCommand(FileSystem fileSystem, SVNUrl url, boolean rec) {
+        this(fileSystem, url, null, rec);
     }
 
-    public ListPropertiesCommand(SVNUrl url, String revision, boolean rec) {
+    public ListPropertiesCommand(FileSystem fileSystem, SVNUrl url, String revision, boolean rec) {
+        super(fileSystem);
         this.url = url;
         this.rec = rec;
         file = null;

@@ -63,6 +63,7 @@ import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -86,7 +87,8 @@ public class InfoCommand extends SvnCommand {
 
     private final InfoType type;
     
-    public InfoCommand(Context context, SVNUrl url, SVNRevision revision, SVNRevision pegging) {
+    public InfoCommand(FileSystem fileSystem, Context context, SVNUrl url, SVNRevision revision, SVNRevision pegging) {
+        super(fileSystem);
         this.context = context;
         this.url = url;
         this.revision = revision;
@@ -97,7 +99,8 @@ public class InfoCommand extends SvnCommand {
         type = InfoType.url;
     }
     
-    public InfoCommand(VCSFileProxy[] files, SVNRevision revision, SVNRevision pegging) {
+    public InfoCommand(FileSystem fileSystem, VCSFileProxy[] files, SVNRevision revision, SVNRevision pegging) {
+        super(fileSystem);
         this.files = files;
         this.context = null;
         this.revision = revision;

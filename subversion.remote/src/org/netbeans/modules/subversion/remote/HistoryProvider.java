@@ -63,6 +63,7 @@ import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.history.HistoryAction;
+import org.netbeans.modules.versioning.history.HistoryActionVCSProxyBased;
 import org.openide.util.*;
 
 /**
@@ -276,7 +277,7 @@ public class HistoryProvider implements VCSHistoryProvider {
         return actions;
     }
 
-    private class ViewAction extends HistoryAction {
+    private class ViewAction extends HistoryActionVCSProxyBased {
         public ViewAction() {
             super(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_View"));
         }
@@ -284,6 +285,11 @@ public class HistoryProvider implements VCSHistoryProvider {
         protected void perform(HistoryEntry entry, Set<VCSFileProxy> files) {
             SVNRevision.Number svnRevision = new SVNRevision.Number(Long.parseLong(entry.getRevision()));
             view(svnRevision, false, files.toArray(new VCSFileProxy[files.size()]));
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null;
         }
     }
 

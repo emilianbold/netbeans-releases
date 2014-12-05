@@ -48,7 +48,6 @@ import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
-import org.netbeans.modules.subversion.remote.api.SVNScheduleKind;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.commands.StatusCommand.Status;
@@ -66,30 +65,35 @@ public class CLIStatus implements ISVNStatus {
         this.status = status;
         this.info = info;
     }
+
+    CLIStatus(Status status) {
+        this.status = status;
+        this.info = null;
+    }
     
     @Override
     public SVNUrl getUrl() {
-        return info.getUrl();
+        return info == null ? null : info.getUrl();
     }
 
     @Override
     public String getUrlString() {
-        return info.getUrlString();
+        return info == null ? null : info.getUrlString();
     }
 
     @Override
     public SVNRevision.Number getLastChangedRevision() {
-        return info.getLastChangedRevision();
+        return info == null ? null : info.getLastChangedRevision();
     }
 
     @Override
     public Date getLastChangedDate() {
-        return info.getLastChangedDate();
+        return info == null ? null : info.getLastChangedDate();
     }
 
     @Override
     public String getLastCommitAuthor() {
-        return info.getLastCommitAuthor();
+        return info == null ? null : info.getLastCommitAuthor();
     }
 
     @Override
@@ -114,7 +118,7 @@ public class CLIStatus implements ISVNStatus {
 
     @Override
     public SVNRevision.Number getRevision() {
-        return info.getRevision(); 
+        return info == null ? null : info.getRevision(); 
     }
 
     @Override
@@ -124,12 +128,12 @@ public class CLIStatus implements ISVNStatus {
 
     @Override
     public VCSFileProxy getFile() {
-        return info.getFile();
+        return info == null ? status.getPath() : info.getFile();
     }
 
     @Override
     public SVNNodeKind getNodeKind() {
-        return info.getNodeKind();
+        return info == null ? null : info.getNodeKind();
     }
 
     @Override
