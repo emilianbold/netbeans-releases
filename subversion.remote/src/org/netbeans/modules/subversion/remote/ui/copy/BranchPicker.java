@@ -175,7 +175,7 @@ class BranchPicker {
                         });
                     }
                 } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, true, false);
+                    SvnClientExceptionHandler.notifyException(null, ex, true, false);
                 }
             }
         };

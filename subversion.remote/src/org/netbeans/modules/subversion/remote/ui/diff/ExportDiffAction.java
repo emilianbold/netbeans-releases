@@ -259,11 +259,13 @@ public class ExportDiffAction extends ContextAction {
             while (it.hasNext()) {
                 Setup setup = it.next();
                 VCSFileProxy file = setup.getBaseFile();                
-                if (file.isDirectory()) continue;
+                if (file.isDirectory()) {
+                    continue;
+                }
                 try {            
                     progress.setRepositoryRoot(SvnUtils.getRepositoryRootUrl(file));
                 } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
                     return;
                 }                           
                 progress.setDisplayName(file.getName());
@@ -284,7 +286,7 @@ public class ExportDiffAction extends ContextAction {
             exportedFiles = i;
             success = true;
         } catch (IOException ex) {
-            SvnClientExceptionHandler.notifyException(new Exception(NbBundle.getMessage(ExportDiffAction.class, "BK3003", //NOI18N
+            SvnClientExceptionHandler.notifyException(null, new Exception(NbBundle.getMessage(ExportDiffAction.class, "BK3003", //NOI18N
                     ex.getLocalizedMessage()), ex), true, false);
         } finally {
             if (out != null) {

@@ -123,7 +123,7 @@ class RevisionSetupsSupport {
         }
         try {
             VCSFileProxy[] roots = getRoots();
-            SvnClient client = Subversion.getInstance().getClient(new Context(roots), repositoryUrl);
+            SvnClient client = Subversion.getInstance().getClient(context, repositoryUrl);
             List<Setup> setups = new ArrayList<Setup>();
             for (VCSFileProxy root : roots) {
                 // TODO: support flat folder? CND not support it.
@@ -209,7 +209,7 @@ class RevisionSetupsSupport {
             }
             return setups.toArray(new Setup[setups.size()]);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, false);
+            SvnClientExceptionHandler.notifyException(context, ex, true, false);
             return new Setup[0];
         }
     }

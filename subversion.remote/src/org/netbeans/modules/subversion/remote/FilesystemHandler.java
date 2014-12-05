@@ -155,7 +155,7 @@ class FilesystemHandler extends VCSInterceptor {
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
                 if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
-                    SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                    SvnClientExceptionHandler.notifyException(new Context(file), e, false, false); // log this
                 }
                 IOException ex = new IOException();
                 Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemHandler.class, "MSG_DeleteFailed", new Object[] {file, e.getLocalizedMessage()})); // NOI18N
@@ -489,7 +489,7 @@ class FilesystemHandler extends VCSInterceptor {
                         continue;
                     }
                     if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
-                        SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                        SvnClientExceptionHandler.notifyException(null, e, false, false); // log this
                     }
                     IOException ex = new IOException();
                     Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemHandler.class, "MSG_MoveFailed", new Object[] {from, to, e.getLocalizedMessage()})); // NOI18N
@@ -499,7 +499,7 @@ class FilesystemHandler extends VCSInterceptor {
             }
         } catch (SVNClientException e) {
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
-                SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                SvnClientExceptionHandler.notifyException(new Context(from), e, false, false); // log this
             }
             IOException ex = new IOException();
             Exceptions.attachLocalizedMessage(ex, "Subversion failed to move " + from.getPath() + " to: " + to.getPath() + "\n" + e.getLocalizedMessage()); // NOI18N
@@ -534,7 +534,7 @@ class FilesystemHandler extends VCSInterceptor {
                     revertDeleted(client, file, true);
                 } catch (SVNClientException ex) {
                     if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
-                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                        SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
                     }
                 }
             }
@@ -639,7 +639,7 @@ class FilesystemHandler extends VCSInterceptor {
                             StatusAction.executeStatus(file, client, null, false); // no need to contact server
                         }
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
                         return;
                     }
                 }
@@ -668,7 +668,7 @@ class FilesystemHandler extends VCSInterceptor {
                     return cache.containsFiles(ctx, STATUS_VCS_MODIFIED_ATTRIBUTE, true);
                 }
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
             }
             return null;
         } else {
@@ -778,7 +778,7 @@ class FilesystemHandler extends VCSInterceptor {
             revertDeleted(client, status, file, checkParents);
         } catch (SVNClientException ex) {
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
             }
         }
     }
@@ -808,7 +808,7 @@ class FilesystemHandler extends VCSInterceptor {
             }
         } catch (SVNClientException ex) {
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
             }
         }
     }
@@ -958,7 +958,7 @@ class FilesystemHandler extends VCSInterceptor {
                         continue;
                     }
                     if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
-                        SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                        SvnClientExceptionHandler.notifyException(new Context(from), e, false, false); // log this
                     }
                     IOException ex = new IOException();
                     Exceptions.attachLocalizedMessage(ex, NbBundle.getMessage(FilesystemHandler.class, "MSG_MoveFailed", new Object[] {from, to, e.getLocalizedMessage()})); //NOI18N
@@ -968,7 +968,7 @@ class FilesystemHandler extends VCSInterceptor {
             }
         } catch (SVNClientException e) {
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(e)) {
-                SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                SvnClientExceptionHandler.notifyException(new Context(from), e, false, false); // log this
             }
             IOException ex = new IOException();
             Exceptions.attachLocalizedMessage(ex, "Subversion failed to move " + from.getPath() + " to: " + to.getPath() + "\n" + e.getLocalizedMessage()); // NOI18N
@@ -1016,7 +1016,7 @@ class FilesystemHandler extends VCSInterceptor {
         try {
             VCSFileProxySupport.copyFile(from, to);
         } catch (IOException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false); // log this
+            SvnClientExceptionHandler.notifyException(new Context(from), ex, false, false); // log this
             return false;
         }
         return true;
@@ -1059,7 +1059,7 @@ class FilesystemHandler extends VCSInterceptor {
                             }
                         }
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                        SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
                         readOnly = true;
                     }
                     if (readOnly) {

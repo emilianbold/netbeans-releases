@@ -90,6 +90,7 @@ import org.netbeans.modules.subversion.remote.ui.diff.DiffSetupSource;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryTopComponent.DiffResultsViewFactory;
 import org.netbeans.modules.subversion.remote.ui.history.SummaryView.SvnLogEntry;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
@@ -823,7 +824,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             currentAdditionalSearch.start(Subversion.getInstance().getParallelRequestProcessor(), currentAdditionalSearch.repoUrl,
                     NbBundle.getMessage(SearchHistoryPanel.class, "MSG_SearchHistoryPanel.GettingMoreRevisions")); //NOI18N
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, true);
         }
     }
 

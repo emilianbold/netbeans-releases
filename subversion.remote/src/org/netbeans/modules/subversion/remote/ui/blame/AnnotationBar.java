@@ -658,7 +658,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         try {
             url = SvnUtils.getRepositoryRootUrl(file);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }
         final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
@@ -688,7 +688,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             fileUrl = SvnUtils.getRepositoryUrl(file);
             svnRev = SVNRevision.getRevision(revision);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
             return;
         } catch (ParseException ex) {
             Subversion.LOG.log(Level.WARNING, null, ex);
@@ -712,7 +712,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             repositoryRoot = SvnUtils.getRepositoryRootUrl(file);
             repositoryUrl = SvnUtils.getRepositoryUrl(file);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
             return;
         }
         try {

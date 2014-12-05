@@ -57,6 +57,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
@@ -121,7 +122,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
                 return rf;
             }
         } catch (SVNClientException ex) {            
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(root), ex, true, true);
         } catch (MalformedURLException ex) {
             // should be already checked and 
             // not happen at this place anymore

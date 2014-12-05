@@ -130,7 +130,7 @@ public class ExportAction extends ContextAction {
                             client = Subversion.getInstance().getClient(fromFile);
                             client.doExport (fromFile, toFile, true);
                         } catch (SVNClientException ex) {
-                            SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
+                            SvnClientExceptionHandler.notifyException(new Context(fromFile), ex, true, true); // should not happen
                             return;
                         }
                         if(export.getScanAfterExport()) {

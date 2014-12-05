@@ -56,6 +56,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
+import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
@@ -171,7 +172,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             if (SvnClientExceptionHandler.isCancelledAction(e.getMessage())) {
                 Subversion.LOG.log(Level.FINE, null, e);
             } else {
-                SvnClientExceptionHandler.notifyException(e, true, true);
+                SvnClientExceptionHandler.notifyException(new Context(files), e, true, true);
             }
         }
         return null;
@@ -227,7 +228,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                 if (SvnClientExceptionHandler.isCancelledAction(ex.getMessage())) {
                     Subversion.LOG.log(Level.FINE, null, e);
                 } else {
-                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    SvnClientExceptionHandler.notifyException(new Context(revisionFile), ex, true, true);
                 }
             }
         }
@@ -293,7 +294,7 @@ public class HistoryProvider implements VCSHistoryProvider {
         }
     }
 
-    private class AnnotateAction extends HistoryAction {
+    private class AnnotateAction extends HistoryActionVCSProxyBased {
         public AnnotateAction() {
             super(NbBundle.getMessage(SearchHistoryAction.class, "CTL_SummaryView_ShowAnnotations"));
         }
@@ -302,9 +303,14 @@ public class HistoryProvider implements VCSHistoryProvider {
             SVNRevision.Number svnRevision = new SVNRevision.Number(Long.parseLong(entry.getRevision()));
             view(svnRevision, true, files.toArray(new VCSFileProxy[files.size()]));
         }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
     }
     
-    private class RollbackAction extends HistoryAction {
+    private class RollbackAction extends HistoryActionVCSProxyBased {
         @Override
         protected void perform(final HistoryEntry entry, final Set<VCSFileProxy> files) {
             final VCSFileProxy file = files.iterator().next();
@@ -312,7 +318,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             try {
                 repository = SvnUtils.getRepositoryRootUrl(file);
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
                 return;
             }
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
@@ -329,7 +335,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                             SvnUtils.rollback(file, repoUrl, fileUrl, svnRevision, false, getLogger());
                         }
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                        SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
                     }
                 }
             };
@@ -369,7 +375,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                         SvnUtils.openInRevision(file, repoUrl, fileUrl, revision, revision, showAnnotations);
                     }
                 } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    SvnClientExceptionHandler.notifyException(new Context(files), ex, false, false);
                 }
             }
         });

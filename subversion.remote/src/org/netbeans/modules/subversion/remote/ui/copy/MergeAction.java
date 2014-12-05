@@ -119,7 +119,7 @@ public class MergeAction extends ContextAction {
             rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
             url = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }           
         final RepositoryFile repositoryRoot = new RepositoryFile(rootUrl, url, SVNRevision.HEAD);
@@ -163,7 +163,7 @@ public class MergeAction extends ContextAction {
             try {
                 client = Subversion.getInstance().getClient(context, repositoryRoot.getRepositoryUrl());
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
+                SvnClientExceptionHandler.notifyException(context, ex, true, true);
                 return;
             }
 

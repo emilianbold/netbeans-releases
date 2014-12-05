@@ -70,6 +70,7 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.commit.ConflictResolvedAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -166,7 +167,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 ConflictResolvedAction.perform(file);  // remove conflict status
             } catch (SVNClientException ex) {
                 // XXX consolidate with the progresssuport
-                SvnClientExceptionHandler.notifyException(ex, true, true);
+                SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
             } finally {
                 if (lock != null) {
                     lock.releaseLock();
@@ -518,7 +519,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 ConflictResolvedAction.perform(file);    
             } catch (SVNClientException ex) {
                 // XXX consolidate with the progresssuport
-                SvnClientExceptionHandler.notifyException(ex, true, true);
+                SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
             }            
         }
     }

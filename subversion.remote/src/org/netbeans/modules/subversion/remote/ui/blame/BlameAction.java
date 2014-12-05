@@ -165,7 +165,7 @@ public class BlameAction extends ContextAction {
         try {
             repository = SvnUtils.getRepositoryRootUrl(file);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
             return;
         }
 
@@ -201,7 +201,7 @@ public class BlameAction extends ContextAction {
             client = Subversion.getInstance().getClient(file, progress);
         } catch (SVNClientException ex) {
             ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
             return;
         }
         if (revision == null) {
@@ -216,7 +216,7 @@ public class BlameAction extends ContextAction {
             annotations = client.annotate(file, new SVNRevision.Number(1), revision);
         } catch (SVNClientException e) {
             ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationFailed")); // NOI18N;
-            SvnClientExceptionHandler.notifyException(e, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(file), e, true, true);
             return;
         }
         if (progress.isCanceled()) {
