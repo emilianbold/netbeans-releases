@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.models;
+package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.ClassLoaderReference;

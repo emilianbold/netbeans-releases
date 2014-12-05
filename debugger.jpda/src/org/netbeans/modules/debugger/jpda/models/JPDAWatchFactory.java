@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.debugger.jpda.models;
 
-import java.util.concurrent.Executor;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
+import com.sun.jdi.PrimitiveValue;
+import com.sun.jdi.Value;
+import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
-import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
-import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 
 /**
  *
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistrations({
-    @DebuggerServiceRegistration(path="netbeans-JPDASession",
-                                 types=AsynchronousModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
-                                 types=AsynchronousModelFilter.class,
-                                 position=13000)
-})
-public class JPDAAsynchronousModel implements AsynchronousModelFilter {
+public final class JPDAWatchFactory {
     
-    private Executor rp;
-
-    public JPDAAsynchronousModel(ContextProvider lookupProvider) {
-        JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
-            lookupFirst (null, JPDADebugger.class);
-        rp = debugger.getRequestProcessor();
-    }
-
-    public Executor asynchronous(Executor exec, CALL asynchCall, Object object) {
-        switch (asynchCall) {
-            case VALUE:
-            case CHILDREN:
-                return rp;
-            case SHORT_DESCRIPTION:
-            case DISPLAY_NAME:
-                return CURRENT_THREAD;
+    private JPDAWatchFactory() {}
+    
+    public static JPDAWatch createJPDAWatch(JPDADebuggerImpl debugger, Watch watch, Value v) {
+        JPDAWatch jw;
+        if (v instanceof PrimitiveValue) {
+            jw = new JPDAWatchImpl (debugger, watch, (PrimitiveValue) v);
+        } else { // ObjectReference or VoidValue
+            jw = new JPDAObjectWatchImpl (debugger, watch, v);
         }
-        return null; // ??
+        return jw;
     }
-
+    
+    public static JPDAWatch createJPDAWatch(JPDADebuggerImpl debugger, Watch watch, Throwable th) {
+        return new JPDAWatchImpl(debugger, watch, th);
+    }
 }

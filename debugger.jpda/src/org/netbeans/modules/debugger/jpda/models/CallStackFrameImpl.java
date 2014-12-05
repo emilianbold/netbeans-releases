@@ -521,12 +521,7 @@ public class CallStackFrameImpl implements CallStackFrame {
         }
     }
 
-    static boolean canFindOperationArguments() {
-        return JPDAUtils.IS_JDK_160_02;
-    }
-    
-    List<LocalVariable> findOperationArguments(Operation operation) {
-        if (!JPDAUtils.IS_JDK_160_02) return null; // Can evaluate methods after pop since JDK 1.6.0_02
+    public List<LocalVariable> findOperationArguments(Operation operation) {
         JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
         thread.accessLock.writeLock().lock();
         try {
