@@ -177,7 +177,9 @@ public class AndroidPlatform implements MobilePlatform {
                     return t;
                 }
             }
-            return targets1.iterator().next();
+            if (targets1.iterator().hasNext()) {
+                return targets1.iterator().next();
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
