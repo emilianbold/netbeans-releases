@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -109,15 +110,20 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
     }
 
     @Override
-    public List getAllThreads() {
-        return debugger.getThreadsCollector().getAllThreads();
+    public List<DebuggingView.DVThread> getAllThreads() {
+        List<JPDAThread> threads = debugger.getThreadsCollector().getAllThreads();
+        List<DebuggingView.DVThread> dvThreads = new ArrayList<>(threads.size());
+        for (JPDAThread t : threads) {
+            dvThreads.add(get(t));
+        }
+        return Collections.unmodifiableList(dvThreads);
     }
 
     @Override
     public String getDisplayName(DebuggingView.DVThread thread) {
         String name;
         try {
-            JPDAThread jt = (JPDAThread) thread;
+            JPDAThread jt = ((JPDADVThread) thread).getKey();
             name = DebuggingNodeModel.getDisplayName(jt, false);
             Session session = debugger.getSession();
             Session currSession = DebuggerManager.getDebuggerManager().getCurrentSession();
@@ -134,7 +140,7 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
 
     @Override
     public Image getIcon(DebuggingView.DVThread thread) {
-        return ImageUtilities.loadImage(DebuggingNodeModel.getIconBase((JPDAThread) thread));
+        return ImageUtilities.loadImage(DebuggingNodeModel.getIconBase(((JPDADVThread) thread).getKey()));
     }
 
     @Override
