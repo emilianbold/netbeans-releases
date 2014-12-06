@@ -59,6 +59,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -73,7 +75,6 @@ import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -130,7 +131,7 @@ public final class JPDAMethodChooserUtils {
         } catch (VMDisconnectedExceptionWrapper aiex) {
             return params;
         } catch (AbsentInformationException aiex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
+            Exceptions.printStackTrace(Exceptions.attachSeverity(aiex, Level.INFO));
         }
         if (locs.isEmpty()) {
             return params;
@@ -331,7 +332,7 @@ public final class JPDAMethodChooserUtils {
                 @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        Logger.getLogger(JPDAMethodChooserUtils.class.getName()).warning(
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
                                 "\nDiagnostics = "+ci.getDiagnostics()+
                                 "\nFree memory = "+Runtime.getRuntime().freeMemory());
@@ -394,7 +395,7 @@ public final class JPDAMethodChooserUtils {
 
             }, true);
         } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
+            Exceptions.printStackTrace(ioex);
         }
     }
 

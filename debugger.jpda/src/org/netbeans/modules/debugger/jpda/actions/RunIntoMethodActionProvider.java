@@ -111,7 +111,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -207,10 +206,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 }
             });
         } catch (InvocationTargetException ex) {
-            ErrorManager.getDefault().notify(ex.getTargetException());
+            Exceptions.printStackTrace(ex.getTargetException());
             return;
         } catch (InterruptedException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             return;
         }
         final String method = methodPtr[0];
@@ -310,7 +309,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             return ;
         } catch (ClassNotPreparedExceptionWrapper aiex) {
         } catch (AbsentInformationException aiex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
+            Exceptions.printStackTrace(Exceptions.attachSeverity(aiex, Level.INFO));
         }
         logger.log(Level.FINE, "doAction({0}, {1}, {2}, {3}) locations = {4}",
                    new Object[]{ url, clazz, methodLine, methodName, locations });
@@ -631,7 +630,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             step.addStep(debugger.getCurrentThread());
                         }
                     } catch (AbsentInformationException aiex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
+                        Exceptions.printStackTrace(Exceptions.attachSeverity(aiex, Level.INFO));
                         // We're somewhere strange...
                         step.setHidden(false);
                     }
@@ -656,7 +655,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                         doFinish = false;
                                     }
                                 } catch (AbsentInformationException aiex) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
+                                    Exceptions.printStackTrace(Exceptions.attachSeverity(aiex, Level.INFO));
                                     // We're somewhere strange...
                                 }
                             }

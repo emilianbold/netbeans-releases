@@ -86,7 +86,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ThreadStartEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -254,7 +254,7 @@ public class Operator {
                      break;
                  //} catch (InterruptedException e) {
                  } catch (Exception e) {
-                     ErrorManager.getDefault().notify(e);
+                     Exceptions.printStackTrace(e);
                  } finally {
                      synchronized (parallelEvents) {
                          if (haveParallelEventsToProcess && parallelEvents.isEmpty()) {
@@ -509,7 +509,7 @@ public class Operator {
                         //S ystem.out.println ("Operator end"); // NOI18N
                         return false;
                     } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 } else {
                     if (e instanceof BreakpointEvent) {
@@ -851,7 +851,7 @@ public class Operator {
                     } catch (VMDisconnectedExceptionWrapper ex) {
                         return ;
                     } catch (Exception e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                     if (Thread.interrupted()) {
                         return ;

@@ -128,7 +128,6 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -809,8 +808,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             throw new IncompatibleThreadStateException("Thread died.");
         } catch (NativeMethodExceptionWrapper nmex) {
             cleanCachedFrames();
-            ErrorManager.getDefault().notify(
-                    ErrorManager.getDefault().annotate(nmex,
+            Exceptions.printStackTrace(
+                    Exceptions.attachLocalizedMessage(nmex,
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NativeMethodPop")));
         } catch (InternalExceptionWrapper iex) {
             cleanCachedFrames();

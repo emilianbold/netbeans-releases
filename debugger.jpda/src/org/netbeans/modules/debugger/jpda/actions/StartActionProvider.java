@@ -68,8 +68,8 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 
-import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -222,12 +222,12 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
         } catch (Exception ex) {
             throwable = ex;
             // Notify! Otherwise bugs in the code can not be located!!!
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         } catch (ThreadDeath td) {
             throw td;
         } catch (Error err) {
             throwable = err;
-            ErrorManager.getDefault().notify(err);
+            Exceptions.printStackTrace(err);
         }
         if (throwable != null) {
             logger.log(Level.FINE,"S StartActionProvider.doAction ().thread end: threw {0}",

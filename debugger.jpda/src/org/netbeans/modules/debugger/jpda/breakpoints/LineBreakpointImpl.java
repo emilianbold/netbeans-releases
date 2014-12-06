@@ -113,7 +113,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper
 import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -305,7 +304,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     private void setInvalid(String reason) {
-        ErrorManager.getDefault().log(ErrorManager.WARNING,
+        logger.warning(
                 "Unable to submit line breakpoint to "+getBreakpoint().getURL()+
                 " at line "+lineNumber+", reason: "+reason);
         setValidity(Breakpoint.VALIDITY.INVALID, reason);
@@ -411,7 +410,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             boolean all = className != null && (className.startsWith("*") || className.endsWith("*")); // NOI18N
             // We know that the breakpoint is invalid, only when it's not submitted for an unknown set of classes.
             if (!all) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                logger.warning(
                         "Unable to submit line breakpoint to "+referenceTypes.get(0).name()+
                         " at line "+lineNumber+", reason: "+failReason);
                 setValidity(Breakpoint.VALIDITY.INVALID, failReason);
@@ -594,13 +593,13 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         } catch (ClassNotPreparedException ex) {
             // should not occurre. VirtualMachine.allClasses () returns prepared
             // classes only. But...
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            Exceptions.printStackTrace(ex);
         } catch (InternalException iex) {
             // Something wrong in JDI
-            ErrorManager.getDefault().annotate(iex, 
+            iex = Exceptions.attachLocalizedMessage(iex, 
                     NbBundle.getMessage(LineBreakpointImpl.class,
                     "MSG_jdi_internal_error") );
-            ErrorManager.getDefault().notify(iex);
+            Exceptions.printStackTrace(iex);
             // We should indicate somehow that the breakpoint is invalid...
             reason[0] = iex.getLocalizedMessage();
         }
@@ -706,7 +705,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        logger.warning(
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
                                 "\nDiagnostics = "+ci.getDiagnostics()+
                                 "\nFree memory = "+Runtime.getRuntime().freeMemory());
@@ -761,7 +760,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 }
             }, true);
         } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
+            Exceptions.printStackTrace(ioex);
             return lineNumber;
         }
         return result[0];
