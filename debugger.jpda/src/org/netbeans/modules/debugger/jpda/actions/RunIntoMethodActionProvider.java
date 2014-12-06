@@ -110,8 +110,6 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -127,12 +125,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     private static final Logger logger = Logger.getLogger(RunIntoMethodActionProvider.class.getName());
 
     private final JPDADebuggerImpl debugger;
+    private final ContextProvider contextProvider;
     private ActionsManager lastActionsManager;
     
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
         debugger.addPropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
+        this.contextProvider = lookupProvider;
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
@@ -214,11 +214,12 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         }
         final String method = methodPtr[0];
         if (method.length () < 1) {
-            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(
-                NbBundle.getMessage(RunIntoMethodActionProvider.class,
+            ActionCallbackSupport.messageCallback(
+                    contextProvider,
+                    ActionsManager.ACTION_RUN_INTO_METHOD,
+                    NbBundle.getMessage(RunIntoMethodActionProvider.class,
                                     "MSG_Put_cursor_on_some_method_call")
             );
-            DialogDisplayer.getDefault ().notify (descriptor);
             return;
         }
         final int methodLine = linePtr[0];
@@ -314,11 +315,12 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         logger.log(Level.FINE, "doAction({0}, {1}, {2}, {3}) locations = {4}",
                    new Object[]{ url, clazz, methodLine, methodName, locations });
         if (locations.isEmpty()) {
-            String message = NbBundle.getMessage(RunIntoMethodActionProvider.class,
-                                                 "MSG_RunIntoMeth_absentInfo",
-                                                 clazz.name());
-            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
-            DialogDisplayer.getDefault().notify(descriptor);
+            ActionCallbackSupport.messageCallback(
+                    contextProvider,
+                    ActionsManager.ACTION_RUN_INTO_METHOD,
+                    NbBundle.getMessage(RunIntoMethodActionProvider.class,
+                                        "MSG_RunIntoMeth_absentInfo",
+                                        clazz.name()));
             return;
         }
         Expression expr = debugger.getExpressionPool().getExpressionAt(locations.get(0), url);
