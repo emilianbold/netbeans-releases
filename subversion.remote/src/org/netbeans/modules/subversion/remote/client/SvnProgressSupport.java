@@ -212,7 +212,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNN
     }
 
     public void annotate(SVNClientException ex) {                        
-        SvnClientExceptionHandler.notifyException(ex, !isCanceled(), true);        
+        SvnClientExceptionHandler.notifyException(null, ex, !isCanceled(), true);        
     }
 
     @Override

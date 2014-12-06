@@ -48,6 +48,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.ui.wcadmin.UpgradeAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.actions.SystemAction;
 
@@ -151,7 +152,7 @@ public final class WorkingCopyAttributesCache {
         }
     }
 
-    private void logWC (final SVNClientException ex, VCSFileProxy file, HashSet<String> loggedWCs) throws SVNClientException {
+    private void logWC (final SVNClientException ex, final VCSFileProxy file, HashSet<String> loggedWCs) throws SVNClientException {
         String fileName = file.getPath();
         if (!isLogged(fileName, loggedWCs)) {
             final VCSFileProxy topManaged = Subversion.getInstance().getTopmostManagedAncestor(file);
@@ -177,10 +178,10 @@ public final class WorkingCopyAttributesCache {
                                     && (msg.contains("svn upgrade") //NOI18N
                                     || msg.contains("working copy format of ") && msg.contains("is too old") //NOI18N
                                     || msg.contains("needs to be upgraded"))) { //NOI18N
-                                SvnClientExceptionHandler.notifyException(ex, false, false);
+                                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
                                 SystemAction.get(UpgradeAction.class).upgrade(topManaged);
                             } else {
-                                SvnClientExceptionHandler.notifyException(ex, true, true);
+                                SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
                             }
                         }
                     });

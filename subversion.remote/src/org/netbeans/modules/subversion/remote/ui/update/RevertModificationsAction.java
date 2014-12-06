@@ -135,7 +135,7 @@ public class RevertModificationsAction extends ContextAction {
             rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
             url = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }
         final RepositoryFile repositoryFile = new RepositoryFile(rootUrl, url, SVNRevision.HEAD);
@@ -167,7 +167,7 @@ public class RevertModificationsAction extends ContextAction {
         try {
             client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }
         
@@ -293,7 +293,7 @@ public class RevertModificationsAction extends ContextAction {
                 
             }, files);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, false);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, false);
         }
         
         if(support.isCanceled()) {

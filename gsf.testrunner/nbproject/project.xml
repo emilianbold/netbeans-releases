@@ -77,6 +77,8 @@
                 <friend>org.netbeans.modules.selenium2.java</friend>
                 <friend>org.netbeans.modules.selenium2.maven</friend>
                 <friend>org.netbeans.modules.selenium2.php</friend>
+                <friend>org.netbeans.modules.selenium2.webclient</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
                 <friend>org.netbeans.modules.testng</friend>
                 <friend>org.netbeans.modules.testng.ant</friend>
                 <friend>org.netbeans.modules.testng.ui</friend>

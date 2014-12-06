@@ -19,3 +19,11 @@ exports.FreeList.prototype.free = function(obj) {
     this.list.push(obj);
   }
 };
+
+
+var Car = require('../complexModule').Car;
+
+var auto = new Car();
+//cc;1;auto.;0;ride,speed,stop,defineProperty,hasOwnProperty;stop;auto.stop();pokus2,obj2,neco2,getDate,E
+
+

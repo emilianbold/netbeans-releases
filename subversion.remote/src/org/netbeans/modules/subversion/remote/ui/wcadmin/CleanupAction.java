@@ -102,7 +102,7 @@ public class CleanupAction extends ContextAction {
         try {
             repository = SvnUtils.getRepositoryRootUrl(root);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
         }
         repositoryUrl = repository;
         if(repositoryUrl == null) {

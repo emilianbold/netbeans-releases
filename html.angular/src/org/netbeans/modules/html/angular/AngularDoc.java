@@ -57,7 +57,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.html.angular.model.Directive;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
@@ -80,7 +79,7 @@ public class AngularDoc {
     private boolean loadingStarted;
     
     private static final String CACHE_FOLDER_NAME = "ajs-doc"; //NOI18N
-    public static final String DOC_VERSION = System.getProperty("nb.angular.doc.version", "1.2.25"); //NOI18N;
+    public static final String DOC_VERSION = System.getProperty("nb.angular.doc.version", "1.3.5"); //NOI18N;
     
     public static synchronized AngularDoc getDefault() {
         if (INSTANCE == null) {

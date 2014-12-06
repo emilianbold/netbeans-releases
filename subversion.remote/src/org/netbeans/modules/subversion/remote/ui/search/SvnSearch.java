@@ -178,12 +178,12 @@ public class SvnSearch implements ActionListener, DocumentListener {
                             }
                             if (ex.getMessage().contains(path)) {
                                 noContentPanel.setLabel(Bundle.MSG_SvnSearch_error_pathNotFound(paths[i]));
-                                SvnClientExceptionHandler.notifyException(ex, false, false);
+                                SvnClientExceptionHandler.notifyException(null, ex, false, false);
                                 return;
                             }
                         }
                     }
-                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    SvnClientExceptionHandler.notifyException(null, ex, true, true);
                 }
 
                 if(isCanceled()) {

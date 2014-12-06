@@ -55,6 +55,7 @@ public final class ProjectFoldersValidator {
     public static final String SITE_ROOT_FOLDER = "site.root.folder"; // NOI18N
     public static final String SOURCE_OR_SITE_ROOT_FOLDER = "source.or.site.root.folder"; // NOI18N
     public static final String TEST_FOLDER = "test.folder"; // NOI18N
+    public static final String TEST_SELENIUM_FOLDER = "test.selenium.folder"; // NOI18N
 
     private final ValidationResult result = new ValidationResult();
 
@@ -63,11 +64,12 @@ public final class ProjectFoldersValidator {
         return result;
     }
 
-    public ProjectFoldersValidator validate(File sourceFolder, File siteRootFolder, File testFolder) {
+    public ProjectFoldersValidator validate(File sourceFolder, File siteRootFolder, File testFolder, File testSeleniumFolder) {
         validateSourceFolder(sourceFolder);
         validateSiteRootFolder(siteRootFolder);
         validateSourceAndSiteRootFolders(sourceFolder, siteRootFolder);
         validateTestFolder(testFolder);
+        validateTestSeleniumFolder(testSeleniumFolder);
         return this;
     }
 
@@ -111,6 +113,11 @@ public final class ProjectFoldersValidator {
     @NbBundle.Messages("ProjectFoldersValidator.tests=Unit Tests")
     ProjectFoldersValidator validateTestFolder(File testFolder) {
         return validateProjectFolder(testFolder, TEST_FOLDER, Bundle.ProjectFoldersValidator_tests());
+    }
+
+    @NbBundle.Messages("ProjectFoldersValidator.tests.selenium=Selenium Tests")
+    ProjectFoldersValidator validateTestSeleniumFolder(File testSeleniumFolder) {
+        return validateProjectFolder(testSeleniumFolder, TEST_SELENIUM_FOLDER, Bundle.ProjectFoldersValidator_tests_selenium());
     }
 
     private ProjectFoldersValidator validateProjectFolder(File folder, String source, String dirName) {

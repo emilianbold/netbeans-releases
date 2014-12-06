@@ -123,7 +123,7 @@ public final class VersioningInfoAction extends ContextAction {
         try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }
         if(repositoryUrl == null) {

@@ -58,10 +58,12 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.options.SvnOptionsController;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,11 +73,12 @@ import org.openide.util.NbBundle;
 public class MissingClient implements ActionListener, HyperlinkListener {
     
     private final MissingClientPanel panel;
-    private static final HashSet<String> ALLOWED_EXECUTABLES =
-            new HashSet<String>(Arrays.asList(new String[] {"svn", "svn.exe"} )); //NOI18N
+    private static final HashSet<String> ALLOWED_EXECUTABLES =  new HashSet<String>(Arrays.asList(new String[] {"svn"} )); //NOI18N
+    private final Context context;
     
     /** Creates a new instance of MissingSvnClient */
-    public MissingClient() {
+    public MissingClient(Context context) {
+        this.context = context;
         panel = new MissingClientPanel();
         panel.browseButton.addActionListener(this);        
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
@@ -106,8 +109,8 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         "FileChooser.SvnExecutables.desc=SVN Executables"
     })
     private void onBrowseClick() {
-        File oldFile = getExecutableFile();
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(SvnOptionsController.class, "ACSD_BrowseFolder"), oldFile);   // NOI18N
+        VCSFileProxy oldFile = getExecutableFile();
+        final JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(SvnOptionsController.class, "Browse_title"));                                            // NOI18N
         fileChooser.setMultiSelectionEnabled(false);       
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -121,24 +124,25 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                 return Bundle.FileChooser_SvnExecutables_desc();
             }
         });
-        fileChooser.showDialog(panel, NbBundle.getMessage(SvnOptionsController.class, "OK_Button"));                                            // NOI18N
-        File f = fileChooser.getSelectedFile();
+        fileChooser.showDialog(panel, NbBundle.getMessage(SvnOptionsController.class, "OK_Button")); // NOI18N
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
             while (!f.exists() || f.isFile()) {
-                File parent = f.getParentFile();
+                VCSFileProxy parent = f.getParentFile();
                 if (parent == null) {
                     break;
                 } else {
                     f = parent;
                 }
             }
-            panel.executablePathTextField.setText(f.getAbsolutePath());
+            panel.executablePathTextField.setText(f.getPath());
         }
     }
 
-    private File getExecutableFile() {
+    private VCSFileProxy getExecutableFile() {
         String execPath = panel.executablePathTextField.getText();
-        return FileUtil.normalizeFile(new File(execPath));
+        VCSFileProxy resource = VCSFileProxySupport.getResource(context.getRootFiles()[0], execPath);
+        return resource.normalizeFile();
     }    
 
     @Override

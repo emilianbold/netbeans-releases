@@ -52,6 +52,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
     private File sourceDir;
     private File siteRootDir;
     private File testDir;
+    private File testSeleniumDir;
 
 
     public ProjectFoldersValidatorTest(String name) {
@@ -69,11 +70,13 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         assertTrue(siteRootDir.mkdir());
         testDir = new File(projectDir, "tests");
         assertTrue(testDir.mkdir());
+        testSeleniumDir = new File(projectDir, "selenium");
+        assertTrue(testSeleniumDir.mkdir());
     }
 
     public void testValidate() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(sourceDir, siteRootDir, testDir)
+                .validate(sourceDir, siteRootDir, testDir, testSeleniumDir)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -97,7 +100,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
 
     public void testNoFolders() {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(null, null, null)
+                .validate(null, null, null, null)
                 .getResult();
         List<ValidationResult.Message> errors = result.getErrors();
         assertFalse(errors.isEmpty());
@@ -178,11 +181,40 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         assertTrue(result.getWarnings().isEmpty());
     }
 
+    public void testNoTestSeleniumFolder() {
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateTestFolder(null)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testInvalidTestSeleniumFolder() throws Exception {
+        File readme = new File(projectDir, "readme.txt");
+        assertTrue(readme.createNewFile());
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateTestSeleniumFolder(readme)
+                .getResult();
+        assertFalse(result.getErrors().isEmpty());
+        assertEquals(ProjectFoldersValidator.TEST_SELENIUM_FOLDER, result.getErrors().get(0).getSource());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testNotProjectTestSeleniumFolder() throws Exception {
+        testSeleniumDir = new File(getWorkDir(), "topLevelDir");
+        assertTrue(testSeleniumDir.mkdir());
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateTestFolder(testSeleniumDir)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
     public void testSiteRootFolderUnderneathSourceFolder() throws Exception {
         File newSiteRootDir = new File(sourceDir, "public");
         assertTrue(newSiteRootDir.mkdirs());
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(sourceDir, newSiteRootDir, null)
+                .validate(sourceDir, newSiteRootDir, null, null)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -191,7 +223,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
 
     public void testSourceFolderEqualsSiteRootFolder() throws Exception {
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(siteRootDir, siteRootDir, null)
+                .validate(siteRootDir, siteRootDir, null, null)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertFalse(result.getWarnings().isEmpty());
@@ -202,7 +234,7 @@ public class ProjectFoldersValidatorTest extends NbTestCase {
         File newSourceDir = new File(siteRootDir, "src");
         assertTrue(newSourceDir.mkdirs());
         ValidationResult result = new ProjectFoldersValidator()
-                .validate(newSourceDir, siteRootDir, null)
+                .validate(newSourceDir, siteRootDir, null, null)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertFalse(result.getWarnings().isEmpty());

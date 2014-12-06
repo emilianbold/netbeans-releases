@@ -438,7 +438,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         try {
             repository = CommitAction.getSvnUrl(context);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);     
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);     
             return; 
         }
         // XXX #168094 logging

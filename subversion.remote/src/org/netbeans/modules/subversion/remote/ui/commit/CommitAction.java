@@ -229,7 +229,7 @@ public class CommitAction extends ContextAction {
         try {
             repository = getSvnUrl(ctx);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
         List<VCSFileProxy> roots = ctx.getRoots();
         SvnProgressSupport prepareSupport = getProgressSupport(ctx, roots, data, panel.progressPanel, deepScanEnabled);
@@ -408,7 +408,7 @@ public class CommitAction extends ContextAction {
         try {
             repository = getSvnUrl(ctx);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport() {
@@ -1235,7 +1235,7 @@ public class CommitAction extends ContextAction {
         try {
             return Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true); // should not hapen
             return null;
         }
     }

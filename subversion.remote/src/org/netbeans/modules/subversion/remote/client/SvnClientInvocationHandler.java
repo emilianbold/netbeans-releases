@@ -59,6 +59,7 @@ import javax.net.ssl.SSLKeyException;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
@@ -133,7 +134,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         "propertyGet" //NOI18N
     }));
     
-    private final SvnClient adapter;
+    private final CommandlineClient adapter;
     private final SvnClientDescriptor desc;
     private final Cancellable cancellable;
     private SvnProgressSupport support;
@@ -144,7 +145,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private static final ConfigFiles SENSITIVE_CONFIG_FILES = new ConfigFiles();
     private static final boolean KEEP_SERVERS_FILE = Boolean.getBoolean("versioning.subversion.keepServersFile");
     
-    public SvnClientInvocationHandler (SvnClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
+    public SvnClientInvocationHandler (CommandlineClient adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions) {
         
         assert adapter  != null;
         assert desc     != null;

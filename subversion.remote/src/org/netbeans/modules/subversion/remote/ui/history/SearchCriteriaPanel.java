@@ -62,6 +62,7 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.ui.browser.Browser;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -267,7 +268,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         try {            
             repositoryUrl = url != null ? url : SvnUtils.getRepositoryRootUrl(roots[0]); 
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, true);
             return;
         }                
 

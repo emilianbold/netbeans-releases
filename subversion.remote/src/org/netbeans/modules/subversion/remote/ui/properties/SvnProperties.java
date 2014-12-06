@@ -280,7 +280,7 @@ public final class SvnProperties implements ActionListener {
         try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, true);
             return;
         }
 
@@ -290,8 +290,9 @@ public final class SvnProperties implements ActionListener {
                 HashMap<String, String> properties;
                 @Override
                 protected void perform() {
+                    final Context context = new Context(roots);
                     try {
-                        SvnClient client = Subversion.getInstance().getClient(false, new Context(roots));
+                        SvnClient client = Subversion.getInstance().getClient(false, context);
                         properties = new HashMap<String, String>();
                         for (VCSFileProxy f : roots) {
                             ISVNStatus status = SvnUtils.getSingleStatus(client, f);
@@ -300,7 +301,7 @@ public final class SvnProperties implements ActionListener {
                             }
                         }
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        SvnClientExceptionHandler.notifyException(context, ex, true, true);
                         return;
                     }
                     EventQueue.invokeLater(new Runnable() {
@@ -357,7 +358,7 @@ public final class SvnProperties implements ActionListener {
         try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, true);
             return;
         }
 
@@ -368,10 +369,11 @@ public final class SvnProperties implements ActionListener {
                 @Override
                 protected void perform() {
                     SvnClient client;
+                    final Context context = new Context(roots);
                     try {
-                        client = Subversion.getInstance().getClient(false, new Context(roots));
+                        client = Subversion.getInstance().getClient(false, context);
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        SvnClientExceptionHandler.notifyException(context, ex, true, true);
                         return;
                     }
                     boolean recursively = panel.cbxRecursively.isSelected();
@@ -394,7 +396,7 @@ public final class SvnProperties implements ActionListener {
                             }
                         }
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        SvnClientExceptionHandler.notifyException(context, ex, true, true);
                         return;
                     } finally {
                         Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new VCSFileProxy[toRefresh.size()]));
@@ -467,10 +469,11 @@ public final class SvnProperties implements ActionListener {
     })
     private void removeProperties() {
         final SVNUrl repositoryUrl;
+        final Context context = new Context(roots);
         try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
         final int[] rows = propTable.getSelectedItems();
@@ -481,9 +484,9 @@ public final class SvnProperties implements ActionListener {
                 protected void perform() {
                     SvnClient client;
                     try {
-                        client = Subversion.getInstance().getClient(false, new Context(roots));
+                        client = Subversion.getInstance().getClient(false, context);
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        SvnClientExceptionHandler.notifyException(context, ex, true, true);
                         return;
                     }
 
@@ -525,7 +528,7 @@ public final class SvnProperties implements ActionListener {
                             }
                         });
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        SvnClientExceptionHandler.notifyException(context, ex, true, true);
                     } finally {
                         Subversion.getInstance().getStatusCache().refreshAsync(recursively, toRefresh.toArray(new VCSFileProxy[toRefresh.size()]));
                     }
