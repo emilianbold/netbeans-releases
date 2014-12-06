@@ -55,6 +55,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -62,6 +63,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -132,7 +134,10 @@ public final class TimeStamps {
     public static boolean existForRoot (final URL root) throws IOException {
         assert root != null;
 
-        FileObject cacheDir = CacheFolder.getDataFolder(root, true);
+        FileObject cacheDir = CacheFolder.getDataFolder(
+            root,
+            EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+            CacheFolderProvider.Mode.EXISTENT);
         if (cacheDir != null) {
             return new File (FileUtil.toFile(cacheDir),TIME_STAMPS_FILE).exists();
         }
@@ -235,7 +240,10 @@ public final class TimeStamps {
 
         @Override
         public void store() throws IOException {
-            final File cacheDir = FileUtil.toFile(CacheFolder.getDataFolder(root));
+            final File cacheDir = FileUtil.toFile(CacheFolder.getDataFolder(
+                root,
+                EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                CacheFolderProvider.Mode.CREATE));
             final File f = new File(cacheDir, TIME_STAMPS_FILE);
             assert f != null;
             try {
@@ -268,97 +276,103 @@ public final class TimeStamps {
         }
         
         private void load () throws IOException {
-            final File cacheDir = FileUtil.toFile(CacheFolder.getDataFolder(root));
-            final File f = new File (cacheDir, TIME_STAMPS_FILE);
-            if (f.exists()) {
-                try {
-                    boolean readOldPropertiesFormat = false;
-                    {
-                        final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //NOI18N
-                        try {
-                            String line = in.readLine();
-                            if (line != null && line.startsWith(VERSION)) {
-                                // it's the new format
-                                LOG.log(Level.FINE, "{0}: reading {1} timestamps", new Object [] { f.getPath(), VERSION }); //NOI18N
+            final FileObject cacheFolder = CacheFolder.getDataFolder(
+                root,
+                EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                CacheFolderProvider.Mode.EXISTENT);
+            if (cacheFolder != null) {
+                final File cacheDir = FileUtil.toFile(cacheFolder);
+                final File f = new File (cacheDir, TIME_STAMPS_FILE);
+                if (f.exists()) {
+                    try {
+                        boolean readOldPropertiesFormat = false;
+                        {
+                            final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //NOI18N
+                            try {
+                                String line = in.readLine();
+                                if (line != null && line.startsWith(VERSION)) {
+                                    // it's the new format
+                                    LOG.log(Level.FINE, "{0}: reading {1} timestamps", new Object [] { f.getPath(), VERSION }); //NOI18N
 
-                                while (null != (line = in.readLine())) {
-                                    int idx = line.indexOf('='); //NOI18N
-                                    if (idx != -1) {
-                                        try {
-                                            final String path = line.substring(0, idx);
-                                            if (!path.isEmpty() && path.charAt(0) != '/') {
-                                                final long ts = Long.parseLong(line.substring(idx + 1));
-                                                timestamps.put(path, ts);
-                                            } else {
-                                                LOG.log(
-                                                    Level.WARNING,
-                                                    "Invalid timestamp entry {0} in {1}",   //NOI18N
-                                                    new Object[]{
-                                                        path,
-                                                        f.getAbsolutePath()
-                                                    });
+                                    while (null != (line = in.readLine())) {
+                                        int idx = line.indexOf('='); //NOI18N
+                                        if (idx != -1) {
+                                            try {
+                                                final String path = line.substring(0, idx);
+                                                if (!path.isEmpty() && path.charAt(0) != '/') {
+                                                    final long ts = Long.parseLong(line.substring(idx + 1));
+                                                    timestamps.put(path, ts);
+                                                } else {
+                                                    LOG.log(
+                                                        Level.WARNING,
+                                                        "Invalid timestamp entry {0} in {1}",   //NOI18N
+                                                        new Object[]{
+                                                            path,
+                                                            f.getAbsolutePath()
+                                                        });
+                                                }
+                                            } catch (NumberFormatException nfe) {
+                                                LOG.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
                                             }
-                                        } catch (NumberFormatException nfe) {
-                                            LOG.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
                                         }
                                     }
+                                } else {
+                                    // it's the old format from Properties.store()
+                                    readOldPropertiesFormat = true;
                                 }
-                            } else {
-                                // it's the old format from Properties.store()
-                                readOldPropertiesFormat = true;
+                            } finally {
+                                in.close();
                             }
-                        } finally {
-                            in.close();
-                        }
-                    }
-
-                    if (readOldPropertiesFormat) {
-                        LOG.log(Level.FINE, "{0}: reading old Properties timestamps", f.getPath()); //NOI18N
-                        final Properties p = new Properties();
-                        final InputStream in = new FileInputStream(f);
-                        try {
-                            p.load(in);
-                        } finally {
-                            in.close();
                         }
 
-                        for(Map.Entry<Object, Object> entry : p.entrySet()) {
+                        if (readOldPropertiesFormat) {
+                            LOG.log(Level.FINE, "{0}: reading old Properties timestamps", f.getPath()); //NOI18N
+                            final Properties p = new Properties();
+                            final InputStream in = new FileInputStream(f);
                             try {
-                                final String fileId = (String) entry.getKey();
-                                if (fileId != null) {
-                                    timestamps.put(fileId, Long.parseLong((String) entry.getValue()));
+                                p.load(in);
+                            } finally {
+                                in.close();
+                            }
+
+                            for(Map.Entry<Object, Object> entry : p.entrySet()) {
+                                try {
+                                    final String fileId = (String) entry.getKey();
+                                    if (fileId != null) {
+                                        timestamps.put(fileId, Long.parseLong((String) entry.getValue()));
+                                    }
+                                } catch (NumberFormatException nfe) {
+                                    LOG.log(Level.FINE, "Invalid timestamp: key={0}, value={1}, timestamps={2}, exception={3}", //NOI18N
+                                            new Object[] { entry.getKey(), entry.getValue(), f, nfe });
                                 }
-                            } catch (NumberFormatException nfe) {
-                                LOG.log(Level.FINE, "Invalid timestamp: key={0}, value={1}, timestamps={2}, exception={3}", //NOI18N
-                                        new Object[] { entry.getKey(), entry.getValue(), f, nfe });
                             }
                         }
-                    }
 
-                    if (unseen != null) {
-                        for (Object k : timestamps.keySet()) {
-                            unseen.add((String)k);
+                        if (unseen != null) {
+                            for (Object k : timestamps.keySet()) {
+                                unseen.add((String)k);
+                            }
                         }
-                    }
 
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.log(Level.FINEST, "Timestamps loaded from {0}:", f.getPath()); //NOI18N
-                        for(LongHashMap.Entry<String> entry : timestamps.entrySet()) {
-                            LOG.log(Level.FINEST, "{0}={1}", new Object [] { entry.getKey(), Long.toString(entry.getValue()) }); //NOI18N
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.log(Level.FINEST, "Timestamps loaded from {0}:", f.getPath()); //NOI18N
+                            for(LongHashMap.Entry<String> entry : timestamps.entrySet()) {
+                                LOG.log(Level.FINEST, "{0}={1}", new Object [] { entry.getKey(), Long.toString(entry.getValue()) }); //NOI18N
+                            }
+                            LOG.log(Level.FINEST, "---------------------------"); //NOI18N
                         }
-                        LOG.log(Level.FINEST, "---------------------------"); //NOI18N
+                    } catch (Exception e) {
+                        // #176001: catching all exceptions, because j.u.Properties can throw IllegalArgumentException
+                        // from its load() method
+                        // In case of any exception props are empty, everything is scanned
+                        timestamps.clear();
+                        LOG.log(Level.FINE, null, e);
                     }
-                } catch (Exception e) {
-                    // #176001: catching all exceptions, because j.u.Properties can throw IllegalArgumentException
-                    // from its load() method
-                    // In case of any exception props are empty, everything is scanned
-                    timestamps.clear();
-                    LOG.log(Level.FINE, null, e);
                 }
             }
-        }        
+        }
     }
-    
+
     private static class AllChangedTransientImpl implements Implementation {
 
         @Override
