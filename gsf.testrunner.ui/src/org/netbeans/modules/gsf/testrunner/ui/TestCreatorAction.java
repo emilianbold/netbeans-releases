@@ -100,6 +100,9 @@ public class TestCreatorAction extends NodeAction {
         }
         if (activatedNodes.length == 1) {
             FileObject fo = UICommonUtils.getFileObjectFromNode(activatedNodes[0]);
+            if(fo == null) {
+                return false;
+            }
             Project p = FileOwnerQuery.getOwner(fo);
             if(p == null) {
                 return false;
