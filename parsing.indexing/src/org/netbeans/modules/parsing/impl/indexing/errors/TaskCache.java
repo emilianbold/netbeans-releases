@@ -59,6 +59,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,6 +74,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
+import org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -573,8 +575,10 @@ public class TaskCache {
     }
 
     private static File getCacheRoot(URL root, boolean onlyIfExists) throws IOException {
-        FileObject dataFolder = CacheFolder.getDataFolder(root, onlyIfExists);
-
+        final FileObject dataFolder = CacheFolder.getDataFolder(
+            root,
+            EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+            onlyIfExists ? CacheFolderProvider.Mode.EXISTENT : CacheFolderProvider.Mode.CREATE);
         if (dataFolder == null) {
             return null;
         }
