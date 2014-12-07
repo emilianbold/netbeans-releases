@@ -97,6 +97,18 @@ public abstract class JsDocumentationHolder {
                         insertIntoOccurencesMap(type);
                     }
                 }
+                DocParameter definedType = comment.getDefinedType();
+                if (definedType != null) {
+                    for (Type type : definedType.getParamTypes()) {
+                        insertIntoOccurencesMap(type);
+                    }
+                }
+                List<Type> types = comment.getTypes();
+                if (types != null) {
+                    for (Type type : types) {
+                        insertIntoOccurencesMap(type);
+                    }
+                }
             }
         }
         return occurencesMap;
