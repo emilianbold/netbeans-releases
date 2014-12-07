@@ -138,6 +138,7 @@ import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.parsing.impl.indexing.Debug.printCollection;
 import static org.netbeans.modules.parsing.impl.indexing.Debug.printMap;
 import static org.netbeans.modules.parsing.impl.indexing.Debug.printMimeTypes;
+import org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider;
 import org.netbeans.modules.parsing.impl.indexing.implspi.ContextProvider;
 import org.openide.util.lookup.Lookups;
 /**
@@ -1410,7 +1411,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 @Override
                                 public FileObject call() throws Exception {
                                     if (cache == null) {
-                                        cache = CacheFolder.getDataFolder(root.first());
+                                        cache = CacheFolder.getDataFolder(
+                                                root.first(),
+                                                EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                                                CacheFolderProvider.Mode.CREATE);
                                     }
                                     return cache;
                                 }
@@ -2014,7 +2018,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             @NonNull final URL root,
             @NonNull final DependenciesContext depCtx) {
             try {
-                final FileObject dataFolder = CacheFolder.getDataFolder(root, true);
+                final FileObject dataFolder = CacheFolder.getDataFolder(
+                        root,
+                        EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                        CacheFolderProvider.Mode.EXISTENT);
                 if (dataFolder != null) {
                     final Set<String> names = depCtx.getIndexerNames();
                     for (FileObject child : dataFolder.getChildren()) {
@@ -2374,7 +2381,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected final void scanStarted(final URL root, final boolean sourceForBinaryRoot,
                                    final SourceIndexers indexers, final Map<SourceIndexerFactory,Boolean> votes,
                                    final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish) throws IOException {
-            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+            final FileObject cacheRoot = CacheFolder.getDataFolder(
+                    root,
+                    EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                    CacheFolderProvider.Mode.CREATE);
             customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.cifInfos, votes, ctxToFinish);
             embeddingIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.eifInfosMap.values(), votes, ctxToFinish);
         }
@@ -2633,7 +2643,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<>();
             SourceAccessor.getINSTANCE().suppressListening(true, !checkEditor);
                 try {
-                    final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                    final FileObject cacheRoot = CacheFolder.getDataFolder(
+                            root,
+                            EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                            CacheFolderProvider.Mode.CREATE);
                     final ClusteredIndexables ci = new ClusteredIndexables(resources);
                     ClusteredIndexables allCi = null;
                     boolean ae = false;
@@ -2977,7 +2990,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 @NonNull final URL root,
                 @NonNull final BinaryIndexers indexers,
                 @NonNull final Map<BinaryIndexerFactory, Context> contexts) throws IOException {
-            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+            final FileObject cacheRoot = CacheFolder.getDataFolder(
+                    root,
+                    EnumSet.of(CacheFolderProvider.Kind.BINARIES),
+                    CacheFolderProvider.Mode.CREATE);
             for(BinaryIndexerFactory bif : indexers.bifs) {
                 final Context ctx = SPIAccessor.getInstance().createContext(
                     cacheRoot,
@@ -4034,7 +4050,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                                     logCrawlerTime(crawler, time);
                                     if (crawler.isFinished()) {
-                                        final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                                        final FileObject cacheRoot = CacheFolder.getDataFolder(
+                                            root,
+                                            EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                                            CacheFolderProvider.Mode.CREATE);
                                         final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<>();
                                         final UsedIndexables usedIterables = new UsedIndexables();
                                         final Map<SourceIndexerFactory,Boolean> votes = new HashMap<>();
@@ -4237,7 +4256,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                                     logCrawlerTime(crawler, t);
                                     if (crawler.isFinished()) {
-                                        final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+                                        final FileObject cacheRoot = CacheFolder.getDataFolder(
+                                                root,
+                                                EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                                                CacheFolderProvider.Mode.CREATE);
                                         final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<>();
                                         final UsedIndexables usedIterables = new UsedIndexables();
                                         final Map<SourceIndexerFactory,Boolean> votes = new HashMap<>();
@@ -5483,7 +5505,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             @NonNull final URL root,
             @NonNull final SourceIndexers indexers,
             final boolean sourceForBinaryRoot) throws IOException {
-            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+            final FileObject cacheRoot = CacheFolder.getDataFolder(
+                    root,
+                    EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                    CacheFolderProvider.Mode.CREATE);
             final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<>();
             final UsedIndexables usedIndexables = new UsedIndexables();
             final Map<SourceIndexerFactory,Boolean> votes = new HashMap<>();
@@ -5573,7 +5598,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     unpack(packedIndex, downloadFolder);
                                     packedIndex.delete();
                                     if (patchDownloadedIndex(root,BaseUtilities.toURI(downloadFolder).toURL())) {
-                                        final FileObject df = CacheFolder.getDataFolder(root);
+                                        final FileObject df = CacheFolder.getDataFolder(
+                                            root,
+                                            EnumSet.of(CacheFolderProvider.Kind.SOURCES, CacheFolderProvider.Kind.LIBRARIES),
+                                            CacheFolderProvider.Mode.CREATE);
                                         assert df != null;
                                         final File dataFolder = FileUtil.toFile(df);
                                         assert dataFolder != null;
