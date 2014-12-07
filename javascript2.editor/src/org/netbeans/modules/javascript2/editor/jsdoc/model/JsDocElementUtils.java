@@ -109,7 +109,7 @@ public class JsDocElementUtils {
         }
         if (text.charAt(0) == '(') {
             text = text.substring(1);
-            if (text.charAt(text.length()) == ')') {
+            if (text.charAt(text.length() - 1) == ')') {
                 text = text.substring(0, text.length() - 2);
             }
             text = text.trim();
