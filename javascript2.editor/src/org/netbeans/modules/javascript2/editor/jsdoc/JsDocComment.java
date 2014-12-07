@@ -296,6 +296,15 @@ public class JsDocComment extends JsComment {
         }
         return definedTypes.get(0);
     }
+
+    @Override
+    public List<Type> getTypes() {
+        List<Type> properties = new LinkedList<Type>();
+        for (JsDocElement jsDocElement : getTagsForType(JsDocElementType.TYPE)) {
+            properties.add(((DeclarationElement) jsDocElement).getDeclaredType());
+        }
+        return properties;
+    }
     
     
 }

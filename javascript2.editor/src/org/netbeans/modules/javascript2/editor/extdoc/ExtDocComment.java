@@ -227,4 +227,9 @@ public class ExtDocComment extends JsComment {
         return null;
     }
     
+    @Override
+    public List<Type> getTypes() {
+        return Collections.emptyList();
+    }
+    
 }

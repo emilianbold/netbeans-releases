@@ -103,7 +103,18 @@ public class JsDocElementUtils {
      */
     public static List<Type> parseTypes(String textToParse, int offset) {
         List<Type> types = new LinkedList<Type>();
-        String[] typesArray = textToParse.split("[|]"); //NOI18N
+        String text = textToParse.trim();
+        if (text.isEmpty()) {
+            return types;
+        }
+        if (text.charAt(0) == '(') {
+            text = text.substring(1);
+            if (text.charAt(text.length()) == ')') {
+                text = text.substring(0, text.length() - 2);
+            }
+            text = text.trim();
+        } 
+        String[] typesArray = text.split("[|]"); //NOI18N
         for (String string : typesArray) {
             if (!string.trim().isEmpty()) {
                 types.add(createTypeUsage(string, offset + textToParse.indexOf(string)));

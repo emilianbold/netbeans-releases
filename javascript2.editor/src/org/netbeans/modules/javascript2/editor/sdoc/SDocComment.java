@@ -262,5 +262,10 @@ public class SDocComment extends JsComment {
     public DocParameter getDefinedType() {
         return null;
     }
+
+    @Override
+    public List<Type> getTypes() {
+        return Collections.emptyList();
+    }
     
 }

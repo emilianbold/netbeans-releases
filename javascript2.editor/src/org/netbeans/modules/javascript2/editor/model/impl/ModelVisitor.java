@@ -709,9 +709,15 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (definedType != null) {
                     JsObject object = new JsObjectImpl(getGlobalObject(), definedType.getParamName(), definedType.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
                     getGlobalObject().addProperty(object.getName(), object);
+                    int assignOffset = definedType.getParamName().getOffsetRange().getEnd();
                     List<Type> types = definedType.getParamTypes();
+                    
                     for (Type type : types) {
-                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), type.getOffset());
+                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                    }
+                    List<Type> assignedTypes = comment.getTypes();
+                    for (Type type : assignedTypes) {
+                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
                     }
                     List<DocParameter> properties = comment.getProperties();
                     for (DocParameter docProperty: properties) {
