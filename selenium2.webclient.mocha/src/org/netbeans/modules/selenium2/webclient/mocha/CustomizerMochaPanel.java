@@ -114,6 +114,7 @@ public class CustomizerMochaPanel implements CustomizerPanelImplementation {
         assert !EventQueue.isDispatchThread();
         assert customizerMocha != null;
         MochaPreferences.setMochaDir(project, customizerMocha.getMochaInstallFolder());
+        MochaPreferences.setTimeout(project, customizerMocha.getTimeout());
     }
 
 }

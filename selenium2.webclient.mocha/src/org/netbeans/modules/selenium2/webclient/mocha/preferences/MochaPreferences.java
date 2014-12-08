@@ -57,6 +57,8 @@ public final class MochaPreferences {
 
     private static final String ENABLED = "enabled"; // NOI18N
     private static final String MOCHA_DIR = "mocha.dir"; // NOI18N
+    private static final String TIMEOUT = "timeout"; // NOI18N
+    private static final int TIMEOUT_DEFAULT = 10000; // 10 seconds
 
 
     private MochaPreferences() {
@@ -77,6 +79,14 @@ public final class MochaPreferences {
 
     public static void setMochaDir(Project project, String installDir) {
         getPreferences(project).put(MOCHA_DIR, installDir);
+    }
+    
+    public static int getTimeout(Project project) {
+        return getPreferences(project).getInt(TIMEOUT, TIMEOUT_DEFAULT);
+    }
+
+    public static void setTimeout(Project project, int timeout) {
+        getPreferences(project).putInt(TIMEOUT, timeout);
     }
 
     private static String relativizePath(Project project, String filePath) {
