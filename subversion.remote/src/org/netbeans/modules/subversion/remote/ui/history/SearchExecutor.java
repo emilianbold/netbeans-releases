@@ -129,7 +129,7 @@ class SearchExecutor extends SvnProgressSupport {
                 }
             }
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(master.getRoots()), ex, true, true);
         }
     }
 
@@ -219,10 +219,11 @@ class SearchExecutor extends SvnProgressSupport {
 
     private void search(SVNUrl rootUrl, Set<VCSFileProxy> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths, int limit) {
         SvnClient client;
+        Context context = new Context(files.toArray(new VCSFileProxy[files.size()]));
         try {
-            client = Subversion.getInstance().getClient(new Context(files.toArray(new VCSFileProxy[files.size()])), rootUrl, progressSupport);
+            client = Subversion.getInstance().getClient(context, rootUrl, progressSupport);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
         if (progressSupport.isCanceled()) {

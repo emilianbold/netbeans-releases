@@ -163,7 +163,7 @@ public class IgnoreAction extends ContextAction {
                 try {
                     client = Subversion.getInstance().getClient(false, ctx);               
                 } catch (SVNClientException e) {
-                    SvnClientExceptionHandler.notifyException(e, true, true);
+                    SvnClientExceptionHandler.notifyException(ctx, e, true, true);
                     return;
                 }
                 if (actionStatus == IGNORING) {
@@ -181,7 +181,7 @@ public class IgnoreAction extends ContextAction {
                             }
                         }
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
                         return;
                     }
                 }
@@ -208,7 +208,7 @@ public class IgnoreAction extends ContextAction {
                             client.setIgnoredPatterns(parent, new ArrayList<String>(currentPatterns));
                         }
                     } catch (SVNClientException e) {
-                        SvnClientExceptionHandler.notifyException(e, true, true);
+                        SvnClientExceptionHandler.notifyException(ctx, e, true, true);
                     }
                 }
                 // refresh files manually, we do not suppport wildcards in ignore patterns so this is sufficient

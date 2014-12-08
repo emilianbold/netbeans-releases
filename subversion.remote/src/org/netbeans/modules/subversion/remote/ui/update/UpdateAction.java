@@ -182,7 +182,7 @@ public class UpdateAction extends ContextAction {
                 }
             }
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }        
         if (repositoryUrl == null) {
@@ -223,7 +223,7 @@ public class UpdateAction extends ContextAction {
             client.addNotifyListener(progress);
             progress.setCancellableDelegate(client);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
 
@@ -313,7 +313,7 @@ public class UpdateAction extends ContextAction {
                             svnRevision = info.getRevision();
                         }
                     } catch (SVNClientException ex) {
-                        SvnClientExceptionHandler.notifyException(ex, true, true);
+                        SvnClientExceptionHandler.notifyException(new Context(root), ex, true, true);
                     }
                 } else {
                     svnRevision = new SVNRevision.Number(revision);
@@ -360,7 +360,7 @@ public class UpdateAction extends ContextAction {
         try {
             repository = getSvnUrl(context);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
 
@@ -382,7 +382,8 @@ public class UpdateAction extends ContextAction {
         if (file == null) {
             return;
         }
-        if(!Subversion.getInstance().checkClientAvailable(new Context(file))) {
+        final Context context = new Context(file);
+        if(!Subversion.getInstance().checkClientAvailable(context)) {
             return;
         }
 
@@ -390,7 +391,7 @@ public class UpdateAction extends ContextAction {
         try {
             repository = SvnUtils.getRepositoryRootUrl(file);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
         final SVNUrl repositoryUrl = repository;

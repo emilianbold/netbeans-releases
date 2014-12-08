@@ -357,7 +357,7 @@ public abstract class ContextAction extends NodeAction {
         try {
             repository = getSvnUrl(ctx);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
         }
         return Subversion.getInstance().getRequestProcessor(repository);
     }
@@ -367,7 +367,7 @@ public abstract class ContextAction extends NodeAction {
         try {
             repository = getSvnUrl(nodes);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            SvnClientExceptionHandler.notifyException(getContext(nodes), ex, false, false);
         }        
         return Subversion.getInstance().getRequestProcessor(repository);
     }
@@ -401,7 +401,7 @@ public abstract class ContextAction extends NodeAction {
                 }
                 url = getSvnUrl(actionContext);
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
             }                    
             return start(rp, url, runningName);
         }

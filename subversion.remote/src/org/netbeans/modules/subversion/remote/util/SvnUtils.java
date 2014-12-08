@@ -515,7 +515,8 @@ public class SvnUtils {
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
         VCSFileProxy lastManaged = file;
-        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
+        final Context context = new Context(file);
+        SvnClient client = Subversion.getInstance().getClient(false, context);
         while (isManaged(file)) {
             fileIsManaged = true;
 
@@ -528,7 +529,7 @@ public class SvnUtils {
                         // log this exception if needed and break the execution
                         WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                     } else {
-                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                        SvnClientExceptionHandler.notifyException(context, ex, false, false);
                     }
                 }
             }
@@ -598,7 +599,8 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */
     public static SVNUrl getRepositoryRootUrl(VCSFileProxy file) throws SVNClientException {
-        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
+        final Context context = new Context(file);
+        SvnClient client = Subversion.getInstance().getClient(false, context);
 
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
@@ -616,7 +618,7 @@ public class SvnUtils {
                         // log this exception if needed and break the execution
                         WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                     } else {
-                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                        SvnClientExceptionHandler.notifyException(context, ex, false, false);
                         e = ex;
                     }
                 }
@@ -677,10 +679,11 @@ public class SvnUtils {
         StringBuilder path = new StringBuilder();
         SVNUrl fileURL = null;
         SvnClient client = null;
+        final Context context = new Context(file);
         try {
-            client = Subversion.getInstance().getClient(false, new Context(file));
+            client = Subversion.getInstance().getClient(false, context);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            SvnClientExceptionHandler.notifyException(context, ex, false, false);
             return null;
         }
         boolean fileIsManaged = false;
@@ -704,7 +707,7 @@ public class SvnUtils {
                         // log this exception if needed and break the execution
                         WorkingCopyAttributesCache.getInstance().logSuppressed(ex, file);
                     } else {
-                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                        SvnClientExceptionHandler.notifyException(context, ex, false, false);
                         e = ex;
                     }
                 }
@@ -717,7 +720,7 @@ public class SvnUtils {
                 info = getInfoFromWorkingCopy(client, file, true);
             } catch (SVNClientException ex) {
                 if (SvnClientExceptionHandler.isUnversionedResource(ex.getMessage()) == false) {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    SvnClientExceptionHandler.notifyException(context, ex, false, false);
                 }
             }
 
@@ -769,10 +772,11 @@ public class SvnUtils {
     public static Map<VCSFileProxy, SVNUrl> getRepositoryUrls(VCSFileProxy root) throws SVNClientException {
         SVNUrl fileURL = null;
         SvnClient client = null;
+        final Context context = new Context(root);
         try {
-            client = Subversion.getInstance().getClient(false, new Context(root));
+            client = Subversion.getInstance().getClient(false, context);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            SvnClientExceptionHandler.notifyException(context, ex, false, false);
             return null;
         }
 
@@ -793,7 +797,7 @@ public class SvnUtils {
                     // log this exception if needed and break the execution
                     WorkingCopyAttributesCache.getInstance().logSuppressed(ex, root);
                 } else {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    SvnClientExceptionHandler.notifyException(context, ex, false, false);
                 }
             }
         }
@@ -1252,7 +1256,7 @@ public class SvnUtils {
             url = getRepositoryUrl(file);
         } catch (SVNClientException ex) {
             if (!WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
             }
             return null;
         }
@@ -1732,7 +1736,7 @@ public class SvnUtils {
         try {
             file = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, rev, pegRevision.toString(), originalFile.getName());
         } catch (IOException e) {
-            SvnClientExceptionHandler.notifyException(e, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(file), e, true, true);
             return;
         }
 

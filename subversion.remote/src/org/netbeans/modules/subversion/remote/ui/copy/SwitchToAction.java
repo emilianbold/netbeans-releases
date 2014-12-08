@@ -126,7 +126,7 @@ public class SwitchToAction extends ContextAction {
             fileUrl = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             if (rootUrl == null) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
+                SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
                 return;
             }
         }
@@ -182,7 +182,7 @@ public class SwitchToAction extends ContextAction {
                                     }
                                 }, roots);
                             } catch (SVNClientException ex) {
-                                SvnClientExceptionHandler.notifyException(ex, true, false);
+                                SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, false);
                             }
                         }
                     };
@@ -195,8 +195,9 @@ public class SwitchToAction extends ContextAction {
     private boolean validateInput(VCSFileProxy root, RepositoryFile toRepositoryFile) {
         boolean ret = false;
         SvnClient client;
+        final Context context = new Context(root);
         try {                   
-            client = Subversion.getInstance().getClient(new Context(root), toRepositoryFile.getRepositoryUrl());
+            client = Subversion.getInstance().getClient(context, toRepositoryFile.getRepositoryUrl());
             ISVNInfo info = client.getInfo(toRepositoryFile.getFileUrl());
             if(info.getNodeKind() == SVNNodeKind.DIR && root.isFile()) {
                 SvnClientExceptionHandler.annotate(NbBundle.getMessage(SwitchToAction.class, "LBL_SwitchFileToFolderError"));
@@ -208,7 +209,7 @@ public class SwitchToAction extends ContextAction {
                 ret = true;
             }
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return ret;
         }                            
         return ret;
@@ -226,10 +227,11 @@ public class SwitchToAction extends ContextAction {
 
         try {
             SvnClient client;
+            final Context context = new Context(root);
             try {
-                client = Subversion.getInstance().getClient(new Context(root), toRepositoryFile.getRepositoryUrl());
+                client = Subversion.getInstance().getClient(context, toRepositoryFile.getRepositoryUrl());
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
+                SvnClientExceptionHandler.notifyException(context, ex, true, true);
                 return;
             }
             // ... and switch

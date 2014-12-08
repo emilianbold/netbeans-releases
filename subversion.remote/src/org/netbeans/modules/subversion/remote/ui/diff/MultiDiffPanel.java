@@ -884,7 +884,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         try {
             url = ContextAction.getSvnUrl(context); 
         } catch(SVNClientException ex)  {
-            SvnClientExceptionHandler.notifyException(ex, true, true);     
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);     
             return;             
         }
         supp.start(rp, url, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
@@ -1460,7 +1460,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        SvnClientExceptionHandler.notifyException(e, true, true);
+                        SvnClientExceptionHandler.notifyException(MultiDiffPanel.this.context, e, true, true);
                     }
                 });
             }

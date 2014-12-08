@@ -72,6 +72,7 @@ import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.ui.wcadmin.UpgradeAction;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
@@ -86,7 +87,7 @@ import org.openide.util.actions.SystemAction;
  * @author Tomas Stupka
  */
 public class SvnClientExceptionHandler {
-    private final SvnClient adapter;
+    private final CommandlineClient adapter;
     private final SvnClient client;
     private final SvnClientDescriptor desc;    
     private final int handledExceptions;
@@ -139,7 +140,7 @@ public class SvnClientExceptionHandler {
             
     static final String ACTION_CANCELED_BY_USER = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser");
     
-    public SvnClientExceptionHandler(SVNClientException exception, SvnClient adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions) {
+    public SvnClientExceptionHandler(SVNClientException exception, CommandlineClient adapter, SvnClient client, SvnClientDescriptor desc, int handledExceptions) {
         this.exception = exception;                
         this.adapter = adapter;
         this.client = client;
@@ -714,7 +715,7 @@ public class SvnClientExceptionHandler {
                 || message.contains("working copy needs to be upgraded"); //NOI18N
     }
 
-    public static void notifyException(Exception ex, boolean annotate, boolean isUI) {
+    public static void notifyException(Context context, Exception ex, boolean annotate, boolean isUI) {
         String message = ex.getMessage();
         if (isUI && isTooOldWorkingCopy(message)) {
             if (upgrade(message)) {
@@ -723,7 +724,9 @@ public class SvnClientExceptionHandler {
         }
         if(isNoCliSvnClient(message)) {
             if(isUI) {
-                notifyNoClient();
+                if (context != null) {
+                    notifyNoClient(context);
+                }
             }
             return;
         }
@@ -758,8 +761,8 @@ public class SvnClientExceptionHandler {
         return false;
     }     
     
-    private static void notifyNoClient() {
-        MissingClient msc = new MissingClient();
+    private static void notifyNoClient(Context context) {
+        MissingClient msc = new MissingClient(context);
         msc.show();
     }
     

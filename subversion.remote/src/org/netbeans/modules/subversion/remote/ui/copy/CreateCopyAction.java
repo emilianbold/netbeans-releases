@@ -124,7 +124,7 @@ public class CreateCopyAction extends ContextAction {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(interestingFile); // XXX
             fileUrl = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }                   
         final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
@@ -204,10 +204,11 @@ public class CreateCopyAction extends ContextAction {
 
         try {                
             SvnClient client;
+            final Context context = new Context(roots);
             try {
-                client = Subversion.getInstance().getClient(new Context(roots), toRepositoryFile.getRepositoryUrl());
+                client = Subversion.getInstance().getClient(context, toRepositoryFile.getRepositoryUrl());
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, true, true);
+                SvnClientExceptionHandler.notifyException(context, ex, true, true);
                 return;
             }
 

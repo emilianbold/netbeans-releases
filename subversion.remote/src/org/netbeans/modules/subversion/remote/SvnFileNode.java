@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.ArrayList;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
@@ -141,7 +142,7 @@ public class SvnFileNode {
                 relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed()
                         ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(getFile())) : SvnUtils.getRelativePath(getFile());
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(ex, false, false);
+                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
             }
             if (relativePath == null) {
                 relativePath = NbBundle.getMessage(SvnFileNode.class, "SvnFileNode.relativePath.unknown"); //NOI18N

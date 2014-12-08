@@ -108,13 +108,13 @@ public final class DeleteLocalAction extends ContextAction {
         support.start(createRequestProcessor(ctx));
     }
     
-    public static void performDelete(Context ctx, final SvnProgressSupport support) {
+    public static void performDelete(final Context ctx, final SvnProgressSupport support) {
 
         final SvnClient client;
         try {
             client = Subversion.getInstance().getClient(ctx, support);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }        
 
@@ -139,7 +139,7 @@ public final class DeleteLocalAction extends ContextAction {
                                 try {
                                     client.revert(file, false);
                                 } catch (SVNClientException ex) {
-                                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                                    SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
                                 }
                                 lock = fo.lock();                    
                                 fo.delete(lock);       
@@ -156,7 +156,7 @@ public final class DeleteLocalAction extends ContextAction {
                 }
             }, files);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, false, false);
+            SvnClientExceptionHandler.notifyException(null, ex, false, false);
         }
     }
     

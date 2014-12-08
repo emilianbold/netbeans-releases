@@ -267,10 +267,11 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 invalid(null);
 
                 SvnClient client;
+                final Context context = new Context(importDirectory);
                 try {
-                    client = Subversion.getInstance().getClient(new Context(importDirectory), repositoryPaths.getRepositoryUrl(), this);
+                    client = Subversion.getInstance().getClient(context, repositoryPaths.getRepositoryUrl(), this);
                 } catch (SVNClientException ex) {
-                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                    SvnClientExceptionHandler.notifyException(context, ex, true, true);
                     invalidMsg = new AbstractStep.WizardMessage(SvnClientExceptionHandler.parseExceptionMessage(ex), false);
                     return;
                 }

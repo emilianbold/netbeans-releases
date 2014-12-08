@@ -929,19 +929,21 @@ public final class QuerySupport {
             this.indexerId = indexerId;
         }
 
-        private LayeredDocumentIndex findIndex(URL root) {
+        @CheckForNull
+        private LayeredDocumentIndex findIndex(@NonNull final URL root) {
             try {
-                FileObject cacheFolder = CacheFolder.getDataFolder(root);
-                assert cacheFolder != null;
-                FileObject indexFolder = cacheFolder.getFileObject(indexerId);
-                if (indexFolder != null) {
-                    return indexFactory.getIndex(indexFolder);
+                final FileObject cacheFolder = CacheFolder.getDataFolder(root, true);
+                if (cacheFolder != null) {
+                    final FileObject indexFolder = cacheFolder.getFileObject(indexerId);
+                    if (indexFolder != null) {
+                        return indexFactory.getIndex(indexFolder);
+                    }
                 }
             } catch (IOException ioe) {
                 LOG.log(Level.INFO, "Can't create index for " + indexerId + " and " + root, ioe); //NOI18N
             }
             return null;
-        }        
+        }
     } // End of IndexerQuery class
 
     private static final class DocumentToResultConvertor implements Convertor<IndexDocument, IndexResult> {
