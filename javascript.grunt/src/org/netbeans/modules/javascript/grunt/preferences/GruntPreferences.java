@@ -70,7 +70,7 @@ public final class GruntPreferences {
         if (value != null) {
             getPreferences().put(COMMAND_PREFIX + commandId, value);
         } else {
-            getPreferences().remove(commandId);
+            getPreferences().remove(COMMAND_PREFIX + commandId);
         }
     }
 
