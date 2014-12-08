@@ -146,8 +146,8 @@ public final class GruntBuildTool implements BuildToolImplementation {
                 }
             }
         } else if (warnUser) {
-            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION);
-            Object option = DialogDisplayer.getDefault().notify(desc);
+            Object option = DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(Bundle.GruntBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION));
             if (option == NotifyDescriptor.YES_OPTION) {
                 project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GruntCustomizerProvider.CUSTOMIZER_IDENT, null);
             }
