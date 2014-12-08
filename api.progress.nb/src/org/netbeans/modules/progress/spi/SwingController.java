@@ -91,9 +91,13 @@ public class SwingController extends Controller {
     }
     
     protected void resetTimer(int delay, boolean restart) {
-        timer.setInitialDelay(delay);
-        if (restart) {
-            timer.restart();
+        if (delay > 0) {
+            timer.setInitialDelay(delay);
+            if (restart) {
+                timer.restart();
+            }
+        } else {
+            timer.stop();
         }
     }
 
