@@ -218,7 +218,7 @@ public final class VersioningInfoAction extends ContextAction {
                             LOG.log(Level.WARNING, "putPropsForVersioned: though versioned it has no svn url: {0}, {1}, {2}, {3}, {4}", //NOI18N
                                     new Object[] { file, fi, status.getTextStatus(), status.getUrlString(), status.getFile() });
                         } else {
-                            info = client.getInfo(url);
+                            info = client.getInfo(new Context(file), url);
                         }
                         if (info != null) {
                             if (!lockedLocally && info.getLockOwner() != null) {

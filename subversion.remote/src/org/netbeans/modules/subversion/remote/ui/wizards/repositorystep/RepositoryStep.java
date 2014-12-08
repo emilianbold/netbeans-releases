@@ -226,7 +226,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                 try {
                     repository.storeConfigValues();
                     setCancellableDelegate(client);
-                    info = client.getInfo(url);
+                    info = client.getInfo(context, url);
                 } catch (SVNClientException ex) {
                     if (SvnClientExceptionHandler.isAuthentication(ex.getMessage()) && !SvnKenaiAccessor.getInstance().canRead(SvnUtils.decodeToString(url))) {
                         invalidMsg = new AbstractStep.WizardMessage(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"), false); //NOI18N

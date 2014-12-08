@@ -187,7 +187,7 @@ public class KVFile {
     private void parse() throws IOException {        
         InputStream is = null;        
         try {            
-            is = FileUtils.createInputStream(file);                                    
+            is = file.getInputStream(false);                                    
             int keyIdx = 0;
             while(!checkEOF(is)) {                      
                int keyLength = readEntryLength(is);     // key length
@@ -259,7 +259,7 @@ public class KVFile {
             if(parent!=null && !parent.exists()) {
                 VCSFileProxySupport.mkdirs(parent);
             }
-            os = FileUtils.createOutputStream(file);            
+            os = file.toFileObject().getOutputStream();            
             for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {
                 Key key = (Key) it.next();
                 byte[] value = (byte[]) getMap().get(key);                

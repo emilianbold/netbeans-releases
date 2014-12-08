@@ -170,10 +170,11 @@ public class CreateCopyAction extends ContextAction {
         String errorText = null;
         try {
             RepositoryFile toRepositoryFile = createCopy.getToRepositoryFile();
-            SvnClient client = Subversion.getInstance().getClient(new Context(roots), toRepositoryFile.getRepositoryUrl());
+            final Context context = new Context(roots);
+            SvnClient client = Subversion.getInstance().getClient(context, toRepositoryFile.getRepositoryUrl());
             ISVNInfo info = null;
             try {
-                info = client.getInfo(toRepositoryFile.getFileUrl());
+                info = client.getInfo(context, toRepositoryFile.getFileUrl());
             } catch (SVNClientException e) {
                 if (!SvnClientExceptionHandler.isWrongUrl(e.getMessage())) {
                     throw e;

@@ -193,7 +193,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                 (file = new ConnectionType.FileUrl(this)).getPanel(),
                 FILE_PANEL);
 
-        svnSSH = new ConnectionType.SvnSSHCli(this);
+        svnSSH = new ConnectionType.SvnSSHCli(fileSystem, this);
 
         repositoryPanel.connPanel.add(svnSSH.getPanel(), SSH_PANEL);
 

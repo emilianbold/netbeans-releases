@@ -279,7 +279,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 try {
                     RepositoryFile repositoryFile = getRepositoryFile();
                     SVNUrl repositoryUrl = repositoryFile.getRepositoryUrl();
-                    if (!importIntoExisting(client, repositoryFile.getFileUrl())) {
+                    if (!importIntoExisting(context, client, repositoryFile.getFileUrl())) {
                         invalidMsg = new AbstractStep.WizardMessage(NbBundle.getMessage(ImportStep.class, "MSG_TargetFolderExists"), true); //NOI18N
                         return;
                     }
@@ -359,9 +359,9 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
          * @param repositoryFileUrl
          * @return true if the target does not exist or user wishes to import anyway.
          */
-        private boolean importIntoExisting(SvnClient client, SVNUrl repositoryFileUrl) {
+        private boolean importIntoExisting(Context context, SvnClient client, SVNUrl repositoryFileUrl) {
             try {
-                ISVNInfo info = client.getInfo(repositoryFileUrl);
+                ISVNInfo info = client.getInfo(context, repositoryFileUrl);
                 if (info != null) {
                     // target folder exists, ask user for confirmation
                     final boolean flags[] = {true};

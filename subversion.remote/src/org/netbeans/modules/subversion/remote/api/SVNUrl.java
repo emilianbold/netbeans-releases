@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.subversion.remote.api;
 
+import com.sun.org.apache.xml.internal.utils.URI;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -179,4 +182,52 @@ public class SVNUrl {
         System.arraycopy(path, 0, parent, 0, path.length - 1);
         return new SVNUrl(protocol, host, port, parent);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append(protocol).append("://").append(host);
+        if (port != getDefaultPort(protocol)) {
+            buf.append(':').append(port);
+        }
+        for(String s : path) {
+            buf.append('/').append(s);
+        }
+        return buf.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.protocol);
+        hash = 89 * hash + Objects.hashCode(this.host);
+        hash = 89 * hash + this.port;
+        hash = 89 * hash + Arrays.deepHashCode(this.path);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SVNUrl other = (SVNUrl) obj;
+        if (!Objects.equals(this.protocol, other.protocol)) {
+            return false;
+        }
+        if (!Objects.equals(this.host, other.host)) {
+            return false;
+        }
+        if (this.port != other.port) {
+            return false;
+        }
+        if (!Arrays.deepEquals(this.path, other.path)) {
+            return false;
+        }
+        return true;
+    }
+
 }

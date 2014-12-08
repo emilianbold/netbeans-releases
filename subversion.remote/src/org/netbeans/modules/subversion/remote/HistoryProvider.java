@@ -63,7 +63,6 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
-import org.netbeans.modules.versioning.history.HistoryAction;
 import org.netbeans.modules.versioning.history.HistoryActionVCSProxyBased;
 import org.openide.util.*;
 
