@@ -57,14 +57,14 @@ public class DataViewPageContextTest extends NbTestCase {
 
     public void testSetGetPageSize() {
         int origSize = DataViewPageContext.getStoredPageSize();
-        assertTrue(origSize > 0);
+        assertTrue(origSize > -1);
         int newSize = origSize + 1;
         DataViewPageContext.setStoredPageSize(newSize);
         assertEquals(newSize, DataViewPageContext.getStoredPageSize());
 
         boolean exception = false;
         try {
-            DataViewPageContext.setStoredPageSize(0);
+            DataViewPageContext.setStoredPageSize(-1);
         } catch (IllegalArgumentException e) {
             exception = true;
         }

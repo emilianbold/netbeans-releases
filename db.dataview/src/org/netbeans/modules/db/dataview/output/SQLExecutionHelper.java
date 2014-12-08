@@ -756,7 +756,7 @@ class SQLExecutionHelper {
 
             // Get next page
             int rowCnt = 0;
-            while (((pageSize == -1) || (pageSize > rowCnt)) && (hasNext)) {
+            while (((pageSize <= 0) || (pageSize > rowCnt)) && (hasNext)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
@@ -974,13 +974,11 @@ class SQLExecutionHelper {
 
     private String appendLimitIfRequired(DataViewPageContext pageContext,
             String sql) {
-        if (useScrollableCursors) {
+        int pageSize = pageContext == null ? dataView.getPageSize() : pageContext.getPageSize();
+        if (pageSize == 0 || useScrollableCursors) {
             return sql;
         } else if (limitSupported && isSelectStatement(sql)
                 && !isLimitUsedInSelect(sql)) {
-
-            int pageSize = pageContext == null ? dataView.getPageSize()
-                    : pageContext.getPageSize();
             int currentPos = pageContext == null ? 1
                     : pageContext.getCurrentPos();
             return sql + ' ' + LIMIT_CLAUSE + pageSize

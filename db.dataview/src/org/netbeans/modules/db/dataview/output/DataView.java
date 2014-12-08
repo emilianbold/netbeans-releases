@@ -103,7 +103,7 @@ public class DataView {
         dv.dbConn = dbConn;
         dv.sqlString = sqlString.trim();
         dv.nbOutputComponent = false;
-        if(pageSize > 0) {
+        if(pageSize >= 0) {
             dv.initialPageSize = pageSize;
         }
         try {
