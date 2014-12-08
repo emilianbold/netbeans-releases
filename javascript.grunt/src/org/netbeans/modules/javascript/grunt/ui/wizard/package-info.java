@@ -41,14 +41,14 @@
  */
 
 @TemplateRegistration(folder = "ClientSide",
-        content = "Gruntfile.js",
-        scriptEngine = "freemarker", 
+        content = "../resources/Gruntfile.js",
+        scriptEngine = "freemarker",
         position = 600,
         displayName = "#Templates.gruntfile.js",
-        description = "gruntdescription.html",
+        description = "../resources/GruntfileDescription.html",
         targetName = "Gruntfile",
         category = "html5")
 
-package org.netbeans.modules.javascript.grunt.legacy;
+package org.netbeans.modules.javascript.grunt.ui.wizard;
 
 import org.netbeans.api.templates.TemplateRegistration;
