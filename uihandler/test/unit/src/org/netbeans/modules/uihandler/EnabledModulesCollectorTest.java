@@ -75,6 +75,11 @@ public class EnabledModulesCollectorTest extends NbTestCase {
         installer.restored();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        installer.uninstalled();
+    }
+    
     public void testSetOfEnabledModulesIsListed() {
         // just log something
         Logger.getLogger(Installer.UI_LOGGER_NAME + ".empty").warning("say anything");

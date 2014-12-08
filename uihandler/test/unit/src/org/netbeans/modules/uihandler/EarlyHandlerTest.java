@@ -64,6 +64,12 @@ public class EarlyHandlerTest extends NbTestCase {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Installer installer = Installer.findObject(Installer.class, true);
+        installer.uninstalled();
+    }
     
     public void testEarlyPublish() throws Exception {
         EarlyHandler eh = Lookup.getDefault().lookup(EarlyHandler.class);

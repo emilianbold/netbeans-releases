@@ -70,6 +70,7 @@ public class BugTriggersTest extends NbTestCase {
     }
 
     protected void tearDown() throws Exception {
+        Installer.findObject(Installer.class, true).uninstalled();
     }
     
     public void testRootLoggerHasHandler() throws Exception {

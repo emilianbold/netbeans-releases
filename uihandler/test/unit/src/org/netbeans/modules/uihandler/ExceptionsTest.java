@@ -69,8 +69,12 @@ public class ExceptionsTest extends NbTestCase {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Installer.findObject(Installer.class, true).uninstalled();
+    }
     
-   
     
     public void testSetReportPanelSummary(){
         String str = "RETEZEC SUMMARY";

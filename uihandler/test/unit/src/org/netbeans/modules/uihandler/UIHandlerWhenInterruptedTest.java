@@ -73,6 +73,8 @@ public class UIHandlerWhenInterruptedTest extends NbTestCase {
     }
 
     protected void tearDown() throws Exception {
+        Installer o = Installer.findObject(Installer.class, true);
+        o.uninstalled();
     }
 
     public void testPublishWhenInterupted() {

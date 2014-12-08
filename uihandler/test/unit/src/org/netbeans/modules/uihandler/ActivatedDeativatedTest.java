@@ -81,6 +81,8 @@ public class ActivatedDeativatedTest extends NbTestCase {
     }
 
     protected void tearDown() throws Exception {
+        o = Installer.findObject(Installer.class, true);
+        o.uninstalled();
     }
     
     public void testActivatedAndDeativated() {
