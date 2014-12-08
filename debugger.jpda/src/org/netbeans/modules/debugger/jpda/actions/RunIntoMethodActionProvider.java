@@ -110,9 +110,6 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -128,12 +125,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     private static final Logger logger = Logger.getLogger(RunIntoMethodActionProvider.class.getName());
 
     private final JPDADebuggerImpl debugger;
+    private final ContextProvider contextProvider;
     private ActionsManager lastActionsManager;
     
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
         debugger.addPropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
+        this.contextProvider = lookupProvider;
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
@@ -207,19 +206,20 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 }
             });
         } catch (InvocationTargetException ex) {
-            ErrorManager.getDefault().notify(ex.getTargetException());
+            Exceptions.printStackTrace(ex.getTargetException());
             return;
         } catch (InterruptedException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             return;
         }
         final String method = methodPtr[0];
         if (method.length () < 1) {
-            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(
-                NbBundle.getMessage(RunIntoMethodActionProvider.class,
+            ActionCallbackSupport.messageCallback(
+                    contextProvider,
+                    ActionsManager.ACTION_RUN_INTO_METHOD,
+                    NbBundle.getMessage(RunIntoMethodActionProvider.class,
                                     "MSG_Put_cursor_on_some_method_call")
             );
-            DialogDisplayer.getDefault ().notify (descriptor);
             return;
         }
         final int methodLine = linePtr[0];
@@ -310,16 +310,17 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             return ;
         } catch (ClassNotPreparedExceptionWrapper aiex) {
         } catch (AbsentInformationException aiex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
+            Exceptions.printStackTrace(Exceptions.attachSeverity(aiex, Level.INFO));
         }
         logger.log(Level.FINE, "doAction({0}, {1}, {2}, {3}) locations = {4}",
                    new Object[]{ url, clazz, methodLine, methodName, locations });
         if (locations.isEmpty()) {
-            String message = NbBundle.getMessage(RunIntoMethodActionProvider.class,
-                                                 "MSG_RunIntoMeth_absentInfo",
-                                                 clazz.name());
-            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
-            DialogDisplayer.getDefault().notify(descriptor);
+            ActionCallbackSupport.messageCallback(
+                    contextProvider,
+                    ActionsManager.ACTION_RUN_INTO_METHOD,
+                    NbBundle.getMessage(RunIntoMethodActionProvider.class,
+                                        "MSG_RunIntoMeth_absentInfo",
+                                        clazz.name()));
             return;
         }
         Expression expr = debugger.getExpressionPool().getExpressionAt(locations.get(0), url);
@@ -347,7 +348,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         }
         doAction(debugger, methodName, methodClassType, isNative, bpLocation,
                   expressionLines, false, doResume,
-                  MethodChooserSupport.MethodEntry.SELECTED);
+                  JPDAMethodChooserUtils.MethodEntry.SELECTED);
     }
 
     static boolean doAction(final JPDADebuggerImpl debugger,
@@ -358,7 +359,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             Interval expressionLines,
                             // If it's important not to run far from the expression
                             boolean setBoundaryStep,
-                            MethodChooserSupport.MethodEntry methodEntry) {
+                            JPDAMethodChooserUtils.MethodEntry methodEntry) {
         
         return doAction(debugger, methodName, methodClassType, isNative, bpLocation, expressionLines, setBoundaryStep, true, methodEntry);
     }
@@ -372,7 +373,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                     Interval expressionLines,
                                     boolean setBoundaryStep,
                                     boolean doResume,
-                                    final MethodChooserSupport.MethodEntry methodEntry) {
+                                    final JPDAMethodChooserUtils.MethodEntry methodEntry) {
         final VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return false;
         final int line = LocationWrapper.lineNumber0(bpLocation, "Java");
@@ -572,7 +573,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                            final boolean isNative,
                                            final int methodLine,
                                            final boolean finishWhenNotFound,
-                                           final MethodChooserSupport.MethodEntry methodEntry) {
+                                           final JPDAMethodChooserUtils.MethodEntry methodEntry) {
         //ThreadReference tr = jtr.getThreadReference();
         final int depth = jtr.getStackDepth();
         //System.err.println("traceLineForMethod: stepping into native method "+methodClassType+"."+method+" = "+isNative);
@@ -604,7 +605,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         step.setHidden(true);
         logger.log(Level.FINE, "Will traceLineForMethod({0}, {1}, {2})",
                    new Object[]{method, methodLine, finishWhenNotFound});
-        if (MethodChooserSupport.MethodEntry.SELECTED.equals(methodEntry)) {
+        if (JPDAMethodChooserUtils.MethodEntry.SELECTED.equals(methodEntry)) {
             // The user has explicitly set the method they want to step into.
             // Therefore, ignore any stepping filters.
             ((JPDAStepImpl) step).setIgnoreStepFilters(true);
@@ -631,7 +632,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             step.addStep(debugger.getCurrentThread());
                         }
                     } catch (AbsentInformationException aiex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
+                        Exceptions.printStackTrace(Exceptions.attachSeverity(aiex, Level.INFO));
                         // We're somewhere strange...
                         step.setHidden(false);
                     }
@@ -656,7 +657,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                         doFinish = false;
                                     }
                                 } catch (AbsentInformationException aiex) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
+                                    Exceptions.printStackTrace(Exceptions.attachSeverity(aiex, Level.INFO));
                                     // We're somewhere strange...
                                 }
                             }

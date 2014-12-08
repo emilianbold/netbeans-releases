@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
@@ -63,18 +62,21 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThread;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThreadGroup;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.DebuggingView;
-import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -122,12 +124,12 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_MakeCurrent_Label"),
         new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
-                if (node instanceof JPDAThread) {
-                    return debugger.getCurrentThread () != node;
+                if (node instanceof JPDADVThread) {
+                    return debugger.getCurrentThread () != ((JPDADVThread) node).getKey();
                 }
                 if (node instanceof CallStackFrame) {
                     CallStackFrame f = (CallStackFrame) node;
-                    return !DebuggingTreeModel.isMethodInvoking(f.getThread()) &&//f.getThread() == debugger.getCurrentThread() &&
+                    return !((JPDAThreadImpl) f.getThread()).isMethodInvoking() &&//f.getThread() == debugger.getCurrentThread() &&
                            !f.equals(debugger.getCurrentCallStackFrame());
                 }
                 return false;
@@ -135,9 +137,9 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             
             public void run (Object[] nodes) {
                 if (nodes.length == 0) return ;
-                if (nodes[0] instanceof JPDAThread) {
-                    ((JPDAThread) nodes [0]).makeCurrent ();
-                    goToSource((JPDAThread) nodes [0]);
+                if (nodes[0] instanceof JPDADVThread) {
+                    ((JPDADVThread) nodes [0]).makeCurrent ();
+                    goToSource((JPDADVThread) nodes [0]);
                 }
                 if (nodes[0] instanceof CallStackFrame) {
                     CallStackFrame f = (CallStackFrame) nodes[0];
@@ -160,18 +162,18 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_CallstackAction_Copy2CLBD_Label"),
         new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
-                if (node instanceof JPDAThread) {
-                    return !DebuggingTreeModel.isMethodInvoking((JPDAThread) node);
+                if (node instanceof JPDADVThread) {
+                    return !((JPDAThreadImpl) ((JPDADVThread) node).getKey()).isMethodInvoking();
                 } else if (node instanceof CallStackFrame) {
-                    return !DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread());
+                    return !((JPDAThreadImpl) ((CallStackFrame) node).getThread()).isMethodInvoking();
                 }
                 return true;
             }
             public void run (Object[] nodes) {
                 List<JPDAThread> threads = new ArrayList<JPDAThread>(nodes.length);
                 for (Object node : nodes) {
-                    if (node instanceof JPDAThread) {
-                        threads.add((JPDAThread) node);
+                    if (node instanceof JPDADVThread) {
+                        threads.add(((JPDADVThread) node).getKey());
                     }
                     if (node instanceof CallStackFrame) {
                         JPDAThread t = ((CallStackFrame) node).getThread();
@@ -199,7 +201,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 public boolean isEnabled (Object node) {
                     if (!(node instanceof CallStackFrame)) {
                         return false;
-                    } else if (DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread())) {
+                    } else if (((JPDAThreadImpl) ((CallStackFrame) node).getThread()).isMethodInvoking()) {
                         return false;
                     }
                     return isGoToSourceSupported ((CallStackFrame) node);
@@ -227,7 +229,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 public boolean isEnabled (Object node) {
                     // TODO: Check whether this frame is deeper then the top-most
                     if (node instanceof CallStackFrame) {
-                        return !DebuggingTreeModel.isMethodInvoking(((CallStackFrame) node).getThread());
+                        return !((JPDAThreadImpl) ((CallStackFrame) node).getThread()).isMethodInvoking();
                     }
                     return true;
                 }
@@ -272,8 +274,8 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
                 //if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
-                if (node instanceof JPDAThread) {
-                    return !((JPDAThread) node).isSuspended ();
+                if (node instanceof JPDADVThread) {
+                    return !((JPDADVThread) node).isSuspended ();
                 }
                 if (node instanceof JPDAThreadGroup) {
                     return true;
@@ -286,10 +288,15 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 for (i = 0; i < k; i++) {
                     Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ?
                             ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
-                    if (node instanceof JPDAThread)
-                        ((JPDAThread) node).suspend ();
-                    else
-                        ((JPDAThreadGroup) node).suspend ();
+                    if (node instanceof JPDAThread) {
+                        ((JPDAThread) node).suspend();
+                    } else if (node instanceof JPDADVThread) {
+                        ((JPDADVThread) node).suspend();
+                    } else if (node instanceof JPDAThreadGroup) {
+                        ((JPDAThreadGroup) node).suspend();
+                    } else if (node instanceof JPDADVThreadGroup) {
+                        ((JPDADVThreadGroup) node).getKey().suspend();
+                    }
                 }
             }
         },
@@ -303,10 +310,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
                 //if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).originalThread;
-                if (node instanceof JPDAThread) {
-                    return ((JPDAThread) node).isSuspended ();
+                if (node instanceof JPDADVThread) {
+                    return ((JPDADVThread) node).isSuspended ();
                 }
-                if (node instanceof JPDAThreadGroup) {
+                if (node instanceof JPDADVThreadGroup) {
                     return true;
                 }
                 return false;
@@ -317,10 +324,15 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 for (i = 0; i < k; i++) {
                     Object node = (nodes[i] instanceof MonitorModel.ThreadWithBordel) ?
                             ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
-                    if (node instanceof JPDAThread)
-                        ((JPDAThread) node).resume ();
-                    else
-                        ((JPDAThreadGroup) node).resume ();
+                    if (node instanceof JPDAThread) {
+                        ((JPDAThread) node).resume();
+                    } else if (node instanceof JPDADVThread) {
+                        ((JPDADVThread) node).resume();
+                    } else if (node instanceof JPDAThreadGroup) {
+                        ((JPDAThreadGroup) node).resume();
+                    } else if (node instanceof JPDADVThreadGroup) {
+                        ((JPDADVThreadGroup) node).getKey().resume();
+                    }
                 }
             }
         },
@@ -334,11 +346,16 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_Interrupt_Label"),
         new LazyActionPerformer (requestProcessor) {
             public boolean isEnabled (Object node) {
-                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).getOriginalThread();
-                if (node instanceof JPDAThread)
+                if (node instanceof MonitorModel.ThreadWithBordel) {
+                    node = ((MonitorModel.ThreadWithBordel) node).getOriginalThread();
+                }
+                if (node instanceof JPDAThread) {
                     return !((JPDAThread) node).isSuspended ();
-                else
+                } else if (node instanceof JPDADVThread) {
+                    return !((JPDADVThread) node).isSuspended ();
+                } else {
                     return false;
+                }
             }
             
             public void run (Object[] nodes) {
@@ -348,6 +365,8 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                             ((MonitorModel.ThreadWithBordel) nodes[i]).getOriginalThread() : nodes[i];
                     if (node instanceof JPDAThread) {
                         ((JPDAThread) node).interrupt();
+                    } else if (node instanceof JPDADVThread) {
+                        ((JPDADVThread) node).getKey().interrupt();
                     }
                 }
             }
@@ -407,8 +426,8 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 SUSPEND_ACTION,
             };
         } else
-        if (node instanceof JPDAThread) {
-            JPDAThread t = (JPDAThread) node;
+        if (node instanceof JPDADVThread) {
+            JPDADVThread t = (JPDADVThread) node;
             boolean suspended = t.isSuspended ();
             Action a = null;
             if (suspended)
@@ -450,11 +469,11 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) {
             return;
         }
-        if (node instanceof JPDAThread || node instanceof CallStackFrame) {
+        if (node instanceof JPDADVThread || node instanceof CallStackFrame) {
             requestProcessor.post(new Runnable() {
                 public void run() {
-                    if (node instanceof JPDAThread) {
-                        ((JPDAThread) node).makeCurrent ();
+                    if (node instanceof JPDADVThread) {
+                        ((JPDADVThread) node).makeCurrent ();
                     } else if (node instanceof CallStackFrame) {
                         CallStackFrame f = (CallStackFrame) node;
                         JPDAThread thread = f.getThread();
@@ -597,14 +616,14 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         sp.showSource (frame, language);
     }
     
-    private static void goToSource(final JPDAThread thread) {
+    private static void goToSource(final JPDADVThread thread) {
         Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
         if (session == null) return ;
         String language = session.getCurrentLanguage ();
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (engine == null) return ;
         SourcePath sp = engine.lookupFirst(null, SourcePath.class);
-        sp.showSource (thread, language);
+        sp.showSource (thread.getKey(), language);
     }
 
 }

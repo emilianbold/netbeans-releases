@@ -51,11 +51,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThread;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThreadGroup;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -63,7 +62,6 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-
 import org.openide.util.WeakSet;
 
 
@@ -148,11 +146,11 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
                 return true;
             }
         }
-        if (node instanceof JPDAThreadGroup) {
+        if (node instanceof JPDADVThreadGroup) {
             return true;
         }
-        if (node instanceof JPDAThread) {
-            if (((JPDAThread) node).getCurrentBreakpoint() != null) {
+        if (node instanceof JPDADVThread) {
+            if (((JPDADVThread) node).getCurrentBreakpoint() != null) {
                 return true;
             }
         }
@@ -174,7 +172,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
         synchronized (this) {
             expandedNodes.add(node);
         }
-        if (node instanceof JPDAThread || node instanceof JPDAThreadGroup) {
+        if (node instanceof JPDADVThread || node instanceof JPDADVThreadGroup) {
             fireNodeChanged(node);
         }
     }
@@ -189,7 +187,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
             expandedNodes.remove(node);
             expandedExplicitely.remove(node);
         }
-        if (node instanceof JPDAThread || node instanceof JPDAThreadGroup) {
+        if (node instanceof JPDADVThread || node instanceof JPDADVThreadGroup) {
             fireNodeChanged(node);
         }
     }

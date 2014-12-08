@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThread;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -63,8 +63,8 @@ public class DebuggingTableModel implements TableModel {
 
     public Object getValueAt(Object node, String columnID) throws UnknownTypeException {
         if (columnID.equals("suspend")) {
-            if (node instanceof JPDAThread) {
-                return new Boolean(((JPDAThread) node).isSuspended());
+            if (node instanceof JPDADVThread) {
+                return new Boolean(((JPDADVThread) node).isSuspended());
             }
             return null;
         }

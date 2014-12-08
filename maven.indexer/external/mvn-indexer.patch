@@ -1,0 +1,164 @@
+diff --git a/indexer-core/src/main/java/org/apache/maven/index/context/DefaultIndexingContext.java b/indexer-core/src/main/java/org/apache/maven/index/context/DefaultIndexingContext.java
+index dda3b18..e3a556e 100644
+--- a/indexer-core/src/main/java/org/apache/maven/index/context/DefaultIndexingContext.java
++++ b/indexer-core/src/main/java/org/apache/maven/index/context/DefaultIndexingContext.java
+@@ -524,7 +524,6 @@
+     public synchronized void optimize()
+         throws CorruptIndexException, IOException
+     {
+-        getIndexWriter().optimize();
+         commit();
+     }
+ 
+diff --git a/indexer-core/src/main/java/org/apache/maven/index/context/NexusAnalyzer.java b/indexer-core/src/main/java/org/apache/maven/index/context/NexusAnalyzer.java
+index 5f51188..f321dc4 100644
+--- a/indexer-core/src/main/java/org/apache/maven/index/context/NexusAnalyzer.java
++++ b/indexer-core/src/main/java/org/apache/maven/index/context/NexusAnalyzer.java
+@@ -19,6 +19,7 @@
+  * under the License.
+  */
+ 
++import java.io.IOException;
+ import java.io.Reader;
+ 
+ import org.apache.lucene.analysis.Analyzer;
+@@ -38,11 +39,22 @@
+ public final class NexusAnalyzer
+     extends Analyzer
+ {
++    private Tokenizer t;
+     public TokenStream tokenStream( String fieldName, Reader reader )
+     {
+         return getTokenizer( fieldName, reader );
+     }
+ 
++    @Override
++    public TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
++        if(t == null) {
++            t = getTokenizer(fieldName, reader);
++        } else {
++            t.reset(reader); 
++        }
++        return t;
++    }
++    
+     protected Tokenizer getTokenizer( String fieldName, Reader reader )
+     {
+         if ( JarFileContentsIndexCreator.FLD_CLASSNAMES_KW.getKey().equals( fieldName ) )
+diff --git a/indexer-core/src/main/java/org/apache/maven/index/context/NexusIndexWriter.java b/indexer-core/src/main/java/org/apache/maven/index/context/NexusIndexWriter.java
+index bceb3c1..9bd7922 100644
+--- a/indexer-core/src/main/java/org/apache/maven/index/context/NexusIndexWriter.java
++++ b/indexer-core/src/main/java/org/apache/maven/index/context/NexusIndexWriter.java
+@@ -22,10 +22,14 @@
+ import java.io.IOException;
+ 
+ import org.apache.lucene.analysis.Analyzer;
++import org.apache.lucene.index.ConcurrentMergeScheduler;
+ import org.apache.lucene.index.CorruptIndexException;
+ import org.apache.lucene.index.IndexWriter;
+ import org.apache.lucene.index.IndexWriterConfig;
++import org.apache.lucene.index.NoMergePolicy;
++import org.apache.lucene.index.NoMergeScheduler;
+ import org.apache.lucene.index.SerialMergeScheduler;
++import org.apache.lucene.index.TieredMergePolicy;
+ import org.apache.lucene.store.Directory;
+ import org.apache.lucene.store.LockObtainFailedException;
+ import org.apache.lucene.util.Version;
+@@ -43,7 +47,9 @@
+         throws CorruptIndexException, LockObtainFailedException, IOException
+     {
+         super( directory, analyzer, create, MaxFieldLength.LIMITED );
+-
++        setMergeScheduler(NoMergeScheduler.INSTANCE);
++        setMergePolicy(NoMergePolicy.NO_COMPOUND_FILES);
++        
+         // setSimilarity( new NexusSimilarity() );
+     }
+ 
+@@ -59,8 +65,9 @@
+     {
+         final IndexWriterConfig config = new IndexWriterConfig( Version.LUCENE_36, new NexusAnalyzer() );
+         // default open mode is CreateOrAppend which suits us
+-        config.setRAMBufferSizeMB( 2.0 ); // old default
+-        config.setMergeScheduler( new SerialMergeScheduler() ); // merging serially
++        config.setRAMBufferSizeMB( 10.0 ); // old default
++        config.setMergeScheduler( new ConcurrentMergeScheduler()); // merging serially
++        config.setMergePolicy(new TieredMergePolicy());
+         return config;
+     }
+ }
+diff --git a/indexer-core/src/main/java/org/apache/maven/index/updater/IndexDataReader.java b/indexer-core/src/main/java/org/apache/maven/index/updater/IndexDataReader.java
+index 87f2153..142a2ef 100644
+--- a/indexer-core/src/main/java/org/apache/maven/index/updater/IndexDataReader.java
++++ b/indexer-core/src/main/java/org/apache/maven/index/updater/IndexDataReader.java
+@@ -49,20 +49,19 @@
+     public IndexDataReader( InputStream is )
+         throws IOException
+     {
+-        BufferedInputStream bis = new BufferedInputStream( is, 1024 * 8 );
+-
+         // MINDEXER-13
+         // LightweightHttpWagon may have performed automatic decompression
+         // Handle it transparently
+-        bis.mark( 2 );
++        is.mark( 2 );
+         InputStream data;
+-        if ( bis.read() == 0x1f && bis.read() == 0x8b ) // GZIPInputStream.GZIP_MAGIC
++        if ( is.read() == 0x1f && is.read() == 0x8b ) // GZIPInputStream.GZIP_MAGIC
+         {
+-            bis.reset();
+-            data = new GZIPInputStream( bis, 2 * 1024 );
++            is.reset();
++            data = new BufferedInputStream(new GZIPInputStream( is, 1024 * 8 ), 1024 * 8 );
+         }
+         else
+-        {
++        {            
++            BufferedInputStream bis = new BufferedInputStream( is, 1024 * 8 );
+             bis.reset();
+             data = bis;
+         }
+@@ -95,7 +94,6 @@
+         }
+ 
+         w.commit();
+-        w.optimize();
+ 
+         IndexDataReadResult result = new IndexDataReadResult();
+         result.setDocumentCount( n );
+diff --git a/indexer-core/src/main/java/org/apache/maven/index/updater/WagonHelper.java b/indexer-core/src/main/java/org/apache/maven/index/updater/WagonHelper.java
+index 0e450c9..0551de7 100644
+--- a/indexer-core/src/main/java/org/apache/maven/index/updater/WagonHelper.java
++++ b/indexer-core/src/main/java/org/apache/maven/index/updater/WagonHelper.java
+@@ -198,6 +198,7 @@
+             throws IOException, FileNotFoundException
+         {
+             final File target = File.createTempFile( name, "" );
++            target.deleteOnExit(); // just in case
+             retrieve( name, target );
+             return new FileInputStream( target )
+             {
+@@ -220,6 +221,7 @@
+             }
+             catch ( AuthorizationException e )
+             {
++                targetFile.delete();
+                 String msg = "Authorization exception retrieving " + name;
+                 logError( msg, e );
+                 IOException ioException = new IOException( msg );
+@@ -228,6 +230,7 @@
+             }
+             catch ( ResourceDoesNotExistException e )
+             {
++                targetFile.delete();
+                 String msg = "Resource " + name + " does not exist";
+                 logError( msg, e );
+                 FileNotFoundException fileNotFoundException = new FileNotFoundException( msg );
+@@ -236,6 +239,7 @@
+             }
+             catch ( WagonException e )
+             {
++                targetFile.delete();
+                 String msg = "Transfer for " + name + " failed";
+                 logError( msg, e );
+                 IOException ioException = new IOException( msg + "; " + e.getMessage() );

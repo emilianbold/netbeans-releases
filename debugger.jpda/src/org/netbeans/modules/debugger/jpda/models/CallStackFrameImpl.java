@@ -98,11 +98,9 @@ import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -545,7 +543,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                 try {
                     frameCount = ThreadReferenceWrapper.frameCount0(tr);
                 } catch (IncompatibleThreadStateException itsex) {
-                    ErrorManager.getDefault().notify(itsex);
+                    Exceptions.printStackTrace(itsex);
                     return null;
                 }
 
@@ -640,7 +638,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                     sf = ThreadReferenceWrapper.frames(tr, 0, 1).get(0);
                     arguments = getArgumentValues(sf);
                 } catch (IncompatibleThreadStateException itsex) {
-                    ErrorManager.getDefault().notify(itsex);
+                    Exceptions.printStackTrace(itsex);
                     return null;
                 } finally {
                     EventRequestManagerWrapper.deleteEventRequest(
@@ -652,7 +650,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                             ThreadReferenceWrapper.popFrames(tr, sf);
                         }
                     } catch (IncompatibleThreadStateException itsex) {
-                        ErrorManager.getDefault().notify(itsex);
+                        Exceptions.printStackTrace(itsex);
                         return null;
                     } catch (NativeMethodExceptionWrapper nmex) {
                         return null;
@@ -674,7 +672,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                                                                        session.getCurrentLanguage()),
                                 operation);
                     } catch (IncompatibleThreadStateException itsex) {
-                        ErrorManager.getDefault().notify(itsex);
+                        Exceptions.printStackTrace(itsex);
                         return null;
                     }
                     int n = arguments.size();

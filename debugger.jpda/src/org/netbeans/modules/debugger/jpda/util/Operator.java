@@ -67,6 +67,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.actions.SuspendController;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
@@ -86,7 +87,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.ThreadStartEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -163,7 +164,7 @@ public class Operator {
             throw new NullPointerException ();
         }
         this.debugger = debugger;
-        final AWTGrabHandler awtGrabHandler = new AWTGrabHandler(debugger);
+        final SuspendControllersSupport scs = new SuspendControllersSupport(debugger);
         final SuspendCount suspendCount = new SuspendCount();
         final Object[] params = new Object[] {eventQueue, starter, finalizer};
         thread = new Thread (new Runnable () {
@@ -244,7 +245,7 @@ public class Operator {
                             }
                         }
                      }
-                     boolean doContinue = processEvents(eventSet, starter, awtGrabHandler, suspendCount);
+                     boolean doContinue = processEvents(eventSet, starter, scs, suspendCount);
                      if (!doContinue) {
                          break;
                      }
@@ -254,7 +255,7 @@ public class Operator {
                      break;
                  //} catch (InterruptedException e) {
                  } catch (Exception e) {
-                     ErrorManager.getDefault().notify(e);
+                     Exceptions.printStackTrace(e);
                  } finally {
                      synchronized (parallelEvents) {
                          if (haveParallelEventsToProcess && parallelEvents.isEmpty()) {
@@ -273,11 +274,11 @@ public class Operator {
              starter = null;
          }
      }, "Debugger operator thread"); // NOI18N
-        loopControl = new LoopControl(thread, starter, awtGrabHandler, suspendCount);
+        loopControl = new LoopControl(thread, starter, scs, suspendCount);
     }
 
     private boolean processEvents(EventSet eventSet, Executor starter,
-                                  AWTGrabHandler awtGrabHandler, SuspendCount suspendCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, IllegalThreadStateExceptionWrapper {                 
+                                  SuspendControllersSupport scs, SuspendCount suspendCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, IllegalThreadStateExceptionWrapper {                 
         boolean silent = eventSet.size() > 0;
         for (Event e: eventSet) {
             EventRequest r = EventWrapper.request(e);
@@ -509,7 +510,7 @@ public class Operator {
                         //S ystem.out.println ("Operator end"); // NOI18N
                         return false;
                     } catch (Exception ex) {
-                        ErrorManager.getDefault().notify(ex);
+                        Exceptions.printStackTrace(ex);
                     }
                 } else {
                     if (e instanceof BreakpointEvent) {
@@ -534,7 +535,7 @@ public class Operator {
         if (!resume) {
             if (!silent && suspendedAll) {
                 //TODO: Not really all might be suspended!
-                boolean grabSolved = awtGrabHandler.solveGrabbing(debugger.getVirtualMachine()); // TODO: check AWT thread!
+                boolean grabSolved = scs.suspend(debugger.getVirtualMachine()); // TODO: check AWT thread!
                 if (!grabSolved) {
                     resume = true; // We must not stop here, nobody will ever be able to resume
                 } else {
@@ -550,7 +551,7 @@ public class Operator {
                 }
             }
             if (!silent && suspendedThread != null) {
-                boolean grabSolved = awtGrabHandler.solveGrabbing(thref);
+                boolean grabSolved = scs.suspend(thref);
                 if (!grabSolved) {
                     resume = true; // We must not stop here, nobody will ever be able to resume
                 } else {
@@ -851,7 +852,7 @@ public class Operator {
                     } catch (VMDisconnectedExceptionWrapper ex) {
                         return ;
                     } catch (Exception e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                     if (Thread.interrupted()) {
                         return ;
@@ -1128,7 +1129,7 @@ public class Operator {
         private boolean interrupedToProcessParalelEvents;
         
         public LoopControl(Thread t, Executor starter,
-                           AWTGrabHandler awtGrabHandler, SuspendCount suspendCount) {
+                           SuspendControllersSupport scs, SuspendCount suspendCount) {
             this.t = t;
         }
         
@@ -1162,6 +1163,40 @@ public class Operator {
         
         public synchronized boolean isInMethodInvoke() {
             return isMethodInvoke;
+        }
+        
+    }
+    
+    private static class SuspendControllersSupport implements SuspendController {
+        
+        private final List<? extends SuspendController> scs;
+        
+        public SuspendControllersSupport(JPDADebuggerImpl debugger) {
+            scs = debugger.getSession().lookup(null, SuspendController.class);
+        }
+
+        @Override
+        public boolean suspend(ThreadReference tRef) {
+            boolean canSuspend = true;
+            for (SuspendController sc : scs) {
+                boolean s = sc.suspend(tRef);
+                if (!s) {
+                    canSuspend = false;
+                }
+            }
+            return canSuspend;
+        }
+
+        @Override
+        public boolean suspend(VirtualMachine vm) {
+            boolean canSuspend = true;
+            for (SuspendController sc : scs) {
+                boolean s = sc.suspend(vm);
+                if (!s) {
+                    canSuspend = false;
+                }
+            }
+            return canSuspend;
         }
         
     }

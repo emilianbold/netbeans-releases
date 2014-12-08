@@ -207,9 +207,11 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() { // #138102
                 public @Override void run() {
                     List<RepositoryInfo> ris = RepositoryPreferences.getInstance().getRepositoryInfos();
+                    Set<String> doNotIndexRepos = getDoNotIndexRepos();
                     for (final RepositoryInfo ri : ris) {
                         //check this repo can be indexed
-                        if (!ri.isRemoteDownloadable() && !ri.isLocal()) {
+                        if ( (!ri.isRemoteDownloadable() && !ri.isLocal()) || doNotIndexRepos.contains(ri.getId())) {
+                            LOGGER.log(Level.FINER, "Skipping Index At Startup for :{0}", ri.getId());//NOI18N
                             continue;
                         }
                         if (freq != RepositoryPreferences.FREQ_NEVER) {
@@ -480,4 +482,12 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         return true;
     }
 
+    private Set<String> getDoNotIndexRepos() {
+        String st = System.getProperty("maven.indexing.doNotAutoIndex");
+        if(st == null || "".equals(st)) {
+            return Collections.EMPTY_SET;
+        }
+        String[] repos = st.split(";");
+        return new HashSet<>(Arrays.asList(repos));
+    }
 }

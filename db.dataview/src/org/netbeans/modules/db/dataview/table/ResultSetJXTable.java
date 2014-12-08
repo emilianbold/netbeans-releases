@@ -43,6 +43,7 @@ package org.netbeans.modules.db.dataview.table;
 
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -56,6 +57,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultRowSorter;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -67,7 +70,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.*;
-import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
@@ -135,6 +137,13 @@ public class ResultSetJXTable extends JXTableDecorator {
         multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 4;
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         this.setModel(createDefaultDataModel());
+
+        getActionMap().put("selectNextColumnCell", new EditingAwareAction(getActionMap().get("selectNextColumnCell")));
+        getActionMap().put("selectPreviousColumnCell", new EditingAwareAction(getActionMap().get("selectPreviousColumnCell")));
+        getActionMap().put("selectNextRowCell", new EditingAwareAction(getActionMap().get("selectNextRowCell")));
+        getActionMap().put("selectNextPreviousCell", new EditingAwareAction(getActionMap().get("selectPreviousRowCell")));
+
+        setSurrendersFocusOnKeystroke(true);
     }
 
     @Override
@@ -478,4 +487,23 @@ public class ResultSetJXTable extends JXTableDecorator {
             return COPY;
         }
     }
+
+    private class EditingAwareAction extends AbstractAction {
+
+        private final Action delegate;
+
+        public EditingAwareAction(Action delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            boolean editing = isEditing();
+            delegate.actionPerformed(e);
+            if (editing) {
+                editCellAt(getSelectedRow(), getSelectedColumn());
+            }
+        }
+    }
+
 }
