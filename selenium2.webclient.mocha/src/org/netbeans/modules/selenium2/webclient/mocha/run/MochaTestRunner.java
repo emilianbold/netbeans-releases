@@ -76,9 +76,11 @@ public final class MochaTestRunner {
     public static final String NB_LINE = "mocha-netbeans-reporter "; // NOI18N
     
     static final Pattern OK_PATTERN = Pattern.compile("^ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
+    static final Pattern OK_SKIP_PATTERN = Pattern.compile("^ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*) # SKIP -, suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*)"); // NOI18N
     static final Pattern NOT_OK_PATTERN = Pattern.compile("^not ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
     static final Pattern SESSION_START_PATTERN = Pattern.compile("^1\\.\\.(?<TOTAL>[\\d]+)"); // NOI18N
-    static final Pattern SESSION_END_PATTERN = Pattern.compile("^tests (?<TOTAL>[\\d]+), pass (?<PASS>[\\d]+), fail (?<FAIL>[\\d]+)"); // NOI18N
+    static final Pattern SESSION_END_PATTERN = Pattern.compile("^tests (?<TOTAL>[\\d]+), pass (?<PASS>[\\d]+), fail (?<FAIL>[\\d]+), skip (?<SKIP>[\\d]+)"); // NOI18N
+    static final String SKIP = " # SKIP -"; // NOI18N
 
     private final RunInfo runInfo;
 
@@ -124,6 +126,14 @@ public final class MochaTestRunner {
             return output2display;
         }
 
+        matcher = OK_SKIP_PATTERN.matcher(line);
+        if (matcher.find()) {
+            String output2display = parseTestResult(matcher).concat(SKIP);
+            addTestCase(testcase, Status.SKIPPED, duration);
+            getManager().displayOutput(testSession, output2display, false);
+            return output2display;
+        }
+
         matcher = NOT_OK_PATTERN.matcher(line);
         if (matcher.find()) {
             String output2display = parseTestResult(matcher);
@@ -144,7 +154,11 @@ public final class MochaTestRunner {
         if (matcher.pattern().pattern().equals(NOT_OK_PATTERN.pattern())) {
             trouble = new Trouble(false);
         }
-        duration = Long.parseLong(matcher.group("DURATION"));
+        if(matcher.pattern().pattern().equals(OK_SKIP_PATTERN.pattern())) {
+            duration = 0;
+        } else {
+            duration = Long.parseLong(matcher.group("DURATION"));
+        }
         if (runningSuite == null) {
             runningSuite = suite;
             suiteStarted(runningSuite);
@@ -155,7 +169,7 @@ public final class MochaTestRunner {
                 suiteStarted(runningSuite);
             }
         }
-        return (matcher.pattern().pattern().equals(OK_PATTERN.pattern()) ? "ok " : "not ok ") + testIndex + " " + runningSuite + " " + testcase;
+        return (matcher.pattern().pattern().equals(NOT_OK_PATTERN.pattern()) ? "not ok " : "ok ") + testIndex + " " + runningSuite + " " + testcase;
     }
     
     private void handleTrouble() {
