@@ -47,8 +47,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -56,9 +58,12 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadGroupImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
+import org.netbeans.modules.debugger.jpda.util.WeakCacheMap;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -73,6 +78,8 @@ import org.openide.util.NbBundle;
 public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
     
     private final JPDADebuggerImpl debugger;
+    private final Map<JPDAThreadImpl, JPDADVThread> threadsMap = new WeakCacheMap<>();
+    private final Map<JPDAThreadGroupImpl, JPDADVThreadGroup> threadGroupsMap = new WeakCacheMap<>();
     
     public DebuggingViewSupportImpl(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -89,7 +96,7 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
                 !currentThread.isMethodInvoking()) {
             currentThread = null;
         }
-        return currentThread;
+        return get(currentThread);
     }
 
     @Override
@@ -103,15 +110,20 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
     }
 
     @Override
-    public List getAllThreads() {
-        return debugger.getThreadsCollector().getAllThreads();
+    public List<DebuggingView.DVThread> getAllThreads() {
+        List<JPDAThread> threads = debugger.getThreadsCollector().getAllThreads();
+        List<DebuggingView.DVThread> dvThreads = new ArrayList<>(threads.size());
+        for (JPDAThread t : threads) {
+            dvThreads.add(get(t));
+        }
+        return Collections.unmodifiableList(dvThreads);
     }
 
     @Override
     public String getDisplayName(DebuggingView.DVThread thread) {
         String name;
         try {
-            JPDAThread jt = (JPDAThread) thread;
+            JPDAThread jt = ((JPDADVThread) thread).getKey();
             name = DebuggingNodeModel.getDisplayName(jt, false);
             Session session = debugger.getSession();
             Session currSession = DebuggerManager.getDebuggerManager().getCurrentSession();
@@ -128,7 +140,7 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
 
     @Override
     public Image getIcon(DebuggingView.DVThread thread) {
-        return ImageUtilities.loadImage(DebuggingNodeModel.getIconBase((JPDAThread) thread));
+        return ImageUtilities.loadImage(DebuggingNodeModel.getIconBase(((JPDADVThread) thread).getKey()));
     }
 
     @Override
@@ -178,6 +190,55 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
         return preferences;
     }
     
+    public JPDADVThread get(JPDAThread t) {
+        if (t == null) {
+            return null;
+        }
+        JPDADVThread dvt;
+        synchronized (threadsMap) {
+            dvt = threadsMap.get(t);
+            if (dvt == null) {
+                dvt = new JPDADVThread(this, (JPDAThreadImpl) t);
+                threadsMap.put((JPDAThreadImpl) t, dvt);
+            }
+        }
+        return dvt;
+    }
+    
+    public JPDADVThread[] get(JPDAThread[] threads) {
+        int n = threads.length;
+        JPDADVThread[] dvThreads = new JPDADVThread[n];
+        for (int i = 0; i < n; i++) {
+            dvThreads[i] = get((JPDAThreadImpl) threads[i]);
+        }
+        return dvThreads;
+
+    }
+    
+    public JPDADVThreadGroup get(JPDAThreadGroup tg) {
+        if (tg == null) {
+            return null;
+        }
+        JPDADVThreadGroup dvtg;
+        synchronized (threadGroupsMap) {
+            dvtg = threadGroupsMap.get(tg);
+            if (dvtg == null) {
+                dvtg = new JPDADVThreadGroup(this, (JPDAThreadGroupImpl) tg);
+                threadGroupsMap.put((JPDAThreadGroupImpl) tg, dvtg);
+            }
+        }
+        return dvtg;
+    }
+    
+    public JPDADVThreadGroup[] get(JPDAThreadGroup[] threadGroups) {
+        int n = threadGroups.length;
+        JPDADVThreadGroup[] dvGroups = new JPDADVThreadGroup[n];
+        for (int i = 0; i < n; i++) {
+            dvGroups[i] = get((JPDAThreadGroupImpl) threadGroups[i]);
+        }
+        return dvGroups;
+    }
+    
     private class ChangeListener implements PropertyChangeListener {
         
         private STATE state = STATE.DISCONNECTED;
@@ -186,13 +247,19 @@ public class DebuggingViewSupportImpl extends DebuggingView.DVSupport {
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (JPDADebugger.PROP_THREAD_STARTED.equals(propertyName)) {
-                firePropertyChange(DebuggingView.DVSupport.PROP_THREAD_STARTED, evt.getOldValue(), evt.getNewValue());
+                firePropertyChange(DebuggingView.DVSupport.PROP_THREAD_STARTED,
+                                   get((JPDAThreadImpl) evt.getOldValue()),
+                                   get((JPDAThreadImpl) evt.getNewValue()));
             } else
             if (JPDADebugger.PROP_THREAD_DIED.equals(propertyName)) {
-                firePropertyChange(DebuggingView.DVSupport.PROP_THREAD_DIED, evt.getOldValue(), evt.getNewValue());
+                firePropertyChange(DebuggingView.DVSupport.PROP_THREAD_DIED,
+                                   get((JPDAThreadImpl) evt.getOldValue()),
+                                   get((JPDAThreadImpl) evt.getNewValue()));
             } else
             if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
-                firePropertyChange(DebuggingView.DVSupport.PROP_CURRENT_THREAD, evt.getOldValue(), evt.getNewValue());
+                firePropertyChange(DebuggingView.DVSupport.PROP_CURRENT_THREAD,
+                                   get((JPDAThreadImpl) evt.getOldValue()),
+                                   get((JPDAThreadImpl) evt.getNewValue()));
             } else
             if (JPDADebugger.PROP_STATE.equals(propertyName)) {
                 int ds = debugger.getState();

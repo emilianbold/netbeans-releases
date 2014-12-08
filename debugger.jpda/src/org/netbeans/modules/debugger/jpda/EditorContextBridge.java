@@ -60,7 +60,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
-import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -138,11 +138,11 @@ public class EditorContextBridge {
             } else if (tex instanceof InvalidExpressionException) {
                 throw ((InvalidExpressionException) tex);
             } else {
-                ErrorManager.getDefault().notify(tex);
+                Exceptions.printStackTrace(tex);
                 return null;
             }
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             return null;
         }
     }
@@ -218,11 +218,11 @@ public class EditorContextBridge {
             if (tex instanceof RuntimeException) {
                 throw (RuntimeException) tex;
             } else {
-                ErrorManager.getDefault().notify(tex);
+                Exceptions.printStackTrace(tex);
                 return 0;
             }
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
             return 0;
         }
     }
@@ -295,7 +295,7 @@ public class EditorContextBridge {
                 if (tex instanceof RuntimeException) {
                     throw (RuntimeException) tex;
                 } else {
-                    ErrorManager.getDefault().notify(tex);
+                    Exceptions.printStackTrace(tex);
                     return 0;
                 }
             } catch (Exception ex) {
@@ -311,11 +311,11 @@ public class EditorContextBridge {
                     if (tex instanceof RuntimeException) {
                         throw (RuntimeException) tex;
                     } else {
-                        ErrorManager.getDefault().notify(tex);
+                        Exceptions.printStackTrace(tex);
                         return 0;
                     }
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                     return 0;
                 }
             }
@@ -377,7 +377,7 @@ public class EditorContextBridge {
                 if (tex instanceof RuntimeException) {
                     throw (RuntimeException) tex;
                 } else {
-                    ErrorManager.getDefault().notify(tex);
+                    Exceptions.printStackTrace(tex);
                 }
             } catch (Exception ex) {
                 // Ignore, we have another attempt with cp2
@@ -393,10 +393,10 @@ public class EditorContextBridge {
                     if (tex instanceof RuntimeException) {
                         throw (RuntimeException) tex;
                     } else {
-                        ErrorManager.getDefault().notify(tex);
+                        Exceptions.printStackTrace(tex);
                     }
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
             return ret;

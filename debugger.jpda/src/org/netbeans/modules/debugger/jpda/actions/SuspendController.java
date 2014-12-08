@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda;
+package org.netbeans.modules.debugger.jpda.actions;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
-
+import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VirtualMachine;
 
 /**
- *
- * @author Jan Jancura
+ * Implementation of this interface can be used to control debugger suspension.
+ * In some situation it can happen that it's better not to allow debugger to
+ * suspend the program in the current state. These are situations like when
+ * the debuggee is holding native locks that affect other applications on the
+ * system. For instance under X-Windows when debuggee is holding an AWT lock,
+ * no other applications (including the debugger application) can gain focus,
+ * thus it's not desired to suspend debuggee in such state, or the implementation
+ * code can perform actions leading to the releasing of such a lock.
+ * 
+ * @author Martin Entlicher
  */
-public class JSR45DebuggerEngineProvider extends DebuggerEngineProvider {
-
-    private String language;
-    private DebuggerEngine.Destructor desctuctor;
-
-    JSR45DebuggerEngineProvider (String language) {
-        this.language = language;
-    }
-
-    public String[] getLanguages () {
-        return new String[] {language};
-    }
-
-    public String getEngineTypeID () {
-        return JPDADebugger.SESSION_ID + "/" + language;
-    }
-
-    public Object[] getServices () {
-        return new Object[]{};
-    }
-
-    public void setDestructor (DebuggerEngine.Destructor desctuctor) {
-        this.desctuctor = desctuctor;
-    }
-
-    public DebuggerEngine.Destructor getDesctuctor() {
-        return desctuctor;
-    }
+public interface SuspendController {
+    
+    /**
+     * Decide whether the thread can be suspended, or perform any steps
+     * that are necessary.
+     * @param tRef An already suspended thread
+     * @return <code>true</code> when the thread can remain suspended, or
+     *         <code>false</code> when the thread needs to be resumed.
+     */
+    boolean suspend(ThreadReference tRef);
+    
+    /**
+     * Decide whether the whole virtual machine can be suspended,
+     * or perform any steps that are necessary.
+     * @param vm An already suspended virtual machine
+     * @return <code>true</code> when the virtual machine can remain suspended, or
+     *         <code>false</code> when it needs to be resumed.
+     */
+    boolean suspend(VirtualMachine vm);
 }
-

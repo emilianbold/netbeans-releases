@@ -116,7 +116,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 
 
@@ -958,15 +957,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         }
                         return true;
                     }
-                } catch (IncompatibleThreadStateException e) {
-                    ErrorManager.getDefault().notify(e);
+                } catch (IncompatibleThreadStateException | InvalidStackFrameExceptionWrapper e) {
+                    Exceptions.printStackTrace(e);
                     return false;
-                } catch (InvalidStackFrameExceptionWrapper e) {
-                    ErrorManager.getDefault().notify(e);
-                    return false;
-                } catch (IllegalThreadStateExceptionWrapper e) {
-                    return false;
-                } catch (ObjectCollectedExceptionWrapper e) {
+                } catch (IllegalThreadStateExceptionWrapper | ObjectCollectedExceptionWrapper e) {
                     return false;
                 }
 

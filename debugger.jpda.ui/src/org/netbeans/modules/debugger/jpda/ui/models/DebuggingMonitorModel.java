@@ -59,7 +59,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -69,13 +68,13 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.Field;
-
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingViewSupportImpl;
+import org.netbeans.modules.debugger.jpda.ui.debugging.JPDADVThread;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -83,13 +82,13 @@ import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -133,7 +132,8 @@ NodeActionsProviderFilter, TableModel, Constants {
 
     static class Children {
 
-        private JPDADebugger debugger;
+        private final JPDADebugger debugger;
+        private final DebuggingViewSupportImpl dvSupport;
         private final Set<JPDAThread> threadsAskedForMonitors = new WeakSet<JPDAThread>();
         private final Set<CallStackFrame> framesAskedForMonitors = new WeakSet<CallStackFrame>();
         private final DeadlockDetector deadlockDetector;
@@ -144,8 +144,10 @@ NodeActionsProviderFilter, TableModel, Constants {
         private ModelListener modelListener;
         private DebuggingTreeModel modelEventSource;
     
-        Children(JPDADebugger debugger, ModelListener modelListener, DebuggingTreeModel modelEventSource) {
+        Children(JPDADebugger debugger, DebuggingViewSupportImpl dvSupport,
+                 ModelListener modelListener, DebuggingTreeModel modelEventSource) {
             this.debugger = debugger;
+            this.dvSupport = dvSupport;
             this.modelListener = modelListener;
             this.modelEventSource = modelEventSource;
             prefListener = new MonitorPreferenceChangeListener();
@@ -160,8 +162,8 @@ NodeActionsProviderFilter, TableModel, Constants {
             int         from,
             int         to
         ) throws UnknownTypeException {
-            if (o instanceof JPDAThread) {
-                JPDAThread t = (JPDAThread) o;
+            if (o instanceof JPDADVThread) {
+                JPDAThread t = ((JPDADVThread) o).getKey();
                 synchronized (threadsAskedForMonitors) {
                     threadsAskedForMonitors.add(t);
                 }
@@ -380,7 +382,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                         threads = new ArrayList(threadsAskedForMonitors);
                     }
                     for (JPDAThread t : threads) {
-                        modelEventSource.doRefreshCache(t);
+                        modelEventSource.doRefreshCache(dvSupport.get(t));
                     }
                     List<CallStackFrame> frames;
                     synchronized (framesAskedForMonitors) {
@@ -395,7 +397,7 @@ NodeActionsProviderFilter, TableModel, Constants {
                     }
                     for (JPDAThread t : threads) {
                         fireModelChange(new ModelEvent.NodeChanged(modelEventSource,
-                                        t, ModelEvent.NodeChanged.CHILDREN_MASK));
+                                        dvSupport.get(t), ModelEvent.NodeChanged.CHILDREN_MASK));
                     }
                     if (revertShowMonitorsListener != null) {
                         // Soneone has changed the SHOW_MONITORS property, cancel the revert.

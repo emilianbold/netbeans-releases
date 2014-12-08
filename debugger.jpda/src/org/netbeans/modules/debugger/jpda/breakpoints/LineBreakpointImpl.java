@@ -45,16 +45,16 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.InternalException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ObjectCollectedException;
-import com.sun.jdi.ReferenceType;
-import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.BreakpointEvent;
-import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
+import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.InvalidRequestStateException;
@@ -79,24 +79,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.text.Document;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
-import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
@@ -112,15 +113,11 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper
 import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.UserQuestionException;
+
 
 
 
@@ -307,7 +304,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     }
 
     private void setInvalid(String reason) {
-        ErrorManager.getDefault().log(ErrorManager.WARNING,
+        logger.warning(
                 "Unable to submit line breakpoint to "+getBreakpoint().getURL()+
                 " at line "+lineNumber+", reason: "+reason);
         setValidity(Breakpoint.VALIDITY.INVALID, reason);
@@ -413,7 +410,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             boolean all = className != null && (className.startsWith("*") || className.endsWith("*")); // NOI18N
             // We know that the breakpoint is invalid, only when it's not submitted for an unknown set of classes.
             if (!all) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                logger.warning(
                         "Unable to submit line breakpoint to "+referenceTypes.get(0).name()+
                         " at line "+lineNumber+", reason: "+failReason);
                 setValidity(Breakpoint.VALIDITY.INVALID, failReason);
@@ -596,13 +593,13 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         } catch (ClassNotPreparedException ex) {
             // should not occurre. VirtualMachine.allClasses () returns prepared
             // classes only. But...
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            Exceptions.printStackTrace(ex);
         } catch (InternalException iex) {
             // Something wrong in JDI
-            ErrorManager.getDefault().annotate(iex, 
+            iex = Exceptions.attachLocalizedMessage(iex, 
                     NbBundle.getMessage(LineBreakpointImpl.class,
                     "MSG_jdi_internal_error") );
-            ErrorManager.getDefault().notify(iex);
+            Exceptions.printStackTrace(iex);
             // We should indicate somehow that the breakpoint is invalid...
             reason[0] = iex.getLocalizedMessage();
         }
@@ -697,25 +694,6 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         } catch (MalformedURLException e) {
         }
         if (fileObj == null) return lineNumber;
-        DataObject dobj = null;
-        try {
-            dobj = DataObject.find(fileObj);
-        } catch (DataObjectNotFoundException ex) {
-        }
-        if (dobj == null) return lineNumber;
-        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-        if (ec == null) return lineNumber;
-        final BaseDocument doc;
-        try {
-            doc = (BaseDocument) ec.openDocument();
-        } catch (UserQuestionException uqex) {
-            // ignored
-            return lineNumber;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return lineNumber;
-        }
-        final int rowStartOffset = Utilities.getRowStartFromLineOffset(doc, lineNumber - 1);
         JavaSource js = JavaSource.forFileObject(fileObj);
         if (js == null) return lineNumber;
         final int[] result = new int[] {lineNumber};
@@ -727,7 +705,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                        logger.warning(
                                 "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
                                 "\nDiagnostics = "+ci.getDiagnostics()+
                                 "\nFree memory = "+Runtime.getRuntime().freeMemory());
@@ -736,6 +714,12 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                     SourcePositions positions = ci.getTrees().getSourcePositions();
                     CompilationUnitTree compUnit = ci.getCompilationUnit();
                     TreeUtilities treeUtils = ci.getTreeUtilities();
+                    Document ciDoc = ci.getDocument();
+                    if (!(ciDoc instanceof LineDocument)) {
+                        return ;
+                    }
+                    LineDocument doc = (LineDocument) ciDoc;
+                    int rowStartOffset = LineDocumentUtils.getLineStartFromIndex(doc, lineNumber -1);
 
                     TreePath path = treeUtils.pathFor(rowStartOffset);
                     Tree tree = path.getLeaf();
@@ -744,7 +728,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                         return ;
                     }
                     int startOffs = (int)positions.getStartPosition(compUnit, tree);
-                    int outerLineNumber = Utilities.getLineOffset(doc, startOffs) + 1;
+                    int outerLineNumber = LineDocumentUtils.getLineIndex(doc, startOffs) + 1;
                     if (outerLineNumber == lineNumber) return;
                     if (kind == Tree.Kind.COMPILATION_UNIT || TreeUtilities.CLASS_TREE_KINDS.contains(kind)) return;
                     if (kind == Tree.Kind.BLOCK) {
@@ -770,13 +754,13 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                             }
                         }
                         startOffs = (int)positions.getStartPosition(compUnit, previousTree);
-                        outerLineNumber = Utilities.getLineOffset(doc, startOffs) + 1;
+                        outerLineNumber = LineDocumentUtils.getLineIndex(doc, startOffs) + 1;
                     } // if
                     result[0] = outerLineNumber;
                 }
             }, true);
         } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
+            Exceptions.printStackTrace(ioex);
             return lineNumber;
         }
         return result[0];
