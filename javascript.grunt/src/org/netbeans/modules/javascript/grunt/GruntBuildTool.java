@@ -50,7 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.file.Gruntfile;
-import org.netbeans.modules.javascript.grunt.legacy.GruntPreferences;
+import org.netbeans.modules.javascript.grunt.preferences.GruntPreferences;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
@@ -68,6 +68,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
     private final Project project;
     private final Gruntfile gruntfile;
     private final GruntTasks gruntTasks;
+    private final GruntPreferences gruntPreferences;
 
 
     private GruntBuildTool(Project project) {
@@ -75,6 +76,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
         this.project = project;
         gruntfile = new Gruntfile(project.getProjectDirectory());
         gruntTasks = GruntTasks.create(project, gruntfile);
+        gruntPreferences = new GruntPreferences(project);
     }
 
     @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
@@ -117,8 +119,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
     public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
         assert isEnabled() : project.getProjectDirectory().getNameExt();
         assert gruntfile.exists() : project.getProjectDirectory().getNameExt();
-        // XXX
-        String gruntBuild = GruntPreferences.getValue(project, "grunt.action." + commandId); // NOI18N
+        String gruntBuild = gruntPreferences.getCommand(commandId);
         if (gruntBuild != null) {
             GruntExecutable grunt = GruntExecutable.getDefault(project, warnUser);
             if (grunt != null) {
