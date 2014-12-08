@@ -115,6 +115,32 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                     Exceptions.printStackTrace(ex);
                 }
             }
+        } else {
+            if (token.getTokenID() == CppTokenId.NEW_LINE) {
+                ts.movePrevious();
+                TokenItem prev = new TokenItem(ts, true);
+                int indent = getTokenColumn(prev);
+                String spaces = spaces(indent);
+                if (prev.getTokenID() == CppTokenId.DOXYGEN_LINE_COMMENT
+                        && caretOffset - token.getTokenSequence().offset() == 3) {
+                    Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
+                    if (function != null) {
+                        StringBuilder buf = new StringBuilder();
+                        buf.append(" \n"); // NOI18N
+                        for (Parameter p : function.getParametes()) {
+                            buf.append(spaces);
+                            buf.append("/// \\param ").append(p.getName()).append('\n'); // NOI18N
+                        }
+                        final String returnType = function.getReturnType();
+                        if (returnType != null && !"void".equals(returnType)) { // NOI18N
+                            buf.append(spaces);
+                            buf.append("/// \\return ").append('\n'); // NOI18N
+                        }
+                        String r = buf.substring(0, buf.length() - 1);
+                        TBIcontext.setText(r, 1, 1);
+                    }
+                }
+            }
         }
         return false;
     }
