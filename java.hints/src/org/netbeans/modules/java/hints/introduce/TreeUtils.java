@@ -69,7 +69,7 @@ public final class TreeUtils {
         return e != null && e.getKind() == ElementKind.CONSTRUCTOR;
     }
 
-    static boolean isParentOf(TreePath parent, TreePath path) {
+    public static boolean isParentOf(TreePath parent, TreePath path) {
         Tree parentLeaf = parent.getLeaf();
         while (path != null && path.getLeaf() != parentLeaf) {
             path = path.getParentPath();

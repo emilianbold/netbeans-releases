@@ -934,6 +934,10 @@ public class Utilities {
     }
 
     public static TreePath findEnclosingMethodOrConstructor(HintContext ctx, TreePath from) {
+        return findEnclosingMethodOrConstructor(from);
+    }
+    
+    public static TreePath findEnclosingMethodOrConstructor(TreePath from) {
         while (from != null && from.getLeaf().getKind() != Kind.METHOD && !TreeUtilities.CLASS_TREE_KINDS.contains(from.getLeaf().getKind())) {
             from = from.getParentPath();
         }
