@@ -24,11 +24,10 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="mochaDirTextField" pref="241" max="32767" attributes="0"/>
+                      <Component id="mochaDirTextField" pref="237" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="mochaDirBrowseButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="mochaDirSearchButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -49,7 +48,6 @@
                   <Component id="mochaDirLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mochaDirTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mochaDirBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="mochaDirSearchButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="mochaDirInfoLabel" min="-2" max="-2" attributes="0"/>
@@ -83,16 +81,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mochaDirBrowseButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="mochaDirSearchButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/selenium2/webclient/mocha/Bundle.properties" key="CustomizerMocha.mochaDirSearchButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mochaDirSearchButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="mochaDirInfoLabel">

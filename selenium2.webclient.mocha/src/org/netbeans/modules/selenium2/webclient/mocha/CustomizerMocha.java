@@ -168,7 +168,6 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         mochaDirLabel = new JLabel();
         mochaDirTextField = new JTextField();
         mochaDirBrowseButton = new JButton();
-        mochaDirSearchButton = new JButton();
         mochaDirInfoLabel = new JLabel();
         timeoutLabel = new JLabel();
         timeoutInfoLabel = new JLabel();
@@ -180,13 +179,6 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         mochaDirBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 mochaDirBrowseButtonActionPerformed(evt);
-            }
-        });
-
-        Mnemonics.setLocalizedText(mochaDirSearchButton, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.mochaDirSearchButton.text")); // NOI18N
-        mochaDirSearchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                mochaDirSearchButtonActionPerformed(evt);
             }
         });
 
@@ -209,11 +201,10 @@ public final class CustomizerMocha extends javax.swing.JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(mochaDirTextField, GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)
+                        .addComponent(mochaDirTextField, GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(mochaDirBrowseButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mochaDirSearchButton))
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                             .addComponent(mochaDirInfoLabel)
@@ -226,8 +217,7 @@ public final class CustomizerMocha extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(mochaDirLabel)
                     .addComponent(mochaDirTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(mochaDirBrowseButton)
-                    .addComponent(mochaDirSearchButton))
+                    .addComponent(mochaDirBrowseButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(mochaDirInfoLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -255,24 +245,10 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_mochaDirBrowseButtonActionPerformed
 
-    @NbBundle.Messages("CustomizerMocha.config.none=No mocha executable was found.")
-    private void mochaDirSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_mochaDirSearchButtonActionPerformed
-        assert EventQueue.isDispatchThread();
-        String installFolder = MochaPreferences.getMochaDir(project);
-        if (installFolder != null) {
-            File configFile = new File(installFolder);
-            mochaDirTextField.setText(configFile.getAbsolutePath());
-            return;
-        }
-        // no mochaInstallFolder found
-        StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerMocha_config_none());
-    }//GEN-LAST:event_mochaDirSearchButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton mochaDirBrowseButton;
     private JLabel mochaDirInfoLabel;
     private JLabel mochaDirLabel;
-    private JButton mochaDirSearchButton;
     private JTextField mochaDirTextField;
     private JLabel timeoutInfoLabel;
     private JLabel timeoutLabel;
