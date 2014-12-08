@@ -250,6 +250,7 @@ public class GruntExecutable {
     private static final class GruntTasksLineConvertor implements LineConvertor {
 
         private static final String AVAILABLE_TASKS = "Available tasks"; // NOI18N
+        private static final String NO_TASKS = "(no tasks found)"; // NOI18N
 
         final List<String> tasks = new ArrayList<>();
 
@@ -266,6 +267,9 @@ public class GruntExecutable {
                     break;
                 case 1:
                     if (!StringUtils.hasText(line)) {
+                        state = 2;
+                    } else if (NO_TASKS.equals(line.trim())) {
+                        tasks.add("default"); // NOI18N
                         state = 2;
                     } else {
                         List<String> parts = StringUtils.explode(line.trim(), " "); // NOI18N
