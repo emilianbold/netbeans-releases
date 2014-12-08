@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda;
+package org.netbeans.modules.debugger.jpda.ui.focus;
 
-import org.netbeans.api.debugger.DebuggerEngine;
+import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VirtualMachine;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
-
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.actions.SuspendController;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 /**
  *
- * @author Jan Jancura
+ * @author Martin Entlicher
  */
-public class JSR45DebuggerEngineProvider extends DebuggerEngineProvider {
-
-    private String language;
-    private DebuggerEngine.Destructor desctuctor;
-
-    JSR45DebuggerEngineProvider (String language) {
-        this.language = language;
+@DebuggerServiceRegistration(path = "netbeans-JPDASession", types = SuspendController.class)
+public class FocusSuspendController implements SuspendController {
+    
+    private final AWTGrabHandler awtGrabHandler;
+    
+    public FocusSuspendController(ContextProvider contextProvider) {
+        JPDADebuggerImpl debugger = (JPDADebuggerImpl) contextProvider.lookupFirst(null, JPDADebugger.class);
+        awtGrabHandler = new AWTGrabHandler(debugger);
     }
 
-    public String[] getLanguages () {
-        return new String[] {language};
+    @Override
+    public boolean suspend(ThreadReference tRef) {
+        return awtGrabHandler.solveGrabbing(tRef);
     }
 
-    public String getEngineTypeID () {
-        return JPDADebugger.SESSION_ID + "/" + language;
+    @Override
+    public boolean suspend(VirtualMachine vm) {
+        return awtGrabHandler.solveGrabbing(vm);
     }
-
-    public Object[] getServices () {
-        return new Object[]{};
-    }
-
-    public void setDestructor (DebuggerEngine.Destructor desctuctor) {
-        this.desctuctor = desctuctor;
-    }
-
-    public DebuggerEngine.Destructor getDesctuctor() {
-        return desctuctor;
-    }
+    
 }
-

@@ -156,7 +156,6 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.debugger.jpda.Evaluator;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -711,7 +710,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 threadImpl.popFrames(frame);
                 evt = updateCurrentCallStackFrameNoFire(threadImpl);
             } catch (IncompatibleThreadStateException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Exceptions.printStackTrace(ex);
             } finally {
                 setState (STATE_STOPPED);
             }
