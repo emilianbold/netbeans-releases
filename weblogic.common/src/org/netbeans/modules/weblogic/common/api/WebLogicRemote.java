@@ -59,9 +59,6 @@ import org.netbeans.modules.weblogic.common.ProxyUtils;
  */
 public final class WebLogicRemote {
 
-    // full weblogic code is setting this, causing CNFE on DWP
-    private static final String PORTABLE_OBJECT_PROPERTY = "javax.rmi.CORBA.PortableRemoteObjectClass"; // NOI18N
-    
     private final WebLogicConfiguration config;
 
     WebLogicRemote(WebLogicConfiguration config) {
@@ -69,37 +66,21 @@ public final class WebLogicRemote {
     }
 
     public <T> T executeAction(@NonNull Callable<T> action, @NullAllowed Callable<String> nonProxy) throws Exception {
-        ClassLoader classLoader = config.getLayout().getClassLoader();
-
         synchronized (this) {
-            ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
-
-            String portable = System.getProperty(PORTABLE_OBJECT_PROPERTY);
-
             String originalNonProxyHosts = System.getProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS);
             String nonProxyHosts = ProxyUtils.getNonProxyHosts(nonProxy);
             if (nonProxyHosts != null) {
                 System.setProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS, nonProxyHosts);
             }
 
-            Thread.currentThread().setContextClassLoader(classLoader);
             try {
                 return action.call();
             } finally {
-                Thread.currentThread().setContextClassLoader(originalLoader);
-
                 // this is not really safe considering other threads, but it is the best we can do
                 if (originalNonProxyHosts == null) {
                     System.clearProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS);
                 } else {
                     System.setProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS, originalNonProxyHosts);
-                }
-
-                // this is not really safe considering other threads, but it is the best we can do
-                if (portable == null) {
-                    System.clearProperty(PORTABLE_OBJECT_PROPERTY);
-                } else {
-                    System.setProperty(PORTABLE_OBJECT_PROPERTY, portable);
                 }
             }
         }
@@ -110,7 +91,7 @@ public final class WebLogicRemote {
 
             @Override
             public T call() throws Exception {
-                JMXServiceURL url = new JMXServiceURL("iiop", config.getHost(), // NOI18N
+                JMXServiceURL url = new JMXServiceURL("t3", config.getHost(), // NOI18N
                         config.getPort(), "/jndi/weblogic.management.mbeanservers.domainruntime"); // NOI18N
 
                 String username = config.getUsername();
@@ -123,6 +104,8 @@ public final class WebLogicRemote {
                 env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
                 env.put("jmx.remote.credentials", // NOI18N
                         new String[]{username, password});
+                env.put("jmx.remote.protocol.provider.class.loader", //NOI18N
+                        config.getLayout().getClassLoader());
 
                 JMXConnector jmxConnector = JMXConnectorFactory.newJMXConnector(url, env);
                 jmxConnector.connect();

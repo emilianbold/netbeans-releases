@@ -253,7 +253,7 @@ public class RemoteLogInputReader implements InputReader {
 
                     @Override
                     public JMXConnector call() throws Exception {
-                        JMXServiceURL url = new JMXServiceURL("iiop", config.getHost(), // NOI18N
+                        JMXServiceURL url = new JMXServiceURL("t3", config.getHost(), // NOI18N
                                 config.getPort(), "/jndi/weblogic.management.mbeanservers.domainruntime"); // NOI18N
 
                         String username = config.getUsername();
@@ -266,6 +266,8 @@ public class RemoteLogInputReader implements InputReader {
                         env.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
                         env.put("jmx.remote.credentials", // NOI18N
                                 new String[]{username, password});
+                        env.put("jmx.remote.protocol.provider.class.loader", //NOI18N
+                                config.getLayout().getClassLoader());
 
                         JMXConnector jmxConnector = JMXConnectorFactory.newJMXConnector(url, env);
                         jmxConnector.connect();
