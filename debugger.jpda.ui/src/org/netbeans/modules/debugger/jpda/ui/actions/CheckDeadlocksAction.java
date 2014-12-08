@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.actions;
+package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
@@ -93,8 +93,9 @@ public class CheckDeadlocksAction extends AbstractAction
         checkEnabled();
     }
 
+    @NbBundle.Messages("CTL_CheckDeadlocks=Chec&k for Deadlock")
     public static String getDisplayName() {
-        return NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_CheckDeadlocks"); // NOI18N
+        return Bundle.CTL_CheckDeadlocks();
     }
     
     @Override
@@ -111,6 +112,7 @@ public class CheckDeadlocksAction extends AbstractAction
         });
     }
 
+    @NbBundle.Messages("CTL_No_Deadlock=No deadlock found.")
     public static void checkForDeadlock(JPDADebuggerImpl debugger) {
         if (debugger.getState() == JPDADebuggerImpl.STATE_DISCONNECTED) {
             return;
@@ -139,7 +141,7 @@ public class CheckDeadlocksAction extends AbstractAction
             } catch (InterruptedException ex) {}
             Set dealocks = detector.getDeadlocks();
             if (dealocks == null || dealocks.isEmpty()) {
-                String msg = NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_No_Deadlock"); // NOI18N
+                String msg = Bundle.CTL_No_Deadlock();
                 NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
                 for (JPDAThreadImpl thread : threadsToNotify) {

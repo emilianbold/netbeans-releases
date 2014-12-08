@@ -93,7 +93,6 @@ import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -232,7 +231,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
         String url = getDebugger().getEngineContext().getURL(sourcePath, true);
         if (url == null) { // In some pathological situations, the source is not found.
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "No URL found for source path "+sourcePath);
+            logger.warning("No URL found for source path "+sourcePath);
             return false;
         }
         String urlRoot = getDebugger().getEngineContext().getSourceRoot(url);

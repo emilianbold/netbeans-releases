@@ -228,6 +228,7 @@ class OutWriter extends PrintWriter {
             owner.setStreamClosed(false);
             lines.fire();
         }
+        checkLimits();
     }
 
     /**
@@ -400,7 +401,6 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(int c) {
         doWrite(new String(new char[]{(char)c}), 0, 1);
-        checkLimits();
     }
 
     private void checkLimits() {
@@ -413,7 +413,6 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(char data[], int off, int len) {
         doWrite(new CharArrayWrapper(data), off, len);
-        checkLimits();
     }
     
     /** write buffer size in chars */
@@ -514,6 +513,11 @@ class OutWriter extends PrintWriter {
             }
         } catch (IOException ioe) {
             onWriteException();
+        } catch (RuntimeException ex) {
+            LOG.log(Level.INFO, "Cannot write text: off={0}, "          //NOI18N
+                    + "len={1}, lineStart={2}",                         //NOI18N
+                    new Object[]{off, len, lineStart});
+            throw ex;
         }
         lines.delayedFire();
         return;
@@ -542,13 +546,11 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(char data[]) {
         doWrite(new CharArrayWrapper(data), 0, data.length);
-        checkLimits();
     }
 
     @Override
     public synchronized void println() {
         printLineEnd();
-        checkLimits();
     }
 
     private void printLineEnd() {
@@ -564,13 +566,11 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(String s, int off, int len) {
         doWrite(s, off, len);
-        checkLimits();
     }
 
     @Override
     public synchronized void write(String s) {
         doWrite(s, 0, s.length());
-        checkLimits();
     }
 
     public synchronized void println(String s, OutputListener l) {
@@ -595,7 +595,6 @@ class OutWriter extends PrintWriter {
             printLineEnd();
         }
         lines.updateLinesInfo(s, lastLine, lastPos, l, important, outKind, c, b);
-        checkLimits();
     }
     private Color ansiColor;
     private Color ansiBackground;
@@ -733,7 +732,6 @@ class OutWriter extends PrintWriter {
         if (info != null) {
             lines.addLineInfo(line, info, important);
         }
-        checkLimits();
     }
 
     /**

@@ -82,7 +82,11 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
                         <attr name="position" intvalue="1880"/>
                     </file>
-                    </folder>
+                </folder>
+                <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
             </folder>
             <folder name="x-java-nbdebug-class">
                 <file name="EditorKit.instance">
@@ -146,6 +150,7 @@ made subject to such option by the copyright holder.
     <folder name="Actions">
         <folder name="Debug">
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-CheckDeadlocksAction.instance"/>
         </folder>
     </folder>
 
@@ -266,6 +271,10 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>
                 <attr name="position" intvalue="2500"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-CheckDeadlocksAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-CheckDeadlocksAction.instance"/>
+                <attr name="position" intvalue="2650"/>
             </file>
         </folder>
     </folder>

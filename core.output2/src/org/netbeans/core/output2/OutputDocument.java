@@ -251,7 +251,7 @@ public class OutputDocument implements Document, Element, ChangeListener {
         } else if (offset < inputOff) { // cursor before start of input
             off = inputOff;
         } else {
-            off = offset;
+            off = Math.min(offset, inBuffer.length() + inputOff);
         }
         inBuffer.insert(off - inputOff, str);
         final int len = str.length();

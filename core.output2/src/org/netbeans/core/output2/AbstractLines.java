@@ -1216,9 +1216,15 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     int checkLimits() {
         synchronized (readLock()) {
-            if (getLineCount() >= outputLimits.getMaxLines()
-                    || getCharCount() >= outputLimits.getMaxChars()
-                    || linesToInfos.size() >= 524288) { // #239445
+            int lines = getLineCount();
+            int chars = getCharCount();
+            int infos = linesToInfos.size();
+            if (lines >= outputLimits.getMaxLines()
+                    || chars >= outputLimits.getMaxChars()
+                    || infos >= 524288) { // #239445
+                LOG.log(Level.INFO, "Removing old lines: lines: {0},"   //NOI18N
+                        + " chars: {1}, infos: {2}", new Object[]{      //NOI18N
+                            lines, chars, infos});
                 return removeOldLines();
             } else {
                 return 0;
