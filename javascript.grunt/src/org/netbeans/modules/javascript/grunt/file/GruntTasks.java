@@ -154,6 +154,13 @@ public final class GruntTasks implements ChangeListener {
 
     public interface TasksProcessor {
 
+        TasksProcessor DEV_NULL = new TasksProcessor() {
+            @Override
+            public void process(List<String> tasks) {
+                // noop
+            }
+        };
+
         void process(@NullAllowed List<String> tasks);
 
     }
