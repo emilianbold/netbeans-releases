@@ -51,8 +51,10 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.ChangeSupport;
 
+@MIMEResolver.Registration(displayName = "Gruntfile", resource = "../resources/gruntfile-resolver.xml", position = 123)
 public final class Gruntfile {
 
     private static final Logger LOGGER = Logger.getLogger(Gruntfile.class.getName());
