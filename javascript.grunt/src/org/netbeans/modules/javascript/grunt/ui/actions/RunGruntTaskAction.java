@@ -44,7 +44,9 @@ package org.netbeans.modules.javascript.grunt.ui.actions;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -213,26 +215,16 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 addConfigureGruntMenuItem();
                 return;
             }
-            for (final String task : tasks) {
-                JMenuItem menuitem = new JMenuItem(task);
-                menuitem.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                GruntExecutable grunt = GruntExecutable.getDefault(project, true);
-                                if (grunt != null) {
-                                    GruntUtils.logUsageGruntBuild();
-                                    grunt.run(task);
-                                }
-                            }
-                        });
-                    }
-                });
-                add(menuitem);
+            // default task?
+            Set<String> allTasks = new LinkedHashSet<>(tasks);
+            if (allTasks.remove(GruntTasks.DEFAULT_TASK)) {
+                addTaskMenuItem(GruntTasks.DEFAULT_TASK);
+                addSeparator();
             }
-            if (!tasks.isEmpty()) {
+            for (String task : allTasks) {
+                addTaskMenuItem(task);
+            }
+            if (!allTasks.isEmpty()) {
                 addSeparator();
             }
             JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_tasks_reload());
@@ -245,6 +237,26 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 }
             });
             add(menuItem);
+        }
+
+        private void addTaskMenuItem(final String task) {
+            JMenuItem menuitem = new JMenuItem(task);
+            menuitem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            GruntExecutable grunt = GruntExecutable.getDefault(project, true);
+                            if (grunt != null) {
+                                GruntUtils.logUsageGruntBuild();
+                                grunt.run(task);
+                            }
+                        }
+                    });
+                }
+            });
+            add(menuitem);
         }
 
         @NbBundle.Messages("LazyMenu.tasks.loading=Loading Tasks...")
