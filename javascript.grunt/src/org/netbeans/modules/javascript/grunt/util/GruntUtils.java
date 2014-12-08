@@ -43,10 +43,22 @@ package org.netbeans.modules.javascript.grunt.util;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.common.api.UsageLogger;
 
 public final class GruntUtils {
 
+    private static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.grunt"; // NOI18N
+    private static final UsageLogger GRUNT_BUILD_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
+            .message(GruntUtils.class, "USG_GRUNT_BUILD") // NOI18N
+            .unrepeated(true)
+            .create();
+
+
     private GruntUtils() {
+    }
+
+    public static void logUsageGruntBuild() {
+        GRUNT_BUILD_USAGE_LOGGER.log();
     }
 
     public static String getProjectDisplayName(Project project) {
