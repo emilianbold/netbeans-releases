@@ -52,6 +52,7 @@ import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.preferences.GruntPreferences;
 import org.netbeans.modules.javascript.grunt.ui.customizer.GruntCustomizerProvider;
+import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
@@ -128,6 +129,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
         if (gruntBuild != null) {
             GruntExecutable grunt = GruntExecutable.getDefault(project, warnUser);
             if (grunt != null) {
+                GruntUtils.logUsageGruntBuild();
                 Future<Integer> result = grunt.run(gruntBuild.split(" ")); // NOI18N
                 if (waitFinished) {
                     try {
