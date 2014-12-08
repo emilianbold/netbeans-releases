@@ -275,7 +275,14 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     assert EventQueue.isDispatchThread();
-                    GruntBuildTool.forProject(project).getGruntTasks().reset();
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            GruntTasks gruntTasks = GruntBuildTool.forProject(project).getGruntTasks();
+                            gruntTasks.reset();
+                            gruntTasks.processTasks(GruntTasks.TasksProcessor.DEV_NULL);
+                        }
+                    });
                     menuBuilt = false;
                 }
             });
