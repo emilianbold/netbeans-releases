@@ -646,6 +646,7 @@ public class ModelVisitor extends PathNodeVisitor {
         functionStack.add(functions);
 
         JsFunctionImpl fncScope = (JsFunctionImpl)modelBuilder.getCurrentDeclarationFunction();
+        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         JsObject parent = null;
         if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
             // create the function object
@@ -700,7 +701,37 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        } 
+        } else if (docHolder != null) {
+            // look for the type defined through comment like @typedef
+            Map<Integer, ? extends JsComment> commentBlocks = docHolder.getCommentBlocks();
+            for(JsComment comment: commentBlocks.values()) {
+                DocParameter definedType = comment.getDefinedType();
+                if (definedType != null) {
+                    JsObject object = new JsObjectImpl(getGlobalObject(), definedType.getParamName(), definedType.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                    getGlobalObject().addProperty(object.getName(), object);
+                    int assignOffset = definedType.getParamName().getOffsetRange().getEnd();
+                    List<Type> types = definedType.getParamTypes();
+                    
+                    for (Type type : types) {
+                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                    }
+                    List<Type> assignedTypes = comment.getTypes();
+                    for (Type type : assignedTypes) {
+                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                    }
+                    List<DocParameter> properties = comment.getProperties();
+                    for (DocParameter docProperty: properties) {
+                        JsObject jsProperty = new JsObjectImpl(object, docProperty.getParamName(), docProperty.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                        object.addProperty(jsProperty.getName(), jsProperty);
+                        types = docProperty.getParamTypes();
+                        assignOffset = docProperty.getParamName().getOffsetRange().getEnd();
+                        for (Type type : types) {
+                           jsProperty.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                        }
+                    }
+                }
+            }
+        }
 //        else {
             for(FunctionNode cFunction: functionNode.getFunctions()) {
                 if (cFunction.isAnonymous()) {
@@ -709,7 +740,6 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 //        }
         if (fncScope != null) {
-            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
             // create variables that are declared in the function
             // They has to be created here for tracking occurrences
             if (canBeSingletonPattern()) {

@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Hint;
@@ -59,8 +57,6 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -73,7 +69,6 @@ import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -83,10 +78,11 @@ import org.openide.util.NbBundle;
  */
 public class GlobalIsNotDefined extends JsAstRule {
 
-    private static final List<String> KNOWN_GLOBAL_OBJECTS = Arrays.asList("window", "document", "console",
-            "clearInterval", "clearTimeout", "event", "frames", "history",
-            "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
+    private static final List<String> KNOWN_GLOBAL_OBJECTS = Arrays.asList("window", "document", "console", //NOI18N
+            "clearInterval", "clearTimeout", "event", "frames", "history", //NOI18N
+            "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout", //NOI18N
             "XMLHttpRequest", "JSON", "Date", "undefined", "Math", "$", "jQuery",  //NOI18N
+            "Error", "EvalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError", //NOI18N
             Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
     
     @Override

@@ -39,4 +39,5 @@ OTHER      @static                                    JsDoc
 OTHER      @syntax text                               JsDoc
 OTHER      @throws {type} description                 JsDoc
 OTHER      @type type                                 JsDoc
+OTHER      @typedef {type} name descripti             JsDoc
 OTHER      @version text                              JsDoc
