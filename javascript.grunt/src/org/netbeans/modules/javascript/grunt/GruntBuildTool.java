@@ -51,6 +51,7 @@ import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.preferences.GruntPreferences;
+import org.netbeans.modules.javascript.grunt.ui.customizer.GruntCustomizerProvider;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
@@ -109,6 +110,10 @@ public final class GruntBuildTool implements BuildToolImplementation {
         return gruntTasks;
     }
 
+    public GruntPreferences getGruntPreferences() {
+        return gruntPreferences;
+    }
+
     @Override
     public boolean isEnabled() {
         return gruntfile.exists();
@@ -144,8 +149,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
             NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION);
             Object option = DialogDisplayer.getDefault().notify(desc);
             if (option == NotifyDescriptor.YES_OPTION) {
-                // XXX
-                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("grunt", null); // NOI18N
+                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GruntCustomizerProvider.CUSTOMIZER_IDENT, null);
             }
         }
         return true;
