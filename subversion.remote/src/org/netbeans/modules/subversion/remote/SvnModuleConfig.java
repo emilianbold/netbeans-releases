@@ -233,7 +233,7 @@ public class SvnModuleConfig {
                 try {
                     org.netbeans.modules.versioning.util.Utils.removeFromArray(prefs, KEY_RECENT_URL, rcOldString);
                 } finally {
-                    SvnConfigFiles.getInstance().reset();
+                    SvnConfigFiles.getInstance(fileSystem).reset();
                 }
             }
         }
@@ -245,7 +245,7 @@ public class SvnModuleConfig {
             try {
                 org.netbeans.modules.versioning.util.Utils.insert(prefs, KEY_RECENT_URL, url, -1);
             } finally {
-                SvnConfigFiles.getInstance().reset();
+                SvnConfigFiles.getInstance(fileSystem).reset();
             }
         }
     }    
@@ -268,7 +268,7 @@ public class SvnModuleConfig {
         try {
             Utils.put(prefs, KEY_RECENT_URL, urls);
         } finally {
-            SvnConfigFiles.getInstance().reset();
+            SvnConfigFiles.getInstance(fileSystem).reset();
         }
     }
     
@@ -284,7 +284,9 @@ public class SvnModuleConfig {
             } else {
                 if(getUrlCredentials().containsKey(rc.getUrl())) {
                     Object[] creds = getUrlCredentials().get(rc.getUrl());
-                    if(creds.length < 3) continue; //skip garbage
+                    if(creds.length < 3) {
+                        continue; //skip garbage
+                    }
                     rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), (char[])creds[2], rc.getSshPortNumber());
                 } else if (!EventQueue.isDispatchThread()) {
                     char[] password = rc.getSavePassword() ? KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString()) : null;

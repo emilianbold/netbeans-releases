@@ -83,7 +83,7 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             javaFile.delete();
         } else {
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, VersioningSupport.createProcessBuilder(file), "rm", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "rm", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
             }
@@ -103,7 +103,7 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             return javaFile.mkdir();
         } else {
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
@@ -118,7 +118,7 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             return javaFile.mkdirs();
         } else {
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;

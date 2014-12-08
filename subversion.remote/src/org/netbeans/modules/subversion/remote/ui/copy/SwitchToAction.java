@@ -198,7 +198,7 @@ public class SwitchToAction extends ContextAction {
         final Context context = new Context(root);
         try {                   
             client = Subversion.getInstance().getClient(context, toRepositoryFile.getRepositoryUrl());
-            ISVNInfo info = client.getInfo(toRepositoryFile.getFileUrl());
+            ISVNInfo info = client.getInfo(context, toRepositoryFile.getFileUrl());
             if(info.getNodeKind() == SVNNodeKind.DIR && root.isFile()) {
                 SvnClientExceptionHandler.annotate(NbBundle.getMessage(SwitchToAction.class, "LBL_SwitchFileToFolderError"));
                 ret = false;
