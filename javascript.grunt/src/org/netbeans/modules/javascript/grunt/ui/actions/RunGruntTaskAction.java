@@ -207,7 +207,6 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
             popupMenu.repaint();
         }
 
-        @NbBundle.Messages("LazyMenu.tasks.reload=Reload Tasks")
         void addTasksMenuItems(@NullAllowed List<String> tasks) {
             assert EventQueue.isDispatchThread();
             if (tasks == null) {
@@ -227,16 +226,7 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
             if (!allTasks.isEmpty()) {
                 addSeparator();
             }
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_tasks_reload());
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    assert EventQueue.isDispatchThread();
-                    GruntBuildTool.forProject(project).getGruntTasks().reset();
-                    menuBuilt = false;
-                }
-            });
-            add(menuItem);
+            addReloadTasksMenuItem();
         }
 
         private void addTaskMenuItem(final String task) {
@@ -273,6 +263,20 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     OptionsDisplayer.getDefault().open(GruntOptionsPanelController.OPTIONS_PATH);
+                }
+            });
+            add(menuItem);
+        }
+
+        @NbBundle.Messages("LazyMenu.tasks.reload=Reload Tasks")
+        private void addReloadTasksMenuItem() {
+            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_tasks_reload());
+            menuItem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    assert EventQueue.isDispatchThread();
+                    GruntBuildTool.forProject(project).getGruntTasks().reset();
+                    menuBuilt = false;
                 }
             });
             add(menuItem);
