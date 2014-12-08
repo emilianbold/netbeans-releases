@@ -139,7 +139,7 @@ public final class GruntTasks implements ChangeListener {
         return grunt.listTasks();
     }
 
-    void reset() {
+    public void reset() {
         tasks = null;
     }
 
