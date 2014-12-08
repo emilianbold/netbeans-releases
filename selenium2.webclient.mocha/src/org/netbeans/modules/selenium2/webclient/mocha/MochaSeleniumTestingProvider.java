@@ -155,7 +155,7 @@ public class MochaSeleniumTestingProvider implements SeleniumTestingProviderImpl
         ArrayList<String> arguments = new ArrayList<>();
         arguments.add(mochaInstallFolder + "/bin/mocha");
         arguments.add("-t");
-        arguments.add("10000");
+        arguments.add(Integer.toString(MochaPreferences.getTimeout(p)));
         arguments.add("-R");
         arguments.add(mochaNBReporter.getPath());
         FileObject testsFolder = Utilities.getTestsSeleniumFolder(p, true);
