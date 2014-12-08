@@ -43,11 +43,9 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FocusTraversalPolicy;
 import java.awt.Rectangle;
 import org.netbeans.modules.db.dataview.table.JXTableRowHeader;
@@ -125,22 +123,6 @@ class InsertRecordDialog extends javax.swing.JDialog {
             public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
                 if (rowIndex != -1 && columnIndex != -1 && getModel().getRowCount() > 1) {
                     removeBtn.setEnabled(true);
-                }
-                AWTEvent awtEvent = EventQueue.getCurrentEvent();
-                if (awtEvent instanceof KeyEvent) {
-                    KeyEvent keyEvt = (KeyEvent) awtEvent;
-                    if (keyEvt.getSource() != InsertRecordDialog.this) {
-                        return;
-                    }
-                    if (rowIndex == 0 && columnIndex == 0 && KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
-                        appendEmptyRow();
-                        rowIndex = getRowCount() - 1; //Otherwise the selection switches to the first row
-                        editCellAt(rowIndex, 0);
-                    } else if (KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT + KeyEvent.VK_TAB, 0))) {
-                        editCellAt(rowIndex, columnIndex);
-                    } else {
-                        editCellAt(rowIndex, columnIndex);
-                    }
                 }
                 super.changeSelection(rowIndex, columnIndex, toggle, extend);
             }
