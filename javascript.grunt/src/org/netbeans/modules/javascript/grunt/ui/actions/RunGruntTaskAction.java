@@ -90,7 +90,7 @@ import org.openide.util.actions.Presenter;
 @NbBundle.Messages("RunGruntTaskAction.name=Grunt Tasks")
 public final class RunGruntTaskAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 
-    static final RequestProcessor RP = new RequestProcessor(RunGruntTaskAction.class);
+    static final RequestProcessor RP = new RequestProcessor(RunGruntTaskAction.class.getName(), 2);
 
     private final Project project;
 
