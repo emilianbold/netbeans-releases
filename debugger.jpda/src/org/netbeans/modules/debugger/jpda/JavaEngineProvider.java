@@ -44,18 +44,12 @@
 
 package org.netbeans.modules.debugger.jpda;
 
-import java.awt.Component;
-import java.beans.DesignMode;
-import java.beans.beancontext.BeanContextChildComponentProxy;
-import java.util.prefs.Preferences;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -82,60 +76,11 @@ public class JavaEngineProvider extends DebuggerEngineProvider {
     public String getEngineTypeID () {
         return JPDADebugger.ENGINE_ID;
     }
-    
+
     public Object[] getServices () {
-        Object[] components = getUIComponentProxies();
-        Object[] services = new Object[components.length + 1];
-        System.arraycopy(components, 0, services, 0, components.length);
-        services[components.length] = jpdaRP;
+        Object[] services = new Object[1];
+        services[0] = jpdaRP;
         return services;
-    }
-    
-    static Object[] getUIComponentProxies() {
-        
-        class ComponentProxy implements BeanContextChildComponentProxy, DesignMode {
-            private String name;
-            private boolean openByDefault;
-            ComponentProxy(String name, boolean openByDefault) {
-                this.name = name;
-                this.openByDefault = openByDefault;
-            }
-            public Component getComponent() {
-                return WindowManager.getDefault().findTopComponent(name);
-            }
-            public boolean isDesignTime() {
-                return openByDefault;
-            }
-            public void setDesignTime(boolean designTime) {
-                throw new UnsupportedOperationException("Not supported.");
-            }
-        }
-
-        class WatchesComponentProxy extends ComponentProxy {
-            WatchesComponentProxy(String name, boolean openByDefault) {
-                super(name, openByDefault);
-            }
-            @Override
-            public boolean isDesignTime() {
-                Preferences preferences = NbPreferences.forModule(ContextProvider.class).node("variables_view"); // NOI18N
-                return !preferences.getBoolean("show_watches", true); // NOI18N
-            }
-        }
-
-        return new Object [] {
-            new ComponentProxy("localsView", true),
-            new WatchesComponentProxy("watchesView", true),
-            new ComponentProxy("breakpointsView", true),
-            new ComponentProxy("debuggingView", true),
-            // Initially closed components
-            new ComponentProxy("evaluatorPane", false),
-            new ComponentProxy("resultsView", false),
-            new ComponentProxy("callstackView", false),
-            new ComponentProxy("sessionsView", false),
-            new ComponentProxy("sources", false),
-            new ComponentProxy("threadsView", false),
-            new ComponentProxy("classes", false),
-        };
     }
     
     public void setDestructor (DebuggerEngine.Destructor desctuctor) {

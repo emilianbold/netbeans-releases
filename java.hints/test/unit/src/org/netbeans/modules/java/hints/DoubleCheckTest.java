@@ -56,6 +56,32 @@ public class DoubleCheckTest extends NbTestCase {
         super(testName);
     }
 
+    /**
+     * The check will not report a code which is 
+     * @throws Exception 
+     */
+    public void testDoNotReportVolatileButNoLocal() throws Exception {
+        String code = "package test;\n" +
+            "public class Test {\n" +
+            "    private volatile String f;\n" +
+            "    public void t() {\n" +
+            "        if (f == null) {\n" +
+            "            synchronized (this) {\n" +
+            "                if (f == null) {\n" +
+            "                    f = \"\";\n" +
+            "                }\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}";
+        HintTest.
+                create().
+                input(code).
+                run(DoubleCheck.class).
+                findWarning("5:12-5:24:verifier:ERR_DoubleCheck").
+                assertFixes("Use local variable for better performance");
+    }
+    
     public void testClassWithOnlyStaticMethods() throws Exception {
         String before = "package test; public class Test {" +
                         "  private static Test INST;" +
@@ -207,7 +233,8 @@ public class DoubleCheckTest extends NbTestCase {
                 .create()
                 .input(code)
                 .run(DoubleCheck.class)
-                .assertWarnings();
+                .findWarning("4:0-4:12:verifier:ERR_DoubleCheck").
+                assertFixes("Use local variable for better performance");
     }
 
     public void testVolatileJDK4IZ153334() throws Exception {

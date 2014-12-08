@@ -1,0 +1,5 @@
+MakeSelectWidgetArgs:CLASS:[PUBLIC]:ESCAPED{MakeSelectWidgetArgs}:
+  dataSource:FIELD:[PUBLIC]:ESCAPED{dataSource}<font color="#999999">ESCAPED{ : }Array.<StringESCAPED{|}StringESCAPED{|}function</font>:
+  keyField:FIELD:[PUBLIC]:ESCAPED{keyField}<font color="#999999">ESCAPED{ : }String</font>:
+  label:FIELD:[PUBLIC]:ESCAPED{label}<font color="#999999">ESCAPED{ : }String</font>:
+makeSelectWidget:METHOD:[PUBLIC]:ESCAPED{makeSelectWidget}ESCAPED{(}<font color="#999999">ESCAPED{MakeSelectWidgetArgs}ESCAPED{ }</font>ESCAPED{opts}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

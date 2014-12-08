@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.util;
+package org.netbeans.modules.debugger.jpda.ui.focus;
 
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ClassNotLoadedException;

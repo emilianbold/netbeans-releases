@@ -64,9 +64,9 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -115,7 +115,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                         continue;
                     }
                 } catch (MalformedURLException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Exceptions.printStackTrace(ex);
                 }
             }
             breakpoints[i].addPropertyChangeListener(this);

@@ -72,7 +72,6 @@ import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ui.MethodChooser;
 
 
 /**
@@ -89,7 +88,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     public static final String ACTION_SMART_STEP_INTO = "smartStepInto";
 
     private final StepIntoNextMethod stepInto;
-    private MethodChooser currentMethodChooser;
+    private JPDAMethodChooserFactory mcf;
 
     static final Map<ContextProvider, Reference<StepIntoActionProvider>> instanceByContext
             = new WeakHashMap<ContextProvider, Reference<StepIntoActionProvider>>();
@@ -102,6 +101,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         stepInto = new StepIntoNextMethod(contextProvider);
         setProviderToDisableOnLazyAction(this);
         instanceByContext.put(contextProvider, new WeakReference(this));
+        mcf = contextProvider.lookupFirst(null, JPDAMethodChooserFactory.class);
     }
 
 
@@ -158,12 +158,11 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     // other methods ...........................................................
     
     public boolean doMethodSelection () {
-        synchronized (this) {
-            if (currentMethodChooser != null) {
-                // perform action
-                currentMethodChooser.releaseUI(true);
-                return true;
-            }
+        if (mcf == null) {
+            return false;
+        }
+        if (mcf.cancelUI()) {
+            return true;
         }
         final String[] methodPtr = new String[1];
         final String[] urlPtr = new String[1];
@@ -197,38 +196,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
             if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
                 return false;
             }
-            final MethodChooserSupport cSupport = new MethodChooserSupport(debugger, url, clazz, methodLine);
-            boolean continuedDirectly = cSupport.init();
-            if (cSupport.getSegmentsCount() == 0) {
-                return false;
-            }
-            if (continuedDirectly) {
-                return true;
-            }
-            MethodChooser.ReleaseListener releaseListener = new MethodChooser.ReleaseListener() {
-                @Override
-                public void released(boolean performAction) {
-                    synchronized (StepIntoActionProvider.this) {
-                        currentMethodChooser = null;
-                        cSupport.tearDown();
-                        if (performAction) {
-                            cSupport.doStepInto();
-                        }
-                    }
-                }
-            };
-            MethodChooser chooser = cSupport.createChooser();
-            chooser.addReleaseListener(releaseListener);
-            boolean success = chooser.showUI();
-            if (success && chooser.isUIActive()) {
-                synchronized (this) {
-                    cSupport.tearUp(chooser);
-                    currentMethodChooser = chooser;
-                }
-            } else {
-                chooser.removeReleaseListener(releaseListener);
-            }
-            return success;
+            return mcf.initChooserUI(debugger, url, clazz, methodLine);
         } else {
             return false;
         }
