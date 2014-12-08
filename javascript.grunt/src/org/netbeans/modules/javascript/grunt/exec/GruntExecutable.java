@@ -64,6 +64,7 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.GruntBuildTool;
+import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.options.GruntOptions;
 import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
@@ -274,7 +275,7 @@ public class GruntExecutable {
                     if (!StringUtils.hasText(line)) {
                         state = 2;
                     } else if (NO_TASKS.equals(line.trim())) {
-                        tasks.add("default"); // NOI18N
+                        tasks.add(GruntTasks.DEFAULT_TASK);
                         state = 2;
                     } else {
                         List<String> parts = StringUtils.explode(line.trim(), " "); // NOI18N

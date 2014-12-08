@@ -67,6 +67,8 @@ public final class GruntTasks implements ChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(GruntTasks.class.getName());
 
+    public static final String DEFAULT_TASK = "default"; // NOI18N
+
     private static final RequestProcessor RP = new RequestProcessor(GruntTasks.class);
 
     private final Project project;
