@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.grunt.ui.customizer;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.grunt.GruntBuildTool;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -55,6 +56,9 @@ public final class GruntCustomizerProvider implements ProjectCustomizer.Composit
     @NbBundle.Messages("GruntCustomizerProvider.name=Grunt")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
+        if (!GruntBuildTool.forProject(context.lookup(Project.class)).getGruntfile().exists()) {
+            return null;
+        }
         return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
                 Bundle.GruntCustomizerProvider_name(), null);
     }
