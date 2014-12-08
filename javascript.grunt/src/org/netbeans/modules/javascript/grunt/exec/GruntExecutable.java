@@ -63,6 +63,8 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.grunt.GruntBuildTool;
+import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.options.GruntOptions;
 import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
@@ -192,7 +194,10 @@ public class GruntExecutable {
         if (project == null) {
             return FileUtils.TMP_DIR;
         }
-        // XXX use gruntfile
+        Gruntfile gruntfile = GruntBuildTool.forProject(project).getGruntfile();
+        if (gruntfile.exists()) {
+            return gruntfile.getFile().getParentFile();
+        }
         File workDir = FileUtil.toFile(project.getProjectDirectory());
         assert workDir != null : project.getProjectDirectory();
         return workDir;
