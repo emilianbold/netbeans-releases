@@ -42,41 +42,141 @@
 package org.netbeans.modules.subversion.remote.api;
 
 import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
  * @author Alexander Simon
  */
 public class SVNUrl {
-    public SVNUrl(String url) throws MalformedURLException{
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+    public static final String SVN_PROTOCOL = "svn";
+    public static final String SVNSSH_PROTOCOL = "svn+";
+    public static final String HTTP_PROTOCOL = "http";
+    public static final String HTTPS_PROTOCOL = "https";
+    public static final String FILE_PROTOCOL = "file";
+    
+    private final String protocol;
+    private final String host;
+    private final int port;
+    private final String path[];
+    
+    public SVNUrl(String url) throws MalformedURLException {
+        if (url == null) {
+            throw new MalformedURLException("SVN URL cannot be NULL.");
+        }
+        String tmp = url.trim();
+        int i = tmp.indexOf("://");
+        if (i < 0) {
+            throw new MalformedURLException("Invalid SVN URL: "+url);
+        }
+        protocol = tmp.substring(0,i).toLowerCase();
+        if (!(SVN_PROTOCOL.equals(protocol) || SVNSSH_PROTOCOL.equals(protocol) || HTTP_PROTOCOL.equals(protocol) ||
+            HTTPS_PROTOCOL.equals(protocol) || FILE_PROTOCOL.equals(protocol))) {
+            throw new MalformedURLException("Unsupported protocol of SVN URL: "+url);
+        }
+        tmp = tmp.substring(i+3);
+        if (tmp.isEmpty()) {
+            throw new MalformedURLException("Invalid path of SVN URL: "+url);
+        }
+        i = tmp.indexOf("/");
+        if (i < 0) {
+            i = tmp.length();
+        }
+        if (FILE_PROTOCOL.equals(protocol)) {
+            port = -1;
+            if(i == 0) {
+                host = "";
+            } else {
+                host = tmp.substring(0, i);
+            }
+        } else {
+            //http://llvm.org:80/svn/llvm-project/llvm/branches/release_34
+            String hostAndPort = tmp.substring(0, i).toLowerCase();
+            String[] split = hostAndPort.split(":");
+            if (split.length == 1) {
+                host = split[0];
+                port = getDefaultPort(protocol);
+            } else if (split.length == 2) {
+                host = split[0];
+                try {
+                    port = Integer.parseInt(split[1]);
+                } catch(NumberFormatException e) {
+                    throw new MalformedURLException("Invalid port of SVN URL: "+url);
+                }
+            } else {
+                throw new MalformedURLException("Invalid SVN URL: "+url);
+            }
+        }
+        if(i < tmp.length()) {
+            tmp = tmp.substring(i + 1);
+            path = tmp.split("/");
+        } else {
+            path = new String[0];
+        }
+    }
+
+    private int getDefaultPort(String protocol) {
+        switch(protocol) {
+            case HTTPS_PROTOCOL:
+                return 443;
+            case HTTP_PROTOCOL:
+                return 80;
+            case SVNSSH_PROTOCOL:
+                return 22;
+            case SVN_PROTOCOL:
+                return 3690;
+        }
+        return -1;
+    }
+    
+    private SVNUrl(String protocol, String host, int port, String[] path) {
+        this.protocol = protocol;
+        this.host = host;
+        this.port = port;
+        this.path = path;
     }
 
     public String getProtocol() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return protocol;
     }
 
     public String getHost() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return host;
     }
 
     public int getPort() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return port;
     }
 
-    public SVNUrl appendPath(String toString) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public SVNUrl appendPath(String append) {
+        List<String> res = Arrays.asList(path);
+        for(String s : append.split("/")) {
+            if (!s.isEmpty()) {
+                res.add(s);
+            }
+        }
+        return new SVNUrl(protocol, host, port, res.toArray(new String[res.size()]));
     }
 
     public String[] getPathSegments() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return path;
     }
 
     public String getLastPathSegment() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (path.length == 0) {
+            return "";
+        }
+        return path[path.length - 1];
     }
 
     public SVNUrl getParent() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (path.length < 2 || host.isEmpty()) {
+            return null;
+        }
+        String parent[] = new String[path.length-1];
+        System.arraycopy(path, 0, parent, 0, path.length - 1);
+        return new SVNUrl(protocol, host, port, parent);
     }
 }

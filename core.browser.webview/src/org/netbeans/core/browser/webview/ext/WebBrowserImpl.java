@@ -346,7 +346,9 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             javafx.application.Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    getEngine().getHistory().go( 1 );
+                    if( _isForward() ) {
+                        getEngine().getHistory().go( 1 );
+                    }
                 }
             });
         }
@@ -363,7 +365,9 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             javafx.application.Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    getEngine().getHistory().go( -1 );
+                    if( _isBackward() ) {
+                        getEngine().getHistory().go( -1 );
+                    }
                 }
             });
         }

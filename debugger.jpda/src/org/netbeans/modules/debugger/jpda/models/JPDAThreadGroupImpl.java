@@ -58,14 +58,13 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.openide.util.Exceptions;
 
 
 /**
  * The implementation of JPDAThreadGroup.
  */
-public class JPDAThreadGroupImpl implements JPDAThreadGroup, DebuggingView.DVThreadGroup {
+public class JPDAThreadGroupImpl implements JPDAThreadGroup {
 
     private ThreadGroupReference tgr;
     private JPDADebuggerImpl debugger;

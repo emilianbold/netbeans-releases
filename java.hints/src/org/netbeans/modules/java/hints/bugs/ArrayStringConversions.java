@@ -69,6 +69,7 @@ import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.Bundle.*;
+import org.netbeans.modules.java.hints.errors.Utilities;
 
 /**
  * Detects places where an array instance is Stringified. This is done explicitly by a call to toString(), or implicitly in
@@ -395,6 +396,11 @@ public class ArrayStringConversions {
         )
     })
     public static ErrorDescription printlnPrintStream(HintContext ctx) {
+        TreePath arrayRef = ctx.getVariables().get("$v");
+        TypeMirror m = ctx.getInfo().getTrees().getTypeMirror(arrayRef);
+        if (!Utilities.isValidType(m) || m.getKind() == TypeKind.NULL) {
+            return null;
+        }
         return printPrintStream(ctx);
     }
 
@@ -1202,6 +1208,10 @@ public class ArrayStringConversions {
         TreePath arrayRef = ctx.getVariables().get("$v");
         // the pattern matcher only identifies one match, it is possible that another array is passed in the subsequent
         // formatting parameters
+        TypeMirror m = ctx.getInfo().getTrees().getTypeMirror(arrayRef);
+        if (!Utilities.isValidType(m) || m.getKind() == TypeKind.NULL) {
+            return null;
+        }
         Element e = ci.getTrees().getElement(ctx.getPath());
         if (e == null || !(e instanceof ExecutableElement)) {
             return null;
@@ -1598,6 +1608,12 @@ public class ArrayStringConversions {
     })
     public static ErrorDescription stringConcatenation(HintContext ctx) {
         TreePath vPath = ctx.getVariables().get("$v");
+        // #248586: check that the type of the `v' variable is not null (as null is assignable to every
+        // array resulting in incorrect hints
+        TypeMirror m = ctx.getInfo().getTrees().getTypeMirror(vPath);
+        if (!Utilities.isValidType(m) || m.getKind() == TypeKind.NULL) {
+            return null;
+        }
         boolean deep = canContainArrays(ctx.getInfo(), vPath);
         return ErrorDescriptionFactory.forTree(ctx, vPath, TEXT_ArrayConcatenatedToString(), 
             new ArraysToStringFix(false, false, ctx.getInfo(), vPath).toEditorFix(),
