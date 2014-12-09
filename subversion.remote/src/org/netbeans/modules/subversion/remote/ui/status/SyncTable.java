@@ -91,6 +91,7 @@ import org.netbeans.modules.subversion.remote.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.remote.ui.update.UpdateAction;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -117,7 +118,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private static final Map<String, String[]> columnLabels = new HashMap<>(4);
     static {
         ResourceBundle loc = NbBundle.getBundle(SyncTable.class);
         columnLabels.put(SyncFileNode.COLUMN_NAME_BRANCH, new String [] {
@@ -329,7 +330,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     private SyncFileNode[] getSelectedNodes () {
-        List<SyncFileNode> selectedNodes = new ArrayList<SyncFileNode>();
+        List<SyncFileNode> selectedNodes = new ArrayList<>();
         ListSelectionModel selectionModel = table.getSelectionModel();
         int min = selectionModel.getMinSelectionIndex();
         if (min != -1) {
@@ -345,7 +346,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
     private Collection<VCSFileProxy> getSelectedFiles () {
         SyncFileNode[] selectedNodes = getSelectedNodes();
-        Collection<VCSFileProxy> files = new HashSet<VCSFileProxy>(selectedNodes.length);
+        Collection<VCSFileProxy> files = new HashSet<>(selectedNodes.length);
         for (SyncFileNode node : selectedNodes) {
             files.add(node.getFile());
         }
@@ -606,7 +607,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 if (!isSelected) {
                     value = "<html>" + node.getHtmlDisplayName(); // NOI18N
                 }
-                if (SvnModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getPath())) {
+                final VCSFileProxy file = node.getFile();
+                if (SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(file)).isExcludedFromCommit(file.getPath())) {
                     String nodeName = node.getDisplayName();
                     if (isSelected) {
                         value = "<html><s>" + nodeName + "</s></html>"; // NOI18N

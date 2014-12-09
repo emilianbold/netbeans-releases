@@ -171,7 +171,7 @@ public class DiffAction extends ContextAction {
             public void run() {
                 Context ctx = getContext(nodes);
                 String contextName = getContextDisplayName(nodes);
-                diff(ctx, SvnModuleConfig.getDefault().getLastUsedModificationContext(), contextName, isSvnNodes(nodes));
+                diff(ctx, SvnModuleConfig.getDefault(ctx.getFileSystem()).getLastUsedModificationContext(), contextName, isSvnNodes(nodes));
             }
         });
     }

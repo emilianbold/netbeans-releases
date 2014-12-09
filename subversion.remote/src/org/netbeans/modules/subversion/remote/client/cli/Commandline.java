@@ -70,7 +70,7 @@ class Commandline {
      */
     Commandline(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
-        executable = SvnModuleConfig.getDefault().getExecutableBinaryPath();
+        executable = SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
             executable = "svn";                                                 // NOI18N
         }                      
@@ -147,7 +147,7 @@ class Commandline {
     }    
 
     private Map<String, String> getEnvVar() {
-        Map<String,String> ret = new HashMap<String, String>();
+        Map<String,String> ret = new HashMap<>();
         ret.put("LC_ALL", null);                // NOI18N    
         ret.put("LC_MESSAGES", "C");                // NOI18N    
         ret.put("LC_TIME", "C");                // NOI18N    

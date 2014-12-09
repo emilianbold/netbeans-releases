@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 import org.openide.filesystems.FileObject;
@@ -94,10 +95,10 @@ public final class ExcludeFromCommitAction extends ContextAction {
     }
     
     public int getActionStatus(Node[] nodes) {
-        SvnModuleConfig config = SvnModuleConfig.getDefault();
         VCSFileProxy [] files = getCachedContext(nodes).getFiles();
         int status = UNDEFINED;
         for (int i = 0; i < files.length; i++) {
+            SvnModuleConfig config = SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(files[i]));
             if (config.isExcludedFromCommit(files[i].getPath())) {
                 if (status == EXCLUDING) {
                     return UNDEFINED;
@@ -118,9 +119,8 @@ public final class ExcludeFromCommitAction extends ContextAction {
         ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             @Override
             public void perform() {
-                SvnModuleConfig config = SvnModuleConfig.getDefault();
                 int status = getActionStatus(nodes);
-                List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
+                List<VCSFileProxy> files = new ArrayList<>();
                 for (Node node : nodes) {
                     VCSFileProxy aFile = node.getLookup().lookup(VCSFileProxy.class);
                     FileObject fo = node.getLookup().lookup(FileObject.class);
@@ -133,7 +133,11 @@ public final class ExcludeFromCommitAction extends ContextAction {
                         }
                     }
                 }
-                List<String> paths = new ArrayList<String>(files.size());
+                if (files.size() == 0) {
+                    return;
+                }
+                SvnModuleConfig config = SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(files.get(0)));
+                List<String> paths = new ArrayList<>(files.size());
                 for (VCSFileProxy file : files) {
                     paths.add(file.getPath());
                 }

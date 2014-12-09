@@ -51,6 +51,7 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 
@@ -122,7 +123,7 @@ public class SvnFileNode {
     }
 
     public Object[] getLookupObjects() {
-        List<Object> list = new ArrayList<Object>(2);
+        List<Object> list = new ArrayList<>(2);
         list.add(file);
         FileObject fo = getFileObject();
         if (fo != null) {
@@ -137,12 +138,13 @@ public class SvnFileNode {
      */
     public String getLocation() {
         if (relativePath == null) {
+            final Context context = new Context(file);
             try {
                 assert !java.awt.EventQueue.isDispatchThread();
-                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed()
+                relativePath = SvnModuleConfig.getDefault(context.getFileSystem()).isRepositoryPathPrefixed()
                         ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(getFile())) : SvnUtils.getRelativePath(getFile());
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
+                SvnClientExceptionHandler.notifyException(context, ex, false, false);
             }
             if (relativePath == null) {
                 relativePath = NbBundle.getMessage(SvnFileNode.class, "SvnFileNode.relativePath.unknown"); //NOI18N

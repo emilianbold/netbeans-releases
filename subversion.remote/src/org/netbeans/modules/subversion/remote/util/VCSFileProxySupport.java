@@ -59,6 +59,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -133,7 +134,7 @@ public final class VCSFileProxySupport {
             return VCSFileProxy.createFileProxy(new File(uri));
         } else {
             try {
-                List<String> segments = new ArrayList<String>();
+                List<String> segments = new ArrayList<>();
                 FileObject fo = findExistingParent(uri, segments);
                 VCSFileProxy res = VCSFileProxy.createFileProxy(fo);
                 for (int i = segments.size() - 1; i >= 0; i--) {
@@ -176,7 +177,7 @@ public final class VCSFileProxySupport {
             return javaFile.toURI();
         }
         try {
-            List<String> segments = new ArrayList<String>();
+            List<String> segments = new ArrayList<>();
             FileObject fo = findExistingParent(file, segments);
             URI res = fo.toURI();
             for (int i = segments.size() - 1; i >= 0; i--) {
@@ -256,7 +257,7 @@ public final class VCSFileProxySupport {
      * @return
      */
     public static VCSFileProxy getTempFolder(VCSFileProxy file, boolean deleteOnExit) throws FileStateInvalidException, IOException {
-        FileObject tmpDir = file.toFileObject().getFileSystem().getTempFolder();
+        FileObject tmpDir = VCSFileProxySupport.getFileSystem(file).getTempFolder();
         for (;;) {
             try {
                 //TODO: support delete on exit
@@ -331,6 +332,22 @@ public final class VCSFileProxySupport {
     public static VCSFileProxy getHome(VCSFileProxy file){
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * Creates or gets the user-localhost folder to persist svn configurations.
+     * @return
+     */
+    public static VCSFileProxy getRemotePeristenceFolder(FileSystem fileSystem) throws FileStateInvalidException, IOException {
+        FileObject tmpDir = fileSystem.getTempFolder();
+        String userName = "user"; //RemoteExecutionEnvironment.getUser();
+        String folderName = "svn_" + userName; // NOI18N
+        FileObject res = tmpDir.getFileObject(folderName);
+        if (res == null || !res.isValid()) {
+            res = tmpDir.createFolder(folderName);
+        }
+        // TODO: create subfolder with hash of localhost
+        return VCSFileProxy.createFileProxy(res);
+    }
     
     public static boolean isMac(VCSFileProxy file) {
         throw new UnsupportedOperationException();
@@ -340,7 +357,7 @@ public final class VCSFileProxySupport {
         throw new UnsupportedOperationException();
     }
     
-    public static String getFileSystemKey(VCSFileProxy file) {
+    public static String getFileSystemKey(FileSystem file) {
         throw new UnsupportedOperationException();
     }
     
@@ -363,5 +380,33 @@ public final class VCSFileProxySupport {
 
     public static VCSFileProxy getSelectedFile(JFileChooser chooser) {
         throw new UnsupportedOperationException();
+    }
+    
+    public static FileSystem getDefaultFileSystem() {
+        // return default remote file system.
+        throw new UnsupportedOperationException();
+    }
+
+    public static FileSystem[] getFileSystems() {
+        // return default remote file system.
+        throw new UnsupportedOperationException();
+    }
+
+    public static FileSystem getFileSystem(VCSFileProxy file) {
+        while(true) {
+            FileObject fo = file.toFileObject();
+            if (fo != null) {
+                try {
+                    return fo.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    ex.printStackTrace(System.err);
+                    return null;
+                }
+            }
+            file = file.getParentFile();
+            if (file == null) {
+                return null;
+            }
+        }
     }
 }

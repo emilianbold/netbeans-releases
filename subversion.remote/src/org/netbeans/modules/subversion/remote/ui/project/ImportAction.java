@@ -158,7 +158,7 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
                 LOG.log(Level.FINE, "null dir to import: {0}", roots.iterator().next()); //NOI18N
             } else {
                 LOG.log(Level.FINE, "Starting wizard: {0}", roots.iterator().next()); //NOI18N
-                List<VCSFileProxy> list = new ArrayList<VCSFileProxy>(1);
+                List<VCSFileProxy> list = new ArrayList<>(1);
                 list.add(importDirectory);
                 Context context = new Context(Context.getEmptyList(), list, Context.getEmptyList());
                 ImportWizard wizard = new ImportWizard(context);

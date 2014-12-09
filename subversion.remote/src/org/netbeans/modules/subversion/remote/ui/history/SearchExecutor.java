@@ -94,7 +94,7 @@ class SearchExecutor extends SvnProgressSupport {
 
     private int                         completedSearches;
     private boolean                     searchCanceled;
-    private final List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
+    private final List<RepositoryRevision> results = new ArrayList<>();
     static final int DEFAULT_LIMIT = 10;
     private final SVNRevision fromRevision;
     private final SVNRevision toRevision;
@@ -110,19 +110,19 @@ class SearchExecutor extends SvnProgressSupport {
     }
 
     private void populatePathToRoot() {
-        pathToRoot = new HashMap<String, VCSFileProxy>();
+        pathToRoot = new HashMap<>();
         try {
             if (searchingUrl()) {
                 String rootPath = SvnUtils.getRepositoryPath(master.getRoots()[0]);
                 pathToRoot.put(rootPath, master.getRoots()[0]);
             } else {
-                workFiles = new HashMap<SVNUrl, Set<VCSFileProxy>>();
+                workFiles = new HashMap<>();
                 for (VCSFileProxy file : master.getRoots()) {
                     SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
                     populatePathToRoot(file, rootUrl);
                     Set<VCSFileProxy> set = workFiles.get(rootUrl);
                     if (set == null) {
-                        set = new HashSet<VCSFileProxy>(2);
+                        set = new HashSet<>(2);
                         workFiles.put(rootUrl, set);
                     }
                     set.add(file);
@@ -242,7 +242,7 @@ class SearchExecutor extends SvnProgressSupport {
         } else {
             String [] paths = new String[files.size()];
             int idx = 0;
-            Map<String, SVNRevision> revisions = new HashMap<String, SVNRevision>();
+            Map<String, SVNRevision> revisions = new HashMap<>();
             try {
                 for (VCSFileProxy file : files) {
                     ISVNInfo info = client.getInfoFromWorkingCopy(file);
@@ -347,8 +347,8 @@ class SearchExecutor extends SvnProgressSupport {
 
     List<RepositoryRevision> search(SVNUrl repositoryUrl, int count, SvnProgressSupport supp) {
         results.clear();
-        search(repositoryUrl, searchingUrl() ? null : new HashSet<VCSFileProxy>(Arrays.asList(master.getRoots())),
+        search(repositoryUrl, searchingUrl() ? null : new HashSet<>(Arrays.asList(master.getRoots())),
                 fromRevision, toRevision, supp, false, count);
-        return new ArrayList<RepositoryRevision>(results);
+        return new ArrayList<>(results);
     }
 }

@@ -228,7 +228,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         BufferedWriter w = new BufferedWriter(new OutputStreamWriter(dest.toFileObject().getOutputStream(), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
-            diffList = new ArrayList<Difference>();
+            diffList = new ArrayList<>();
         }
         try {
             String line;

@@ -92,11 +92,13 @@ import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryTopCompone
 import org.netbeans.modules.subversion.remote.ui.history.SummaryView.SvnLogEntry;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Contains all components of the Search History panel.
@@ -129,6 +131,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private Map<String, VCSKenaiAccessor.KenaiUser> kenaiUserMap;
     private List<SvnLogEntry> logEntries;
     private boolean selectFirstRevision;
+    private final FileSystem fileSystem;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -154,6 +157,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(VCSFileProxy [] roots, SearchCriteriaPanel criteria) {
         this.roots = roots;
+        fileSystem = VCSFileProxySupport.getFileSystem(roots[0]);
         this.repositoryUrl = null;
         this.criteria = criteria;
         this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
@@ -172,6 +176,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     public SearchHistoryPanel(SVNUrl repositoryUrl, VCSFileProxy localRoot, SearchCriteriaPanel criteria) {
         this.repositoryUrl = repositoryUrl;
         this.roots = new VCSFileProxy[] { localRoot };
+        fileSystem = VCSFileProxySupport.getFileSystem(roots[0]);
         this.criteria = criteria;
         this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
@@ -185,6 +190,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         refreshComponents(true);
     }
 
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+    
     private void aquaBackgroundWorkaround() {
         if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
             Color color = UIManager.getColor("NbExplorerView.background");      // NOI18N
@@ -269,7 +278,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getActionMap().put("jumpNext", nextAction); // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
 
-        fileInfoCheckBox.setSelected(SvnModuleConfig.getDefault().getShowFileAllInfo());
+        fileInfoCheckBox.setSelected(SvnModuleConfig.getDefault(fileSystem).getShowFileAllInfo());
     }
 
     private ExplorerManager             explorerManager;
@@ -467,7 +476,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     Collection<Setup> getSetups(RepositoryRevision [] revisions, RepositoryRevision.Event [] events) {
         long fromRevision = Long.MAX_VALUE;
         long toRevision = Long.MIN_VALUE;
-        Set<VCSFileProxy> filesToDiff = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> filesToDiff = new HashSet<>();
         
         for (RepositoryRevision revision : revisions) {
             long rev = revision.getLog().getRevision().getNumber();
@@ -499,7 +508,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
         }
 
-        List<Setup> setups = new ArrayList<Setup>();
+        List<Setup> setups = new ArrayList<>();
         for (VCSFileProxy file : filesToDiff) {
             Setup setup = new Setup(file, Long.toString(fromRevision - 1), Long.toString(toRevision), false);
             setups.add(setup);
@@ -682,7 +691,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }//GEN-LAST:event_expandCriteriaButtonActionPerformed
 
     private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileInfoCheckBoxActionPerformed
-        SvnModuleConfig.getDefault().setShowFileAllInfo(fileInfoCheckBox.isSelected());
+        SvnModuleConfig.getDefault(fileSystem).setShowFileAllInfo(fileInfoCheckBox.isSelected());
         if (summaryView != null) {
             summaryView.refreshView();
         }
@@ -785,12 +794,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
     
     static Map<String, VCSKenaiAccessor.KenaiUser> createKenaiUsersMap (List<RepositoryRevision> results) {
-        Map<String, VCSKenaiAccessor.KenaiUser> kenaiUsersMap = new HashMap<String, VCSKenaiAccessor.KenaiUser>();
+        Map<String, VCSKenaiAccessor.KenaiUser> kenaiUsersMap = new HashMap<>();
         if (!results.isEmpty()) {
             SVNUrl url = results.get(0).getRepositoryRootUrl();
             boolean isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
             if(isKenaiRepository) {
-                kenaiUsersMap = new HashMap<String, VCSKenaiAccessor.KenaiUser>();
+                kenaiUsersMap = new HashMap<>();
                 for (RepositoryRevision repositoryRevision : results) {
                     String author = repositoryRevision.getLog().getAuthor();
                     if(author != null && !author.isEmpty()) {
@@ -851,7 +860,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private List<RepositoryRevision> filter (List<RepositoryRevision> results) {
-        List<RepositoryRevision> newResults = new ArrayList<RepositoryRevision>(results.size());
+        List<RepositoryRevision> newResults = new ArrayList<>(results.size());
         for (RepositoryRevision rev : results) {
             if (applyFilter(rev)) {
                 newResults.add(rev);
@@ -896,12 +905,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                     @Override
                     public void run () {
                         if (!isCanceled()) {
-                            Set<SVNRevision.Number> visibleRevisions = new HashSet<SVNRevision.Number>(results.size());
+                            Set<SVNRevision.Number> visibleRevisions = new HashSet<>(results.size());
                             for (RepositoryRevision rev : results) {
                                 visibleRevisions.add(rev.getLog().getRevision());
                             }
                             
-                            List<RepositoryRevision> toAdd = new ArrayList<RepositoryRevision>(newResults.size());
+                            List<RepositoryRevision> toAdd = new ArrayList<>(newResults.size());
                             for (RepositoryRevision rev : filter(newResults)) {
                                 if (!visibleRevisions.contains(rev.getLog().getRevision())) {
                                     toAdd.add(rev);
@@ -932,7 +941,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     List<SvnLogEntry> createLogEntries(List<RepositoryRevision> results) {
-        List<SvnLogEntry> ret = new LinkedList<SvnLogEntry>();
+        List<SvnLogEntry> ret = new LinkedList<>();
         for (RepositoryRevision repositoryRevision : results) {
             ret.add(new SummaryView.SvnLogEntry(repositoryRevision, this));
         }

@@ -109,6 +109,7 @@ public class PinPanel extends javax.swing.JPanel {
 
         envField.setEditable(false);
         envField.setText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envField.text")); // NOI18N
+        envField.setFocusable(false);
         envField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 envFieldActionPerformed(evt);
@@ -179,9 +180,10 @@ public class PinPanel extends javax.swing.JPanel {
 	customStateChanged(customCheckBox.isSelected());
     }//GEN-LAST:event_customCheckBoxActionPerformed
 
-    private void customStateChanged(boolean newState){
+    private void customStateChanged(boolean newState) {
 	if (newState) {
 	    titleField.setEnabled(true);
+	    titleField.requestFocus();
 	} else {
 	    titleField.setEnabled(false);
 	}

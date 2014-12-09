@@ -55,7 +55,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  */
 public class SvnClientRefreshHandler implements ISVNNotifyListener {
 
-    private final Set<VCSFileProxy>  filesToRefresh = new HashSet<VCSFileProxy>();
+    private final Set<VCSFileProxy>  filesToRefresh = new HashSet<>();
 
     @Override
     public void setCommand(ISVNNotifyListener.Command arg0)                { /* boring */ }

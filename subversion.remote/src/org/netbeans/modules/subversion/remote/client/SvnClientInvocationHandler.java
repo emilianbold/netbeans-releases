@@ -42,7 +42,6 @@
 package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.EventQueue;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -85,7 +84,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
     private static final String DISPOSE_METHOD = "dispose"; //NOI18N
     private static final String CHECKOUT_METHOD = "checkout"; //NOI18N
-    private static final Set<String> ADMINISTRATIVE_METHODS = new HashSet<String>(Arrays.asList(
+    private static final Set<String> ADMINISTRATIVE_METHODS = new HashSet<>(Arrays.asList(
         "addConflictResolutionCallback", //NOI18N
         "addNotifyListener", //NOI18N
         "addPasswordCallback", //NOI18N
@@ -108,7 +107,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         CANCEL_OPERATION,
         DISPOSE_METHOD
     ));
-    private static final Set<String> READ_ONLY_METHODS = new HashSet<String>(Arrays.asList(new String[] {
+    private static final Set<String> READ_ONLY_METHODS = new HashSet<>(Arrays.asList(new String[] {
         "annotate", //NOI18N
         "createPatch", //NOI18N
         "diff", //NOI18N
@@ -142,7 +141,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private final int handledExceptions;
     private static boolean metricsAlreadyLogged = false;
     private volatile boolean disposed;
-    private static final Map<String, Mutex> locks = new HashMap<String, Mutex>(5);
+    private static final Map<String, Mutex> locks = new HashMap<>(5);
     private static final ConfigFiles SENSITIVE_CONFIG_FILES = new ConfigFiles();
     private static final boolean KEEP_SERVERS_FILE = Boolean.getBoolean("versioning.subversion.keepServersFile");
     
@@ -419,7 +418,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if(support != null) {
                 support.setCancellableDelegate(cancellable);
             }            
-            File serversConfigFile = null;
+            VCSFileProxy serversConfigFile = null;
             try {
                 // save the proxy settings into the svn servers file                
                 if(desc != null && desc.getSvnUrl() != null) {

@@ -80,7 +80,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
     
     /** Creates a new instance of CreateCopy */
     public CreateCopy(RepositoryFile repositoryFile, VCSFileProxy localeFile, boolean localChanges) {        
-        super(new CreateCopyPanel(), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Prompt", localeFile.getName()), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title")); // NOI18N
+        super(localeFile, new CreateCopyPanel(), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Prompt", localeFile.getName()), NbBundle.getMessage(CreateCopy.class, "CTL_CopyDialog_Title")); // NOI18N
         
         this.localeFile = localeFile;        
         this.repositoryFile = repositoryFile;

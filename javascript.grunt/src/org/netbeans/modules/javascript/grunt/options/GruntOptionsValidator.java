@@ -39,38 +39,38 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.grunt.legacy;
+package org.netbeans.modules.javascript.grunt.options;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
+import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
+import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Jan Becicka
- */
-public class GruntPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public final class GruntOptionsValidator {
 
-    @Override
-    public Category createCategory(Lookup context) {
-            return ProjectCustomizer.Category.create(
-                    "grunt",//NOI18N
-                    "Grunt",//NOI18N
-                    null);
+    public static final String GRUNT_PATH = "grunt.path"; // NOI18N
+
+    private final ValidationResult result = new ValidationResult();
+
+
+    public GruntOptionsValidator validate() {
+        return GruntOptionsValidator.this.validateGrunt();
     }
 
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        return new GruntCustomizerPanel(context.lookup(Project.class), category);
+    public GruntOptionsValidator validateGrunt() {
+        return validateGrunt(GruntOptions.getInstance().getGrunt());
     }
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org.netbeans.modules.web.clientproject",//NOI18N
-            position = 365)
-    public static GruntPanelProvider createRunConfigs() {
-        return new GruntPanelProvider();
+    @NbBundle.Messages("GruntOptionsValidator.grunt.name=Grunt")
+    public GruntOptionsValidator validateGrunt(String grunt) {
+        String warning = ExternalExecutableValidator.validateCommand(grunt, Bundle.GruntOptionsValidator_grunt_name());
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message(GRUNT_PATH, warning));
+        }
+        return this;
     }
-    
+
+    public ValidationResult getResult() {
+        return result;
+    }
+
 }

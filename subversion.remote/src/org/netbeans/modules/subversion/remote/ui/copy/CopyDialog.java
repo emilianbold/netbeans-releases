@@ -71,9 +71,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.remote.RepositoryFile;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.api.SVNUrlUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -94,9 +97,11 @@ public abstract class CopyDialog {
     private static final String SEP = "----------"; //NOI18N
     private static final String MORE_BRANCHES = NbBundle.getMessage(CopyDialog.class, "LBL_CopyDialog.moreBranchesAndTags"); //NOI18N
     private Set<JComboBox> urlComboBoxes;
+    private final FileSystem fileSystem;
     
-    protected CopyDialog(JPanel panel, String title, String okLabel) {                
+    protected CopyDialog(VCSFileProxy file, JPanel panel, String title, String okLabel) {                
         this.panel = panel;
+        fileSystem = VCSFileProxySupport.getFileSystem(file);
         
         okButton = new JButton(okLabel);
         okButton.getAccessibleContext().setAccessibleDescription(okLabel);
@@ -115,7 +120,7 @@ public abstract class CopyDialog {
         if(cbo==null) {
             return;
         }
-        List<String> recentFolders = new LinkedList<String>(Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CopyDialog.class.getName()));
+        List<String> recentFolders = new LinkedList<>(Utils.getStringList(SvnModuleConfig.getDefault(fileSystem).getPreferences(), CopyDialog.class.getName()));
         Map<String, String> comboItems = setupModel(cbo, repositoryFile, recentFolders);
         cbo.setRenderer(new LocationRenderer(comboItems));
         getUrlComboBoxes().add(cbo);
@@ -123,7 +128,7 @@ public abstract class CopyDialog {
     
     private Set<JComboBox> getUrlComboBoxes () {
         if(urlComboBoxes == null) {
-            urlComboBoxes = new HashSet<JComboBox>();
+            urlComboBoxes = new HashSet<>();
         }
         return urlComboBoxes;
     }
@@ -148,7 +153,7 @@ public abstract class CopyDialog {
         for (JComboBox cbo : urlComboBoxes) {
             Object item = cbo.getEditor().getItem();
             if(item != null && !item.equals("")) { // NOI18N
-                 org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), CopyDialog.class.getName(), (String) item, -1);
+                 org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault(fileSystem).getPreferences(), CopyDialog.class.getName(), (String) item, -1);
             }            
         }                
     }       
@@ -171,8 +176,8 @@ public abstract class CopyDialog {
      * @return 
      */
     static Map<String, String> setupModel (JComboBox cbo, RepositoryFile repositoryFile, List<String> recentFolders) {
-        Map<String, String> locations = new HashMap<String, String>(Math.min(recentFolders.size(), 10));
-        List<String> model = new LinkedList<String>();
+        Map<String, String> locations = new HashMap<>(Math.min(recentFolders.size(), 10));
+        List<String> model = new LinkedList<>();
         // all category in the model is sorted by name ignoring case
         Comparator comparator = new Comparator<String>() {
             @Override
@@ -181,9 +186,9 @@ public abstract class CopyDialog {
             }
         };
         // category 3
-        TreeMap<String, String> relatedLocations = new TreeMap<String, String>(comparator);
+        TreeMap<String, String> relatedLocations = new TreeMap<>(comparator);
         // category 2
-        TreeMap<String, String> branchLocations = new TreeMap<String, String>(comparator);
+        TreeMap<String, String> branchLocations = new TreeMap<>(comparator);
         String relativePath = SVNUrlUtils.getRelativePath(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl());
         String fileName = repositoryFile.getName();
         String[] branchPathSegments = getBranchPathSegments(relativePath);

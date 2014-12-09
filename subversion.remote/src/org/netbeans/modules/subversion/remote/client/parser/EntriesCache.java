@@ -123,14 +123,14 @@ public class EntriesCache {
         ATTR_TREE_CONFLICTS
     };
 
-    private static final Set<String> BOOLEAN_ATTRIBUTES = new java.util.HashSet<String>();
+    private static final Set<String> BOOLEAN_ATTRIBUTES = new java.util.HashSet<>();
     static {
         BOOLEAN_ATTRIBUTES.add("has-props");
         BOOLEAN_ATTRIBUTES.add("has-prop-mods");
         BOOLEAN_ATTRIBUTES.add("copied");
         BOOLEAN_ATTRIBUTES.add("deleted");
     }
-    private static final Set<String> DATE_ATTRIBUTES = new java.util.HashSet<String>();
+    private static final Set<String> DATE_ATTRIBUTES = new java.util.HashSet<>();
     static {
         DATE_ATTRIBUTES.add("committed-date");
         DATE_ATTRIBUTES.add("lock-creation-date");
@@ -156,7 +156,7 @@ public class EntriesCache {
     private WeakHashMap<String, List<ConflictDescriptionParser.ParserConflictDescriptor>> cachedConflicts;
 
     private EntriesCache() {
-        cachedConflicts = new WeakHashMap<String, List<ConflictDescriptionParser.ParserConflictDescriptor>>(5);
+        cachedConflicts = new WeakHashMap<>(5);
     }
 
     static EntriesCache getInstance() {
@@ -270,7 +270,7 @@ public class EntriesCache {
     private Map<String, String> mergeThisDirAttributes(final boolean isDirectory, final String fileName, final EntryAttributes ea) {
         Map<String, String> attributes = ea.get(fileName);
         if(attributes == null) {
-           attributes = new HashMap<String, String>();
+           attributes = new HashMap<>();
            ea.put(fileName, attributes);
         }
         if (!ea.containsKey(SVN_THIS_DIR)) {
@@ -358,7 +358,7 @@ public class EntriesCache {
         int attrIndex = 0;
 
         String entryName = null;
-        Map<String, String> attributes = new HashMap<String, String>();
+        Map<String, String> attributes = new HashMap<>();
 
         String nextLine = attributePool.get(entriesReader.readLine());
         if (nextLine == null && VCSFileProxy.createFileProxy(entryFile.getParentFile().getParentFile(), SvnUtils.SVN_WC_DB).exists()) {
@@ -389,7 +389,7 @@ public class EntriesCache {
             if (DELIMITER.equals(nextLine)) {
                 attributes.put(WorkingCopyDetails.VERSION_ATTR_KEY, WorkingCopyDetails.VERSION_14);
                 returnValue.put(entryName, attributes);
-                attributes = new HashMap<String, String>();
+                attributes = new HashMap<>();
                 attrIndex = 0;
                 nextLine = attributePool.get(entriesReader.readLine());
                 continue;
@@ -436,7 +436,7 @@ public class EntriesCache {
         @Override
         public void startElement(String uri, String localName, String qName, Attributes elementAttributes) throws SAXException {
             if (ENTRY_ELEMENT_NAME.equals(qName)) {
-                Map<String, String> attributes = new HashMap<String, String>();
+                Map<String, String> attributes = new HashMap<>();
                 for (int i = 0; i < elementAttributes.getLength(); i++) {
                     String name = attributePool.get(elementAttributes.getQName(i));
                     String value = attributePool.get(elementAttributes.getValue(i));
@@ -503,7 +503,7 @@ public class EntriesCache {
     };
 
     private class AttributePool {        
-        private Map<String, String> m = new WeakHashMap<String, String>();
+        private Map<String, String> m = new WeakHashMap<>();
         public String get(String str) {
             if(str == null ) return null;
             if(DELIMITER.equals(str)) {
