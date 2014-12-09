@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIParserTestCase;
+import org.netbeans.modules.cnd.debugger.gdb2.peculiarity.PeculiarityTestCase;
 
 /**
  *
@@ -58,6 +59,7 @@ public class GdbUnitTest extends TestSuite {
         addTestSuite(PidParserTestCase.class);
         addTestSuite(MemParserTestCase.class);
         addTestSuite(RedirectionPathTestCase.class);
+        addTestSuite(PeculiarityTestCase.class);
     }
 
     public static Test suite() {
