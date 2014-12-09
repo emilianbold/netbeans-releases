@@ -86,7 +86,7 @@ final class RepositoryRevision {
     /**
      * List of events associated with the revision.
      */
-    private final List<Event> events = new ArrayList<Event>(5);
+    private final List<Event> events = new ArrayList<>(5);
     private List<Event> fakeRootEvents;
     private boolean eventsInitialized;
     private Search currentSearch;
@@ -174,7 +174,7 @@ final class RepositoryRevision {
     }
     
     Action[] getActions () {
-        List<Action> actions = new ArrayList<Action>();
+        List<Action> actions = new ArrayList<>();
         actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_RollbackChange")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -285,7 +285,7 @@ final class RepositoryRevision {
         })
         Action[] getActions () {
             if (actions == null) {
-                actions = new ArrayList<Action>();
+                actions = new ArrayList<>();
                 boolean rollbackToEnabled = getFile() != null && getChangedPath().getAction() != 'D';
                 boolean rollbackChangeEnabled = getFile() != null && (getChangedPath().getAction() != 'D' || !getFile().exists());
                 boolean viewEnabled = rollbackToEnabled && !getFile().isDirectory();
@@ -408,7 +408,7 @@ final class RepositoryRevision {
     }
 
     public void initFakeRootEvent() {
-        fakeRootEvents = new LinkedList<Event>();
+        fakeRootEvents = new LinkedList<>();
         for (final VCSFileProxy selectionRoot : selectionRoots) {
             Event e = new Event(new ISVNLogMessageChangePath() {
                 private String path;
@@ -484,7 +484,7 @@ final class RepositoryRevision {
                                     events.addAll(logEvents);
                                     eventsInitialized = true;
                                     currentSearch = null;
-                                    support.firePropertyChange(RepositoryRevision.PROP_EVENTS_CHANGED, null, new ArrayList<Event>(events));
+                                    support.firePropertyChange(RepositoryRevision.PROP_EVENTS_CHANGED, null, new ArrayList<>(events));
                                 }
                             }
                         });
@@ -517,8 +517,8 @@ final class RepositoryRevision {
             if (paths == null) {
                 return Collections.<Event>emptyList();
             } else {
-                List<Event> events = new ArrayList<Event>(paths.length);
-                Set<String> removedPaths = new HashSet<String>(paths.length);
+                List<Event> events = new ArrayList<>(paths.length);
+                Set<String> removedPaths = new HashSet<>(paths.length);
                 for (ISVNLogMessageChangePath path : paths) {
                     if (path.getAction() == 'D') {
                         removedPaths.add(path.getPath());

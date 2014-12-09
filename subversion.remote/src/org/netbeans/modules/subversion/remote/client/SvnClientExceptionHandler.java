@@ -42,7 +42,6 @@
 package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.Dialog;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -231,7 +230,7 @@ public class SvnClientExceptionHandler {
                 Subversion.LOG.log(Level.FINE, "SvnClientExceptionHandler.handleRepositoryConnectError(): canceled"); //NOI18N
                 return false;
             }
-            Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
+            Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
 
             JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
@@ -249,20 +248,20 @@ public class SvnClientExceptionHandler {
 
                 adapter.setUsername(username);
                 adapter.setPassword(password != null ? new String(password) : ""); //NOI18N
-                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+                SvnModuleConfig.getDefault(adapter.getFileSystem()).insertRecentUrl(rc);
             }
             return ret;
         }
     }
 
     @NbBundle.Messages("CTL_Action_Cancel=Cancel")
-    public static boolean handleAuth (SVNUrl url) {
+    public boolean handleAuth (SVNUrl url) {
         SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         String sUrl = url.toString();
         if(support.isKenai(sUrl)) {
             return support.showLogin() && support.getPasswordAuthentication(sUrl, true) != null;
         } else {
-            Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
+            Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
 
             JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
@@ -276,7 +275,7 @@ public class SvnClientExceptionHandler {
 
             boolean ret = (option == retryButton);
             if(ret) {
-                SvnModuleConfig.getDefault().insertRecentUrl(repository.getSelectedRC());
+                SvnModuleConfig.getDefault(adapter.getFileSystem()).insertRecentUrl(repository.getSelectedRC());
             }
             return ret;
         }
@@ -289,14 +288,14 @@ public class SvnClientExceptionHandler {
         String hostString = SvnUtils.ripUserFromHost(url.getHost());                                
         // copy the certificate if it already exists        
         VCSFileProxy certFile = CertificateFile.getSystemCertFile(adapter.getFileSystem(), realmString);
-        File nbCertFile = CertificateFile.getNBCertFile(adapter.getFileSystem(), realmString);
-        if( !nbCertFile.exists() &&  certFile.exists() ) {            
-            try {
-                VCSFileProxySupport.copyFile(certFile, VCSFileProxy.createFileProxy(nbCertFile));
-            } catch (IOException ex) {
-                throw new SVNClientException(ex);
+        try {
+            VCSFileProxy nbCertFile = CertificateFile.getNBCertFile(adapter.getFileSystem(), realmString);
+            if( !nbCertFile.exists() &&  certFile.exists() ) {            
+                VCSFileProxySupport.copyFile(certFile, nbCertFile);
+                return true;
             }
-            return true;
+        } catch (IOException ex) {
+            throw new SVNClientException(ex);
         }
 
         // otherwise try to retrieve the certificate from the server ...                                             
@@ -349,7 +348,7 @@ public class SvnClientExceptionHandler {
 
         try {
             boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
-            CertificateFile cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
+            CertificateFile cf = new CertificateFile(adapter.getFileSystem(), cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
             throw new SVNClientException(ex);
@@ -471,7 +470,7 @@ public class SvnClientExceptionHandler {
         private KeyManager[] getKeyManagers() {        
         try {
             SVNUrl url = getRemoteHostUrl();
-            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(url.toString());
+            RepositoryConnection rc = SvnModuleConfig.getDefault(adapter.getFileSystem()).getRepositoryConnection(url.toString());
             if(rc == null) {
                 return null;
             }
@@ -595,7 +594,7 @@ public class SvnClientExceptionHandler {
     }
 
     private CertificateFailure[] getCertFailures() {
-        List<CertificateFailure> ret = new ArrayList<CertificateFailure>();
+        List<CertificateFailure> ret = new ArrayList<>();
         String exceptionMessage = getException().getMessage();
         for (CertificateFailure failure : failures) {
             if (exceptionMessage.indexOf(failure.error) > -1) {

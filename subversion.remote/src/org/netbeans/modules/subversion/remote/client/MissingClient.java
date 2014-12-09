@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
 public class MissingClient implements ActionListener, HyperlinkListener {
     
     private final MissingClientPanel panel;
-    private static final HashSet<String> ALLOWED_EXECUTABLES =  new HashSet<String>(Arrays.asList(new String[] {"svn"} )); //NOI18N
+    private static final HashSet<String> ALLOWED_EXECUTABLES =  new HashSet<>(Arrays.asList(new String[] {"svn"} )); //NOI18N
     private final Context context;
     
     /** Creates a new instance of MissingSvnClient */
@@ -81,7 +81,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         this.context = context;
         panel = new MissingClientPanel();
         panel.browseButton.addActionListener(this);        
-        panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
+        panel.executablePathTextField.setText(SvnModuleConfig.getDefault(context.getFileSystem()).getExecutableBinaryPath());
         panel.textPane.addHyperlinkListener(this);
     }
 
@@ -100,7 +100,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                 new Object [] { ok, cancel },
                 ok);
         if(DialogDisplayer.getDefault().notify(descriptor) == ok) {
-            SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
+            SvnModuleConfig.getDefault(context.getFileSystem()).setExecutableBinaryPath(panel.executablePathTextField.getText());
             SvnClientFactory.resetClient();
         }
     }

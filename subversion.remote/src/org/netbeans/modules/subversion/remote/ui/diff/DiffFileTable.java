@@ -102,7 +102,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     /**
      * Defines labels for Diff view table columns.
      */ 
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private static final Map<String, String[]> columnLabels = new HashMap<>(4);
 
     static {
         ResourceBundle loc = NbBundle.getBundle(DiffFileTable.class);
@@ -429,7 +429,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
             // single selection
             master.tableRowSelected(table.getSelectedRow());
         } else {
-            List<DiffNode> selectedNodes = new ArrayList<DiffNode>();
+            List<DiffNode> selectedNodes = new ArrayList<>();
             if (min == -1) {
                 master.tableRowSelected(-1);
             } else {
@@ -463,7 +463,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                        = DiffUtils.getHtmlDisplayName(nodes[modelRow],
                                                       isModified(modelRow),
                                                       isSelected);
-                if (SvnModuleConfig.getDefault().isExcludedFromCommit(nodes[modelRow].getSetup().getBaseFile().getPath())) {
+                if (SvnModuleConfig.getDefault(master.getFileSystem()).isExcludedFromCommit(nodes[modelRow].getSetup().getBaseFile().getPath())) {
                     htmlDisplayName = "<s>" + (htmlDisplayName == null ? nodes[modelRow].getName() : htmlDisplayName) + "</s>"; //NOI18N
                 }
                 if (htmlDisplayName != null) {

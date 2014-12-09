@@ -120,7 +120,7 @@ public final class SvnPropertiesAction extends ContextAction {
             return;
         }       
 
-        final PropertiesPanel panel = new PropertiesPanel();
+        final PropertiesPanel panel = new PropertiesPanel(ctx.getFileSystem());
         final PropertiesTable propTable;
         propTable = new PropertiesTable(panel.labelForTable, PropertiesTable.PROPERTIES_COLUMNS, new String[] { PropertiesTableModel.COLUMN_NAME_VALUE});
         panel.setPropertiesTable(propTable);

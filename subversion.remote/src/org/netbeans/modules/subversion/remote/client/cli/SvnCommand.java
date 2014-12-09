@@ -68,7 +68,7 @@ import org.openide.filesystems.FileSystem;
  */
 public abstract class SvnCommand implements CommandNotificationListener {
                
-    private final List<String> cmdError = new ArrayList<String>(10);
+    private final List<String> cmdError = new ArrayList<>(10);
        
     /**
      * If the command throws an execption, this is it.
@@ -259,7 +259,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
     }
 
     String[] getCliArguments() {
-        List<String> l = new ArrayList<String>(arguments.size());
+        List<String> l = new ArrayList<>(arguments.size());
         for (String arg : arguments.toArray()) {
             l.add(arg);
         }
@@ -341,7 +341,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
         
     public final class Arguments implements Iterable<String> {
 
-        private final List<String> args = new ArrayList<String>(5);
+        private final List<String> args = new ArrayList<>(5);
 
         public Arguments() {
         }

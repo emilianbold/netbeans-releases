@@ -85,10 +85,10 @@ class FilesystemHandler extends VCSInterceptor {
     /**
      * Stores all moved files for a later cache refresh in afterMove
      */
-    private final Set<VCSFileProxy> movedFiles = new HashSet<VCSFileProxy>();
-    private final Set<VCSFileProxy> copiedFiles = new HashSet<VCSFileProxy>();
+    private final Set<VCSFileProxy> movedFiles = new HashSet<>();
+    private final Set<VCSFileProxy> copiedFiles = new HashSet<>();
 
-    private final Set<VCSFileProxy> internalyDeletedFiles = new HashSet<VCSFileProxy>();
+    private final Set<VCSFileProxy> internalyDeletedFiles = new HashSet<>();
     private final Set<VCSFileProxy> toLockFiles = Collections.synchronizedSet(new HashSet<VCSFileProxy>());
     private final Map<VCSFileProxy, Boolean> readOnlyFiles = Collections.synchronizedMap(new LinkedHashMap<VCSFileProxy, Boolean>() {
         @Override
@@ -101,7 +101,7 @@ class FilesystemHandler extends VCSInterceptor {
     /**
      * Stores .svn folders that should be deleted ASAP.
      */
-    private final Set<VCSFileProxy> invalidMetadata = new HashSet<VCSFileProxy>(5);
+    private final Set<VCSFileProxy> invalidMetadata = new HashSet<>(5);
     private static final int STATUS_VCS_MODIFIED_ATTRIBUTE
             = FileInformation.STATUS_VERSIONED_CONFLICT
             | FileInformation.STATUS_VERSIONED_MERGE
@@ -696,7 +696,7 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public boolean isMutable(VCSFileProxy file) {
         boolean mutable = SvnUtils.isPartOfSubversionMetadata(file) || super.isMutable(file);
-        if (!mutable && SvnModuleConfig.getDefault().isAutoLock() && !readOnlyFiles.containsKey(file)) {
+        if (!mutable && SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(file)).isAutoLock() && !readOnlyFiles.containsKey(file)) {
             toLockFiles.add(file);
             return true;
         }
@@ -761,7 +761,7 @@ class FilesystemHandler extends VCSInterceptor {
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
     private static List<VCSFileProxy> getDeletedParents(VCSFileProxy file, SvnClient client) throws SVNClientException {
-        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> ret = new ArrayList<>();
         for(VCSFileProxy parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
             ISVNStatus status = getStatus(client, parent);
             if (status == null || !status.getTextStatus().equals(SVNStatusKind.DELETED)) {

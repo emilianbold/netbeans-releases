@@ -267,7 +267,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     public void annotationLines(final VCSFileProxy file, List<AnnotateLine> annotateLines) {
         this.file = file;
-        final List<AnnotateLine> lines = new LinkedList<AnnotateLine>(annotateLines);
+        final List<AnnotateLine> lines = new LinkedList<>(annotateLines);
         int lineCount = lines.size();
         /** 0 based line numbers => 1 based line numbers*/
         final int ann2editorPermutation[] = new int[lineCount];
@@ -369,7 +369,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             url = SvnUtils.getRepositoryUrl(file);
             isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
             if(isKenaiRepository) {
-                kenaiUsersMap = new HashMap<String, KenaiUser>();
+                kenaiUsersMap = new HashMap<>();
                 Iterator<AnnotateLine> it = lines.iterator();
                 while (it.hasNext()) {
                     AnnotateLine line = it.next();
@@ -823,12 +823,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
             if (amp != null) {
             
-                List<AnnotationMark> marks = new ArrayList<AnnotationMark>(elementAnnotations.size());
+                List<AnnotationMark> marks = new ArrayList<>(elementAnnotations.size());
                 // I cannot affort to lock elementAnnotations for long time
                 // it's accessed from editor thread too
                 Iterator<Map.Entry<Element, AnnotateLine>> it2;
                 synchronized(elementAnnotations) {
-                    it2 = new HashSet<Map.Entry<Element, AnnotateLine>>(elementAnnotations.entrySet()).iterator();
+                    it2 = new HashSet<>(elementAnnotations.entrySet()).iterator();
                 }
                 while (it2.hasNext()) {
                     Map.Entry<Element, AnnotateLine> next = it2.next();                        

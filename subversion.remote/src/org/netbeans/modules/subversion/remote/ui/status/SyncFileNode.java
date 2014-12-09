@@ -66,6 +66,7 @@ import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.remote.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -246,8 +247,9 @@ public class SyncFileNode extends AbstractNode {
                             return;
                         }
                         try {
-                            shortPath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed()
-                                    ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(node.getFile())) : SvnUtils.getRelativePath(node.getFile());
+                            final VCSFileProxy file = node.getFile();
+                            shortPath = SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(file)).isRepositoryPathPrefixed()
+                                    ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(file)) : SvnUtils.getRelativePath(node.getFile());
                         } catch (SVNClientException ex) {
                             if (WorkingCopyAttributesCache.getInstance().isSuppressed(ex)) {
                                 try {

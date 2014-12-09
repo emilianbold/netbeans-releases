@@ -83,7 +83,7 @@ public class Context implements Serializable {
     }
 
     public Context(VCSFileProxy [] files) {
-        List<VCSFileProxy> list = new ArrayList<VCSFileProxy>(files.length);
+        List<VCSFileProxy> list = new ArrayList<>(files.length);
         list.addAll(Arrays.asList(files));
         removeDuplicates(list);
         this.filteredFiles = list;
@@ -93,11 +93,7 @@ public class Context implements Serializable {
 
     public FileSystem getFileSystem() {
         for (VCSFileProxy root : rootFiles) {
-            try {
-                return root.toFileObject().getFileSystem();
-            } catch (FileStateInvalidException ex) {
-                ex.printStackTrace(System.err);
-            }
+            return VCSFileProxySupport.getFileSystem(root);
         }
         return null;
     }
@@ -120,7 +116,7 @@ public class Context implements Serializable {
     }
 
     private void removeDuplicates(List<VCSFileProxy> files) {
-        List<VCSFileProxy> newFiles = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> newFiles = new ArrayList<>();
         outter: for (Iterator<VCSFileProxy> i = files.iterator(); i.hasNext();) {
             VCSFileProxy file = i.next();
             for (Iterator<VCSFileProxy> j = newFiles.iterator(); j.hasNext();) {

@@ -113,7 +113,7 @@ public class UpgradeAction extends ContextAction {
         "# {0} - path to a folder", "MSG_UpgradeAction_statusBar_upgraded=Working Copy at {0} upgraded successfully."
     })
     private void upgrade (boolean explicitelyInvoked, VCSFileProxy ... roots) {
-        final Set<VCSFileProxy> toUpgrade = new HashSet<VCSFileProxy>();
+        final Set<VCSFileProxy> toUpgrade = new HashSet<>();
         for (VCSFileProxy root : roots) {
             boolean needsUpgrade = false;
             try {

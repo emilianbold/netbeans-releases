@@ -134,14 +134,14 @@ public class KVFile {
      */
     private Map<Key, byte[]> getMap() {
         if(map == null) {
-            map = new TreeMap<Key, byte[]>();
+            map = new TreeMap<>();
         }
         return map;
     }
 
     public Map<String, byte[]> getNormalizedMap() {
         Map<Key, byte[]> keyValue = getMap();
-        Map<String, byte[]> stringValue = new HashMap<String, byte[]>(keyValue.size());
+        Map<String, byte[]> stringValue = new HashMap<>(keyValue.size());
         Iterator<Map.Entry<Key, byte[]>> it = keyValue.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry next = it.next();
@@ -158,7 +158,7 @@ public class KVFile {
      */
     private Map<String, Key> getKeyMap() {
         if(keyMap == null) {
-            keyMap = new HashMap<String, Key>();
+            keyMap = new HashMap<>();
         }
         return keyMap;
     }

@@ -44,13 +44,13 @@
 
 package org.netbeans.modules.subversion.remote.config;
 
-import java.io.File;
+import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import org.netbeans.modules.proxy.Base64Encoder;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Represents a Subversions file holding a X509Certificate for a realmstring.
@@ -65,13 +65,13 @@ public class CertificateFile extends SVNCredentialFile {
 
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     
-    public CertificateFile(X509Certificate cert, String realmString, int failures, boolean temporarily) throws CertificateEncodingException {
+    public CertificateFile(FileSystem fileSystem, X509Certificate cert, String realmString, int failures, boolean temporarily) throws CertificateEncodingException, IOException {
         super(getNBCertFile(fileSystem, realmString));
         setCert(cert);
         setFailures(failures);
         setRealmString(realmString);
         if(temporarily) {
-            getFile().deleteOnExit();
+            VCSFileProxySupport.deleteOnExit(getFile());
         }
     }
 
@@ -97,9 +97,9 @@ public class CertificateFile extends SVNCredentialFile {
         return file.normalizeFile();
     }
 
-    public static File getNBCertFile(FileSystem fileSystem, String realmString) {
-        File file = new File(SvnConfigFiles.getNBConfigPath(fileSystem) + "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
-        return FileUtil.normalizeFile(file);
+    public static VCSFileProxy getNBCertFile(FileSystem fileSystem, String realmString) throws IOException {
+        VCSFileProxy file = VCSFileProxy.createFileProxy(SvnConfigFiles.getNBConfigPath(fileSystem), "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
+        return file.normalizeFile();
     }
 
     private Key getCertKey() {

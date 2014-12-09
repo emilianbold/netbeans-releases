@@ -72,7 +72,7 @@ import org.openide.util.*;
  */
 public class HistoryProvider implements VCSHistoryProvider {
 
-    private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
+    private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<>();
     private Action[] actions;
 
     @Override
@@ -95,10 +95,10 @@ public class HistoryProvider implements VCSHistoryProvider {
         try {
             SvnClient client = Subversion.getInstance().getClient(files[0]);
 
-            List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
-            Map<String, Set<VCSFileProxy>> rev2FileMap = new HashMap<String, Set<VCSFileProxy>>();
-            Map<String, ISVNLogMessage> rev2LMMap = new HashMap<String, ISVNLogMessage>();
-            Map<VCSFileProxy, SVNUrl> file2Copy = new HashMap<VCSFileProxy, SVNUrl>();
+            List<HistoryEntry> ret = new LinkedList<>();
+            Map<String, Set<VCSFileProxy>> rev2FileMap = new HashMap<>();
+            Map<String, ISVNLogMessage> rev2LMMap = new HashMap<>();
+            Map<VCSFileProxy, SVNUrl> file2Copy = new HashMap<>();
             SVNUrl repoUrl = null;
             for (VCSFileProxy file : files) {
                 FileInformation fi = Subversion.getInstance().getStatusCache().getStatus(file);
@@ -142,7 +142,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                     rev2LMMap.put(r, m);
                     Set<VCSFileProxy> s = rev2FileMap.get(r);
                     if(s == null) {
-                        s = new HashSet<VCSFileProxy>();
+                        s = new HashSet<>();
                         rev2FileMap.put(r, s);
                     }
                     s.add(file);

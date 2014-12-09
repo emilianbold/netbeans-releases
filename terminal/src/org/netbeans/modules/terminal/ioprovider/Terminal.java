@@ -150,6 +150,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -828,9 +829,8 @@ public final class Terminal extends JComponent {
 	    
 	    putValue(NAME, pinMessage);
 	    putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-
-	    support.addListener(new DetailsStateListener() {
-
+	    listener = new DetailsStateListener() {
+		
 		@Override
 		public void detailsAdded(Term term) {
 		    if (term != term()) {
@@ -845,7 +845,10 @@ public final class Terminal extends JComponent {
 			pin(true);
 		    } 
 		}
-	    });
+	    };
+
+	    DetailsStateListener create = WeakListeners.create(DetailsStateListener.class, listener, support);
+	    support.addDetailsStateListener(create);
 	    
 	    term.addListener(new TermListener() {
 
@@ -863,6 +866,7 @@ public final class Terminal extends JComponent {
 		}
 	    });
 	}
+	private final DetailsStateListener listener;
 
 	@Override
 	public void actionPerformed(ActionEvent e) {

@@ -111,6 +111,7 @@ import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -130,7 +131,7 @@ public class SvnUtils {
     public static final String SVN_WC_DB;
     private static final Pattern metadataPattern;
 
-    public static final HashSet<Character> autoEscapedCharacters = new HashSet<Character>(6);
+    public static final HashSet<Character> autoEscapedCharacters = new HashSet<>(6);
     static {
         autoEscapedCharacters.add(';');
         autoEscapedCharacters.add('?');
@@ -148,8 +149,8 @@ public class SvnUtils {
         metadataPattern = Pattern.compile(".*\\" + "/" + SVN_ADMIN_DIR.replace(".", "\\.") + "(\\" + "/" + ".*|$)");
     }
 
-    private static Reference<Context>  contextCached = new WeakReference<Context>(null);
-    private static Reference<Node[]> contextNodesCached = new WeakReference<Node []>(null);
+    private static Reference<Context>  contextCached = new WeakReference<>(null);
+    private static Reference<Node[]> contextNodesCached = new WeakReference<>(null);
 
     private static final VCSContext.FileFilter svnFileFilter = new VCSContext.FileFilter() {
         @Override
@@ -234,9 +235,9 @@ public class SvnUtils {
             if (ctx != null) return ctx;
         }
         VCSContext vcsCtx = VCSContext.forNodes(nodes);
-        Context ctx = new Context(new ArrayList<VCSFileProxy>(vcsCtx.computeFiles(svnFileFilter)), new ArrayList<VCSFileProxy>(vcsCtx.getRootFiles()), new ArrayList<VCSFileProxy>(vcsCtx.getExclusions()));
-        contextCached = new WeakReference<Context>(ctx);
-        contextNodesCached = new WeakReference<Node []>(nodes);
+        Context ctx = new Context(new ArrayList<>(vcsCtx.computeFiles(svnFileFilter)), new ArrayList<>(vcsCtx.getRootFiles()), new ArrayList<>(vcsCtx.getExclusions()));
+        contextCached = new WeakReference<>(ctx);
+        contextNodesCached = new WeakReference<>(nodes);
         return ctx;
     }
 
@@ -383,7 +384,7 @@ public class SvnUtils {
             rootFiles.add(rootFile);
             boolean containsSubprojects = false;
             FileObject [] rootChildren = srcRootFo.getChildren();
-            Set<VCSFileProxy> projectFiles = new HashSet<VCSFileProxy>(rootChildren.length);
+            Set<VCSFileProxy> projectFiles = new HashSet<>(rootChildren.length);
             for (int i = 0; i < rootChildren.length; i++) {
                 FileObject rootChildFo = rootChildren[i];
                 if (isAdministrative(rootChildFo.getNameExt())) {
@@ -419,9 +420,9 @@ public class SvnUtils {
      * @return Context context that defines list of supplied projects
      */
     public static Context getProjectsContext(Project [] projects) {
-        List<VCSFileProxy> filtered = new ArrayList<VCSFileProxy>();
-        List<VCSFileProxy> roots = new ArrayList<VCSFileProxy>();
-        List<VCSFileProxy> exclusions = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> filtered = new ArrayList<>();
+        List<VCSFileProxy> roots = new ArrayList<>();
+        List<VCSFileProxy> exclusions = new ArrayList<>();
         for (int i = 0; i < projects.length; i++) {
             addProjectFiles(filtered, roots, exclusions, projects[i]);
         }
@@ -429,7 +430,7 @@ public class SvnUtils {
     }
 
     public static VCSFileProxy [] toFileArray(Collection<FileObject> fileObjects) {
-        Set<VCSFileProxy> files = new HashSet<VCSFileProxy>(fileObjects.size()*4/3+1);
+        Set<VCSFileProxy> files = new HashSet<>(fileObjects.size()*4/3+1);
         for (Iterator<FileObject> i = fileObjects.iterator(); i.hasNext();) {
             VCSFileProxy f = VCSFileProxy.createFileProxy(i.next());
             if (f != null) {
@@ -511,7 +512,7 @@ public class SvnUtils {
     public static String getRelativePath(VCSFileProxy file) throws SVNClientException {
         String repositoryPath = null;
 
-        List<String> path = new ArrayList<String>();
+        List<String> path = new ArrayList<>();
         SVNUrl repositoryURL = null;
         boolean fileIsManaged = false;
         VCSFileProxy lastManaged = file;
@@ -780,7 +781,7 @@ public class SvnUtils {
             return null;
         }
 
-        Map<VCSFileProxy, SVNUrl> ret = new HashMap<VCSFileProxy, SVNUrl>();
+        Map<VCSFileProxy, SVNUrl> ret = new HashMap<>();
         try {
             ISVNStatus[] statuses = client.getStatus(root, true, true);
             for (ISVNStatus status : statuses) {
@@ -877,7 +878,7 @@ public class SvnUtils {
             } else if (c == '+' && inQuery) {
                 sb.append(' ');
             } else if (isEncodedByte(c, url, i)) {
-                List<Byte> byteList = new ArrayList<Byte>();
+                List<Byte> byteList = new ArrayList<>();
                 do  {
                     byteList.add((byte) Integer.parseInt(url.substring(i + 1, i + 3), 16));
                     i += 3;
@@ -967,16 +968,16 @@ public class SvnUtils {
         return VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR)) || VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_WC_DB));
     }
 
-    private static final ThreadLocal<Map<VCSFileProxy, ISVNInfo>> infoCache = new ThreadLocal<Map<VCSFileProxy, ISVNInfo>>();
-    private static final ThreadLocal<Map<VCSFileProxy, ISVNStatus>> statusCache = new ThreadLocal<Map<VCSFileProxy, ISVNStatus>>();
+    private static final ThreadLocal<Map<VCSFileProxy, ISVNInfo>> infoCache = new ThreadLocal<>();
+    private static final ThreadLocal<Map<VCSFileProxy, ISVNStatus>> statusCache = new ThreadLocal<>();
     
     public static void runWithInfoCache (Runnable runnable) {
         Map<VCSFileProxy, ISVNInfo> infos = infoCache.get();
         Map<VCSFileProxy, ISVNStatus> statuses = statusCache.get();
         if (infos == null || statuses == null) {
-            infos = new HashMap<VCSFileProxy, ISVNInfo>();
+            infos = new HashMap<>();
             infoCache.set(infos);
-            statuses = new HashMap<VCSFileProxy, ISVNStatus>();
+            statuses = new HashMap<>();
             statusCache.set(statuses);
             try {
                 runnable.run();
@@ -1139,7 +1140,7 @@ public class SvnUtils {
      * @return files with given status and direct descendants with given status.
      */
     public static VCSFileProxy[] flatten(VCSFileProxy[] files, int status) {
-        LinkedList<VCSFileProxy> ret = new LinkedList<VCSFileProxy>();
+        LinkedList<VCSFileProxy> ret = new LinkedList<>();
 
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (int i = 0; i<files.length; i++) {
@@ -1171,11 +1172,11 @@ public class SvnUtils {
      */
     public static VCSFileProxy [] getModifiedFiles(Context context, int includeStatus) {
         VCSFileProxy[] all = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
-        List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> files = new ArrayList<>();
         for (int i = 0; i < all.length; i++) {
             VCSFileProxy file = all[i];
             String path = file.getPath();
-            if (SvnModuleConfig.getDefault().isExcludedFromCommit(path) == false) {
+            if (SvnModuleConfig.getDefault(context.getFileSystem()).isExcludedFromCommit(path) == false) {
                 files.add(file);
             }
         }
@@ -1260,7 +1261,8 @@ public class SvnUtils {
             }
             return null;
         }
-        return getCopy(url, SvnModuleConfig.getDefault().getAnnotationExpresions());
+        final FileSystem fileSystem = VCSFileProxySupport.getFileSystem(file);
+        return getCopy(fileSystem, url, SvnModuleConfig.getDefault(fileSystem).getAnnotationExpresions());
     }
 
     /**
@@ -1270,8 +1272,9 @@ public class SvnUtils {
      * @param url
      * @return name or null
      */
-    public static String getCopy(SVNUrl url) {
-        return getCopy(url, SvnModuleConfig.getDefault().getAnnotationExpresions());
+    public static String getCopy(Context context, SVNUrl url) {
+        final FileSystem fileSystem = context.getFileSystem();
+        return getCopy(fileSystem, url, SvnModuleConfig.getDefault(fileSystem).getAnnotationExpresions());
     }
 
     /**
@@ -1282,8 +1285,8 @@ public class SvnUtils {
      * @param annotationExpressions
      * @return name or null
      */
-    private static String getCopy(SVNUrl url, List<AnnotationExpression> annotationExpressions) {
-        if (url != null && SvnModuleConfig.getDefault().isDetermineBranchesEnabled()) {
+    private static String getCopy(FileSystem fileSystem, SVNUrl url, List<AnnotationExpression> annotationExpressions) {
+        if (url != null && SvnModuleConfig.getDefault(fileSystem).isDetermineBranchesEnabled()) {
             String urlString = decodeToString(url);
             for (Iterator<AnnotationExpression> it = annotationExpressions.iterator(); it.hasNext();) {
                 String name = it.next().getCopyName(urlString);
@@ -1341,7 +1344,7 @@ public class SvnUtils {
      * @return the first pattern matching with the given value
      */
     public static List<String> getMatchinIgnoreParterns(List<String> patterns, String value, boolean onlyFirstMatch)  {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         if(patterns == null) {
             return ret;
         }
@@ -1395,7 +1398,7 @@ public class SvnUtils {
      * @return string with escaped characters
      */
     private static String patchRegExpClassCharacters (String exp) {
-        LinkedList<Integer> indexes = new LinkedList<Integer>();
+        LinkedList<Integer> indexes = new LinkedList<>();
         StringBuilder builder = new StringBuilder(exp.length());
 
         for (int index = 0, builderIndex = 0; index < exp.length(); ++index, ++builderIndex) {
@@ -1506,7 +1509,7 @@ public class SvnUtils {
     private static final int STATUS_RECURSIVELY_TRAVERSIBLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
 
     public static List<VCSFileProxy> listManagedRecursively(VCSFileProxy root) {
-        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> ret = new ArrayList<>();
         if(root == null) {
             return ret;
         }
@@ -1535,7 +1538,7 @@ public class SvnUtils {
      * @return list of all direct children
      */
     public static List<VCSFileProxy> listChildren (VCSFileProxy root) {
-        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> ret = new ArrayList<>();
         if(root == null) {
             return ret;
         }
@@ -1566,8 +1569,8 @@ public class SvnUtils {
     public static ISVNLogMessage[] getLogMessages(SvnClient client, SVNUrl rootUrl, String[] paths,
             Map<String, SVNRevision> pegRevisions, SVNRevision fromRevision, SVNRevision toRevision,
             boolean stopOnCopy, boolean fetchChangePath, long limit) throws SVNClientException {
-        Set<Long> alreadyHere = new HashSet<Long>();
-        List<ISVNLogMessage> ret = new ArrayList<ISVNLogMessage>();
+        Set<Long> alreadyHere = new HashSet<>();
+        List<ISVNLogMessage> ret = new ArrayList<>();
         boolean sorted = true;
         long lastRevNum = -1;
         for (String path : paths) {
@@ -1633,7 +1636,7 @@ public class SvnUtils {
 
     public static VCSFileProxy[] getActionRoots (Context ctx, boolean showSelector) {
         VCSFileProxy[] roots = ctx.getRootFiles();
-        List<VCSFileProxy> l = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> l = new ArrayList<>();
 
         // filter managed roots
         for (VCSFileProxy file : roots) {
@@ -1653,7 +1656,7 @@ public class SvnUtils {
                     NbBundle.getMessage(SvnUtils.class, "LBL_FileSelector_Title"),
                     NbBundle.getMessage(SvnUtils.class, "FileSelector.jLabel1.text"),
                     new HelpCtx("org.netbeans.modules.subversion.FileSelector"),
-                    SvnModuleConfig.getDefault().getPreferences());
+                    SvnModuleConfig.getDefault(ctx.getFileSystem()).getPreferences());
             if(showSelector && fs.show(roots)) {
                 return new VCSFileProxy[ ]{ fs.getSelectedFile()};
             } else {
@@ -1707,7 +1710,7 @@ public class SvnUtils {
         for (int i = 0; i < nodes.length; i++) {
             SvnFileNode node = nodes[i];
             VCSFileProxy file = node.getFile();
-            if (SvnModuleConfig.getDefault().isExcludedFromCommit(file.getPath())) {
+            if (SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(file)).isExcludedFromCommit(file.getPath())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
                 commitOptions[i] = getDefaultCommitOptions(node, excludeNew);
@@ -1809,7 +1812,7 @@ public class SvnUtils {
 
     public void scanForProjects(VCSFileProxy workingFolder, String[] checkedOutFolders, SvnProgressSupport support) {
 
-        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+        Map<Project, Set<Project>> checkedOutProjects = new HashMap<>();
         checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
         VCSFileProxy normalizedWorkingFolder = workingFolder.normalizeFile();
         // checkout creates new folders and cache must be aware of them
@@ -1842,7 +1845,7 @@ public class SvnUtils {
      * XXX move to versioning.utils if needed in other modules
      */
     public static void refreshFS (VCSFileProxy... files) {
-        final Set<VCSFileProxy> parents = new HashSet<VCSFileProxy>();
+        final Set<VCSFileProxy> parents = new HashSet<>();
         for (VCSFileProxy f : files) {
             VCSFileProxy parent = f.getParentFile();
             if (parent != null) {
@@ -1861,7 +1864,7 @@ public class SvnUtils {
         }
     }
 
-    static ThreadLocal<Set<VCSFileProxy>> indexingFiles = new ThreadLocal<Set<VCSFileProxy>>();
+    static ThreadLocal<Set<VCSFileProxy>> indexingFiles = new ThreadLocal<>();
     public static <T> T runWithoutIndexing (Callable<T> callable, List<VCSFileProxy> files) throws SVNClientException {
         return runWithoutIndexing(callable, files.toArray(new VCSFileProxy[files.size()]));
     }
@@ -1879,7 +1882,7 @@ public class SvnUtils {
                     if (Subversion.LOG.isLoggable(Level.FINER)) {
                         Subversion.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
                     }
-                    indexingFiles.set(new HashSet<VCSFileProxy>(Arrays.asList(files)));
+                    indexingFiles.set(new HashSet<>(Arrays.asList(files)));
                     return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
                 } finally {
                     indexingFiles.remove();

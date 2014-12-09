@@ -74,8 +74,8 @@ public class Utils {
     // Usages logging based on repository URL (for Kenai)
 
     private static VCSKenaiAccessor kenaiAccessor;
-    private static final LinkedList<VCSFileProxy> loggedRoots = new LinkedList<VCSFileProxy>();
-    private static final List<VCSFileProxy> foldersToCheck = new LinkedList<VCSFileProxy>();
+    private static final LinkedList<VCSFileProxy> loggedRoots = new LinkedList<>();
+    private static final List<VCSFileProxy> foldersToCheck = new LinkedList<>();
     private static Runnable loggingTask = null;
 
     /*
@@ -169,7 +169,7 @@ public class Utils {
      * files
      */
     public static VCSFileProxy[][] splitFlatOthers(VCSFileProxy[] files) {
-        Set<VCSFileProxy> flat = new HashSet<VCSFileProxy>(1);
+        Set<VCSFileProxy> flat = new HashSet<>(1);
         for (int i = 0; i < files.length; i++) {
             if (VersioningSupport.isFlat(files[i])) {
                 flat.add(files[i]);
@@ -178,7 +178,7 @@ public class Utils {
         if (flat.isEmpty()) {
             return new VCSFileProxy[][]{new VCSFileProxy[0], files};
         } else {
-            Set<VCSFileProxy> allFiles = new HashSet<VCSFileProxy>(Arrays.asList(files));
+            Set<VCSFileProxy> allFiles = new HashSet<>(Arrays.asList(files));
             allFiles.removeAll(flat);
             return new VCSFileProxy[][]{
                         flat.toArray(new VCSFileProxy[flat.size()]),
@@ -256,7 +256,7 @@ public class Utils {
         }
         try {
             DataObject dao = DataObject.find(fo);
-            return dao.getLookup().lookupItem(new Lookup.Template<EditorCookie>(EditorCookie.class)) != null;
+            return dao.getLookup().lookupItem(new Lookup.Template<>(EditorCookie.class)) != null;
         } catch (DataObjectNotFoundException e) {
             // not found, continue
         }
@@ -311,7 +311,7 @@ public class Utils {
             return;
         }
         if (fileToCharset == null) {
-            fileToCharset = new WeakHashMap<VCSFileProxy, Charset>();
+            fileToCharset = new WeakHashMap<>();
         }
         synchronized (fileToCharset) {
             fileToCharset.put(file, c);
@@ -350,7 +350,7 @@ public class Utils {
      * argument
      */
     public static Set<VCSFileProxy> getAllDataObjectFiles(VCSFileProxy file) {
-        Set<VCSFileProxy> filesToCheckout = new HashSet<VCSFileProxy>(2);
+        Set<VCSFileProxy> filesToCheckout = new HashSet<>(2);
         filesToCheckout.add(file);
         FileObject fo = file.toFileObject();
         if (fo != null) {

@@ -63,7 +63,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     private SvnPropertiesNode[] nodes;
     private String[] columns;
     
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(2); 
+    private static final Map<String, String[]> columnLabels = new HashMap<>(2); 
     
     static {
         ResourceBundle loc = NbBundle.getBundle(PropertiesTableModel.class);    

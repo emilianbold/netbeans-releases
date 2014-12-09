@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,14 +75,16 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
     private final JButton okButton;
     private final JButton cancelButton;
     private final DialogDescriptor dialogDescriptor;
+    private final FileSystem fileSystem;
 
     public Export(VCSFileProxy fromFile, boolean localChanges) {
         
         this.fromFile = fromFile;
+        fileSystem = VCSFileProxySupport.getFileSystem(fromFile);
         
         panel = new ExportPanel();
 
-        panel.scanCheckBox.setSelected(SvnModuleConfig.getDefault().getPreferences().getBoolean(SCAN_AFTER_EXPORT, false));
+        panel.scanCheckBox.setSelected(SvnModuleConfig.getDefault(fileSystem).getPreferences().getBoolean(SCAN_AFTER_EXPORT, false));
         panel.exportFromTextField.setText(fromFile.getPath());
         panel.browseToFolderButton.addActionListener(this);
         panel.exportToTextField.getDocument().addDocumentListener(this);
@@ -210,7 +213,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         }
 
         if (defaultDir == null) {
-            String coDir = SvnModuleConfig.getDefault().getPreferences().get(EXPORT_FROM_DIRECTORY, null);
+            String coDir = SvnModuleConfig.getDefault(fileSystem).getPreferences().get(EXPORT_FROM_DIRECTORY, null);
             if(coDir != null) {
                 defaultDir = VCSFileProxySupport.getResource(fromFile, coDir);
             }

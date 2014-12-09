@@ -86,7 +86,7 @@ public class SvnWcParser {
     }
 
     private List<ISVNStatus> getStatus(VCSFileProxy path, boolean descend) throws LocalSubversionException {
-        List<ISVNStatus> ret = new ArrayList<ISVNStatus>(20);                        
+        List<ISVNStatus> ret = new ArrayList<>(20);                        
         ret.add(getSingleStatus(path));
         
         VCSFileProxy[] children = getChildren(path);
@@ -112,7 +112,7 @@ public class SvnWcParser {
         if (children != null) { // it is a folder, get all its children from metadata
             try {
                 String[] entries = EntriesCache.getInstance().getChildren(file);
-                Set<VCSFileProxy> childSet = new LinkedHashSet<VCSFileProxy>(children.length + entries.length);
+                Set<VCSFileProxy> childSet = new LinkedHashSet<>(children.length + entries.length);
                 childSet.addAll(Arrays.asList(children));
                 for (String name : entries) {
                     childSet.add(VCSFileProxy.createFileProxy(file, name));

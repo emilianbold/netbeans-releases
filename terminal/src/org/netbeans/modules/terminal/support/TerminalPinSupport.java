@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.terminal.support;
 
+import java.util.EventListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -114,11 +115,11 @@ public class TerminalPinSupport {
 	}
     }
 
-    public void addListener(DetailsStateListener listener) {
+    public void addDetailsStateListener(DetailsStateListener listener) {
 	listeners.add(listener);
     }
 
-    public void removeListener(DetailsStateListener listener) {
+    public void removeDetailsStateListener(DetailsStateListener listener) {
 	listeners.remove(listener);
     }
 
@@ -157,7 +158,7 @@ public class TerminalPinSupport {
 	}
     }
 
-    public static interface DetailsStateListener {
+    public static interface DetailsStateListener extends EventListener{
 
 	void detailsAdded(Term term);
     }

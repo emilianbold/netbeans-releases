@@ -69,7 +69,7 @@ class ConflictDescriptionParser {
     private static final Logger LOG = Logger.getLogger(ConflictDescriptionParser.class.getName());
 
     private ConflictDescriptionParser() {
-        conflicts = new LinkedList<ParserConflictDescriptor>();
+        conflicts = new LinkedList<>();
     }
 
     static ConflictDescriptionParser parseDescription (String description) {
