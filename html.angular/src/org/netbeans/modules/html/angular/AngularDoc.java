@@ -77,10 +77,10 @@ public class AngularDoc {
     private static RequestProcessor RP = new RequestProcessor(AngularDoc.class);
     private static AngularDoc INSTANCE;
     private boolean loadingStarted;
-    
+
     private static final String CACHE_FOLDER_NAME = "ajs-doc"; //NOI18N
-    public static final String DOC_VERSION = System.getProperty("nb.angular.doc.version", "1.3.5"); //NOI18N;
-    
+    public static final String DOC_VERSION = System.getProperty("nb.angular.doc.version", "1.3.6"); //NOI18N;
+
     public static synchronized AngularDoc getDefault() {
         if (INSTANCE == null) {
             INSTANCE = new AngularDoc();
@@ -98,6 +98,10 @@ public class AngularDoc {
         return getDoc(directive);
     }
 
+    public String getFunctionDocumentation(FunctionDocUrl functionDocUrl) {
+        return getDoc(functionDocUrl);
+    }
+
     private void startLoading() {
         LOG.fine("start loading doc"); //NOI18N
         Directive[] dirs = Directive.values();
@@ -108,19 +112,19 @@ public class AngularDoc {
         buildDoc();
     }
 
-    private File getCacheFile(Directive directive) {
-        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(DOC_VERSION).append('/').append(directive.name()).toString());
+    private File getCacheFile(String name) {
+        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(DOC_VERSION).append('/').append(name).toString());
     }
 
     private String getDoc(Directive directive) {
         try {
-            File cacheFile = getCacheFile(directive);
+            File cacheFile = getCacheFile(directive.name());
             if (!cacheFile.exists()) {
                 //load from web and cache locally
                 loadDoc(directive, cacheFile);
-                
+
                 //if any of the files is not loaded yet, start the loading process
-                if(!loadingStarted) {
+                if (!loadingStarted) {
                     loadingStarted = true;
                     startLoading();
                 }
@@ -133,10 +137,28 @@ public class AngularDoc {
 
     }
 
+    private String getDoc(FunctionDocUrl functionDocUrl) {
+        try {
+            File cacheFile = getCacheFile(functionDocUrl.getFunctionName());
+            if (!cacheFile.exists()) {
+                //load from web and cache locally
+                loadDoc(new URL(functionDocUrl.getDocumentationPartialUrl()), cacheFile);
+            }
+            return Utils.getFileContent(cacheFile);
+        } catch (URISyntaxException | IOException ex) {
+            LOG.log(Level.INFO, "Cannot load AngularJS documentation from \"{0}\".", new Object[]{functionDocUrl.getDocumentationPartialUrl()}); //NOI18N
+            return null;
+        }
+    }
+
     private void loadDoc(Directive directive, File cacheFile) throws URISyntaxException, MalformedURLException, IOException {
-        LOG.fine("start loading doc"); //NOI18N
         String docURL = directive.getExternalDocumentationURL_partial();
         URL url = new URI(docURL).toURL();
+        loadDoc(url, cacheFile);
+    }
+
+    private void loadDoc(URL url, File cacheFile) throws URISyntaxException, MalformedURLException, IOException {
+        LOG.fine("start loading doc"); //NOI18N
         synchronized (cacheFile) {
             String tmpFileName = cacheFile.getAbsolutePath() + ".tmp";
             File tmpFile = new File(tmpFileName);
@@ -151,7 +173,7 @@ public class AngularDoc {
                     tmpFile.delete();
                 }
             }
-            
+
         }
     }
 
@@ -180,4 +202,29 @@ public class AngularDoc {
     private Enumeration<Directive> directives;
     private ProgressHandle progress;
     private int loaded = 0;
+
+    public static class FunctionDocUrl {
+
+        private static final String DOC_URL_BASE = "https://docs.angularjs.org/api/ng/function/"; //NOI18N
+        private static final String PARTIAL_DOC_URL_BASE = "https://code.angularjs.org/" + DOC_VERSION + "/docs/partials/api/ng/function/"; //NOI18N
+        private static final String PARTIAL_SUFFIX = ".html"; //NOI18N
+
+        private final String functionName;
+
+        public String getFunctionName() {
+            return functionName;
+        }
+
+        public FunctionDocUrl(String functionName) {
+            this.functionName = functionName;
+        }
+
+        public String getDocumentationUrl() {
+            return DOC_URL_BASE + functionName;
+        }
+
+        public String getDocumentationPartialUrl() {
+            return PARTIAL_DOC_URL_BASE + functionName + PARTIAL_SUFFIX;
+        }
+    }
 }

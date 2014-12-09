@@ -44,6 +44,7 @@ package org.netbeans.modules.html.angular.model;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -71,7 +72,7 @@ public class AngularModelTest extends ModelTestBase {
     }
 
     public void testAngular() throws Exception {
-        String file = "model/angular-1.3.3.js";
+        String file = "model/angular-1.3.6.js";
         if (!new File(getDataDir(), file).canRead()) {
             return;
         }
@@ -83,9 +84,9 @@ public class AngularModelTest extends ModelTestBase {
         // publishExternalAPI function.
         // Generated property names will vary in different angular versions.
         JsObject angularObj = model.getGlobalObject()
-                .getProperty("angular-1_3_3_L6")
+                .getProperty("angular-1_3_6_L6")
                 .getProperty("publishExternalAPI")
-                .getProperty("angular-1.3.3Anonym$14");
+                .getProperty("angular-1.3.6Anonym$13");
 
         // XXX remove all generated properties/functions that start with $$
         List<String> names = new ArrayList<>();
@@ -94,14 +95,15 @@ public class AngularModelTest extends ModelTestBase {
                 names.add(name);
             }
         }
+        Collections.addAll(names, "callbacks", "getTestability", "version");
         for (String name : names) {
             angularObj.getProperties().remove(name);
         }
 
         JsObject moduleFunc = model.getGlobalObject()
-                .getProperty("angular-1_3_3_L6")
+                .getProperty("angular-1_3_6_L6")
                 .getProperty("setupModuleLoader")
-                .getProperty("angular-1_3_3_L1679")
+                .getProperty("angular-1_3_6_L1683")
                 .getProperty("module");
         moduleFunc.getModifiers().remove(Modifier.PRIVATE);
         moduleFunc.getModifiers().add(Modifier.PUBLIC);
