@@ -44,9 +44,7 @@
 package org.netbeans.modules.subversion.remote.config;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -69,11 +67,9 @@ import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.Places;
 import org.openide.util.NetworkSettings;
 
 /**
@@ -190,10 +186,10 @@ public class SvnConfigFiles {
      *     
      * @param host the host
      */
-    public File storeSvnServersSettings(SVNUrl url) {
+    public VCSFileProxy storeSvnServersSettings(SVNUrl url) {
                         
         assert url != null : "can\'t do anything for a null host";     // NOI18N
-        File sensitiveConfigFile = null;
+        VCSFileProxy sensitiveConfigFile = null;
                          
         if(!(url.getProtocol().startsWith("http") ||                    //NOI18N
              url.getProtocol().startsWith("https") ||                   //NOI18N
@@ -211,7 +207,7 @@ public class SvnConfigFiles {
         changes = !repositoryUrl.equals(recentUrl);
 
         if(changes) {
-            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl);
+            RepositoryConnection rc = SvnModuleConfig.getDefault(fileSystem).getRepositoryConnection(repositoryUrl);
             if (rc != null && url.getProtocol().startsWith("svn+")) {   //NOI18N
                 // must set tunnel info for the repository url
                 setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
@@ -221,7 +217,7 @@ public class SvnConfigFiles {
                 hasPassphrase = setSSLCert(rc, nbGlobalSection);
             }
             hasPassphrase = setProxy(url, nbGlobalSection) | hasPassphrase;
-            File configFile = storeIni(nbServers, "servers"); //NOI18N
+            VCSFileProxy configFile = storeIni(nbServers, "servers"); //NOI18N
             recentUrl = url.toString();
             if (hasPassphrase) {
                 sensitiveConfigFile = configFile;
@@ -330,12 +326,15 @@ public class SvnConfigFiles {
         return section;
     }
     
-    private File storeIni (Ini ini, String iniFile) {
+    private VCSFileProxy storeIni (Ini ini, String iniFile) {
         BufferedOutputStream bos = null;
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath(fileSystem) + "/" + iniFile));   // NOI18N
+        VCSFileProxy file = null;
         try {
-            file.getParentFile().mkdirs();
-            ini.store(bos = FileUtils.createOutputStream(file));
+            file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), iniFile);
+            VCSFileProxySupport.mkdirs(file.getParentFile());
+            FileObject fo = file.getParentFile().toFileObject().createData(file.getName());
+            bos = new BufferedOutputStream(fo.getOutputStream());
+            ini.store(bos);
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);            
         } finally {
@@ -390,7 +389,7 @@ public class SvnConfigFiles {
     
     private static List<String> parseGlobalIgnores(String ignores) {
         StringTokenizer st = new StringTokenizer(ignores, " ");                 // NOI18N
-        List<String> ret = new ArrayList<String>(10);
+        List<String> ret = new ArrayList<>(10);
         while (st.hasMoreTokens()) {
             String entry = st.nextToken();
             if (!entry.equals(""))                                              // NOI18N
@@ -424,16 +423,16 @@ public class SvnConfigFiles {
      * @return the path
      *
      */ 
-    public static String getNBConfigPath(FileSystem fileSystem) {
+    public static VCSFileProxy getNBConfigPath(FileSystem fileSystem) throws IOException {
         
         //T9Y - nb svn confing should be changable
         String t9yNbConfigPath = System.getProperty("netbeans.t9y.svn.nb.config.path");
         if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
-            return t9yNbConfigPath;
+            return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), t9yNbConfigPath);
         }
-        String remote = VCSFileProxySupport.getFileSystemKey(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
-        String nbHome = Places.getUserDirectory().getAbsolutePath();
-        return nbHome + "/config/svn_"+remote+"/config/";                                  // NOI18N
+        //String nbHome = Places.getUserDirectory().getAbsolutePath();
+        //return nbHome + "/config/svn/config/"; // NOI18N
+        return VCSFileProxySupport.getRemotePeristenceFolder(fileSystem);
     }
     
     /**
@@ -511,12 +510,13 @@ public class SvnConfigFiles {
         Ini systemIniFile = loadSystemIniFile(fileName);
 
         patcher.patch(systemIniFile);
-
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath(fileSystem) + File.separatorChar + fileName)); // NOI18N
         BufferedOutputStream bos = null;
         try {
-            file.getParentFile().mkdirs();
-            systemIniFile.store(bos = FileUtils.createOutputStream(file));
+            VCSFileProxy file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), fileName);
+            VCSFileProxySupport.mkdirs(file.getParentFile());
+            FileObject fo = file.getParentFile().toFileObject().createData(file.getName());
+            bos = new BufferedOutputStream(fo.getOutputStream());
+            systemIniFile.store(bos);
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
         } finally {

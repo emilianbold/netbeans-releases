@@ -54,6 +54,7 @@ import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.Reposito
 import org.netbeans.modules.subversion.remote.ui.wizards.urlpatternstep.URLPatternStep;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 
 /*
  *
@@ -69,6 +70,11 @@ public final class URLPatternWizard implements ChangeListener {
     private AbstractStep.WizardMessage errorMessage;
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
+    private final FileSystem fileSystem;
+    
+    public URLPatternWizard(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
         
     public boolean show() {
         wizardIterator = new PanelsIterator();
@@ -133,7 +139,7 @@ public final class URLPatternWizard implements ChangeListener {
         @Override
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[2];
-            repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION, RepositoryStep.URL_PATTERN_HELP_ID);
+            repositoryStep = new RepositoryStep(fileSystem, Repository.FLAG_ACCEPT_REVISION, RepositoryStep.URL_PATTERN_HELP_ID);
             repositoryStep.addChangeListener(URLPatternWizard.this);            
             urlPatternStep = new URLPatternStep();            
             urlPatternStep.addChangeListener(URLPatternWizard.this);

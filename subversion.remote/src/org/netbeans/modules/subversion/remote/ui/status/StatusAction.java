@@ -60,6 +60,7 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 
@@ -146,10 +147,10 @@ public class StatusAction extends ContextAction {
             return;
         }
         ISVNStatus[] statuses;
-        Map<VCSFileProxy, ISVNLock> locks = new HashMap<VCSFileProxy, ISVNLock>();
+        Map<VCSFileProxy, ISVNLock> locks = new HashMap<>();
         try {
             statuses = client.getStatus(root, true, false, contactServer); // cache refires events
-            if (contactServer && SvnModuleConfig.getDefault().isGetRemoteLocks()) {
+            if (contactServer && SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(root)).isGetRemoteLocks()) {
                 try {
                     ISVNInfo info = client.getInfoFromWorkingCopy(root);
                     if (info != null && info.getUrl() != null && !info.isCopied()) {

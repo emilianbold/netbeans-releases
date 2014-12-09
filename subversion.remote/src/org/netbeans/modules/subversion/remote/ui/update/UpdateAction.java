@@ -196,8 +196,8 @@ public class UpdateAction extends ContextAction {
 
     private static void update(VCSFileProxy[] roots, final SvnProgressSupport progress, String contextDisplayName, SVNUrl repositoryUrl, final SVNRevision revision) {
         VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(roots);
-        final List<VCSFileProxy> recursiveFiles = new ArrayList<VCSFileProxy>();
-        final List<VCSFileProxy> flatFiles = new ArrayList<VCSFileProxy>();
+        final List<VCSFileProxy> recursiveFiles = new ArrayList<>();
+        final List<VCSFileProxy> flatFiles = new ArrayList<>();
         
         // recursive files
         for (int i = 0; i<split[1].length; i++) {
@@ -252,7 +252,7 @@ public class UpdateAction extends ContextAction {
             if (!l.existedFiles.isEmpty() || !l.conflictedFiles.isEmpty()) {
                 // status of replaced files should be refreshed
                 // because locally added files can be replaced with those in repository and their status would be still the same in the cache
-                HashSet<VCSFileProxy> filesToRefresh = new HashSet<VCSFileProxy>(l.existedFiles);
+                HashSet<VCSFileProxy> filesToRefresh = new HashSet<>(l.existedFiles);
                 filesToRefresh.addAll(l.conflictedFiles);
                 Subversion.getInstance().getStatusCache().refreshAsync(filesToRefresh.toArray(new VCSFileProxy[filesToRefresh.size()]));
             }
@@ -330,7 +330,7 @@ public class UpdateAction extends ContextAction {
                     // if >= 10000 rather refresh everything than just too large set of files
                     fileArray = filesToRefresh.size() >= maxItems ? null : filesToRefresh.toArray(new VCSFileProxy[filesToRefresh.size()]);
                 } else {
-                    filesToRefresh = new ArrayList<VCSFileProxy>();
+                    filesToRefresh = new ArrayList<>();
                     filesToRefresh.add(root);
                     VCSFileProxy[] files = root.listFiles();
                     if (files != null) {
@@ -409,7 +409,7 @@ public class UpdateAction extends ContextAction {
     }
     
     private static List<VCSFileProxy> patchFilesRecursively (VCSFileProxy root, SVNRevision.Number revision, int maxReturnFiles) {
-        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> ret = new ArrayList<>();
         if (root == null) {
             return ret;
         }
@@ -480,7 +480,7 @@ public class UpdateAction extends ContextAction {
         
         List<FileUpdateInfo> getResults() {
             if(results == null) {
-                results = new ArrayList<FileUpdateInfo>();
+                results = new ArrayList<>();
             }
             return results;
         }
@@ -501,8 +501,8 @@ public class UpdateAction extends ContextAction {
     private static class UpdateNotifyListener implements ISVNNotifyListener {
         private static final Pattern conflictFilePattern = Pattern.compile("(C...|.C..|..C.|...C) ?(.+)"); //NOI18N
         private static final Pattern existedFilePattern = Pattern.compile("E    ?(.+)"); //NOI18N
-        HashSet<VCSFileProxy> conflictedFiles = new HashSet<VCSFileProxy>();
-        HashSet<VCSFileProxy> existedFiles = new HashSet<VCSFileProxy>();
+        HashSet<VCSFileProxy> conflictedFiles = new HashSet<>();
+        HashSet<VCSFileProxy> existedFiles = new HashSet<>();
         private final VCSFileProxy root;
         
         private UpdateNotifyListener(Context context) {

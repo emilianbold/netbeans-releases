@@ -115,10 +115,10 @@ public final class PropertiesClient {
                 KVFile kv = new KVFile(store);
                 return kv.getNormalizedMap();
             } else {
-                return new HashMap<String, byte[]>();
+                return new HashMap<>();
             }
         } else {
-            Map<String, byte[]> map = new HashMap<String, byte[]>();
+            Map<String, byte[]> map = new HashMap<>();
             try {
                 if (contactServer) {
                     SvnClient client = Subversion.getInstance().getClient(file);
@@ -168,12 +168,12 @@ public final class PropertiesClient {
                 KVFile kv = new KVFile(store);
                 return kv.getNormalizedMap();
             } else {
-                return new HashMap<String, byte[]>();
+                return new HashMap<>();
             }
         } else {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
-                Map<String, byte[]> map = new HashMap<String, byte[]>();
+                Map<String, byte[]> map = new HashMap<>();
                 if (client != null) {
                     ISVNProperty[] props = client.getProperties(file);
                     for (ISVNProperty prop : props) {
@@ -182,7 +182,7 @@ public final class PropertiesClient {
                 }
                 return map;
             } catch (SVNClientException ex) {
-                return new HashMap<String, byte[]>();
+                return new HashMap<>();
             }
         }
     }

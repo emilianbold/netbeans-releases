@@ -60,14 +60,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.diff.options.AccessibleJFileChooser;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -107,7 +106,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
     protected void addSelectOnFocusFields(JTextField... txts) {
         if(selectOnFocusFields == null) {
-            selectOnFocusFields = new ArrayList<JTextField>();
+            selectOnFocusFields = new ArrayList<>();
         }
         selectOnFocusFields.addAll(Arrays.asList(txts));
     }
@@ -164,22 +163,22 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
     }
 
     protected void onBrowse(JTextField txt) {
-        VCSFileProxy oldFile = FileUtil.normalizeFile(new File(txt.getText()));
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(Repository.class, "ACSD_BrowseCertFile"), oldFile); // NOI18N
-        fileChooser.setDialogTitle(NbBundle.getMessage(Repository.class, "Browse_title"));                                            // NOI18N
+        VCSFileProxy oldFile = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), txt.getText()).normalizeFile();
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
+        fileChooser.setDialogTitle(NbBundle.getMessage(Repository.class, "Browse_title")); // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.showDialog(this.getPanel(), NbBundle.getMessage(Repository.class, "OK_Button"));                                            // NOI18N
-        VCSFileProxy f = fileChooser.getSelectedFile();
+        fileChooser.showDialog(this.getPanel(), NbBundle.getMessage(Repository.class, "OK_Button")); // NOI18N
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
-            txt.setText(f.getAbsolutePath());
+            txt.setText(f.getPath());
         }
     }
 
     static class FileUrl extends ConnectionType {
         private final JPanel panel = new JPanel();
-        public FileUrl(Repository repository) {
-            super(repository);
+        public FileUrl(FileSystem fileSystem, Repository repository) {
+            super(fileSystem, repository);
         }
         @Override
         JPanel getPanel() {
@@ -195,8 +194,8 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
     }
 
     static class InvalidUrl extends FileUrl {
-        public InvalidUrl(Repository repository) {
-            super(repository);
+        public InvalidUrl(FileSystem fileSystem, Repository repository) {
+            super(fileSystem, repository);
         }
         @Override
         String getTip(String url) {
@@ -210,8 +209,8 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
         private final HttpPanel panel = new HttpPanel();
 
-        public Http(Repository repository) {
-            super(repository);
+        public Http(FileSystem fileSystem, Repository repository) {
+            super(fileSystem, repository);
             panel.proxySettingsButton.addActionListener(this);
             panel.savePasswordCheckBox.addActionListener(this);
 

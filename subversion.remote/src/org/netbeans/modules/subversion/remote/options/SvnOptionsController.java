@@ -92,8 +92,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private final SvnOptionsPanel panel;
     private Repository repository;
     private final AnnotationSettings annotationSettings;
-    private static final HashSet<String> allowedExecutables = new HashSet<String>(Arrays.asList(new String[] {"svn", "svn.exe"} )); //NOI18N
-    private static final HashSet<String> allowedLibs = new HashSet<String>(Arrays.asList(new String[] {"libsvnjavahl-1.dll", "libsvnjavahl-1.so"} )); //NOI18N
+    private static final HashSet<String> allowedExecutables = new HashSet<>(Arrays.asList(new String[] {"svn", "svn.exe"} )); //NOI18N
+    private static final HashSet<String> allowedLibs = new HashSet<>(Arrays.asList(new String[] {"libsvnjavahl-1.dll", "libsvnjavahl-1.so"} )); //NOI18N
     private Object currentClient;
         
     public SvnOptionsController() {        
@@ -145,7 +145,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     @Override
     public boolean acceptKeywords (List<String> keywords) {
-        Set<String> allKeywords = new HashSet<String>(panel.getKeywords());
+        Set<String> allKeywords = new HashSet<>(panel.getKeywords());
         allKeywords.retainAll(keywords);
         return !allKeywords.isEmpty();
     }
@@ -153,24 +153,24 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private void createRepository() throws MissingResourceException {
         int repositoryModeMask = Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_REMOVE;
         String title = org.openide.util.NbBundle.getMessage(SvnOptionsController.class, "CTL_Repository_Location");
-        repository = new Repository(repositoryModeMask, title); // NOI18N
+        repository = new Repository(fileSystem, repositoryModeMask, title); // NOI18N
     }
     
     @Override
     public void update() {
-        panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
-        panel.javahlPathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
-        panel.annotationTextField.setText(SvnModuleConfig.getDefault().getAnnotationFormat());
-        panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault().getAutoOpenOutput());
-        panel.cbGetRemoteLocks.setSelected(SvnModuleConfig.getDefault().isGetRemoteLocks());
-        panel.cbAutoLockFiles.setSelected(SvnModuleConfig.getDefault().isAutoLock());
+        panel.executablePathTextField.setText(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath());
+        panel.javahlPathTextField.setText(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath());
+        panel.annotationTextField.setText(SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat());
+        panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput());
+        panel.cbGetRemoteLocks.setSelected(SvnModuleConfig.getDefault(fileSystem).isGetRemoteLocks());
+        panel.cbAutoLockFiles.setSelected(SvnModuleConfig.getDefault(fileSystem).isAutoLock());
         annotationSettings.update();
         if (repository != null) {
             repository.refreshUrlHistory();
         }
-        panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault().getExludeNewFiles());
-        panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault().isRepositoryPathPrefixed());
-        panel.cbDetermineBranches.setSelected(SvnModuleConfig.getDefault().isDetermineBranchesEnabled());
+        panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault(fileSystem).getExludeNewFiles());
+        panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault(fileSystem).isRepositoryPathPrefixed());
+        panel.cbDetermineBranches.setSelected(SvnModuleConfig.getDefault(fileSystem).isDetermineBranchesEnabled());
         panel.cmbPreferredClient.setSelectedItem(panel.panelCLI);
         currentClient = panel.cmbPreferredClient.getSelectedItem();
     }
@@ -180,16 +180,16 @@ public final class SvnOptionsController extends OptionsPanelController implement
         // executable
         boolean clientChanged = isClientChanged();
         if (panel.cmbPreferredClient.getSelectedItem() == panel.panelCLI) {
-            SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());
-            SvnModuleConfig.getDefault().setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_COMMANDLINE);
+            SvnModuleConfig.getDefault(fileSystem).setExecutableBinaryPath(panel.executablePathTextField.getText());
+            SvnModuleConfig.getDefault(fileSystem).setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_COMMANDLINE);
         }
-        SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
-        SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
-        SvnModuleConfig.getDefault().setGetRemoteLocks(panel.cbGetRemoteLocks.isSelected());
-        SvnModuleConfig.getDefault().setAutoLock(panel.cbAutoLockFiles.isSelected());
-        SvnModuleConfig.getDefault().setExcludeNewFiles(panel.excludeNewFiles.isSelected());
-        SvnModuleConfig.getDefault().setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
-        SvnModuleConfig.getDefault().setDetermineBranchesEnabled(panel.cbDetermineBranches.isSelected());
+        SvnModuleConfig.getDefault(fileSystem).setAnnotationFormat(panel.annotationTextField.getText());
+        SvnModuleConfig.getDefault(fileSystem).setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
+        SvnModuleConfig.getDefault(fileSystem).setGetRemoteLocks(panel.cbGetRemoteLocks.isSelected());
+        SvnModuleConfig.getDefault(fileSystem).setAutoLock(panel.cbAutoLockFiles.isSelected());
+        SvnModuleConfig.getDefault(fileSystem).setExcludeNewFiles(panel.excludeNewFiles.isSelected());
+        SvnModuleConfig.getDefault(fileSystem).setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
+        SvnModuleConfig.getDefault(fileSystem).setDetermineBranchesEnabled(panel.cbDetermineBranches.isSelected());
 
         if (clientChanged) {
             SvnClientFactory.resetClient();
@@ -216,18 +216,18 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     @Override
     public boolean isChanged() {        
-        return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) ||
-               !panel.javahlPathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) ||
-               !panel.annotationTextField.getText().equals(SvnModuleConfig.getDefault().getAnnotationFormat()) || 
-               panel.cbGetRemoteLocks.isSelected() != SvnModuleConfig.getDefault().isGetRemoteLocks() || 
+        return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath()) ||
+               !panel.javahlPathTextField.getText().equals(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath()) ||
+               !panel.annotationTextField.getText().equals(SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat()) || 
+               panel.cbGetRemoteLocks.isSelected() != SvnModuleConfig.getDefault(fileSystem).isGetRemoteLocks() || 
                (repository != null && repository.isChanged()) || 
                annotationSettings.isChanged()
                 || isClientChanged()
-                || SvnModuleConfig.getDefault().getAutoOpenOutput() != panel.cbOpenOutputWindow.isSelected()
-                || SvnModuleConfig.getDefault().isAutoLock() != panel.cbAutoLockFiles.isSelected()
-                || SvnModuleConfig.getDefault().getExludeNewFiles() != panel.excludeNewFiles.isSelected()
-                || SvnModuleConfig.getDefault().isDetermineBranchesEnabled() != panel.cbDetermineBranches.isSelected()
-                || SvnModuleConfig.getDefault().isRepositoryPathPrefixed() != panel.prefixRepositoryPath.isSelected();
+                || SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput() != panel.cbOpenOutputWindow.isSelected()
+                || SvnModuleConfig.getDefault(fileSystem).isAutoLock() != panel.cbAutoLockFiles.isSelected()
+                || SvnModuleConfig.getDefault(fileSystem).getExludeNewFiles() != panel.excludeNewFiles.isSelected()
+                || SvnModuleConfig.getDefault(fileSystem).isDetermineBranchesEnabled() != panel.cbDetermineBranches.isSelected()
+                || SvnModuleConfig.getDefault(fileSystem).isRepositoryPathPrefixed() != panel.prefixRepositoryPath.isSelected();
     }
 
     private boolean isClientChanged () {
@@ -411,7 +411,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private void onAddClick() {
         LabelsPanel labelsPanel = new LabelsPanel();
-        List<LabelVariable> variables = new ArrayList<LabelVariable>(Annotator.LABELS.length);
+        List<LabelVariable> variables = new ArrayList<>(Annotator.LABELS.length);
         for (int i = 0; i < Annotator.LABELS.length; i++) {   
             LabelVariable variable = new LabelVariable(
                     Annotator.LABELS[i], 

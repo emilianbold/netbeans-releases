@@ -67,7 +67,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
  */
 public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
 
-    private final List<ChangeListener> listeners = new LinkedList<ChangeListener>();
+    private final List<ChangeListener> listeners = new LinkedList<>();
     private boolean valid;
     private JComponent panel;
     private volatile boolean underConstruction;
@@ -190,7 +190,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
         }
         List<ChangeListener> clone;
         synchronized(listeners) {
-            clone = new ArrayList<ChangeListener>(listeners);
+            clone = new ArrayList<>(listeners);
         }
         Iterator<ChangeListener> it = clone.iterator();
         ChangeEvent event = new ChangeEvent(this);

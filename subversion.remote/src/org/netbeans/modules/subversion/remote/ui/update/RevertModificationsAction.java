@@ -109,7 +109,7 @@ public class RevertModificationsAction extends ContextAction {
         }
         VCSFileProxy[] roots = ctx.getRootFiles();
         // filter managed roots
-        List<VCSFileProxy> l = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> l = new ArrayList<>();
         for (VCSFileProxy file : roots) {
             if(SvnUtils.isManaged(file)) {
                 l.add(file);
@@ -224,7 +224,7 @@ public class RevertModificationsAction extends ContextAction {
                                 }
                                 if(files.length > 0 ) {                        
                                     // check for deleted files, we also want to undelete their parents
-                                    Set<VCSFileProxy> deletedFiles = new HashSet<VCSFileProxy>();
+                                    Set<VCSFileProxy> deletedFiles = new HashSet<>();
                                     for(VCSFileProxy file : files) {
                                         deletedFiles.addAll(getDeletedParents(file));
                                     }
@@ -332,7 +332,7 @@ public class RevertModificationsAction extends ContextAction {
     }     
 
     private static List<VCSFileProxy> getDeletedParents(VCSFileProxy file) {
-        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> ret = new ArrayList<>();
         for(VCSFileProxy parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
             FileInformation info = Subversion.getInstance().getStatusCache().getStatus(parent);
             if( !((info.getStatus() & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 ||

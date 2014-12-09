@@ -50,7 +50,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author Alexander Simon
  */
 public class SVNNotificationHandler {
-    private Set<ISVNNotifyListener> notifylisteners = new HashSet<ISVNNotifyListener>();
+    private Set<ISVNNotifyListener> notifylisteners = new HashSet<>();
     private boolean logEnabled = true;
     private VCSFileProxy baseDir;
     

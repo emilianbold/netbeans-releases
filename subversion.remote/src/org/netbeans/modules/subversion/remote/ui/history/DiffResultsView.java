@@ -93,7 +93,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private static final RequestProcessor rp = new RequestProcessor("SubversionDiff", 1, true);  // NOI18N
     private final PropertyChangeListener list;
     private Node[] selectedNodes;
-    private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<RepositoryRevision>(2);
+    private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<>(2);
     private int lastDividerLoc;
 
     public DiffResultsView(SearchHistoryPanel parent, List<RepositoryRevision> results) {
@@ -267,8 +267,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             return parent.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);
         }
         
-        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
-        Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+        Set<RepositoryRevision.Event> events = new HashSet<>();
+        Set<RepositoryRevision> revisions = new HashSet<>();
         for (Node n : nodes) {
             RevisionNode node = (RevisionNode) n;
             if (node.getEvent() != null) {
