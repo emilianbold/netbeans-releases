@@ -1465,7 +1465,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         initFeatures();
         
         // init signals list
-        initSignalsList();
+        if (!peculiarity.isLldb()) {
+            initSignalsList();
+        }
         
         //init global parameters
         send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
@@ -3555,7 +3557,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void getMILocals(final boolean update_var) {
         MICommand cmd =
-            new MiCommandImpl("-stack-list-locals --simple-values") { // NOI18N
+            new MiCommandImpl("-stack-list-locals 2") { // NOI18N
             @Override
                     protected void onDone(MIRecord record) {
                         setLocals(update_var, record);
