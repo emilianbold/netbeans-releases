@@ -96,15 +96,10 @@ public final class DefaultCacheFolderProvider extends CacheFolderProvider {
     }
 
     @Override
-    protected boolean supports(@NonNull final Set<CacheFolderProvider.Kind> kinds) {
-        //Supports all kinds
-        return true;
-    }
-
-    @Override
     @CheckForNull
     protected FileObject findCacheFolderForRoot(
             @NonNull final URL root,
+            @NonNull final Set<CacheFolderProvider.Kind> kinds,
             @NonNull final CacheFolderProvider.Mode mode) throws IOException {
         final String rootName = root.toExternalForm();
         final FileObject _cacheFolder = getCacheFolder();
