@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.*;
 import static org.netbeans.CLIHandlerTest.*;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -107,7 +106,8 @@ public class CLIHandlerGrepTest extends NbTestCase {
     protected @Override int timeOut() {
         return 15000;
     }
-    
+
+    @RandomlyFails // ergonomics-5386
     public void testReadingOfInputWorksInHandler() throws Exception {
         final byte[] template = { 1, 2, 3, 4 };
         
