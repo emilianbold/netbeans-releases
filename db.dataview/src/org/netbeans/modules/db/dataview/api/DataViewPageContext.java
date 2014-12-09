@@ -80,11 +80,11 @@ public final class DataViewPageContext {
      * @since 1.20
      */
     public static int getStoredPageSize() {
-        if (defaultPageSize <= 0) {
+        if (defaultPageSize < 0) {
             defaultPageSize = NbPreferences.forModule(
                     DataViewPageContext.class).getInt(
                     PROP_STORED_PAGE_SIZE, DEFAULT_PAGE_SIZE);
-            if (defaultPageSize <= 0) {
+            if (defaultPageSize < 0) {
                 defaultPageSize = DEFAULT_PAGE_SIZE;
             }
         }
@@ -98,7 +98,7 @@ public final class DataViewPageContext {
      * @since 1.20
      */
     public static void setStoredPageSize(final int pageSize) {
-        if (pageSize <= 0) {
+        if (pageSize < 0) {
             throw new IllegalArgumentException("Negative pageSize");    //NOI18N
         }
         DataViewPageContext.defaultPageSize = pageSize;

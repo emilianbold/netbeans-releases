@@ -154,34 +154,42 @@ class DataViewPageContext {
     }
 
     boolean hasNext() {
+        if (pageSize == 0) {
+            return false;
+        }
         return (((currentPos + pageSize) <= totalRows) && hasRows()) || (totalRows < 0 && getModel().getRowCount() >= pageSize);
     }
 
     boolean hasOnePageOnly() {
-        return totalRows > 0 && totalRows < pageSize;
+        return pageSize == 0 || (totalRows > 0 && totalRows < pageSize);
     }
 
     boolean hasPrevious() {
-        return ((currentPos - pageSize) > 0) && hasRows();
+        return pageSize != 0 && ((currentPos - pageSize) > 0) && hasRows();
     }
 
     boolean isLastPage() {
-        return ((currentPos + pageSize) > totalRows) && totalRows > 0;
+        return pageSize == 0 || (((currentPos + pageSize) > totalRows) && totalRows > 0);
     }
 
     boolean refreshRequiredOnInsert() {
-        return (isLastPage() && model.getRowCount() <= pageSize);
+        return pageSize == 0 || (isLastPage() && model.getRowCount() <= pageSize);
     }
 
     String pageOf() {
         String curPage = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
         String totalPages = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
 
-        if (pageSize >= 0 && currentPos >= 0) {
+        if (pageSize == 0) {
+            curPage = "1";
+            totalPages = "1";
+        }
+
+        if (pageSize > 0 && currentPos >= 0) {
             curPage = Integer.toString(currentPos / pageSize + (pageSize == 1 ? 0 : 1));
         }
 
-        if (pageSize >= 0 && totalRows >= 0) {
+        if (pageSize > 0 && totalRows >= 0) {
             totalPages = Integer.toString(totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0));
         }
         return NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of", curPage, totalPages);
@@ -189,7 +197,7 @@ class DataViewPageContext {
 
     synchronized void decrementRowSize(int count) {
         setTotalRows(getTotalRows() - count);
-        if (totalRows <= pageSize) {
+        if (pageSize == 0 || totalRows <= pageSize) {
             first();
         } else if (currentPos > totalRows) {
             previous();
@@ -198,7 +206,7 @@ class DataViewPageContext {
 
     synchronized void incrementRowSize(int count) {
         setTotalRows(getTotalRows() + count);
-        if (totalRows <= pageSize) {
+        if (pageSize == 0 || totalRows <= pageSize) {
             first();
         } else if (currentPos > totalRows) {
             previous();
