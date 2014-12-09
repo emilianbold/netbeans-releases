@@ -660,6 +660,8 @@ public class ClientSideProject implements Project {
 
         @Override
         protected void projectOpened() {
+            new ProjectUpgrader(project).upgrade();
+
             project.getEvaluator().addPropertyChangeListener(this);
             addSiteRootListener();
             GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
