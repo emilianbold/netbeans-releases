@@ -53,6 +53,9 @@ import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
  */
 public class JQueryUtils {
 
+    public static final String JQUERY$ = "$";      //NOI18N
+    public static final String JQUERY = "jQuery";  //NOI18N
+    
     public static boolean isJQuery(ParserResult parserResult, int offset) {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
         if (ts == null) {
@@ -71,16 +74,16 @@ public class JQueryUtils {
         JsTokenId tokenId = token.id();
         while (tokenId != JsTokenId.EOL
                 && tokenId != JsTokenId.WHITESPACE
-                && !(lastToken.id() == JsTokenId.IDENTIFIER && ("$".equals(lastToken.text().toString()) || "jQuery".equals(lastToken.text().toString())))
+                && !(lastToken.id() == JsTokenId.IDENTIFIER && (JQueryUtils.JQUERY$.equals(lastToken.text().toString()) || JQUERY.equals(lastToken.text().toString())))
                 && ts.movePrevious()) {
             lastToken = token;
             token = ts.token();
             tokenId = token.id();
         }
         return (lastToken.id() == JsTokenId.IDENTIFIER
-                && ("$".equals(lastToken.text().toString()) || "jQuery".equals(lastToken.text().toString()))
+                && (JQueryUtils.JQUERY$.equals(lastToken.text().toString()) || JQUERY.equals(lastToken.text().toString()))
                 || (!ts.movePrevious()
-                && ("$".equals(token.text().toString()) || "jQuery".equals(token.text().toString()))));
+                && (JQueryUtils.JQUERY$.equals(token.text().toString()) || JQUERY.equals(token.text().toString()))));
     }
 
     public static boolean isInJQuerySelector(ParserResult parserResult, int offset) {

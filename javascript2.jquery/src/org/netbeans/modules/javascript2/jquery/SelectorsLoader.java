@@ -55,6 +55,7 @@ import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.javascript2.jquery.model.JQueryUtils;
 import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -217,7 +218,7 @@ public class SelectorsLoader extends DefaultHandler {
             try {
                 long start = System.currentTimeMillis();
                 elementName = name;
-                elementNameWithPrefix = "jQuery." + name; //NOI18N
+                elementNameWithPrefix = JQueryUtils.JQUERY + "." + name; //NOI18N
                 interestedInTypeTag = METHOD;
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 SAXParser parser = factory.newSAXParser();
@@ -557,7 +558,7 @@ public class SelectorsLoader extends DefaultHandler {
                     }
                     if (isMethod || isProperty) {
                         name = attributes.getValue(NAME);
-                        if (name.startsWith("jQuery.")) {
+                        if (name.startsWith(JQueryUtils.JQUERY + ".")) {
                             name = name.substring(7);
                         }
                         returns = attributes.getValue(RETURN);

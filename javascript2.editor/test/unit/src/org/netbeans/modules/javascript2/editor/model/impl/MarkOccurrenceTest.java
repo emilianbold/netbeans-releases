@@ -1183,6 +1183,38 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue249006.js", "LoginSe^rvice.test = \"google\";", true);
     }
     
+    public void testIssue249119_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249119.js", "^f();", true);
+    }
+    
+    public void testIssue249119_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249119.js", "f^2();", true);
+    }
+    
+    public void testIssue249119_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249119.js", "var  a^ = param.a || 1;", true);
+    }
+    
+    public void testIssue249119_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249119.js", "var  a = par^am.a || 1;", true);
+    }
+    
+    public void testIssue249119_05() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249119.js", "^g();", true);
+    }
+    
+    public void testIssue249119_06() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249119.js", "var  a^2 = param.a || 1;", true);
+    }
+    
+    public void testIssue249119_07() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249119.js", "var  a2 = par^am.a || 1;", true);
+    }
+    
+    public void testIssue249119_08() throws Exception {
+        checkOccurrences("testfiles/coloring/issue249119.js", "^g2();", true);
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
