@@ -87,7 +87,7 @@ static int refresh_sleep = 1;
 
 #define FS_SERVER_MAJOR_VERSION 1
 #define FS_SERVER_MID_VERSION 2
-#define FS_SERVER_MINOR_VERSION 1
+#define FS_SERVER_MINOR_VERSION 3
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -513,7 +513,7 @@ static bool response_entry_create(buffer response_buf,
         if (link_flag) {
             char* link = work_buf.data + escaped_name_size + 1;
             ssize_t sz = readlink(abspath, link, work_buf_size);
-           if (sz == -1) {
+            if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
                 err_set(errno, "error performing readlink for %s: %s\n", abspath, err_to_string(errno));
                 strcpy(work_buf.data, "?");
@@ -732,11 +732,10 @@ static void response_stat(int request_id, const char* path) {
     }
 }
 
-static void response_copy(const fs_request* request) {
+static bool copy_symlink(const char* path, const char* path2,int id);
+static bool copy_plain_file(const char* path, const char* path2,int id);
 
-    FILE *src = NULL;
-    FILE *dst = NULL;
-    char *buf = NULL;
+static void response_copy(const fs_request* request) {
 
     // if file exists, return error
     struct stat stat_buf;
@@ -744,18 +743,50 @@ static void response_copy(const fs_request* request) {
         response_error(request->id, request->path2, 0, "file already exists");
         return;
     }
-
-    src = fopen(request->path, "r");
-    if (!src) {
+    if (lstat(request->path, &stat_buf) == -1) {
         response_error(request->id, request->path, errno, err_to_string(errno));
         return;
     }
+    bool success = false;
+    if (S_ISDIR(stat_buf.st_mode)) {
+        response_error(request->id, request->path2, 0, "file is a directory");
+    } else if (S_ISREG(stat_buf.st_mode)) {
+        success = copy_plain_file(request->path, request->path2, request->id);
+    } else if (S_ISLNK(stat_buf.st_mode)) {
+        success = copy_symlink(request->path, request->path2, request->id);
+    } else {
+        response_error(request->id, request->path2, 0, "don't know how to copy a special file");
+    }
+    if (success) {
+        char *dst_parent = strdup(request->path2);
+        char *last_slash = strrchr(dst_parent, '/');
+        if (last_slash) {
+            *last_slash = 0;
+            response_ls(request->id, dst_parent, false, true);
+        } else {
+            response_error(request->id, dst_parent, 0, "path does not contain '/'");
+        }
+        free(dst_parent);
+    }
+}
 
-    dst = fopen(request->path2, "w");
+static bool copy_plain_file(const char* path, const char* path2, int id) {
+
+    FILE *src = NULL;
+    FILE *dst = NULL;
+    char *buf = NULL;
+
+    src = fopen(path, "r");
+    if (!src) {
+        response_error(id, path, errno, err_to_string(errno));
+        return false;
+    }
+
+    dst = fopen(path2, "w");
     if (!dst) {
-        response_error(request->id, request->path2, errno, err_to_string(errno));
+        response_error(id, path2, errno, err_to_string(errno));
         fclose(src);
-        return;
+        return false;
     }
 
     bool success = false;
@@ -769,9 +800,9 @@ static void response_copy(const fs_request* request) {
             if (write_cnt != read_cnt) {
                 int errcode = ferror(dst);
                 if (errcode) {
-                    response_error(request->id, request->path2, errcode, err_to_string(errcode));
+                    response_error(id, path2, errcode, err_to_string(errcode));
                 } else {
-                    response_error(request->id, request->path2, 0, "error writing");
+                    response_error(id, path2, 0, "error writing");
                 }
                 break;
             }
@@ -781,30 +812,40 @@ static void response_copy(const fs_request* request) {
         } else {
             int errcode = ferror(src);
             if (errcode) {
-                response_error(request->id, request->path, errcode, err_to_string(errcode));
+                response_error(id, path, errcode, err_to_string(errcode));
             } else {
-                response_error(request->id, request->path, 0, "error reading");
+                response_error(id, path, 0, "error reading");
             }
         }
         free(buf);
     } else {
-        response_error(request->id, request->path2, 0, "not enough memory");
+        response_error(id, path2, 0, "not enough memory");
     }
 
     fclose(src);
     fclose(dst);
 
-    if (success) {
-        char *dst_parent = strdup(request->path2);
-        char *last_slash = strrchr(dst_parent, '/');
-        if (last_slash) {
-            *last_slash = 0;
-            response_ls(request->id, dst_parent, false, true);
-        } else {
-            response_error(request->id, dst_parent, 0, "path does not contain '/'");
+    return success;
+}
+
+static bool copy_symlink(const char* path, const char* path2, int id) {
+    bool success = false;
+    const int buf_size = PATH_MAX;
+    char *link_dst = malloc(buf_size);
+    ssize_t sz = readlink (path, link_dst, buf_size);
+    if (sz == -1) {
+        response_error(id, path, errno, err_to_string(errno));
+    } else {
+        link_dst[sz] = 0;
+        errno = 0;
+        if (symlink(link_dst, path2) == -1) {
+            response_error(id, path2, errno, err_to_string(errno));
+        } else { 
+           success = true;
         }
-        free(dst_parent);
     }
+    free(link_dst);
+    return success;
 }
 
 static void response_lstat(int request_id, const char* path) {
@@ -1390,7 +1431,7 @@ static void shutdown() {
 static void log_header(int argc, char* argv[]) {
     if (log_flag) {
        log_open("log") ;
-       log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ",
+log_print("\n--------------------------------------\nfs_server version %d.%d.%d (%s %s) started on ",
                FS_SERVER_MAJOR_VERSION, FS_SERVER_MID_VERSION, FS_SERVER_MINOR_VERSION, __DATE__, __TIME__);
        time_t t = time(NULL);
        struct tm *tt = localtime(&t);
@@ -1418,3 +1459,4 @@ int main(int argc, char* argv[]) {
     shutdown();
     return 0;
 }
+
