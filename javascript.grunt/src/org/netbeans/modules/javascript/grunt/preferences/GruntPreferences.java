@@ -62,11 +62,11 @@ public final class GruntPreferences {
     }
 
     @CheckForNull
-    public String getCommand(String commandId) {
+    public String getTask(String commandId) {
         return getPreferences().get(COMMAND_PREFIX + commandId, null);
     }
 
-    public void setCommand(String commandId, @NullAllowed String value) {
+    public void setTask(String commandId, @NullAllowed String value) {
         if (value != null) {
             getPreferences().put(COMMAND_PREFIX + commandId, value);
         } else {

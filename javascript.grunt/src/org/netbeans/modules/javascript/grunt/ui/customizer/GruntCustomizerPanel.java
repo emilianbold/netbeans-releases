@@ -91,7 +91,7 @@ public class GruntCustomizerPanel extends JPanel {
         gruntTasks.add(new GruntTask(ActionProvider.COMMAND_REBUILD, "clean build", rebuildCheckBox, rebuildTextField)); // NOI18N
         // default values
         for (GruntTask gruntTask : gruntTasks) {
-            gruntTask.setText(preferences.getCommand(gruntTask.getCommandId()));
+            gruntTask.setText(preferences.getTask(gruntTask.getCommandId()));
         }
         // listeners
         category.setStoreListener(new ActionListener() {
@@ -121,7 +121,7 @@ public class GruntCustomizerPanel extends JPanel {
     void saveData() {
         assert !EventQueue.isDispatchThread();
         for (GruntTask gruntTask : gruntTasks) {
-            preferences.setCommand(gruntTask.getCommandId(), gruntTask.getText());
+            preferences.setTask(gruntTask.getCommandId(), gruntTask.getText());
         }
     }
 

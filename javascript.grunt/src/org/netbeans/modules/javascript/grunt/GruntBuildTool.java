@@ -125,7 +125,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
     public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
         assert isEnabled() : project.getProjectDirectory().getNameExt();
         assert gruntfile.exists() : project.getProjectDirectory().getNameExt();
-        String gruntBuild = gruntPreferences.getCommand(commandId);
+        String gruntBuild = gruntPreferences.getTask(commandId);
         if (gruntBuild != null) {
             GruntExecutable grunt = GruntExecutable.getDefault(project, warnUser);
             if (grunt != null) {
