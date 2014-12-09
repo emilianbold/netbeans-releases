@@ -39,46 +39,69 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.grunt.legacy;
+package org.netbeans.modules.javascript.nodejs.api;
 
-import java.util.Collection;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
-import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
+import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 
-@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-public final class ImportantFilesImpl implements ImportantFilesImplementation {
+/**
+ * Node.js options (as set in IDE Options).
+ * @since 0.14
+ */
+public final class NodeJsOptions {
 
-    private final ImportantFilesSupport support;
-    private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
-        @Override
-        public FileInfo create(FileObject fileObject) {
-            return new FileInfo(fileObject, fileObject.getName(), null);
-        }
-    };
+    private static final NodeJsOptions INSTANCE = new NodeJsOptions();
 
 
-    public ImportantFilesImpl(Project project) {
-        assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), "Gruntfile.js"); // NOI18N
+    private NodeJsOptions() {
     }
 
-    @Override
-    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
-        return support.getFiles(fileInfoCreator);
+    /**
+     * Gets instance of node.js options.
+     * @return instance of node.js options
+     */
+    public static NodeJsOptions getInstance() {
+        return INSTANCE;
     }
 
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        support.addChangeListener(listener);
+    /**
+     * Adds listener to node.js options.
+     * @param listener listener to be added
+     */
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
+        getInternalOptions().addPreferenceChangeListener(listener);
     }
 
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        support.removeChangeListener(listener);
+    /**
+     * Removes listener from node.js options.
+     * @param listener listener to be removed
+     */
+    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
+        getInternalOptions().removePreferenceChangeListener(listener);
+    }
+
+    /**
+     * Gets file path representing <tt>node</tt> executable
+     * or {@code null} if not set/found.
+     * @return file path representing <tt>node</tt> executable, can be {@code null} if not set/found
+     */
+    @CheckForNull
+    public String getNode() {
+        return getInternalOptions().getNode();
+    }
+
+    /**
+     * Gets file path representing <tt>npm</tt> executable
+     * or {@code null} if not set/found.
+     * @return file path representing <tt>npm</tt> executable, can be {@code null} if not set/found
+     */
+    @CheckForNull
+    public String getNpm() {
+        return getInternalOptions().getNpm();
+    }
+
+    private org.netbeans.modules.javascript.nodejs.options.NodeJsOptions getInternalOptions() {
+        return org.netbeans.modules.javascript.nodejs.options.NodeJsOptions.getInstance();
     }
 
 }

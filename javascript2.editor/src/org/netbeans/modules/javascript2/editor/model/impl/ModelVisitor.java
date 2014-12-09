@@ -577,17 +577,30 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (node instanceof PropertyNode) {
                     name = getName((PropertyNode)node);
                 } else if (node instanceof BinaryNode) {
-                    BinaryNode bNode = (BinaryNode)node;
-                    if (bNode.lhs() instanceof AccessNode ) {
-                        AccessNode aNode = (AccessNode)bNode.lhs();
-                        if (aNode.getBase() instanceof IdentNode) {
-                            IdentNode iNode = (IdentNode)aNode.getBase();
-                            if ("this".equals(iNode.getName())) {
-                                isPrivilage = true;
-                            }
+                    boolean processAsBinary = true;
+                    if (pathSize > 4) {
+                        Node node4 = getPreviousFromPath(4);
+                        if (node4 instanceof VarNode) {
+                            name = getName((VarNode)node4, parserResult);
+                            // private method
+                            // It can be only if it's in a function
+                            isPrivate = functionStack.size() > 1;
+                            processAsBinary = false;
                         }
                     }
-                    name = getName((BinaryNode)node, parserResult);
+                    if (processAsBinary) {
+                        BinaryNode bNode = (BinaryNode)node;
+                        if (bNode.lhs() instanceof AccessNode ) {
+                            AccessNode aNode = (AccessNode)bNode.lhs();
+                            if (aNode.getBase() instanceof IdentNode) {
+                                IdentNode iNode = (IdentNode)aNode.getBase();
+                                if ("this".equals(iNode.getName())) {
+                                    isPrivilage = true;
+                                }
+                            }
+                        }
+                        name = getName((BinaryNode)node, parserResult);
+                    }
                 } else if (node instanceof VarNode) {
                    name = getName((VarNode)node, parserResult);
                     // private method
@@ -1475,7 +1488,19 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node leave(VarNode varNode) {
-        if (!(varNode.getInit() instanceof ReferenceNode || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)
+        Node init = varNode.getInit();
+        if (init instanceof BinaryNode) {
+            // this should handle cases like 
+            // var prom  = another.prom = function prom() {}
+            BinaryNode bNode = (BinaryNode)init;
+            while (bNode.rhs() instanceof BinaryNode ) {
+                bNode = (BinaryNode)bNode.rhs();
+            }
+            if (bNode.rhs() instanceof ReferenceNode /*&& bNode.tokenType() == TokenType.ASSIGN*/) {
+                 init = (ReferenceNode) bNode.rhs();
+            }
+        }
+        if (!(init instanceof ReferenceNode || init instanceof LiteralNode.ArrayLiteralNode)
                 // XXX can we avoid creation of object ?
                 && ModelElementFactory.create(parserResult, varNode.getName()) != null) {
             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();

@@ -79,9 +79,6 @@ public class JQueryModel {
     private static JsObject rjQuery = null;
     private static JsFunction globalObject = null;
     
-    private static final String JQUERY$ = "$";      //NOI18N
-    private static final String JQUERY = "jQuery";  //NOI18N
-
     // XXX this should be synchronized I guess
     public static JsObject getGlobalObject(ModelElementFactory modelElementFactory) {
         if (skipInTest) {
@@ -94,9 +91,9 @@ public class JQueryModel {
                 globalObject = modelElementFactory.newGlobalObject(
                         FileUtil.toFileObject(apiFile), (int) apiFile.length());
                 JsFunction function = new JQFunction(modelElementFactory.newFunction(
-                        (DeclarationScope) globalObject, globalObject, JQUERY, Collections.<String>emptyList())); // NOI18N
+                        (DeclarationScope) globalObject, globalObject, JQueryUtils.JQUERY, Collections.<String>emptyList())); // NOI18N
                 jQuery =  modelElementFactory.putGlobalProperty(globalObject, function);
-                rjQuery = modelElementFactory.newReference(JQUERY$, jQuery, false); // NOI18N
+                rjQuery = modelElementFactory.newReference(JQueryUtils.JQUERY$, jQuery, false); // NOI18N
 
                 SelectorsLoader.addToModel(apiFile, modelElementFactory, jQuery);
                 globalObject.addProperty(rjQuery.getName(), rjQuery);
@@ -251,7 +248,7 @@ public class JQueryModel {
 
         @Override
         public Kind getJSKind() {
-            if (JQUERY$.equals(getName()) || JQUERY.equals(getName())) {
+            if (JQueryUtils.JQUERY$.equals(getName()) || JQueryUtils.JQUERY.equals(getName())) {
                 return Kind.METHOD;
             }
             return delegate.getJSKind();

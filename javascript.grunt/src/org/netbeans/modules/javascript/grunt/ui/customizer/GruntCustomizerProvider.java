@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,18 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.grunt.ui.customizer;
 
-@TemplateRegistration(folder = "ClientSide",
-        content = "Gruntfile.js",
-        scriptEngine = "freemarker", 
-        position = 600,
-        displayName = "#Templates.gruntfile.js",
-        description = "gruntdescription.html",
-        targetName = "Gruntfile",
-        category = "html5")
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.grunt.GruntBuildTool;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-package org.netbeans.modules.javascript.grunt.legacy;
+public final class GruntCustomizerProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
-import org.netbeans.api.templates.TemplateRegistration;
+    public static final String CUSTOMIZER_IDENT = "Grunt"; // NOI18N
+
+
+    @NbBundle.Messages("GruntCustomizerProvider.name=Grunt")
+    @Override
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        if (!GruntBuildTool.forProject(context.lookup(Project.class)).getGruntfile().exists()) {
+            return null;
+        }
+        return ProjectCustomizer.Category.create(CUSTOMIZER_IDENT,
+                Bundle.GruntCustomizerProvider_name(), null);
+    }
+
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project project = context.lookup(Project.class);
+        assert project != null;
+        return new GruntCustomizerPanel(category, project);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org.netbeans.modules.web.clientproject", // NOI18N
+            position = 365)
+    public static GruntCustomizerProvider forHtml5Project() {
+        return new GruntCustomizerProvider();
+    }
+
+}

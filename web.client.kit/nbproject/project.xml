@@ -45,8 +45,11 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javascript.nodejs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.1</specification-version>
+                        <release-version>0</release-version>
+                        <specification-version>0.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
