@@ -68,7 +68,6 @@ public class ProjectUpgrader {
         });
     }
 
-
     void upgradeProjectProperties() {
         EditableProperties properties = project.getProjectHelper().getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
         // specific upgrades
