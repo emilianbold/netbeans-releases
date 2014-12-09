@@ -49,7 +49,7 @@ import org.netbeans.api.project.ProjectUtils;
 
 public final class GruntPreferences {
 
-    private static final String COMMAND_PREFIX = "grunt.action."; // NOI18N
+    private static final String COMMAND_PREFIX = "action."; // NOI18N
 
     private final Project project;
 
