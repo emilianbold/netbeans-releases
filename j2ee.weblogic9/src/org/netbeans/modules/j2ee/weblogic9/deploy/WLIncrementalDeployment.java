@@ -261,7 +261,8 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
         }
 
         CommandBasedDeployer deployer = new CommandBasedDeployer(dm);
-        return deployer.directoryDeploy(target, name, dir, dm.getHost(), dm.getPort(), app.getType());
+        return deployer.directoryDeploy(target, name, dir, dm.getHost(), dm.getPort(),
+                dm.getCommonConfiguration().isSecured(), app.getType());
     }
 
     @Override

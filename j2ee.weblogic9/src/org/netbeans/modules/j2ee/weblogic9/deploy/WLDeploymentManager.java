@@ -375,7 +375,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
-        return wlDeployer.deploy(target, file, file2, getHost(), getPort());
+        return wlDeployer.deploy(target, file, file2, getHost(), getPort(), getCommonConfiguration().isSecured());
     }
 
     @Override
@@ -387,7 +387,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
         deployOptionalPackages(deployment.getRequiredLibraries());
 
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
-        return wlDeployer.deploy(targets, deployment.getModuleFile(), deployment.getDeploymentPlan(), getHost(), getPort());
+        return wlDeployer.deploy(targets, deployment.getModuleFile(), deployment.getDeploymentPlan(),
+                getHost(), getPort(), getCommonConfiguration().isSecured());
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
@@ -824,18 +825,22 @@ public class WLDeploymentManager implements DeploymentManager2 {
         @Override
         public String getWebURL() {
             String url = moduleId.getWebURL();
+            boolean secured = getCommonConfiguration().isSecured();
+
             if (url != null && url.startsWith("/")) { // NOI18N
-                url = "http://" + getHost() + ":" + getPort() + url; // NOI18N
+                url = (secured ? "https://" : "http://") + getHost() + ":" + getPort() + url; // NOI18N
             }
             // TODO perhaps web url should be configurable separately
             //if (isRemote()) {
-                if (url != null && url.startsWith("http://")) { // NOI18N
-                    // start at 7 - after http://
-                    int end = url.indexOf('/', 7); //NOI18N
+                if (url != null && (url.startsWith("http://") || url.startsWith("https://"))) { // NOI18N
+                    // start after http:// or https://
+                    int start = url.indexOf("//");
+                    assert start > 0;
+                    int end = url.indexOf('/', start + 2); //NOI18N
                     if (end < 0) {
                         end = url.length();
                     }
-                    url = "http://" + getHost() + ":" + getPort() + url.substring(end); // NOI18n
+                    url = (secured ? "https://" : "http://") + getHost() + ":" + getPort() + url.substring(end); // NOI18n
                 }
             //}
             return url;
