@@ -347,8 +347,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
             Class helperClazz = Class.forName("weblogic.deploy.api.tools.SessionHelper", // NOI18N
                     false, Thread.currentThread().getContextClassLoader());
             Method m = helperClazz.getDeclaredMethod("getDeploymentManager", // NOI18N
-                    new Class[]{String.class, String.class, String.class, String.class});
-            Object o = m.invoke(null, new Object[]{host, port, username, password});
+                    new Class[]{String.class, String.class, String.class, String.class, String.class});
+            boolean secured = getCommonConfiguration().isSecured();
+            Object o = m.invoke(null, new Object[]{secured ? "t3s" : "t3", host, port, username, password});
             if (DeploymentManager.class.isAssignableFrom(o.getClass())) {
                 manager = (DeploymentManager) o;
                 return manager;
@@ -714,7 +715,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
             } catch (NumberFormatException ex) {
                 realPort = 7001;
             }
-            config = WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, credentials);
+            boolean secured = Boolean.valueOf(ip.getProperty(WLPluginProperties.SECURED_ATTR));
+            config = WebLogicConfiguration.forRemoteDomain(new File(serverHome), host, realPort, secured, credentials);
         } else {
             config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), credentials);
         }
