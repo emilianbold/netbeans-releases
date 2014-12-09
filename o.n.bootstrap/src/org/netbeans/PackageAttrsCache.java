@@ -47,9 +47,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -76,7 +75,7 @@ final class PackageAttrsCache implements Stamps.Updater {
         Map<String,String[]> tmp = null;
         if (is != null) {
             try {
-                tmp = new HashMap<String, String[]>();
+                tmp = new ConcurrentHashMap<>();
                 DataInputStream dis = new DataInputStream(is);
                 for (;;) {
                     String key = Stamps.readRelativePath(dis);
@@ -95,7 +94,7 @@ final class PackageAttrsCache implements Stamps.Updater {
             }
         }
         if (tmp == null) {
-            cache = new HashMap<String,String[]>();
+            cache = new ConcurrentHashMap();
             Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
         } else {
             cache = Collections.unmodifiableMap(tmp);
@@ -117,7 +116,7 @@ final class PackageAttrsCache implements Stamps.Updater {
         }
         key += path;
         String[] arr;
-        if (cache instanceof HashMap) {
+        if (cache instanceof ConcurrentHashMap) {
             arr = extractFromManifest(man, path);
             if (isEmpty(arr)) {
                 arr = EMPTY;
