@@ -81,7 +81,7 @@ public class Merge extends CopyDialog implements ItemListener {
     private final RepositoryFile repositoryFile;
 
     public Merge(RepositoryFile repositoryRoot, VCSFileProxy root) {
-        super(new MergePanel(), NbBundle.getMessage(Merge.class, "CTL_Merge_Prompt", root.getName()), NbBundle.getMessage(Merge.class, "CTL_Merge_Title")); // NOI18N
+        super(root, new MergePanel(), NbBundle.getMessage(Merge.class, "CTL_Merge_Prompt", root.getName()), NbBundle.getMessage(Merge.class, "CTL_Merge_Title")); // NOI18N
 
         MergePanel panel = getMergePanel();
 

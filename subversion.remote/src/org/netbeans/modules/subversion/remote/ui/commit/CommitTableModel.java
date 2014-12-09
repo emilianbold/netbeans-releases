@@ -51,6 +51,7 @@ import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.SvnFileNode;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -79,7 +80,7 @@ public class CommitTableModel extends AbstractTableModel {
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);   
+    private static final Map<String, String[]> columnLabels = new HashMap<>(4);   
 
     static {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
@@ -137,7 +138,7 @@ public class CommitTableModel extends AbstractTableModel {
      * @return Map&lt;SvnFileNode, CommitOptions>
      */
     public Map<SvnFileNode, CommitOptions> getCommitFiles() {
-        Map<SvnFileNode, CommitOptions> ret = new HashMap<SvnFileNode, CommitOptions>(nodes.length);
+        Map<SvnFileNode, CommitOptions> ret = new HashMap<>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             ret.put(nodes[i], commitOptions[i]);
         }
@@ -229,7 +230,7 @@ public class CommitTableModel extends AbstractTableModel {
     }
 
     private void defaultCommitOptions() {
-        boolean excludeNew = SvnModuleConfig.getDefault().getExludeNewFiles();
+        boolean excludeNew = SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(nodes[0].getFile())).getExludeNewFiles();
         commitOptions = SvnUtils.createDefaultCommitOptions(nodes, excludeNew);
         ensureFilesExcluded();
     }
@@ -265,7 +266,7 @@ public class CommitTableModel extends AbstractTableModel {
     }
 
     private void includeExcludeTree (int[] rows, boolean include, boolean recursively) {
-        LinkedList<Integer> rowList = new LinkedList<Integer>();
+        LinkedList<Integer> rowList = new LinkedList<>();
         for (int row : rows) {
             rowList.add(row);
         }
@@ -288,8 +289,8 @@ public class CommitTableModel extends AbstractTableModel {
     }
 
     private void ensureFilesExcluded () {
-        LinkedList<Integer> newFilesExcluded = new LinkedList<Integer>();
-        LinkedList<Integer> deletedFilesExcluded = new LinkedList<Integer>();
+        LinkedList<Integer> newFilesExcluded = new LinkedList<>();
+        LinkedList<Integer> deletedFilesExcluded = new LinkedList<>();
         for (int i = 0; i < nodes.length; ++i) {
             SvnFileNode node = nodes[i];
             if (CommitOptions.EXCLUDE.equals(commitOptions[i])
@@ -307,7 +308,7 @@ public class CommitTableModel extends AbstractTableModel {
     private void includeExcludeParents (Collection<Integer> nodeIndexes, int statusMask, boolean include) {
         boolean includeExcludeWholeTree = include && (statusMask & (STATUS_DELETED)) != 0
                 || !include && (statusMask & (STATUS_NEW)) != 0;
-        HashSet<Integer> toCheck = new HashSet<Integer>();
+        HashSet<Integer> toCheck = new HashSet<>();
         boolean[] checkedNodes = new boolean[nodes.length];
         outer:
         for (int nodeIndex : nodeIndexes) {
@@ -333,7 +334,7 @@ public class CommitTableModel extends AbstractTableModel {
 
     private void includeExcludeChildren (Collection<Integer> nodeIndexes, int statusMask, boolean include) {
         boolean[] checkedNodes = new boolean[nodes.length];
-        HashSet<Integer> toCheck = new HashSet<Integer>();
+        HashSet<Integer> toCheck = new HashSet<>();
         for (int nodeIndex : nodeIndexes) {
             toCheck.add(nodeIndex);
         }
@@ -371,7 +372,7 @@ public class CommitTableModel extends AbstractTableModel {
         }
 
         private void constructIndex () {
-            fileToIndex = new HashMap<VCSFileProxy, Value>(nodes.length);
+            fileToIndex = new HashMap<>(nodes.length);
             for (int i = 0; i < nodes.length; ++i) {
                 Value value = new Value(i);
                 fileToIndex.put(nodes[i].getFile(), value);
@@ -408,7 +409,7 @@ public class CommitTableModel extends AbstractTableModel {
 
             private void addChild(int childIndex) {
                 if (childrenIndexes == null) {
-                    childrenIndexes = new HashSet<Integer>();
+                    childrenIndexes = new HashSet<>();
                 }
                 childrenIndexes.add(childIndex);
             }

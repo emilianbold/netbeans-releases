@@ -62,7 +62,7 @@ public class ListPropertiesCommand extends SvnCommand {
         file
     }
     
-    private final List<String> output = new ArrayList<String>();
+    private final List<String> output = new ArrayList<>();
     private final VCSFileProxy file;
     private final boolean rec;
     private final SVNUrl url;

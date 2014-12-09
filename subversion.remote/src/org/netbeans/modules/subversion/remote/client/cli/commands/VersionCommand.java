@@ -61,7 +61,7 @@ public class VersionCommand extends SvnCommand {
         super(fileSystem);
     }
 
-    private final List<String> output = new ArrayList<String>();
+    private final List<String> output = new ArrayList<>();
     private boolean unsupportedVersion = false;
     private boolean supportedMetadataFormat = false;
     

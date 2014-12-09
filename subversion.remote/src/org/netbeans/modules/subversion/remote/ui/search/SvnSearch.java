@@ -109,7 +109,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         panel.dateFromTextField.getDocument().addDocumentListener(this); 
         
         String date = DATE_FORMAT.format(new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 7));
-        panel.dateFromTextField.setText(SvnModuleConfig.getDefault().getPreferences().get(DATE_FROM, date));
+        panel.dateFromTextField.setText(SvnModuleConfig.getDefault(fileSystem).getPreferences().get(DATE_FROM, date));
         
         searchView = new SvnSearchView();
         
@@ -147,7 +147,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         final SVNRevision revisionFrom = getRevisionFrom();
         final SVNUrl repositoryUrl = this.repositoryFiles[0].getRepositoryUrl();
         if(revisionFrom instanceof SVNRevision.DateSpec) {
-            SvnModuleConfig.getDefault().getPreferences().put(DATE_FROM, panel.dateFromTextField.getText().trim());
+            SvnModuleConfig.getDefault(fileSystem).getPreferences().put(DATE_FROM, panel.dateFromTextField.getText().trim());
         }
                 
         final String[] paths = new String[repositoryFiles.length];
@@ -194,7 +194,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                     return;
                 }
 
-                final List<ISVNLogMessage> messages = new ArrayList<ISVNLogMessage>();
+                final List<ISVNLogMessage> messages = new ArrayList<>();
                 if(revisionFrom instanceof SVNRevision.DateSpec) {
                     long timeFrom = ((SVNRevision.DateSpec) revisionFrom).getDate().getTime();                        
                     for(ISVNLogMessage lm : messageArray) {                        

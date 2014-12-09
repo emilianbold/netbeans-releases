@@ -78,7 +78,7 @@ public class InfoCommand extends SvnCommand {
         url
     }
     
-    private final List<String> output = new ArrayList<String>();
+    private final List<String> output = new ArrayList<>();
     private final SVNUrl url;
     private final VCSFileProxy[] files;
     private final SVNRevision revision;
@@ -151,7 +151,7 @@ public class InfoCommand extends SvnCommand {
     }
     
     public ISVNInfo[] getInfo() throws SVNClientException {
-        List<Info> infos = new ArrayList<Info>();        
+        List<Info> infos = new ArrayList<>();        
         
         Map<String, String> map = null;
         
@@ -167,7 +167,7 @@ public class InfoCommand extends SvnCommand {
                 if(map != null) {
                     infos.add(new Info(map));            
                 }
-                map = new HashMap<String, String>();
+                map = new HashMap<>();
             }
             
             int idx = outputLine.indexOf(':');            

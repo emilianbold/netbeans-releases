@@ -80,7 +80,7 @@ public class OutputLogger implements ISVNNotifyListener {
      * So if this cache doesn't contain the repository string yet, it will probably mean the OW is automatically opened
      * and in that case it should be closed again. See getLog().
      */
-    private static final HashSet<String> openedWindows = new HashSet<String>(5);
+    private static final HashSet<String> openedWindows = new HashSet<>(5);
     private static final Pattern[] filePatterns = new Pattern[] {
         Pattern.compile("[AUCGE ][ UC][ BC][ C] ?(.+)"), //NOI18N
         Pattern.compile("Reverted '(.+)'"), //NOI18N - for commandline
@@ -230,7 +230,7 @@ public class OutputLogger implements ISVNNotifyListener {
             return;
         }
         if (getLog().isClosed()) {
-            if (SvnModuleConfig.getDefault().getAutoOpenOutput()) {
+            if (SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput()) {
                 Subversion.LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRootString); // NOI18N
                 log = IOProvider.getDefault().getIO(repositoryRootString, false);
                 try {
@@ -269,7 +269,7 @@ public class OutputLogger implements ISVNNotifyListener {
             log = IOProvider.getDefault().getIO(repositoryRootString, false);
             if (!openedWindows.contains(repositoryRootString)) {
                 // log window has been opened
-                writable = SvnModuleConfig.getDefault().getAutoOpenOutput();
+                writable = SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput();
                 openedWindows.add(repositoryRootString);
                 if (!writable) {
                     // close it again

@@ -52,10 +52,10 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.notifications.NotificationsManager;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSKenaiAccessor;
+import org.netbeans.modules.subversion.remote.util.VCSKenaiAccessor.VCSKenaiModification;
+import org.netbeans.modules.subversion.remote.util.VCSKenaiAccessor.VCSKenaiNotification;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiModification;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.VCSKenaiNotification;
 
 /**
  *
@@ -81,7 +81,7 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
         VCSFileProxy[] files = cache.listFiles(new VCSFileProxy[] {projectDir}, FileInformation.STATUS_LOCAL_CHANGE);
         List<VCSKenaiModification> modifications = notification.getModifications();
 
-        List<File> notifyFiles = new LinkedList<File>();
+        List<VCSFileProxy> notifyFiles = new LinkedList<>();
         String revision = null;
         for (VCSFileProxy file : files) {
             String path;
@@ -108,7 +108,7 @@ public class KenaiNotificationListener extends VCSKenaiAccessor.KenaiNotificatio
             }
         }
         if(notifyFiles.size() > 0) {
-            notifyFileChange(notifyFiles.toArray(new File[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
+            notifyFileChange(notifyFiles.toArray(new VCSFileProxy[notifyFiles.size()]), projectDir, notification.getUri().toString(), revision);
             try {
                 NotificationsManager.getInstance().notfied(files, Long.parseLong(revision));
             } catch (NumberFormatException e) {

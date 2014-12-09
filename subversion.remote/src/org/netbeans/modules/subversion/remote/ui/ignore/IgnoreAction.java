@@ -198,14 +198,14 @@ public class IgnoreAction extends ContextAction {
                                 Subversion.LOG.log(Level.WARNING, IgnoreAction.class.toString() + ": file does exist: " + parent.getPath()); // NOI18N
                             }
                         } else {
-                            Set<String> currentPatterns = new HashSet<String>(c);
+                            Set<String> currentPatterns = new HashSet<>(c);
                             if (actionStatus == IGNORING) {
                                 ensureVersioned(parent);
                                 currentPatterns.addAll(patterns);
                             } else if (actionStatus == UNIGNORING) {
                                 currentPatterns.removeAll(patterns);
                             }
-                            client.setIgnoredPatterns(parent, new ArrayList<String>(currentPatterns));
+                            client.setIgnoredPatterns(parent, new ArrayList<>(currentPatterns));
                         }
                     } catch (SVNClientException e) {
                         SvnClientExceptionHandler.notifyException(ctx, e, true, true);
@@ -225,7 +225,7 @@ public class IgnoreAction extends ContextAction {
     }
 
     private Map<VCSFileProxy, Set<String>> splitByParent(VCSFileProxy[] files) {
-        Map<VCSFileProxy, Set<String>> map = new HashMap<VCSFileProxy, Set<String>>(2);
+        Map<VCSFileProxy, Set<String>> map = new HashMap<>(2);
         for (VCSFileProxy file : files) {
             VCSFileProxy parent = file.getParentFile();
             if (parent == null) {
@@ -233,7 +233,7 @@ public class IgnoreAction extends ContextAction {
             }
             Set<String> names = map.get(parent);
             if (names == null) {
-                names = new HashSet<String>(5);
+                names = new HashSet<>(5);
                 map.put(parent, names);
             }
             names.add(file.getName());

@@ -64,6 +64,7 @@ public class GdbVersionPeculiarity {
     private final double version;
     private final Platform platform;
     private final Set<String> features = Collections.synchronizedSet(new HashSet<String>());
+    private final boolean lldb = "true".equals(System.getProperty("cnd.debugger.lldb")); // NOI18N
 
     private GdbVersionPeculiarity(double version, Platform platform) {
         this.version = version;
@@ -90,6 +91,14 @@ public class GdbVersionPeculiarity {
         }
     }
 
+    public String runArgsCommand(String args) {
+        if (lldb) {
+            return "-interpreter-exec console \"settings set target.run-args " + args + "\""; // NOI18N
+        } else {
+            return "-exec-arguments " + args; // NOI18N
+        }
+    }
+
     public String execAbortCommand() {
         if (version > 6.6) {
             return "-exec-abort"; // NOI18N
@@ -98,14 +107,63 @@ public class GdbVersionPeculiarity {
         }
     }
     
+    public String execStepCommand(String thread) {
+        if (version >= 7.4 || lldb) {
+            return "-exec-step --thread " + thread; // NOI18N
+        } else {
+            return "-exec-step"; // NOI18N
+        }
+    }
+    
+    public String execNextCommand(String thread) {
+        if (version >= 7.4 || lldb) {
+            return "-exec-next --thread " + thread; // NOI18N
+        } else {
+            return "-exec-next"; // NOI18N
+        }
+    }
+    
+    public String execStepInstCommand(String thread) {
+        if (version >= 7.4 || lldb) {
+            return "-exec-step-instruction --thread " + thread; // NOI18N
+        } else {
+            return "-exec-step-instruction"; // NOI18N
+        }
+    }
+    
+    public String execNextInstCommand(String thread) {
+        if (version >= 7.4 || lldb) {
+            return "-exec-next-instruction --thread " + thread; // NOI18N
+        } else {
+            return "-exec-next-instruction"; // NOI18N
+        }
+    }
+    
+    public String execFinishCommand(String thread) {
+        if (lldb) {
+            return "-exec-finish --thread " + thread; // NOI18N
+        } else {
+            return "-exec-finish"; // NOI18N
+        }
+    }
+    
     public String listChildrenCommand(String expr, int start, int end) {
-        String retVal = "-var-list-children --all-values \"" + expr + "\""; // NOI18N
-        
-        if (version > 6.8) {
-            retVal = retVal + " " + start + " " + end; // NOI18N
+        StringBuilder retVal = new StringBuilder();
+        if (lldb) {
+            retVal.append("-var-list-children --all-values ").append(expr); // NOI18N
+        } else {
+            retVal.append("-var-list-children --all-values \"").append(expr).append("\""); // NOI18N
         }
         
-        return retVal;
+        if (version > 6.8) {
+            retVal.append(" ").append(start).append(" ").append(end); // NOI18N
+        }
+        
+        return retVal.toString();
+    }
+
+    public boolean isLldb() {
+        return lldb;
     }
     
     public boolean isThreadsOutputUnusual() {
@@ -132,6 +190,22 @@ public class GdbVersionPeculiarity {
             return " -d"; // NOI18N
         } else {
             return "";
+        }
+    }
+    
+    public String createVarCommand(String expr, String thread, String frame) {
+        if (lldb) {
+            return "-var-create - @ " + expr + " --thread " + thread + " --frame " + frame; // NOI18N
+        } else {
+            return "-var-create - @ " + expr; // NOI18N
+        }
+    }
+    
+    public String stackListFramesCommand(String thread) {
+        if (version >= 7.4 || lldb) {
+            return "-stack-list-frames --thread " + thread; // NOI18N
+        } else {
+            return "-stack-list-frames";  // NOI18N
         }
     }
 

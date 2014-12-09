@@ -39,33 +39,30 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.grunt.legacy;
+package org.netbeans.modules.javascript.grunt.util;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.common.api.UsageLogger;
 
-public final class GruntPreferences {
+public final class GruntUtils {
 
-    private GruntPreferences() {
+    private static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.grunt"; // NOI18N
+    private static final UsageLogger GRUNT_BUILD_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
+            .message(GruntUtils.class, "USG_GRUNT_BUILD") // NOI18N
+            .unrepeated(true)
+            .create();
+
+
+    private GruntUtils() {
     }
 
-    @CheckForNull
-    public static String getValue(Project project, String key) {
-        return getPreferences(project).get(key, null);
+    public static void logUsageGruntBuild() {
+        GRUNT_BUILD_USAGE_LOGGER.log();
     }
 
-    public static void setValue(Project project, String key, String value) {
-        if (value != null) {
-            getPreferences(project).put(key, value);
-        } else {
-            getPreferences(project).remove(key);
-        }
-    }
-
-    private static Preferences getPreferences(Project project) {
-        return ProjectUtils.getPreferences(project, GruntPreferences.class, true);
+    public static String getProjectDisplayName(Project project) {
+        return ProjectUtils.getInformation(project).getDisplayName();
     }
 
 }

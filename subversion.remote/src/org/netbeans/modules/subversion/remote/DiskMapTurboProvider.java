@@ -108,7 +108,7 @@ class DiskMapTurboProvider implements TurboProvider {
         } else if (arr2.length == 0) {
             return arr1;
         } else {
-            Set<VCSFileProxy> merged = new HashSet<VCSFileProxy>(Arrays.asList(arr2));
+            Set<VCSFileProxy> merged = new HashSet<>(Arrays.asList(arr2));
             merged.addAll(Arrays.asList(arr1));
             return merged.toArray(new VCSFileProxy[merged.size()]);
         }
@@ -134,8 +134,8 @@ class DiskMapTurboProvider implements TurboProvider {
             
             int modifiedFiles = 0;
             int locallyNewFiles = 0;
-            Map<String, Integer> locallyNewFolders = new HashMap<String, Integer>();
-            Map<String, Integer> modifiedFolders = new HashMap<String, Integer>();
+            Map<String, Integer> locallyNewFolders = new HashMap<>();
+            Map<String, Integer> modifiedFolders = new HashMap<>();
 
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -410,9 +410,9 @@ class DiskMapTurboProvider implements TurboProvider {
         Set set = map != null ? map.keySet() : null;
 
         // all modified files
-        Set<File> conflictedSet = new HashSet<File>();
-        Set<File> newSet = new HashSet<File>();
-        Set<File> ignoredSet = new HashSet<File>();
+        Set<File> conflictedSet = new HashSet<>();
+        Set<File> newSet = new HashSet<>();
+        Set<File> ignoredSet = new HashSet<>();
         if(set != null) {
             for (Iterator i = set.iterator(); i.hasNext();) {
                 File file = (File) i.next();
@@ -484,7 +484,7 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private Map<File, FileInformation> readValue(DataInputStream dis, String dirPath) throws IOException {
-        Map<File, FileInformation> map = new HashMap<File, FileInformation>();
+        Map<File, FileInformation> map = new HashMap<>();
         int len = dis.readInt();
         while (len-- > 0) {
             int nameLen = dis.readInt();
@@ -614,7 +614,7 @@ class DiskMapTurboProvider implements TurboProvider {
     })
     private void logTooManyNewFiles (Map<String, Integer> locallyNewFolders, int locallyNewFiles) {
         Map<Integer, List<String>> sortedFolders = sortFolders(locallyNewFolders);
-        List<String> biggestFolders = new ArrayList<String>(3);
+        List<String> biggestFolders = new ArrayList<>(3);
         outer: for (Map.Entry<Integer, List<String>> e : sortedFolders.entrySet()) {
             for (String folder : e.getValue()) {
                 biggestFolders.add(Bundle.MSG_FileStatusCache_cacheTooBig_ignoreCandidate(folder, e.getKey()));
@@ -637,7 +637,7 @@ class DiskMapTurboProvider implements TurboProvider {
     })
     private void logTooManyModifications (Map<String, Integer> modifiedFolders, int modifiedFiles) {
         Map<Integer, List<String>> sortedFolders = sortFolders(modifiedFolders);
-        List<String> biggestFolders = new ArrayList<String>(3);
+        List<String> biggestFolders = new ArrayList<>(3);
         outer: for (Map.Entry<Integer, List<String>> e : sortedFolders.entrySet()) {
             for (String folder : e.getValue()) {
                 biggestFolders.add(Bundle.MSG_FileStatusCache_cacheTooBig_checkoutWithModifications(folder, e.getKey()));
@@ -650,7 +650,7 @@ class DiskMapTurboProvider implements TurboProvider {
     }
     
     private static Map<Integer, List<String>> sortFolders (Map<String, Integer> unsortedFolders) {
-        Map<Integer, List<String>> sortedFolders = new TreeMap<Integer, List<String>>(new Comparator<Integer>() {
+        Map<Integer, List<String>> sortedFolders = new TreeMap<>(new Comparator<Integer>() {
             @Override
             public int compare (Integer o1, Integer o2) {
                 return - o1.compareTo(o2);
@@ -659,7 +659,7 @@ class DiskMapTurboProvider implements TurboProvider {
         for (Map.Entry<String, Integer> e : unsortedFolders.entrySet()) {
             List<String> folders = sortedFolders.get(e.getValue());
             if (folders == null) {
-                sortedFolders.put(e.getValue(), folders = new ArrayList<String>());
+                sortedFolders.put(e.getValue(), folders = new ArrayList<>());
             }
             folders.add(e.getKey());
         }
