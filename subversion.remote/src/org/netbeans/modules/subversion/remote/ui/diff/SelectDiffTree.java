@@ -81,7 +81,7 @@ public class SelectDiffTree extends CopyDialog implements PropertyChangeListener
         "LBL_BrowserMessageSelectDiffTreeFolder=&Choose the Folder you want to diff"
     })
     public SelectDiffTree (RepositoryFile repositoryFile, VCSFileProxy root) {
-        super(new SelectDiffTreePanel(), Bundle.CTL_SelectDiffTree_Title(root.getName()),
+        super(root, new SelectDiffTreePanel(), Bundle.CTL_SelectDiffTree_Title(root.getName()),
                 Bundle.CTL_SelectDiffTree_okButton());
         
         this.root = root;        

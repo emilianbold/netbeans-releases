@@ -236,7 +236,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
 
     public LinkedHashMap<String, Integer> getSortingState() {
         Map<Integer, Integer> sorterState = sorter.getSortingState();
-        LinkedHashMap<String, Integer> sortingStatus = new LinkedHashMap<String, Integer>(sorterState.size());
+        LinkedHashMap<String, Integer> sortingStatus = new LinkedHashMap<>(sorterState.size());
         for (Map.Entry<Integer, Integer> e : sorterState.entrySet()) {
             sortingStatus.put(columns[e.getKey()], e.getValue());
         }

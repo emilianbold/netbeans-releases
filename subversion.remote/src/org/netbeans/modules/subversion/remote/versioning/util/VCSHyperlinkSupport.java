@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  */
 public class VCSHyperlinkSupport {
     private static Logger LOG = Logger.getLogger(VCSHyperlinkSupport.class.getName());
-    private Map<String, List<Hyperlink>> linkers = new HashMap<String, List<Hyperlink>>();
+    private Map<String, List<Hyperlink>> linkers = new HashMap<>();
 
     public <T extends Hyperlink> T getLinker(Class<T> t, int idx) {
         return getLinker(t, Integer.toString(idx));
@@ -97,7 +97,7 @@ public class VCSHyperlinkSupport {
         }
         List<Hyperlink> list = linkers.get(idx);
         if(list == null) {
-            list = new ArrayList<Hyperlink>();
+            list = new ArrayList<>();
         }
         list.add(l);
         linkers.put(idx, list);

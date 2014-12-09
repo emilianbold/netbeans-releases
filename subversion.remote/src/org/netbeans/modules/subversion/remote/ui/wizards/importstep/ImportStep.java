@@ -243,10 +243,10 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     }
     
     private void onBrowseRecentMessages() {
-        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault().getPreferences());
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(importDirectory)).getPreferences());
         String message = selector.getRecentMessage(NbBundle.getMessage(ImportStep.class, "CTL_ImportPanel_RecentTitle"), //NOI18N
                                                NbBundle.getMessage(ImportStep.class, "CTL_ImportPanel_RecentPrompt"), //NOI18N
-            Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
+            Utils.getStringList(SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(importDirectory)).getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             importPanel.messageTextArea.replaceSelection(message);
         }

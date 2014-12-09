@@ -88,19 +88,19 @@ import org.openide.util.RequestProcessor;
 public final class SvnProperties implements ActionListener {
 
     /** Subversion properties that may be set only on directories */
-    private static final HashSet<String> DIR_ONLY_PROPERTIES = new HashSet<String>(Arrays.asList(new String[] {
+    private static final HashSet<String> DIR_ONLY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] {
                                                             "svn:ignore",
                                                             "svn:externals"}));
  
     /** Subversion properties that may be set only on files (not directories) */
-    private static final HashSet<String> FILE_ONLY_PROPERTIES = new HashSet<String>(Arrays.asList(new String[] {
+    private static final HashSet<String> FILE_ONLY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] {
                                                             "svn:eol-style",
                                                             "svn:executable",
                                                             "svn:keywords",
                                                             "svn:needs-lock",
                                                             "svn:mime-type"}));
 
-    private static final HashSet<String> MIXED_PROPERTIES = new HashSet<String>(DIR_ONLY_PROPERTIES.size() + FILE_ONLY_PROPERTIES.size());
+    private static final HashSet<String> MIXED_PROPERTIES = new HashSet<>(DIR_ONLY_PROPERTIES.size() + FILE_ONLY_PROPERTIES.size());
     static {
         MIXED_PROPERTIES.addAll(DIR_ONLY_PROPERTIES);
         MIXED_PROPERTIES.addAll(FILE_ONLY_PROPERTIES);
@@ -112,9 +112,9 @@ public final class SvnProperties implements ActionListener {
     private SvnProgressSupport support;
     private boolean loadedFromFile;
     private VCSFileProxy loadedValueFile;
-    private final Set<VCSFileProxy> folders = new HashSet<VCSFileProxy>();
-    private final Set<VCSFileProxy> files = new HashSet<VCSFileProxy>();
-    private final Map<String, Set<VCSFileProxy>> filesPerProperty = new HashMap<String, Set<VCSFileProxy>>();
+    private final Set<VCSFileProxy> folders = new HashSet<>();
+    private final Set<VCSFileProxy> files = new HashSet<>();
+    private final Map<String, Set<VCSFileProxy>> filesPerProperty = new HashMap<>();
 
     /** Creates a ew instance of SvnProperties */
     public SvnProperties(PropertiesPanel panel, PropertiesTable propTable, VCSFileProxy[] files) {
@@ -293,7 +293,7 @@ public final class SvnProperties implements ActionListener {
                     final Context context = new Context(roots);
                     try {
                         SvnClient client = Subversion.getInstance().getClient(false, context);
-                        properties = new HashMap<String, String>();
+                        properties = new HashMap<>();
                         for (VCSFileProxy f : roots) {
                             ISVNStatus status = SvnUtils.getSingleStatus(client, f);
                             if (!status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
@@ -340,7 +340,7 @@ public final class SvnProperties implements ActionListener {
                         properties.put(propName, propValue);
                         Set<VCSFileProxy> filesPerProp = filesPerProperty.get(propName);
                         if (filesPerProp == null) {
-                            filesPerProp = new HashSet<VCSFileProxy>();
+                            filesPerProp = new HashSet<>();
                             filesPerProperty.put(propName, filesPerProp);
                         }
                         filesPerProp.add(file);
@@ -377,7 +377,7 @@ public final class SvnProperties implements ActionListener {
                         return;
                     }
                     boolean recursively = panel.cbxRecursively.isSelected();
-                    Set<VCSFileProxy> toRefresh = new HashSet<VCSFileProxy>();
+                    Set<VCSFileProxy> toRefresh = new HashSet<>();
                     try {
                         String propName = getPropertyName();
                         for (VCSFileProxy root : getAllowedFiles(propName, recursively)) {
@@ -418,7 +418,7 @@ public final class SvnProperties implements ActionListener {
     }
 
     private VCSFileProxy[] getAllowedFiles (String propertyName, boolean recursively) {
-        List<VCSFileProxy> fileList = new LinkedList<VCSFileProxy>();
+        List<VCSFileProxy> fileList = new LinkedList<>();
         for (VCSFileProxy root : roots) {
             boolean isFile = files.contains(root);
             if (!(isFile && DIR_ONLY_PROPERTIES.contains(propertyName) // do not set folder properties on files
@@ -431,7 +431,7 @@ public final class SvnProperties implements ActionListener {
 
     private VCSFileProxy[] getFilesWithProperty (String propertyName) {
         Set<VCSFileProxy> filesWithProperty = filesPerProperty.get(propertyName);
-        Set<VCSFileProxy> fileList = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> fileList = new HashSet<>();
         if (filesWithProperty != null) {
             fileList.addAll(filesWithProperty);
         }
@@ -491,7 +491,7 @@ public final class SvnProperties implements ActionListener {
                     }
 
                     boolean recursively = panel.cbxRecursively.isSelected();
-                    Set<VCSFileProxy> toRefresh = new HashSet<VCSFileProxy>();
+                    Set<VCSFileProxy> toRefresh = new HashSet<>();
                     try {
                         SvnPropertiesNode[] svnPropertiesNodes = propTable.getNodes();
                         List<SvnPropertiesNode> lstSvnPropertiesNodes = Arrays.asList(svnPropertiesNodes);

@@ -116,6 +116,7 @@ import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.netbeans.modules.versioning.util.TemplateSelector;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -147,13 +148,15 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private Collection<SvnHook> hooks = Collections.emptyList();
     private SvnHookContext hookContext;
     private JTabbedPane tabbedPane;
-    private final HashMap<VCSFileProxy, MultiDiffPanel> displayedDiffs = new HashMap<VCSFileProxy, MultiDiffPanel>();
+    private final HashMap<VCSFileProxy, MultiDiffPanel> displayedDiffs = new HashMap<>();
     private UndoRedoSupport um;
     private final Preferences prefs;
+    private final FileSystem fileSystem;
 
     /** Creates new form CommitPanel */
-    public CommitPanel() {
-        prefs = SvnModuleConfig.getDefault().getPreferences();
+    public CommitPanel(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+        prefs = SvnModuleConfig.getDefault(fileSystem).getPreferences();
         initComponents();
         initInteraction();
     }
@@ -186,7 +189,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         if (ts.isAutofill()) {
             messageTextArea.setText(ts.getTemplate());
         } else {
-            String lastCommitMessage = SvnModuleConfig.getDefault().getLastCanceledCommitMessage();
+            String lastCommitMessage = SvnModuleConfig.getDefault(fileSystem).getLastCanceledCommitMessage();
             if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(prefs).isAutoFill()) {
                 List<String> messages = Utils.getStringList(prefs, CommitAction.RECENT_COMMIT_MESSAGES);
                 if (messages.size() > 0) {
@@ -504,7 +507,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == tabbedPane && tabbedPane.getSelectedComponent() == basePanel) {
-            commitTable.setModifiedFiles(new HashSet<VCSFileProxy>(getModifiedFiles().keySet()));
+            commitTable.setModifiedFiles(new HashSet<>(getModifiedFiles().keySet()));
         }
     }
 
@@ -543,7 +546,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
      * @return
      */
     EditorCookie[] getEditorCookies() {
-        LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+        LinkedList<EditorCookie> allCookies = new LinkedList<>();
         for (Map.Entry<VCSFileProxy, MultiDiffPanel> e : displayedDiffs.entrySet()) {
             EditorCookie[] cookies = e.getValue().getEditorCookies(true);
             if (cookies.length > 0) {
@@ -593,7 +596,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private HashMap<VCSFileProxy, SaveCookie> getModifiedFiles () {
-        HashMap<VCSFileProxy, SaveCookie> modifiedFiles = new HashMap<VCSFileProxy, SaveCookie>();
+        HashMap<VCSFileProxy, SaveCookie> modifiedFiles = new HashMap<>();
         for (Map.Entry<VCSFileProxy, MultiDiffPanel> e : displayedDiffs.entrySet()) {
             SaveCookie[] cookies = e.getValue().getSaveCookies(false);
             if (cookies.length > 0) {

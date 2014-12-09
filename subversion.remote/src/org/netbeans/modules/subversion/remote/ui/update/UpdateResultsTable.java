@@ -100,7 +100,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private final Map<String, String[]> columnLabels = new HashMap<>(4);
     {
         ResourceBundle loc = NbBundle.getBundle(UpdateResultsTable.class);
         columnLabels.put(UpdateResultNode.COLUMN_NAME_NAME, new String [] { 
@@ -400,7 +400,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     }
     
     private VCSFileProxy[] getSelectedFiles(int[] selection) {
-        List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> files = new ArrayList<>();
         for(int idx : selection) {
             int nodesIdx = sorter.modelIndex(idx);
             Node node = nodes[nodesIdx];
@@ -415,7 +415,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     
     @Override
     public void valueChanged(ListSelectionEvent e) {
-        final List<Node> selectedNodes = new ArrayList<Node>();
+        final List<Node> selectedNodes = new ArrayList<>();
         ListSelectionModel selectionModel = table.getSelectionModel();
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class,  table);
         if (tc == null) {
@@ -477,7 +477,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             VCSFileProxy changedFile = (VCSFileProxy) event.getParams()[0];
             FileInformation newFileInfo = (FileInformation) event.getParams()[2];
             
-            final List<UpdateResultNode> nodesList = new ArrayList<UpdateResultNode>();
+            final List<UpdateResultNode> nodesList = new ArrayList<>();
             boolean touched = false;
             final UpdateResultNode[] currentNodes = nodes;
             for(UpdateResultNode node : currentNodes) {

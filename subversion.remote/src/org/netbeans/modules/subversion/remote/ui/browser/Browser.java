@@ -116,7 +116,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
     private boolean keepWarning = false;
     private boolean initialSelection = true;
 
-    private final List<SvnProgressSupport> supportList = new ArrayList<SvnProgressSupport>();
+    private final List<SvnProgressSupport> supportList = new ArrayList<>();
     private volatile boolean cancelled = false;
     private Node[] selectedNodes;
     /**
@@ -218,7 +218,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
             return EMPTY_ROOT;
         }
 
-        List<RepositoryFile> ret = new ArrayList<RepositoryFile>(nodes.length);
+        List<RepositoryFile> ret = new ArrayList<>(nodes.length);
         for (Node node : nodes) {
             if (node instanceof RepositoryPathNode) {
                 ret.add(((RepositoryPathNode) node).getEntry().getRepositoryFile());
@@ -259,7 +259,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
             return null;
         }
         Node segmentParentNode;
-        List<Node> nodesToSelect = new ArrayList<Node>(select.length);
+        List<Node> nodesToSelect = new ArrayList<>(select.length);
         for (RepositoryFile select1 : select) {
             String[] segments = select1.getPathSegments();
             segmentParentNode = rootNode;
@@ -308,7 +308,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
     @Override
     public List<RepositoryPathNode.RepositoryPathEntry> listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException {
 
-        List<RepositoryPathNode.RepositoryPathEntry> ret = new ArrayList<RepositoryPathNode.RepositoryPathEntry>();
+        List<RepositoryPathNode.RepositoryPathEntry> ret = new ArrayList<>();
 
         synchronized (supportList) {
             if(cancelled) {

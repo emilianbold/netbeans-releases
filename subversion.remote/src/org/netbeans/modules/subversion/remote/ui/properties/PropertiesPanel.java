@@ -84,6 +84,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -159,9 +160,11 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     private Set<String> recursiveProperties = Collections.emptySet();
     private SvnProperties propValueChangeListener;
     private boolean interactionInitialized;
+    private final FileSystem fileSystem;
 
     /** Creates new form PropertiesPanel */
-    public PropertiesPanel() {
+    public PropertiesPanel(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
         propNameDocument = ((JTextField) comboName.getEditor().getEditorComponent())
                            .getDocument();
         propValueDocument = txtAreaValue.getDocument();
@@ -183,7 +186,7 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     @Override
     public void addNotify() {
         super.addNotify();
-        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);        
+        SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);        
         propertiesTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         txtAreaValue.selectAll();
@@ -192,7 +195,7 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     @Override
     public void removeNotify() {
         propertiesTable.getTableModel().removeTableModelListener(this);
-        SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        SvnModuleConfig.getDefault(fileSystem).getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
     
@@ -231,7 +234,7 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
     }
 
     void setRecursiveProperties (Collection<String> propNames) {
-        recursiveProperties = new HashSet<String>(propNames);
+        recursiveProperties = new HashSet<>(propNames);
     }
 
     void setForDirectory(boolean forDirectory) {

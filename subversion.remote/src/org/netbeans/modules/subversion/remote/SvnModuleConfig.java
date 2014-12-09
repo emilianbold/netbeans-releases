@@ -61,8 +61,10 @@ import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.options.AnnotationExpression;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbPreferences;
 
 /**
@@ -103,12 +105,22 @@ public class SvnModuleConfig {
     private static final String PROP_FILTER_PROPERTIES_ENABLED = "filterProperties.enabled"; //NOI18N
     private static final String PROP_DETERMINE_BRANCHES_ENABLED = "determineBranch.enabled"; //NOI18N
 
-    private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
+    private static final Map<FileSystem,SvnModuleConfig> INSTANCE = new HashMap<>();
         
     private Map<String, Object[]> urlCredentials;
+    private final FileSystem fileSystem;
     
-    public static SvnModuleConfig getDefault() {
-        return INSTANCE;
+    public static SvnModuleConfig getDefault(FileSystem fileSystem) {
+        SvnModuleConfig res = INSTANCE.get(fileSystem);
+        if (res == null) {
+            res = new SvnModuleConfig(fileSystem);
+            INSTANCE.put(fileSystem, res);
+        }
+        return res;
+    }
+    
+    public SvnModuleConfig(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
     
     private Set<String> exclusions;
@@ -118,7 +130,7 @@ public class SvnModuleConfig {
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     public Preferences getPreferences() {
-        return NbPreferences.forModule(SvnModuleConfig.class);
+        return NbPreferences.forModule(SvnModuleConfig.class).node(VCSFileProxySupport.getFileSystemKey(fileSystem));
     }
     
     public boolean getShowCheckoutCompleted() {
@@ -139,7 +151,7 @@ public class SvnModuleConfig {
     public void addExclusionPaths(Collection<String> paths) {
         Set<String> exclusions = getCommitExclusions();
         if (exclusions.addAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(exclusions));
         }
     }
 
@@ -149,7 +161,7 @@ public class SvnModuleConfig {
     public void removeExclusionPaths(Collection<String> paths) {
         Set<String> exclusions = getCommitExclusions();
         if (exclusions.removeAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(exclusions));
         }
     }
 
@@ -251,7 +263,7 @@ public class SvnModuleConfig {
     }    
 
     public void setRecentUrls(List<RepositoryConnection> recentUrls) {
-        List<String> urls = new ArrayList<String>(recentUrls.size());
+        List<String> urls = new ArrayList<>(recentUrls.size());
         
         int idx = 0;
         for (Iterator<RepositoryConnection> it = recentUrls.iterator(); it.hasNext();) {
@@ -275,8 +287,8 @@ public class SvnModuleConfig {
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, KEY_RECENT_URL);
-        List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
-        List<RepositoryConnection> withPassword = new LinkedList<RepositoryConnection>();
+        List<RepositoryConnection> ret = new ArrayList<>(urls.size());
+        List<RepositoryConnection> withPassword = new LinkedList<>();
         for (String urlString : urls) {
             RepositoryConnection rc = RepositoryConnection.parse(urlString);
             if (rc.getPassword() != null || rc.getCertPassword() != null) {
@@ -308,8 +320,8 @@ public class SvnModuleConfig {
     }
             
     public void setAnnotationExpresions(List<AnnotationExpression> exps) {
-        List<String> urlExp = new ArrayList<String>(exps.size());
-        List<String> annotationExp = new ArrayList<String>(exps.size());        
+        List<String> urlExp = new ArrayList<>(exps.size());
+        List<String> annotationExp = new ArrayList<>(exps.size());        
         
         int idx = 0;
         for (Iterator<AnnotationExpression> it = exps.iterator(); it.hasNext();) {
@@ -329,7 +341,7 @@ public class SvnModuleConfig {
         List<String> urlExp = Utils.getStringList(prefs, URL_EXP);
         List<String> annotationExp = Utils.getStringList(prefs, ANNOTATION_EXP);        
                 
-        List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(urlExp.size());                
+        List<AnnotationExpression> ret = new ArrayList<>(urlExp.size());                
         for (int i = 0; i < urlExp.size(); i++) {                                        
             ret.add(new AnnotationExpression(urlExp.get(i), annotationExp.get(i)));
         }
@@ -340,7 +352,7 @@ public class SvnModuleConfig {
     }
 
     public List<AnnotationExpression> getDefaultAnnotationExpresions() {
-        List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(1);
+        List<AnnotationExpression> ret = new ArrayList<>(1);
         ret.add(new AnnotationExpression(".*?/(?<!/src/.{1,200})(branches|tags)/(.+?)(/.*)?", "\\2")); //NOI18N
         return ret;
     }
@@ -405,7 +417,7 @@ public class SvnModuleConfig {
         String packed = getPreferences().get(KEY_SORTING + panel, null);
         if (packed != null) {
             String[] tokens = packed.split(SEPARATOR);
-            sortingState = new LinkedHashMap<String, Integer>(tokens.length >> 1);
+            sortingState = new LinkedHashMap<>(tokens.length >> 1);
             for (int i = 0; i < tokens.length - 1;) {
                 String column = tokens[i++];
                 try {
@@ -459,7 +471,7 @@ public class SvnModuleConfig {
     
     private synchronized Set<String> getCommitExclusions() {
         if (exclusions == null) {
-            exclusions = new HashSet<String>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
+            exclusions = new HashSet<>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
         }
         return exclusions;
     }
@@ -513,7 +525,7 @@ public class SvnModuleConfig {
     
     private Map<String, Object[]> getUrlCredentials() {
         if(urlCredentials == null) {
-            urlCredentials =  new HashMap<String, Object[]>();
+            urlCredentials =  new HashMap<>();
         }
         return urlCredentials;
     }    

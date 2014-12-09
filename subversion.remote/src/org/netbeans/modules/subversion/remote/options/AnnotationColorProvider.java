@@ -52,6 +52,7 @@ import org.netbeans.modules.subversion.remote.SubversionVCS;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -125,7 +126,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
         initColors();
     }
     
-    public static synchronized AnnotationColorProvider getInstance() {
+    public static synchronized AnnotationColorProvider getInstance(FileSystem fileSystem) {
         if (INSTANCE == null) {
             INSTANCE = Lookup.getDefault().lookup(AnnotationColorProvider.class);
             if (INSTANCE == null) {
@@ -145,7 +146,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
 
     @Override
     protected Color getSavedColor (String key, Color defaultColor) {
-        return SvnModuleConfig.getDefault().getColor(key, defaultColor);
+        return SvnModuleConfig.getDefault(fileSystem).getColor(key, defaultColor);
     }
 
     @Override
@@ -169,7 +170,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     protected void saveColors (Collection<OptionsPanelColorProvider.AnnotationFormat> colors) {
         for (OptionsPanelColorProvider.AnnotationFormat af : colors) {
             if (af != null) {
-                SvnModuleConfig.getDefault().setColor(getColorKey(af.getKey()), af.getActualColor());
+                SvnModuleConfig.getDefault(fileSystem).setColor(getColorKey(af.getKey()), af.getActualColor());
             }
         }
         Subversion.getInstance().getRequestProcessor().post(new Runnable() {

@@ -74,7 +74,7 @@ public class CheckoutCompleted {
 
     public void scanForProjects(SvnProgressSupport support, Type type) {
 
-        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+        Map<Project, Set<Project>> checkedOutProjects = new HashMap<>();
         checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
         VCSFileProxy normalizedWorkingFolder = workingFolder.normalizeFile();
         // checkout creates new folders and cache must be aware of them

@@ -85,7 +85,7 @@ public class ProcessUtils  {
     }
 
     public static final class Canceler {
-        private final List<Process> listeners = new ArrayList<Process>();
+        private final List<Process> listeners = new ArrayList<>();
         private final AtomicBoolean canceled = new AtomicBoolean(false);
         public Canceler(){
         }

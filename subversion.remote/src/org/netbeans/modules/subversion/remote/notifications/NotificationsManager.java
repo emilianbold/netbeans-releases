@@ -102,7 +102,7 @@ public class NotificationsManager {
     private final Map<VCSFileProxy, Long> notifiedFiles = Collections.synchronizedMap(new HashMap<VCSFileProxy, Long>());
 
     private NotificationsManager () {
-        files = new HashSet<VCSFileProxy>();
+        files = new HashSet<>();
         rp = new RequestProcessor("SubversionNotifications", 1, true);  //NOI18N
         notificationTask = rp.create(new NotificationTask());
         cache = Subversion.getInstance().getStatusCache();
@@ -222,7 +222,7 @@ public class NotificationsManager {
         public void run() {
             HashSet<VCSFileProxy> filesToScan;
             synchronized (files) {
-                filesToScan = new HashSet<VCSFileProxy>(files);
+                filesToScan = new HashSet<>(files);
                 files.clear();
             }
             removeDirectories(filesToScan);
@@ -272,7 +272,7 @@ public class NotificationsManager {
             HashMap<SVNUrl, HashSet<VCSFileProxy>> filesPerRepository = sortByRepository(filesToScan);
             for (Map.Entry<SVNUrl, HashSet<VCSFileProxy>> entry : filesPerRepository.entrySet()) {
                 SVNUrl repositoryUrl = entry.getKey();
-                HashMap<Long, Notification> notifications = new HashMap<Long, Notification>();
+                HashMap<Long, Notification> notifications = new HashMap<>();
                 try {
                     HashSet<VCSFileProxy> files = entry.getValue();
                     VCSFileProxy[] roots = files.toArray(new VCSFileProxy[files.size()]);
@@ -354,7 +354,7 @@ public class NotificationsManager {
             private final Long revision;
 
             Notification(Long revision) {
-                files = new HashSet<VCSFileProxy>();
+                files = new HashSet<>();
                 this.revision = revision;
             }
 
@@ -372,13 +372,13 @@ public class NotificationsManager {
         }
 
         private HashMap<SVNUrl, HashSet<VCSFileProxy>> sortByRepository (Collection<VCSFileProxy> files) {
-            HashMap<SVNUrl, HashSet<VCSFileProxy>> filesByRepository = new HashMap<SVNUrl, HashSet<VCSFileProxy>>();
+            HashMap<SVNUrl, HashSet<VCSFileProxy>> filesByRepository = new HashMap<>();
             for (VCSFileProxy file : files) {
                 SVNUrl repositoryUrl = getRepositoryRoot(file);
                 if (repositoryUrl != null) {
                     HashSet<VCSFileProxy> filesPerRepository = filesByRepository.get(repositoryUrl);
                     if (filesPerRepository == null) {
-                        filesPerRepository = new HashSet<VCSFileProxy>();
+                        filesPerRepository = new HashSet<>();
                         filesByRepository.put(repositoryUrl, filesPerRepository);
                     }
                     filesPerRepository.add(file);

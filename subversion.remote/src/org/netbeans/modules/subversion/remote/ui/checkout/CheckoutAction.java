@@ -65,6 +65,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -99,7 +100,11 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         
     private VCSFileProxy performCheckout (final boolean wait) {
         assert !wait || !EventQueue.isDispatchThread(); // cannot wait in AWT
-        CheckoutWizard wizard = new CheckoutWizard();
+        FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
+        if (defaultFileSystem == null) {
+            return null;
+        }
+        CheckoutWizard wizard = new CheckoutWizard(defaultFileSystem);
         if (!wizard.show()) {
             return null;
         
@@ -112,7 +117,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         }
         final boolean atWorkingDirLevel = wizard.isAtWorkingDirLevel();
         final boolean doExport = wizard.isExport();
-        final boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
+        final boolean showCheckoutCompleted = SvnModuleConfig.getDefault(defaultFileSystem).getShowCheckoutCompleted();
         final boolean old16Format = wizard.isOldFormatPreferred();
         Runnable run = new Runnable() {
             @Override

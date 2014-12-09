@@ -160,7 +160,7 @@ public class ListCommand extends SvnCommand {
         private static final String KIND_ATTR           = "kind_attr";
         private static final String PATH_ATTR           = "path_attr";;
         
-        private final List<ISVNDirEntry> entries = new ArrayList<ISVNDirEntry>();        
+        private final List<ISVNDirEntry> entries = new ArrayList<>();        
 //        <?xml version="1.0"?>
 //        <lists>
 //        <list
@@ -190,7 +190,7 @@ public class ListCommand extends SvnCommand {
         public void startElement(String uri, String localName, String qName, Attributes elementAttributes) throws SAXException {            
             tag = qName.trim();                
             if (ENTRY_ELEMENT_NAME.equals(qName)) {                        
-                values = new HashMap<String, String>();
+                values = new HashMap<>();
                 values.put(KIND_ATTR, elementAttributes.getValue(KIND_ATTRIBUTE));
             } else if (COMMIT_ELEMENT_NAME.equals(qName)) {                                
                 values.put(REVISION_ATTR, elementAttributes.getValue(REVISION_ATTRIBUTE));

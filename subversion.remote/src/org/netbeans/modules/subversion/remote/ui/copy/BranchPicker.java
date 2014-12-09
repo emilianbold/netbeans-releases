@@ -79,7 +79,7 @@ class BranchPicker {
     private static final String ITEM_TAGS = NbBundle.getMessage(BranchPicker.class, "BranchPickerPanel.item.tags"); //NOI18N
     private static final String ITEM_LOADING = NbBundle.getMessage(BranchPicker.class, "BranchPickerPanel.item.loading"); //NOI18N
     private static final String ITEM_SEP = "   "; //NOI18N
-    private static final Set<Object> FORBIDDEN_SELECTION = new HashSet<Object>(Arrays.asList(new Object[] { null, ITEM_BRANCHES, ITEM_TAGS, ITEM_LOADING, ITEM_SEP }));
+    private static final Set<Object> FORBIDDEN_SELECTION = new HashSet<>(Arrays.asList(new Object[] { null, ITEM_BRANCHES, ITEM_TAGS, ITEM_LOADING, ITEM_SEP }));
     private static final String PREFIX_BRANCHES = "branches"; //NOI18N
     private static final String PREFIX_TAGS = "tags"; //NOI18N
     private SvnProgressSupport loadingSupport;
@@ -140,7 +140,7 @@ class BranchPicker {
             protected void perform () {
                 try {
                     SvnClient client = Subversion.getInstance().getClient(null, repositoryFile.getRepositoryUrl());
-                    final Map<String, ISVNDirEntry[]> entries = new HashMap<String, ISVNDirEntry[]>(2);
+                    final Map<String, ISVNDirEntry[]> entries = new HashMap<>(2);
                     for (String pathName : new String[] { PREFIX_BRANCHES, PREFIX_TAGS }) {
                         if (isCanceled()) {
                             return;

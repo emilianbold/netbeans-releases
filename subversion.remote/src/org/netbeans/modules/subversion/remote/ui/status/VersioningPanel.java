@@ -119,7 +119,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         explorerManager = new ExplorerManager ();
         displayStatuses = getDefaultDisplayStatus();
         noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
-        modeKeeper = new ModeKeeper(SvnModuleConfig.getDefault().getLastUsedModificationContext());
+        modeKeeper = new ModeKeeper(SvnModuleConfig.getDefault(context.getFileSystem()).getLastUsedModificationContext());
         syncTable = new SyncTable(modeKeeper);
 
         initComponents();
@@ -219,7 +219,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     @Override
     public void addNotify() {
         super.addNotify();
-        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences().addPreferenceChangeListener(this);
         subversion.getStatusCache().addVersioningListener(this);
         subversion.getStatusCache().addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
@@ -229,7 +229,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
     @Override
     public void removeNotify() {
-        SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+        SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences().removePreferenceChangeListener(this);
         subversion.getStatusCache().removeVersioningListener(this);
         subversion.getStatusCache().removePropertyChangeListener(this);
         subversion.removePropertyChangeListener(syncTable);
@@ -598,9 +598,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         refreshViewTask.cancel();
     }
 
-    private static int getDefaultDisplayStatus () {
+    private int getDefaultDisplayStatus () {
         int displayStatus;
-        int selectedMode = SvnModuleConfig.getDefault().getLastUsedModificationContext();
+        int selectedMode = SvnModuleConfig.getDefault(context.getFileSystem()).getLastUsedModificationContext();
         if (selectedMode == Setup.DIFFTYPE_ALL) {
             displayStatus = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
         } else if (selectedMode == Setup.DIFFTYPE_REMOTE) {
@@ -641,7 +641,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         /** Guard for above cache. */
         private Dimension parentSize;
 
-        private final Set<JComponent> adjusted = new HashSet<JComponent>();
+        private final Set<JComponent> adjusted = new HashSet<>();
 
         @Override
         public void removeLayoutComponent(Component comp) {
@@ -826,7 +826,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
     }
 
-    static class ModeKeeper {
+    class ModeKeeper {
         private int mode;
 
         private ModeKeeper (int defaultMode) {
@@ -834,7 +834,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
 
         void storeMode () {
-            SvnModuleConfig.getDefault().setLastUsedModificationContext(mode);
+            SvnModuleConfig.getDefault(context.getFileSystem()).setLastUsedModificationContext(mode);
         }
 
         private void setMode (int mode) {
