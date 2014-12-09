@@ -161,6 +161,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public static final String MI_WPT = "wpt";       //NOI18N
     public static final String MI_EXP = "exp";       //NOI18N
     public static final String MI_NUMBER = "number"; //NOI18N
+    public static final String MI_FRAME = "frame";   //NOI18N
+    public static final String MI_THREADS = "threads";                  //NOI18N
+    public static final String MI_CURRENT_THREAD = "current-thread-id"; //NOI18N
     public static final String MI_WATCHPOINT_TRIGGER = "watchpoint-trigger"; //NOI18N
     public static final String MI_WATCHPOINT_SCOPE = "watchpoint-scope"; //NOI18N
     public static final String MI_SYSCALL_ENTRY = "syscall-entry"; //NOI18N
@@ -1843,7 +1846,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //        if (threadresults.isEmpty()) {
 //            f = getCurrentFrame();
 //        } else {
-//            MIValue frame = threadresults.valueOf("frame"); // frame entry // NOI18N
+//            MIValue frame = threadresults.valueOf(MI_FRAME); // frame entry
 //            f = new GdbFrame(this, frame, null); // args data are included in frame
 //        }
 //        
@@ -1863,7 +1866,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 //    private void interpCore(MIRecord threadframe) {
 //        MITList threadresults = threadframe.results();
-//        MIValue frame = threadresults.valueOf("frame"); // frame entry // NOI18N
+//        MIValue frame = threadresults.valueOf(MI_FRAME); // frame entry
 //        GdbFrame f = new GdbFrame(this, frame, null); // args data are included in frame
 //
 ////        if (get_frames || get_locals) {
@@ -1886,7 +1889,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         currentThreadId = threadresults.getConstValue("new-thread-id"); // NOI18N
 
-        MIValue frame = threadresults.valueOf("frame");// frame entry // NOI18N
+        MIValue frame = threadresults.valueOf(MI_FRAME);// frame entry
         if (Log.Variable.mi_threads) {
             System.out.println("threadframe " + threadresults.toString()); // NOI18N
             System.out.println("tid_no " + currentThreadId); // NOI18N
@@ -1970,15 +1973,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 protected void onDone(MIRecord record) {
                     List<GdbThread> res = new ArrayList<GdbThread>();
                     MITList results = record.results();
-                    String threadId = results.getConstValue("current-thread-id");
+                    String threadId = results.getConstValue(MI_CURRENT_THREAD);
                     if (!threadId.isEmpty()) {
                         currentThreadId = threadId;
                     }
-                    for (MITListItem thr : results.valueOf("threads").asList()) { //NOI18N
+                    for (MITListItem thr : results.valueOf(MI_THREADS).asList()) {
                         MITList thrList = (MITList) thr;
                         String id = thrList.getConstValue("id"); //NOI18N
                         String name = thrList.getConstValue("target-id"); //NOI18N
-                        MIValue frame = thrList.valueOf("frame");// frame entry // NOI18N
+                        MIValue frame = thrList.valueOf(MI_FRAME);// frame entry
                         GdbFrame f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
                         f.setCurrent(true);     // in order to let Thread make some updates | GDB response contains only current frame
                         String state = thrList.getConstValue("state"); // NOI18N
@@ -2026,11 +2029,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                         name = result.value().toString();
 
                                         result = (MIResult) results.get(i++);
-                                        if (result.matches("frame")) { //NOI18N
+                                        if (result.matches(MI_FRAME)) {
                                             MIValue frame = result.value();
                                             f = new GdbFrame(GdbDebuggerImpl.this, frame, null, null);
                                         }
-                                    } else if (result.matches("frame")) { //NOI18N
+                                    } else if (result.matches(MI_FRAME)) {
                                         name = "Thread ".concat(id); //NOI18N
 
                                         MIValue frame = result.value();
@@ -2122,13 +2125,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 protected void onDone(final MIRecord threads) {
                     final List<GdbThread> res = new ArrayList<GdbThread>();
                     MITList results = threads.results();
-                    String threadId = results.getConstValue("current-thread-id"); // NOI18N
+                    String threadId = results.getConstValue(MI_CURRENT_THREAD);
                     if (!threadId.isEmpty()) {
                         // lldb-mi doesn't report an active thread for a single-threaded app
                         currentThreadId = threadId;
                     }
 
-                    for (MITListItem thr : results.valueOf("threads").asList()) { //NOI18N
+                    for (MITListItem thr : results.valueOf(MI_THREADS).asList()) {
                         MITList thrList = (MITList) thr;
                         final String id = thrList.getConstValue("id"); //NOI18N
                         final String name = thrList.getConstValue("target-id"); //NOI18N
@@ -2148,7 +2151,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                             Iterator<MITListItem> iterator = thrList.iterator();
                             while (iterator.hasNext()) {
                                 MIResult item = (MIResult) iterator.next();
-                                if (item.matches("frame")) {
+                                if (item.matches(MI_FRAME)) {
                                     MIValue frame = item.value();
 
                                     GdbFrame gdbFrame = new GdbFrame(GdbDebuggerImpl.this, frame, null, gdbThread);
@@ -3662,7 +3665,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
             }
 
-            MIValue frameValue = (results != null) ? results.valueOf("frame") : null; // NOI18N
+            MIValue frameValue = (results != null) ? results.valueOf(MI_FRAME) : null;
             MITList frameTuple;
             MITList stack;
             boolean visited = false;

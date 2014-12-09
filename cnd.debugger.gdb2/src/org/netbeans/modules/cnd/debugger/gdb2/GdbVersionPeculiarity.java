@@ -197,7 +197,7 @@ public class GdbVersionPeculiarity {
         if (isLldb()) {
             return "-var-create - @ " + expr + " --thread " + thread + " --frame " + frame; // NOI18N
         } else {
-            return "-var-create - @ " + expr;
+            return "-var-create - @ " + expr; // NOI18N
         }
     }
     
