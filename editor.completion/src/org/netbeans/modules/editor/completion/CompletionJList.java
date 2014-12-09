@@ -232,12 +232,23 @@ public class CompletionJList extends JList {
         JLabel orig = accessibleLabel;
         editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY, accessibleLabel, accessibleFakeLabel);
         Object selectedValue = getSelectedValue();
-        String accName = selectedValue instanceof Accessible ? ((Accessible) selectedValue).getAccessibleContext().getAccessibleName() : selectedValue.toString();
-        accessibleLabel = new JLabel(LocaleSupport.getString("ACSN_CompletionView_SelectedItem") + accName); //NOI18N
-        editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, null, accessibleLabel);
-        editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY, accessibleFakeLabel, accessibleLabel);
-        if (orig != null) {
-            editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, orig, null);
+        String accName = null;
+        if (selectedValue instanceof Accessible) {
+            AccessibleContext ac = ((Accessible) selectedValue).getAccessibleContext();
+            if (ac != null) {
+                accName = ac.getAccessibleName();
+            }
+        }
+        if (accName == null && selectedValue != null) {
+            accName = selectedValue.toString();
+        }
+        if (accName != null) {
+            accessibleLabel = new JLabel(LocaleSupport.getString("ACSN_CompletionView_SelectedItem") + accName); //NOI18N
+            editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, null, accessibleLabel);
+            editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY, accessibleFakeLabel, accessibleLabel);
+            if (orig != null) {
+                editorAC.firePropertyChange(AccessibleContext.ACCESSIBLE_CHILD_PROPERTY, orig, null);
+            }
         }
     }
     
