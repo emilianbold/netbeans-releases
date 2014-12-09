@@ -47,12 +47,14 @@ package org.netbeans.modules.progress.spi;
 
 import java.awt.EventQueue;
 import java.util.LinkedHashSet;
+import java.util.concurrent.Executor;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.progress.module.DefaultHandleFactory;
 
 /**
  *
@@ -65,8 +67,9 @@ public final class TaskModel {
     private InternalHandle explicit;
     private final LinkedHashSet<ListDataListener> dataListeners;
     private final LinkedHashSet<ListSelectionListener> selectionListeners;
-    /** Creates a new instance of TaskModel */
-    public TaskModel() {
+    private final Executor eventExecutor;
+    
+    TaskModel(Executor eventExecutor) {
         selectionModel = new DefaultListSelectionModel();
         model = new DefaultListModel();
         dataListeners = new LinkedHashSet<ListDataListener>();
@@ -74,6 +77,12 @@ public final class TaskModel {
         TaskListener list = new TaskListener();
         model.addListDataListener(list);
         selectionModel.addListSelectionListener(list);
+        this.eventExecutor = eventExecutor;
+    }
+    
+    /** Creates a new instance of TaskModel */
+    public TaskModel() {
+        this(Controller.getDefault().getEventExecutor());
     }
     
     
@@ -225,7 +234,7 @@ public final class TaskModel {
         @Override
         public void intervalAdded(final ListDataEvent e) {
             final ListDataListener[] lists = getDataListeners();
-            EventQueue.invokeLater(new Runnable() {
+            eventExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     for (ListDataListener list : lists) {
@@ -238,7 +247,7 @@ public final class TaskModel {
         @Override
         public void intervalRemoved(final ListDataEvent e) {
             final ListDataListener[] lists = getDataListeners();
-            EventQueue.invokeLater(new Runnable() {
+            eventExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     for (ListDataListener list : lists) {
@@ -251,7 +260,7 @@ public final class TaskModel {
         @Override
         public void contentsChanged(final ListDataEvent e) {
             final ListDataListener[] lists = getDataListeners();
-            EventQueue.invokeLater(new Runnable() {
+            eventExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     for (ListDataListener list : lists) {
@@ -264,7 +273,7 @@ public final class TaskModel {
         @Override
         public void valueChanged(final ListSelectionEvent e) {
             final ListSelectionListener[] lists = getSelectionListeners();
-            EventQueue.invokeLater(new Runnable() {
+            eventExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     for (ListSelectionListener list : lists) {
