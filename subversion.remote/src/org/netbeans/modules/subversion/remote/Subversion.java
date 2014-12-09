@@ -255,7 +255,7 @@ public class Subversion {
                 username = rc.getUsername();
                 password = rc.getPassword();
             } else {
-                PasswordFile pf = PasswordFile.findFileForUrl(repositoryUrl);
+                PasswordFile pf = PasswordFile.findFileForUrl(context.getFileSystem(), repositoryUrl);
                 if(pf != null) {
                     username = pf.getUsername();
                     String psswdString = pf.getPassword();
@@ -397,7 +397,7 @@ public class Subversion {
                 try {
                     SvnClient client = getClient(false, context);
 
-                    List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
+                    List<String> gignores = SvnConfigFiles.getInstance(context.getFileSystem()).getGlobalIgnores();
                     if(gignores != null && SvnUtils.getMatchinIgnoreParterns(gignores, name, true).size() > 0) {
                         // no need to read the ignored property -> its already set in ignore patterns
                         return true;
@@ -634,7 +634,7 @@ public class Subversion {
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
             }
-            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
+            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(originalFile.toFileObject().getOutputStream(), original.getInputStream(false));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
         } catch (SVNClientException ex) {

@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -418,7 +419,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if(support != null) {
                 support.setCancellableDelegate(cancellable);
             }            
-            VCSFileProxy serversConfigFile = null;
+            File serversConfigFile = null;
             try {
                 // save the proxy settings into the svn servers file                
                 if(desc != null && desc.getSvnUrl() != null) {
@@ -426,7 +427,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                         // prepare a config file. If the return value is not null
                         // it means the file should be deleted eventually because it 
                         // contains sensitive private data.
-                        serversConfigFile = SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl());
+                        serversConfigFile = SvnConfigFiles.getInstance(adapter.getFileSystem()).storeSvnServersSettings(desc.getSvnUrl());
                         if (serversConfigFile != null) {
                             SENSITIVE_CONFIG_FILES.add(serversConfigFile);
                         }

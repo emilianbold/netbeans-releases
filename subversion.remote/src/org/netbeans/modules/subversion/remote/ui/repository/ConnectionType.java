@@ -66,6 +66,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -83,9 +84,11 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
     protected final Repository repository;
     private List<JTextField> selectOnFocusFields = null;
+    protected final FileSystem fileSystem;
 
-    public ConnectionType(Repository repository) {
+    public ConnectionType(FileSystem fileSystem, Repository repository) {
         this.repository = repository;
+        this.fileSystem = fileSystem;
     }
 
     abstract String getTip(String url);
@@ -374,8 +377,8 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
     static class SvnSSHCli extends ConnectionType {
         private final SvnSSHCliPanel panel = new SvnSSHCliPanel();
-        public SvnSSHCli(Repository repository) {
-            super(repository);
+        public SvnSSHCli(FileSystem fileSystem, Repository repository) {
+            super(fileSystem, repository);
             panel.tunnelCommandTextField.getDocument().addDocumentListener(this);
         }
 
@@ -422,7 +425,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
             try {
                 SVNUrl repositoryUrl = rc.getSvnUrl();
                 if(repositoryUrl.getProtocol().startsWith("svn+")) {
-                    SvnConfigFiles.getInstance().setExternalCommand(SvnUtils.getTunnelName(repositoryUrl.getProtocol()), panel.tunnelCommandTextField.getText());
+                    SvnConfigFiles.getInstance(fileSystem).setExternalCommand(SvnUtils.getTunnelName(repositoryUrl.getProtocol()), panel.tunnelCommandTextField.getText());
                 }
             } catch (MalformedURLException mue) {
                 // should not happen
@@ -448,7 +451,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
                     tunnelName != null &&
                     !tunnelName.equals("") )
                 {
-                    panel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance().getExternalCommand(tunnelName));
+                    panel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance(fileSystem).getExternalCommand(tunnelName));
                 }
             }
         }

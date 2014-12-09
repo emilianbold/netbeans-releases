@@ -207,7 +207,7 @@ public class RevertModificationsAction extends ContextAction {
                                         return null;
                                     }
                                     SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
-                                    RevertModifications.RevisionInterval targetInterval = recountStartRevision(client, url, revisions);
+                                    RevertModifications.RevisionInterval targetInterval = recountStartRevision(ctx, client, url, revisions);
                                     if(files[i].exists()) {
                                         client.merge(url, targetInterval.endRevision,
                                                      url, targetInterval.startRevision,
@@ -345,12 +345,12 @@ public class RevertModificationsAction extends ContextAction {
         return ret;
     }
     
-    private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {
+    private static RevertModifications.RevisionInterval recountStartRevision(Context context, SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {
         SVNRevision currStartRevision = ret.startRevision;
         SVNRevision currEndRevision = ret.endRevision;
 
         if(currStartRevision.equals(SVNRevision.HEAD)) {
-            ISVNInfo info = client.getInfo(repository);
+            ISVNInfo info = client.getInfo(context, repository);
             currStartRevision = info.getRevision();
         }
 

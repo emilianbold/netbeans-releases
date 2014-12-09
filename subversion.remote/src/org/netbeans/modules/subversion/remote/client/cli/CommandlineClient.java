@@ -136,6 +136,10 @@ public class CommandlineClient implements SvnClient {
         cli = new Commandline(fileSystem);
     }
 
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+    
     /**
      * @return true if old 1.5 format is supported
      */
@@ -277,8 +281,8 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public ISVNInfo getInfo(SVNUrl url) throws SVNClientException {
-        return super.getInfo(url);
+    public ISVNInfo getInfo(Context context, SVNUrl url) throws SVNClientException {
+        return getInfo(context, url, SVNRevision.HEAD, SVNRevision.HEAD);
     }
 
     @Override
@@ -353,18 +357,6 @@ public class CommandlineClient implements SvnClient {
     public void mkdir(SVNUrl url, String msg) throws SVNClientException {
         MkdirCommand cmd = new MkdirCommand(fileSystem, url, msg);
         exec(cmd);
-    }
-
-    @Override
-    public void mkdir(SVNUrl url, boolean parents, String msg) throws SVNClientException {
-        if(parents) {
-            List<SVNUrl> parent = getAllNotExistingParents(url);
-            for (SVNUrl p : parent) {
-                mkdir(p, msg);
-            }
-        } else {
-            mkdir(url, msg);
-        }
     }
 
     @Override
@@ -527,7 +519,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNLogMessage[] getLogMessages(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
-        return super.getLogMessages(url, revStart, revEnd);
+        return getLogMessages(url, revStart, revEnd, false);
     }
 
     @Override
@@ -549,7 +541,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNLogMessage[] getLogMessages(VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
-        return super.getLogMessages(file, revStart, revEnd);
+        return getLogMessages(file, revStart, revEnd, false);
     }
 
     @Override
@@ -629,7 +621,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNProperty propertyGet(SVNUrl url, String name) throws SVNClientException {
-        return super.propertyGet(url, name);
+        return propertyGet(url, SVNRevision.HEAD, SVNRevision.HEAD, name);
     }
 
     @Override
@@ -668,18 +660,38 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public List getIgnoredPatterns(VCSFileProxy file) throws SVNClientException {
-        return super.getIgnoredPatterns(file);
+    public List<String> getIgnoredPatterns(VCSFileProxy file) throws SVNClientException {
+        List<String> res = new ArrayList<>();
+        for(ISVNProperty property : getProperties(file)) {
+            if (ISVNProperty.IGNORE.equals(property.getName())) {
+                String value = property.getValue();
+                for(String s : value.split("\n")) {
+                    if (!s.isEmpty()) {
+                        res.add(s);
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     @Override
     public void addToIgnoredPatterns(VCSFileProxy file, String value) throws SVNClientException {
-        super.addToIgnoredPatterns(file, value);
+        List<String> ignoredPatterns = getIgnoredPatterns(file);
+        if (!ignoredPatterns.contains(value)) {
+            ignoredPatterns.add(value);
+            setIgnoredPatterns(file, ignoredPatterns);
+        }
     }
 
     @Override
-    public void setIgnoredPatterns(VCSFileProxy file, List l) throws SVNClientException {
-        super.setIgnoredPatterns(file, l);
+    public void setIgnoredPatterns(VCSFileProxy file, List<String>  l) throws SVNClientException {
+        StringBuilder buf = new StringBuilder();
+        for(String s : l) {
+            buf.append(s);
+            buf.append('\n');
+        }
+        propertySet(file, ISVNProperty.IGNORE, buf.toString(), false);
     }
 
     @Override
@@ -802,12 +814,12 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void merge(SVNUrl startUrl, SVNRevision startRev, SVNUrl endUrl, SVNRevision endRev, VCSFileProxy file, boolean force, boolean recurse) throws SVNClientException {
-       super.merge(startUrl, startRev, endUrl, endRev, file, force, recurse);
+       merge(startUrl, startRev, endUrl, endRev, file, force, recurse,false);
     }
 
     @Override
     public void merge(SVNUrl startUrl, SVNRevision startRev, SVNUrl endUrl, SVNRevision endRev, VCSFileProxy file, boolean force, boolean recurse, boolean dryRun) throws SVNClientException {
-        super.merge(startUrl, startRev, endUrl, endRev, file, force, recurse, dryRun);
+        merge(startUrl, startRev, endUrl, endRev, file, force, recurse, dryRun, false);
     }
 
     @Override
@@ -943,24 +955,6 @@ public class CommandlineClient implements SvnClient {
         throw new SVNClientException(sb.toString());
     }
 
-    private List<SVNUrl> getAllNotExistingParents(SVNUrl url) throws SVNClientException {
-        List<SVNUrl> ret = new ArrayList<SVNUrl>();
-        if(url == null) {
-            return ret;
-        }
-        try {
-            getInfo(url);
-        } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("Not a valid URL") > -1 || e.getMessage().contains("non-existent in revision")) {
-                ret.addAll(getAllNotExistingParents(url.getParent()));
-                ret.add(url);
-            } else {
-                throw e;
-            }
-        }
-        return ret;
-    }
-
     private boolean isManaged(SVNStatusKind s) {
         return !(s.equals(SVNStatusKind.UNVERSIONED) ||
                  s.equals(SVNStatusKind.NONE) ||
@@ -981,11 +975,6 @@ public class CommandlineClient implements SvnClient {
     }
 
     // unsupported start
-
-    @Override
-    public long[] commitAcrossWC(VCSFileProxy[] arg0, String arg1, boolean arg2, boolean arg3, boolean arg4) throws SVNClientException {
-        return super.commitAcrossWC(arg0, arg1, arg2, arg3, arg4);
-    }
 
     @Override
     public void cleanup(VCSFileProxy file) throws SVNClientException {
@@ -1054,6 +1043,11 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public boolean cancel() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SVNUrl getSvnUrl() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

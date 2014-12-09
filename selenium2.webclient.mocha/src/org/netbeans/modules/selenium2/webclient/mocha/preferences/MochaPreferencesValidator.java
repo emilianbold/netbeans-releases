@@ -71,11 +71,11 @@ public class MochaPreferencesValidator {
     
     @NbBundle.Messages({
         "# {0} - source",
-        "ExternalExecutableValidator.validateFile.missing={0} must be selected.",
+        "ExternalExecutableValidator.validateFile.missing={0} install location must be specified.",
         "# {0} - source",
-        "ExternalExecutableValidator.validateFile.notAbsolute={0} must be an absolute path.",
+        "ExternalExecutableValidator.validateFile.notAbsolute={0} install location must be an absolute path.",
         "# {0} - source",
-        "ExternalExecutableValidator.validateFile.notFile={0} is invalid (\"./bin/mocha\" executable could not be located).",
+        "ExternalExecutableValidator.validateFile.notFile={0} install location is invalid (\"./bin/mocha\" executable could not be located).",
         "# {0} - source",
         "ExternalExecutableValidator.validateFile.notReadable={0} is not readable.",
         "# {0} - source",

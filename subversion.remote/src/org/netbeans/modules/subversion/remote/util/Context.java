@@ -50,6 +50,9 @@ import java.util.List;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  * Encapsulates context of an action. There are two ways in which context may be defined:
@@ -88,6 +91,17 @@ public class Context implements Serializable {
         this.exclusions = Collections.emptyList();
     }
 
+    public FileSystem getFileSystem() {
+        for (VCSFileProxy root : rootFiles) {
+            try {
+                return root.toFileObject().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+        return null;
+    }
+    
     private boolean normalize() {
         for (Iterator<VCSFileProxy> i = rootFiles.iterator(); i.hasNext();) {
             VCSFileProxy root = i.next();

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.selenium2.webclient;
 
+import java.awt.Component;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.project.Project;
@@ -51,6 +52,8 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
@@ -59,6 +62,8 @@ import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProvider;
 import org.netbeans.modules.selenium2.webclient.api.Utilities;
 import org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -89,9 +94,17 @@ public class Selenium2WebClientSupportImpl extends Selenium2SupportImpl {
     }
 
     @Override
+    @NbBundle.Messages({
+    "# {0} - project",
+    "NO_SELENIUM_TESTS_FOLDER=No Selenium Tests Folder set for project: {0}"})
     public WizardDescriptor.Panel createTargetChooserPanel(WizardDescriptor wiz) {
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
+        FileObject testsFolder = Utilities.getTestsSeleniumFolder(project, true);
+        if (testsFolder == null) {
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.NO_SELENIUM_TESTS_FOLDER(ProjectUtils.getInformation(project).getDisplayName()));
+            return new NoSeleniumTestsFolderSetWizardPanel();
+        }
         SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST_SELENIUM);
         return Templates.buildSimpleTargetChooser(project, sourceGroups).create();
     }
@@ -150,6 +163,40 @@ public class Selenium2WebClientSupportImpl extends Selenium2SupportImpl {
                 }
             }
         });
+    }
+    
+    private class NoSeleniumTestsFolderSetWizardPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+
+        @Override
+        public Component getComponent() {
+            return new JPanel();
+        }
+
+        @Override
+        public HelpCtx getHelp() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        @Override
+        public void readSettings(WizardDescriptor settings) {
+        }
+
+        @Override
+        public void storeSettings(WizardDescriptor settings) {
+        }
+
+        @Override
+        public boolean isValid() {
+            return false;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+        }
     }
     
 }

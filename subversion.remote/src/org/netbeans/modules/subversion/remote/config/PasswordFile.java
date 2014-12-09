@@ -43,12 +43,14 @@
  */
 package org.netbeans.modules.subversion.remote.config;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Represents a file holding the username and password credentials for a realmstring.
@@ -65,8 +67,8 @@ public class PasswordFile extends SVNCredentialFile {
     private final static String PASSTYPE_SIMPLE = "simple"; // NOI18N
     private static Map<String, PasswordFile> files;
         
-    public PasswordFile (String realmString) {
-        super(getFile(realmString));
+    public PasswordFile (FileSystem fileSystem, String realmString) {
+        super(getFile(fileSystem, realmString));
     }
 
     private PasswordFile (VCSFileProxy file) {
@@ -81,13 +83,13 @@ public class PasswordFile extends SVNCredentialFile {
      * @return the file holding the username and password for the given url or null
      *         if nothing was found    
      */
-    public static PasswordFile findFileForUrl(SVNUrl svnUrl) {
+    public static PasswordFile findFileForUrl(FileSystem fileSystem, SVNUrl svnUrl) {
         if(files == null) {
             files = new HashMap<String, PasswordFile>(1);
         }
         PasswordFile pf = files.get(svnUrl.toString());
         if(pf == null) {
-            pf = findFileForUrlIntern(svnUrl);
+            pf = findFileForUrlIntern(fileSystem, svnUrl);
             if(pf != null) {
                 files.put(svnUrl.toString(), pf);
             }
@@ -95,15 +97,15 @@ public class PasswordFile extends SVNCredentialFile {
         return pf;
     }
 
-    private static PasswordFile findFileForUrlIntern(SVNUrl svnUrl) {
+    private static PasswordFile findFileForUrlIntern(FileSystem fileSystem, SVNUrl svnUrl) {
         // create our own realmstring  -
         String urlString = SvnUtils.ripUserFromHost(svnUrl.getHost());
         String realmString = "<" + svnUrl.getProtocol() + "://" + urlString + ">"; // NOI18N
-        PasswordFile nbPasswordFile = new PasswordFile(realmString);
+        PasswordFile nbPasswordFile = new PasswordFile(null, realmString);
 
         if(!nbPasswordFile.getFile().exists()) {
 
-            VCSFileProxy configDir = new File(SvnConfigFiles.getUserConfigPath() + "/auth/svn.simple"); // NOI18N
+            VCSFileProxy configDir = VCSFileProxy.createFileProxy(SvnConfigFiles.getUserConfigPath(fileSystem), "/auth/svn.simple"); // NOI18N
             VCSFileProxy[] files = configDir.listFiles();
             if(files==null) {
                 return null;
@@ -134,7 +136,7 @@ public class PasswordFile extends SVNCredentialFile {
 
     @Override
     public void store() throws IOException {
-        store(getFile(getRealmString()));
+        store(getFile(null, getRealmString()));
     }
 
     public String getPassword() {
@@ -184,8 +186,8 @@ public class PasswordFile extends SVNCredentialFile {
         return realmStrig.substring(1).startsWith(svnUrl.getProtocol() + "://" + urlString); // NOI18N
     }
     
-    private static VCSFileProxy getFile(String realmString) {
-        return new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.simple/" + getFileName(realmString)); // NOI18N
+    private static File getFile(FileSystem fileSystem, String realmString) {
+        return new File(SvnConfigFiles.getNBConfigPath(fileSystem), "auth/svn.simple/" + getFileName(realmString)); // NOI18N
     }
     
     private Key getPasstypeKey() {
