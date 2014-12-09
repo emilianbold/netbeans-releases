@@ -310,6 +310,9 @@ function ${name}(${parameters}) {
     <codetemplate abbreviation="dw">
         <code><![CDATA[document.write(${message});]]></code>
     </codetemplate>
+    <codetemplate abbreviation="slf">
+        <code><![CDATA[var self = this;]]></code>
+    </codetemplate>
     <codetemplate abbreviation="do"><code><![CDATA[${no-indent}document]]></code></codetemplate>
     <codetemplate abbreviation="lo"><code><![CDATA[${no-indent}window.location]]></code></codetemplate>
     <codetemplate abbreviation="hi"><code><![CDATA[${no-indent}window.history]]></code></codetemplate>
