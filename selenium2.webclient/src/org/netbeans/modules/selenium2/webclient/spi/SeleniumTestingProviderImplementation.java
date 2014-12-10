@@ -96,6 +96,15 @@ public interface SeleniumTestingProviderImplementation {
     void runTests(@NonNull FileObject[] activatedFOs);
 
     /**
+     * Debug tests for the given {@link RunInfo info}.
+     * <p>
+     * This method is always called in a background thread.
+     * @param activatedFOs the FileObjects to debug tests for; never {@code null}
+     * @see org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider
+     */
+    void debugTests(@NonNull FileObject[] activatedFOs);
+
+    /**
      * Create project customizer panel for the given project.
      * @param project  the project; never {@code null}
      * @return project customizer panel, can be {@code null} if not supported

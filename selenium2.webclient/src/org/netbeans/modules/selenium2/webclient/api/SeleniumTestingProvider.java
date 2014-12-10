@@ -132,6 +132,16 @@ public final class SeleniumTestingProvider {
     }
 
     /**
+     * Debug tests for the given {@link RunInfo info}.
+     * @param activatedFOs the FileObjects to debug tests for; never {@code null}
+     * @see org.netbeans.modules.web.clientproject.api.ProjectDirectoriesProvider
+     */
+    public void debugTests(@NonNull FileObject[] activatedFOs) {
+        Parameters.notNull("activatedFOs", activatedFOs); // NOI18N
+        delegate.debugTests(activatedFOs);
+    }
+
+    /**
      * Notify Selenium testing provider that the given project is being opened.
      * @param project project being opened
      */
