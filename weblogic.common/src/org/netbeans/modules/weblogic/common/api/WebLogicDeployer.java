@@ -628,6 +628,7 @@ public final class WebLogicDeployer {
         }
 
         if (config.isSecured()) {
+            boolean weblogicSpecific = false;
             String[] sslProperties = new String[] {
                 "weblogic.security.TrustKeyStore", // NOI18N
                 "weblogic.security.JavaStandardTrustKeystorePassPhrase", // NOI18N
@@ -636,9 +637,9 @@ public final class WebLogicDeployer {
                 "weblogic.security.CustomTrustKeystorePassPhrase", // NOI18N
                 "weblogic.security.SSL.hostnameVerifier", // NOI18N
                 "weblogic.security.SSL.ignoreHostnameVerification", // NOI18N
-                "javax.net.ssl.keyStore", // NOI18N
-                "javax.net.ssl.keyStorePassword", // NOI18N
-                "javax.net.ssl.keyStoreType", // NOI18N
+//                "javax.net.ssl.keyStore", // NOI18N
+//                "javax.net.ssl.keyStorePassword", // NOI18N
+//                "javax.net.ssl.keyStoreType", // NOI18N
                 "javax.net.ssl.trustStore", // NOI18N
                 "javax.net.ssl.trustStorePassword", // NOI18N
                 "javax.net.ssl.trustStoreType" // NOI18N
@@ -647,7 +648,27 @@ public final class WebLogicDeployer {
             for (String prop : sslProperties) {
                 String value = System.getProperty(prop);
                 if (value != null) {
-                    arguments.add("-D" + prop + "=" + value);
+                    arguments.add("-D" + prop + "=" + value); // NOI18N
+                    if (!weblogicSpecific && prop.startsWith("weblogic.security")) { // NOI18N
+                        weblogicSpecific = true;
+                    }
+                }
+            }
+
+            if (!weblogicSpecific) {
+                String trustStore = System.getProperty("javax.net.ssl.trustStore"); // NOI18N
+                if (trustStore != null) {
+                    arguments.add("-Dweblogic.security.TrustKeyStore=CustomTrust"); // NOI18N
+                    arguments.add("-Dweblogic.security.CustomTrustKeyStoreFileName=" + trustStore); // NOI18N
+                    String pass = System.getProperty("javax.net.ssl.trustStorePassword"); // NOI18N
+                    if (pass != null) {
+                        arguments.add("-Dweblogic.security.CustomTrustKeystorePassPhrase=" + pass); // NOI18N
+                    }
+                } else {
+                    String pass = System.getProperty("javax.net.ssl.trustStorePassword"); // NOI18N
+                    if (pass != null) {
+                        arguments.add("-Dweblogic.security.JavaStandardTrustKeystorePassPhrase=" + pass); // NOI18N
+                    }
                 }
             }
         }
