@@ -43,6 +43,7 @@ package org.netbeans.modules.subversion.remote.util;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -126,13 +127,14 @@ import org.openide.windows.TopComponent;
  */
 public class SvnUtils {
 
-    public static final String SVN_ADMIN_DIR;
-    public static final String SVN_ENTRIES_DIR;
-    public static final String SVN_WC_DB;
+    public static final String SVN_ADMIN_DIR = ".svn";
+    public static final String SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
+    public static final String SVN_WC_DB = SVN_ADMIN_DIR + "/wc.db";
     private static final Pattern metadataPattern;
 
     public static final HashSet<Character> autoEscapedCharacters = new HashSet<>(6);
     static {
+        metadataPattern = Pattern.compile(".*\\" + "/" + SVN_ADMIN_DIR.replace(".", "\\.") + "(\\" + "/" + ".*|$)");
         autoEscapedCharacters.add(';');
         autoEscapedCharacters.add('?');
         autoEscapedCharacters.add('#');
@@ -140,13 +142,6 @@ public class SvnUtils {
         autoEscapedCharacters.add('[');
         autoEscapedCharacters.add(']');
         autoEscapedCharacters.add(' ');
-    }
-
-    static {
-        SVN_ADMIN_DIR = ".svn";
-        SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
-        SVN_WC_DB = SVN_ADMIN_DIR + "/wc.db";
-        metadataPattern = Pattern.compile(".*\\" + "/" + SVN_ADMIN_DIR.replace(".", "\\.") + "(\\" + "/" + ".*|$)");
     }
 
     private static Reference<Context>  contextCached = new WeakReference<>(null);
@@ -1055,7 +1050,7 @@ public class SvnUtils {
         OutputStream os = null;
         InputStream is = null;
         try {
-            VCSFileProxy oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, revision.toString(), file.getName());
+            File oldFile = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(file)).getFileRevision(repoUrl, fileUrl, revision.toString(), file.getName());
             FileObject fo = file.toFileObject();
             if (fo == null) {
                 fo = parent.toFileObject().createData(file.getName());
@@ -1068,7 +1063,7 @@ public class SvnUtils {
                 }
             }
             os = fo.getOutputStream();
-            is = oldFile.getInputStream(false);
+            is = FileUtil.toFileObject(oldFile).getInputStream();
             FileUtil.copy(is, os);
         } catch (IOException e) {
             if (refersToDirectory(e)) {
@@ -1734,16 +1729,16 @@ public class SvnUtils {
     }
 
     public static void openInRevision(final VCSFileProxy originalFile, final SVNUrl repoUrl, final SVNUrl fileUrl, final SVNRevision svnRevision, final SVNRevision pegRevision, boolean showAnnotations) {
-        VCSFileProxy file;
+        File file;
         String rev = svnRevision.toString();
         try {
-            file = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, rev, pegRevision.toString(), originalFile.getName());
+            file = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(originalFile)).getFileRevision(repoUrl, fileUrl, rev, pegRevision.toString(), originalFile.getName());
         } catch (IOException e) {
-            SvnClientExceptionHandler.notifyException(new Context(file), e, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(originalFile), e, true, true);
             return;
         }
 
-        final FileObject fo = file.normalizeFile().toFileObject();
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         EditorCookie ec = null;
         org.openide.cookies.OpenCookie oc = null;
         try {

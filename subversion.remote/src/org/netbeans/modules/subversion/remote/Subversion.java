@@ -630,8 +630,9 @@ public class Subversion {
 
         VCSFileProxy original = null;
         try {
-            SvnClientFactory.checkClientAvailable(new Context(originalFile));
-            original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
+            final Context context = new Context(originalFile);
+            SvnClientFactory.checkClientAvailable(context);
+            original = VersionsCache.getInstance(context.getFileSystem()).getBaseRevisionFile(workingCopy);
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
             }

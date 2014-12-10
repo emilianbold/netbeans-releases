@@ -43,6 +43,7 @@ package org.netbeans.modules.subversion.remote;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -211,12 +212,13 @@ public class HistoryProvider implements VCSHistoryProvider {
         @Override
         public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
             try {
-                VCSFileProxy file;
                 SVNUrl copyUrl = repoUrl != null ? file2Copy.get(originalFile) : null;
+                VCSFileProxy file;
                 if(copyUrl != null) {
-                    file = VersionsCache.getInstance().getFileRevision(repoUrl, copyUrl, revision.toString(), originalFile.getName());
+                    file = VCSFileProxy.createFileProxy(VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(originalFile)).getFileRevision(repoUrl, copyUrl, revision.toString(), originalFile.getName()));
                 } else {
-                    file = VersionsCache.getInstance().getFileRevision(originalFile, revision.toString());
+                    file = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(originalFile)).getFileRevision(originalFile, revision.toString());
+                    VCSFileProxySupport.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
                 }
                 VCSFileProxySupport.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {

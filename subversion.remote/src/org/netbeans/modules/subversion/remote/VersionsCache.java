@@ -46,9 +46,12 @@ package org.netbeans.modules.subversion.remote;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.remote.api.ISVNStatus;
@@ -67,6 +70,7 @@ import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -76,17 +80,21 @@ import org.openide.filesystems.FileUtil;
  */
 public class VersionsCache {
 
-    private static VersionsCache instance;
+    private static final Map<FileSystem,VersionsCache> instances = new HashMap<>();
+    private final FileSystem fileSystem;
 
     /** Creates a new instance of VersionsCache */
-    private VersionsCache() {
+    private VersionsCache(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
-    public static synchronized VersionsCache getInstance() {
-        if (instance == null) {
-            instance = new VersionsCache();
+    public static synchronized VersionsCache getInstance(FileSystem fileSystem) {
+        VersionsCache res = instances.get(fileSystem);
+        if (res == null) {
+            res = new VersionsCache(fileSystem);
+            instances.put(fileSystem, res);
         }
-        return instance;
+        return res;
     }
 
     /**
@@ -98,7 +106,7 @@ public class VersionsCache {
      * @return a temporary file with given file's content
      * @throws java.io.IOException
      */
-    public VCSFileProxy getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String fileName) throws IOException {
+    public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String fileName) throws IOException {
         return getFileRevision(repoUrl, url, revision, revision, fileName);
     }
     /**
@@ -116,10 +124,12 @@ public class VersionsCache {
         try {
             canUseRevisionsCache = SVNRevision.getRevision(revision).getKind() == SVNRevision.Kind.number
                     && SVNRevision.getRevision(pegRevision).getKind() == SVNRevision.Kind.number;
-        } catch (ParseException ex) { }
+        } catch (ParseException ex) {
+        }
         try {
+            Context context = new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
             if (!canUseRevisionsCache || "false".equals(System.getProperty("versioning.subversion.historycache.enable", "true"))) { //NOI18N
-                SvnClient client = Subversion.getInstance().getClient(null, repoUrl);
+                SvnClient client = Subversion.getInstance().getClient(context, repoUrl);
                 InputStream in = getInputStream(client, url, revision, pegRevision);
                 return createContent(fileName, in);
             } else {
@@ -128,7 +138,7 @@ public class VersionsCache {
                 Storage cachedVersions = StorageManager.getInstance().getStorage(rootUrl);
                 File cachedFile = cachedVersions.getContent(resourceUrl, fileName, revision);
                 if (cachedFile.length() == 0) { // not yet cached
-                    SvnClient client = Subversion.getInstance().getClient(null, repoUrl);
+                    SvnClient client = Subversion.getInstance().getClient(context, repoUrl);
                     InputStream in = getInputStream(client, url, revision, pegRevision);
                     cachedFile = createContent(fileName, in);
                     if (cachedFile.length() != 0) {
@@ -233,7 +243,7 @@ public class VersionsCache {
                         throw e;
                     }
                 }
-                return createContent(base.getName(), in);
+                return VCSFileProxy.createFileProxy(createContent(base.getName(), in));
             } catch (SVNClientException ex) {
                 throw new IOException("Can not load: " + base.getPath() + " in revision: " + revision, ex);
             }
@@ -273,7 +283,7 @@ public class VersionsCache {
                 return null;
             }
             if (newMetadataFormat) {
-                return getContentBase(referenceFile, new File(Utils.getTempFolder(), referenceFile.getName() + ".netbeans-base")); //NOI18N
+            return getContentBase(referenceFile, new File(Utils.getTempFolder(), referenceFile.getName() + ".netbeans-base")); //NOI18N
             } else {
                 VCSFileProxy svnBase = VCSFileProxy.createFileProxy(svnDir, "text-base/" + referenceFile.getName() + ".svn-base"); //NOI18N
                 if (!svnBase.exists()) {
@@ -310,9 +320,28 @@ public class VersionsCache {
                 throw ex;
             }
         }
-        output = output.normalizeFile();
-        VCSFileProxySupport.copyStreamToFile(new BufferedInputStream(in), output);
-        return output;
+        VCSFileProxy res = output.normalizeFile();
+        VCSFileProxySupport.copyStreamToFile(new BufferedInputStream(in), res);
+        return res;
+    }
+
+    private VCSFileProxy getContentBase (VCSFileProxy referenceFile, File output) throws SVNClientException, IOException {
+        SvnClient client = Subversion.getInstance().getClient(false, new Context(referenceFile)); // local call, does not need to be instantiated with the file instance
+        InputStream in;
+        try {
+            in = client.getContent(referenceFile, SVNRevision.BASE);
+        } catch (SVNClientException ex) {
+            if(SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())
+                    || SvnClientExceptionHandler.hasNoBaseRevision(ex.getMessage())) {
+                // Subversion 1.7 error messages
+                in = new ByteArrayInputStream(new byte[] {});
+            } else {
+                throw ex;
+            }
+        }
+        VCSFileProxy res = VCSFileProxy.createFileProxy(FileUtil.normalizeFile(output));
+        VCSFileProxySupport.copyStreamToFile(new BufferedInputStream(in), res);
+        return res;
     }
 
     /**
@@ -346,7 +375,7 @@ public class VersionsCache {
      * @return created temporary file
      * @throws java.io.IOException
      */
-    private VCSFileProxy createContent (String fileName, InputStream in) throws IOException {
+    private File createContent (String fileName, InputStream in) throws IOException {
         // keep original extension so MIME can be guessed by the extension
         File tmp = new File(Utils.getTempFolder(), fileName);  // NOI18N
         tmp = FileUtil.normalizeFile(tmp);
