@@ -67,7 +67,6 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.TypeComponent;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -156,6 +155,7 @@ import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.jpda.Evaluator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -2653,7 +2653,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
             @Override
             public void lock() {
-                assert !EventQueue.isDispatchThread() : "Debugger lock taken in AWT Event Queue!";
+                assert !Mutex.EVENT.isReadAccess() : "Debugger lock taken in AWT Event Queue!";
                 super.lock();
             }
 
@@ -2667,7 +2667,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
             @Override
             public void lock() {
-                assert !EventQueue.isDispatchThread() : "Debugger lock taken in AWT Event Queue!";
+                assert !Mutex.EVENT.isReadAccess() : "Debugger lock taken in AWT Event Queue!";
                 super.lock();
             }
 

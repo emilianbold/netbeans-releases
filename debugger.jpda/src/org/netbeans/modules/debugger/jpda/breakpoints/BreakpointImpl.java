@@ -72,7 +72,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -115,6 +114,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.ConditionedExecutor;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 
 /**
@@ -223,7 +223,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
     protected abstract void setRequests ();
     
     protected void remove () {
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (Mutex.EVENT.isReadAccess()) {
             // One can not want to access the requests in AWT EQ
             debugger.getRequestProcessor().post(new Runnable() {
                 @Override

@@ -46,7 +46,6 @@ package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
-import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -79,6 +78,7 @@ import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.openide.util.Mutex;
 
 
 /**
@@ -160,7 +160,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
     @Override
     public void breakpointAdded (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
-        if (!EventQueue.isDispatchThread() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
+        if (!Mutex.EVENT.isReadAccess() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
             try {
                 createBreakpointImpl (breakpoint);
             } finally {
@@ -183,7 +183,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 }
             }
         });
-        if (!EventQueue.isDispatchThread()) { // AWT should not wait for debugger.LOCK
+        if (!Mutex.EVENT.isReadAccess()) { // AWT should not wait for debugger.LOCK
             synchronized (started) {
                 if (!started[0]) {
                     try {
@@ -197,7 +197,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
     @Override
     public void breakpointRemoved (final Breakpoint breakpoint) {
         final boolean[] started = new boolean[] { false };
-        if (!EventQueue.isDispatchThread() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
+        if (!Mutex.EVENT.isReadAccess() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
             try {
                 removeBreakpointImpl (breakpoint);
             } finally {
@@ -220,7 +220,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 }
             }
         });
-        if (!EventQueue.isDispatchThread()) { // AWT should not wait for debugger.LOCK
+        if (!Mutex.EVENT.isReadAccess()) { // AWT should not wait for debugger.LOCK
             synchronized (started) {
                 if (!started[0]) {
                     try {

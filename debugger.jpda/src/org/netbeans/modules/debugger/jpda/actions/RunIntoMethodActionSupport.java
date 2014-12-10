@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,7 +34,12 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
@@ -59,18 +58,13 @@ import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.SessionBridge;
@@ -83,9 +77,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
-import org.netbeans.modules.debugger.jpda.EditorContextBridge;
-import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
-import org.netbeans.modules.debugger.jpda.ExpressionPool.Interval;
+import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -105,124 +97,27 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author  Martin Entlicher
+ * Support code for RunIntoMethodActionProvider.
+ * 
+ * @author Martin Entlicher
  */
-@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"runIntoMethod"})
-public class RunIntoMethodActionProvider extends ActionsProviderSupport 
-                                         implements PropertyChangeListener,
-                                                    ActionsManagerListener {
-
-    private static final Logger logger = Logger.getLogger(RunIntoMethodActionProvider.class.getName());
-
-    private final JPDADebuggerImpl debugger;
-    private ActionsManager lastActionsManager;
+public final class RunIntoMethodActionSupport {
     
-    public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
-        debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
-                (null, JPDADebugger.class);
-        debugger.addPropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
-        EditorContextBridge.getContext().addPropertyChangeListener (this);
-    }
+    private static final Logger logger = Logger.getLogger(RunIntoMethodActionSupport.class.getName());
     
-    private void destroy () {
-        debugger.removePropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
-        EditorContextBridge.getContext().removePropertyChangeListener (this);
-        if (lastActionsManager != null) {
-            lastActionsManager.removeActionsManagerListener(ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
-            lastActionsManager = null;
-        }
-    }
+    private RunIntoMethodActionSupport() {}
     
-    static ActionsManager getCurrentActionsManager () {
-        return DebuggerManager.getDebuggerManager ().
-            getCurrentEngine () == null ? 
-            DebuggerManager.getDebuggerManager ().getActionsManager () :
-            DebuggerManager.getDebuggerManager ().getCurrentEngine ().
-                getActionsManager ();
-    }
-    
-    private ActionsManager getActionsManager () {
-        ActionsManager current = getCurrentActionsManager();
-        if (current != lastActionsManager) {
-            if (lastActionsManager != null) {
-                lastActionsManager.removeActionsManagerListener(
-                        ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
-            }
-            current.addActionsManagerListener(
-                    ActionsManagerListener.PROP_ACTION_STATE_CHANGED, this);
-            lastActionsManager = current;
-        }
-        return current;
-    }
-
-    @Override
-    public void propertyChange (PropertyChangeEvent evt) {
-        setEnabled (
-            ActionsManager.ACTION_RUN_INTO_METHOD,
-            getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
-            (debugger.getState () == JPDADebugger.STATE_STOPPED) &&
-            (debugger.getCurrentThread() != null) &&
-            (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
-            (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
-        );
-        if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) 
-            destroy ();
-    }
-    
-    @Override
-    public Set getActions () {
-        return Collections.singleton (ActionsManager.ACTION_RUN_INTO_METHOD);
-    }
-    
-    @Override
-    public void doAction (Object action) {
-        final String[] methodPtr = new String[1];
-        final String[] urlPtr = new String[1];
-        final String[] classPtr = new String[1];
-        final int[] linePtr = new int[1];
-        final int[] offsetPtr = new int[1];
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    EditorContext context = EditorContextBridge.getContext();
-                    methodPtr[0] = context.getSelectedMethodName ();
-                    linePtr[0] = context.getCurrentLineNumber();
-                    offsetPtr[0] = EditorContextBridge.getCurrentOffset();
-                    urlPtr[0] = context.getCurrentURL();
-                    classPtr[0] = context.getCurrentClassName();
-                }
-            });
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex.getTargetException());
-            return;
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
-        final String method = methodPtr[0];
-        if (method.length () < 1) {
-            debugger.actionMessageCallback(
-                    ActionsManager.ACTION_RUN_INTO_METHOD,
-                    NbBundle.getMessage(RunIntoMethodActionProvider.class,
-                                    "MSG_Put_cursor_on_some_method_call")
-            );
-            return;
-        }
-        final int methodLine = linePtr[0];
-        final int methodOffset = offsetPtr[0];
-        final String url = urlPtr[0];
-        String className = classPtr[0]; //debugger.getCurrentThread().getClassName();
+    public static void runIntoMethod(final JPDADebuggerImpl debugger,
+                                     final String url,
+                                     final String className,
+                                     final String method,
+                                     final int methodLine,
+                                     final int methodOffset) {
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return ;
         // Find the class where the thread is stopped at
@@ -249,12 +144,12 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             }
         }
         if (clazz != null && (className == null || className.equals(clazzName))) {
-            doAction(url, clazz, methodLine, methodOffset, method, true);
+            doAction(debugger, url, clazz, methodLine, methodOffset, method, true);
         } else {
             try {
                 List<ReferenceType> classes = VirtualMachineWrapper.classesByName(vm, className);
                 if (classes.size() > 0) {
-                    doAction(url, classes.get(0), methodLine, methodOffset, method, true);
+                    doAction(debugger, url, classes.get(0), methodLine, methodOffset, method, true);
                     return ;
                 }
             } catch (InternalExceptionWrapper ex) {
@@ -270,13 +165,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 @Override
                 public void breakpointReached(JPDABreakpointEvent event) {
                     DebuggerManager.getDebuggerManager().removeBreakpoint(cbrkp);
-                    doAction(url, event.getReferenceType(), methodLine, methodOffset, method, false);
+                    doAction(debugger, url, event.getReferenceType(), methodLine, methodOffset, method, false);
                 }
             });
             cbrkp.setSession(debugger);
             DebuggerManager.getDebuggerManager().addBreakpoint(cbrkp);
             resume(debugger);
         }
+        
     }
     
     private static void resume(JPDADebugger debugger) {
@@ -292,8 +188,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         }
     }
     
-    private void doAction(String url, final ReferenceType clazz, int methodLine,
-                          int methodOffset, final String methodName, boolean doResume) {
+    private static void doAction(JPDADebuggerImpl debugger, String url,
+                                 final ReferenceType clazz, int methodLine,
+                                 int methodOffset, final String methodName,
+                                 boolean doResume) {
         List<Location> locations = java.util.Collections.emptyList();
         try {
             while (methodLine > 0 && (locations = ReferenceTypeWrapper.locationsOfLine(clazz, methodLine)).isEmpty()) {
@@ -314,20 +212,20 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         if (locations.isEmpty()) {
             debugger.actionMessageCallback(
                     ActionsManager.ACTION_RUN_INTO_METHOD,
-                    NbBundle.getMessage(RunIntoMethodActionProvider.class,
+                    NbBundle.getMessage(RunIntoMethodActionSupport.class,
                                         "MSG_RunIntoMeth_absentInfo",
                                         clazz.name()));
             return;
         }
-        Expression expr = debugger.getExpressionPool().getExpressionAt(locations.get(0), url);
+        ExpressionPool.Expression expr = debugger.getExpressionPool().getExpressionAt(locations.get(0), url);
         Location bpLocation = null;
-        Interval expressionLines = null;
+        ExpressionPool.Interval expressionLines = null;
         String methodClassType = null;
         boolean isNative = false;
         if (expr != null) {
-            Operation[] ops = expr.getOperations();
+            EditorContext.Operation[] ops = expr.getOperations();
             for (int i = 0; i < ops.length; i++) {
-                Operation op = ops[i];
+                EditorContext.Operation op = ops[i];
                 if (op.getMethodStartPosition().getOffset() <= methodOffset &&
                     methodOffset <= op.getMethodEndPosition().getOffset()) {
                     
@@ -352,7 +250,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             final String methodClassType,
                             final boolean isNative,
                             Location bpLocation,
-                            Interval expressionLines,
+                            ExpressionPool.Interval expressionLines,
                             // If it's important not to run far from the expression
                             boolean setBoundaryStep,
                             JPDAMethodChooserUtils.MethodEntry methodEntry) {
@@ -366,7 +264,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                     final boolean isNative,
                                     Location bpLocation,
                                     // If it's important not to run far from the expression
-                                    Interval expressionLines,
+                                    ExpressionPool.Interval expressionLines,
                                     boolean setBoundaryStep,
                                     boolean doResume,
                                     final JPDAMethodChooserUtils.MethodEntry methodEntry) {
@@ -524,7 +422,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     private static JPDAStep setBoundaryStepRequest(final JPDADebuggerImpl debugger,
                                                    final JPDAThread tr,
                                                    final EventRequest request,
-                                                   final Interval expressionLines) {
+                                                   final ExpressionPool.Interval expressionLines) {
         // We need to also submit a step request so that we're sure that we end up at least on the next execution line
         final JPDAStep boundaryStep = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_OVER);
         boundaryStep.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
@@ -693,21 +591,4 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         }
     }
 
-    @Override
-    public void actionPerformed(Object action) {
-        // Is never called
-    }
-
-    @Override
-    public void actionStateChanged(Object action, boolean enabled) {
-        if (ActionsManager.ACTION_CONTINUE == action) {
-            setEnabled (
-                ActionsManager.ACTION_RUN_INTO_METHOD,
-                enabled &&
-                (debugger.getState () == JPDADebugger.STATE_STOPPED) &&
-                (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
-                (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java"))
-            );
-        }
-    }
 }

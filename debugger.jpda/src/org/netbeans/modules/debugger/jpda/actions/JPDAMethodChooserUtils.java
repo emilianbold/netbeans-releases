@@ -103,9 +103,9 @@ public final class JPDAMethodChooserUtils {
         debugger.getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                RunIntoMethodActionProvider.doAction(debugger, name, methodClassType, isNative,
-                                                     location, expressionLines, true,
-                                                     MethodEntry.SELECTED);
+                RunIntoMethodActionSupport.doAction(debugger, name, methodClassType, isNative,
+                                                    location, expressionLines, true,
+                                                    MethodEntry.SELECTED);
             }
         });
     }
@@ -304,9 +304,9 @@ public final class JPDAMethodChooserUtils {
             if ("<init>".equals(name)) {
                 name = op.getMethodClassType();
             }
-            RunIntoMethodActionProvider.doAction(debugger, name, op.getMethodClassType(), op.isNative(),
-                                                 params.locations[params.selectedIndex], expr.getInterval(),
-                                                 true, MethodEntry.DIRECT);
+            RunIntoMethodActionSupport.doAction(debugger, name, op.getMethodClassType(), op.isNative(),
+                                                params.locations[params.selectedIndex], expr.getInterval(),
+                                                true, MethodEntry.DIRECT);
             params.continuedDirectly = true;
         }
         params.continuedDirectly = false;
