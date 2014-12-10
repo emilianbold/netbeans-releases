@@ -42,47 +42,17 @@
 package org.netbeans.modules.cnd.repository.impl.spi;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
-import org.openide.filesystems.FileSystem;
 
 /**
+ * A list of all client UnitDescriptors per Storage.
  *
+ * clientUnitDescriptor --- clientShortUnitID
  *
- * @author vkvashin
+ * @author akrasny
  */
-public interface Layer {
-
-    public boolean startup(int persistMechanismVersion, boolean recreate);
-
-    public void shutdown();
-
-    public void openUnit(int unitIdInLayer);
-
-    public void closeUnit(int unitIdInLayer, boolean cleanRepository,
-            Set<Integer> requiredUnits);
-
-
-
-    public UnitDescriptorsList getUnitsTable();
-
-    public List<FileSystem> getFileSystemsTable();
-
-    public ReadLayerCapability getReadCapability();
-
-    public WriteLayerCapability getWriteCapability();
-    
-    public Collection<LayerKey> removedTableKeySet();
-
-    //-----------------------------------------        
-    public LayerDescriptor getLayerDescriptor();
-
-    /**
-     * Returns an index in the FileSystemsTable for an equivalent client
-     * FileSystem or -1 if no matching found.
-     *
-     * @param clientFileSystem
-     */
-    public int findMatchedFileSystemIndexInLayer(FileSystem clientFileSystem);
+public interface UnitDescriptorsList {
+    public UnitDescriptor getUnitDescriptor(Integer layerUnitID);
+    public boolean contains(UnitDescriptor clientUnitDescriptor);
+    public Collection<Integer> getUnitIDs();
 }
