@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.debugger.jpda.projectsui;
 
-package org.netbeans.modules.debugger.jpda.ui.actions;
-
-import org.netbeans.modules.debugger.jpda.actions.ActionErrorMessageCallback;
-import org.netbeans.modules.debugger.jpda.actions.ActionMessageCallback;
-import org.netbeans.modules.debugger.jpda.actions.ActionStatusDisplayCallback;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
+import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
- *
+ * Assures that the variable in tooltip is expanded automatically.
+ * 
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path = "netbeans-JPDASession", types={ ActionMessageCallback.class,
-                                                                    ActionErrorMessageCallback.class,
-                                                                    ActionStatusDisplayCallback.class })
-public class ActionMessageCallbackUIImpl implements ActionMessageCallback,
-                                                    ActionErrorMessageCallback,
-                                                    ActionStatusDisplayCallback {
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                             types=TreeExpansionModelFilter.class,
+                             position=2000)
+public class ToolTipExpansionFilter implements TreeExpansionModelFilter {
 
     @Override
-    public void messageCallback(Object action, String message) {
-        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
-        DialogDisplayer.getDefault().notify(descriptor);
+    public boolean isExpanded(TreeExpansionModel original, Object node) throws UnknownTypeException {
+        if (node == ToolTipView.getVariable()) {
+            return true;
+        } else {
+            return original.isExpanded(node);
+        }
     }
 
     @Override
-    public void errorMessageCallback(Object action, String message) {
-        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
-        DialogDisplayer.getDefault().notifyLater(descriptor);
-    }
+    public void nodeExpanded(Object node) {}
 
     @Override
-    public void statusDisplayCallback(Object action, String status) {
-        StatusDisplayer.getDefault().setStatusText(status);
-    }
+    public void nodeCollapsed(Object node) {}
+
+    @Override
+    public void addModelListener(ModelListener l) {}
+
+    @Override
+    public void removeModelListener(ModelListener l) {}
     
 }

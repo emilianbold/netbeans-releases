@@ -125,14 +125,12 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     private static final Logger logger = Logger.getLogger(RunIntoMethodActionProvider.class.getName());
 
     private final JPDADebuggerImpl debugger;
-    private final ContextProvider contextProvider;
     private ActionsManager lastActionsManager;
     
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
         debugger.addPropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
-        this.contextProvider = lookupProvider;
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
@@ -214,8 +212,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         }
         final String method = methodPtr[0];
         if (method.length () < 1) {
-            ActionCallbackSupport.messageCallback(
-                    contextProvider,
+            debugger.actionMessageCallback(
                     ActionsManager.ACTION_RUN_INTO_METHOD,
                     NbBundle.getMessage(RunIntoMethodActionProvider.class,
                                     "MSG_Put_cursor_on_some_method_call")
@@ -315,8 +312,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         logger.log(Level.FINE, "doAction({0}, {1}, {2}, {3}) locations = {4}",
                    new Object[]{ url, clazz, methodLine, methodName, locations });
         if (locations.isEmpty()) {
-            ActionCallbackSupport.messageCallback(
-                    contextProvider,
+            debugger.actionMessageCallback(
                     ActionsManager.ACTION_RUN_INTO_METHOD,
                     NbBundle.getMessage(RunIntoMethodActionProvider.class,
                                         "MSG_RunIntoMeth_absentInfo",

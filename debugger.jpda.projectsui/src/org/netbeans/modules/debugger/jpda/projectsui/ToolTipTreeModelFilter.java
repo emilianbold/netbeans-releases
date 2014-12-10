@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.actions;
+package org.netbeans.modules.debugger.jpda.projectsui;
 
-import org.netbeans.modules.debugger.jpda.actions.ActionErrorMessageCallback;
-import org.netbeans.modules.debugger.jpda.actions.ActionMessageCallback;
-import org.netbeans.modules.debugger.jpda.actions.ActionStatusDisplayCallback;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Martin Entlicher
+ * @author martin
  */
-@DebuggerServiceRegistration(path = "netbeans-JPDASession", types={ ActionMessageCallback.class,
-                                                                    ActionErrorMessageCallback.class,
-                                                                    ActionStatusDisplayCallback.class })
-public class ActionMessageCallbackUIImpl implements ActionMessageCallback,
-                                                    ActionErrorMessageCallback,
-                                                    ActionStatusDisplayCallback {
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                             types=TreeModelFilter.class,
+                             position=370)
+public class ToolTipTreeModelFilter implements TreeModelFilter {
 
     @Override
-    public void messageCallback(Object action, String message) {
-        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
-        DialogDisplayer.getDefault().notify(descriptor);
+    public Object getRoot(TreeModel original) {
+        return original.getRoot();
     }
 
     @Override
-    public void errorMessageCallback(Object action, String message) {
-        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
-        DialogDisplayer.getDefault().notifyLater(descriptor);
+    public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
+        if (parent == TreeModel.ROOT) {
+            ObjectVariable tooltipVar = ToolTipView.getVariable();
+            if (tooltipVar != null) {
+                return new Object[] { tooltipVar };
+            } else {
+                return new Object[] { };
+            }
+        } else {
+            return original.getChildren(parent, from, to);
+        }
     }
 
     @Override
-    public void statusDisplayCallback(Object action, String status) {
-        StatusDisplayer.getDefault().setStatusText(status);
+    public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
+        return Integer.MAX_VALUE;
     }
-    
+
+    @Override
+    public boolean isLeaf(TreeModel original, Object node) throws UnknownTypeException {
+        return original.isLeaf(node);
+    }
+
+    @Override
+    public void addModelListener(ModelListener l) {
+    }
+
+    @Override
+    public void removeModelListener(ModelListener l) {
+    }
+
 }

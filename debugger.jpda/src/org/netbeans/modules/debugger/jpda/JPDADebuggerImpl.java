@@ -67,94 +67,92 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.TypeComponent;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.InvalidObjectException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.Refreshable;
-
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Properties;
-
-import org.netbeans.api.debugger.jpda.DeadlockDetector;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
-import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
-import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
-import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.DeadlockDetector;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.api.debugger.jpda.ListeningDICookie;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.api.debugger.jpda.JPDAStep;
-import org.netbeans.api.debugger.jpda.ListeningDICookie;
-
-import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.modules.debugger.jpda.actions.ActionErrorMessageCallback;
+import org.netbeans.modules.debugger.jpda.actions.ActionMessageCallback;
+import org.netbeans.modules.debugger.jpda.actions.ActionStatusDisplayCallback;
+import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.expr.EvaluatorExpression;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
-import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
-import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
-import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
-import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.expr.formatters.Formatters;
 import org.netbeans.modules.debugger.jpda.expr.formatters.FormattersLoopControl;
 import org.netbeans.modules.debugger.jpda.expr.formatters.VariablesFormatter;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalArgumentExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.IntegerValueWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.AbstractObjectVariable;
 import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
+import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.ClassVariableImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAClassTypeImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.models.ObjectTranslation;
+import org.netbeans.modules.debugger.jpda.models.ThreadsCache;
 import org.netbeans.modules.debugger.jpda.models.VariableMirrorTranslator;
+import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
+import org.netbeans.modules.debugger.jpda.util.Operator;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
-
 import org.netbeans.spi.debugger.jpda.Evaluator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -2604,6 +2602,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return ov;
     }
 
+    public void actionMessageCallback(Object action, String message) {
+        List<? extends ActionMessageCallback> amcList = lookupProvider.lookup(null, ActionMessageCallback.class);
+        for (ActionMessageCallback amc : amcList) {
+            amc.messageCallback(action, message);
+        }
+    }
+    
+    public void actionErrorMessageCallback(Object action, String message) {
+        List<? extends ActionErrorMessageCallback> amcList = lookupProvider.lookup(null, ActionErrorMessageCallback.class);
+        for (ActionErrorMessageCallback amc : amcList) {
+            amc.errorMessageCallback(action, message);
+        }
+    }
+    
+    public void actionStatusDisplayCallback(Object action, String status) {
+        List<? extends ActionStatusDisplayCallback> asdcList = lookupProvider.lookup(null, ActionStatusDisplayCallback.class);
+        for (ActionStatusDisplayCallback asdc : asdcList) {
+            asdc.statusDisplayCallback(action, status);
+        }
+    }
+    
 
     private static class DebuggerReentrantReadWriteLock extends ReentrantReadWriteLock {
 

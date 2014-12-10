@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.ui.actions;
+package org.netbeans.modules.debugger.jpda.projectsui;
 
-import org.netbeans.modules.debugger.jpda.actions.ActionErrorMessageCallback;
-import org.netbeans.modules.debugger.jpda.actions.ActionMessageCallback;
-import org.netbeans.modules.debugger.jpda.actions.ActionStatusDisplayCallback;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.modules.debugger.jpda.projectsui.MainProjectManager;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author Martin Entlicher
- */
-@DebuggerServiceRegistration(path = "netbeans-JPDASession", types={ ActionMessageCallback.class,
-                                                                    ActionErrorMessageCallback.class,
-                                                                    ActionStatusDisplayCallback.class })
-public class ActionMessageCallbackUIImpl implements ActionMessageCallback,
-                                                    ActionErrorMessageCallback,
-                                                    ActionStatusDisplayCallback {
+public class MainProjectManagerTest extends NbTestCase {
 
-    @Override
-    public void messageCallback(Object action, String message) {
-        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
-        DialogDisplayer.getDefault().notify(descriptor);
+    public MainProjectManagerTest(String name) {
+        super(name);
     }
 
-    @Override
-    public void errorMessageCallback(Object action, String message) {
-        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
-        DialogDisplayer.getDefault().notifyLater(descriptor);
+    public void testLeakedProject() throws Exception {
+        class MockProject implements Project {
+            public @Override FileObject getProjectDirectory() {
+                return FileUtil.createMemoryFileSystem().getRoot();
+            }
+            public @Override Lookup getLookup() {
+                return Lookup.EMPTY;
+            }
+        }
+        Project p = new MockProject();
+        MainProjectManager mpm = MainProjectManager.getDefault();
+        OpenProjects.getDefault().open(new Project[] {p}, false);
+        OpenProjects.getDefault().setMainProject(p);
+        OpenProjects.getDefault().setMainProject(null);
+        OpenProjects.getDefault().close(new Project[] {p});
+        mpm.enable(p);
+        Reference<?> r = new WeakReference<Object>(p);
+        p = null;
+        assertGC("can collect project after closing", r);
     }
 
-    @Override
-    public void statusDisplayCallback(Object action, String status) {
-        StatusDisplayer.getDefault().setStatusText(status);
-    }
-    
 }
