@@ -94,6 +94,12 @@ public class MochaRunner {
             return;
         }
         
+        String node = Utilities.getNode(p);
+        if(node == null || !Utilities.isEnabled(p)) {
+            Utilities.openNodeSettings(p);
+            return;
+        }
+        
         String mochaInstallFolder = MochaSeleniumPreferences.getMochaDir(p);
         ValidationResult validationResult = new MochaPreferencesValidator()
                 .validateMochaInstallFolder(mochaInstallFolder)
@@ -152,7 +158,7 @@ public class MochaRunner {
         }
 
         String displayname = ProjectUtils.getInformation(runInfo.getProject()).getDisplayName() + (isSelenium ? " Selenium" : " Unit") + " Tests";
-        final ExternalExecutable externalexecutable = new ExternalExecutable("/usr/local/bin/node")
+        final ExternalExecutable externalexecutable = new ExternalExecutable(node)
                 .workDir(FileUtil.toFile(p.getProjectDirectory()))
                 .displayName(displayname)
                 .additionalParameters(arguments)
