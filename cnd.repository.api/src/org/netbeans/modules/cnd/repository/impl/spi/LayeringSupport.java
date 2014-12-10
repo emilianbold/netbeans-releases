@@ -58,5 +58,9 @@ public interface LayeringSupport {
     public UnitsConverter getReadUnitsConverter(LayerDescriptor layerDescriptor);
 
     public UnitsConverter getWriteUnitsConverter(LayerDescriptor layerDescriptor);
+
+    public FSConverter getReadFSConverter(LayerDescriptor layerDescriptor);
+
+    public FSConverter getWriteFSConverter(LayerDescriptor layerDescriptor);
      
 }

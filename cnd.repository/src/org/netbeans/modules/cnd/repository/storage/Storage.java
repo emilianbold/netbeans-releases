@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.repository.storage;
 
+import org.netbeans.modules.cnd.repository.impl.spi.FSConverter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -64,6 +65,7 @@ import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.Layer;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerFactory;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
@@ -79,7 +81,6 @@ import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStre
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -118,12 +119,12 @@ import org.openide.util.lookup.Lookups;
             log.log(Level.FINE, "New storage with storageID == {0} created",
                     new Object[]{storageID, unitIDConverter});
         }
-
+        this.layeringSupport = new LayeringSupportImpl();
         this.storageID = storageID;
         this.storageMask = unitIDConverter;
         final Collection<? extends LayerListener> lst =
                 Lookups.forPath(LayerListener.PATH).lookupAll(LayerListener.class);
-        this.layers = Collections.unmodifiableList(createLayers(layerDescriptors, lst, persistMechanismVersion));
+        this.layers = Collections.unmodifiableList(createLayers(layerDescriptors, layeringSupport, lst, persistMechanismVersion));
         assert layers != null;// && layers.size() > 0;
         // Initialize layerDescriptors list with descriptors of created layers
         // only.
@@ -134,8 +135,7 @@ import org.openide.util.lookup.Lookups;
             }
             descriptors.add(layer.getLayerDescriptor());
         }
-        this.layerDescriptors = Collections.unmodifiableList(descriptors);                
-        this.layeringSupport = new LayeringSupportImpl();
+        this.layerDescriptors = Collections.unmodifiableList(descriptors);
     }
 
     /**
@@ -210,7 +210,7 @@ import org.openide.util.lookup.Lookups;
         }
     }
 
-    private List<Layer> createLayers(List<LayerDescriptor> layerDescriptors, Collection<? extends LayerListener> lst, int persistMechanismVersion) {
+    private List<Layer> createLayers(List<LayerDescriptor> layerDescriptors, LayeringSupport layeringSupport, Collection<? extends LayerListener> lst, int persistMechanismVersion) {
         Collection<? extends LayerFactory> factories = Lookup.getDefault().lookupAll(LayerFactory.class);
         List<Layer> result = new ArrayList<Layer>();
 
@@ -218,7 +218,7 @@ import org.openide.util.lookup.Lookups;
             Layer layer = null;
             for (LayerFactory factory : factories) {
                 if (factory.canHandle(layerDescriptor)) {
-                    layer = factory.createLayer(layerDescriptor);
+                    layer = factory.createLayer(layerDescriptor, layeringSupport);
                     break;
                 }
             }
@@ -315,8 +315,8 @@ import org.openide.util.lookup.Lookups;
             if (rawData != null) {
                 return new RepositoryDataInputStream(
                         new ByteArrayInputStream(rawData.array()),
-                        new UnitIDReadConverterImpl(layer),
-                        new FSReadConverterImpl(ld));
+                        LayerConvertersProvider.getInstance(new UnitIDReadConverterImpl(layer),
+                                null, new FSReadConverterImpl(ld), null));
             }
         }
         return null;
@@ -334,8 +334,7 @@ import org.openide.util.lookup.Lookups;
                     return new RepositoryDataOutputStream(
                             layerKey,
                             wc,
-                            unitIDConverter,
-                            fsConverter);
+                            LayerConvertersProvider.getInstance(null, unitIDConverter, null, fsConverter));
                 }
             }
         }
@@ -404,6 +403,7 @@ import org.openide.util.lookup.Lookups;
         UnitDescriptor clientUnitDescriptor = clientUnitDescriptorsDictionary.getUnitDescriptor(clientShortUnitID);
         if (clientUnitDescriptor == null) {
             //was not registered, at all, what should we do here?
+            System.err.println(clientUnitDescriptor + " is not registered in the storage!!!!");
            return;
         }
         int clientFileSystemID = clientFileSystemsDictionary.getFileSystemID(clientUnitDescriptor.getFileSystem());
@@ -457,7 +457,7 @@ import org.openide.util.lookup.Lookups;
                         if (unitDescriptor == null) {
                             //is it legal that we do not have unit descriptor here?
                             //do not think so, 
-                            log.log(Level.FINE, "UnitDesctipor not found  for {0} and layer {1}", new Object[]{unit_id_layer_to_read_files_from, layer_to_read_files_from.getLayerDescriptor()});
+                            System.err.println("UnitDesctipor not found  for " + unit_id_layer_to_read_files_from + " and layer " +  layer_to_read_files_from.getLayerDescriptor());
                             CndUtils.threadsDump();
                             continue;
                         }
@@ -500,8 +500,8 @@ import org.openide.util.lookup.Lookups;
             }
             RepositoryDataInputStream inputStream = new RepositoryDataInputStream(
                     new ByteArrayInputStream(rawData.array()),
-                    new UnitIDReadConverterImpl(layer),
-                    new FSReadConverterImpl(ld));
+                    LayerConvertersProvider.getInstance(new UnitIDReadConverterImpl(layer), null,
+                            new FSReadConverterImpl(ld), null));
             Persistent obj = key.getPersistentFactory().read(inputStream);
             assert (obj instanceof FilePathsDictionary);
             return (FilePathsDictionary) obj;
@@ -571,7 +571,8 @@ import org.openide.util.lookup.Lookups;
         CharSequence res = fsDict.getFilePath(fileIdx);
         if (FilePathsDictionary.WRONG_PATH == res) {
             if (PRINT_STACK){
-                System.err.println("Path by index "+fileIdx+"/"+clientShortUnitID+" not found. Index size is "+fsDict.size()); //NOI18N
+                System.err.println("Path by index "+fileIdx+"/"+clientShortUnitID+" not found. files dictionary size is "+fsDict.size()); //NOI18N
+                //additional infor required
                 CndUtils.threadsDump();
                 // only once
                 PRINT_STACK = false;
@@ -728,6 +729,17 @@ import org.openide.util.lookup.Lookups;
         return new UnitIDWriteConverterImpl(layer);
     }
 
+    FSConverter getReadFSConverter(LayerDescriptor layerDescriptor) {
+        return new FSReadConverterImpl(layerDescriptor);
+    }
+
+    FSConverter getWriteFSConverter(LayerDescriptor layerDescriptor) {
+        int layerID = layerDescriptors.indexOf(layerDescriptor);
+        assert layerID >= 0;
+        Layer layer = layers.get(layerID);
+        return new FSWriteConverterImpl(layer);
+    }
+
     LayeringSupport getLayeringSupport() {
         return layeringSupport;
     }
@@ -798,6 +810,16 @@ import org.openide.util.lookup.Lookups;
         @Override
         public UnitsConverter getWriteUnitsConverter(LayerDescriptor layerDescriptor) {
             return Storage.this.getWriteUnitsConverter(layerDescriptor);
+        }
+
+        @Override
+        public FSConverter getReadFSConverter(LayerDescriptor layerDescriptor) {
+            return Storage.this.getReadFSConverter(layerDescriptor);
+        }
+
+        @Override
+        public FSConverter getWriteFSConverter(LayerDescriptor layerDescriptor) {
+            return Storage.this.getWriteFSConverter(layerDescriptor);
         }
         
     }
