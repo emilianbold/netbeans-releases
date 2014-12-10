@@ -200,7 +200,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             if(repositoryPaths == null) {
                 repositoryPaths =
                     new RepositoryPaths (
-                        repositoryFile,
+                        VCSFileProxySupport.getFileSystem(importDirectory), repositoryFile,
                         importPanel.repositoryPathTextField,
                         importPanel.browseRepositoryButton,
                         null,
@@ -254,7 +254,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
 
     private class ImportProgressSupport extends WizardStepProgressSupport {
         public ImportProgressSupport(JPanel panel, JLabel label) {
-            super(panel);
+            super(new Context(importDirectory).getFileSystem(), panel);
         }
         @Override
         public void perform() {

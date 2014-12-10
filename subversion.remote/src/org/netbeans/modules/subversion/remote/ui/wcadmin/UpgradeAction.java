@@ -98,7 +98,9 @@ public class UpgradeAction extends ContextAction {
         final Context ctx = getContext(nodes);
         final VCSFileProxy[] roots = ctx.getRootFiles();
         if (roots == null || roots.length == 0) {
-            Subversion.LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
+            }
             return;
         }
 
@@ -142,7 +144,7 @@ public class UpgradeAction extends ContextAction {
             return;
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(VCSFileProxySupport.getFileSystem(roots[0])) {
             @Override
             protected void perform() {
                 for (VCSFileProxy root : toUpgrade) {

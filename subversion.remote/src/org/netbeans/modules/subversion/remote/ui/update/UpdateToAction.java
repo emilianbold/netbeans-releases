@@ -90,7 +90,7 @@ public class UpdateToAction extends UpdateAction {
             return null;
         }
         
-        final RepositoryFile repositoryFile = new RepositoryFile(rootUrl, url, SVNRevision.HEAD);
+        final RepositoryFile repositoryFile = new RepositoryFile(ctx.getFileSystem(), rootUrl, url, SVNRevision.HEAD);
 
         final UpdateTo updateTo = new UpdateTo(repositoryFile, Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE, true));
         if(updateTo.showDialog()) {

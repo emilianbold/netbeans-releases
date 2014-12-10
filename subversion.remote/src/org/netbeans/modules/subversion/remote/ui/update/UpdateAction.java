@@ -365,7 +365,7 @@ public class UpdateAction extends ContextAction {
         }
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(context.getFileSystem()) {
             @Override
             public void perform() {
                 update(context, this, contextDisplayName, null);
@@ -397,7 +397,7 @@ public class UpdateAction extends ContextAction {
         final SVNUrl repositoryUrl = repository;
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(context.getFileSystem()) {
             @Override
             public void perform() {
 //                FileStatusCache cache = Subversion.getInstance().getStatusCache();

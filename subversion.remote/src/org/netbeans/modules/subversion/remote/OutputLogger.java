@@ -53,9 +53,10 @@ import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
 import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -89,21 +90,24 @@ public class OutputLogger implements ISVNNotifyListener {
         Pattern.compile("Adding         (.+)") //NOI18N
     };
     
-    public static OutputLogger getLogger(SVNUrl repositoryRoot) {
+    public static OutputLogger getLogger(FileSystem fileSystem, SVNUrl repositoryRoot) {
         if (repositoryRoot != null) {
-            return new OutputLogger(repositoryRoot);
+            return new OutputLogger(fileSystem, repositoryRoot);
         } else {
             return new NullLogger();
         }
     }
     private AbstractAction action;
     private String lastCompletedMessage;
+    private final FileSystem fileSystem;
     
-    private OutputLogger(SVNUrl repositoryRoot) {
+    private OutputLogger(FileSystem fileSystem, SVNUrl repositoryRoot) {
         repositoryRootString = SvnUtils.decodeToString(repositoryRoot);
+        this.fileSystem = fileSystem;
     }
 
     private OutputLogger() {
+        fileSystem = null;
     }
     
     @Override
@@ -215,9 +219,9 @@ public class OutputLogger implements ISVNNotifyListener {
             Matcher m = p.matcher(message);
             if (m.matches() && m.groupCount() > 0) {
                 String path = m.group(1);
-                File f = new File(path);
+                VCSFileProxy f = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), path);
                 if (!f.isDirectory()) {
-                    ol = new OpenFileOutputListener(FileUtil.normalizeFile(f), m.start(1));
+                    ol = new OpenFileOutputListener(f.normalizeFile(), m.start(1));
                     break;
                 }
             }
@@ -231,7 +235,9 @@ public class OutputLogger implements ISVNNotifyListener {
         }
         if (getLog().isClosed()) {
             if (SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput()) {
-                Subversion.LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRootString); // NOI18N
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRootString); // NOI18N
+                }
                 log = IOProvider.getDefault().getIO(repositoryRootString, false);
                 try {
                     // HACK (mystic logic) workaround, otherwise it writes to nowhere
@@ -265,7 +271,9 @@ public class OutputLogger implements ISVNNotifyListener {
     private InputOutput getLog() {
         writable = true;
         if(log == null) {
-            Subversion.LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRootString);
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "Creating OutputLogger for {0}", repositoryRootString);
+            }
             log = IOProvider.getDefault().getIO(repositoryRootString, false);
             if (!openedWindows.contains(repositoryRootString)) {
                 // log window has been opened
@@ -328,7 +336,9 @@ public class OutputLogger implements ISVNNotifyListener {
 
         @Override
         public void outputLineAction(OutputEvent ev) {
-            Subversion.LOG.log(Level.FINE, "Opeining file [{0}]", f);           // NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "Opeining file [{0}]", f);           // NOI18N
+            }
             new OpenInEditorAction(new VCSFileProxy[] {f}).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, f.getPath()));
         }
 

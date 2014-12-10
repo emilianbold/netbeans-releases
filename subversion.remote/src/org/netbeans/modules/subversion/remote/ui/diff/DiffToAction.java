@@ -93,13 +93,13 @@ public class DiffToAction extends ContextAction {
     
     @Override
     protected void performContextAction(final Node[] nodes) {
-        SvnProgressSupport supp = new SvnProgressSupport() {
+        final Context ctx = getContext(nodes);
+        SvnProgressSupport supp = new SvnProgressSupport(ctx.getFileSystem()) {
             @Override
             protected void perform() {
                 if (isCanceled()) {
                     return;
                 }
-                final Context ctx = getContext(nodes);
                 if (!Subversion.getInstance().checkClientAvailable(ctx)) {
                     Logger.getLogger(DiffToAction.class.getName()).log(Level.FINE, "Client is unavailable, cannot perform Diff To"); //NOI18N
                     return;
@@ -126,7 +126,7 @@ public class DiffToAction extends ContextAction {
                             "No repository URL: {0} or file URL: {1} for roots: {2}", new Object[] { //NOI18N
                                 repositoryUrl, fileUrl, Arrays.asList(roots) });
                 }
-                final SelectDiffTree panel = new SelectDiffTree(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD), interestingFile);
+                final SelectDiffTree panel = new SelectDiffTree(new RepositoryFile(ctx.getFileSystem(), repositoryUrl, fileUrl, SVNRevision.HEAD), interestingFile);
                 final SVNUrl fRepositoryUrl = repositoryUrl;
                 final SVNUrl fFileUrl = fileUrl;
                 EventQueue.invokeLater(new Runnable() {
@@ -138,7 +138,7 @@ public class DiffToAction extends ContextAction {
                         RepositoryFile left = panel.getRepositoryFile();
                         MultiDiffPanel panel = new MultiDiffPanel(ctx, -1, contextName, false,
                                 fRepositoryUrl, fFileUrl, left,
-                                new RepositoryFile(fRepositoryUrl, fFileUrl, SVNRevision.WORKING));
+                                new RepositoryFile(ctx.getFileSystem(), fRepositoryUrl, fFileUrl, SVNRevision.WORKING));
                         DiffTopComponent tc = new DiffTopComponent(panel);
                         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); //NOI18N
                         tc.open();

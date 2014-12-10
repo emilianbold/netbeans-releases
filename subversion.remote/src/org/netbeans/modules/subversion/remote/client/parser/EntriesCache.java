@@ -382,7 +382,9 @@ public class EntriesCache {
             nextLine = attributePool.get(entriesReader.readLine());
 
             if(nextLine != null && attrIndex > entryFileAttributes.length - 1) {
-                Subversion.LOG.fine("Skipping attribute from position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.fine("Skipping attribute from position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
+                }
                 for( ; nextLine != null && !DELIMITER.equals(nextLine); nextLine = attributePool.get(entriesReader.readLine()));
             }
 

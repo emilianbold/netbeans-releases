@@ -114,9 +114,13 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeDelete(VCSFileProxy file) {
-        Subversion.LOG.log(Level.FINE, "beforeDelete {0}", file);
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+           Subversion.LOG.log(Level.FINE, "beforeDelete {0}", file);
+        }
         if(!SvnClientFactory.isClientAvailable(new Context(file))) {
-            Subversion.LOG.fine(" skipping delete due to missing client");
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine(" skipping delete due to missing client");
+            }
             return false;
         }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
@@ -133,7 +137,9 @@ class FilesystemHandler extends VCSInterceptor {
      */
     @Override
     public void doDelete(VCSFileProxy file) throws IOException {
-        Subversion.LOG.log(Level.FINE, "doDelete {0}", file);
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "doDelete {0}", file);
+        }
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
@@ -169,8 +175,12 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterDelete(final VCSFileProxy file) {
-        Subversion.LOG.log(Level.FINE, "afterDelete {0}", file);
-        if (file == null || SvnUtils.isPartOfSubversionMetadata(file)) return;
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "afterDelete {0}", file);
+        }
+        if (file == null || SvnUtils.isPartOfSubversionMetadata(file)) {
+            return;
+        }
 
         // TODO the afterXXX events should not be triggered by the FS listener events
         //      their order isn't guaranteed when e.g calling fo.delete() a fo.create()
@@ -200,7 +210,9 @@ class FilesystemHandler extends VCSInterceptor {
                         }
                     } catch (SVNClientException e) {
                         // ignore; we do not know what to do here
-                        Subversion.LOG.log(Level.FINER, null, e);
+                        if (Subversion.LOG.isLoggable(Level.FINER)) {
+                            Subversion.LOG.log(Level.FINER, null, e);
+                        }
                     }
                 } finally {
                     cache.refreshAsync(file);
@@ -273,12 +285,16 @@ class FilesystemHandler extends VCSInterceptor {
         boolean retval = true;
         if (!"true".equals(System.getProperty("org.netbeans.modules.subversion.deleteMissingFiles", "false"))) { //NOI18N
             // prevents automatic svn remove for those who dislike such behavior
-            Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false by default)", new String[] {file.getPath()}); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false by default)", new String[] {file.getPath()}); //NOI18N
+            }
             retval = false;
         } else {
             ISVNStatus status = getStatus(client, file);
             if (!SVNStatusKind.MISSING.equals(status.getTextStatus())) {
-                Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
+                }
                 retval = false;
             } else if (VCSFileProxySupport.isMac(file)) {
                 String existingFilename = VCSFileProxySupport.getExistingFilenameInParent(file);
@@ -292,9 +308,13 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeMove(VCSFileProxy from, VCSFileProxy to) {
-        Subversion.LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[]{from, to});
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[]{from, to});
+        }
         if(!SvnClientFactory.isClientAvailable(new Context(from))) {
-            Subversion.LOG.fine(" skipping move due to missing client");
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine(" skipping move due to missing client");
+            }
             return false;
         }
         VCSFileProxy destDir = to.getParentFile();
@@ -312,13 +332,17 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void doMove(final VCSFileProxy from, final VCSFileProxy to) throws IOException {
-        Subversion.LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[]{from, to});
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[]{from, to});
+        }
         svnMoveImplementation(from, to);
     }
 
     @Override
     public void afterMove(final VCSFileProxy from, final VCSFileProxy to) {
-        Subversion.LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[]{from, to});
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[]{from, to});
+        }
         VCSFileProxy[] files;
         synchronized(movedFiles) {
             movedFiles.add(from);
@@ -337,9 +361,13 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeCopy(VCSFileProxy from, VCSFileProxy to) {
-        Subversion.LOG.log(Level.FINE, "beforeCopy {0} -> {1}", new Object[]{from, to});
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "beforeCopy {0} -> {1}", new Object[]{from, to});
+        }
         if(!SvnClientFactory.isClientAvailable(new Context(from))) {
-            Subversion.LOG.fine(" skipping copy due to missing client");
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine(" skipping copy due to missing client");
+            }
             return false;
         }
 
@@ -368,13 +396,17 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void doCopy(final VCSFileProxy from, final VCSFileProxy to) throws IOException {
-        Subversion.LOG.log(Level.FINE, "doCopy {0} -> {1}", new Object[]{from, to});
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "doCopy {0} -> {1}", new Object[]{from, to});
+        }
         svnCopyImplementation(from, to);
     }
 
     @Override
     public void afterCopy(final VCSFileProxy from, final VCSFileProxy to) {
-        Subversion.LOG.log(Level.FINE, "afterCopy {0} -> {1}", new Object[]{from, to});
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "afterCopy {0} -> {1}", new Object[]{from, to});
+        }
         VCSFileProxy[] files;
         synchronized(copiedFiles) {
             copiedFiles.add(from);
@@ -457,8 +489,10 @@ class FilesystemHandler extends VCSInterceptor {
                                     // otherwise the metadata from the source WC will be copied too
                                     copyFolderToDifferentRepository(from, to);
                                 } else if (copyFile(from, to)) {
-                                    Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
-                                            + ": copying between different repositories {0} to {1}", new Object[] {from, to});
+                                    if (Subversion.LOG.isLoggable(Level.FINE)) {
+                                        Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
+                                                + ": copying between different repositories {0} to {1}", new Object[] {from, to});
+                                    }
                                 } else {
                                     Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
                                             + ": cannot copy {0} to {1}", new Object[] {from, to});
@@ -511,9 +545,13 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public boolean beforeCreate(VCSFileProxy file, boolean isDirectory) {
-        Subversion.LOG.log(Level.FINE, "beforeCreate {0}", file);
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "beforeCreate {0}", file);
+        }
         if(!SvnClientFactory.isClientAvailable(new Context(file))) {
-            Subversion.LOG.fine(" skipping create due to missing client");
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine(" skipping create due to missing client");
+            }
             return false;
         }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
@@ -549,7 +587,9 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void afterCreate(final VCSFileProxy file) {
-        Subversion.LOG.log(Level.FINE, "afterCreate {0}", file);
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "afterCreate {0}", file);
+        }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             // not interested in .svn events
             return;
@@ -603,10 +643,14 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void afterChange(final VCSFileProxy file) {
         if(!SvnClientFactory.isClientAvailable(new Context(file))) {
-            Subversion.LOG.fine(" skipping afterChange due to missing client");
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine(" skipping afterChange due to missing client");
+            }
             return;
         }
-        Subversion.LOG.log(Level.FINE, "afterChange {0}", file);
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "afterChange {0}", file);
+        }
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -626,7 +670,9 @@ class FilesystemHandler extends VCSInterceptor {
                 @Override
                 public void run() {
                     if (!SvnClientFactory.isClientAvailable(new Context(file))) {
-                        Subversion.LOG.fine(" skipping ProvidedExtensions.Refresh due to missing client"); //NOI18N
+                        if (Subversion.LOG.isLoggable(Level.FINE)) {
+                            Subversion.LOG.fine(" skipping ProvidedExtensions.Refresh due to missing client"); //NOI18N
+                        }
                         return;
                     }
                     if (!SvnUtils.isManaged(file)) {
@@ -653,7 +699,9 @@ class FilesystemHandler extends VCSInterceptor {
             }
 
             if (!SvnClientFactory.isClientAvailable(new Context(file))) {
-                Subversion.LOG.fine(" skipping ProvidedExtensions.VCSIsModified due to missing client"); //NOI18N
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.fine(" skipping ProvidedExtensions.VCSIsModified due to missing client"); //NOI18N
+                }
                 return null;
             }
             if (!SvnUtils.isManaged(file)) {
@@ -711,11 +759,15 @@ class FilesystemHandler extends VCSInterceptor {
         try {
             url = SvnUtils.getRepositoryRootUrl(file);
         } catch (SVNClientException ex) {
-            Subversion.LOG.log(Level.FINE, "No repository root url found for managed file : [" + file + "]", ex); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "No repository root url found for managed file : [" + file + "]", ex); //NOI18N
+            }
             try {
                 url = SvnUtils.getRepositoryUrl(file); // try to falback
             } catch (SVNClientException ex1) {
-                Subversion.LOG.log(Level.FINE, "No repository url found for managed file : [" + file + "]", ex1);
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, "No repository url found for managed file : [" + file + "]", ex1);
+                }
             }
         }
         return url != null ? SvnUtils.decodeToString(url) : null;
@@ -864,9 +916,13 @@ class FilesystemHandler extends VCSInterceptor {
 
                             VCSFileProxy temp = from;
                             if (VCSFileProxySupport.isMac(from) && from.getPath().equalsIgnoreCase(to.getPath())) {
-                                Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
+                                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                                    Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
+                                }
                                 temp = VCSFileProxySupport.generateTemporaryFile(from.getParentFile(), from.getName());
-                                Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
+                                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                                    Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
+                                }
                                 client.move(from, temp, force);
                             }
                             
@@ -901,13 +957,21 @@ class FilesystemHandler extends VCSInterceptor {
                                     client.move(from, to, force);
                                 } catch (SVNClientException ex) {
                                     if (VCSFileProxySupport.isMac(from) && from.getPath().equalsIgnoreCase(to.getPath())) {
-                                        Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
+                                        if (Subversion.LOG.isLoggable(Level.FINE)) {
+                                            Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
+                                        }
                                         VCSFileProxy temp = VCSFileProxySupport.generateTemporaryFile(to.getParentFile(), from.getName());
-                                        Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
+                                        if (Subversion.LOG.isLoggable(Level.FINE)) {
+                                            Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
+                                        }
                                         client.move(from, temp, force);
-                                        Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 2: {0} -> {1}", new Object[] { temp, to }); //NOI18N
+                                        if (Subversion.LOG.isLoggable(Level.FINE)) {
+                                            Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 2: {0} -> {1}", new Object[] { temp, to }); //NOI18N
+                                        }
                                         client.move(temp, to, force);
-                                        Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround completed"); //NOI18N
+                                        if (Subversion.LOG.isLoggable(Level.FINE)) {
+                                            Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround completed"); //NOI18N
+                                        }
                                     } else {
                                         throw ex;
                                     }
@@ -926,8 +990,10 @@ class FilesystemHandler extends VCSInterceptor {
                                 }
                                 if (remove) {
                                     client.remove(new VCSFileProxy[] {from}, force);
-                                    Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
-                                            + ": moving between different repositories {0} to {1}", new Object[] {from, to});
+                                    if (Subversion.LOG.isLoggable(Level.FINE)) {
+                                        Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
+                                                + ": moving between different repositories {0} to {1}", new Object[] {from, to});
+                                    }
                                 }
                             }
                         }

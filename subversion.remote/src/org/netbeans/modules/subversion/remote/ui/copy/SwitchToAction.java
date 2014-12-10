@@ -130,7 +130,7 @@ public class SwitchToAction extends ContextAction {
                 return;
             }
         }
-        final RepositoryFile repositoryFile = new RepositoryFile(rootUrl, fileUrl == null ? rootUrl : fileUrl, SVNRevision.HEAD);
+        final RepositoryFile repositoryFile = new RepositoryFile(ctx.getFileSystem(), rootUrl, fileUrl == null ? rootUrl : fileUrl, SVNRevision.HEAD);
         boolean hasChanges = Subversion.getInstance().getStatusCache().containsFiles(ctx, FileInformation.STATUS_LOCAL_CHANGE, true);
 
         final RequestProcessor rp = createRequestProcessor(ctx);
@@ -162,7 +162,7 @@ public class SwitchToAction extends ContextAction {
                         }
                     });
                 } else {
-                    ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(SwitchToAction.this, nodes) {
+                    ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(SwitchToAction.this, nodes, getCachedContext(nodes)) {
                         @Override
                         public void perform() {
                             final ContextAction.ProgressSupport supp = this;

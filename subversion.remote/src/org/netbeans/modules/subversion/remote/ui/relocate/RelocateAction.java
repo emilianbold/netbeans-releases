@@ -190,7 +190,7 @@ public class RelocateAction extends ContextAction {
         
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         final SVNUrl url = repositoryUrl;
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(ctx.getFileSystem()) {
             SvnClient client = null;
             @Override
             protected void perform() {                    

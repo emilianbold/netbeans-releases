@@ -67,7 +67,9 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -109,7 +111,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         panel.dateFromTextField.getDocument().addDocumentListener(this); 
         
         String date = DATE_FORMAT.format(new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 7));
-        panel.dateFromTextField.setText(SvnModuleConfig.getDefault(fileSystem).getPreferences().get(DATE_FROM, date));
+        panel.dateFromTextField.setText(SvnModuleConfig.getDefault(repositoryFile[0].getFileSystem()).getPreferences().get(DATE_FROM, date));
         
         searchView = new SvnSearchView();
         
@@ -147,7 +149,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         final SVNRevision revisionFrom = getRevisionFrom();
         final SVNUrl repositoryUrl = this.repositoryFiles[0].getRepositoryUrl();
         if(revisionFrom instanceof SVNRevision.DateSpec) {
-            SvnModuleConfig.getDefault(fileSystem).getPreferences().put(DATE_FROM, panel.dateFromTextField.getText().trim());
+            SvnModuleConfig.getDefault(repositoryFiles[0].getFileSystem()).getPreferences().put(DATE_FROM, panel.dateFromTextField.getText().trim());
         }
                 
         final String[] paths = new String[repositoryFiles.length];
@@ -162,12 +164,12 @@ public class SvnSearch implements ActionListener, DocumentListener {
         }
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
-        support = new SvnProgressSupport() {
+        support = new SvnProgressSupport(repositoryFiles[0].getFileSystem()) {
             @Override
             protected void perform() {                                                                                                                            
                 ISVNLogMessage[] messageArray= null;
                 try {                        
-                    SvnClient client = Subversion.getInstance().getClient(null, repositoryUrl, this);                         
+                    SvnClient client = Subversion.getInstance().getClient(new Context(VCSFileProxy.createFileProxy(repositoryFiles[0].getFileSystem().getRoot())), repositoryUrl, this);                         
                     messageArray = SvnUtils.getLogMessages(client, repositoryUrl, paths, null, SVNRevision.HEAD, revisionFrom, false, false, 0);
                 } catch (SVNClientException ex) {
                     if (SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {

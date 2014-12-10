@@ -175,7 +175,7 @@ public abstract class CopyDialog {
      * @param recentFolders
      * @return 
      */
-    static Map<String, String> setupModel (JComboBox cbo, RepositoryFile repositoryFile, List<String> recentFolders) {
+    private Map<String, String> setupModel (JComboBox cbo, RepositoryFile repositoryFile, List<String> recentFolders) {
         Map<String, String> locations = new HashMap<>(Math.min(recentFolders.size(), 10));
         List<String> model = new LinkedList<>();
         // all category in the model is sorted by name ignoring case
@@ -329,7 +329,7 @@ public abstract class CopyDialog {
         }
     }
 
-    private static class SelectionListener implements ActionListener, PopupMenuListener {
+    private class SelectionListener implements ActionListener, PopupMenuListener {
         private final RepositoryFile repositoryFile;
         private final JComboBox combo;
         private boolean popupOn;
@@ -350,7 +350,7 @@ public abstract class CopyDialog {
                         if (!popupOn && (combo.getSelectedItem() == SEP || combo.getSelectedItem() == MORE_BRANCHES)) {
                             String text = ""; //NOI18N
                             if (combo.getSelectedItem() == MORE_BRANCHES) {
-                                BranchPicker picker = new BranchPicker(repositoryFile, branchesFolderPath);
+                                BranchPicker picker = new BranchPicker(fileSystem, repositoryFile, branchesFolderPath);
                                 if (picker.openDialog()) {
                                     String relativePath = SVNUrlUtils.getRelativePath(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl());
                                     text = picker.getSelectedPath() + "/" + getBranchPathSegments(relativePath)[2]; //NOI18N

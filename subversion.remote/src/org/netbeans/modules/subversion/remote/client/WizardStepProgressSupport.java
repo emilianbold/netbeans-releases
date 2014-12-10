@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.RepositoryStep;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
 
 /**
@@ -68,7 +69,8 @@ public abstract class WizardStepProgressSupport extends SvnProgressSupport imple
     private final JPanel panel;
     private JButton stopButton;
     
-    public WizardStepProgressSupport(JPanel panel) {
+    public WizardStepProgressSupport(FileSystem fileSystem, JPanel panel) {
+        super(fileSystem);
         this.panel = panel;        
     }
 

@@ -223,7 +223,9 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         } catch (IOException e) {
             if ((e.getCause() != null && SvnClientExceptionHandler.isTargetDirectory(e.getCause().getMessage()) || SvnClientExceptionHandler.isTargetDirectory(e.getMessage()))) {
                 // target is a directory, but locally deleted
-                Subversion.LOG.log(Level.FINE, "", e);
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, "", e);
+                }
                 mimeType = "content/unknown"; // NOI18N
                 isDirectory = true;
                 return;
