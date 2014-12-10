@@ -134,6 +134,22 @@ public class CompletionContextFinderTest extends JsTestBase {
         checkCompletionContext("testfiles/completion/issue246020.js", "for(var i=0, max = i )^", CompletionContext.EXPRESSION);
     }
     
+    public void testIssue249264_01() throws Exception {
+        checkCompletionContext("testfiles/completion/issue249264.js", "document.getElementById('mainCon^tainer');", CompletionContext.STRING_ELEMENTS_BY_ID);
+    }
+    
+    public void testIssue249264_02() throws Exception {
+        checkCompletionContext("testfiles/completion/issue249264.js", "document.getElementById('^');", CompletionContext.STRING_ELEMENTS_BY_ID);
+    }
+    
+    public void testIssue249264_03() throws Exception {
+        checkCompletionContext("testfiles/completion/issue249264.js", "document.getElementsByClassName('demo-apphe^ader');", CompletionContext.STRING_ELEMENTS_BY_CLASS_NAME);
+    }
+    
+    public void testIssue249264_04() throws Exception {
+        checkCompletionContext("testfiles/completion/issue249264.js", "document.getElementsByClassName('^');", CompletionContext.STRING_ELEMENTS_BY_CLASS_NAME);
+    }
+    
     private void checkCompletionContext(final String file, final String caretLine, final CompletionContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));
