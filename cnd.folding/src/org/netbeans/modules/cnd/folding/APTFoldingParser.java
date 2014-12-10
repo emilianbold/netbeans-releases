@@ -72,6 +72,7 @@ import org.openide.filesystems.FileSystem;
     private static final int CLASS_FOLD = CppFoldRecord.CLASS_FOLD;
     private static final int NAMESPACE_FOLD = CppFoldRecord.NAMESPACE_FOLD;
     private static final int FUNCTION_FOLD = CppFoldRecord.FUNCTION_FOLD;
+    private static final int COMPOUND_BLOCK_FOLD = CppFoldRecord.COMPOUND_BLOCK_FOLD;
     private static final int FIRST_TOKEN = APTTokenTypes.NULL_TREE_LOOKAHEAD+1;
     private static final int LAST_TOKEN = APTTokenTypes.LAST_LEXER_FAKE_RULE;
     //private int curCurlyLevel = 0;
@@ -541,7 +542,7 @@ import org.openide.filesystems.FileSystem;
                     }
                     switch (LA(1)) {
                         case LCURLY: {
-                            createCurlyFolder(FUNCTION_FOLD);
+                            blockFold(FUNCTION_FOLD);
                             if (matchError) {
                                 break main_loop;
                             }
@@ -609,6 +610,109 @@ import org.openide.filesystems.FileSystem;
             resetMatchError();
         }
     }
+
+    /*
+     * Curly braced sections:
+     * Functions, conditional statements, iteration statements
+     */
+    @SuppressWarnings("fallthrough")
+    protected final void block() throws TokenStreamException {
+        main_loop:
+        while (true) {
+            if (matchError) {
+                break main_loop;
+            }
+            switch (LA(1)) {
+                case RCURLY:
+                    break main_loop;
+                case LITERAL_else:
+                case LITERAL_do:
+                    consume();
+                    if (LA(1) == LCURLY) {
+                        blockFold(COMPOUND_BLOCK_FOLD);
+                    } else {
+                        // see COMMENT-1
+                    }
+                    break;
+                case LITERAL_if:
+                case LITERAL_switch:
+                case LITERAL_while:
+                case LITERAL_for:
+                    consume();
+                    if (LA(1) == LPAREN) {
+                        /* if ( condition ) ... */
+                        consume(); // LPAREN
+                        balanceParens();
+                        consume(); // RPAREN
+                        if (LA(1) == LCURLY) {
+                            /* if ( condition ) { statement } ... */
+                            blockFold(COMPOUND_BLOCK_FOLD);
+                        } else {
+                            /* if ( condition ) statement ... */
+
+                            /* COMMENT-1
+                             * No braces after current statement, but we continue 
+                             * to look up for nested blocks
+                             * if (1)
+                             *      if (1) {
+                             *          int a = 1;
+                             *      }
+                             */
+                        }
+                    } else {
+                        matchError = true;
+                    }
+                    break;
+                default:
+                    consume();
+            }
+        }
+    }
+
+    protected final void blockFold(int foldType) throws TokenStreamException {
+        // LA(1) = LCURLY
+        main_loop:
+        while (true) {
+            APTToken begin = (APTToken) LT(1);
+            /* LCURLY - left balance (enter) */
+            match(LCURLY);
+            if (matchError) {
+                break main_loop;
+            }
+
+            do {
+                // nongreedy exit test
+                if (LA(1) == RCURLY) {
+                    /* RCURLY - right balance (exit) */
+                    break;
+                }
+
+                if ((LA(1) >= FIRST_TOKEN && LA(1) <= LAST_TOKEN)) {
+                    block();
+                    if (matchError) {
+                        break main_loop;
+                    }
+                } else {
+                    break;
+                }
+            } while (true);
+
+            APTToken end = (APTToken) LT(1);
+            match(RCURLY);
+            if (matchError) {
+                break main_loop;
+            }
+
+            createFolder(foldType, begin, end);
+
+            break;
+        }
+        if (matchError) {
+            reportError(matchException);
+            resetMatchError();
+        }
+    }
+
 //    protected final void namespaceFold() throws TokenStreamException {
 //        
 //        Token  bb = null;

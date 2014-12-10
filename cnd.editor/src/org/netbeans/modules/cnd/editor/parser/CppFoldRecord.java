@@ -59,6 +59,7 @@ public final class CppFoldRecord {
     public final static int CONSTRUCTOR_FOLD = CppFile.CONSTRUCTOR_FOLD;
     public final static int DESTRUCTOR_FOLD = CppFile.DESTRUCTOR_FOLD;
     public final static int NAMESPACE_FOLD = CppFile.NAMESPACE_FOLD;
+    public final static int COMPOUND_BLOCK_FOLD = CppFile.COMPOUND_BLOCK_FOLD;
     
     private final int type;
     private final int startOffset;
@@ -126,6 +127,9 @@ public final class CppFoldRecord {
                 break;
             case NAMESPACE_FOLD:
                 kind = "NAMESPACE_FOLD"; // NOI18N
+                break;
+            case COMPOUND_BLOCK_FOLD:
+                kind = "COMPOUND_BLOCK_FOLD"; // NOI18N
                 break;
             default:
         }
