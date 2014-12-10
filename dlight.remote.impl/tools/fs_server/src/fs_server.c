@@ -86,8 +86,8 @@ static int refresh_sleep = 1;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 2
-#define FS_SERVER_MINOR_VERSION 3
+#define FS_SERVER_MID_VERSION 3
+#define FS_SERVER_MINOR_VERSION 0
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -555,6 +555,7 @@ typedef struct {
     FILE *cache_fp;
 } response_ls_data;
 
+static void response_end(int request_id, const char* path);
 static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
 
@@ -589,8 +590,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
     visit_dir_entries(path, response_ls_plain_visitor, &data);
 
-    my_fprintf(STDOUT, "%c %d %li %s %lli\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path, get_curretn_time_millis());
-    my_fflush(STDOUT);
+    response_end(request_id, path);
 
     if (el) {
         if (cache_fp) {
@@ -603,13 +603,17 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     if (recursive) {
         visit_dir_entries(path, response_ls_recursive_visitor, &data);
         if (!inner) {
-            my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path);
-            my_fflush(STDOUT);
+            response_end(request_id, path);
         }
     }
 
     buffer_free(&response_buf);
     buffer_free(&work_buf);
+}
+
+static void response_end(int request_id, const char* path) {
+    my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path);
+    my_fflush(STDOUT);    
 }
 
 static void response_error(int request_id, const char* path, int err_code, const char *err_msg) {
@@ -733,7 +737,8 @@ static void response_stat(int request_id, const char* path) {
 }
 
 static bool copy_symlink(const char* path, const char* path2,int id);
-static bool copy_plain_file(const char* path, const char* path2,int id);
+static bool copy_plain_file(const char* path, const char* path2, int id);
+static bool copy_dir(const char* path, const char* path2, int id);
 
 static void response_copy(const fs_request* request) {
 
@@ -741,15 +746,17 @@ static void response_copy(const fs_request* request) {
     struct stat stat_buf;
     if (lstat(request->path2, &stat_buf) == 0) {
         response_error(request->id, request->path2, 0, "file already exists");
+        response_end(request->id, request->path2);
         return;
     }
     if (lstat(request->path, &stat_buf) == -1) {
         response_error(request->id, request->path, errno, err_to_string(errno));
+        response_end(request->id, request->path2);
         return;
     }
     bool success = false;
     if (S_ISDIR(stat_buf.st_mode)) {
-        response_error(request->id, request->path2, 0, "file is a directory");
+        success = copy_dir(request->path, request->path2, request->id);
     } else if (S_ISREG(stat_buf.st_mode)) {
         success = copy_plain_file(request->path, request->path2, request->id);
     } else if (S_ISLNK(stat_buf.st_mode)) {
@@ -763,11 +770,61 @@ static void response_copy(const fs_request* request) {
         if (last_slash) {
             *last_slash = 0;
             response_ls(request->id, dst_parent, false, true);
+            // response_end() is called from response_ls
         } else {
             response_error(request->id, dst_parent, 0, "path does not contain '/'");
+            response_end(request->id, request->path2);
         }
         free(dst_parent);
     }
+}
+
+typedef struct {
+    bool success;
+    int id;
+    char* dst_path_base_end;
+    int dst_max_append_size;
+    char dst_path[PATH_MAX+1];    
+} copy_dir_struct;
+
+static bool copy_dir_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
+    copy_dir_struct *cds = p;
+    strncpy_w_zero(cds->dst_path_base_end, name, cds->dst_max_append_size);
+    
+    bool success = false;
+    if (S_ISDIR(stat_buf->st_mode)) {
+        success = copy_dir(child_abspath, cds->dst_path, cds->id);
+    } else if (S_ISREG(stat_buf->st_mode)) {
+        success = copy_plain_file(child_abspath, cds->dst_path, cds->id);
+    } else if (S_ISLNK(stat_buf->st_mode)) {
+        success = copy_symlink(child_abspath, cds->dst_path, cds->id);
+    } else {
+        response_error(cds->id, child_abspath, 0, "don't know how to copy a special file");
+    }    
+    return success;
+}
+
+static bool copy_dir(const char* path, const char* path2, int id) {
+    if (mkdir(path2, 0700) != 0) {
+        response_error(id, path2, errno, err_to_string(errno));
+        return false;
+    }
+    copy_dir_struct* cds = malloc(sizeof(copy_dir_struct));
+    cds->success = true;
+    cds->id = id;
+
+    int len = strlen(path2);
+    len = (len > PATH_MAX) ? PATH_MAX : len;
+    strncpy(cds->dst_path, path2, len);
+    cds->dst_path[len] = '/';
+    cds->dst_path_base_end = cds->dst_path + len + 1;
+    cds->dst_max_append_size = PATH_MAX - len - 1;
+
+    visit_dir_entries(path, copy_dir_visitor, cds);
+    
+    bool success = cds->success;
+    free(cds);    
+    return success;
 }
 
 static bool copy_plain_file(const char* path, const char* path2, int id) {
@@ -1033,7 +1090,7 @@ static void refresh_cycle(fs_request* request) {
     }
     dirtab_visit(refresh_visitor, request);
     if (request && request->id) { // zero id means nobody is waiting, so no need for header and end marker
-        my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request->id, (long) utf8_strlen(request->path), request->path);
+        response_end(request->id, request->path);
     }
     stopwatch_stop(TRACE_FINE, "refresh cycle");
 }

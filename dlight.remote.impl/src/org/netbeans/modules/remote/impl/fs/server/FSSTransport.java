@@ -195,21 +195,35 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
 
     @Override
-    protected DirEntryList copy(String from, String to) throws IOException, InterruptedException, CancellationException, ExecutionException {
+    protected DirEntryList copy(String from, String to, 
+            Collection<IOException> subdirectoryExceptions) 
+            throws IOException, InterruptedException, CancellationException, ExecutionException {
+
         FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_COPY, from, to);
         FSSResponse response = null;
         RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("fs_server_copy", from, to); // NOI18N
         long time = System.currentTimeMillis();
         try {
             RemoteLogger.finest("Sending request #{0} for copying {1} to {2} to fs_server", request.getId(), from, to);
-            response = dispatcher.dispatch(request);
+            response = dispatcher.dispatch(request);            
             FSSResponse.Package pkg = response.getNextPackage();
-            if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
-                throw createIOException(pkg);
-            } else if(pkg.getKind() != FSSResponseKind.FS_RSP_LS) {
-                throw new IOException("Unexpected package kind: " + pkg.getKind() + " expected " + FSSResponseKind.FS_RSP_LS); // NOI18N
+            while (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
+                IOException ex = createIOException(pkg);
+                subdirectoryExceptions.add(ex);
+                pkg = response.getNextPackage();
             }
-            return readEntries(response, to, request.getId(), dirReadCnt);
+            if (pkg.getKind() == FSSResponseKind.FS_RSP_END) {
+                // no ls info => throw an exception
+                if (subdirectoryExceptions.isEmpty()) {
+                    throw new IOException("Unexpected package list end"); // NOI18N
+                } else {
+                    throw subdirectoryExceptions.iterator().next();
+                }
+            } else if (pkg.getKind() == FSSResponseKind.FS_RSP_LS) {
+                return readEntries(response, to, request.getId(), dirReadCnt);
+            } else {
+                throw new IOException("Unexpected package kind: " + pkg.getKind()); // NOI18N
+            }
         } catch (ConnectException ex) {
             throw new IOException(ex);
         } catch (CancellationException ex) {

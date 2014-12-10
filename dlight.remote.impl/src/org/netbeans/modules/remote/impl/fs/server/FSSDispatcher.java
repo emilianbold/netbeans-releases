@@ -125,7 +125,7 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
-    private static final String MIN_SERVER_VERSION = "1.2.1"; // NOI18N
+    private static final String MIN_SERVER_VERSION = "1.3.0"; // NOI18N
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
@@ -528,6 +528,7 @@ import org.openide.util.RequestProcessor;
                 //}
             }
         } else {
+            RemoteLogger.fine("Reading handshake response from {0}:{1} -> {2}", env, server.path, line);
             Buffer buf = new Buffer(line);
             char respKind = buf.getChar();
             RemoteLogger.assertTrue(respKind == FSSResponseKind.FS_RSP_SERVER_INFO.getChar());
