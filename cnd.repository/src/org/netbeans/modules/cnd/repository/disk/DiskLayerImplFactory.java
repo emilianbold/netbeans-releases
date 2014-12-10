@@ -47,6 +47,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerFactory;
 import org.netbeans.modules.cnd.repository.impl.spi.Layer;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -75,8 +76,8 @@ public final class DiskLayerImplFactory implements LayerFactory {
     }
 
     @Override
-    public Layer createLayer(LayerDescriptor layerDescriptor) {
-        DiskLayerImpl layer = new DiskLayerImpl(layerDescriptor);
+    public Layer createLayer(LayerDescriptor layerDescriptor, LayeringSupport layeringSupport) {
+        DiskLayerImpl layer = new DiskLayerImpl(layerDescriptor, layeringSupport);
         return new DiskLayerImplDelegate(layer, layerDescriptor);
     }
 }

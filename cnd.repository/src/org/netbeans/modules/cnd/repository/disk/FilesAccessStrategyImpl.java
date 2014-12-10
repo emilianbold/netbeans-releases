@@ -43,20 +43,15 @@
  */
 package org.netbeans.modules.cnd.repository.disk;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -65,18 +60,18 @@ import org.netbeans.modules.cnd.repository.Logger;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.disk.index.KeysListFile;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.storage.data.UTF;
+import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataInputStream;
+import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStream;
 import org.netbeans.modules.cnd.repository.testbench.BaseStatistics;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -91,6 +86,8 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
     private final ConcurrentHashMap<Integer, UnitStorage> unitStorageCache = new ConcurrentHashMap<Integer, UnitStorage>();
     private final URI cacheLocationURI;
     private final File cacheLocationFile;
+    private final LayeringSupport layeringSupport;
+    private final LayerDescriptor layerDescriptor;
     // Statistics
     private final AtomicInteger readCnt = new AtomicInteger();
     private final AtomicInteger readHitCnt = new AtomicInteger();
@@ -105,17 +102,20 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
     private static final java.util.logging.Logger log = Logger.getInstance();
 
     public FilesAccessStrategyImpl(LayerIndex layerIndex, URI cacheLocation, 
-            LayerDescriptor layerDescriptor) {
+            LayerDescriptor layerDescriptor, LayeringSupport layeringSupport) {
+        this.layeringSupport = layeringSupport;
+        this.layerDescriptor = layerDescriptor;
         this.layerIndex = layerIndex;
         this.cacheLocationURI = cacheLocation;
         this.cacheLocationFile = Utilities.toFile(cacheLocation);
         this.isWritable = layerDescriptor.isWritable();
         KeysListFile f = null;
-        RepositoryDataInputImpl din = null;
+        RepositoryDataInputStream din = null;
         try {
             final File file = new File(cacheLocationFile, removedKeysTable);
             if (file.exists()) {
-                din = new RepositoryDataInputImpl(RepositoryImplUtil.getBufferedDataInputStream(file));
+                din = new RepositoryDataInputStream(RepositoryImplUtil.getBufferedDataInputStream(file),
+                        LayerConvertersProvider.getInstance(layeringSupport, layerDescriptor));
                 f = new KeysListFile(din);
             } 
         } catch (FileNotFoundException ex) {
@@ -165,7 +165,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
         if (!writable) {
             return;
         }
-        RepositoryDataOutputImpl dos = null;
+        RepositoryDataOutputStream dos = null;
         try {
             
             final File file = new File(cacheLocationFile, removedKeysTable);
@@ -174,7 +174,8 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
                 file.delete();
             }
             //store removed tables on disk
-            dos = new RepositoryDataOutputImpl(RepositoryImplUtil.getBufferedDataOutputStream(file));
+            dos = new RepositoryDataOutputStream(RepositoryImplUtil.getBufferedDataOutputStream(file),
+                    LayerConvertersProvider.getInstance(layeringSupport, layerDescriptor));
             removedKeysFile.write(dos);
         } catch (FileNotFoundException ex) {
             RepositoryExceptions.throwException(this, ex);
@@ -402,7 +403,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
     private UnitStorage getUnitStorage(int unitID) {
         UnitStorage result = unitStorageCache.get(unitID);
         if (result == null) {
-            result = new UnitStorage(cacheLocationFile, unitID);
+            result = new UnitStorage(cacheLocationFile, layerDescriptor, layeringSupport, unitID);
             unitStorageCache.put(unitID, result);
         }
         return result;
@@ -437,9 +438,9 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
         private final SingleFileStorage singleStorage;
         private final File baseDir;
 
-        private UnitStorage(File cacheLocationFile, int unitID) {
+        private UnitStorage(File cacheLocationFile, LayerDescriptor layerDescriptor, LayeringSupport layeringSupport, int unitID) {
             baseDir = new File(cacheLocationFile, "" + unitID); // NOI18N
-            dblStorage = new DoubleFileStorage(baseDir);
+            dblStorage = new DoubleFileStorage(baseDir, layerDescriptor, layeringSupport);
             singleStorage = new SingleFileStorage(baseDir);
         }
 
@@ -508,57 +509,7 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
             RepositoryImplUtil.deleteDirectory(baseDir, true);
         }
     }
-    
-    private static class RepositoryDataInputImpl extends DataInputStream implements RepositoryDataInput {
 
-        public RepositoryDataInputImpl(InputStream in) {
-            super(in);
-        }
-
-        @Override
-        public CharSequence readCharSequenceUTF() throws IOException {
-            return UTF.readUTF(this);
-        }
-
-        @Override
-        public int readUnitId() throws IOException {
-            return readInt();
-        }
-
-        @Override
-        public FileSystem readFileSystem() throws IOException {
-            throw new InternalError();
-        }
-    }    
-    
-    private static class RepositoryDataOutputImpl extends DataOutputStream implements RepositoryDataOutput {
-
-        public RepositoryDataOutputImpl(OutputStream in) {
-            super(in);
-        }
-
-        @Override
-        public void writeCharSequenceUTF(CharSequence seq) throws IOException {
-            UTF.writeUTF(seq, this);
-        }
-
-        @Override
-        public void writeUnitId(int unitId) throws IOException {
-            writeInt(unitId);
-        }
-
-        @Override
-        public void writeFileSystem(FileSystem fileSystem) throws IOException {
-            writeInt(0);
-        }
-
-        @Override
-        public void commit() {
-            
-        }
-
-        
-    }        
 
     private static class MaintenanceStorageComparator  implements Comparator<UnitStorage>, Serializable {
 

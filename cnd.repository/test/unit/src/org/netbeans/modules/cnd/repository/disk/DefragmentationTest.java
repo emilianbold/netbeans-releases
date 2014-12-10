@@ -48,9 +48,17 @@ import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.repository.impl.spi.FSConverter;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.LocalFileSystem;
 
 /**
  * A test for DoubleFileStorage defragmentation
@@ -78,10 +86,68 @@ public class DefragmentationTest extends NbTestCase {
     protected int timeOut() {
         return 500000;
     }
+    
+private static final class NoopUnitIDConverter implements UnitsConverter {
+
+        @Override
+        public int clientToLayer(int clientUnitID) {
+            return clientUnitID;
+        }
+
+        @Override
+        public int layerToClient(int unitIDInLayer) {
+            return unitIDInLayer;
+        }
+    }
+
+    private static final class NoopFSConverter implements FSConverter {
+
+        @Override
+        public FileSystem layerToClient(int fsIdx) {
+            return new LocalFileSystem();
+        }
+
+        @Override
+        public int clientToLayer(FileSystem fileSystem) {
+            return 0;
+        }
+    }       
 
     private DoubleFileStorage createStorage() throws IOException {
         File file = new File(getWorkDir(), "double_file_storage.dat");
-        DoubleFileStorage dfs = new DoubleFileStorage(file);
+        final LayerDescriptor layerDescriptor = new LayerDescriptor(file.toURI());
+        DoubleFileStorage dfs = new DoubleFileStorage(file, layerDescriptor, new LayeringSupport() {
+
+            @Override
+            public List<LayerDescriptor> getLayerDescriptors() {
+                return Arrays.asList(layerDescriptor);
+            }
+
+            @Override
+            public int getStorageID() {
+                return 1;
+            }
+
+            @Override
+            public UnitsConverter getReadUnitsConverter(LayerDescriptor layerDescriptor) {
+                return new NoopUnitIDConverter();
+            }
+
+            @Override
+            public UnitsConverter getWriteUnitsConverter(LayerDescriptor layerDescriptor) {
+                return new NoopUnitIDConverter();
+            }
+
+            @Override
+            public FSConverter getReadFSConverter(LayerDescriptor layerDescriptor) {
+                return new NoopFSConverter();
+            }
+
+            @Override
+            public FSConverter getWriteFSConverter(LayerDescriptor layerDescriptor) {
+                return new NoopFSConverter();
+            }
+        });
         dfs.open(true);
         return dfs;
     }
