@@ -46,6 +46,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LineMap;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -83,7 +84,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.swing.text.StyledDocument;
 import javax.tools.Diagnostic;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.java.source.CancellableTask;
@@ -105,7 +105,6 @@ import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -209,7 +208,7 @@ public final class EditorContextSupport {
                     if (classElement == null) {
                         return ;
                     }
-                    StyledDocument doc = (StyledDocument) ci.getDocument();
+                    LineMap lineMap = ci.getCompilationUnit().getLineMap();
                     if (fieldName == null) {
                         // If no field name is provided, just find the beginning of the class:
                         SourcePositions positions =  ci.getTrees().getSourcePositions();
@@ -220,11 +219,13 @@ public final class EditorContextSupport {
                                     "No position for tree "+tree+" in "+className);
                             return;
                         }
-                        int l = doc.getLength();
-                        while (pos < l && doc.getText(pos, 1).charAt(0) != '{') {
+                        
+                        CharSequence text = ci.getSnapshot().getText();
+                        int l = text.length();
+                        while (pos < l && text.charAt(pos) != '{') {
                             pos++;
                         }
-                        result[0] = NbDocument.findLineNumber(doc, pos) + 2;
+                        result[0] = (int) lineMap.getLineNumber(pos) + 1;
                         return ;
                     }
                     List classMemberElements = elms.getAllMembers(classElement);
@@ -241,7 +242,7 @@ public final class EditorContextSupport {
                                             "No position for tree "+tree+" of element "+elm+" in "+className);
                                     continue;
                                 }
-                                result[0] = NbDocument.findLineNumber(doc, pos) + 1;
+                                result[0] = (int) lineMap.getLineNumber(pos);
                                 //return elms.getSourcePosition(elm).getLine();
                             }
                         }
@@ -370,7 +371,7 @@ public final class EditorContextSupport {
                     if (classElement == null) {
                         return ;
                     }
-                    StyledDocument doc = (StyledDocument) ci.getDocument();
+                    LineMap lineMap = ci.getCompilationUnit().getLineMap();
                     List classMemberElements = ci.getElements().getAllMembers(classElement);
                     for (Iterator it = classMemberElements.iterator(); it.hasNext(); ) {
                         Element elm = (Element) it.next();
@@ -431,7 +432,7 @@ public final class EditorContextSupport {
                                             }
                                         }
                                     }
-                                    result.add(new Integer(NbDocument.findLineNumber(doc, pos) + 1));
+                                    result.add(new Integer((int) lineMap.getLineNumber(pos)));
                                 }
                             }
                         }
@@ -600,7 +601,6 @@ public final class EditorContextSupport {
                                 "No position for tree "+tree+" of element "+classElement+" ("+className+")");
                         return;
                     }
-                    StyledDocument doc = (StyledDocument) ci.getDocument();
                     if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                         boolean shifted = false;
                         ModifiersTree mtree = ((ClassTree) tree).getModifiers();
@@ -619,7 +619,8 @@ public final class EditorContextSupport {
                             }
                         }
                     }
-                    result[0] = new Integer(NbDocument.findLineNumber(doc, pos) + 1);
+                    LineMap lineMap = ci.getCompilationUnit().getLineMap();
+                    result[0] = new Integer((int) lineMap.getLineNumber(pos));
                 }
             });
             if (!f.isDone()) {
@@ -699,8 +700,8 @@ public final class EditorContextSupport {
                                 "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
                     }
-                    StyledDocument doc = (StyledDocument) ci.getDocument();
-                    int offset = NbDocument.findLineOffset(doc, lineNumber - 1);
+                    LineMap lineMap = ci.getCompilationUnit().getLineMap();
+                    int offset = (int) lineMap.getStartPosition(lineNumber);
                     TreePath p = ci.getTreeUtilities().pathFor(offset);
                     while  (p != null && !TreeUtilities.CLASS_TREE_KINDS.contains(p.getLeaf().getKind())) {
                         p = p.getParentPath();

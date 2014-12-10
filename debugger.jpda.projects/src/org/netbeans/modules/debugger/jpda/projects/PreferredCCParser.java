@@ -45,6 +45,7 @@ package org.netbeans.modules.debugger.jpda.projects;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.LineMap;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
@@ -62,8 +63,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
@@ -89,7 +88,6 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -138,6 +136,7 @@ class PreferredCCParser {
                 }
             }
             preferredCI = (CompilationController) handle.getCompilationController();
+            preferredCI.toPhase(JavaSource.Phase.PARSED);
         } else {
             preferredCI = null;
         }
@@ -170,8 +169,8 @@ class PreferredCCParser {
                         if (ci == null) {
                             return;
                         }
-                        StyledDocument doc = (StyledDocument) ci.getDocument();
-                        final int offset = findLineOffset(doc, (int) lineNumber);
+                        LineMap lineMap = ci.getCompilationUnit().getLineMap();
+                        final int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), (int) lineNumber);
                         result[0] = EditorContextSupport.computeOperations(
                                         ci, offset, lineNumber, bytecodeProvider,
                                         opCreationDelegate);
@@ -187,8 +186,8 @@ class PreferredCCParser {
                 if (ci == null) {
                     return new EditorContext.Operation[] {};
                 }
-                StyledDocument doc = (StyledDocument) ci.getDocument();
-                final int offset = findLineOffset(doc, (int) lineNumber);
+                LineMap lineMap = ci.getCompilationUnit().getLineMap();
+                final int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), (int) lineNumber);
                 synchronized (ci) {
                     result[0] = EditorContextSupport.computeOperations(
                                     ci, offset, lineNumber, bytecodeProvider,
@@ -277,8 +276,8 @@ class PreferredCCParser {
                         if (ci == null) {
                             return;
                         }
-                        StyledDocument doc = (StyledDocument) ci.getDocument();
-                        int offset = findLineOffset(doc, methodLineNumber);
+                        LineMap lineMap = ci.getCompilationUnit().getLineMap();
+                        int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), methodLineNumber);
                         args[0] = EditorContextSupport.computeMethodArguments(
                                     ci, methodLineNumber, offset,
                                     opCreationDelegate);
@@ -294,8 +293,8 @@ class PreferredCCParser {
                 if (ci == null) {
                     return null;
                 }
-                StyledDocument doc = (StyledDocument) ci.getDocument();
-                int offset = findLineOffset(doc, methodLineNumber);
+                LineMap lineMap = ci.getCompilationUnit().getLineMap();
+                int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), methodLineNumber);
                 synchronized (ci) {
                     args[0] = EditorContextSupport.computeMethodArguments(
                                 ci, methodLineNumber, offset,
@@ -494,9 +493,9 @@ class PreferredCCParser {
             }
             Scope scope = null;
             int offset = 0;
-            StyledDocument doc = (StyledDocument) ci.getDocument();
-            if (doc != null) {
-                offset = findLineOffset(doc, line);
+            LineMap lineMap = ci.getCompilationUnit().getLineMap();
+            if (lineMap != null) {
+                offset = findLineOffset(lineMap, ci.getSnapshot().getText(), line);
                 scope = ci.getTreeUtilities().scopeFor(offset);
             }
             SourcePositions[] sourcePtr = new SourcePositions[] { null };
@@ -537,7 +536,7 @@ class PreferredCCParser {
                 //context.setTrees(ci.getTrees());
                 java.lang.reflect.Method setTreePathMethod =
                         context.getClass().getMethod("setTreePath", new Class[] { TreePath.class });
-                if (doc != null) {
+                if (lineMap != null) {
                     treePath = ci.getTreeUtilities().pathFor(offset);
                     treePath = new TreePath(treePath, tree);
                     setTreePathMethod.invoke(context, treePath);
@@ -582,21 +581,17 @@ class PreferredCCParser {
     /** return the offset of the first non-whitespace character on the line,
                or -1 when the line does not exist
      */
-    private static int findLineOffset(StyledDocument doc, int lineNumber) {
+    private static int findLineOffset(LineMap lineMap, CharSequence text, int lineNumber) {
         int offset;
         try {
-            offset = NbDocument.findLineOffset (doc, lineNumber - 1);
-            int offset2 = NbDocument.findLineOffset (doc, lineNumber);
-            try {
-                String lineStr = doc.getText(offset, offset2 - offset);
-                for (int i = 0; i < lineStr.length(); i++) {
-                    if (!Character.isWhitespace(lineStr.charAt(i))) {
-                        offset += i;
-                        break;
-                    }
+            offset = (int) lineMap.getStartPosition(lineNumber);
+            int offset2 = (int) lineMap.getStartPosition(lineNumber + 1);
+            CharSequence lineStr = text.subSequence(offset, offset2);
+            for (int i = 0; i < lineStr.length(); i++) {
+                if (!Character.isWhitespace(lineStr.charAt(i))) {
+                    offset += i;
+                    break;
                 }
-            } catch (BadLocationException ex) {
-                // ignore
             }
         } catch (IndexOutOfBoundsException ioobex) {
             return -1;
