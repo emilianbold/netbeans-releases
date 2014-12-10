@@ -400,7 +400,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private synchronized void search() {
         cancelBackgroundTasks();
         setResults(null, null, true, -1);
-        currentSearch = new SearchExecutor(this);
+        currentSearch = new SearchExecutor(fileSystem, this);
         currentSearch.start();
     }
     
@@ -891,6 +891,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         private final SVNUrl repoUrl;
 
         private Search (SVNUrl repoUrl, int count) {
+            super(fileSystem);
             this.repoUrl = repoUrl;
             this.count = count;
             this.executor = currentSearch;

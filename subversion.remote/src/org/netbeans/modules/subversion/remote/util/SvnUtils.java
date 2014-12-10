@@ -43,6 +43,7 @@ package org.netbeans.modules.subversion.remote.util;
 
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -107,7 +108,6 @@ import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.cookies.*;
 import org.openide.filesystems.FileObject;
@@ -126,13 +126,14 @@ import org.openide.windows.TopComponent;
  */
 public class SvnUtils {
 
-    public static final String SVN_ADMIN_DIR;
-    public static final String SVN_ENTRIES_DIR;
-    public static final String SVN_WC_DB;
+    public static final String SVN_ADMIN_DIR = ".svn";
+    public static final String SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
+    public static final String SVN_WC_DB = SVN_ADMIN_DIR + "/wc.db";
     private static final Pattern metadataPattern;
 
     public static final HashSet<Character> autoEscapedCharacters = new HashSet<>(6);
     static {
+        metadataPattern = Pattern.compile(".*\\" + "/" + SVN_ADMIN_DIR.replace(".", "\\.") + "(\\" + "/" + ".*|$)");
         autoEscapedCharacters.add(';');
         autoEscapedCharacters.add('?');
         autoEscapedCharacters.add('#');
@@ -140,13 +141,6 @@ public class SvnUtils {
         autoEscapedCharacters.add('[');
         autoEscapedCharacters.add(']');
         autoEscapedCharacters.add(' ');
-    }
-
-    static {
-        SVN_ADMIN_DIR = ".svn";
-        SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
-        SVN_WC_DB = SVN_ADMIN_DIR + "/wc.db";
-        metadataPattern = Pattern.compile(".*\\" + "/" + SVN_ADMIN_DIR.replace(".", "\\.") + "(\\" + "/" + ".*|$)");
     }
 
     private static Reference<Context>  contextCached = new WeakReference<>(null);
@@ -311,7 +305,9 @@ public class SvnUtils {
             try {
                 new MessageFormat(format);
             } catch (IllegalArgumentException ex) {
-                Subversion.LOG.log(Level.FINER, "Bad user input - annotation format", ex);
+                if (Subversion.LOG.isLoggable(Level.FINER)) {
+                    Subversion.LOG.log(Level.FINER, "Bad user input - annotation format", ex);
+                }
                 retval = false;
             }
         }
@@ -1055,7 +1051,7 @@ public class SvnUtils {
         OutputStream os = null;
         InputStream is = null;
         try {
-            VCSFileProxy oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, revision.toString(), file.getName());
+            File oldFile = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(file)).getFileRevision(repoUrl, fileUrl, revision.toString(), file.getName());
             FileObject fo = file.toFileObject();
             if (fo == null) {
                 fo = parent.toFileObject().createData(file.getName());
@@ -1068,11 +1064,13 @@ public class SvnUtils {
                 }
             }
             os = fo.getOutputStream();
-            is = oldFile.getInputStream(false);
+            is = FileUtil.toFileObject(oldFile).getInputStream();
             FileUtil.copy(is, os);
         } catch (IOException e) {
             if (refersToDirectory(e)) {
-                Subversion.LOG.log(Level.FINE, null, e);
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, null, e);
+                }
                 logger.logError(NbBundle.getMessage(SearchHistoryAction.class, "MSG_SummaryView.refersToDirectory", fileUrl)); //NOI18N
             } else {
                 Subversion.LOG.log(Level.SEVERE, null, e);
@@ -1734,16 +1732,16 @@ public class SvnUtils {
     }
 
     public static void openInRevision(final VCSFileProxy originalFile, final SVNUrl repoUrl, final SVNUrl fileUrl, final SVNRevision svnRevision, final SVNRevision pegRevision, boolean showAnnotations) {
-        VCSFileProxy file;
+        File file;
         String rev = svnRevision.toString();
         try {
-            file = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, rev, pegRevision.toString(), originalFile.getName());
+            file = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(originalFile)).getFileRevision(repoUrl, fileUrl, rev, pegRevision.toString(), originalFile.getName());
         } catch (IOException e) {
-            SvnClientExceptionHandler.notifyException(new Context(file), e, true, true);
+            SvnClientExceptionHandler.notifyException(new Context(originalFile), e, true, true);
             return;
         }
 
-        final FileObject fo = file.normalizeFile().toFileObject();
+        final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         EditorCookie ec = null;
         org.openide.cookies.OpenCookie oc = null;
         try {
@@ -1751,7 +1749,9 @@ public class SvnUtils {
             ec = dobj.getLookup().lookup(EditorCookie.class);
             oc = dobj.getLookup().lookup(org.openide.cookies.OpenCookie.class);
         } catch (DataObjectNotFoundException ex) {
-            Subversion.LOG.log(Level.FINE, null, ex);
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, null, ex);
+            }
         }
         org.openide.text.CloneableEditorSupport ces = null;
         if (ec == null && oc != null) {
@@ -1850,7 +1850,9 @@ public class SvnUtils {
             VCSFileProxy parent = f.getParentFile();
             if (parent != null) {
                 parents.add(parent);
-                Subversion.LOG.log(Level.FINE, "scheduling for fs refresh: [{0}]", parent); // NOI18N
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, "scheduling for fs refresh: [{0}]", parent); // NOI18N
+                }
             }
         }
         if (parents.size() > 0) {
@@ -1883,7 +1885,7 @@ public class SvnUtils {
                         Subversion.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
                     }
                     indexingFiles.set(new HashSet<>(Arrays.asList(files)));
-                    return IndexingBridge.getInstance().runWithoutIndexing(callable, files);
+                    return runWithoutIndexingImpl(callable, files);
                 } finally {
                     indexingFiles.remove();
                 }
@@ -1894,6 +1896,41 @@ public class SvnUtils {
             throw ex;
         } catch (Exception ex) {
             throw new SVNClientException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N
+        }
+    }
+
+    private static <T> T runWithoutIndexingImpl(Callable<T> operation, VCSFileProxy ... files) throws Exception  {
+        boolean refreshFS = true;
+        try {
+            return operation.call();
+        } finally {
+            final Set<VCSFileProxy> parents = new HashSet<VCSFileProxy>();
+            for (VCSFileProxy f : files) {
+                VCSFileProxy parent = f.getParentFile();
+                if (parent != null) {
+                    parents.add(parent);
+                    if ( Subversion.LOG.isLoggable(Level.FINE)) {
+                        Subversion.LOG.fine("scheduling for fs refresh: [" + parent + "]"); // NOI18N
+                    }
+                }
+            }
+
+            if (refreshFS && parents.size() > 0) {
+                // let's give the filesystem some time to wake up and to realize that the file has really changed
+                org.netbeans.modules.versioning.util.Utils.postParallel(new Runnable() {
+                    @Override
+                    public void run() {
+                        long t = System.currentTimeMillis();
+                        try {
+                            FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                        } finally {                                
+                            if ( Subversion.LOG.isLoggable(Level.FINE)) {
+                                Subversion.LOG.fine(" refreshing " + parents.size() + " parents took " + (System.currentTimeMillis() - t) + " millis.");
+                            }
+                        }
+                    }
+                }, 100); 
+            }
         }
     }
 

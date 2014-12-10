@@ -89,7 +89,9 @@ class Commandline {
    
     private void destroy() throws IOException {
         canceled.cancel();
-        Subversion.LOG.fine("cli: Process destroyed");                          // NOI18N
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.fine("cli: Process destroyed");                          // NOI18N
+        }
     }
 
     // why synchronized? with 1.7, all commands go through this method, even those parallelizable ones
@@ -100,25 +102,35 @@ class Commandline {
         command.prepareCommand();        
         
         String cmd = executable + " " + command.getStringCommand();
-        Subversion.LOG.log(Level.FINE, "cli: Executing \"{0}\"", cmd);          // NOI18N
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "cli: Executing \"{0}\"", cmd);          // NOI18N
+            Subversion.LOG.fine("cli: Creating process...");                        // NOI18N
+        }
         
-        Subversion.LOG.fine("cli: Creating process...");                        // NOI18N
         command.commandStarted();
         try {
             ProcessBuilder processBuilder = VersioningSupport.createProcessBuilder(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
             String[] args = command.getCliArguments();
-            Subversion.LOG.fine("cli: process created");                        // NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine("cli: process created");                        // NOI18N
+            }
             ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(cmd, getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args);
 
             if(command.hasBinaryOutput()) {
-                Subversion.LOG.fine("cli: ready for binary OUTPUT \"");         // NOI18N          
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.fine("cli: ready for binary OUTPUT \"");         // NOI18N          
+                }
                 if(Subversion.LOG.isLoggable(Level.FINER)) {
                     Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", new String(exitStatus.bytes)); // NOI18N
                 }
                 command.output(exitStatus.bytes);
             } else {             
-                Subversion.LOG.fine("cli: ready for OUTPUT \"");                // NOI18N     
-                Subversion.LOG.log(Level.FINE, "cli: OUTPUT \"{0}\"", exitStatus.output);// NOI18N
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.fine("cli: ready for OUTPUT \"");                // NOI18N     
+                }
+                if(Subversion.LOG.isLoggable(Level.FINER)) {
+                    Subversion.LOG.log(Level.FINE, "cli: OUTPUT \"{0}\"", exitStatus.output);// NOI18N
+                }
                 for(String line : exitStatus.output.split("\n")) {
                     command.outputText(line);
                 }
@@ -132,7 +144,9 @@ class Commandline {
             command.commandCompleted(exitStatus.exitCode);
         } catch (Throwable t) {
             if(canceled.canceled()) {
-                Subversion.LOG.fine(t.getMessage());
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.fine(t.getMessage());
+                }
             } else {
                 if(t instanceof IOException) {
                     throw (IOException) t;
@@ -141,7 +155,9 @@ class Commandline {
                 }
             }
         } finally {
-            Subversion.LOG.fine("cli: process finnished");                      // NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine("cli: process finnished");                      // NOI18N
+            }
             command.commandFinished();
         }        
     }    

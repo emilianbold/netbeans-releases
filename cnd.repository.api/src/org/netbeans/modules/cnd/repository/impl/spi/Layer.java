@@ -65,8 +65,7 @@ public interface Layer {
 
 
 
-    // Index in the returned list IS an ID of the unit in this layer
-    public List<UnitDescriptor> getUnitsTable();
+    public UnitDescriptorsList getUnitsTable();
 
     public List<FileSystem> getFileSystemsTable();
 

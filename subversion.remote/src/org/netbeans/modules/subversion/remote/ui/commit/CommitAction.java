@@ -86,6 +86,7 @@ import org.netbeans.modules.subversion.remote.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.remote.util.ClientCheckSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
@@ -411,7 +412,7 @@ public class CommitAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(ctx.getFileSystem()) {
             @Override
             public void perform() {
                 performCommit(message, commitFiles, ctx, rootFiles, this, hooks);
@@ -421,7 +422,7 @@ public class CommitAction extends ContextAction {
     }
 
     private static SvnProgressSupport getProgressSupport (final Context ctx, final List<VCSFileProxy> roots, final CommitTable data, JPanel progressPanel, final boolean deepScanEnabled) {
-        SvnProgressSupport support = new PanelProgressSupport(progressPanel) {
+        SvnProgressSupport support = new PanelProgressSupport(ctx.getFileSystem(), progressPanel) {
             
             @Override
             public void perform() {
@@ -891,7 +892,7 @@ public class CommitAction extends ContextAction {
             if (files.length > 0 && !supp.isCanceled() && revision > -1) {
                 ISVNLogMessage revisionLog = getLogMessage (files, revision);
                 if (revisionLog != null) {
-                    Subversion.getInstance().getLogger(getRepositoryRootUrl(files[0])).logMessage(NbBundle.getMessage(CommitAction.class, "MSG_OutputCommitMessage",
+                    Subversion.getInstance().getLogger(VCSFileProxySupport.getFileSystem(files[0]), getRepositoryRootUrl(files[0])).logMessage(NbBundle.getMessage(CommitAction.class, "MSG_OutputCommitMessage",
                             new Object[]{
                                 revisionLog.getRevision(),
                                 revisionLog.getAuthor(),

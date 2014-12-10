@@ -306,7 +306,7 @@ public class RepositoryPathNode extends AbstractNode {
             setKeys(Collections.singleton(waitNode));
 
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(pathEntry.getRepositoryFile().getRepositoryUrl());
-            SvnProgressSupport support = new SvnProgressSupport() {
+            SvnProgressSupport support = new SvnProgressSupport(pathEntry.getRepositoryFile().getFileSystem()) {
                 @Override
                 public void perform() {
                     try {
@@ -569,7 +569,7 @@ public class RepositoryPathNode extends AbstractNode {
             SVNRevision revision = entry.getLastChangedRevision();
             SVNUrl repositoryUrl = entry.getRepositoryFile().getRepositoryUrl();
             SVNUrl fileUrl = entry.getRepositoryFile().getFileUrl();
-            final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(repositoryUrl, fileUrl, revision));
+            final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(entry.getRepositoryFile().getFileSystem(), repositoryUrl, fileUrl, revision));
             return svnSearch.getSearchPanel();
         }
     }

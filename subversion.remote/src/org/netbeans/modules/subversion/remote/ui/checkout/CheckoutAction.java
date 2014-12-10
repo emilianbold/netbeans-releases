@@ -100,7 +100,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         
     private VCSFileProxy performCheckout (final boolean wait) {
         assert !wait || !EventQueue.isDispatchThread(); // cannot wait in AWT
-        FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
+        final FileSystem defaultFileSystem = VCSFileProxySupport.getDefaultFileSystem();
         if (defaultFileSystem == null) {
             return null;
         }
@@ -133,7 +133,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
                     SvnClientExceptionHandler.notifyException(context, ex, true, true); // should not happen
                     return;
                 }
-                Task t = performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted);
+                Task t = performCheckout(defaultFileSystem, repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted);
                 t.addTaskListener(new TaskListener() {
                     @Override
                     public void taskFinished (Task task) {
@@ -157,7 +157,8 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         return wizard.getWorkdir();
     }
     
-    public static RequestProcessor.Task performCheckout(
+    private RequestProcessor.Task performCheckout(
+        final FileSystem fileSystem,
         final SVNUrl repository,
         final SvnClient client,
         final RepositoryFile[] repositoryFiles,
@@ -166,7 +167,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         final boolean doExport,
         final boolean showCheckoutCompleted)
     {
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(fileSystem) {
             @Override
             public void perform() {
                 try {

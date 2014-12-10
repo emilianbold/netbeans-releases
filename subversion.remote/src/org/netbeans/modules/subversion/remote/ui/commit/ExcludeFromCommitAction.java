@@ -116,7 +116,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
 
     @Override
     public void performContextAction(final Node[] nodes) {
-        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+        ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, getCachedContext(nodes)) {
             @Override
             public void perform() {
                 int status = getActionStatus(nodes);

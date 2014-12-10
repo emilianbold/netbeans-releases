@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -65,18 +66,20 @@ public class RepositoryFile {
     private boolean repositoryRoot;
 
     private String name;
+    private final FileSystem fileSystem;
     
-    public RepositoryFile(SVNUrl repositoryUrl, SVNRevision revision) {
+    public RepositoryFile(FileSystem fileSystem, SVNUrl repositoryUrl, SVNRevision revision) {
         assert repositoryUrl != null;        
         assert revision != null;
         
         this.repositoryUrl = repositoryUrl;
         this.revision = revision;
         repositoryRoot = true;
+        this.fileSystem = fileSystem;
     }
         
-    public RepositoryFile(SVNUrl repositoryUrl, SVNUrl fileUrl, SVNRevision revision) {       
-        this(repositoryUrl, revision);
+    public RepositoryFile(FileSystem fileSystem, SVNUrl repositoryUrl, SVNUrl fileUrl, SVNRevision revision) {       
+        this(fileSystem, repositoryUrl, revision);
         this.fileUrl = fileUrl;        
         repositoryRoot = fileUrl == null;   
         
@@ -97,8 +100,8 @@ public class RepositoryFile {
         }                
     }
 
-    public RepositoryFile(SVNUrl repositoryUrl, String[] pathSegments, SVNRevision revision) throws MalformedURLException {
-        this(repositoryUrl, revision);
+    public RepositoryFile(FileSystem fileSystem, SVNUrl repositoryUrl, String[] pathSegments, SVNRevision revision) throws MalformedURLException {
+        this(fileSystem, repositoryUrl, revision);
         this.pathSegments = pathSegments;    
         repositoryRoot = pathSegments == null;        
         
@@ -115,8 +118,8 @@ public class RepositoryFile {
         }
     }
     
-    public RepositoryFile(SVNUrl repositoryUrl, String path, SVNRevision revision) throws MalformedURLException {
-        this(repositoryUrl, revision);
+    public RepositoryFile(FileSystem fileSystem, SVNUrl repositoryUrl, String path, SVNRevision revision) throws MalformedURLException {
+        this(fileSystem, repositoryUrl, revision);
         this.path = path;
         repositoryRoot = path == null;        
         
@@ -124,6 +127,10 @@ public class RepositoryFile {
             fileUrl = repositoryUrl.appendPath(path);        
             pathSegments = path.split("/"); // NOI18N
         }
+    }
+    
+    public FileSystem getFileSystem() {
+        return fileSystem;
     }
     
     public SVNUrl getRepositoryUrl() {
@@ -189,7 +196,7 @@ public class RepositoryFile {
     }
 
     public RepositoryFile appendPath(String path) {
-        return new RepositoryFile(repositoryUrl, getFileUrl().appendPath(path), revision);
+        return new RepositoryFile(fileSystem, repositoryUrl, getFileUrl().appendPath(path), revision);
     }       
 
     public RepositoryFile replaceLastSegment(String segment, int level) {
@@ -214,7 +221,7 @@ public class RepositoryFile {
         } catch (MalformedURLException ex) {
             Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);   // should not happen            
         }                        
-        return new RepositoryFile(repositoryUrl, newUrl, revision);
+        return new RepositoryFile(fileSystem, repositoryUrl, newUrl, revision);
     }
 
     public RepositoryFile  removeLastSegment() {                
@@ -231,7 +238,7 @@ public class RepositoryFile {
         } catch (MalformedURLException ex) {
             Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);  // should not happen
         }                        
-        return new RepositoryFile(repositoryUrl, newUrl, revision);
+        return new RepositoryFile(fileSystem, repositoryUrl, newUrl, revision);
     }         
     
 }

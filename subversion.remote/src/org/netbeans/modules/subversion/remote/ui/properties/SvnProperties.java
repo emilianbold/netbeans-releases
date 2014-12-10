@@ -277,16 +277,17 @@ public final class SvnProperties implements ActionListener {
 
     protected void refreshProperties() {
         final SVNUrl repositoryUrl;
+        final Context context = new Context(roots);
         try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
-            support = new SvnProgressSupport() {
+            support = new SvnProgressSupport(context.getFileSystem()) {
                 HashMap<String, String> properties;
                 @Override
                 protected void perform() {
@@ -355,16 +356,17 @@ public final class SvnProperties implements ActionListener {
 
     private void setProperties() {
         final SVNUrl repositoryUrl;
+        final Context context = new Context(roots);
         try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(roots[0]);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
-            support = new SvnProgressSupport() {
+            support = new SvnProgressSupport(context.getFileSystem()) {
                 ISVNProperty[] isvnProps;
                 @Override
                 protected void perform() {
@@ -479,7 +481,7 @@ public final class SvnProperties implements ActionListener {
         final int[] rows = propTable.getSelectedItems();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
-            support = new SvnProgressSupport() {
+            support = new SvnProgressSupport(context.getFileSystem()) {
                 @Override
                 protected void perform() {
                     SvnClient client;

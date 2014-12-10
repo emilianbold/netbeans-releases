@@ -70,6 +70,7 @@ import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -103,13 +104,10 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private List<PropertyChangeListener> listeners;
     
     private PropertyChangeSupport propertyChangeSupport;
+    private final FileSystem fileSystem;
     
-    public RepositoryPaths(RepositoryFile repositoryFile,
-                           JTextComponent repositoryPathTextField,
-                           JButton browseButton,
-                           JTextField revisionTextField,
-                           JButton searchRevisionButton) {
-        this(repositoryFile,
+    public RepositoryPaths(FileSystem fileSystem, RepositoryFile repositoryFile, JTextComponent repositoryPathTextField, JButton browseButton, JTextField revisionTextField, JButton searchRevisionButton) {
+        this(fileSystem, repositoryFile,
             repositoryPathTextField,
             browseButton,
             revisionTextField,
@@ -117,17 +115,12 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             null);
     }
 
-    public RepositoryPaths(RepositoryFile repositoryFile, 
-                           JTextComponent repositoryPathTextField,  
-                           JButton browseButton, 
-                           JTextField revisionTextField, 
-                           JButton searchRevisionButton,
-                           JButton browseRevisionButton) {
+    public RepositoryPaths(FileSystem fileSystem, RepositoryFile repositoryFile, JTextComponent repositoryPathTextField, JButton browseButton, JTextField revisionTextField, JButton searchRevisionButton, JButton browseRevisionButton) {
 
         assert repositoryFile != null;
         assert (repositoryPathTextField !=null && browseButton != null) ||
                (revisionTextField != null && searchRevisionButton != null);
-
+        this.fileSystem = fileSystem;
         this.repositoryFile = repositoryFile;
 
         if(repositoryPathTextField!=null) {
@@ -189,13 +182,13 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         SVNRevision revision = getRevision();
         
         if(repositoryPathTextField==null) {
-            RepositoryFile rf = new RepositoryFile(repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl(), revision);
+            RepositoryFile rf = new RepositoryFile(fileSystem, repositoryFile.getRepositoryUrl(), repositoryFile.getFileUrl(), revision);
             return new RepositoryFile[] {rf};
         }
      
         if(getRepositoryString().equals("")) { // NOI18N
             if(defaultPath != null && !defaultPath.trim().equals("") ) {                
-                return new RepositoryFile[] { new RepositoryFile(getRepositoryUrl(), defaultPath, revision) } ;
+                return new RepositoryFile[] { new RepositoryFile(fileSystem, getRepositoryUrl(), defaultPath, revision) } ;
             } else {
                 return EMPTY_REPOSITORY_FILES;   
             }            
@@ -220,12 +213,12 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                 // so check if it matches with the given repository URL
                 if(path.startsWith(repositoryUrlString)) {
                     // lets take only the part without the repository base URL
-                    ret[i] = new RepositoryFile(repositoryUrl, path.substring(repositoryUrlString.length()), revision);
+                    ret[i] = new RepositoryFile(fileSystem, repositoryUrl, path.substring(repositoryUrlString.length()), revision);
                 } else {
                     throw new MalformedURLException(NbBundle.getMessage(RepositoryPaths.class, "MSG_RepositoryPath_WrongStart", path, repositoryUrlString)); // NOI18N
                 }
             } else {                
-                ret[i] = new RepositoryFile(repositoryUrl, path, revision);    
+                ret[i] = new RepositoryFile(fileSystem, repositoryUrl, path, revision);    
             }                
         }                                    
         return ret;
@@ -241,8 +234,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
             return;
         }
         
-        RepositoryFile repositoryFile = new RepositoryFile(getRepositoryUrl(), revision);
-        Browser browser = new Browser(browserPurpose, browserMode, repositoryFile, repositoryFilesToSelect, browserActions, browserHelpID);                               
+        RepositoryFile repositoryFile = new RepositoryFile(fileSystem, getRepositoryUrl(), revision);
+        Browser browser = new Browser(fileSystem, browserPurpose, browserMode, repositoryFile, repositoryFilesToSelect, browserActions, browserHelpID);                               
 
         // handle results    
         RepositoryFile[] selectedFiles = browser.getRepositoryFiles();
@@ -263,9 +256,9 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         final SVNUrl repositoryUrl = getRepositoryUrl();
 
         String title = NbBundle.getMessage(RepositoryPaths.class, "CTL_BrowseTag"); // NOI18N
-        RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
+        RepositoryFile repoFile = new RepositoryFile(fileSystem, repositoryUrl, SVNRevision.HEAD);
         int mode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;
-        Browser browser = new Browser(title, mode, repoFile, null, null, Browser.BROWSER_HELP_ID_MERGE_TAG);
+        Browser browser = new Browser(fileSystem, title, mode, repoFile, null, null, Browser.BROWSER_HELP_ID_MERGE_TAG);
         final RepositoryFile[] repositoryFiles = browser.getRepositoryFiles();
         if(repositoryFiles == null || repositoryFiles.length == 0) {
             return;

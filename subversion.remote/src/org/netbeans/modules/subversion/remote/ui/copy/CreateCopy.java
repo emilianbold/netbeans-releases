@@ -97,7 +97,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
                         
         copyFromRepositoryPaths = 
             new RepositoryPaths(
-                repositoryFile, 
+                repositoryFile.getFileSystem(), repositoryFile, 
                 panel.copyFromRemoteTextField,
                 null,
                 panel.copyFromRevisionTextField,
@@ -118,7 +118,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         
         copyToRepositoryPaths = 
             new RepositoryPaths(
-                repositoryFile, 
+                repositoryFile.getFileSystem(), repositoryFile, 
                 (JTextComponent) panel.urlComboBox.getEditor().getEditorComponent(),
                 panel.browseRepositoryButton,
                 null,

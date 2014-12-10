@@ -353,7 +353,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private void onManageConnClick() {
         if (repository == null) {
             panel.manageConnSettingsButton.setEnabled(false);
-            new SvnProgressSupport() {
+            new SvnProgressSupport(fileSystem) {
                 @Override
                 protected void perform () {
                     try {

@@ -404,7 +404,9 @@ public class Annotator extends VCSAnnotator {
             if (info == null) {
                 // status not in cache, plan refresh
                 VCSFileProxy parentFile = file.getParentFile();
-                Subversion.LOG.log(Level.FINE, "null cached status for: {0} in {1}", new Object[] {file, parentFile});
+                if ( Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, "null cached status for: {0} in {1}", new Object[] {file, parentFile});
+                }
                 cache.refreshAsync(file);
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
             }
@@ -598,7 +600,9 @@ public class Annotator extends VCSAnnotator {
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 VCSFileProxy parentFile = file.getParentFile();
-                Subversion.LOG.log(Level.FINE, "null cached status for: {0} in {1}", new Object[] {file, parentFile});
+                if ( Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, "null cached status for: {0} in {1}", new Object[] {file, parentFile});
+                }
                 filesToRefresh.add(file);
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
             }
@@ -702,10 +706,14 @@ public class Annotator extends VCSAnnotator {
                     }
                 });
             }
-            Subversion.LOG.log(Level.FINE, " skipping {0} due to not yet initialized client", methodName); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, " skipping {0} due to not yet initialized client", methodName); //NOI18N
+            }
             available = false;
         } else if(!SvnClientFactory.isClientAvailable(new Context(files))) {
-            Subversion.LOG.log(Level.FINE, " skipping {0} due to missing client", methodName); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, " skipping {0} due to missing client", methodName); //NOI18N
+            }
             available = false;
         }
         return available;

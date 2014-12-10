@@ -69,6 +69,7 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.text.NbDocument;
 import org.openide.util.Mutex;
@@ -185,7 +186,7 @@ public class BlameAction extends ContextAction {
 
     private static void computeAnnotations(SVNUrl repository, final VCSFileProxy file, final AnnotationBar ab, final SVNRevision revision) {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(VCSFileProxySupport.getFileSystem(file)) {
             @Override
             public void perform() {                    
                 computeAnnotations(file, this, ab, revision);

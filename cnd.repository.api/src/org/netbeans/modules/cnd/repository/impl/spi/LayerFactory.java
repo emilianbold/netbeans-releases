@@ -53,7 +53,8 @@ public interface LayerFactory {
      * Creates and initializes a layer.
      *
      * @param layerDescriptor
+     * @param layeringSupport
      * @return
      */
-    Layer createLayer(LayerDescriptor layerDescriptor);
+    Layer createLayer(LayerDescriptor layerDescriptor, LayeringSupport layeringSupport);
 }

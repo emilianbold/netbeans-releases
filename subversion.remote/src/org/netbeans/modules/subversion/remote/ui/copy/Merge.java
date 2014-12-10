@@ -68,6 +68,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 
@@ -351,7 +352,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
             RepositoryPaths mergeStartRepositoryPaths =
                 new RepositoryPaths(
-                    repositoryRoot,
+                    VCSFileProxySupport.getFileSystem(root), repositoryRoot,
                     (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeStartBrowseButton,
                     panel.mergeStartRevisionTextField,
@@ -361,7 +362,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
             RepositoryPaths mergeEndRepositoryPaths =
                 new RepositoryPaths(
-                    repositoryRoot,
+                    VCSFileProxySupport.getFileSystem(root), repositoryRoot,
                     (JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeEndBrowseButton,
                     panel.mergeEndRevisionTextField,
@@ -443,7 +444,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
             RepositoryPaths mergeStartRepositoryPaths =
                 new RepositoryPaths(
-                    repositoryRoot,
+                    VCSFileProxySupport.getFileSystem(root), repositoryRoot,
                     (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
                     null,
                     panel.mergeStartRevisionTextField,
@@ -453,7 +454,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
             mergeEndRepositoryPaths =
                 new RepositoryPaths(
-                    repositoryRoot,
+                    VCSFileProxySupport.getFileSystem(root), repositoryRoot,
                     (JTextComponent) panel.mergeStartUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeStartBrowseButton,
                     panel.mergeEndRevisionTextField,
@@ -539,7 +540,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
             mergeEndRepositoryPaths =
                 new RepositoryPaths(
-                    repositoryRoot,
+                    VCSFileProxySupport.getFileSystem(root), repositoryRoot,
                     (JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeEndBrowseButton,
                     panel.mergeEndRevisionTextField,
@@ -655,7 +656,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
             mergeEndRepositoryPaths =
                 new RepositoryPaths(
-                    repositoryRoot,
+                    VCSFileProxySupport.getFileSystem(root), repositoryRoot,
                     (JTextComponent) panel.mergeEndUrlComboBox.getEditor().getEditorComponent(),
                     panel.mergeEndBrowseButton,
                     null,

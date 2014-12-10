@@ -115,7 +115,7 @@ public class ExportAction extends ContextAction {
         rp.post(new Runnable() {
             @Override
             public void run() {
-                ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(ExportAction.this, nodes) {
+                ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(ExportAction.this, nodes, getCachedContext(nodes)) {
                     @Override
                     public void perform() {
                         VCSFileProxy fromFile = export.getFromFile();

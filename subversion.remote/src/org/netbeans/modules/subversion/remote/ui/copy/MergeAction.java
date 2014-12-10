@@ -122,7 +122,7 @@ public class MergeAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }           
-        final RepositoryFile repositoryRoot = new RepositoryFile(rootUrl, url, SVNRevision.HEAD);
+        final RepositoryFile repositoryRoot = new RepositoryFile(ctx.getFileSystem(), rootUrl, url, SVNRevision.HEAD);
 
         final Merge merge = new Merge(repositoryRoot, interestingFile);
         if(merge.showDialog()) {

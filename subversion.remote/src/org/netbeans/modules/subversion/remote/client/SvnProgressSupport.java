@@ -53,6 +53,7 @@ import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -73,6 +74,11 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNN
     private OutputLogger logger;
     private SVNUrl repositoryRoot;
     private RequestProcessor.Task task;
+    private final FileSystem fileSystem;
+    
+    protected SvnProgressSupport(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
     
     public RequestProcessor.Task start(RequestProcessor rp, SVNUrl repositoryRoot, String displayName) {
         setDisplayName(displayName);        
@@ -192,14 +198,16 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNN
     
     protected OutputLogger getLogger() {
         if (logger == null) {
-            logger = Subversion.getInstance().getLogger(repositoryRoot);
+            logger = Subversion.getInstance().getLogger(fileSystem, repositoryRoot);
         }
         return logger;
     }
 
     private static void log(String msg) {
         SvnUtils.logT9Y(msg);
-        Subversion.LOG.log(Level.FINE, msg); 
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, msg); 
+        }
     }
 
     private void logChangedDisplayName(String thisDisplayName, String displayName) {

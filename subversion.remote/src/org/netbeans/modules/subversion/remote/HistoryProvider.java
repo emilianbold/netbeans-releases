@@ -43,6 +43,7 @@ package org.netbeans.modules.subversion.remote;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -169,7 +170,9 @@ public class HistoryProvider implements VCSHistoryProvider {
             return ret.toArray(new HistoryEntry[ret.size()]);
         } catch (SVNClientException e) {
             if (SvnClientExceptionHandler.isCancelledAction(e.getMessage())) {
-                Subversion.LOG.log(Level.FINE, null, e);
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, null, e);
+                }
             } else {
                 SvnClientExceptionHandler.notifyException(new Context(files), e, true, true);
             }
@@ -211,12 +214,13 @@ public class HistoryProvider implements VCSHistoryProvider {
         @Override
         public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
             try {
-                VCSFileProxy file;
                 SVNUrl copyUrl = repoUrl != null ? file2Copy.get(originalFile) : null;
+                VCSFileProxy file;
                 if(copyUrl != null) {
-                    file = VersionsCache.getInstance().getFileRevision(repoUrl, copyUrl, revision.toString(), originalFile.getName());
+                    file = VCSFileProxy.createFileProxy(VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(originalFile)).getFileRevision(repoUrl, copyUrl, revision.toString(), originalFile.getName()));
                 } else {
-                    file = VersionsCache.getInstance().getFileRevision(originalFile, revision.toString());
+                    file = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(originalFile)).getFileRevision(originalFile, revision.toString());
+                    VCSFileProxySupport.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
                 }
                 VCSFileProxySupport.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {
@@ -225,7 +229,9 @@ public class HistoryProvider implements VCSHistoryProvider {
                     ex = (SVNClientException) e.getCause();
                 }
                 if (SvnClientExceptionHandler.isCancelledAction(ex.getMessage())) {
-                    Subversion.LOG.log(Level.FINE, null, e);
+                    if (Subversion.LOG.isLoggable(Level.FINE)) {
+                        Subversion.LOG.log(Level.FINE, null, e);
+                    }
                 } else {
                     SvnClientExceptionHandler.notifyException(new Context(revisionFile), ex, true, true);
                 }
@@ -313,15 +319,16 @@ public class HistoryProvider implements VCSHistoryProvider {
         @Override
         protected void perform(final HistoryEntry entry, final Set<VCSFileProxy> files) {
             final VCSFileProxy file = files.iterator().next();
+            final Context context = new Context(file);
             SVNUrl repository;
             try {
                 repository = SvnUtils.getRepositoryRootUrl(file);
             } catch (SVNClientException ex) {
-                SvnClientExceptionHandler.notifyException(new Context(file), ex, false, false);
+                SvnClientExceptionHandler.notifyException(context, ex, false, false);
                 return;
             }
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-            SvnProgressSupport support = new SvnProgressSupport() {
+            SvnProgressSupport support = new SvnProgressSupport(context.getFileSystem()) {
                 @Override
                 public void perform() {
                     try {

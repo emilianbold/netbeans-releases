@@ -119,14 +119,14 @@ public class DiffAction extends ContextAction {
                 }
                 if (repositoryUrl != null && fileUrl != null) {
                     if (type == Setup.DIFFTYPE_LOCAL) {
-                        left = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE);
-                        right = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.WORKING);
+                        left = new RepositoryFile(ctx.getFileSystem(), repositoryUrl, fileUrl, SVNRevision.BASE);
+                        right = new RepositoryFile(ctx.getFileSystem(), repositoryUrl, fileUrl, SVNRevision.WORKING);
                     } else if (type == Setup.DIFFTYPE_REMOTE) {
-                        left = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);
-                        right = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE);
+                        left = new RepositoryFile(ctx.getFileSystem(), repositoryUrl, fileUrl, SVNRevision.HEAD);
+                        right = new RepositoryFile(ctx.getFileSystem(), repositoryUrl, fileUrl, SVNRevision.BASE);
                     } else {
-                        left = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);
-                        right = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.WORKING);
+                        left = new RepositoryFile(ctx.getFileSystem(), repositoryUrl, fileUrl, SVNRevision.HEAD);
+                        right = new RepositoryFile(ctx.getFileSystem(), repositoryUrl, fileUrl, SVNRevision.WORKING);
                     }
                 }
                 final SVNUrl fRepositoryUrl = repositoryUrl;

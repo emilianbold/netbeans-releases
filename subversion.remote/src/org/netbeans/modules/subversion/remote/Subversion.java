@@ -78,6 +78,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Parameters;
@@ -188,10 +189,14 @@ public class Subversion {
                 }
                 
                 try {
-                    LOG.fine("Cleaning up cache"); // NOI18N
+                    if (Subversion.LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Cleaning up cache"); // NOI18N
+                    }
                     fileStatusCache.cleanUp(); // do not call before computeIndex()
                 } finally {
-                    Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
+                    if (Subversion.LOG.isLoggable(Level.FINE)) {
+                        Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
+                    }
                     cleanupTask = null;
                 }
             }
@@ -234,7 +239,7 @@ public class Subversion {
 
     public SvnClient getClient(Context context, SVNUrl repositoryUrl, String username, char[] password, int handledExceptions) throws SVNClientException {
         SvnClient client = SvnClientFactory.getInstance(context).createSvnClient(context, repositoryUrl, null, username, password, handledExceptions);
-        attachListeners(client);
+        attachListeners(context.getFileSystem(), client);
         return client;
     }
 
@@ -269,7 +274,7 @@ public class Subversion {
 
     public SvnClient getClient(Context context, SVNUrl repositoryUrl, String username, char[] password, SvnProgressSupport support) throws SVNClientException {
         SvnClient client = SvnClientFactory.getInstance(context).createSvnClient(context, repositoryUrl, support, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
-        attachListeners(client);
+        attachListeners(context.getFileSystem(), client);
         return client;
     }
 
@@ -333,7 +338,7 @@ public class Subversion {
         cleanupFilesystem();
         SvnClient client = SvnClientFactory.getInstance(context).createSvnClient(context);
         if(attachListeners) {
-            attachListeners(client);
+            attachListeners(context.getFileSystem(), client);
         }
         return client;
     }
@@ -350,8 +355,8 @@ public class Subversion {
         filesystemHandler.removeInvalidMetadata();
     }
 
-    private void attachListeners(SvnClient client) {
-        client.addNotifyListener(getLogger(client.getSvnUrl()));
+    private void attachListeners(FileSystem fileSystem, SvnClient client) {
+        client.addNotifyListener(getLogger(fileSystem, client.getSvnUrl()));
         client.addNotifyListener(refreshHandler);
 
         List<ISVNNotifyListener> l = getSVNNotifyListeners();
@@ -371,8 +376,8 @@ public class Subversion {
      * in which case the logger will not print anything
      * @return OutputLogger logger to write to
      */
-    public OutputLogger getLogger(SVNUrl repositoryRoot) {
-        return OutputLogger.getLogger(repositoryRoot);
+    public OutputLogger getLogger(FileSystem fileSystem, SVNUrl repositoryRoot) {
+        return OutputLogger.getLogger(fileSystem, repositoryRoot);
     }
 
     /**
@@ -495,12 +500,16 @@ public class Subversion {
             Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
         }
         if(unversionedParents.contains(file)) {
-            Subversion.LOG.fine(" cached as unversioned");
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine(" cached as unversioned");
+            }
             return null;
     }
         VCSFileProxy metadataRoot = null;
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
-            Subversion.LOG.fine(" part of metaddata");
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.fine(" part of metaddata");
+            }
             for (;file != null; file = file.getParentFile()) {
                 if (SvnUtils.isAdministrative(file)) {
                     if (Subversion.LOG.isLoggable(Level.FINE)) {
@@ -542,7 +551,9 @@ public class Subversion {
             }
         }
         if(done.size() > 0) {
-            Subversion.LOG.log(Level.FINE, " storing unversioned");
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, " storing unversioned");
+            }
             unversionedParents.addAll(done);
         }
         if (topmost == null && metadataRoot != null) {
@@ -630,8 +641,9 @@ public class Subversion {
 
         VCSFileProxy original = null;
         try {
-            SvnClientFactory.checkClientAvailable(new Context(originalFile));
-            original = VersionsCache.getInstance().getBaseRevisionFile(workingCopy);
+            final Context context = new Context(originalFile);
+            SvnClientFactory.checkClientAvailable(context);
+            original = VersionsCache.getInstance(context.getFileSystem()).getBaseRevisionFile(workingCopy);
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
             }
