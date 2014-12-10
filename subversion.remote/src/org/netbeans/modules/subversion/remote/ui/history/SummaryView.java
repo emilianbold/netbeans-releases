@@ -93,7 +93,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     static final class SvnLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
         private final RepositoryRevision revision;
-        private List events = new ArrayList<SvnLogEvent>(10);
+        private List events = new ArrayList<>(10);
         private List<Event> dummyEvents;
         private final SearchHistoryPanel master;
         private final PropertyChangeListener list;
@@ -149,7 +149,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         @Override
         public Action[] getActions () {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             long revisionNumber = revision.getLog().getRevision().getNumber();
             
             if (revisionNumber > 1) {
@@ -199,7 +199,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
 
         void prepareDummyEvents () {
-            ArrayList<Event> evts = new ArrayList<Event>(revision.getDummyEvents().size());
+            ArrayList<Event> evts = new ArrayList<>(revision.getDummyEvents().size());
             for (RepositoryRevision.Event event : revision.getDummyEvents()) {
                 evts.add(new SvnLogEvent(master, event));
             }
@@ -207,11 +207,11 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
 
         void refreshEvents () {
-            ArrayList<SvnLogEvent> evts = new ArrayList<SvnLogEvent>(revision.getEvents().size());
+            ArrayList<SvnLogEvent> evts = new ArrayList<>(revision.getEvents().size());
             for (RepositoryRevision.Event event : revision.getEvents()) {
                 evts.add(new SvnLogEvent(master, event));
             }
-            List<SvnLogEvent> newEvents = new ArrayList<SvnLogEvent>(evts);
+            List<SvnLogEvent> newEvents = new ArrayList<>(evts);
             events = evts;
             dummyEvents.clear();
             eventsChanged(null, newEvents);
@@ -258,7 +258,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         @Override
         public Action[] getUserActions () {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             long revisionNumber = event.getLogInfoHeader().getLog().getRevision().getNumber();
             if (revisionNumber > 1) {
                 actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPreviousShort")) { //NOI18N
@@ -296,8 +296,8 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             return master.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);
         }
     
-        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
-        Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+        Set<RepositoryRevision.Event> events = new HashSet<>();
+        Set<RepositoryRevision> revisions = new HashSet<>();
 
         Object [] sel = getSelection();
         for (Object revCon : sel) {
@@ -316,13 +316,13 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     }
     
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
-        final Map<String, String> colors = new HashMap<String, String>();
-        colors.put("A", SvnUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
-        colors.put("C", SvnUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("R", SvnUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("M", SvnUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
-        colors.put("D", SvnUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
-        colors.put("?", SvnUtils.getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
+        final Map<String, String> colors = new HashMap<>();
+        colors.put("A", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).ADDED_LOCALLY_FILE.getActualColor()));
+        colors.put("C", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("R", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("M", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).MODIFIED_LOCALLY_FILE.getActualColor()));
+        colors.put("D", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).REMOVED_LOCALLY_FILE.getActualColor()));
+        colors.put("?", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).EXCLUDED_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 
@@ -333,7 +333,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
             @Override
             public File[] getRoots(){
-                List<File> files = new ArrayList<File>();
+                List<File> files = new ArrayList<>();
                 for(VCSFileProxy proxy : master.getRoots()) {
                     File file = proxy.toFile();
                     if (file != null) {
@@ -383,12 +383,12 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         if (revCon instanceof SvnLogEntry && selection.length == 1) {
             revisionSelected = true;
             container = ((SvnLogEntry) selection[0]).revision;
-            drevList = new ArrayList<RepositoryRevision.Event>(0);
+            drevList = new ArrayList<>(0);
             oneRevisionMultiselected = true;
             noExDeletedExistingFiles = true;
         } else {
             revisionSelected = false;
-            drevList = new ArrayList<RepositoryRevision.Event>(selection.length);
+            drevList = new ArrayList<>(selection.length);
             for(int i = 0; i < selection.length; i++) {
                 if (!(selection[i] instanceof SvnLogEvent)) {
                     return;
@@ -533,8 +533,8 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     }
 
     private static void revertModifications (SearchHistoryPanel master, Object[] selection) {
-        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
-        Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+        Set<RepositoryRevision.Event> events = new HashSet<>();
+        Set<RepositoryRevision> revisions = new HashSet<>();
         for (Object o : selection) {
             if (o instanceof RepositoryRevision) {
                 revisions.add((RepositoryRevision) o);

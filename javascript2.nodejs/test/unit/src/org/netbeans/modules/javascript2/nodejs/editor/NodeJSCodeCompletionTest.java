@@ -96,11 +96,11 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     }
     
     public void testExport01() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "var mess = require('./simpleModule').^message;", false);
+        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "var mess = require('./simpleModule').m^essage;", false);
     }
     
     public void testExport02() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "simple.^message.setCode(23);", false);
+        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "simple.m^essage.setCode(23);", false);
     }
     
     public void testExport03() throws Exception {

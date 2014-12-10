@@ -160,18 +160,20 @@ public class FileStatusCache {
     private final String FILE_STATUS_MAP = DiskMapTurboProvider.ATTR_STATUS_MAP;
 
     private DiskMapTurboProvider        cacheProvider;    
-    private Subversion                  svn;
 
     private RequestProcessor rp = new RequestProcessor("Subversion - file status refresh", 1); // NOI18N    
-    private final LinkedHashSet<VCSFileProxy> filesToRefresh = new LinkedHashSet<VCSFileProxy>();
+    private final LinkedHashSet<VCSFileProxy> filesToRefresh = new LinkedHashSet<>();
     private RequestProcessor.Task refreshTask;
     private final FileLabelCache labelsCache;
+    private Annotator annotator;
 
     private long refreshedFilesCount;
     private static final boolean EXCLUDE_SYMLINKS = "true".equals(System.getProperty("versioning.subversion.doNotFollowSymlinks", "false")); //NOI18N
+    private static final Logger LABELS_CACHE_LOG = Logger.getLogger(FileStatusCache.class.getName());
+    private static final FileLabelInfo FAKE_LABEL_INFO = new FileLabelInfo("", "", "", "", "", ""); //NOI18N
+    private static final boolean VERSIONING_ASYNC_ANNOTATOR = !"false".equals(System.getProperty("versioning.asyncAnnotator", "true")); //NOI18N
 
     FileStatusCache() {
-        this.svn = Subversion.getInstance();
         cacheProvider = new DiskMapTurboProvider();
         
         turbo = Turbo.createCustom(new CustomProviders() {
@@ -222,6 +224,11 @@ public class FileStatusCache {
         });
         labelsCache = new FileLabelCache(this);
     }
+
+    void setAnnotator(Annotator annotator) {
+        this.annotator = annotator;
+    }
+
 
     // --- Public interface -------------------------------------------------
 
@@ -297,7 +304,7 @@ public class FileStatusCache {
         for (VCSFileProxy root : indexRoots) {
             FileInformation fi = getCachedStatus(root);
             if( (fi != null && (fi.getStatus() & includeStatus) != 0) &&
-                (addExcluded || !SvnModuleConfig.getDefault().isExcludedFromCommit(root.getPath())))
+                (addExcluded || !SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(root)).isExcludedFromCommit(root.getPath())))
             {
                 return true;
             }
@@ -332,7 +339,7 @@ public class FileStatusCache {
     public VCSFileProxy [] listFiles(VCSFileProxy[] roots, int includeStatus) { 
         long ts = System.currentTimeMillis();
         try {
-            Set<VCSFileProxy> set = new HashSet<VCSFileProxy>();
+            Set<VCSFileProxy> set = new HashSet<>();
 
             // get all files with given status underneath the roots files;
             // do it recusively if root isn't a flat folder
@@ -369,7 +376,7 @@ public class FileStatusCache {
     public VCSFileProxy [] listFiles(Context context, int includeStatus) {
         long ts = System.currentTimeMillis();
         try {
-            Set<VCSFileProxy> set = new HashSet<VCSFileProxy>();
+            Set<VCSFileProxy> set = new HashSet<>();
             VCSFileProxy [] roots = context.getRootFiles();
 
             // list all files applying to the status with
@@ -399,7 +406,7 @@ public class FileStatusCache {
         if(roots == null || roots.length == 0) {
             return Collections.emptySet();
         }
-        Set<VCSFileProxy> ret = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> ret = new HashSet<>();
         for (VCSFileProxy root : roots) {
             if(recursively) {
                 ret.addAll(listFilesIntern(cacheProvider.getIndexValues(root, includeStatus), includeStatus, recursively));
@@ -631,7 +638,7 @@ public class FileStatusCache {
 
                 dir = dir.normalizeFile();
                 file = VCSFileProxy.createFileProxy(dir, file.getName());
-                Map<VCSFileProxy, FileInformation> newFiles = new HashMap<VCSFileProxy, FileInformation>(files);
+                Map<VCSFileProxy, FileInformation> newFiles = new HashMap<>(files);
                 if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
                     newFiles.remove(file);
                     turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
@@ -693,7 +700,7 @@ public class FileStatusCache {
                         FileInformation info = createFileInformation(file, new FakeRevisionStatus(entry, revision), REPOSITORY_STATUS_UNKNOWN);
                         VCSFileProxy dir = file.getParentFile();
                         Map<VCSFileProxy, FileInformation> files = getScannedFiles(dir);
-                        Map<VCSFileProxy, FileInformation> newFiles = new HashMap<VCSFileProxy, FileInformation>(files);
+                        Map<VCSFileProxy, FileInformation> newFiles = new HashMap<>(files);
                         newFiles.put(file, info);
                         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.isEmpty() ? null : newFiles);
                     }
@@ -894,7 +901,7 @@ public class FileStatusCache {
         if (files == null) {
             files = new VCSFileProxy[0];
         }
-        Map<VCSFileProxy, FileInformation> folderFiles = new HashMap<VCSFileProxy, FileInformation>(files.length);
+        Map<VCSFileProxy, FileInformation> folderFiles = new HashMap<>(files.length);
 
         ISVNStatus [] entries = null;
         final Context context = new Context(dir);
@@ -926,7 +933,7 @@ public class FileStatusCache {
                 }
             }
         } else {
-            Set<VCSFileProxy> localFiles = new HashSet<VCSFileProxy>(Arrays.asList(files));
+            Set<VCSFileProxy> localFiles = new HashSet<>(Arrays.asList(files));
             for (int i = 0; i < entries.length; i++) {
                 ISVNStatus entry = entries[i];
                 VCSFileProxy file = entry.getFile();
@@ -1332,21 +1339,16 @@ public class FileStatusCache {
     /**
      * Cache of information needed for name annotations, caching such information prevents from running status commands in AWT
      */
-    public static class FileLabelCache {
-        private static final Logger LABELS_CACHE_LOG = Logger.getLogger("org.netbeans.modules.subversion.FileLabelsCache"); //NOI18N
+    public class FileLabelCache {
         private final LinkedHashMap<VCSFileProxy, FileLabelInfo> fileLabels;
-        private static final long VALID_LABEL_PERIOD = 20000; // 20 seconds
-        private static final FileLabelInfo FAKE_LABEL_INFO = new FileLabelInfo("", "", "", "", "", ""); //NOI18N
-        private final Set<VCSFileProxy> filesForLabelRefresh = new HashSet<VCSFileProxy>();
+        private final Set<VCSFileProxy> filesForLabelRefresh = new HashSet<>();
         private final RequestProcessor.Task labelInfoRefreshTask;
-        private boolean mimeTypeFlag;
         private final FileStatusCache master;
-        private static final boolean VERSIONING_ASYNC_ANNOTATOR = !"false".equals(System.getProperty("versioning.asyncAnnotator", "true")); //NOI18N
 
         private FileLabelCache(FileStatusCache master) {
             this.master = master;
             labelInfoRefreshTask = master.rp.create(new LabelInfoRefreshTask());
-            fileLabels = new LinkedHashMap<VCSFileProxy, FileLabelInfo>(100);
+            fileLabels = new LinkedHashMap<>(100);
         }
 
         public void flushFileLabels(VCSFileProxy... files) {
@@ -1362,10 +1364,6 @@ public class FileStatusCache {
                     fileLabels.remove(f);
                 }
             }
-        }
-
-        void setMimeTypeFlag(boolean flag) {
-            this.mimeTypeFlag = flag;
         }
 
         /**
@@ -1434,17 +1432,18 @@ public class FileStatusCache {
                 Set<VCSFileProxy> filesToRefresh;
                 synchronized (filesForLabelRefresh) {
                     // pick up files for refresh
-                    filesToRefresh = new HashSet<VCSFileProxy>(filesForLabelRefresh);
+                    filesToRefresh = new HashSet<>(filesForLabelRefresh);
                     filesForLabelRefresh.clear();
                 }
                 if (!filesToRefresh.isEmpty()) {
                     // labels are accummulated in a temporary map so their timestamp can be later set to a more accurate value
                     // initialization for many files can be time-consuming and labels initialized in first cycles can grow old even before
                     // their annotations are refreshed through refreshAnnotations()
-                    HashMap<VCSFileProxy, FileLabelInfo> labels = new HashMap<VCSFileProxy, FileLabelInfo>(filesToRefresh.size());
+                    HashMap<VCSFileProxy, FileLabelInfo> labels = new HashMap<>(filesToRefresh.size());
                     for (VCSFileProxy file : filesToRefresh) {
                         try {
-                            SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
+                            final Context context = new Context(file);
+                            SvnClient client = Subversion.getInstance().getClient(false, context);
                             // get status for all files
                             ISVNInfo info = SvnUtils.getInfoFromWorkingCopy(client, file);
                             SVNRevision rev = info.getRevision();
@@ -1457,7 +1456,8 @@ public class FileStatusCache {
                                 lastDateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(info.getLastChangedDate());
                             }
                             FileInformation fi = master.getCachedStatus(file);
-                            if (mimeTypeFlag) {
+                            Annotator.AnnotationFormat af = annotator.getAnnotationFormat(context.getFileSystem());
+                            if (af.mimeTypeFlag) {
                                 // call svn prop command only when really needed
                                 if (fi == null || (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0) {
                                     binaryString = getMimeType(client, file);
@@ -1468,7 +1468,7 @@ public class FileStatusCache {
                             if (fi == null || (fi.getStatus() & (FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) == 0) {
                                 // copy name
                                 if (info.getUrl() != null) {
-                                    stickyString = SvnUtils.getCopy(info.getUrl());
+                                    stickyString = SvnUtils.getCopy(context, info.getUrl());
                                 } else {
                                     // slower
                                     stickyString = SvnUtils.getCopy(file);
@@ -1513,7 +1513,8 @@ public class FileStatusCache {
                             }
                             for (Iterator<VCSFileProxy> it = fileLabels.keySet().iterator(); it.hasNext();) {
                                 VCSFileProxy f = it.next();
-                                if (!fileLabels.get(f).isValid(mimeTypeFlag, false)) {
+                                Annotator.AnnotationFormat af = annotator.getAnnotationFormat(VCSFileProxySupport.getFileSystem(f));
+                                if (!fileLabels.get(f).isValid(af.mimeTypeFlag, false)) {
                                     it.remove();
                                 } else {
                                     break;
@@ -1545,108 +1546,110 @@ public class FileStatusCache {
 
         }
 
+    }
+    
+    /**
+     * File label cache item
+     */
+    public static class FileLabelInfo {
+
+        private static final long VALID_LABEL_PERIOD = 20000; // 20 seconds
+        private final String revisionString;
+        private final String binaryString;
+        private final String stickyString;
+        private final String lastRevisionString;
+        private final String lastAuthorString;
+        private final String lastDateString;
+        private boolean pickedUp;
+        private long timestamp;
+
+        private FileLabelInfo (String revisionString, String binaryString, String stickyString, String lastAuthorString, String lastDateString, String lastRevisionString) {
+            this.revisionString = revisionString;
+            this.binaryString = binaryString;
+            this.stickyString = stickyString;
+            this.lastAuthorString = lastAuthorString;
+            this.lastDateString = lastDateString;
+            this.lastRevisionString = lastRevisionString;
+            updateTimestamp();
+        }
+
+        private void updateTimestamp() {
+            this.timestamp = System.currentTimeMillis();
+        }
+
         /**
-         * File label cache item
+         *
+         * @param mimeFlag if set to true, binaryString will be checked for being set
+         * @param checkFirstAccess first access to this info is always valid,
+         * so the oldness will be checked only when this is false or the info has already been accessed for the first time
+         * @return
          */
-        public static class FileLabelInfo {
+        private boolean isValid(boolean mimeFlag, boolean checkFirstAccess) {
+            long diff = System.currentTimeMillis() - timestamp;
+            boolean valid = (checkFirstAccess && !pickedUp && (pickedUp = true)) || (diff <= VALID_LABEL_PERIOD);
+            return valid && (!mimeFlag || binaryString != null);
 
-            private final String revisionString;
-            private final String binaryString;
-            private final String stickyString;
-            private final String lastRevisionString;
-            private final String lastAuthorString;
-            private final String lastDateString;
-            private boolean pickedUp;
-            private long timestamp;
+        }
 
-            private FileLabelInfo (String revisionString, String binaryString, String stickyString, String lastAuthorString, String lastDateString, String lastRevisionString) {
-                this.revisionString = revisionString;
-                this.binaryString = binaryString;
-                this.stickyString = stickyString;
-                this.lastAuthorString = lastAuthorString;
-                this.lastDateString = lastDateString;
-                this.lastRevisionString = lastRevisionString;
-                updateTimestamp();
+        /**
+         * Returns a not null String with revision number, empty for unknown revisions
+         * @return
+         */
+        String getRevisionString() {
+            return revisionString != null ? revisionString : "";        //NOI18N
+        }
+
+        /*
+         * Returns a not null String, empty for not binary files
+         */
+        public String getBinaryString() {
+            return binaryString != null ? binaryString : "";            //NOI18N
+        }
+
+        /**
+         * returns a not null String denoting a copy name
+         * @return
+         */
+        public String getStickyString() {
+            return stickyString != null ? stickyString : "";            //NOI18N
+        }
+
+        public String getLastRevisionString () {
+            return lastRevisionString == null ? "" : lastRevisionString; //NOI18N
+        }
+
+        public String getLastDateString () {
+            return lastDateString == null ? "" : lastDateString; //NOI18N
+        }
+
+        public String getLastAuthorString () {
+            return lastAuthorString == null ? "" : lastAuthorString; //NOI18N
+        }
+
+        @Override
+        public boolean equals (Object obj) {
+            if (obj instanceof FileLabelInfo) {
+                FileLabelInfo other = (FileLabelInfo) obj;
+                return getRevisionString().equals(other.getRevisionString())
+                        && getBinaryString().equals(other.getBinaryString())
+                        && getStickyString().equals(other.getStickyString())
+                        && getLastAuthorString().equals(other.getLastAuthorString())
+                        && getLastDateString().equals(other.getLastDateString())
+                        && getLastRevisionString().equals(other.getLastRevisionString());
             }
+            return super.equals(obj);
+        }
 
-            private void updateTimestamp() {
-                this.timestamp = System.currentTimeMillis();
-            }
-
-            /**
-             *
-             * @param mimeFlag if set to true, binaryString will be checked for being set
-             * @param checkFirstAccess first access to this info is always valid,
-             * so the oldness will be checked only when this is false or the info has already been accessed for the first time
-             * @return
-             */
-            private boolean isValid(boolean mimeFlag, boolean checkFirstAccess) {
-                long diff = System.currentTimeMillis() - timestamp;
-                boolean valid = (checkFirstAccess && !pickedUp && (pickedUp = true)) || (diff <= VALID_LABEL_PERIOD);
-                return valid && (!mimeFlag || binaryString != null);
-
-            }
-
-            /**
-             * Returns a not null String with revision number, empty for unknown revisions
-             * @return
-             */
-            String getRevisionString() {
-                return revisionString != null ? revisionString : "";        //NOI18N
-            }
-
-            /*
-             * Returns a not null String, empty for not binary files
-             */
-            public String getBinaryString() {
-                return binaryString != null ? binaryString : "";            //NOI18N
-            }
-
-            /**
-             * returns a not null String denoting a copy name
-             * @return
-             */
-            public String getStickyString() {
-                return stickyString != null ? stickyString : "";            //NOI18N
-            }
-
-            public String getLastRevisionString () {
-                return lastRevisionString == null ? "" : lastRevisionString; //NOI18N
-            }
-
-            public String getLastDateString () {
-                return lastDateString == null ? "" : lastDateString; //NOI18N
-            }
-
-            public String getLastAuthorString () {
-                return lastAuthorString == null ? "" : lastAuthorString; //NOI18N
-            }
-
-            @Override
-            public boolean equals (Object obj) {
-                if (obj instanceof FileLabelInfo) {
-                    FileLabelInfo other = (FileLabelInfo) obj;
-                    return getRevisionString().equals(other.getRevisionString())
-                            && getBinaryString().equals(other.getBinaryString())
-                            && getStickyString().equals(other.getStickyString())
-                            && getLastAuthorString().equals(other.getLastAuthorString())
-                            && getLastDateString().equals(other.getLastDateString())
-                            && getLastRevisionString().equals(other.getLastRevisionString());
-                }
-                return super.equals(obj);
-            }
-
-            @Override
-            public int hashCode () {
-                int hash = 7;
-                hash = 71 * hash + (this.revisionString != null ? this.revisionString.hashCode() : 0);
-                hash = 71 * hash + (this.binaryString != null ? this.binaryString.hashCode() : 0);
-                hash = 71 * hash + (this.stickyString != null ? this.stickyString.hashCode() : 0);
-                hash = 71 * hash + (this.lastRevisionString != null ? this.lastRevisionString.hashCode() : 0);
-                hash = 71 * hash + (this.lastAuthorString != null ? this.lastAuthorString.hashCode() : 0);
-                hash = 71 * hash + (this.lastDateString != null ? this.lastDateString.hashCode() : 0);
-                return hash;
-            }
+        @Override
+        public int hashCode () {
+            int hash = 7;
+            hash = 71 * hash + (this.revisionString != null ? this.revisionString.hashCode() : 0);
+            hash = 71 * hash + (this.binaryString != null ? this.binaryString.hashCode() : 0);
+            hash = 71 * hash + (this.stickyString != null ? this.stickyString.hashCode() : 0);
+            hash = 71 * hash + (this.lastRevisionString != null ? this.lastRevisionString.hashCode() : 0);
+            hash = 71 * hash + (this.lastAuthorString != null ? this.lastAuthorString.hashCode() : 0);
+            hash = 71 * hash + (this.lastDateString != null ? this.lastDateString.hashCode() : 0);
+            return hash;
         }
     }
 

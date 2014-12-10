@@ -239,6 +239,7 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-parsing-nb@" value="${javadoc.docs.org-netbeans-modules-parsing-nb}"/>
 <replacefilter token="@org-netbeans-modules-project-libraries-ui@" value="${javadoc.docs.org-netbeans-modules-project-libraries-ui}"/>
 <replacefilter token="@org-openide-filesystems-nb@" value="${javadoc.docs.org-openide-filesystems-nb}"/>
+<replacefilter token="@org-netbeans-api-intent@" value="${javadoc.docs.org-netbeans-api-intent}"/>
 <replacefilter token="@org-netbeans-api-templates@" value="${javadoc.docs.org-netbeans-api-templates}"/>
 <replacefilter token="@org-netbeans-api-io@" value="${javadoc.docs.org-netbeans-api-io}"/>
 <replacefilter token="@org-netbeans-api-htmlui@" value="${javadoc.docs.org-netbeans-api-htmlui}"/>

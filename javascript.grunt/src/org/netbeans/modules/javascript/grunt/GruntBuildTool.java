@@ -41,19 +41,23 @@
  */
 package org.netbeans.modules.javascript.grunt;
 
-import java.io.IOException;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.grunt.legacy.GruntPreferences;
-import org.netbeans.modules.javascript.grunt.legacy.GruntfileExecutor;
+import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
+import org.netbeans.modules.javascript.grunt.file.GruntTasks;
+import org.netbeans.modules.javascript.grunt.file.Gruntfile;
+import org.netbeans.modules.javascript.grunt.preferences.GruntPreferences;
+import org.netbeans.modules.javascript.grunt.ui.customizer.GruntCustomizerProvider;
+import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 
@@ -64,16 +68,28 @@ public final class GruntBuildTool implements BuildToolImplementation {
     private static final String IDENTIFIER = "Grunt"; // NOI18N
 
     private final Project project;
+    private final Gruntfile gruntfile;
+    private final GruntTasks gruntTasks;
+    private final GruntPreferences gruntPreferences;
 
 
     private GruntBuildTool(Project project) {
         assert project != null;
         this.project = project;
+        gruntfile = new Gruntfile(project.getProjectDirectory());
+        gruntTasks = GruntTasks.create(project, gruntfile);
+        gruntPreferences = new GruntPreferences(project);
     }
 
     @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
     public static BuildToolImplementation forHtml5Project(Project project) {
         return new GruntBuildTool(project);
+    }
+
+    public static GruntBuildTool forProject(Project project) {
+        GruntBuildTool buildTool = project.getLookup().lookup(GruntBuildTool.class);
+        assert buildTool != null : "GruntBuildTool should be found in project " + project.getClass().getName() + " (lookup: " + project.getLookup() + ")";
+        return buildTool;
     }
 
     @Override
@@ -87,34 +103,55 @@ public final class GruntBuildTool implements BuildToolImplementation {
         return Bundle.GruntBuildTool_name();
     }
 
+    public Gruntfile getGruntfile() {
+        return gruntfile;
+    }
+
+    public GruntTasks getGruntTasks() {
+        return gruntTasks;
+    }
+
+    public GruntPreferences getGruntPreferences() {
+        return gruntPreferences;
+    }
+
     @Override
     public boolean isEnabled() {
-        // XXX
-        return project.getProjectDirectory().getFileObject("Gruntfile.js") != null; // NOI18N
+        return gruntfile.exists();
     }
 
     @NbBundle.Messages("GruntBuildTool.configure=Do you want to configure project actions to call Grunt tasks?")
     @Override
-    public boolean run(String commandId, boolean waitFinished, boolean showCustomizer) {
+    public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
         assert isEnabled() : project.getProjectDirectory().getNameExt();
-        FileObject gruntFile = project.getProjectDirectory().getFileObject("Gruntfile.js"); // NOI18N
-        assert gruntFile != null : project.getProjectDirectory().getNameExt();
-        String gruntBuild = GruntPreferences.getValue(project, "grunt.action." + commandId); // NOI18N
+        assert gruntfile.exists() : project.getProjectDirectory().getNameExt();
+        String gruntBuild = gruntPreferences.getTask(commandId);
         if (gruntBuild != null) {
-            try {
-                ExecutorTask execute = new GruntfileExecutor(gruntFile, gruntBuild.split(" ")).execute(); // NOI18N
+            GruntExecutable grunt = GruntExecutable.getDefault(project, warnUser);
+            if (grunt != null) {
+                GruntUtils.logUsageGruntBuild();
+                Future<Integer> result = grunt.run(gruntBuild.split(" ")); // NOI18N
                 if (waitFinished) {
-                    execute.result();
+                    try {
+                        result.get();
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } catch (CancellationException ex) {
+                        // cancelled by user
+                        LOGGER.log(Level.FINE, null, ex);
+                    } catch (ExecutionException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                        if (warnUser) {
+                            // XXX open customizer? show error dialog?
+                        }
+                    }
                 }
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
             }
-        } else if (showCustomizer) {
-            NotifyDescriptor desc = new NotifyDescriptor.Confirmation(Bundle.GruntBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION);
-            Object option = DialogDisplayer.getDefault().notify(desc);
+        } else if (warnUser) {
+            Object option = DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(Bundle.GruntBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION));
             if (option == NotifyDescriptor.YES_OPTION) {
-                // XXX
-                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer("grunt", null); // NOI18N
+                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GruntCustomizerProvider.CUSTOMIZER_IDENT, null);
             }
         }
         return true;

@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.Reposito
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 
 /*
  *
@@ -73,8 +74,10 @@ public final class CheckoutWizard implements ChangeListener {
     private AbstractStep.WizardMessage errorMessage;
     private WizardDescriptor wizardDescriptor;
     private PanelsIterator wizardIterator;
+    private final FileSystem fileSystem;
     
-    public CheckoutWizard() {
+    public CheckoutWizard(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
         
     public boolean show() {
@@ -106,7 +109,7 @@ public final class CheckoutWizard implements ChangeListener {
     /** Called on sucessfull finish. */
     private void onFinished() {
         String checkout = checkoutStep.getWorkdir().getPath();
-        SvnModuleConfig.getDefault().getPreferences().put(CheckoutStep.CHECKOUT_DIRECTORY, checkout);
+        SvnModuleConfig.getDefault(fileSystem).getPreferences().put(CheckoutStep.CHECKOUT_DIRECTORY, checkout);
     }
 
     private void setErrorMessage(AbstractStep.WizardMessage msg) {
@@ -148,9 +151,9 @@ public final class CheckoutWizard implements ChangeListener {
         @Override
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
-            repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION, RepositoryStep.CHECKOUT_HELP_ID);
+            repositoryStep = new RepositoryStep(fileSystem, Repository.FLAG_ACCEPT_REVISION, RepositoryStep.CHECKOUT_HELP_ID);
             repositoryStep.addChangeListener(CheckoutWizard.this);
-            checkoutStep = new CheckoutStep();            
+            checkoutStep = new CheckoutStep(fileSystem);            
             checkoutStep.addChangeListener(CheckoutWizard.this);
             
             panels = new  WizardDescriptor.Panel[] {repositoryStep, checkoutStep};

@@ -111,7 +111,7 @@ public class UpdateWithDependenciesAction extends ContextAction {
     }
 
     private void updateWithDependencies(Node[] nodes) {
-        Set<Project> projectsToUpdate = new HashSet<Project>(nodes.length * 2);
+        Set<Project> projectsToUpdate = new HashSet<>(nodes.length * 2);
         for (Node node : nodes) {
             if (!SvnUtils.isVersionedProject(node, true)) {
                 continue;

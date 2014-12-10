@@ -120,15 +120,15 @@ if [ -z ${JDK_BUILDS_HOST} ]; then
     export JDK_BUILDS_HOST
 fi
 
-#JDK7_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/7u71/promoted/all
+#JDK7_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/7u75/promoted/all
 if [ -z ${JDK7_BUILDS_PATH} ]; then
-    JDK7_BUILDS_PATH=java/re/jdk/7u71/promoted/
+    JDK7_BUILDS_PATH=java/re/jdk/7u75/promoted/
     export JDK7_BUILDS_PATH
 fi
 
-#JDK8_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/8u25/promoted/all/
+#JDK8_BUILDS_PATH=http://jre.us.oracle.com/java/re/jdk/8u31/promoted/all/
 if [ -z ${JDK8_BUILDS_PATH} ]; then
-    JDK8_BUILDS_PATH=java/re/jdk/8u25/promoted/
+    JDK8_BUILDS_PATH=java/re/jdk/8u31/promoted/
     export JDK8_BUILDS_PATH
 fi
 

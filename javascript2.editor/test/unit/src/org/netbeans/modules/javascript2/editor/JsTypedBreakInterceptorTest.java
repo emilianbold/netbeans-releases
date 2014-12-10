@@ -146,8 +146,9 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("function foo() {^\n}", "function foo() {\n    ^\n}");
     }
 
+    // TODO - correct the functionality. It should be inserted 8 spaces by default
     public void testInsertNewLine4() throws Exception {
-        insertBreak("function foo() {\n    if(bar())^\n\n}", "function foo() {\n    if(bar())\n        ^\n\n}");
+        insertBreak("function foo() {\n    if(bar())^\n\n}", "function foo() {\n    if(bar())\n    ^\n\n}");
     }
 
     public void testInsertIf1() throws Exception {

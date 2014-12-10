@@ -328,6 +328,7 @@ public class NodeExecutable {
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .frontWindowOnError(false)
+                .showSuspended(true)
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true)

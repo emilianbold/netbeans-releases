@@ -76,9 +76,11 @@ public final class MochaTestRunner {
     public static final String NB_LINE = "mocha-netbeans-reporter "; // NOI18N
     
     static final Pattern OK_PATTERN = Pattern.compile("^ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
+    static final Pattern OK_SKIP_PATTERN = Pattern.compile("^ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*) # SKIP -, suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*)"); // NOI18N
     static final Pattern NOT_OK_PATTERN = Pattern.compile("^not ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
     static final Pattern SESSION_START_PATTERN = Pattern.compile("^1\\.\\.(?<TOTAL>[\\d]+)"); // NOI18N
-    static final Pattern SESSION_END_PATTERN = Pattern.compile("^tests (?<TOTAL>[\\d]+), pass (?<PASS>[\\d]+), fail (?<FAIL>[\\d]+)"); // NOI18N
+    static final Pattern SESSION_END_PATTERN = Pattern.compile("^tests (?<TOTAL>[\\d]+), pass (?<PASS>[\\d]+), fail (?<FAIL>[\\d]+), skip (?<SKIP>[\\d]+)"); // NOI18N
+    static final String SKIP = " # SKIP -"; // NOI18N
 
     private final RunInfo runInfo;
 
@@ -100,7 +102,7 @@ public final class MochaTestRunner {
     }
     
     public String processLine(String logMessage) {
-        String line = logMessage.replace(NB_LINE, "");
+        String line = removeEscapeCharachters(logMessage).replace(NB_LINE, "");
         
         Matcher matcher;
         matcher = SESSION_START_PATTERN.matcher(line);
@@ -120,6 +122,14 @@ public final class MochaTestRunner {
         if (matcher.find()) {
             String output2display = parseTestResult(matcher);
             addTestCase(testcase, Status.PASSED, duration);
+            getManager().displayOutput(testSession, output2display, false);
+            return output2display;
+        }
+
+        matcher = OK_SKIP_PATTERN.matcher(line);
+        if (matcher.find()) {
+            String output2display = parseTestResult(matcher).concat(SKIP);
+            addTestCase(testcase, Status.SKIPPED, duration);
             getManager().displayOutput(testSession, output2display, false);
             return output2display;
         }
@@ -144,7 +154,11 @@ public final class MochaTestRunner {
         if (matcher.pattern().pattern().equals(NOT_OK_PATTERN.pattern())) {
             trouble = new Trouble(false);
         }
-        duration = Long.parseLong(matcher.group("DURATION"));
+        if(matcher.pattern().pattern().equals(OK_SKIP_PATTERN.pattern())) {
+            duration = 0;
+        } else {
+            duration = Long.parseLong(matcher.group("DURATION"));
+        }
         if (runningSuite == null) {
             runningSuite = suite;
             suiteStarted(runningSuite);
@@ -155,7 +169,7 @@ public final class MochaTestRunner {
                 suiteStarted(runningSuite);
             }
         }
-        return (matcher.pattern().pattern().equals(OK_PATTERN.pattern()) ? "ok " : "not ok ") + testIndex + " " + runningSuite + " " + testcase;
+        return (matcher.pattern().pattern().equals(NOT_OK_PATTERN.pattern()) ? "not ok " : "ok ") + testIndex + " " + runningSuite + " " + testcase;
     }
     
     private void handleTrouble() {
@@ -168,7 +182,7 @@ public final class MochaTestRunner {
     }
     
     static String removeEscapeCharachters(String line) {
-        return line.replaceAll("\u001B", "").replaceAll("\\[[;\\d]*m", "").trim();
+        return line.replace("[?25l", "").replace("[2K", "").replaceAll("\u001B", "").replaceAll("\\[[;\\d]*m", "").trim();
     }
 
     private Manager getManager() {
@@ -177,7 +191,9 @@ public final class MochaTestRunner {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "TestRunner.runner.title={0} (Selenium)",
+        "TestRunner.selenium.runner.title={0} (Selenium)",
+        "# {0} - project name",
+        "TestRunner.unit.runner.title={0} (Unit)",
     })
     private String getOutputTitle() {
         StringBuilder sb = new StringBuilder(30);
@@ -189,12 +205,11 @@ public final class MochaTestRunner {
                 sb.append(new File(testFile).getName());
             }
         }
-        return Bundle.TestRunner_runner_title(sb.toString());
+        return runInfo.isSelenium() ? Bundle.TestRunner_selenium_runner_title(sb.toString()) : Bundle.TestRunner_unit_runner_title(sb.toString());
     }
 
     private void sessionStarted(String line) {
         assert testSession == null;
-//        getManager().setNodeFactory(new SeleniumTestRunnerNodeFactory(new CallStackCallback(runInfo.getProject())));
         getManager().setNodeFactory(Utilities.getTestRunnerNodeFactory(new CallStackCallback(runInfo.getProject())));
         testSession = new TestSession(getOutputTitle(), runInfo.getProject(), TestSession.SessionType.TEST);
         testSession.setRerunHandler(runInfo.getRerunHandler());

@@ -107,6 +107,22 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
   <changes>
+      <change id="taskmodel.sync">
+          <api name="progress_api"/>
+          <summary>
+              Allow to synchronize with Controller's event delivery.
+          </summary>
+          <version major="1" minor="44"/>
+          <date day="7" month="12" year="2014"/>
+          <author login="sdedic"/>
+          <compatibility binary="compatible" source="compatible" addition="yes"/>
+          <description>
+              Exposes Executor used by the <a href="@TOP@/org/netbeans/modules/progress/spi/Controller.html">Controller</a> to deliver progress events, so that 
+              <a href="@TOP@/org/netbeans/modules/progress/spi/TaskModel.html">TaskModel</a> can synchronize its change events to the same event stream.
+          </description>
+          <class package="org.netbeans.modules.progress.spi" name="Controller"/>
+          <class package="org.netbeans.modules.progress.spi" name="TaskModel"/>
+      </change>
       <change id="swingSplit">
           <api name="progress_api"/>
           <summary>

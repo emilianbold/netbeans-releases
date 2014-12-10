@@ -243,10 +243,10 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
     }
     
     private void onBrowseRecentMessages() {
-        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault().getPreferences());
+        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(importDirectory)).getPreferences());
         String message = selector.getRecentMessage(NbBundle.getMessage(ImportStep.class, "CTL_ImportPanel_RecentTitle"), //NOI18N
                                                NbBundle.getMessage(ImportStep.class, "CTL_ImportPanel_RecentPrompt"), //NOI18N
-            Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
+            Utils.getStringList(SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(importDirectory)).getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             importPanel.messageTextArea.replaceSelection(message);
         }
@@ -279,7 +279,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                 try {
                     RepositoryFile repositoryFile = getRepositoryFile();
                     SVNUrl repositoryUrl = repositoryFile.getRepositoryUrl();
-                    if (!importIntoExisting(client, repositoryFile.getFileUrl())) {
+                    if (!importIntoExisting(context, client, repositoryFile.getFileUrl())) {
                         invalidMsg = new AbstractStep.WizardMessage(NbBundle.getMessage(ImportStep.class, "MSG_TargetFolderExists"), true); //NOI18N
                         return;
                     }
@@ -359,9 +359,9 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
          * @param repositoryFileUrl
          * @return true if the target does not exist or user wishes to import anyway.
          */
-        private boolean importIntoExisting(SvnClient client, SVNUrl repositoryFileUrl) {
+        private boolean importIntoExisting(Context context, SvnClient client, SVNUrl repositoryFileUrl) {
             try {
-                ISVNInfo info = client.getInfo(repositoryFileUrl);
+                ISVNInfo info = client.getInfo(context, repositoryFileUrl);
                 if (info != null) {
                     // target folder exists, ask user for confirmation
                     final boolean flags[] = {true};

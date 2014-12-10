@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion.remote.client;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -61,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * A SvnClient factory
@@ -70,10 +72,10 @@ import org.openide.filesystems.FileUtil;
 public class SvnClientFactory {
     
     /** the only existing SvnClientFactory instance */
-    private static final Map<FileSystem, SvnClientFactory> instance = new HashMap<FileSystem, SvnClientFactory>();
+    private static final Map<FileSystem, SvnClientFactory> instances = new HashMap<>();
     /** the only existing ClientAdapterFactory instance */
     private ClientAdapterFactory factory;
-    /** if an exception occured */
+    /** if an exception occurred */
     private SVNClientException exception;
     private final FileSystem fileSystem;
 
@@ -106,11 +108,11 @@ public class SvnClientFactory {
             FileObject fo = root.toFileObject();
             try {
                 FileSystem fs = fo.getFileSystem();
-                SvnClientFactory fac = instance.get(fs);
+                SvnClientFactory fac = instances.get(fs);
                 if (fac == null) {
                     fac = new SvnClientFactory(fs);
                     fac.setup();
-                    instance.put(fs, fac);
+                    instances.put(fs, fac);
                 }
                 return fac;
             } catch (FileStateInvalidException ex) {
@@ -125,8 +127,10 @@ public class SvnClientFactory {
      * Call this method if user's preferences regarding used client change.
      */
     public synchronized static void resetClient() {
-        instance.clear();
-        SvnConfigFiles.getInstance().reset();
+        for(Map.Entry<FileSystem, SvnClientFactory> entry : instances.entrySet()) {
+            SvnConfigFiles.getInstance(entry.getKey()).reset();
+        }
+        instances.clear();
     }
     
     public static boolean isCLI() {
@@ -180,17 +184,6 @@ public class SvnClientFactory {
     }
     
     /**
-     * Switches to commandline client. Call this as a fallback when no
-     * integrated svn clients work with some working copies
-     */
-    static void switchToCLI () {
-        LOG.log(Level.INFO, "Switching forcefully to a commandline client"); //NOI18N
-        SvnModuleConfig.getDefault().setPreferredFactoryType(FACTORY_TYPE_COMMANDLINE);
-        SvnModuleConfig.getDefault().setForceCommnandlineClient(true);
-        resetClient();
-    }
-
-    /**
      * A SVNClientAdapterFactory will be setup, according to the svnClientAdapterFactory property.<br>
      * The CommandlineClientAdapterFactory is default as long no value is set for svnClientAdapterFactory.
      *
@@ -199,7 +192,7 @@ public class SvnClientFactory {
         try {
             exception = null;
             // ping config file copying
-            SvnConfigFiles.getInstance();
+            SvnConfigFiles.getInstance(fileSystem);
 
             String factoryType = getDefaultFactoryType();
             
@@ -242,7 +235,7 @@ public class SvnClientFactory {
             FileObject fo = root.toFileObject();
             try {
                 FileSystem fs = fo.getFileSystem();
-                return instance.get(fs) != null;
+                return instances.get(fs) != null;
             } catch (FileStateInvalidException ex) {
                 ex.printStackTrace(System.err);
             }
@@ -272,7 +265,7 @@ public class SvnClientFactory {
             LOG.fine("svn client returns correct version");
             return true;
         }
-        String execPath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
+        String execPath = SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath();
         if(execPath != null && !execPath.trim().equals("")) {
             exception = ex;
             LOG.log(Level.WARNING, "executable binary path set to {0} yet client not available.", new Object[] { execPath });
@@ -285,7 +278,7 @@ public class SvnClientFactory {
             File file = new File(loc, name);
             LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
             if (file.exists()) {                
-                SvnModuleConfig.getDefault().setExecutableBinaryPath(loc);
+                SvnModuleConfig.getDefault(fileSystem).setExecutableBinaryPath(loc);
                 try {
                     checkVersion();
                 } catch (SVNClientException e) {
@@ -301,7 +294,7 @@ public class SvnClientFactory {
     }
 
     private void checkVersion() throws SVNClientException {
-        CommandlineClient cc = new CommandlineClient(null);
+        CommandlineClient cc = new CommandlineClient(fileSystem);
         try {
             setConfigDir(cc);
             cli16Version = cc.checkSupportedVersion();
@@ -313,10 +306,10 @@ public class SvnClientFactory {
 
     private void setConfigDir (SvnClient client) {
         if (client != null) {
-            File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
             try {
+                VCSFileProxy configDir = SvnConfigFiles.getNBConfigPath(fileSystem).normalizeFile();
                 client.setConfigDirectory(configDir);
-            } catch (SVNClientException ex) {
+            } catch (SVNClientException | IOException ex) {
                 // not interested, just log
                 LOG.log(Level.INFO, null, ex);
             }
@@ -324,7 +317,7 @@ public class SvnClientFactory {
     }
     
     private String getDefaultFactoryType () {
-        SvnModuleConfig config = SvnModuleConfig.getDefault();
+        SvnModuleConfig config = SvnModuleConfig.getDefault(fileSystem);
         String factoryType = config.getGlobalSvnFactory();
         config.setForceCommnandlineClient(false);
 
@@ -396,14 +389,14 @@ public class SvnClientFactory {
             return null;
         }
 
-        protected void setupAdapter(SvnClient adapter, String username, char[] password) {
+        protected void setupAdapter(CommandlineClient adapter, String username, char[] password) {
             adapter.setUsername(username);
             // do not set password for javahl, it seems that in that case the password is stored permanently in ~/.subversion/auth
             adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             try {
-                File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
+                VCSFileProxy configDir = SvnConfigFiles.getNBConfigPath(fileSystem).normalizeFile();
                 adapter.setConfigDirectory(configDir);
-            } catch (SVNClientException ex) {
+            } catch (SVNClientException | IOException ex) {
                 SvnClientExceptionHandler.notifyException(new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot())), ex, false, false);
             }
         }

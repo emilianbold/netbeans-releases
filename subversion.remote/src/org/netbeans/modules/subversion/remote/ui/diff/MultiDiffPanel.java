@@ -106,6 +106,7 @@ import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsActio
 import org.netbeans.modules.subversion.remote.ui.update.UpdateAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
@@ -120,6 +121,7 @@ import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -197,6 +199,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private boolean internalChange;
     private boolean propertiesVisible;
     private int lastDividerLoc;
+    private final FileSystem fileSystem;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -205,6 +208,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             SVNUrl repositoryUrl, SVNUrl fileUrl, RepositoryFile left, RepositoryFile right) {
         assert EventQueue.isDispatchThread();
         this.context = context;
+        this.fileSystem = context.getFileSystem();
         this.diffedFile = null;
         this.contextName = contextName;
         this.initialRefreshDisabled = initialRefreshDisabled;
@@ -252,6 +256,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     public MultiDiffPanel (VCSFileProxy file, String rev1, String rev2, boolean forceNonEditable) {
         assert EventQueue.isDispatchThread();
         context = null;
+        fileSystem = VCSFileProxySupport.getFileSystem(file);
         diffedFile = file;
         contextName = file.getName();
         repositoryTreeOriginalLeft = null;
@@ -283,6 +288,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     public MultiDiffPanel(VCSFileProxy file, ISVNStatus status) {
         assert EventQueue.isDispatchThread();
         context = null;
+        fileSystem = VCSFileProxySupport.getFileSystem(file);
         diffedFile = file;
         contextName = file.getName();
         repositoryTreeOriginalLeft = null;
@@ -308,6 +314,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         prepareTask = Subversion.getInstance().getRequestProcessor().post(dpt);
     }
 
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+    
     private void replaceVerticalSplitPane(JComponent replacement) {
         removeAll();
         splitPane = null;
@@ -463,7 +473,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
 
             commitButton.setEnabled(false);
-            boolean propsVisible = SvnModuleConfig.getDefault().isFilterPropertiesEnabled();
+            boolean propsVisible = SvnModuleConfig.getDefault(fileSystem).isFilterPropertiesEnabled();
             filterPropertiesButton.setSelected(propsVisible);
             if (currentType == -1) {
                 filterPropertiesButton.setEnabled(false);
@@ -529,7 +539,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         super.addNotify();
         if (fileTable != null) {
             cache.addVersioningListener(this);
-            SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+            SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
         }
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
@@ -578,7 +588,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
         cache.removeVersioningListener(this);
         if (fileTable != null) {
-            SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+            SvnModuleConfig.getDefault(fileSystem).getPreferences().removePreferenceChangeListener(this);
         }
         super.removeNotify();
     }
@@ -800,7 +810,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
         } else if (source == filterPropertiesButton) {
             boolean propsVisible = filterPropertiesButton.isSelected();
-            SvnModuleConfig.getDefault().setFilterPropertiesEnabled(propsVisible);
+            SvnModuleConfig.getDefault(fileSystem).setFilterPropertiesEnabled(propsVisible);
             propertiesVisible = propsVisible && filterPropertiesButton.isEnabled();
             refreshStatuses();
         }
@@ -992,8 +1002,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     private void refreshSelectionCombos () {
         if (!fixedRevisions && repositoryTreeOriginalLeft != null && repositoryTreeOriginalRight != null) {
-            List<Object> modelRight = new ArrayList<Object>(10);
-            List<Object> modelLeft = new ArrayList<Object>(10);
+            List<Object> modelRight = new ArrayList<>(10);
+            List<Object> modelLeft = new ArrayList<>(10);
             modelLeft.add(repositoryTreeOriginalLeft);
             if (!SVNRevision.BASE.equals(repositoryTreeOriginalLeft.getRevision())) {
                 modelLeft.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE));
@@ -1265,7 +1275,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
 
         private Setup[] computeSetups (final VCSFileProxy[] files, final int displayStatus, final int setupType) {
-            final List<Setup> newSetups = new ArrayList<Setup>(files.length);
+            final List<Setup> newSetups = new ArrayList<>(files.length);
             final int statusWithoutProperties = displayStatus & ~FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY_PROPERTY;
             final boolean[] canceled = new boolean[1];
             SvnUtils.runWithInfoCache(new Runnable() {
@@ -1308,7 +1318,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             Map<String, byte[]> baseProps = client.getBaseProperties(currentType == Setup.DIFFTYPE_ALL);
             Map<String, byte[]> localProps = client.getProperties();
 
-            Set<String> allProps = new TreeSet<String>(localProps.keySet());
+            Set<String> allProps = new TreeSet<>(localProps.keySet());
             allProps.addAll(baseProps.keySet());
             for (String key : allProps) {
                 boolean isBase = baseProps.containsKey(key);
@@ -1372,7 +1382,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         } finally {
             internalChange = orig;
         }
-        SvnModuleConfig.getDefault().setLastUsedModificationContext(currentType);
+        SvnModuleConfig.getDefault(fileSystem).setLastUsedModificationContext(currentType);
         refreshStatuses();
     }
     

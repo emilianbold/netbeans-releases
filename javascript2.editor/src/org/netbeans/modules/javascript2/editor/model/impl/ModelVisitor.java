@@ -577,17 +577,30 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (node instanceof PropertyNode) {
                     name = getName((PropertyNode)node);
                 } else if (node instanceof BinaryNode) {
-                    BinaryNode bNode = (BinaryNode)node;
-                    if (bNode.lhs() instanceof AccessNode ) {
-                        AccessNode aNode = (AccessNode)bNode.lhs();
-                        if (aNode.getBase() instanceof IdentNode) {
-                            IdentNode iNode = (IdentNode)aNode.getBase();
-                            if ("this".equals(iNode.getName())) {
-                                isPrivilage = true;
-                            }
+                    boolean processAsBinary = true;
+                    if (pathSize > 4) {
+                        Node node4 = getPreviousFromPath(4);
+                        if (node4 instanceof VarNode) {
+                            name = getName((VarNode)node4, parserResult);
+                            // private method
+                            // It can be only if it's in a function
+                            isPrivate = functionStack.size() > 1;
+                            processAsBinary = false;
                         }
                     }
-                    name = getName((BinaryNode)node, parserResult);
+                    if (processAsBinary) {
+                        BinaryNode bNode = (BinaryNode)node;
+                        if (bNode.lhs() instanceof AccessNode ) {
+                            AccessNode aNode = (AccessNode)bNode.lhs();
+                            if (aNode.getBase() instanceof IdentNode) {
+                                IdentNode iNode = (IdentNode)aNode.getBase();
+                                if ("this".equals(iNode.getName())) {
+                                    isPrivilage = true;
+                                }
+                            }
+                        }
+                        name = getName((BinaryNode)node, parserResult);
+                    }
                 } else if (node instanceof VarNode) {
                    name = getName((VarNode)node, parserResult);
                     // private method
@@ -646,6 +659,7 @@ public class ModelVisitor extends PathNodeVisitor {
         functionStack.add(functions);
 
         JsFunctionImpl fncScope = (JsFunctionImpl)modelBuilder.getCurrentDeclarationFunction();
+        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         JsObject parent = null;
         if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
             // create the function object
@@ -700,7 +714,37 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        } 
+        } else if (docHolder != null) {
+            // look for the type defined through comment like @typedef
+            Map<Integer, ? extends JsComment> commentBlocks = docHolder.getCommentBlocks();
+            for(JsComment comment: commentBlocks.values()) {
+                DocParameter definedType = comment.getDefinedType();
+                if (definedType != null) {
+                    JsObject object = new JsObjectImpl(getGlobalObject(), definedType.getParamName(), definedType.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                    getGlobalObject().addProperty(object.getName(), object);
+                    int assignOffset = definedType.getParamName().getOffsetRange().getEnd();
+                    List<Type> types = definedType.getParamTypes();
+                    
+                    for (Type type : types) {
+                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                    }
+                    List<Type> assignedTypes = comment.getTypes();
+                    for (Type type : assignedTypes) {
+                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                    }
+                    List<DocParameter> properties = comment.getProperties();
+                    for (DocParameter docProperty: properties) {
+                        JsObject jsProperty = new JsObjectImpl(object, docProperty.getParamName(), docProperty.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                        object.addProperty(jsProperty.getName(), jsProperty);
+                        types = docProperty.getParamTypes();
+                        assignOffset = docProperty.getParamName().getOffsetRange().getEnd();
+                        for (Type type : types) {
+                           jsProperty.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                        }
+                    }
+                }
+            }
+        }
 //        else {
             for(FunctionNode cFunction: functionNode.getFunctions()) {
                 if (cFunction.isAnonymous()) {
@@ -709,7 +753,6 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 //        }
         if (fncScope != null) {
-            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
             // create variables that are declared in the function
             // They has to be created here for tracking occurrences
             if (canBeSingletonPattern()) {
@@ -1445,7 +1488,19 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node leave(VarNode varNode) {
-        if (!(varNode.getInit() instanceof ReferenceNode || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)
+        Node init = varNode.getInit();
+        if (init instanceof BinaryNode) {
+            // this should handle cases like 
+            // var prom  = another.prom = function prom() {}
+            BinaryNode bNode = (BinaryNode)init;
+            while (bNode.rhs() instanceof BinaryNode ) {
+                bNode = (BinaryNode)bNode.rhs();
+            }
+            if (bNode.rhs() instanceof ReferenceNode /*&& bNode.tokenType() == TokenType.ASSIGN*/) {
+                 init = (ReferenceNode) bNode.rhs();
+            }
+        }
+        if (!(init instanceof ReferenceNode || init instanceof LiteralNode.ArrayLiteralNode)
                 // XXX can we avoid creation of object ?
                 && ModelElementFactory.create(parserResult, varNode.getName()) != null) {
             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();

@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class Annotations implements ISVNAnnotations {
 
-    private final List<Annotation> annotations = new ArrayList<Annotation>();
+    private final List<Annotation> annotations = new ArrayList<>();
 
     public Annotations() {
     }

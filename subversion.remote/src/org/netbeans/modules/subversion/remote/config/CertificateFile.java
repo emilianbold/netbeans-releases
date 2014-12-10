@@ -44,11 +44,13 @@
 
 package org.netbeans.modules.subversion.remote.config;
 
+import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import org.netbeans.modules.proxy.Base64Encoder;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileSystem;
 
 /**
  * Represents a Subversions file holding a X509Certificate for a realmstring.
@@ -63,13 +65,13 @@ public class CertificateFile extends SVNCredentialFile {
 
     private static final String NEWLINE = System.getProperty("line.separator"); // NOI18N
     
-    public CertificateFile(X509Certificate cert, String realmString, int failures, boolean temporarily) throws CertificateEncodingException {
-        super(getNBCertFile(realmString));
+    public CertificateFile(FileSystem fileSystem, X509Certificate cert, String realmString, int failures, boolean temporarily) throws CertificateEncodingException, IOException {
+        super(getNBCertFile(fileSystem, realmString));
         setCert(cert);
         setFailures(failures);
         setRealmString(realmString);
         if(temporarily) {
-            getFile().deleteOnExit();
+            VCSFileProxySupport.deleteOnExit(getFile());
         }
     }
 
@@ -90,14 +92,14 @@ public class CertificateFile extends SVNCredentialFile {
         setValue(getFailuresKey(), String.valueOf(failures));
     }
 
-    public static VCSFileProxy getSystemCertFile(String realmString) {
-        File file = new File(SvnConfigFiles.getUserConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
-        return FileUtil.normalizeFile(file);
+    public static VCSFileProxy getSystemCertFile(FileSystem fileSystem, String realmString) {
+        VCSFileProxy file = VCSFileProxy.createFileProxy(SvnConfigFiles.getUserConfigPath(fileSystem), "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
+        return file.normalizeFile();
     }
 
-    public static VCSFileProxy getNBCertFile(String realmString) {
-        File file = new File(SvnConfigFiles.getNBConfigPath() + "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
-        return FileUtil.normalizeFile(file);
+    public static VCSFileProxy getNBCertFile(FileSystem fileSystem, String realmString) throws IOException {
+        VCSFileProxy file = VCSFileProxy.createFileProxy(SvnConfigFiles.getNBConfigPath(fileSystem), "auth/svn.ssl.server/" + getFileName(realmString)); // NOI18N
+        return file.normalizeFile();
     }
 
     private Key getCertKey() {

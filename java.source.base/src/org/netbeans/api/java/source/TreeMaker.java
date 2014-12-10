@@ -1557,7 +1557,7 @@ public final class TreeMaker {
      * @return  compilation unit tree with modified type declarations.
      */
     public CompilationUnitTree removeCompUnitTypeDecl(CompilationUnitTree compilationUnit, Tree typeDeclaration) {
-        return delegate.removeCompUnitTypeDecl(compilationUnit, typeDeclaration);
+        return delegate.removeCompUnitTypeDecl(compilationUnit, asRemoved(typeDeclaration));
     }
     
     /**
@@ -1612,7 +1612,7 @@ public final class TreeMaker {
      * @return  compilation unit tree with modified imports.
      */
     public CompilationUnitTree removeCompUnitImport(CompilationUnitTree compilationUnit, ImportTree importt) {
-        return delegate.removeCompUnitImport(compilationUnit, importt);
+        return delegate.removeCompUnitImport(compilationUnit, asRemoved(importt));
     }
     
     /**

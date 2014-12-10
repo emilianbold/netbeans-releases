@@ -96,6 +96,25 @@ public class MochaTestRunnerTest extends TestCase {
     }
     
     @Test
+    public void testOKSkipRegex() throws Exception {
+        Pattern pattern = MochaTestRunner.OK_SKIP_PATTERN;
+        
+        final String[][] matchingStrings = new String[][]{
+            {"ok 1 Google Search should append query to title # SKIP -, suite=Google Search, testcase=should append query to title", "1", "Google Search should append query to title", "Google Search", "should append query to title"}
+        };
+
+        for (int i = 0; i < matchingStrings.length; i++) {
+            String string = matchingStrings[i][0];
+            Matcher matcher = pattern.matcher(string);
+            assertTrue("should match: " + string, matcher.find());
+            assertEquals(matchingStrings[i][1], matcher.group("INDEX"));
+            assertEquals(matchingStrings[i][2], matcher.group("FULLTITLE"));
+            assertEquals(matchingStrings[i][3], matcher.group("SUITE"));
+            assertEquals(matchingStrings[i][4], matcher.group("TESTCASE"));
+        }
+    }
+    
+    @Test
     public void testNotOKRegex() throws Exception {
         Pattern pattern = MochaTestRunner.NOT_OK_PATTERN;
         
@@ -138,8 +157,7 @@ public class MochaTestRunnerTest extends TestCase {
         Pattern pattern = MochaTestRunner.SESSION_END_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
-            {"tests 8, pass 6, fail 2", "8", "6", "2"},
-//            {"ok 1 Google Search should append query to title", "1", "Google Search should append query to title"},
+            {"tests 8, pass 6, fail 2, skip 1", "8", "6", "2", "1"},
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
@@ -149,6 +167,7 @@ public class MochaTestRunnerTest extends TestCase {
             assertEquals(matchingStrings[i][1], matcher.group("TOTAL"));
             assertEquals(matchingStrings[i][2], matcher.group("PASS"));
             assertEquals(matchingStrings[i][3], matcher.group("FAIL"));
+            assertEquals(matchingStrings[i][4], matcher.group("SKIP"));
         }
     }
 }

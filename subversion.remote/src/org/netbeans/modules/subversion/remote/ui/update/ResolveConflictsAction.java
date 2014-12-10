@@ -200,7 +200,7 @@ public class ResolveConflictsAction extends ContextAction {
      * @return
      */
     private static List<VCSFileProxy> removeFolders (VCSFileProxy[] files, Set<VCSFileProxy> treeConflicts) {
-        LinkedList<VCSFileProxy> filteredFiles = new LinkedList<VCSFileProxy>();
+        LinkedList<VCSFileProxy> filteredFiles = new LinkedList<>();
         for (VCSFileProxy file : files) {
             if (!treeConflicts.contains(file) && file.isFile()) {
                 filteredFiles.add(file);
@@ -210,7 +210,7 @@ public class ResolveConflictsAction extends ContextAction {
     }
 
     private static Map<VCSFileProxy, ISVNStatus> getTreeConflicts (VCSFileProxy[] files) {
-        Map<VCSFileProxy, ISVNStatus> treeConflicts = new HashMap<VCSFileProxy, ISVNStatus>(files.length);
+        Map<VCSFileProxy, ISVNStatus> treeConflicts = new HashMap<>(files.length);
         if (files.length > 0) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false, new Context(files));
@@ -231,7 +231,7 @@ public class ResolveConflictsAction extends ContextAction {
     }
 
     private static Map<VCSFileProxy, ISVNStatus> getPropertyConflicts (VCSFileProxy[] files) {
-        Map<VCSFileProxy, ISVNStatus> propertyConflicts = new HashMap<VCSFileProxy, ISVNStatus>(files.length);
+        Map<VCSFileProxy, ISVNStatus> propertyConflicts = new HashMap<>(files.length);
         if (files.length > 0) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false, new Context(files));

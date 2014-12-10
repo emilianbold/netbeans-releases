@@ -73,7 +73,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
     private final RepositoryFile repositoryFile;
         
     public SwitchTo(RepositoryFile repositoryFile, VCSFileProxy root, boolean localChanges) {
-        super(new SwitchToPanel(), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Title", root.getName()), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Action")); // NOI18N
+        super(root, new SwitchToPanel(), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Title", root.getName()), NbBundle.getMessage(SwitchTo.class, "CTL_SwitchTo_Action")); // NOI18N
         
         this.root = root;        
         this.repositoryFile = repositoryFile;       

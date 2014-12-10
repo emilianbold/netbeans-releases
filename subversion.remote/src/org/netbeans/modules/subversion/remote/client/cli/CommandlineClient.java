@@ -136,6 +136,10 @@ public class CommandlineClient implements SvnClient {
         cli = new Commandline(fileSystem);
     }
 
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+    
     /**
      * @return true if old 1.5 format is supported
      */
@@ -277,8 +281,8 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public ISVNInfo getInfo(SVNUrl url) throws SVNClientException {
-        return super.getInfo(url);
+    public ISVNInfo getInfo(Context context, SVNUrl url) throws SVNClientException {
+        return getInfo(context, url, SVNRevision.HEAD, SVNRevision.HEAD);
     }
 
     @Override
@@ -356,18 +360,6 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public void mkdir(SVNUrl url, boolean parents, String msg) throws SVNClientException {
-        if(parents) {
-            List<SVNUrl> parent = getAllNotExistingParents(url);
-            for (SVNUrl p : parent) {
-                mkdir(p, msg);
-            }
-        } else {
-            mkdir(url, msg);
-        }
-    }
-
-    @Override
     public void mkdir(VCSFileProxy file) throws SVNClientException {
         MkdirCommand cmd = new MkdirCommand(fileSystem, file);
         exec(cmd);
@@ -403,9 +395,9 @@ public class CommandlineClient implements SvnClient {
     @Override
     public ISVNStatus[] getStatus(VCSFileProxy[] files) throws SVNClientException {
 
-        Map<VCSFileProxy, ISVNStatus> unversionedMap = new HashMap<VCSFileProxy, ISVNStatus>();
-        List<VCSFileProxy> filesForStatus = new ArrayList<VCSFileProxy>();
-        List<VCSFileProxy> filesForInfo = new ArrayList<VCSFileProxy>();
+        Map<VCSFileProxy, ISVNStatus> unversionedMap = new HashMap<>();
+        List<VCSFileProxy> filesForStatus = new ArrayList<>();
+        List<VCSFileProxy> filesForInfo = new ArrayList<>();
         for (VCSFileProxy f : files) {
             if(!isManaged(f)) {
                 unversionedMap.put(f, new SVNStatusUnversioned(f));
@@ -425,13 +417,13 @@ public class CommandlineClient implements SvnClient {
                 filesForInfo.add(status.getPath());
             }
         }
-        Map<VCSFileProxy, ISVNInfo> infoMap = new HashMap<VCSFileProxy, ISVNInfo>();
+        Map<VCSFileProxy, ISVNInfo> infoMap = new HashMap<>();
         if (!filesForInfo.isEmpty()) {
             ISVNInfo[] infos = getInfo(filesForInfo.toArray(new VCSFileProxy[filesForInfo.size()]), null, null);
             for (ISVNInfo info : infos) infoMap.put(info.getFile(), info);
         }
 
-        Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<VCSFileProxy, ISVNStatus>();
+        Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<>();
         for (Status status : statusValues) {
             VCSFileProxy file = status.getPath();
             if (status == null || !isManaged(status.getWcStatus())) {
@@ -448,7 +440,7 @@ public class CommandlineClient implements SvnClient {
             }
         }
 
-        List<ISVNStatus> ret = new ArrayList<ISVNStatus>();
+        List<ISVNStatus> ret = new ArrayList<>();
         for (VCSFileProxy f : files) {
             ISVNStatus s = statusMap.get(f);
             if(s == null) {
@@ -485,7 +477,7 @@ public class CommandlineClient implements SvnClient {
             }
         }
 
-        List<VCSFileProxy> filesForInfo = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> filesForInfo = new ArrayList<>();
         for (Status status : statusValues) {
             if(isManaged(status.getWcStatus())) {
                 filesForInfo.add(status.getPath());
@@ -493,10 +485,10 @@ public class CommandlineClient implements SvnClient {
         }
         ISVNInfo[] infos = getInfo(filesForInfo.toArray(new VCSFileProxy[filesForInfo.size()]), null, null);
 
-        Map<VCSFileProxy, ISVNInfo> infoMap = new HashMap<VCSFileProxy, ISVNInfo>();
+        Map<VCSFileProxy, ISVNInfo> infoMap = new HashMap<>();
         for (ISVNInfo info : infos) infoMap.put(info.getFile(), info);
 
-        Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<VCSFileProxy, ISVNStatus>();
+        Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<>();
         for (Status status : statusValues) {
             VCSFileProxy f = status.getPath();
             if (status == null || !isManaged(status.getWcStatus())) {
@@ -513,7 +505,7 @@ public class CommandlineClient implements SvnClient {
             }
         }
 
-        List<ISVNStatus> ret = new ArrayList<ISVNStatus>();
+        List<ISVNStatus> ret = new ArrayList<>();
         for (Status status : statusValues) {
             VCSFileProxy f = status.getPath();
             ISVNStatus s = statusMap.get(f);
@@ -527,7 +519,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNLogMessage[] getLogMessages(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
-        return super.getLogMessages(url, revStart, revEnd);
+        return getLogMessages(url, revStart, revEnd, false);
     }
 
     @Override
@@ -549,7 +541,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNLogMessage[] getLogMessages(VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
-        return super.getLogMessages(file, revStart, revEnd);
+        return getLogMessages(file, revStart, revEnd, false);
     }
 
     @Override
@@ -629,7 +621,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNProperty propertyGet(SVNUrl url, String name) throws SVNClientException {
-        return super.propertyGet(url, name);
+        return propertyGet(url, SVNRevision.HEAD, SVNRevision.HEAD, name);
     }
 
     @Override
@@ -668,18 +660,38 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    public List getIgnoredPatterns(VCSFileProxy file) throws SVNClientException {
-        return super.getIgnoredPatterns(file);
+    public List<String> getIgnoredPatterns(VCSFileProxy file) throws SVNClientException {
+        List<String> res = new ArrayList<>();
+        for(ISVNProperty property : getProperties(file)) {
+            if (ISVNProperty.IGNORE.equals(property.getName())) {
+                String value = property.getValue();
+                for(String s : value.split("\n")) {
+                    if (!s.isEmpty()) {
+                        res.add(s);
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     @Override
     public void addToIgnoredPatterns(VCSFileProxy file, String value) throws SVNClientException {
-        super.addToIgnoredPatterns(file, value);
+        List<String> ignoredPatterns = getIgnoredPatterns(file);
+        if (!ignoredPatterns.contains(value)) {
+            ignoredPatterns.add(value);
+            setIgnoredPatterns(file, ignoredPatterns);
+        }
     }
 
     @Override
-    public void setIgnoredPatterns(VCSFileProxy file, List l) throws SVNClientException {
-        super.setIgnoredPatterns(file, l);
+    public void setIgnoredPatterns(VCSFileProxy file, List<String>  l) throws SVNClientException {
+        StringBuilder buf = new StringBuilder();
+        for(String s : l) {
+            buf.append(s);
+            buf.append('\n');
+        }
+        propertySet(file, ISVNProperty.IGNORE, buf.toString(), false);
     }
 
     @Override
@@ -735,7 +747,7 @@ public class CommandlineClient implements SvnClient {
         ListPropertiesCommand cmd = new ListPropertiesCommand(fileSystem, file, false);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
-        List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
+        List<ISVNProperty> props = new ArrayList<>(names.size());
         for (final String name : names) {
             ISVNProperty prop = propertyGet(file, name);
             if (prop == null) {
@@ -773,7 +785,7 @@ public class CommandlineClient implements SvnClient {
         ListPropertiesCommand cmd = new ListPropertiesCommand(fileSystem, url, false);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
-        List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
+        List<ISVNProperty> props = new ArrayList<>(names.size());
         for (String name : names) {
             ISVNProperty prop = propertyGet(url, name);
             if (prop != null) {
@@ -802,12 +814,12 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void merge(SVNUrl startUrl, SVNRevision startRev, SVNUrl endUrl, SVNRevision endRev, VCSFileProxy file, boolean force, boolean recurse) throws SVNClientException {
-       super.merge(startUrl, startRev, endUrl, endRev, file, force, recurse);
+       merge(startUrl, startRev, endUrl, endRev, file, force, recurse,false);
     }
 
     @Override
     public void merge(SVNUrl startUrl, SVNRevision startRev, SVNUrl endUrl, SVNRevision endRev, VCSFileProxy file, boolean force, boolean recurse, boolean dryRun) throws SVNClientException {
-        super.merge(startUrl, startRev, endUrl, endRev, file, force, recurse, dryRun);
+        merge(startUrl, startRev, endUrl, endRev, file, force, recurse, dryRun, false);
     }
 
     @Override
@@ -943,24 +955,6 @@ public class CommandlineClient implements SvnClient {
         throw new SVNClientException(sb.toString());
     }
 
-    private List<SVNUrl> getAllNotExistingParents(SVNUrl url) throws SVNClientException {
-        List<SVNUrl> ret = new ArrayList<SVNUrl>();
-        if(url == null) {
-            return ret;
-        }
-        try {
-            getInfo(url);
-        } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("Not a valid URL") > -1 || e.getMessage().contains("non-existent in revision")) {
-                ret.addAll(getAllNotExistingParents(url.getParent()));
-                ret.add(url);
-            } else {
-                throw e;
-            }
-        }
-        return ret;
-    }
-
     private boolean isManaged(SVNStatusKind s) {
         return !(s.equals(SVNStatusKind.UNVERSIONED) ||
                  s.equals(SVNStatusKind.NONE) ||
@@ -983,18 +977,13 @@ public class CommandlineClient implements SvnClient {
     // unsupported start
 
     @Override
-    public long[] commitAcrossWC(VCSFileProxy[] arg0, String arg1, boolean arg2, boolean arg3, boolean arg4) throws SVNClientException {
-        return super.commitAcrossWC(arg0, arg1, arg2, arg3, arg4);
-    }
-
-    @Override
     public void cleanup(VCSFileProxy file) throws SVNClientException {
         CleanupCommand cmd = new CleanupCommand(fileSystem, file);
         exec(cmd);
     }
 
     private void notifyChangedStatus(VCSFileProxy file, boolean rec, ISVNStatus[] oldStatuses) throws SVNClientException {
-        Map<VCSFileProxy, ISVNStatus> oldStatusMap = new HashMap<VCSFileProxy, ISVNStatus>();
+        Map<VCSFileProxy, ISVNStatus> oldStatusMap = new HashMap<>();
         for (ISVNStatus s : oldStatuses) {
             oldStatusMap.put(s.getFile(), s);
         }
@@ -1026,7 +1015,7 @@ public class CommandlineClient implements SvnClient {
         ListPropertiesCommand cmd = new ListPropertiesCommand(fileSystem, url, revision.toString(), recursive);
         exec(cmd);
         List<String> names = cmd.getPropertyNames();
-        List<ISVNProperty> props = new ArrayList<ISVNProperty>(names.size());
+        List<ISVNProperty> props = new ArrayList<>(names.size());
         for (String name : names) {
             ISVNProperty prop = propertyGet(url, name);
             if (prop != null) {
@@ -1054,6 +1043,11 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public boolean cancel() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public SVNUrl getSvnUrl() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -1097,7 +1091,7 @@ public class CommandlineClient implements SvnClient {
         "MSG_Error.reintegrateBranchWithCLI=Reintegrating branch is not supported with commandline client.\nPlease switch to SVNKit or JavaHL."
     })
     public void mergeReintegrate(SVNUrl arg0, SVNRevision arg1, VCSFileProxy arg2, boolean arg3, boolean arg4) throws SVNClientException {
-        throw new SVNClientException(SvnModuleConfig.getDefault().isForcedCommandlineClient()
+        throw new SVNClientException(SvnModuleConfig.getDefault(fileSystem).isForcedCommandlineClient()
                 ? Bundle.MSG_Error_reintegrateBranchWithCLI_CLIforced()
                 : Bundle.MSG_Error_reintegrateBranchWithCLI());
     }
@@ -1108,7 +1102,7 @@ public class CommandlineClient implements SvnClient {
         "MSG_Error.diffSummaryWithCLI=Diffing between revision trees is not supported with commandline client.\nPlease switch to SVNKit or JavaHL."
     })
     public SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, Depth arg4, boolean arg5) throws SVNClientException {
-        throw new SVNClientException(SvnModuleConfig.getDefault().isForcedCommandlineClient()
+        throw new SVNClientException(SvnModuleConfig.getDefault(fileSystem).isForcedCommandlineClient()
                 ? Bundle.MSG_Error_diffSummaryWithCLI_CLIforced()
                 : Bundle.MSG_Error_diffSummaryWithCLI());
     }

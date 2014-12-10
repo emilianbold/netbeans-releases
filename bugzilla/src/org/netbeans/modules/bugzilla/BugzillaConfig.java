@@ -129,7 +129,7 @@ public class BugzillaConfig {
             return null;
         }
         String[] values = value.split(DELIMITER);
-        assert values.length >= 2 : "worng amount of stored query data " + values.length + " in query " + queryName; // NOI18N
+        assert values.length >= 2 : "wrong amount of stored query data [" + values.length + "] in query '" + queryName + "'"; // NOI18N
         String urlParams = values[0];
         boolean urlDef = values.length > 2 ? Boolean.parseBoolean(values[2]) : false;
         return repository.createPersistentQuery(queryName, urlParams, urlDef);

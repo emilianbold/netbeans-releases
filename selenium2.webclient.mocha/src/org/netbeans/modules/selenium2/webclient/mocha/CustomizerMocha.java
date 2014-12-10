@@ -48,18 +48,22 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaPreferences;
+import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaJSPreferences;
+import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaSeleniumPreferences;
 import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaPreferencesValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.awt.Mnemonics;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -68,19 +72,24 @@ import org.openide.util.NbBundle;
 public final class CustomizerMocha extends javax.swing.JPanel {
 
     private final Project project;
+    private final boolean isSelenium;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final SpinnerNumberModel timeoutModel;
 
     private volatile String mochaInstallFolder;
+    private volatile int timeout;
 
     // @GuardedBy("EDT")
     private ValidationResult validationResult;
 
 
-    public CustomizerMocha(Project project) {
+    public CustomizerMocha(Project project, boolean isSelenium) {
         assert EventQueue.isDispatchThread();
         assert project != null;
 
         this.project = project;
+        this.isSelenium = isSelenium;
+        timeoutModel = new SpinnerNumberModel(65534, 1, 65534, 1);
 
         initComponents();
         init();
@@ -96,6 +105,14 @@ public final class CustomizerMocha extends javax.swing.JPanel {
 
     public String getMochaInstallFolder() {
         return mochaInstallFolder;
+    }
+
+    public int getTimeout() {
+        return timeout;
+    }
+
+    public boolean getAutoWatch() {
+        return autowatchCheckBox.isSelected();
     }
 
     public String getWarningMessage() {
@@ -114,12 +131,26 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         return null;
     }
 
-    @NbBundle.Messages("CustomizerMocha.mocha.dir.info=Full path of mocha installation dir (typically node_modules/mocha).")
+    @NbBundle.Messages({"CustomizerMocha.mocha.dir.info=Full path of mocha installation dir (typically node_modules/mocha).",
+    "CustomizerMocha.timeout.info=Test-case timeout in milliseconds."})
     private void init() {
         assert EventQueue.isDispatchThread();
-        // data
-        mochaDirTextField.setText(MochaPreferences.getMochaDir(project));
+        String mochaDir;
+        mochaDir = isSelenium ? MochaSeleniumPreferences.getMochaDir(project) : MochaJSPreferences.getMochaDir(project);
+        if(mochaDir == null) {
+            mochaDir = isSelenium ? MochaJSPreferences.getMochaDir(project) : MochaSeleniumPreferences.getMochaDir(project);
+        }
+        mochaDirTextField.setText(mochaDir);
         mochaDirInfoLabel.setText(Bundle.CustomizerMocha_mocha_dir_info());
+        timeoutSpinner.setModel(timeoutModel);
+        timeout = isSelenium ? MochaSeleniumPreferences.getTimeout(project) : MochaJSPreferences.getTimeout(project);
+        timeoutModel.setValue(timeout);
+        timeoutInfoLabel.setText(Bundle.CustomizerMocha_timeout_info());
+        if(isSelenium) {
+            autowatchCheckBox.setVisible(false);
+        } else {
+            autowatchCheckBox.setSelected(MochaJSPreferences.isAutoWatch(project));
+        }
         // listeners
         addListeners();
         // initial validation
@@ -129,6 +160,7 @@ public final class CustomizerMocha extends javax.swing.JPanel {
     private void addListeners() {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         mochaDirTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        timeoutModel.addChangeListener(new DefaultChangeListener());
     }
 
     void validateData() {
@@ -152,8 +184,11 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         mochaDirLabel = new JLabel();
         mochaDirTextField = new JTextField();
         mochaDirBrowseButton = new JButton();
-        mochaDirSearchButton = new JButton();
         mochaDirInfoLabel = new JLabel();
+        timeoutLabel = new JLabel();
+        timeoutInfoLabel = new JLabel();
+        timeoutSpinner = new JSpinner();
+        autowatchCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(mochaDirLabel, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.mochaDirLabel.text")); // NOI18N
 
@@ -164,41 +199,58 @@ public final class CustomizerMocha extends javax.swing.JPanel {
             }
         });
 
-        Mnemonics.setLocalizedText(mochaDirSearchButton, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.mochaDirSearchButton.text")); // NOI18N
-        mochaDirSearchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                mochaDirSearchButtonActionPerformed(evt);
-            }
-        });
-
         Mnemonics.setLocalizedText(mochaDirInfoLabel, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.mochaDirInfoLabel.text")); // NOI18N
+
+        timeoutLabel.setLabelFor(timeoutSpinner);
+        Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.timeoutLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(timeoutInfoLabel, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.timeoutInfoLabel.text")); // NOI18N
+
+        timeoutSpinner.setEditor(new JSpinner.NumberEditor(timeoutSpinner, "#"));
+
+        Mnemonics.setLocalizedText(autowatchCheckBox, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.autowatchCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(mochaDirLabel)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(mochaDirLabel)
+                    .addComponent(timeoutLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(mochaDirInfoLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(mochaDirTextField, GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE)
+                        .addComponent(mochaDirTextField, GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(mochaDirBrowseButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(mochaDirSearchButton))))
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(mochaDirInfoLabel)
+                            .addComponent(timeoutInfoLabel)
+                            .addComponent(timeoutSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(autowatchCheckBox)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(mochaDirLabel)
                     .addComponent(mochaDirTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(mochaDirBrowseButton)
-                    .addComponent(mochaDirSearchButton))
+                    .addComponent(mochaDirBrowseButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(mochaDirInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(timeoutLabel)
+                    .addComponent(timeoutSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(timeoutInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(autowatchCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -218,25 +270,15 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_mochaDirBrowseButtonActionPerformed
 
-    @NbBundle.Messages("CustomizerMocha.config.none=No mocha executable was found.")
-    private void mochaDirSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_mochaDirSearchButtonActionPerformed
-        assert EventQueue.isDispatchThread();
-        String installFolder = MochaPreferences.getMochaDir(project);
-        if (installFolder != null) {
-            File configFile = new File(installFolder);
-            mochaDirTextField.setText(configFile.getAbsolutePath());
-            return;
-        }
-        // no mochaInstallFolder found
-        StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerMocha_config_none());
-    }//GEN-LAST:event_mochaDirSearchButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox autowatchCheckBox;
     private JButton mochaDirBrowseButton;
     private JLabel mochaDirInfoLabel;
     private JLabel mochaDirLabel;
-    private JButton mochaDirSearchButton;
     private JTextField mochaDirTextField;
+    private JLabel timeoutInfoLabel;
+    private JLabel timeoutLabel;
+    private JSpinner timeoutSpinner;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -259,6 +301,16 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         }
 
         private void processChange() {
+            validateData();
+        }
+
+    }
+
+    private final class DefaultChangeListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            timeout = timeoutModel.getNumber().intValue();
             validateData();
         }
 

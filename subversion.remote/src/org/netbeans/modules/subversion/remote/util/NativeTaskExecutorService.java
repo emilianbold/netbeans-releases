@@ -61,7 +61,7 @@ public class NativeTaskExecutorService  {
     }
 
     public static <T> Future<T> submit(final Callable<T> task, final String name) {
-        final FutureTask<T> ftask = new FutureTask<T>(new Callable<T>() {
+        final FutureTask<T> ftask = new FutureTask<>(new Callable<T>() {
 
             @Override
             public T call() throws Exception {

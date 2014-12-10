@@ -140,23 +140,23 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
     }
     
     void update() {
-        reset(SvnModuleConfig.getDefault().getAnnotationExpresions());
+        reset(SvnModuleConfig.getDefault(fileSystem).getAnnotationExpresions());
     }
        
     boolean isChanged() {                
-        List<AnnotationExpression> storedExpressions = SvnModuleConfig.getDefault().getAnnotationExpresions();
+        List<AnnotationExpression> storedExpressions = SvnModuleConfig.getDefault(fileSystem).getAnnotationExpresions();
         List<AnnotationExpression> expressions = getAnnotationExpressions();                
         return !SvnUtils.equals(storedExpressions, expressions);
     }
     
     void applyChanges() {                                         
         List<AnnotationExpression> exps = getAnnotationExpressions();
-        SvnModuleConfig.getDefault().setAnnotationExpresions(exps);        
+        SvnModuleConfig.getDefault(fileSystem).setAnnotationExpresions(exps);        
     }    
 
     private List<AnnotationExpression> getAnnotationExpressions() {
         TableModel model = panel.expresionsTable.getModel();
-        List<AnnotationExpression> exps = new ArrayList<AnnotationExpression>(model.getRowCount());
+        List<AnnotationExpression> exps = new ArrayList<>(model.getRowCount());
         for (int r = 0; r < model.getRowCount(); r++) {
             String urlExp = (String) model.getValueAt(r, 0);
             if (urlExp.trim().equals("")) {
@@ -268,11 +268,11 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
     }
     
     private void onResetClick() {  
-        reset(SvnModuleConfig.getDefault().getDefaultAnnotationExpresions());               
+        reset(SvnModuleConfig.getDefault(fileSystem).getDefaultAnnotationExpresions());               
     }
     
     private void onWizardClick() {  
-        URLPatternWizard wizard = new URLPatternWizard();
+        URLPatternWizard wizard = new URLPatternWizard(fileSystem);
         if (!wizard.show()) {
             return;
         }

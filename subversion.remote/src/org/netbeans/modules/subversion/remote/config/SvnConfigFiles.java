@@ -44,15 +44,16 @@
 package org.netbeans.modules.subversion.remote.config;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -66,10 +67,9 @@ import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.Places;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NetworkSettings;
 
 /**
@@ -87,7 +87,7 @@ import org.openide.util.NetworkSettings;
 public class SvnConfigFiles {
 
     /** the only SvnConfigFiles instance */
-    private static SvnConfigFiles instance;
+    private static final Map<FileSystem,SvnConfigFiles> instances = new HashMap<>();
 
     /** the Ini instance holding the configuration values stored in the <b>servers</b>
      * file used by the Subversion module */    
@@ -105,6 +105,7 @@ public class SvnConfigFiles {
     private static final boolean DO_NOT_SAVE_PASSPHRASE = Boolean.getBoolean("versioning.subversion.noPassphraseInConfig"); // NOI18N
 
     private String recentUrl;
+    private final FileSystem fileSystem;
 
     private interface IniFilePatcher {
         void patch(Ini file);
@@ -135,7 +136,8 @@ public class SvnConfigFiles {
     /**
      * Creates a new instance
      */
-    private SvnConfigFiles() {      
+    private SvnConfigFiles(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(Subversion.class.getClassLoader());
         try {
@@ -155,18 +157,19 @@ public class SvnConfigFiles {
      *
      * @return the SvnConfigFiles instance
      */
-    public static synchronized SvnConfigFiles getInstance() {
+    public static synchronized SvnConfigFiles getInstance(FileSystem fileSystem) {
         //T9Y - singleton is not required - always create new instance of this class
         String t9yUserConfigPath = System.getProperty("netbeans.t9y.svn.user.config.path");
         if (t9yUserConfigPath != null && t9yUserConfigPath.length() > 0) {
             //make sure that new instance will be created
-            instance = null;
+            instances.clear();
         }
-        
-        if(instance == null) {
-            instance = new SvnConfigFiles();                    
+        SvnConfigFiles res = instances.get(fileSystem);
+        if(res == null) {
+            res = new SvnConfigFiles(fileSystem);
+            instances.put(fileSystem, res);
         }
-        return instance;
+        return res;
     }
 
     public void reset() {
@@ -204,7 +207,7 @@ public class SvnConfigFiles {
         changes = !repositoryUrl.equals(recentUrl);
 
         if(changes) {
-            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl);
+            RepositoryConnection rc = SvnModuleConfig.getDefault(fileSystem).getRepositoryConnection(repositoryUrl);
             if (rc != null && url.getProtocol().startsWith("svn+")) {   //NOI18N
                 // must set tunnel info for the repository url
                 setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
@@ -323,12 +326,15 @@ public class SvnConfigFiles {
         return section;
     }
     
-    private File storeIni (Ini ini, String iniFile) {
+    private VCSFileProxy storeIni (Ini ini, String iniFile) {
         BufferedOutputStream bos = null;
-        File file = FileUtil.normalizeFile(new File(getNBConfigPath() + "/" + iniFile));   // NOI18N
+        VCSFileProxy file = null;
         try {
-            file.getParentFile().mkdirs();
-            ini.store(bos = FileUtils.createOutputStream(file));
+            file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), iniFile);
+            VCSFileProxySupport.mkdirs(file.getParentFile());
+            FileObject fo = file.getParentFile().toFileObject().createData(file.getName());
+            bos = new BufferedOutputStream(fo.getOutputStream());
+            ini.store(bos);
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex);            
         } finally {
@@ -383,7 +389,7 @@ public class SvnConfigFiles {
     
     private static List<String> parseGlobalIgnores(String ignores) {
         StringTokenizer st = new StringTokenizer(ignores, " ");                 // NOI18N
-        List<String> ret = new ArrayList<String>(10);
+        List<String> ret = new ArrayList<>(10);
         while (st.hasMoreTokens()) {
             String entry = st.nextToken();
             if (!entry.equals(""))                                              // NOI18N
@@ -399,19 +405,15 @@ public class SvnConfigFiles {
      * @return the path
      *
      */ 
-    public static String getUserConfigPath() {        
-        
+    public static VCSFileProxy getUserConfigPath(FileSystem fileSystem) {        
+        VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystem.getRoot());
         //T9Y - user svn config files should be changable
         String t9yUserConfigPath = System.getProperty("netbeans.t9y.svn.user.config.path");
         if (t9yUserConfigPath != null && t9yUserConfigPath.length() > 0) {
-            return t9yUserConfigPath;
+            return VCSFileProxySupport.getResource(root, t9yUserConfigPath);
         }
-        
-        if(VCSFileProxySupport.isUnix()) {
-            String path = System.getProperty("user.home") ;                     // NOI18N
-            return path + "/" + UNIX_CONFIG_DIR;                                // NOI18N
-        } 
-        return "";                                                              // NOI18N
+        VCSFileProxy home = VCSFileProxySupport.getHome(root);
+        return VCSFileProxy.createFileProxy(home, UNIX_CONFIG_DIR);
     }
 
     /**
@@ -421,16 +423,16 @@ public class SvnConfigFiles {
      * @return the path
      *
      */ 
-    public static String getNBConfigPath() {
+    public static VCSFileProxy getNBConfigPath(FileSystem fileSystem) throws IOException {
         
         //T9Y - nb svn confing should be changable
         String t9yNbConfigPath = System.getProperty("netbeans.t9y.svn.nb.config.path");
         if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
-            return t9yNbConfigPath;
+            return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), t9yNbConfigPath);
         }
-        
-        String nbHome = Places.getUserDirectory().getAbsolutePath();
-        return nbHome + "/config/svn/config/";                                  // NOI18N
+        //String nbHome = Places.getUserDirectory().getAbsolutePath();
+        //return nbHome + "/config/svn/config/"; // NOI18N
+        return VCSFileProxySupport.getRemotePeristenceFolder(fileSystem);
     }
     
     /**
@@ -508,12 +510,13 @@ public class SvnConfigFiles {
         Ini systemIniFile = loadSystemIniFile(fileName);
 
         patcher.patch(systemIniFile);
-
-        VCSFileProxy file = FileUtil.normalizeFile(new File(getNBConfigPath() + File.separatorChar + fileName)); // NOI18N
         BufferedOutputStream bos = null;
         try {
+            VCSFileProxy file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), fileName);
             VCSFileProxySupport.mkdirs(file.getParentFile());
-            systemIniFile.store(bos = FileUtils.createOutputStream(file));
+            FileObject fo = file.getParentFile().toFileObject().createData(file.getName());
+            bos = new BufferedOutputStream(fo.getOutputStream());
+            systemIniFile.store(bos);
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
         } finally {
@@ -542,33 +545,34 @@ public class SvnConfigFiles {
      */       
     private Ini loadSystemIniFile(String fileName) {
         // config files from userdir
-        String filePath = getUserConfigPath() + "/" + fileName;                         // NOI18N
-        VCSFileProxy file = FileUtil.normalizeFile(new File(filePath));
+        VCSFileProxy file = VCSFileProxy.createFileProxy(getUserConfigPath(fileSystem), fileName);
+        file = file.normalizeFile();
         Ini system = null;
         try {            
-            system = new Ini(new FileReader(file));
+            system = new Ini(new InputStreamReader(file.getInputStream(false)));
         } catch (FileNotFoundException ex) {
             // ignore
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex)     ;
         } catch (Exception ex) {
-            Subversion.LOG.log(Level.INFO, "exception in Ini4j, system file not loaded: " + filePath, ex);
+            Subversion.LOG.log(Level.INFO, "exception in Ini4j, system file not loaded: " + file.getPath(), ex);
         }
 
         if(system == null) {
             system = new Ini();
-            Subversion.LOG.warning("Could not load the file " + filePath + ". Falling back on svn defaults."); // NOI18N
+            Subversion.LOG.warning("Could not load the file " + file.getPath() + ". Falling back on svn defaults."); // NOI18N
         }
         
+        file = VCSFileProxy.createFileProxy(getGlobalConfigPath(fileSystem), fileName);
         Ini global = null;      
         try {
-            global = new Ini(new FileReader(getGlobalConfigPath() + "/" + fileName));   // NOI18N
+            global = new Ini(new InputStreamReader(file.getInputStream(false)));
         } catch (FileNotFoundException ex) {
             // just doesn't exist - ignore
         } catch (IOException ex) {
             Subversion.LOG.log(Level.INFO, null, ex)     ;
         } catch (Exception ex) {
-            Subversion.LOG.log(Level.INFO, "exception in Ini4j, global file not loaded: " + getGlobalConfigPath() + "/" + fileName, ex);
+            Subversion.LOG.log(Level.INFO, "exception in Ini4j, global file not loaded: " + file.getPath(), ex);
         }
          
         if(global != null) {
@@ -620,8 +624,8 @@ public class SvnConfigFiles {
     /**
      * Return the path for the systemwide command lines configuration directory 
      */
-    private static String getGlobalConfigPath () {
-        return "/etc/subversion";               // NOI18N
+    private static VCSFileProxy getGlobalConfigPath (FileSystem fileSystem) {
+        return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), "/etc/subversion");               // NOI18N
     }
 
     private String getProxyPassword(String key) {

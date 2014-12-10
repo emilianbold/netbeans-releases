@@ -108,4 +108,8 @@ public class JQueryCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue235647() throws Exception {
         checkCompletion("testfiles/completion/issue235647.js", "$.po^", false);
     }
+    
+    public void testIssue249169() throws Exception {
+        checkCompletion("testfiles/completion/issue249169.js", "if ($(\":an^\")) {", false);
+    }
 }

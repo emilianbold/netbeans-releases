@@ -134,14 +134,14 @@ public class KVFile {
      */
     private Map<Key, byte[]> getMap() {
         if(map == null) {
-            map = new TreeMap<Key, byte[]>();
+            map = new TreeMap<>();
         }
         return map;
     }
 
     public Map<String, byte[]> getNormalizedMap() {
         Map<Key, byte[]> keyValue = getMap();
-        Map<String, byte[]> stringValue = new HashMap<String, byte[]>(keyValue.size());
+        Map<String, byte[]> stringValue = new HashMap<>(keyValue.size());
         Iterator<Map.Entry<Key, byte[]>> it = keyValue.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry next = it.next();
@@ -158,7 +158,7 @@ public class KVFile {
      */
     private Map<String, Key> getKeyMap() {
         if(keyMap == null) {
-            keyMap = new HashMap<String, Key>();
+            keyMap = new HashMap<>();
         }
         return keyMap;
     }
@@ -187,7 +187,7 @@ public class KVFile {
     private void parse() throws IOException {        
         InputStream is = null;        
         try {            
-            is = FileUtils.createInputStream(file);                                    
+            is = file.getInputStream(false);                                    
             int keyIdx = 0;
             while(!checkEOF(is)) {                      
                int keyLength = readEntryLength(is);     // key length
@@ -259,7 +259,7 @@ public class KVFile {
             if(parent!=null && !parent.exists()) {
                 VCSFileProxySupport.mkdirs(parent);
             }
-            os = FileUtils.createOutputStream(file);            
+            os = file.toFileObject().getOutputStream();            
             for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {
                 Key key = (Key) it.next();
                 byte[] value = (byte[]) getMap().get(key);                

@@ -145,6 +145,12 @@ public final class FileUtilities {
                 && FileUtil.isParentOf(siteRootFolder, fileObject)) {
             return null;
         }
+        FileObject testsSeleniumFolder = clientSideProject.getTestsSeleniumFolder(false);
+        if(testsSeleniumFolder != null && FileUtil.isParentOf(testsSeleniumFolder, fileObject)) {
+            // Hide Run/Debug File actions from javascript files under Selenium Tests Folder, as
+            // more appropriate actions will be registered and handled by selenium support
+            return null;
+        }
         return fileObject;
     }
 

@@ -29,6 +29,7 @@ function NetbeansReporter(runner) {
     , n = 1
     , passes = 0
     , failures = 0
+    , skipped = 0
     , REPORTER_MESSAGE = 'mocha-netbeans-reporter ';
 
   runner.on('start', function(){
@@ -38,6 +39,11 @@ function NetbeansReporter(runner) {
 
   runner.on('test end', function(){
     ++n;
+  });
+
+  runner.on('pending', function(test){
+    skipped++;
+    console.log(REPORTER_MESSAGE + 'ok %d %s # SKIP -, suite=%s, testcase=%s', n, title(test), test.parent.fullTitle(), test.title);
   });
 
   runner.on('pass', function(test){
@@ -52,7 +58,7 @@ function NetbeansReporter(runner) {
   });
 
   runner.on('end', function(){
-    console.log(REPORTER_MESSAGE + 'tests ' + (passes + failures)+ ', pass ' + passes + ', fail ' + failures);
+    console.log(REPORTER_MESSAGE + 'tests ' + (passes + failures)+ ', pass ' + passes + ', fail ' + failures + ', skip ' + skipped);
   });
 }
 

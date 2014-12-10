@@ -59,7 +59,7 @@ import org.openide.util.NbPreferences;
  */
 public class TerminalPinnedTabOptions {
 
-    private static final Preferences defaultPrefs = NbPreferences.forModule(TerminalPinnedTabOptions.class).node("TerminalPinTabs");
+    private static final Preferences defaultPrefs = NbPreferences.forModule(TerminalPinnedTabOptions.class).node("TerminalPinTabs"); //NOI18N
     private static final TerminalPinnedTabOptions INSTANCE = new TerminalPinnedTabOptions(defaultPrefs);
 
     private static final String DELIMITER = "_";//NOI18N

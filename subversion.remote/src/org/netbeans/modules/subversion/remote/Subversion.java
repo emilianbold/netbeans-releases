@@ -149,6 +149,7 @@ public class Subversion {
     private void init() {
         fileStatusCache = new FileStatusCache();
         annotator = new Annotator(this);
+        fileStatusCache.setAnnotator(annotator);
         fileStatusProvider = new FileStatusProvider();
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
@@ -250,12 +251,12 @@ public class Subversion {
                 password = pa.getPassword();
             }
         } else {
-            RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());
+            RepositoryConnection rc = SvnModuleConfig.getDefault(context.getFileSystem()).getRepositoryConnection(repositoryUrl.toString());
             if(rc != null) {
                 username = rc.getUsername();
                 password = rc.getPassword();
             } else {
-                PasswordFile pf = PasswordFile.findFileForUrl(repositoryUrl);
+                PasswordFile pf = PasswordFile.findFileForUrl(context.getFileSystem(), repositoryUrl);
                 if(pf != null) {
                     username = pf.getUsername();
                     String psswdString = pf.getPassword();
@@ -397,7 +398,7 @@ public class Subversion {
                 try {
                     SvnClient client = getClient(false, context);
 
-                    List<String> gignores = SvnConfigFiles.getInstance().getGlobalIgnores();
+                    List<String> gignores = SvnConfigFiles.getInstance(context.getFileSystem()).getGlobalIgnores();
                     if(gignores != null && SvnUtils.getMatchinIgnoreParterns(gignores, name, true).size() > 0) {
                         // no need to read the ignored property -> its already set in ignore patterns
                         return true;
@@ -466,7 +467,7 @@ public class Subversion {
      */
     public RequestProcessor getRequestProcessor(SVNUrl url) {
         if(processorsToUrl == null) {
-            processorsToUrl = new HashMap<String, RequestProcessor>();
+            processorsToUrl = new HashMap<>();
         }
 
         String key;
@@ -512,7 +513,7 @@ public class Subversion {
             }
         }
         VCSFileProxy topmost = null;
-        Set<VCSFileProxy> done = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> done = new HashSet<>();
         for (; file != null; file = file.getParentFile()) {
             if(unversionedParents.contains(file)) {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
@@ -567,7 +568,7 @@ public class Subversion {
 
     private List<ISVNNotifyListener> getSVNNotifyListeners() {
         if(svnNotifyListeners == null) {
-            svnNotifyListeners = new ArrayList<ISVNNotifyListener>();
+            svnNotifyListeners = new ArrayList<>();
         }
         return svnNotifyListeners;
     }
@@ -585,7 +586,7 @@ public class Subversion {
      * @param files files to chage the annotations for
      */
     public void refreshAnnotations(VCSFileProxy ... files) {
-        Set<VCSFileProxy> s = new HashSet<VCSFileProxy>(Arrays.asList(files));
+        Set<VCSFileProxy> s = new HashSet<>(Arrays.asList(files));
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, s);
     }
 
@@ -595,7 +596,7 @@ public class Subversion {
      * @param files files to chage the annotations and sidebars for
      */
     public void refreshAnnotationsAndSidebars (VCSFileProxy... files) {
-        Set<VCSFileProxy> s = files == null ? null : new HashSet<VCSFileProxy>(Arrays.asList(files));
+        Set<VCSFileProxy> s = files == null ? null : new HashSet<>(Arrays.asList(files));
         support.firePropertyChange(PROP_BASE_FILE_CHANGED, null, s);
     }
 
@@ -634,7 +635,7 @@ public class Subversion {
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
             }
-            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
+            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(originalFile.toFileObject().getOutputStream(), original.getInputStream(false));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
         } catch (SVNClientException ex) {
@@ -657,7 +658,7 @@ public class Subversion {
             return Collections.emptyList();
         }
         Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
-        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
+        List<VCSHyperlinkProvider> providersList = new ArrayList<>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }

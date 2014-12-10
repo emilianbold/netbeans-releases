@@ -66,8 +66,11 @@ import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -89,17 +92,13 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
     private RepositoryFile repositoryFile;    
     private int repositoryModeMask;
     private WizardStepProgressSupport support;
-
+    private final FileSystem fileSystem;
     private final String helpID;
     
-    public RepositoryStep(String helpID) {
-        this.repositoryModeMask = 0;
-        this.helpID = helpID;
-    }
-    
-    public RepositoryStep(int repositoryModeMask, String helpID) {
+    public RepositoryStep(FileSystem fileSystem, int repositoryModeMask, String helpID) {
         this.repositoryModeMask = repositoryModeMask;
         this.helpID = helpID;
+        this.fileSystem = fileSystem;
     }
 
     @Override
@@ -112,7 +111,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         if (repository == null) {         
             repositoryModeMask = repositoryModeMask | Repository.FLAG_URL_EDITABLE | Repository.FLAG_URL_ENABLED | Repository.FLAG_SHOW_HINTS | Repository.FLAG_SHOW_PROXY;
             String title = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Location");       // NOI18N
-            repository = new Repository(repositoryModeMask, title); 
+            repository = new Repository(fileSystem, repositoryModeMask, title); 
             repository.addPropertyChangeListener(this);
             panel = new RepositoryStepPanel();            
             panel.repositoryPanel.add(repository.getPanel());
@@ -156,7 +155,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
     private void storeHistory() {        
         RepositoryConnection rc = getSelectedRepositoryConnection();
         if(rc != null) {  
-            SvnModuleConfig.getDefault().insertRecentUrl(rc);           
+            SvnModuleConfig.getDefault(fileSystem).insertRecentUrl(rc);           
         }        
     }
     
@@ -206,7 +205,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             AbstractStep.WizardMessage invalidMsg = null;
             try {
                 invalid(null);
-
+                Context context = new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
                 SvnClient client;
                 SVNUrl url = rc.getSvnUrl();
                 try {
@@ -226,7 +225,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                 try {
                     repository.storeConfigValues();
                     setCancellableDelegate(client);
-                    info = client.getInfo(url);
+                    info = client.getInfo(context, url);
                 } catch (SVNClientException ex) {
                     if (SvnClientExceptionHandler.isAuthentication(ex.getMessage()) && !SvnKenaiAccessor.getInstance().canRead(SvnUtils.decodeToString(url))) {
                         invalidMsg = new AbstractStep.WizardMessage(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"), false); //NOI18N

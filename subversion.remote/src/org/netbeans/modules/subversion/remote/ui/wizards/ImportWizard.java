@@ -60,6 +60,8 @@ import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.Reposito
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 
 /*
  *
@@ -78,9 +80,12 @@ public final class ImportWizard implements ChangeListener {
     private PanelsIterator wizardIterator;
     
     private final Context context;
+    private final FileSystem fileSystem;
     
     public ImportWizard(Context context) {
         this.context = context;
+        this.fileSystem = context.getFileSystem();
+        
     }
     
     public boolean show() {
@@ -165,8 +170,7 @@ public final class ImportWizard implements ChangeListener {
         @Override
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];            
-
-            repositoryStep = new RepositoryStep(RepositoryStep.IMPORT_HELP_ID);
+            repositoryStep = new RepositoryStep(fileSystem, 0, RepositoryStep.IMPORT_HELP_ID);
             repositoryStep.addChangeListener(ImportWizard.this);
 
             VCSFileProxy file = context.getRootFiles()[0];

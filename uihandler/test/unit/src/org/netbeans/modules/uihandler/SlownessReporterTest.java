@@ -44,6 +44,7 @@ package org.netbeans.modules.uihandler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
@@ -93,6 +94,13 @@ public class SlownessReporterTest extends NbTestCase {
         rec3.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/10);
         rec3.setParameters(params);
         Logger.getLogger(TEST_LOGGER).log(rec3);
+    }
+
+    @Override
+    @After
+    protected void tearDown() throws Exception {
+        Installer installer = Installer.findObject(Installer.class, true);
+        installer.uninstalled();
     }
 
     @Test

@@ -407,6 +407,9 @@ function detect_platform() {
     if (agent.indexOf("SunOS sun4") != -1) {
         document.getElementById("platform_select").selectedIndex = 3;
     }
+    if (agent.indexOf("BSD") != -1) {
+        document.getElementById("platform_select").selectedIndex = 3;
+    } 
 }
 
 function getZipUrl() {

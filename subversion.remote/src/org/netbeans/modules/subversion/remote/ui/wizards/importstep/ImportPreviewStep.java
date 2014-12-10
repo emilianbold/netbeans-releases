@@ -99,7 +99,7 @@ public class ImportPreviewStep extends AbstractStep {
         if (previewPanel == null) {
             previewPanel = new PreviewPanel();
 
-            Map<String, Integer> sortingStatus = SvnModuleConfig.getDefault().getSortingStatus(PANEL_PREFIX);
+            Map<String, Integer> sortingStatus = SvnModuleConfig.getDefault(context.getFileSystem()).getSortingStatus(PANEL_PREFIX);
             if (sortingStatus == null) {
                 sortingStatus = Collections.singletonMap(CommitTableModel.COLUMN_NAME_PATH, TableSorter.ASCENDING);
             }
@@ -156,7 +156,7 @@ public class ImportPreviewStep extends AbstractStep {
                     table.setRootFile(repositoryPath, rootLocalPath);
                 }
 
-                final ArrayList<SvnFileNode> nodesList = new ArrayList<SvnFileNode>(files.length);
+                final ArrayList<SvnFileNode> nodesList = new ArrayList<>(files.length);
                 SvnUtils.runWithInfoCache(new Runnable() {
                     @Override
                     public void run () {
@@ -203,7 +203,7 @@ public class ImportPreviewStep extends AbstractStep {
     }
     
     public void storeTableSorter() {
-        SvnModuleConfig.getDefault().setSortingStatus(PANEL_PREFIX, table.getSortingState());
+        SvnModuleConfig.getDefault(context.getFileSystem()).setSortingStatus(PANEL_PREFIX, table.getSortingState());
     }
 
     /**

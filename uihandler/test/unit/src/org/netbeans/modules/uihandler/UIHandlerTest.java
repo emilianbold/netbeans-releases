@@ -76,6 +76,12 @@ public class UIHandlerTest extends NbTestCase {
         o.restored();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        Installer o = Installer.findObject(Installer.class, true);
+        o.uninstalled();
+    }
+    
     public void testPublish() {
         
         MyAction a = new MyAction();

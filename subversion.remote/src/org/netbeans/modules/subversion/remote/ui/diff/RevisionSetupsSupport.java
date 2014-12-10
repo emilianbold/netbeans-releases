@@ -106,9 +106,9 @@ class RevisionSetupsSupport {
         this.repositoryUrl = repositoryUrl;
         this.context = context;
         this.cache = Subversion.getInstance().getStatusCache();
-        this.wcSetups = new LinkedHashMap<VCSFileProxy, Setup>();
-        this.diffSummaryCache = new LinkedHashMap<String, SVNDiffSummary[]>();
-        this.missingURLs = new LinkedHashSet<String>();
+        this.wcSetups = new LinkedHashMap<>();
+        this.diffSummaryCache = new LinkedHashMap<>();
+        this.missingURLs = new LinkedHashSet<>();
         workingCopy = SVNRevision.WORKING.equals(this.repositoryTreeRight.getRevision());
         base = SVNRevision.BASE.equals(this.repositoryTreeRight.getRevision())
                 || SVNRevision.BASE.equals(this.repositoryTreeLeft.getRevision());
@@ -124,7 +124,7 @@ class RevisionSetupsSupport {
         try {
             VCSFileProxy[] roots = getRoots();
             SvnClient client = Subversion.getInstance().getClient(context, repositoryUrl);
-            List<Setup> setups = new ArrayList<Setup>();
+            List<Setup> setups = new ArrayList<>();
             for (VCSFileProxy root : roots) {
                 // TODO: support flat folder? CND not support it.
                 boolean flatFile = false;
@@ -136,7 +136,7 @@ class RevisionSetupsSupport {
                         : right.getFileUrl();
                 if (base || workingCopy) {
                     ISVNStatus[] statuses = client.getStatus(root, !flatFile, true, false, true);
-                    Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<VCSFileProxy, ISVNStatus>(statuses.length);
+                    Map<VCSFileProxy, ISVNStatus> statusMap = new HashMap<>(statuses.length);
                     for (ISVNStatus s : statuses) {
                         statusMap.put(s.getFile(), s);
                     }                        
@@ -246,7 +246,7 @@ class RevisionSetupsSupport {
 
     private List<Setup> addPropertySetups (SvnClient client, SVNUrl leftFileUrl, SVNRevision leftRevision,
             SVNUrl rightFileUrl, SVNRevision rightRevision) throws SVNClientException {
-        List<Setup> propSetups = new ArrayList<Setup>();
+        List<Setup> propSetups = new ArrayList<>();
         DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         try {
             Map<String, byte[]> leftProps = leftFileUrl == null
@@ -256,7 +256,7 @@ class RevisionSetupsSupport {
                     ? Collections.<String, byte[]>emptyMap()
                     : toMap(client.getProperties(rightFileUrl, rightRevision, rightRevision));
 
-            Set<String> allProps = new TreeSet<String>(leftProps.keySet());
+            Set<String> allProps = new TreeSet<>(leftProps.keySet());
             allProps.addAll(rightProps.keySet());
             for (String key : allProps) {
                 boolean isLeft = leftProps.containsKey(key);
@@ -279,7 +279,7 @@ class RevisionSetupsSupport {
     }
 
     private Map<String, byte[]> toMap (ISVNProperty[] properties) {
-        Map<String, byte[]> map = new LinkedHashMap<String, byte[]>(properties.length);
+        Map<String, byte[]> map = new LinkedHashMap<>(properties.length);
         for (ISVNProperty prop : properties) {
             map.put(prop.getName(), prop.getData());
         }
@@ -349,7 +349,7 @@ class RevisionSetupsSupport {
             Map<VCSFileProxy, ISVNStatus> statusMap) throws SVNClientException {
         boolean sameURLs = leftFileUrl != null && leftFileUrl.equals(rightFileUrl)
                 && leftRevision != null && leftRevision.equals(rightRevision);
-        List<Setup> setups = new ArrayList<Setup>();
+        List<Setup> setups = new ArrayList<>();
         if (!sameURLs) {
             SVNDiffSummary[] diffSummaries = getCachedSummaries(leftFileUrl, leftRevision, rightRevision);
             boolean leftExists, rightExists;
@@ -375,8 +375,8 @@ class RevisionSetupsSupport {
                             rightRevision, depth, true);
                     cacheSummaries(diffSummaries, leftFileUrl, leftRevision, rightRevision);
                 }
-                List<String> skippedPaths = new ArrayList<String>();
-                Set<String> deletedPaths = new HashSet<String>();
+                List<String> skippedPaths = new ArrayList<>();
+                Set<String> deletedPaths = new HashSet<>();
                 for (SVNDiffSummary summary : diffSummaries) {
                     if (summary.getDiffKind() == SVNDiffKind.DELETED) {
                         deletedPaths.add(summary.getPath());
@@ -449,14 +449,14 @@ class RevisionSetupsSupport {
     private void cacheSummaries (SVNDiffSummary[] diffSummaries, SVNUrl leftUrl,
             SVNRevision leftRevision, SVNRevision rightRevision) {
         String revisionString = "@" + leftRevision + ":" + rightRevision;
-        Map<String, List<SVNDiffSummary>> sums = new LinkedHashMap<String, List<SVNDiffSummary>>();
+        Map<String, List<SVNDiffSummary>> sums = new LinkedHashMap<>();
         sums.put("", new ArrayList<SVNDiffSummary>(diffSummaries.length));
         for (SVNDiffSummary s : diffSummaries) {
             String path = s.getPath();
             do {
                 List<SVNDiffSummary> list = sums.get(path);
                 if (list == null) {
-                    list = new ArrayList<SVNDiffSummary>();
+                    list = new ArrayList<>();
                     sums.put(path, list);
                 }
                 String suffix = s.getPath().substring(path.length());

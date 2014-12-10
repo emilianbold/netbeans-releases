@@ -92,6 +92,68 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         FileObject template2 = FileUtil.getConfigFile("Templates/Classes/package-info.java");
         if (template2 != null) template2.delete();
     }
+    
+    public void testRemoveClassFromCompUnit() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+                "package zoo;\n"
+                + "\n"
+                + "public class A {\n"
+                + "  /** Something about a */\n"
+                + "  int a;\n"
+                + "  public class Krtek {\n"
+                + "    public void foo() {\n"
+                + "      int c=a;\n"
+                + "    }\n"
+                + "  }\n"
+                + "}\n"
+                + "class B {\n"
+                + "    int a = 42;\n"
+                + "}\n");
+        
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+        
+        String golden1 = 
+            "package zoo;\n" +
+            "\n" +
+            "class B {\n" +
+            "    int a = 42;\n" +
+            "}\n";
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void cancel() {
+            }
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                CompilationUnitTree ccut = GeneratorUtilities.get(workingCopy).importComments(cut, cut);
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                CompilationUnitTree newTree = make.removeCompUnitTypeDecl(ccut, clazz);
+                workingCopy.rewrite(cut, newTree);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden1, res);
+    }
 
     public void testNewCompilationUnitFromTemplate() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");

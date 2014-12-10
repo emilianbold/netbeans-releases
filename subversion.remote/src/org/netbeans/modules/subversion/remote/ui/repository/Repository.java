@@ -86,6 +86,7 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -120,19 +121,16 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     public static final String PROP_VALID = "valid";                                                    // NOI18N
 
     private String message;            
-    private int modeMask;
-    private Dimension maxNeededSize;
+    private final int modeMask;
+    private final Dimension maxNeededSize;
     private ConnectionType http;
     private ConnectionType file;
     private ConnectionType svnSSH;
     private ConnectionType invalidUrlPanel;
+    private final FileSystem fileSystem;
     
-    public Repository(String titleLabel) {
-        this(0, titleLabel);
-    }
-            
-    public Repository(int modeMask, String titleLabel) {
-        
+    public Repository(FileSystem fileSystem, int modeMask, String titleLabel) {
+        this.fileSystem = fileSystem;
         this.modeMask = modeMask;
         
         initPanel();
@@ -150,6 +148,10 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         maxNeededSize = repositoryPanel.getPreferredSize();
         
         refreshUrlHistory();
+    }
+    
+    public final FileSystem getFileSystem() {
+        return fileSystem;
     }
     
     public void selectUrl (final SVNUrl url, final boolean force) {
@@ -187,18 +189,18 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
     private void initPanel() {        
         repositoryPanel = new RepositoryPanel();
         repositoryPanel.connPanel.add(
-                (http = new ConnectionType.Http(this)).getPanel(),
+                (http = new ConnectionType.Http(fileSystem, this)).getPanel(),
                 HTTP_PANEL);
         repositoryPanel.connPanel.add(
-                (file = new ConnectionType.FileUrl(this)).getPanel(),
+                (file = new ConnectionType.FileUrl(fileSystem, this)).getPanel(),
                 FILE_PANEL);
 
-        svnSSH = new ConnectionType.SvnSSHCli(this);
+        svnSSH = new ConnectionType.SvnSSHCli(fileSystem, this);
 
         repositoryPanel.connPanel.add(svnSSH.getPanel(), SSH_PANEL);
 
         repositoryPanel.connPanel.add(
-                (invalidUrlPanel = new ConnectionType.InvalidUrl(this)).getPanel(),
+                (invalidUrlPanel = new ConnectionType.InvalidUrl(fileSystem, this)).getPanel(),
                 INVALID_URL_PANEL);
 
         svnSSH.showHints(isSet(FLAG_SHOW_HINTS));
@@ -237,8 +239,8 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         Runnable notInAWT = new Runnable() {
             @Override
             public void run() {
-                List<RepositoryConnection> recentUrls = SvnModuleConfig.getDefault().getRecentUrls();
-                final Set<RepositoryConnection> recentRoots = new LinkedHashSet<RepositoryConnection>();
+                List<RepositoryConnection> recentUrls = SvnModuleConfig.getDefault(fileSystem).getRecentUrls();
+                final Set<RepositoryConnection> recentRoots = new LinkedHashSet<>();
                 recentRoots.addAll(recentUrls);
                 addProjects(recentRoots);
                 if (repositoryPanel.urlComboBox.isEditable()) {
@@ -253,7 +255,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        ComboBoxModel rootsModel = new RepositoryModel(new Vector<RepositoryConnection>(recentRoots));
+                        ComboBoxModel rootsModel = new RepositoryModel(new Vector<>(recentRoots));
                         repositoryPanel.urlComboBox.setModel(rootsModel);
                         if (recentRoots.size() > 0) {
                             repositoryPanel.urlComboBox.setSelectedIndex(0);
@@ -302,20 +304,20 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         Subversion.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                SvnModuleConfig.getDefault().setRecentUrls(recentUrls);
+                SvnModuleConfig.getDefault(fileSystem).setRecentUrls(recentUrls);
             }
         });
     }
     
     public boolean isChanged() {
         List<RepositoryConnection> connections = getRecentUrls();
-        List<RepositoryConnection> storedConnections = SvnModuleConfig.getDefault().getRecentUrls();        
+        List<RepositoryConnection> storedConnections = SvnModuleConfig.getDefault(fileSystem).getRecentUrls();        
         return !SvnUtils.equals(connections, storedConnections);
     }
     
     private List<RepositoryConnection> getRecentUrls() {
         ComboBoxModel model = repositoryPanel.urlComboBox.getModel();
-        List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(model.getSize());
+        List<RepositoryConnection> ret = new ArrayList<>(model.getSize());
         for (int i = 0; i < model.getSize(); i++) {
             ret.add((RepositoryConnection)model.getElementAt(i));
         }
@@ -576,7 +578,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
         if(listeners==null) {
-            listeners = new ArrayList<PropertyChangeListener>();
+            listeners = new ArrayList<>();
         }
         listeners.add(l);
     }

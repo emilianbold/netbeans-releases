@@ -433,7 +433,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 insideExpressionStatement(env);
                 break;
             case BREAK:
-                insideBreak(env);
+            case CONTINUE:
+                insideBreakOrContinue(env);
                 break;
             case STRING_LITERAL:
                 insideStringLiteral(env);
@@ -2624,10 +2625,10 @@ public final class JavaCompletionTask<T> extends BaseTask {
         }
     }
 
-    private void insideBreak(Env env) throws IOException {
+    private void insideBreakOrContinue(Env env) throws IOException {
         TreePath path = env.getPath();
         TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, path.getLeaf(), env.getOffset());
-        if (ts != null && ts.token().id() == JavaTokenId.BREAK) {
+        if (ts != null && (ts.token().id() == JavaTokenId.BREAK || ts.token().id() == JavaTokenId.CONTINUE)) {
             while (path != null) {
                 if (path.getLeaf().getKind() == Tree.Kind.LABELED_STATEMENT) {
                     results.add(itemFactory.createVariableItem(env.getController(), ((LabeledStatementTree) path.getLeaf()).getLabel().toString(), anchorOffset, false, false));

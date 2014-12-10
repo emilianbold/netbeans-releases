@@ -42,10 +42,20 @@
 package org.netbeans.modules.subversion.remote.client;
 
 import java.awt.Dialog;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -57,9 +67,17 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
+import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.WorkingCopyAttributesCache;
@@ -74,12 +92,15 @@ import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection
 import org.netbeans.modules.subversion.remote.ui.wcadmin.UpgradeAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.versioning.util.FileUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NetworkSettings;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -91,6 +112,7 @@ public class SvnClientExceptionHandler {
     private final SvnClient client;
     private final SvnClientDescriptor desc;    
     private final int handledExceptions;
+    private static final String CHARSET_NAME = "ASCII7";                        // NOI18N
     
     private String methodName;
     
@@ -208,7 +230,7 @@ public class SvnClientExceptionHandler {
                 Subversion.LOG.log(Level.FINE, "SvnClientExceptionHandler.handleRepositoryConnectError(): canceled"); //NOI18N
                 return false;
             }
-            Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
+            Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
 
             JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
@@ -226,20 +248,20 @@ public class SvnClientExceptionHandler {
 
                 adapter.setUsername(username);
                 adapter.setPassword(password != null ? new String(password) : ""); //NOI18N
-                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+                SvnModuleConfig.getDefault(adapter.getFileSystem()).insertRecentUrl(rc);
             }
             return ret;
         }
     }
 
     @NbBundle.Messages("CTL_Action_Cancel=Cancel")
-    public static boolean handleAuth (SVNUrl url) {
+    public boolean handleAuth (SVNUrl url) {
         SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
         String sUrl = url.toString();
         if(support.isKenai(sUrl)) {
             return support.showLogin() && support.getPasswordAuthentication(sUrl, true) != null;
         } else {
-            Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
+            Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
 
             JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
@@ -253,7 +275,7 @@ public class SvnClientExceptionHandler {
 
             boolean ret = (option == retryButton);
             if(ret) {
-                SvnModuleConfig.getDefault().insertRecentUrl(repository.getSelectedRC());
+                SvnModuleConfig.getDefault(adapter.getFileSystem()).insertRecentUrl(repository.getSelectedRC());
             }
             return ret;
         }
@@ -264,17 +286,16 @@ public class SvnClientExceptionHandler {
         SVNUrl url = getSVNUrl(); // get the remote host url
         String realmString = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort(); // NOI18N
         String hostString = SvnUtils.ripUserFromHost(url.getHost());                                
-        
         // copy the certificate if it already exists        
-        File certFile = CertificateFile.getSystemCertFile(realmString);
-        File nbCertFile = CertificateFile.getNBCertFile(realmString);
-        if( !nbCertFile.exists() &&  certFile.exists() ) {            
-            try {
-                FileUtils.copyFile(certFile, CertificateFile.getNBCertFile(realmString));
-            } catch (IOException ex) {
-                throw new SVNClientException(ex);
+        VCSFileProxy certFile = CertificateFile.getSystemCertFile(adapter.getFileSystem(), realmString);
+        try {
+            VCSFileProxy nbCertFile = CertificateFile.getNBCertFile(adapter.getFileSystem(), realmString);
+            if( !nbCertFile.exists() &&  certFile.exists() ) {            
+                VCSFileProxySupport.copyFile(certFile, nbCertFile);
+                return true;
             }
-            return true;
+        } catch (IOException ex) {
+            throw new SVNClientException(ex);
         }
 
         // otherwise try to retrieve the certificate from the server ...                                             
@@ -327,7 +348,7 @@ public class SvnClientExceptionHandler {
 
         try {
             boolean temporarily = dialogDescriptor.getValue() == temporarilyButton;
-            CertificateFile cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
+            CertificateFile cf = new CertificateFile(adapter.getFileSystem(), cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
             throw new SVNClientException(ex);
@@ -356,6 +377,7 @@ public class SvnClientExceptionHandler {
         }        
         return url;
     }
+
     private String getRealmFromException() {        
         String exceptionMessage = exception.getMessage().toLowerCase();             
         String[] errorMessages = new String[] {
@@ -379,6 +401,162 @@ public class SvnClientExceptionHandler {
         return null;
     }  
     
+    private SSLSocket getSSLSocket(String host, int port, String[] protocols, SVNUrl url) throws Exception {
+        TrustManager[] trust = new TrustManager[] {
+            new X509TrustManager() {
+            @Override
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+            @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+            }
+        };
+        
+        URI uri = null;
+        try {
+            uri = new URI(url.toString());
+        } catch (URISyntaxException ex) {
+            Subversion.LOG.log(Level.INFO, null, ex);
+        }
+       
+        String proxyHost = uri == null ? null : NetworkSettings.getProxyHost(uri);
+        String proxyPort = uri == null ? null : NetworkSettings.getProxyPort(uri);
+
+        // now this is the messy part ...
+        Socket proxySocket = new Socket(java.net.Proxy.NO_PROXY);
+        if(proxyHost == null || proxyHost.length() == 0) {                                           
+            proxySocket.connect(new InetSocketAddress(host, port));
+        } else {
+            boolean directWorks = false;
+            try {
+                proxySocket.connect(new InetSocketAddress(host, port));
+                directWorks = true;
+            } catch (IOException e) {
+                // do nothing
+                Subversion.LOG.log(Level.FINE, null, e);
+            }
+            if(!directWorks) {
+                proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
+                proxySocket.connect(new InetSocketAddress(proxyHost, Integer.valueOf(proxyPort)));
+                String username = NetworkSettings.getAuthenticationUsername(uri);
+                String password = null;
+                if (username != null) {
+                    char[] pwd = KeyringSupport.read(NetworkSettings.getKeyForAuthenticationPassword(uri), null);
+                    password = pwd == null ? "" : new String(pwd); //NOI18N
+                }
+                connectProxy(proxySocket, host, port, proxyHost, proxyPort, username, password);
+            } 
+        }
+                        
+        SSLContext context = SSLContext.getInstance("SSL");                     // NOI18N
+        context.init(getKeyManagers(), trust, null);
+        SSLSocketFactory factory = context.getSocketFactory();
+        SSLSocket socket = (SSLSocket) factory.createSocket(proxySocket, host, port, true);
+        if (protocols != null) {
+            socket.setEnabledProtocols(protocols);
+        }
+        try {
+            socket.startHandshake();
+        } catch (SSLException ex) {
+            if (protocols == null && isBadRecordMac(ex.getMessage())) {
+                return getSSLSocket(host, port, new String[] {"SSLv3", "SSLv2Hello"}, url); //NOI18N
+            } else {
+                throw ex;
+            }
+        }
+        return socket;
+    }
+        private KeyManager[] getKeyManagers() {        
+        try {
+            SVNUrl url = getRemoteHostUrl();
+            RepositoryConnection rc = SvnModuleConfig.getDefault(adapter.getFileSystem()).getRepositoryConnection(url.toString());
+            if(rc == null) {
+                return null;
+            }
+            String certFile = rc.getCertFile();
+            if(certFile == null || certFile.trim().equals("")) {                            // NOI18N
+                return null;
+            }               
+            char[] certPasswordChars = rc.getCertPassword();
+            
+            KeyStore ks = KeyStore.getInstance("pkcs12");                                   // NOI18N            
+            FileInputStream fis = new FileInputStream(certFile);
+            try {
+                ks.load(fis, certPasswordChars);
+            } finally {
+                fis.close();
+            }
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(ks, certPasswordChars);
+            return kmf.getKeyManagers();
+            
+        } catch(IOException ex) {
+            Subversion.LOG.log(Level.SEVERE, null, ex);
+        } catch (GeneralSecurityException ex) {
+            Subversion.LOG.log(Level.SEVERE, null, ex);
+        }                                       
+        return null;
+    }
+        
+    private void connectProxy(Socket proxy, String host, int port, String proxyHost, String proxyPort, String userName, String password) throws IOException {
+      StringBuilder sb = new StringBuilder("CONNECT ").append(host).append(":").append(port).append(" HTTP/1.0\r\n") //NOI18N
+              .append("Connection: Keep-Alive\r\n");                    //NOI18N
+      if (userName != null && password != null && userName.length() > 0) {
+          Subversion.LOG.info("connectProxy: adding proxy authorization field"); //NOI18N
+          sb.append("Proxy-Authorization: Basic ").append(Base64Encoder.encode((userName + ":" + password).getBytes())).append("\r\n"); //NOI18N
+      }
+      String connectString = sb.append("\r\n").toString();
+      byte connectBytes[];
+      try {
+         connectBytes = connectString.getBytes(CHARSET_NAME);
+      } catch (UnsupportedEncodingException ignored) {
+         connectBytes = connectString.getBytes();
+      }
+      
+      OutputStream out = proxy.getOutputStream();
+      out.write(connectBytes);
+      out.flush();
+
+      byte reply[] = new byte[200];
+      int replyLen = 0;
+      int newlinesSeen = 0;
+      boolean headerDone = false;
+      InputStream in = proxy.getInputStream();
+      
+      while (newlinesSeen < 2) {
+         byte b = (byte) in.read();
+         if (b < 0) {
+            throw new IOException("Unexpected EOF from proxy");                 // NOI18N
+         }
+         if (b == '\n') {
+            headerDone = true;
+            ++newlinesSeen;
+         } else if (b != '\r') {
+            newlinesSeen = 0;
+            if (!headerDone && replyLen < reply.length) {
+               reply[replyLen++] = b;
+            }
+         }
+      }
+
+      String ret;
+      try {
+        ret = new String(reply, 0, replyLen, CHARSET_NAME);
+      } catch (UnsupportedEncodingException ignored) {
+        ret = new String(reply, 0, replyLen);
+      }
+        if (!isOKresponse(ret.toLowerCase())) {
+            throw new IOException("Unable to connect through proxy "            // NOI18N
+                                 + proxyHost + ":" + proxyPort                  // NOI18N
+                                 + ".  Proxy returns \"" + ret + "\"");         // NOI18N
+        }
+    }    
+
+    private boolean isOKresponse(String ret) {
+        return ret.startsWith("http/1.1 200") || ret.startsWith("http/1.0 200");// NOI18N
+    }    
+        
     private SVNUrl getRemoteHostUrl() {
         SVNUrl url = desc != null ? desc.getSvnUrl() : null;
         if (url == null) {
@@ -416,7 +594,7 @@ public class SvnClientExceptionHandler {
     }
 
     private CertificateFailure[] getCertFailures() {
-        List<CertificateFailure> ret = new ArrayList<CertificateFailure>();
+        List<CertificateFailure> ret = new ArrayList<>();
         String exceptionMessage = getException().getMessage();
         for (CertificateFailure failure : failures) {
             if (exceptionMessage.indexOf(failure.error) > -1) {
@@ -718,7 +896,7 @@ public class SvnClientExceptionHandler {
     public static void notifyException(Context context, Exception ex, boolean annotate, boolean isUI) {
         String message = ex.getMessage();
         if (isUI && isTooOldWorkingCopy(message)) {
-            if (upgrade(message)) {
+            if (upgrade(context, message)) {
                 return;
             }
         }
@@ -825,9 +1003,9 @@ public class SvnClientExceptionHandler {
                 && message.contains("bad_record_mac");                  //NOI18N
     }
 
-    private static boolean upgrade (final String exMessage) {
+    private static boolean upgrade (Context context, final String exMessage) {
         boolean retval = false;
-        final File wc = findPathInTooOldWCMessage(exMessage);
+        final VCSFileProxy wc = findPathInTooOldWCMessage(context, exMessage);
         if (wc != null) {
             retval = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
                 @Override
@@ -846,12 +1024,12 @@ public class SvnClientExceptionHandler {
         return retval;
     }
     
-    private static File findPathInTooOldWCMessage (String message) {
+    private static VCSFileProxy findPathInTooOldWCMessage (Context context, String message) {
         for (String s : new String[] { ".*Working copy \'([^\']+)\' is too old.*" }) { //NOI18N
             Pattern p = Pattern.compile(s, Pattern.DOTALL);
             Matcher m = p.matcher(message);
             if (m.matches()) {
-                return new File(m.group(1));
+                return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(context.getFileSystem().getRoot()), m.group(1));
             }
         }
         return null;

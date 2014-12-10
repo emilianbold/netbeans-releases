@@ -317,7 +317,7 @@ public class RepositoryPathNode extends AbstractNode {
 
                         Collection<RepositoryPathEntry> previousEntries = getPreviousNodeEntries();
                         // entries to add
-                        Collection<RepositoryPathEntry> accepptedNewEntries = new ArrayList<RepositoryPathEntry>();
+                        Collection<RepositoryPathEntry> accepptedNewEntries = new ArrayList<>();
                         if(listedEntries == null) {
                             // is not a folder in the repository
                             RepositoryPathNode node = (RepositoryPathNode) getNode();
@@ -329,7 +329,7 @@ public class RepositoryPathNode extends AbstractNode {
                             }
 
                             // collection of nodes which are to be deleted, e.g. shown as folders but in fact they are files
-                            Collection<RepositoryPathEntry> deletedEntries = new ArrayList<RepositoryPathEntry>();
+                            Collection<RepositoryPathEntry> deletedEntries = new ArrayList<>();
                             // keep nodes which were created in the browser
                             for(RepositoryPathEntry listedEntry : listedEntries) {
                                 boolean found = false;
@@ -376,7 +376,7 @@ public class RepositoryPathNode extends AbstractNode {
         }
 
         private Collection<RepositoryPathEntry> getPreviousNodeEntries() {
-            List<RepositoryPathEntry> l = new ArrayList<RepositoryPathEntry>();
+            List<RepositoryPathEntry> l = new ArrayList<>();
             if(previousNodes != null) {
                 for(Node node : previousNodes) {
                     if(node instanceof RepositoryPathNode) {

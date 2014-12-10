@@ -59,6 +59,7 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -177,7 +178,7 @@ class UpdateResultNode extends AbstractNode {
     private String getLocation () {
         if (relativePath == null) {
             try {
-                relativePath = SvnModuleConfig.getDefault().isRepositoryPathPrefixed()
+                relativePath = SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(info.getFile())).isRepositoryPathPrefixed()
                         ? SvnUtils.decodeToString(SvnUtils.getRepositoryUrl(info.getFile())) : SvnUtils.getRelativePath(info.getFile());
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(new Context(info.getFile()), ex, false, false);

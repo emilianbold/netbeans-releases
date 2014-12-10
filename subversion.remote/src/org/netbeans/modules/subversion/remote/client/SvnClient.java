@@ -68,7 +68,7 @@ import org.openide.util.Cancellable;
  *
  * @author Alexander Simon
  */
-public interface SvnClient extends Cancellable {
+public interface SvnClient extends Cancellable, SvnClientDescriptor {
 
     void addDirectory(VCSFileProxy dir, boolean recursive) throws SVNClientException;
 
@@ -100,8 +100,6 @@ public interface SvnClient extends Cancellable {
     long commit(VCSFileProxy[] files, String message, boolean keep, boolean recursive) throws SVNClientException;
 
     // unsupported start
-    long[] commitAcrossWC(VCSFileProxy[] arg0, String arg1, boolean arg2, boolean arg3, boolean arg4) throws SVNClientException;
-
     void copy(VCSFileProxy fileFrom, VCSFileProxy fileTo) throws SVNClientException;
 
     void copy(VCSFileProxy file, SVNUrl url, String msg) throws SVNClientException;
@@ -139,9 +137,9 @@ public interface SvnClient extends Cancellable {
 
     InputStream getContent(SVNUrl url, SVNRevision rev, SVNRevision pegRevision) throws SVNClientException;
 
-    List getIgnoredPatterns(VCSFileProxy file) throws SVNClientException;
+    List<String> getIgnoredPatterns(VCSFileProxy file) throws SVNClientException;
 
-    ISVNInfo getInfo(SVNUrl url) throws SVNClientException;
+    ISVNInfo getInfo(Context context, SVNUrl url) throws SVNClientException;
 
     ISVNInfo getInfo(VCSFileProxy file) throws SVNClientException;
 
@@ -207,8 +205,6 @@ public interface SvnClient extends Cancellable {
 
     void mkdir(SVNUrl url, String msg) throws SVNClientException;
 
-    void mkdir(SVNUrl url, boolean parents, String msg) throws SVNClientException;
-
     void mkdir(VCSFileProxy file) throws SVNClientException;
 
     void move(VCSFileProxy fromFile, VCSFileProxy toFile, boolean force) throws SVNClientException;
@@ -239,7 +235,7 @@ public interface SvnClient extends Cancellable {
 
     void setConfigDirectory(VCSFileProxy file) throws SVNClientException;
 
-    void setIgnoredPatterns(VCSFileProxy file, List l) throws SVNClientException;
+    void setIgnoredPatterns(VCSFileProxy file, List<String>  l) throws SVNClientException;
 
     void setPassword(String psswd);
 

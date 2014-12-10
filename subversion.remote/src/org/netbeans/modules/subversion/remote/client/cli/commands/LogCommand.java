@@ -238,7 +238,7 @@ public class LogCommand extends SvnCommand {
         private static final String ACTION_ATTRIBUTE        = "action";     // NOI18N                
         private static final String REVISION_ATTRIBUTE      = "revision";   // NOI18N
         
-        private final List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();        
+        private final List<ISVNLogMessage> logs = new ArrayList<>();        
         
         
         private Map<String, Object> values;
@@ -255,7 +255,7 @@ public class LogCommand extends SvnCommand {
         public void startElement(String uri, String localName, String qName, Attributes elementAttributes) throws SAXException {            
             tag = qName.trim();                
             if (ENTRY_ELEMENT_NAME.equals(qName)) {                        
-                values = new HashMap<String, Object>();
+                values = new HashMap<>();
                 values.put(REVISION_ATTRIBUTE, elementAttributes.getValue(REVISION_ATTRIBUTE));            
             } else if (PATH_ELEMENT_NAME.equals(qName)) {                                
                 List<Path> paths = getPathList();
@@ -356,7 +356,7 @@ public class LogCommand extends SvnCommand {
         private List<Path> getPathList() {
             List<Path>paths = (List<Path>) values.get(PATH_ELEMENT_NAME);
             if(paths == null) {
-                paths = new ArrayList<Path>();
+                paths = new ArrayList<>();
                 values.put(PATH_ELEMENT_NAME, paths);
             }
             return paths;

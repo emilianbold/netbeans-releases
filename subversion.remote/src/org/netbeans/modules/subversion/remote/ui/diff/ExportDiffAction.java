@@ -164,7 +164,7 @@ public class ExportDiffAction extends ContextAction {
             return;
         }
 
-        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(context.getRootFiles(), SvnModuleConfig.getDefault().getPreferences()) {
+        ExportDiffSupport exportDiffSupport = new ExportDiffSupport(context.getRootFiles(), SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences()) {
             @Override
             public void writeDiffFile(final VCSFileProxy toFile) {
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
@@ -194,15 +194,15 @@ public class ExportDiffAction extends ContextAction {
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             if (!singleDiffSetup) {
-                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+                setups = new ArrayList<>(((DiffSetupSource) activated).getSetups());
             } else {
                 if (nodes.length > 0 && nodes[0] instanceof DiffNode) {
-                    setups = new ArrayList<Setup>(Collections.singletonList(((DiffNode)nodes[0]).getSetup()));
+                    setups = new ArrayList<>(Collections.singletonList(((DiffNode)nodes[0]).getSetup()));
                 } else {
                     return;
                 }
             }
-            List<VCSFileProxy> setupFiles = new ArrayList<VCSFileProxy>(setups.size());
+            List<VCSFileProxy> setupFiles = new ArrayList<>(setups.size());
             for (Iterator i = setups.iterator(); i.hasNext();) {
                 Setup setup = (Setup) i.next();
                 setupFiles.add(setup.getBaseFile()); 
@@ -212,7 +212,7 @@ public class ExportDiffAction extends ContextAction {
             Context context = getContext(nodes);
             VCSFileProxy [] files = SvnUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
             root = getCommonParent(context.getRootFiles());
-            setups = new ArrayList<Setup>(files.length);
+            setups = new ArrayList<>(files.length);
             for (int i = 0; i < files.length; i++) {
                 VCSFileProxy file = files[i];
                 if (!Subversion.getInstance().getStatusCache().getStatus(file).isDirectory()) {

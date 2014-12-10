@@ -109,7 +109,7 @@ public class RevertModificationsAction extends ContextAction {
         }
         VCSFileProxy[] roots = ctx.getRootFiles();
         // filter managed roots
-        List<VCSFileProxy> l = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> l = new ArrayList<>();
         for (VCSFileProxy file : roots) {
             if(SvnUtils.isManaged(file)) {
                 l.add(file);
@@ -207,7 +207,7 @@ public class RevertModificationsAction extends ContextAction {
                                         return null;
                                     }
                                     SVNUrl url = SvnUtils.getRepositoryUrl(files[i]);
-                                    RevertModifications.RevisionInterval targetInterval = recountStartRevision(client, url, revisions);
+                                    RevertModifications.RevisionInterval targetInterval = recountStartRevision(ctx, client, url, revisions);
                                     if(files[i].exists()) {
                                         client.merge(url, targetInterval.endRevision,
                                                      url, targetInterval.startRevision,
@@ -224,7 +224,7 @@ public class RevertModificationsAction extends ContextAction {
                                 }
                                 if(files.length > 0 ) {                        
                                     // check for deleted files, we also want to undelete their parents
-                                    Set<VCSFileProxy> deletedFiles = new HashSet<VCSFileProxy>();
+                                    Set<VCSFileProxy> deletedFiles = new HashSet<>();
                                     for(VCSFileProxy file : files) {
                                         deletedFiles.addAll(getDeletedParents(file));
                                     }
@@ -332,7 +332,7 @@ public class RevertModificationsAction extends ContextAction {
     }     
 
     private static List<VCSFileProxy> getDeletedParents(VCSFileProxy file) {
-        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> ret = new ArrayList<>();
         for(VCSFileProxy parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {        
             FileInformation info = Subversion.getInstance().getStatusCache().getStatus(parent);
             if( !((info.getStatus() & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 ||
@@ -345,12 +345,12 @@ public class RevertModificationsAction extends ContextAction {
         return ret;
     }
     
-    private static RevertModifications.RevisionInterval recountStartRevision(SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {
+    private static RevertModifications.RevisionInterval recountStartRevision(Context context, SvnClient client, SVNUrl repository, RevertModifications.RevisionInterval ret) throws SVNClientException {
         SVNRevision currStartRevision = ret.startRevision;
         SVNRevision currEndRevision = ret.endRevision;
 
         if(currStartRevision.equals(SVNRevision.HEAD)) {
-            ISVNInfo info = client.getInfo(repository);
+            ISVNInfo info = client.getInfo(context, repository);
             currStartRevision = info.getRevision();
         }
 

@@ -151,6 +151,7 @@ public class Installer extends ModuleInstall implements Runnable {
     private static final  String USAGE_STATISTICS_ENABLED          = "usageStatisticsEnabled"; // NOI18N
     private static final String USAGE_STATISTICS_SET_BY_IDE       = "usageStatisticsSetByIde"; // NOI18N
     private static final String USAGE_STATISTICS_NB_OF_IDE_STARTS = "usageStatisticsNbOfIdeStarts"; // NOI18N
+    private static final String FIRST_DATE_METRICS_PROP = "firstDateMetric";    // NOI18N
     private static final String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
     private static final Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
 
@@ -257,7 +258,7 @@ public class Installer extends ModuleInstall implements Runnable {
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
-        logsFirstDateMetric = prefs.getLong("firstDateMetric", -1);
+        logsFirstDateMetric = prefs.getLong(FIRST_DATE_METRICS_PROP, -1);
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", false); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
@@ -590,7 +591,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (preferencesWritable) {
                     prefs.putInt("countMetrics", logsSizeMetrics);
                     if (firstDateMetric) {
-                        prefs.putLong("firstDateMetric", logsFirstDateMetric);
+                        prefs.putLong(FIRST_DATE_METRICS_PROP, logsFirstDateMetric);
                     }
                 }
                 upload = uploadMetricsTest();
@@ -627,7 +628,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     logsFirstDateMetric = System.currentTimeMillis();
                     if (preferencesWritable) {
                         prefs.putInt("countMetrics", logsSizeMetrics);
-                        prefs.putLong("dateFirstMetric", logsFirstDateMetric);
+                        prefs.putLong(FIRST_DATE_METRICS_PROP, logsFirstDateMetric);
                     }
                 }
             }

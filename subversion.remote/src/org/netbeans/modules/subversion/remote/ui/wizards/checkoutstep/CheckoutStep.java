@@ -50,6 +50,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import javax.swing.InputVerifier;
@@ -62,14 +63,14 @@ import org.netbeans.modules.subversion.remote.RepositoryFile;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
+import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -83,8 +84,10 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     private CheckoutPanel workdirPanel;
     private RepositoryPaths repositoryPaths;
     private boolean invalidTarget;
+    private final FileSystem fileSystem;
 
-    public CheckoutStep() {
+    public CheckoutStep(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
     
     @Override
@@ -145,15 +148,15 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                 return true;
             }
         });
-        workdirPanel.scanForProjectsCheckBox.setSelected(SvnModuleConfig.getDefault().getShowCheckoutCompleted());
+        workdirPanel.scanForProjectsCheckBox.setSelected(SvnModuleConfig.getDefault(fileSystem).getShowCheckoutCompleted());
     }    
      
     @Override
     protected void validateBeforeNext() {
         if (validateUserInput(true)) {
             String text = getWorkdirText();
-            VCSFileProxy file = new File(text);
-            if (file.exists() == false) {
+            VCSFileProxy file = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), text);
+            if (!file.exists()) {
                 boolean done = VCSFileProxySupport.mkdirs(file);
                 if (done == false) {
                     invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2013") + file.getPath(), false));// NOI18N
@@ -193,13 +196,13 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         
         AbstractStep.WizardMessage errorMessage = null;
         if (full) {
-            VCSFileProxy file = new File(text);
-            if (file.exists() == false) {
+            VCSFileProxy file = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), text);
+            if (!file.exists()) {
                 // it's automaticaly create later on, check for permisions here
                 VCSFileProxy parent = file.getParentFile();
                 while (parent != null) {
                     if (parent.exists()) {
-                        if (parent.canWrite() == false) {
+                        if (!parent.canWrite()) {
                             errorMessage = new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2016") + parent.getPath(), false);// NOI18N
                         }
                         break;
@@ -224,7 +227,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     
     private void onBrowseWorkdir() {
         VCSFileProxy defaultDir = defaultWorkingDirectory();
-        JFileChooser fileChooser = new AccessibleJFileChooser(NbBundle.getMessage(CheckoutStep.class, "ACSD_BrowseFolder"), defaultDir);// NOI18N
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(defaultDir);
         fileChooser.setDialogTitle(NbBundle.getMessage(CheckoutStep.class, "BK0010"));// NOI18N
         fileChooser.setMultiSelectionEnabled(false);
         FileFilter[] old = fileChooser.getChoosableFileFilters();
@@ -245,9 +248,9 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         });
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(workdirPanel, NbBundle.getMessage(CheckoutStep.class, "BK0009"));// NOI18N
-        File f = fileChooser.getSelectedFile();
+        VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
         if (f != null) {
-            workdirPanel.workdirTextField.setText(f.getAbsolutePath().trim());
+            workdirPanel.workdirTextField.setText(f.getPath().trim());
         }                
     }    
     
@@ -260,12 +263,12 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
      * <li>finally <tt>user.home</tt>
      * <ul>
      */
-    private File defaultWorkingDirectory() {
-        File defaultDir = null;
+    private VCSFileProxy defaultWorkingDirectory() {
+        VCSFileProxy defaultDir = null;
         String current = getWorkdirText();
         if (current != null && !(current.trim().equals(""))) {  // NOI18N
-            File currentFile = new File(current);
-            while (currentFile != null && currentFile.exists() == false) {
+            VCSFileProxy currentFile = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), current);
+            while (currentFile != null && !currentFile.exists()) {
                 currentFile = currentFile.getParentFile();
             }
             if (currentFile != null) {
@@ -278,21 +281,22 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
 
         if (defaultDir == null) {
-            String coDir = SvnModuleConfig.getDefault().getPreferences().get(CHECKOUT_DIRECTORY, null);
+            String coDir = SvnModuleConfig.getDefault(fileSystem).getPreferences().get(CHECKOUT_DIRECTORY, null);
             if(coDir != null) {
-                defaultDir = new File(coDir);               
+                VCSFileProxy currentFile = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), coDir);
             }            
         }
 
-        if (defaultDir == null) {
-            File projectFolder = ProjectChooser.getProjectsFolder();
-            if (projectFolder.exists() && projectFolder.isDirectory()) {
-                defaultDir = projectFolder;
-            }
-        }
+        //TODO: last selected project?
+        //if (defaultDir == null) {
+        //    File projectFolder = ProjectChooser.getProjectsFolder();
+        //    if (projectFolder.exists() && projectFolder.isDirectory()) {
+        //        defaultDir = projectFolder;
+        //    }
+        //}
 
         if (defaultDir == null) {
-            defaultDir = new File(System.getProperty("user.home"));  // NOI18N
+            defaultDir = SvnConfigFiles.getUserConfigPath(fileSystem);
         }
 
         return defaultDir;
@@ -338,7 +342,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     public void itemStateChanged(ItemEvent e) {
         Object source = e.getSource();
         if (source == workdirPanel.scanForProjectsCheckBox) {
-            SvnModuleConfig.getDefault().setShowCheckoutCompleted(workdirPanel.scanForProjectsCheckBox.isSelected());
+            SvnModuleConfig.getDefault(fileSystem).setShowCheckoutCompleted(workdirPanel.scanForProjectsCheckBox.isSelected());
         } else if (source == workdirPanel.atWorkingDirLevelCheckBox) {
             RepositoryFile[] repositoryFiles = null;
             if (getRepositoryPath().length() != 0) {
@@ -355,7 +359,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
     
     public VCSFileProxy getWorkdir() {
-        return new File(getWorkdirText());
+        return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), getWorkdirText());
     }        
 
     public RepositoryFile[] getRepositoryFiles() {
@@ -451,7 +455,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                 StringBuilder buf = new StringBuilder(localFolderPath.length()
                                                       + repositoryFolderName.length()
                                                       + 10);
-                buf.append(localFolderPath).append(File.separatorChar).append(repositoryFolderName);
+                buf.append(localFolderPath).append('/').append(repositoryFolderName);
                 if (filesCount > 1) {
                     buf.append(", ...");                                //NOI18N
                 }

@@ -141,11 +141,11 @@ public final class VersioningInfoAction extends ContextAction {
                         return f1.getName().compareTo(f2.getName());
                     }
                 });
-                final LinkedHashMap<VCSFileProxy, Map<String, String>> properties = new LinkedHashMap<VCSFileProxy, Map<String, String>>(roots.length);
+                final LinkedHashMap<VCSFileProxy, Map<String, String>> properties = new LinkedHashMap<>(roots.length);
                 cache = Subversion.getInstance().getStatusCache();
                 for (VCSFileProxy root : roots) {
                     FileInformation fi = cache.getStatus(root);
-                    LinkedHashMap<String, String> fileProps = new LinkedHashMap<String, String>();
+                    LinkedHashMap<String, String> fileProps = new LinkedHashMap<>();
                     properties.put(root, fileProps);
                     String relativePath = getMessage("LBL_VersioningInfo_Property_Unknown"); //NOI18N
                     try {
@@ -173,7 +173,7 @@ public final class VersioningInfoAction extends ContextAction {
                     // still probably unversioned
                     return;
                 }
-                FileStatusCache.FileLabelCache.FileLabelInfo labelInfo;
+                FileStatusCache.FileLabelInfo labelInfo;
                 labelInfo = cache.getLabelsCache().getLabelInfo(file, true);
 
                 String repositoryRootUrl = getMessage("LBL_VersioningInfo_Property_Unknown"); //NOI18N
@@ -218,7 +218,7 @@ public final class VersioningInfoAction extends ContextAction {
                             LOG.log(Level.WARNING, "putPropsForVersioned: though versioned it has no svn url: {0}, {1}, {2}, {3}, {4}", //NOI18N
                                     new Object[] { file, fi, status.getTextStatus(), status.getUrlString(), status.getFile() });
                         } else {
-                            info = client.getInfo(url);
+                            info = client.getInfo(new Context(file), url);
                         }
                         if (info != null) {
                             if (!lockedLocally && info.getLockOwner() != null) {

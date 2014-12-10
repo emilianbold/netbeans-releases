@@ -114,6 +114,12 @@ public class AutoSubmitTest extends NbTestCase {
         //checkHandlers("After initialization of module system", Logger.getLogger(Installer.UI_LOGGER_NAME));
         MemoryURL.initialize();
         //checkHandlers("After all set up", Logger.getLogger(Installer.UI_LOGGER_NAME));
+        installer.restored();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        installer.uninstalled();
     }
     
     /**

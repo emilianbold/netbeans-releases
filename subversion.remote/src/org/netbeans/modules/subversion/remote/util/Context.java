@@ -50,6 +50,9 @@ import java.util.List;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  * Encapsulates context of an action. There are two ways in which context may be defined:
@@ -80,7 +83,7 @@ public class Context implements Serializable {
     }
 
     public Context(VCSFileProxy [] files) {
-        List<VCSFileProxy> list = new ArrayList<VCSFileProxy>(files.length);
+        List<VCSFileProxy> list = new ArrayList<>(files.length);
         list.addAll(Arrays.asList(files));
         removeDuplicates(list);
         this.filteredFiles = list;
@@ -88,6 +91,13 @@ public class Context implements Serializable {
         this.exclusions = Collections.emptyList();
     }
 
+    public FileSystem getFileSystem() {
+        for (VCSFileProxy root : rootFiles) {
+            return VCSFileProxySupport.getFileSystem(root);
+        }
+        return null;
+    }
+    
     private boolean normalize() {
         for (Iterator<VCSFileProxy> i = rootFiles.iterator(); i.hasNext();) {
             VCSFileProxy root = i.next();
@@ -106,7 +116,7 @@ public class Context implements Serializable {
     }
 
     private void removeDuplicates(List<VCSFileProxy> files) {
-        List<VCSFileProxy> newFiles = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> newFiles = new ArrayList<>();
         outter: for (Iterator<VCSFileProxy> i = files.iterator(); i.hasNext();) {
             VCSFileProxy file = i.next();
             for (Iterator<VCSFileProxy> j = newFiles.iterator(); j.hasNext();) {
