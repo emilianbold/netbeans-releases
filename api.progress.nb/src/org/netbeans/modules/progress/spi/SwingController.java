@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.Executor;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.openide.util.Exceptions;
@@ -58,7 +59,7 @@ import org.openide.util.Lookup;
  * @author sdedic
  * @since 1.40
  */
-public class SwingController extends Controller {
+public class SwingController extends Controller implements Executor, Runnable {
     private static final SwingController INSTANCE = new SwingController(null);
     private static final int TIMER_QUANTUM = 400;
 
@@ -77,17 +78,30 @@ public class SwingController extends Controller {
     }
 
     @Override
+    protected Executor getEventExecutor() {
+        return this;
+    }
+    
     protected void runEvents() {
         if (SwingUtilities.isEventDispatchThread()) {
            runNow();
         } else {
-           SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    runNow();
-                }
-            });
+            execute(this);
         }
+    }
+
+    @Override
+    public void run() {
+        runNow();
+    }
+
+    public void execute(final Runnable r) {
+        SwingUtilities.invokeLater(new Runnable() {
+             @Override
+             public void run() {
+                r.run();
+             }
+        });
     }
     
     protected void resetTimer(int delay, boolean restart) {

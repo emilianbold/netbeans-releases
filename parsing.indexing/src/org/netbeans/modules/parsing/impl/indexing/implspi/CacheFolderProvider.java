@@ -77,10 +77,8 @@ public abstract class CacheFolderProvider {
 
     protected CacheFolderProvider() {}
 
-    protected abstract boolean supports(@NonNull Set<Kind> kinds);
-
     @CheckForNull
-    protected abstract FileObject findCacheFolderForRoot(@NonNull URL root, @NonNull Mode mode) throws IOException;
+    protected abstract FileObject findCacheFolderForRoot(@NonNull URL root, @NonNull Set<Kind> kinds, @NonNull Mode mode) throws IOException;
 
     @CheckForNull
     protected abstract URL findRootForCacheFolder(@NonNull FileObject cacheFolder)  throws IOException;
@@ -96,11 +94,9 @@ public abstract class CacheFolderProvider {
         assert kinds != null;
         assert mode != null;
         for (CacheFolderProvider impl : getImpls()) {
-            if (impl.supports(kinds)) {
-                final FileObject result = impl.findCacheFolderForRoot(root, mode);
-                if (result != null) {
-                    return result;
-                }
+            final FileObject result = impl.findCacheFolderForRoot(root, kinds, mode);
+            if (result != null) {
+                return result;
             }
         }
         return null;

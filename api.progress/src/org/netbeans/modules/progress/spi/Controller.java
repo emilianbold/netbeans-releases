@@ -46,6 +46,7 @@
 package org.netbeans.modules.progress.spi;
 
 import java.util.*;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.progress.module.DefaultHandleFactory;
@@ -76,9 +77,10 @@ public class Controller {
     public static final int INITIAL_DELAY = 500;
     
     /** Creates a new instance of Controller */
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public Controller(ProgressUIWorker comp) {
         component = comp;
-        model = new TaskModel();
+        model = new TaskModel(getEventExecutor());
         eventQueue = new LinkedList<ProgressEvent>();
         dispatchRunning = false;
     }
@@ -285,6 +287,23 @@ public class Controller {
             assert activate;
             task.cancel();
         }
+    }
+    
+    /**
+     * Executes runnable synchronously with controller's event dispatch.
+     * The method is used by Progress API to deliver other events which do not
+     * therefore interfere with Controller's own events. If called from the thread
+     * dispatching events, the executed Runnables will be delayed after the
+     * and may be interleaved by dispatched events.
+     * <p/>
+     * The method <b>must</b> be overriden by a controller implementation which
+     * changes the threading model from the default one.
+     * 
+     * @return the executor instance
+     * @since 1.44
+     */
+    protected Executor getEventExecutor() {
+        return RQ;
     }
 
     /**
