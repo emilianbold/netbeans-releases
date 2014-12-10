@@ -70,7 +70,8 @@ import org.openide.util.Utilities;
 public class FSCompletionUtils {
 
     final static String GO_UP = "../"; //NOI18N
-
+    private static final String SLASH = "/"; //NOI18N
+    
     public static List<CompletionProposal> computeRelativeItems(
             Collection<? extends FileObject> relativeTo,
             final String prefix,
@@ -97,8 +98,8 @@ public class FSCompletionUtils {
         Set<FileObject> directories = new HashSet();
         File prefixFile = null;
         if (pathPrefix != null && !pathPrefix.startsWith(".")) { //NOI18N
-            if (pathPrefix.length() == 0 && prefix.startsWith("/")) {
-                prefixFile = new File("/"); //NOI18N
+            if (pathPrefix.length() == 0 && prefix.startsWith(SLASH)) {
+                prefixFile = new File(SLASH); //NOI18N
             } else {
                 prefixFile = new File(pathPrefix);
             }
@@ -142,7 +143,7 @@ public class FSCompletionUtils {
 //                    if (lastSlash == 1 && prefix.charAt(0) == '.') {
                         int newAnchor = anchor - prefix.length();
 //                    }
-                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + "/" : (filePrefix.isEmpty() ? "./" : ""), addExtensions, newAnchor)); //NOI18N
+                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + SLASH : (filePrefix.isEmpty() ? "./" : ""), addExtensions, newAnchor)); //NOI18N
                 }
             }
         }
@@ -185,11 +186,11 @@ public class FSCompletionUtils {
 
             String mimeType = FileUtil.getMIMEType(file);
 
-            return mimeType != null && mimeType.startsWith("text/");
+            return mimeType != null && mimeType.startsWith("text/");    //NOI18N
         }
 
         private static boolean isNbProjectMetadata(FileObject fo) {
-            final String metadataName = "nbproject"; //NOI18N
+            final String metadataName = "nbproject"; //NOI18N   
             if (fo.getPath().indexOf(metadataName) != -1) {
                 while (fo != null) {
                     if (fo.isFolder()) {
@@ -219,7 +220,7 @@ public class FSCompletionUtils {
      */
     public static FileObject findMappedFileObject(final String pathToFile, FileObject parent) {
         String path = pathToFile;
-        String[] pathParts = path.split("/");
+        String[] pathParts = path.split(SLASH);
         FileObject result = null;
         if (parent != null && pathParts.length > 0) {
             if (pathParts[pathParts.length - 1].indexOf('.') > 0) {
@@ -376,7 +377,7 @@ public class FSCompletionUtils {
 
     public static String writeFilePathForDocWindow(final FileObject fo) {
         String path = fo.getPath();
-        String[] parts = path.split("/");
+        String[] parts = path.split(SLASH);
         StringBuilder sb = new StringBuilder();
         sb.append("<pre>"); // NOI18N
         int length = 0;
