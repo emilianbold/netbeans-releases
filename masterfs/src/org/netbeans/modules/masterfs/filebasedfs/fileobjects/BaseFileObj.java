@@ -62,6 +62,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Date;
@@ -1083,6 +1086,86 @@ public abstract class BaseFileObj extends FileObject {
     
     FolderObj getExistingParent() {         
         return getExistingParentFor(getFileName().getFile(), getFactory());
+    }
+
+    /**
+     * Get {@link Path} object for this BaseFileObj.
+     */
+    private Path getNativePath() throws IOException {
+        File file = getFileName().getFile();
+        final Path path;
+        try {
+            path = file.toPath();
+        } catch (RuntimeException e) {
+            throw new IOException("Cannot get Path for " + this, e);    //NOI18N
+        }
+        return path;
+    }
+
+    @Override
+    public boolean isSymbolicLink() throws IOException {
+        Path p = getNativePath();
+        return Files.isSymbolicLink(p);
+    }
+
+    @Override
+    public FileObject readSymbolicLink() throws IOException {
+        final Path path = getNativePath();
+        try {
+            return AccessController.doPrivileged(
+                    new PrivilegedExceptionAction<FileObject>() {
+
+                        @Override
+                        public FileObject run() throws Exception {
+                            Path target = Files.readSymbolicLink(path);
+                            Path absoluteTarget = target.isAbsolute()
+                                ? target
+                                : path.getParent().resolve(target);
+                            File file = absoluteTarget.toFile();
+                            File normFile = FileUtil.normalizeFile(file);
+                            return FileBasedFileSystem.getFileObject(normFile);
+                        }
+                    });
+        } catch (PrivilegedActionException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    @Override
+    public String readSymbolicLinkPath() throws IOException {
+        final Path path = getNativePath();
+        try {
+            return AccessController.doPrivileged(
+                    new PrivilegedExceptionAction<String>() {
+
+                        @Override
+                        public String run() throws Exception {
+                            Path target = Files.readSymbolicLink(path);
+                            return target.toString();
+                        }
+                    });
+        } catch (PrivilegedActionException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    @Override
+    public FileObject getCanonicalFileObject() throws IOException {
+        final Path path = getNativePath();
+        try {
+            return AccessController.doPrivileged(
+                    new PrivilegedExceptionAction<FileObject>() {
+
+                        @Override
+                        public FileObject run() throws Exception {
+                            Path realPath = path.toRealPath();
+                            File realFile = realPath.toFile();
+                            return FileBasedFileSystem.getFileObject(realFile);
+                        }
+                    });
+        } catch (PrivilegedActionException ex) {
+            throw new IOException(ex);
+        }
     }
     
     private static class FileEventImpl extends FileEvent implements Enumeration<FileEvent> {
