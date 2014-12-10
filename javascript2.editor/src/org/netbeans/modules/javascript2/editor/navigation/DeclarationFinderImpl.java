@@ -261,10 +261,10 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     ts.move(caretOffset);
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         value[0] = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
-                    } else if (ts.token().id() == JsTokenId.DOC_COMMENT) {
+                    } else if (ts.token() != null && ts.token().id() == JsTokenId.DOC_COMMENT) {
                         TokenSequence<? extends JsDocumentationTokenId> tsDoc = LexerUtils.getTokenSequence(doc, caretOffset, JsDocumentationTokenId.language(), true);
                         if (tsDoc != null) {
-                            if (tsDoc.token().id() == JsDocumentationTokenId.OTHER) {
+                            if (tsDoc.token() != null && tsDoc.token().id() == JsDocumentationTokenId.OTHER) {
                                 if (tsDoc.moveNext() && tsDoc.token().id() == JsDocumentationTokenId.BRACKET_RIGHT_CURLY
                                         && tsDoc.movePrevious() && tsDoc.movePrevious() && tsDoc.token().id() == JsDocumentationTokenId.BRACKET_LEFT_CURLY) {
                                     tsDoc.moveNext();
