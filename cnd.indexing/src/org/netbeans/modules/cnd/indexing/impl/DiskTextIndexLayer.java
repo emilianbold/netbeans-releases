@@ -74,7 +74,7 @@ public final class DiskTextIndexLayer implements TextIndexLayer {
     static {
         boolean check;
         if (System.getProperty("org.netbeans.modules.cnd.indexing.check.key") != null) {// NOI18N
-            check = Boolean.getBoolean(System.getProperty("org.netbeans.modules.cnd.indexing.check.key"));// NOI18N
+            check = Boolean.getBoolean("org.netbeans.modules.cnd.indexing.check.key");// NOI18N
         } else {
             boolean debug = false;
             assert debug = true;
