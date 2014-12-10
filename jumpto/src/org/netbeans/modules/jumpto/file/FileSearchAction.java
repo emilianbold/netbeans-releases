@@ -194,24 +194,6 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             return;
         }
 
-        int wildcard = Utils.containsWildCard(text);
-        QuerySupport.Kind nameKind;
-
-        if (exact) {
-            //nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.EXACT : QuerySupport.Kind.CASE_INSENSITIVE_EXACT;
-            nameKind = QuerySupport.Kind.EXACT;
-        }
-        else if (wildcard != -1) {
-            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.REGEXP : QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
-            text = Utils.removeNonNeededWildCards(text);
-        }
-        else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
-            nameKind = QuerySupport.Kind.CAMEL_CASE;
-        }
-        else {
-            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
-        }
-
         //Extract linenumber from search text
         //Pattern is like 'My*Object.java:123'
         final Matcher matcher = PATTERN_WITH_LINE_NUMBER.matcher(text);
@@ -226,6 +208,22 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             }
         } else {
             lineNr = -1;
+        }
+        QuerySupport.Kind nameKind;
+        int wildcard = Utils.containsWildCard(text);
+        if (exact) {
+            //nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.EXACT : QuerySupport.Kind.CASE_INSENSITIVE_EXACT;
+            nameKind = QuerySupport.Kind.EXACT;
+        }
+        else if (wildcard != -1) {
+            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.REGEXP : QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
+            text = Utils.removeNonNeededWildCards(text);
+        }
+        else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
+            nameKind = QuerySupport.Kind.CAMEL_CASE;
+        }
+        else {
+            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         }
 
         // Compute in other thread
