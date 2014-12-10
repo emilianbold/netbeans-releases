@@ -52,7 +52,10 @@ import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProvider;
 import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
-import org.netbeans.modules.selenium2.webclient.mocha.MochaSeleniumTestingProvider;
+import org.netbeans.modules.selenium2.webclient.mocha.CustomizerMochaPanel;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -71,10 +74,12 @@ public class MochaRerunHandler implements RerunHandler {
     private volatile boolean enabled = true;
     private final FileObject[] activatedFOs;
     private final Project project;
+    private final boolean isSelenium;
 
-    public MochaRerunHandler(Project project, FileObject[] activatedFOs) {
+    public MochaRerunHandler(Project project, FileObject[] activatedFOs, boolean isSelenium) {
         this.project = project;
         this.activatedFOs = activatedFOs;
+        this.isSelenium = isSelenium;
     }
 
     @Override
@@ -116,9 +121,16 @@ public class MochaRerunHandler implements RerunHandler {
                 if (p == null) {
                     return;
                 }
-                SeleniumTestingProvider provider = SeleniumTestingProviders.getDefault().findSeleniumTestingProvider(MochaSeleniumTestingProvider.IDENTIFIER);
-                if(provider != null) {
-                    provider.runTests(testFOs);
+                if (isSelenium) {
+                    SeleniumTestingProvider provider = SeleniumTestingProviders.getDefault().findSeleniumTestingProvider(CustomizerMochaPanel.IDENTIFIER);
+                    if (provider != null) {
+                        provider.runTests(testFOs);
+                    }
+                } else {
+                    JsTestingProvider provider = JsTestingProviders.getDefault().findJsTestingProvider(CustomizerMochaPanel.IDENTIFIER);
+                    if (provider != null) {
+                        provider.runTests(project, new TestRunInfo.Builder().setSessionType(TestRunInfo.SessionType.TEST).setTestFile(null).build());
+                    }
                 }
             }
         });

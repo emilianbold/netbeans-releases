@@ -41,23 +41,31 @@
  */
 package org.netbeans.modules.selenium2.webclient.mocha;
 
+import java.io.File;
+import java.net.URL;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
-import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaSeleniumPreferences;
-import org.netbeans.modules.selenium2.webclient.spi.SeleniumTestingProviderImplementation;
+import org.netbeans.modules.selenium2.webclient.api.Utilities;
+import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaJSPreferences;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
+import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
 import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
+import org.netbeans.modules.web.clientproject.spi.jstesting.JsTestingProviderImplementation;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Theofanis Oikonomou
  */
-@ServiceProvider(service = SeleniumTestingProviderImplementation.class, path = SeleniumTestingProviders.SELENIUM_TESTING_PATH, position = 100)
-public class MochaSeleniumTestingProvider implements SeleniumTestingProviderImplementation {
-    
-    private static final Logger LOGGER = Logger.getLogger(MochaSeleniumTestingProvider.class.getName());
+@ServiceProvider(service = JsTestingProviderImplementation.class, path = JsTestingProviders.JS_TESTING_PATH, position = 300)
+public class MochaJSTestingProvider implements JsTestingProviderImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(MochaJSTestingProvider.class.getName());
+
 
     @Override
     public String getIdentifier() {
@@ -71,7 +79,7 @@ public class MochaSeleniumTestingProvider implements SeleniumTestingProviderImpl
 
     @Override
     public boolean isEnabled(Project project) {
-        return MochaSeleniumPreferences.isEnabled(project);
+        return MochaJSPreferences.isEnabled(project);
     }
 
     @Override
@@ -80,13 +88,40 @@ public class MochaSeleniumTestingProvider implements SeleniumTestingProviderImpl
     }
 
     @Override
+    public void runTests(Project project, TestRunInfo runInfo) {
+        String testFile = runInfo.getTestFile();
+        FileObject[] activatedFOs = new FileObject[1];
+        if(testFile == null) {
+            FileObject testsFolder = Utilities.getTestsFolder(project, false);
+            if(testsFolder == null) {
+                return;
+            }
+            activatedFOs[0] = project.getProjectDirectory();
+        } else {
+            activatedFOs = new FileObject[1];
+            activatedFOs[0] = FileUtil.toFileObject(new File(testFile));
+        }
+        MochaRunner.runTests(activatedFOs, false);
+    }
+
+    @Override
+    public FileObject fromServer(Project project, URL serverUrl) {
+        return null;
+    }
+
+    @Override
+    public URL toServer(Project project, FileObject projectFile) {
+        return null;
+    }
+
+    @Override
     public CustomizerPanelImplementation createCustomizerPanel(Project project) {
-        return new CustomizerMochaPanel(project, true);
+        return new CustomizerMochaPanel(project, false);
     }
 
     @Override
     public void notifyEnabled(Project project, boolean enabled) {
-        MochaSeleniumPreferences.setEnabled(project, enabled);
+        MochaJSPreferences.setEnabled(project, enabled);
     }
 
     @Override
@@ -100,8 +135,8 @@ public class MochaSeleniumTestingProvider implements SeleniumTestingProviderImpl
     }
 
     @Override
-    public void runTests(FileObject[] activatedFOs) {
-        MochaRunner.runTests(activatedFOs, true);
+    public NodeList<Node> createNodeList(Project project) {
+        return null;
     }
-    
+
 }

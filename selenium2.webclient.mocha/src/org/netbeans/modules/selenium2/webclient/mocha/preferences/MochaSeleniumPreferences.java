@@ -39,69 +39,65 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.webclient.mocha;
+package org.netbeans.modules.selenium2.webclient.mocha.preferences;
 
-import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
-import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaSeleniumPreferences;
-import org.netbeans.modules.selenium2.webclient.spi.SeleniumTestingProviderImplementation;
-import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Theofanis Oikonomou
  */
-@ServiceProvider(service = SeleniumTestingProviderImplementation.class, path = SeleniumTestingProviders.SELENIUM_TESTING_PATH, position = 100)
-public class MochaSeleniumTestingProvider implements SeleniumTestingProviderImplementation {
+public final class MochaSeleniumPreferences {
+
+    private static final String ENABLED = "enabled"; // NOI18N
+    private static final String MOCHA_DIR = "mocha.dir"; // NOI18N
+    private static final String TIMEOUT = "timeout"; // NOI18N
+    private static final int TIMEOUT_DEFAULT = 10000; // 10 seconds
+
+
+    private MochaSeleniumPreferences() {
+    }
+
+    public static boolean isEnabled(Project project) {
+        return getPreferences(project).getBoolean(ENABLED, false);
+    }
+
+    public static void setEnabled(Project project, boolean enabled) {
+        getPreferences(project).putBoolean(ENABLED, enabled);
+    }
+
+    @CheckForNull
+    public static String getMochaDir(Project project) {
+        return resolvePath(project, getPreferences(project).get(MOCHA_DIR, null));
+    }
+
+    public static void setMochaDir(Project project, String installDir) {
+        getPreferences(project).put(MOCHA_DIR, installDir);
+    }
     
-    private static final Logger LOGGER = Logger.getLogger(MochaSeleniumTestingProvider.class.getName());
-
-    @Override
-    public String getIdentifier() {
-        return CustomizerMochaPanel.IDENTIFIER;
+    public static int getTimeout(Project project) {
+        return getPreferences(project).getInt(TIMEOUT, TIMEOUT_DEFAULT);
     }
 
-    @Override
-    public String getDisplayName() {
-        return Bundle.CustomizerMochaPanel_displayName();
+    public static void setTimeout(Project project, int timeout) {
+        getPreferences(project).putInt(TIMEOUT, timeout);
     }
 
-    @Override
-    public boolean isEnabled(Project project) {
-        return MochaSeleniumPreferences.isEnabled(project);
+    private static String resolvePath(Project project, String filePath) {
+        if (filePath == null
+                || filePath.trim().isEmpty()) {
+            return null;
+        }
+        return PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), filePath).getAbsolutePath();
     }
 
-    @Override
-    public boolean isCoverageSupported(Project project) {
-        return false;
-    }
-
-    @Override
-    public CustomizerPanelImplementation createCustomizerPanel(Project project) {
-        return new CustomizerMochaPanel(project, true);
-    }
-
-    @Override
-    public void notifyEnabled(Project project, boolean enabled) {
-        MochaSeleniumPreferences.setEnabled(project, enabled);
-    }
-
-    @Override
-    public void projectOpened(Project project) {
-        // noop
-    }
-
-    @Override
-    public void projectClosed(Project project) {
-        // noop
-    }
-
-    @Override
-    public void runTests(FileObject[] activatedFOs) {
-        MochaRunner.runTests(activatedFOs, true);
+    private static Preferences getPreferences(Project project) {
+        return ProjectUtils.getPreferences(project, MochaSeleniumPreferences.class, false);
     }
     
 }

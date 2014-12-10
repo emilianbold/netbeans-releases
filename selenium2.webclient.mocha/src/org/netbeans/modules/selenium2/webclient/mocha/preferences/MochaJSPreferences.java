@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.selenium2.webclient.mocha.preferences;
 
-import java.io.File;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
@@ -53,15 +52,15 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Theofanis Oikonomou
  */
-public final class MochaPreferences {
+public final class MochaJSPreferences {
 
-    private static final String ENABLED = "enabled"; // NOI18N
-    private static final String MOCHA_DIR = "mocha.dir"; // NOI18N
-    private static final String TIMEOUT = "timeout"; // NOI18N
+    private static final String ENABLED = "js.enabled"; // NOI18N
+    private static final String MOCHA_DIR = "js.mocha.dir"; // NOI18N
+    private static final String TIMEOUT = "js.timeout"; // NOI18N
     private static final int TIMEOUT_DEFAULT = 10000; // 10 seconds
+    public static final String AUTO_WATCH = "js.auto.watch"; // NOI18N 
 
-
-    private MochaPreferences() {
+    private MochaJSPreferences() {
     }
 
     public static boolean isEnabled(Project project) {
@@ -89,19 +88,12 @@ public final class MochaPreferences {
         getPreferences(project).putInt(TIMEOUT, timeout);
     }
 
-    private static String relativizePath(Project project, String filePath) {
-        if (filePath == null
-                || filePath.trim().isEmpty()) {
-            return ""; // NOI18N
-        }
-        File file = new File(filePath);
-        String path = PropertyUtils.relativizeFile(FileUtil.toFile(project.getProjectDirectory()), file);
-        if (path == null
-                || path.startsWith("../")) { // NOI18N
-            // cannot be relativized or outside project
-            path = file.getAbsolutePath();
-        }
-        return path;
+    public static boolean isAutoWatch(Project project) {
+        return getPreferences(project).getBoolean(AUTO_WATCH, false);
+    }
+
+    public static void setAutoWatch(Project project, boolean autoWatch) {
+        getPreferences(project).putBoolean(AUTO_WATCH, autoWatch);
     }
 
     private static String resolvePath(Project project, String filePath) {
@@ -113,7 +105,7 @@ public final class MochaPreferences {
     }
 
     private static Preferences getPreferences(Project project) {
-        return ProjectUtils.getPreferences(project, MochaPreferences.class, false);
+        return ProjectUtils.getPreferences(project, MochaJSPreferences.class, false);
     }
     
 }

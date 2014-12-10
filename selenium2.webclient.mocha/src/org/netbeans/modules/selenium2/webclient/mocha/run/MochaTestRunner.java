@@ -102,7 +102,7 @@ public final class MochaTestRunner {
     }
     
     public String processLine(String logMessage) {
-        String line = logMessage.replace(NB_LINE, "");
+        String line = removeEscapeCharachters(logMessage).replace(NB_LINE, "");
         
         Matcher matcher;
         matcher = SESSION_START_PATTERN.matcher(line);
@@ -182,7 +182,7 @@ public final class MochaTestRunner {
     }
     
     static String removeEscapeCharachters(String line) {
-        return line.replaceAll("\u001B", "").replaceAll("\\[[;\\d]*m", "").trim();
+        return line.replace("[?25l", "").replace("[2K", "").replaceAll("\u001B", "").replaceAll("\\[[;\\d]*m", "").trim();
     }
 
     private Manager getManager() {
@@ -191,7 +191,9 @@ public final class MochaTestRunner {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "TestRunner.runner.title={0} (Selenium)",
+        "TestRunner.selenium.runner.title={0} (Selenium)",
+        "# {0} - project name",
+        "TestRunner.unit.runner.title={0} (Unit)",
     })
     private String getOutputTitle() {
         StringBuilder sb = new StringBuilder(30);
@@ -203,12 +205,11 @@ public final class MochaTestRunner {
                 sb.append(new File(testFile).getName());
             }
         }
-        return Bundle.TestRunner_runner_title(sb.toString());
+        return runInfo.isSelenium() ? Bundle.TestRunner_selenium_runner_title(sb.toString()) : Bundle.TestRunner_unit_runner_title(sb.toString());
     }
 
     private void sessionStarted(String line) {
         assert testSession == null;
-//        getManager().setNodeFactory(new SeleniumTestRunnerNodeFactory(new CallStackCallback(runInfo.getProject())));
         getManager().setNodeFactory(Utilities.getTestRunnerNodeFactory(new CallStackCallback(runInfo.getProject())));
         testSession = new TestSession(getOutputTitle(), runInfo.getProject(), TestSession.SessionType.TEST);
         testSession.setRerunHandler(runInfo.getRerunHandler());
