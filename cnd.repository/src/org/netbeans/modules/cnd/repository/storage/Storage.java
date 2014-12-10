@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerListener;
 import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitDescriptorsList;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -90,7 +91,8 @@ import org.openide.util.lookup.Lookups;
  */
 /* package */ final class Storage {
 
-    private static boolean PRINT_STACK = CndUtils.getBoolean("cnd.repository.print.stack.wrong.file", true);// NOI18N
+    private static boolean PRINT_STACK_FILES = CndUtils.getBoolean("cnd.repository.print.stack.wrong.file", true);// NOI18N
+    private static boolean PRINT_STACK_UNITS = CndUtils.getBoolean("cnd.repository.print.stack.wrong.units", true);// NOI18N
     private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
     // A list of all layers that belong to this Storage.
     private final List<Layer> layers;
@@ -453,7 +455,7 @@ import org.openide.util.lookup.Lookups;
                     List<CharSequence> fileNameTable = dict == null ? Collections.<CharSequence>emptyList() : dict.toList();
                     convertedTable = new ArrayList<CharSequence>(fileNameTable.size());
                     for (CharSequence fname : fileNameTable) {
-                        final UnitDescriptor unitDescriptor = layer_to_read_files_from.getUnitsTable().get(unit_id_layer_to_read_files_from);
+                        final UnitDescriptor unitDescriptor = layer_to_read_files_from.getUnitsTable().getUnitDescriptor(unit_id_layer_to_read_files_from);
                         if (unitDescriptor == null) {
                             //is it legal that we do not have unit descriptor here?
                             //do not think so, 
@@ -570,12 +572,12 @@ import org.openide.util.lookup.Lookups;
         }
         CharSequence res = fsDict.getFilePath(fileIdx);
         if (FilePathsDictionary.WRONG_PATH == res) {
-            if (PRINT_STACK){
-                System.err.println("Path by index "+fileIdx+"/"+clientShortUnitID+" not found. files dictionary size is "+fsDict.size()); //NOI18N
-                //additional infor required
-                CndUtils.threadsDump();
+            if (PRINT_STACK_FILES){
+                System.err.println("Path by index fileIdx/clientShortUnitID"+fileIdx+"/"+clientShortUnitID+" not found. files dictionary size is " + fsDict.size()); //NOI18N
+                System.err.println("filePathDictionaries:" + fsDict);//NOI18N
+                dumpStorage();                
                 // only once
-                PRINT_STACK = false;
+                PRINT_STACK_FILES = false;
             }
         }
         return res;
@@ -618,7 +620,7 @@ import org.openide.util.lookup.Lookups;
 
 
     private int findMatchedUnitIDInLayer(Layer layer, UnitDescriptor clientUnitDescriptor) {
-        List<UnitDescriptor> layerUnitsTable = layer.getUnitsTable();
+        UnitDescriptorsList layerUnitsTable = layer.getUnitsTable();
         int clientFileSystemID = clientFileSystemsDictionary.getFileSystemID(clientUnitDescriptor.getFileSystem());
         Map<Integer, Integer> map = fileSystemsTranslationMap.get(layer.getLayerDescriptor());
         // map: clientFileSystemID => fileSystemIndexInLayer
@@ -631,9 +633,9 @@ import org.openide.util.lookup.Lookups;
             requiredFileSystem = layer.getWriteCapability().registerClientFileSystem(clientUnitDescriptor.getFileSystem());
             map.put(clientFileSystemID, requiredFileSystem);
         }
-
-        for (int unitIDInLayer = 0; unitIDInLayer < layerUnitsTable.size(); unitIDInLayer++) {
-            UnitDescriptor layerUnitDescriptor = layerUnitsTable.get(unitIDInLayer);
+        Collection<Integer> unitIDs = layerUnitsTable.getUnitIDs();
+        for (Integer unitIDInLayer : unitIDs) {
+            UnitDescriptor layerUnitDescriptor = layerUnitsTable.getUnitDescriptor(unitIDInLayer);
             FileSystem unitFileSystemInLayer = layerUnitDescriptor.getFileSystem();
             int fileSystemIndexInLayer = layer.getFileSystemsTable().indexOf(unitFileSystemInLayer);
 //            assert fileSystemIndexInLayer != -1;
@@ -888,7 +890,19 @@ import org.openide.util.lookup.Lookups;
                 //
                 // Do registration.
                 // TODO: HOW TO DEAL WITH THIS ???
-                UnitDescriptor layerUnit = layer.getUnitsTable().get(unitIDInLayer);
+                UnitDescriptor layerUnit = layer.getUnitsTable().getUnitDescriptor(unitIDInLayer);
+                if (layerUnit == null) {
+                    if (PRINT_STACK_UNITS){
+                        //what should we do here?
+                        System.err.println("In previous version we had IndexOutOfBounds here! unitID=" + unitIDInLayer + " " //NOI18N
+                                + "not found, current units list is " + layer.getUnitsTable());//NOI18N
+                        dumpStorage();
+                        //only once
+                        PRINT_STACK_UNITS = false;
+                    }
+                    //BAD situation!!!!
+                    return -1;
+                }
                 // 'Reserve' a new ID for the layer.
                 // Put a wrapper around the layer's Unit
                 // Once client's unitDescriptor is in the game we will substitute
@@ -902,6 +916,24 @@ import org.openide.util.lookup.Lookups;
 
             return result.equals(-1) ? -1 : storageMask.layerToClient(result);
         }
+    }
+
+    private void dumpStorage() {
+        System.err.println("--------Dump storage internals--------:\n");//NOI18N
+        for (Layer l : layers) {
+            System.err.println("Later.unitsTable is: \n" + l.getUnitsTable());//NOI18N
+            final LayerDescriptor ld = l.getLayerDescriptor();
+            // For LayerDescriptor -> map of translation clientShortUnitID => unitIDInLayer
+            Map<Integer, Integer> unitsMap = unitsTranslationMap.get(ld);
+            System.err.println("for layer:" + ld.getURI());//NOI18N
+            System.err.println("clientShortUnitID => unitIDInLayer:");//NOI18N
+            for (Map.Entry<Integer, Integer> entry : unitsMap.entrySet()) {
+                System.err.println(entry.getKey() + " => " + entry.getValue());//NOI18N
+            }
+
+        }
+        System.err.println("unitsTranslationMap is " + clientUnitDescriptorsDictionary);//NOI18N
+        CndUtils.threadsDump();
     }
 
     private class UnitIDWriteConverterImpl implements UnitsConverter {
