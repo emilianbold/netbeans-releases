@@ -64,6 +64,7 @@ public class RunInfo {
     private final Map<String, String> envVars = new ConcurrentHashMap<>();
     private boolean testingProject;
     private FileObject[] activatedFOs;
+    private boolean isSelenium;
 
     private volatile boolean absoluteUrls = false;
 
@@ -78,6 +79,7 @@ public class RunInfo {
         testFile = builder.testFile;
         envVars.putAll(builder.envVars);
         testingProject = builder.testingProject;
+        isSelenium = builder.isSelenium;
     }
 
     public FileObject[] getActivatedFOs() {
@@ -113,6 +115,10 @@ public class RunInfo {
         return testingProject;
     }
 
+    public boolean isSelenium() {
+        return isSelenium;
+    }
+
     @Override
     public String toString() {
 //        return "RunInfo{" + "project=" + project + ", rerunHandler=" + rerunHandler + ", nbConfigFile=" + nbConfigFile // NOI18N
@@ -133,12 +139,18 @@ public class RunInfo {
         Map<String, String> envVars = new HashMap<>();
         boolean testingProject;
         FileObject[] activatedFOs;
+        boolean isSelenium;
 
         public Builder(FileObject[] activatedFOs) {
             assert activatedFOs != null;
             assert activatedFOs.length > 0;
             this.activatedFOs = activatedFOs;
             project = FileOwnerQuery.getOwner(activatedFOs[0]);
+        }
+
+        public Builder setIsSelenium(boolean isSelenium) {
+            this.isSelenium = isSelenium;
+            return this;
         }
 
         public Builder setTestingProject(boolean testingProject) {

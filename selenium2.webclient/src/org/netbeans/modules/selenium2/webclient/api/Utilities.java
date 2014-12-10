@@ -60,6 +60,15 @@ public class Utilities {
     }
     
     @CheckForNull
+    public static FileObject getTestsFolder(Project project, boolean showFileChooser) {
+        ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
+        if (directoriesProvider == null) {
+            return null;
+        }
+        return directoriesProvider.getTestDirectory(showFileChooser);
+    }
+    
+    @CheckForNull
     public static FileObject getTestsSeleniumFolder(Project project, boolean showFileChooser) {
         ProjectDirectoriesProvider directoriesProvider = project.getLookup().lookup(ProjectDirectoriesProvider.class);
         if (directoriesProvider == null) {

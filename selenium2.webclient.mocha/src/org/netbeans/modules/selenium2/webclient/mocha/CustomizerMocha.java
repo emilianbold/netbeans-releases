@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -58,11 +59,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaPreferences;
+import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaJSPreferences;
+import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaSeleniumPreferences;
 import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaPreferencesValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.awt.Mnemonics;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -71,6 +72,7 @@ import org.openide.util.NbBundle;
 public final class CustomizerMocha extends javax.swing.JPanel {
 
     private final Project project;
+    private final boolean isSelenium;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final SpinnerNumberModel timeoutModel;
 
@@ -81,11 +83,12 @@ public final class CustomizerMocha extends javax.swing.JPanel {
     private ValidationResult validationResult;
 
 
-    public CustomizerMocha(Project project) {
+    public CustomizerMocha(Project project, boolean isSelenium) {
         assert EventQueue.isDispatchThread();
         assert project != null;
 
         this.project = project;
+        this.isSelenium = isSelenium;
         timeoutModel = new SpinnerNumberModel(65534, 1, 65534, 1);
 
         initComponents();
@@ -108,6 +111,10 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         return timeout;
     }
 
+    public boolean getAutoWatch() {
+        return autowatchCheckBox.isSelected();
+    }
+
     public String getWarningMessage() {
         assert EventQueue.isDispatchThread();
         for (ValidationResult.Message message : validationResult.getWarnings()) {
@@ -128,13 +135,22 @@ public final class CustomizerMocha extends javax.swing.JPanel {
     "CustomizerMocha.timeout.info=Test-case timeout in milliseconds."})
     private void init() {
         assert EventQueue.isDispatchThread();
-        // data
-        mochaDirTextField.setText(MochaPreferences.getMochaDir(project));
+        String mochaDir;
+        mochaDir = isSelenium ? MochaSeleniumPreferences.getMochaDir(project) : MochaJSPreferences.getMochaDir(project);
+        if(mochaDir == null) {
+            mochaDir = isSelenium ? MochaJSPreferences.getMochaDir(project) : MochaSeleniumPreferences.getMochaDir(project);
+        }
+        mochaDirTextField.setText(mochaDir);
         mochaDirInfoLabel.setText(Bundle.CustomizerMocha_mocha_dir_info());
         timeoutSpinner.setModel(timeoutModel);
-        timeout = MochaPreferences.getTimeout(project);
+        timeout = isSelenium ? MochaSeleniumPreferences.getTimeout(project) : MochaJSPreferences.getTimeout(project);
         timeoutModel.setValue(timeout);
         timeoutInfoLabel.setText(Bundle.CustomizerMocha_timeout_info());
+        if(isSelenium) {
+            autowatchCheckBox.setVisible(false);
+        } else {
+            autowatchCheckBox.setSelected(MochaJSPreferences.isAutoWatch(project));
+        }
         // listeners
         addListeners();
         // initial validation
@@ -172,6 +188,7 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         timeoutLabel = new JLabel();
         timeoutInfoLabel = new JLabel();
         timeoutSpinner = new JSpinner();
+        autowatchCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(mochaDirLabel, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.mochaDirLabel.text")); // NOI18N
 
@@ -190,6 +207,8 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         Mnemonics.setLocalizedText(timeoutInfoLabel, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.timeoutInfoLabel.text")); // NOI18N
 
         timeoutSpinner.setEditor(new JSpinner.NumberEditor(timeoutSpinner, "#"));
+
+        Mnemonics.setLocalizedText(autowatchCheckBox, NbBundle.getMessage(CustomizerMocha.class, "CustomizerMocha.autowatchCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -211,6 +230,10 @@ public final class CustomizerMocha extends javax.swing.JPanel {
                             .addComponent(timeoutInfoLabel)
                             .addComponent(timeoutSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(autowatchCheckBox)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -226,6 +249,8 @@ public final class CustomizerMocha extends javax.swing.JPanel {
                     .addComponent(timeoutSpinner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(timeoutInfoLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(autowatchCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -246,6 +271,7 @@ public final class CustomizerMocha extends javax.swing.JPanel {
     }//GEN-LAST:event_mochaDirBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JCheckBox autowatchCheckBox;
     private JButton mochaDirBrowseButton;
     private JLabel mochaDirInfoLabel;
     private JLabel mochaDirLabel;
