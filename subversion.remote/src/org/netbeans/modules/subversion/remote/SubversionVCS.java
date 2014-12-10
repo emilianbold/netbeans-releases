@@ -61,6 +61,7 @@ import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -81,7 +82,9 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
     private VCSVisibilityQuery visibilityQuery;
 
     public SubversionVCS() {
-        SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
+        for(FileSystem fileSystem : VCSFileProxySupport.getFileSystems()) {
+            SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
+        }
         Subversion.getInstance().attachListeners(this);
     }
 
@@ -192,8 +195,8 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
 
     @Override
     public void versioningEvent(VersioningEvent event) {
-        if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(event.getPropertyName())) {
-            VCSFileProxy file = event.getFile();
+        if (FileStatusCache.EVENT_FILE_STATUS_CHANGED.equals(event.getId())) {
+            VCSFileProxy file = (VCSFileProxy) event.getParams()[0];
             if (file != null) {
                 fireStatusChanged(file);
             }

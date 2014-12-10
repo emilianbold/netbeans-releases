@@ -56,6 +56,6 @@ final class WaitNode extends AbstractNode {
     public WaitNode(String name) {
         super(Children.LEAF);
         setDisplayName(name);
-        setIconBaseWithExtension("org/netbeans/modules/subversion/ui/browser/wait.gif");  // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/subversion/remote/ui/browser/wait.gif");  // NOI18N
     }
 }

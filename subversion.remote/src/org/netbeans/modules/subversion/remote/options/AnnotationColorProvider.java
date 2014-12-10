@@ -50,6 +50,7 @@ import org.netbeans.modules.subversion.remote.Annotator;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SubversionVCS;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.filesystems.FileSystem;
@@ -121,7 +122,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     public final OptionsPanelColorProvider.AnnotationFormat TREECONFLICT_FILE = createAnnotationFormat("treeconflict", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TreeConflict"), CONFLICTED_COLOR, false); //NOI18N
     public final OptionsPanelColorProvider.AnnotationFormat TREECONFLICT_FILE_TOOLTIP = createAnnotationFormat("treeconflictTT", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TreeConflict"), CONFLICTED_COLOR, true); //NOI18N
     public final OptionsPanelColorProvider.AnnotationFormat TEXT_ANNOTATION = createAnnotationFormat("textAnnotation", NbBundle.getMessage(Annotator.class, "CTL_FileInfoStatus_TextAnnotation"), TEXT_ANNOTATION_COLOR, true); //NOI18N
-
+    
     public AnnotationColorProvider () {
         initColors();
     }
@@ -146,6 +147,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
 
     @Override
     protected Color getSavedColor (String key, Color defaultColor) {
+        FileSystem fileSystem = VCSFileProxySupport.getDefaultFileSystem();
         return SvnModuleConfig.getDefault(fileSystem).getColor(key, defaultColor);
     }
 
@@ -170,6 +172,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     protected void saveColors (Collection<OptionsPanelColorProvider.AnnotationFormat> colors) {
         for (OptionsPanelColorProvider.AnnotationFormat af : colors) {
             if (af != null) {
+                FileSystem fileSystem = VCSFileProxySupport.getDefaultFileSystem();
                 SvnModuleConfig.getDefault(fileSystem).setColor(getColorKey(af.getKey()), af.getActualColor());
             }
         }

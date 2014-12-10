@@ -47,12 +47,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 
 /**
  * Encapsulates context of an action. There are two ways in which context may be defined:
@@ -103,7 +100,7 @@ public class Context implements Serializable {
             VCSFileProxy root = i.next();
             for (Iterator<VCSFileProxy> j = exclusions.iterator(); j.hasNext();) {
                 VCSFileProxy exclusion = j.next();
-                if (Utils.isAncestorOrEqual(exclusion, root)) {
+                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(exclusion, root)) {
                     j.remove();
                     exclusionRemoved(exclusion, root);
                     return true;
@@ -121,10 +118,10 @@ public class Context implements Serializable {
             VCSFileProxy file = i.next();
             for (Iterator<VCSFileProxy> j = newFiles.iterator(); j.hasNext();) {
                 VCSFileProxy includedFile = j.next();
-                if (Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) {
+                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) {
                     continue outter;
                 }
-                if (Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
+                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
                     j.remove();
                 }
             }
@@ -141,7 +138,7 @@ public class Context implements Serializable {
         }
         for (int i = 0; i < exclusionChildren.length; i++) {
             VCSFileProxy child = exclusionChildren[i];
-            if (!Utils.isAncestorOrEqual(root, child)) {
+            if (!org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(root, child)) {
                 exclusions.add(child);
             }
         }
@@ -176,7 +173,7 @@ public class Context implements Serializable {
             if (SvnUtils.isParentOrEqual(root, file)) {
                 for (Iterator j = exclusions.iterator(); j.hasNext();) {
                     VCSFileProxy excluded = (VCSFileProxy) j.next();
-                    if (Utils.isAncestorOrEqual(excluded, file)) {
+                    if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(excluded, file)) {
                         continue outter;
                     }
                 }

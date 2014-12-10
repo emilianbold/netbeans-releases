@@ -123,7 +123,7 @@ public class SvnConfigFiles {
         @Override
         public void patch(Ini file) {
             // patch store-auth-creds to "no"
-            Ini.Section auth = (Ini.Section) file.get("auth");                  // NOI18N
+            Ini.Section auth = file.get("auth");                  // NOI18N
             if(auth == null) {
                 auth = file.add("auth");                                        // NOI18N
             }

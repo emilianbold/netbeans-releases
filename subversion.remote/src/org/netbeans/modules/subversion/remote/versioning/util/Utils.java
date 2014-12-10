@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion.remote.versioning.util;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -51,8 +52,11 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.VersioningQuery;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
@@ -367,4 +371,95 @@ public class Utils {
         return filesToCheckout;
     }
     
+    /**
+     * Helper method to get an array of Strings from preferences.
+     *
+     * @param prefs storage
+     * @param key key of the String array
+     * @return List<String> stored List of String or an empty List if the key was not found (order is preserved)
+     */
+    public static List<String> getStringList (Preferences prefs, String key) {
+        List<String> retval = new ArrayList<String>();
+        try {
+            String[] keys = prefs.keys();
+            for (int i = 0; i < keys.length; i++) {
+                String k = keys[i];
+                if (k != null && k.startsWith(key)) {
+                    int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));
+                    retval.add(idx + "." + prefs.get(k, null));
+                }
+            }
+            List<String> rv = new ArrayList<String>(retval.size());
+            rv.addAll(retval);
+            for (String s : retval) {
+                int pos = s.indexOf('.');
+                int index = Integer.parseInt(s.substring(0, pos));
+                rv.set(index, s.substring(pos + 1));
+            }
+            return rv;
+        } catch (Exception ex) {
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, null, ex);
+            return new ArrayList<String>(0);
+        }
+    }
+
+    
+    /**
+     * Stores a List of Strings into Preferences node under the given key.
+     *
+     * @param prefs storage
+     * @param key key of the String array
+     * @param value List of Strings to write (order will be preserved)
+     */
+    public static void put (Preferences prefs, String key, List<String> value) {
+        try {
+            String[] keys = prefs.keys();
+            for (int i = 0; i < keys.length; i++) {
+                String k = keys[i];
+                if (k != null && k.startsWith(key + ".")) {
+                    prefs.remove(k);
+                }
+            }
+            int idx = 0;
+            for (String s : value) {
+                prefs.put(key + "." + idx++, s);
+            }
+        } catch (BackingStoreException ex) {
+            Logger.getLogger(Utils.class.getName()).log(Level.INFO, null, ex);
+        }
+    }
+    
+    public static boolean isAncestorOrEqual(VCSFileProxy ancestor, VCSFileProxy file) {
+        String ancestorPath = ancestor.getPath();
+        String filePath = file.getPath();
+        if (VCSFileProxySupport.isMac(ancestor)) {
+            // Mac is not case sensitive, cannot use the else statement
+            if(filePath.length() < ancestorPath.length()) {
+                return false;
+            }
+        } else {
+            if(!filePath.startsWith(ancestorPath)) {
+                return false;
+            }
+        }
+
+        // get sure as it still could be something like:
+        // ancestor: /home/dil
+        // file:     /home/dil1/dil2
+        for (; file != null; file = file.getParentFile()) {
+            if(ancestor == null) {
+                // XXX have to rely on path because of fileproxy being created from 
+                // io.file even if it was originaly stored from a remote
+                if (file.getPath().equals(ancestorPath)) {
+                    return true;
+                } 
+            } else {
+                if (file.equals(ancestor)) {
+                    return true;
+                } 
+            }
+        }
+        return false;
+    }
+
 }

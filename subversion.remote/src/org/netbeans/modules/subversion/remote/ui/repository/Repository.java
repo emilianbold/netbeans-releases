@@ -510,7 +510,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
                 Runnable awt = new Runnable() {
                     @Override
                     public void run() {
-                        svnUrl[0] = (String) repositoryPanel.urlComboBox.getEditor().getItem().toString().trim();
+                        svnUrl[0] = repositoryPanel.urlComboBox.getEditor().getItem().toString().trim();
                     }
                 };
                 if (SwingUtilities.isEventDispatchThread()) {
