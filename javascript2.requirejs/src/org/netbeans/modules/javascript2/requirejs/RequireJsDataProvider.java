@@ -254,10 +254,16 @@ public class RequireJsDataProvider {
             try (Writer writer = new OutputStreamWriter(new FileOutputStream(tmpFile), "UTF-8")) { // NOI18N
                 loadURL(url, writer, Charset.forName("UTF-8")); //NOI18N
                 writer.close();
-                tmpFile.renameTo(cacheFile);
+                boolean success = tmpFile.renameTo(cacheFile);
+                if (!success) {
+                    LOG.log(Level.WARNING, "Renaming {0} to {1] was not successful.", new Object[]{tmpFile.getAbsolutePath(), cacheFile.getAbsolutePath()});
+                }
             } finally {
                 if (tmpFile.exists()) {
-                    tmpFile.delete();
+                    boolean success = tmpFile.delete();
+                    if (!success) {
+                        LOG.log(Level.WARNING, "Deleting {0} faild.", new Object[]{tmpFile.getAbsolutePath()});
+                    }
                 }
             }
 
