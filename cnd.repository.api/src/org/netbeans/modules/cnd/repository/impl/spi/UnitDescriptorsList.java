@@ -39,45 +39,20 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.disk;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
-import org.netbeans.modules.cnd.repository.impl.spi.LayerFactory;
-import org.netbeans.modules.cnd.repository.impl.spi.Layer;
-import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Collection;
+import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 
 /**
+ * A list of all client UnitDescriptors per Storage.
  *
- * @author vk155633
+ * clientUnitDescriptor --- clientShortUnitID
+ *
+ * @author akrasny
  */
-/**
- * This factory creates "LayerProxies" that have WritableDiskLayerImpl
- * underneath.
- *
- * WritableDiskLayerImpl is always writable, but returned "proxy" could be
- * read-only (depending on layerDescriptor).
- *
- * But R/O and R/W layers for the same URI (identity part) will share the same
- * WritableDiskLayerImpl instance.
- * 
- * TODO: The above is wrong now. And this is correct. isn't it?
- * 
- */
-@ServiceProvider(service = LayerFactory.class, position = 1000)
-public final class DiskLayerImplFactory implements LayerFactory {
-
-    @Override
-    public boolean canHandle(LayerDescriptor layerDescriptor) {
-        return "file".equals(layerDescriptor.getURI().getScheme()); // NOI18N
-    }
-
-    @Override
-    public Layer createLayer(LayerDescriptor layerDescriptor, LayeringSupport layeringSupport) {
-        DiskLayerImpl layer = new DiskLayerImpl(layerDescriptor, layeringSupport);
-        return new DiskLayerImplDelegate(layer, layerDescriptor);
-    }
+public interface UnitDescriptorsList {
+    public UnitDescriptor getUnitDescriptor(Integer layerUnitID);
+    public boolean contains(UnitDescriptor clientUnitDescriptor);
+    public Collection<Integer> getUnitIDs();
 }

@@ -379,10 +379,9 @@ public abstract class ContextAction extends NodeAction {
         private long progressStamp;
         private String runningName;
         private final Context ctx;
-        public ProgressSupport(ContextAction action, Node[] nodes) {
-            this(action, nodes, null);
-        }
+
         public ProgressSupport(ContextAction action, Node[] nodes, Context ctx) {
+            super(ctx.getFileSystem());
             this.action = action;
             this.nodes = nodes;
             this.ctx = ctx;

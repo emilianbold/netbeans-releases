@@ -159,7 +159,9 @@ public class CommandlineClient implements SvnClient {
                 return supportedMetadataFormat = cmd.isMetadataFormatSupported();
             }
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.FINE, null, ex);
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, null, ex);
+            }
             throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
         }
     }
@@ -173,7 +175,9 @@ public class CommandlineClient implements SvnClient {
             checkErrors(cmd);
             return cmd.getOutput();
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.FINE, null, ex);
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, null, ex);
+            }
             throw new SVNClientException(ex);
         }
     }
@@ -255,7 +259,9 @@ public class CommandlineClient implements SvnClient {
                 break;
             } catch (SVNClientException e) {
                 if (e.getMessage().startsWith("svn: Attempted to lock an already-locked dir")) {
-                    Subversion.LOG.fine("ComandlineClient.comit() : " + e.getMessage());
+                    if (Subversion.LOG.isLoggable(Level.FINE)) {
+                        Subversion.LOG.fine("ComandlineClient.comit() : " + e.getMessage());
+                    }
                     try {
                         retry++;
                         if (retry > 14) {
@@ -927,7 +933,9 @@ public class CommandlineClient implements SvnClient {
             config(cmd);
             cli.exec(cmd);
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.FINE, null, ex);
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, null, ex);
+            }
             throw new SVNClientException(ex);
         }
         checkErrors(cmd);

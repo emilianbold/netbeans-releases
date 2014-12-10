@@ -44,16 +44,30 @@
 
 package org.netbeans.modules.subversion.remote;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.netbeans.modules.versioning.util.FileUtils;
-import org.netbeans.modules.turbo.CacheIndex;
 import org.netbeans.modules.turbo.TurboProvider;
-import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.proxy.Base64Encoder;
+import org.netbeans.modules.subversion.remote.util.CacheIndex;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 
@@ -68,11 +82,11 @@ class DiskMapTurboProvider implements TurboProvider {
 
     private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED
             & ~FileInformation.STATUS_VERSIONED_UPTODATE & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
-    private static final String CACHE_DIRECTORY = "svncache"; // NOI18N
+    private static final String CACHE_DIRECTORY = "svnremotecache"; // NOI18N
     private static final int DIRECTORY = Integer.highestOneBit(Integer.MAX_VALUE);
     private static final Logger LOG = Logger.getLogger(DiskMapTurboProvider.class.getName());
 
-    private File                            cacheStore;
+    private File cacheStore;
 
     private final CacheIndex index = createCacheIndex();
     private final CacheIndex conflictedIndex = createCacheIndex();
@@ -88,8 +102,8 @@ class DiskMapTurboProvider implements TurboProvider {
         } else if (includeStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
             return ignoresIndex.get(file);
         } else if ((includeStatus & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0) {
-            File[] files = index.get(file);
-            File[] ignores = ignoresIndex.get(file);
+            VCSFileProxy[] files = index.get(file);
+            VCSFileProxy[] ignores = ignoresIndex.get(file);
             return mergeArrays(files, ignores);
         } else {
             return index.get(file);
@@ -174,11 +188,11 @@ class DiskMapTurboProvider implements TurboProvider {
                             }
                             dis.readInt();
                             String path = readChars(dis, pathLen);
-                            Map value = readValue(dis, path);
-                            for (Iterator j = value.keySet().iterator(); j.hasNext();) {
+                            Map<VCSFileProxy, FileInformation> value = readValue(dis, path);
+                            for(Map.Entry<VCSFileProxy, FileInformation> entry : value.entrySet()) {
                                 entriesCount++;
-                                File f = (File) j.next();
-                                FileInformation info = (FileInformation) value.get(f);
+                                VCSFileProxy f = entry.getKey();
+                                FileInformation info = entry.getValue();
                                 if((info.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
                                     conflictedIndex.add(f);
                                 }
@@ -188,7 +202,7 @@ class DiskMapTurboProvider implements TurboProvider {
                                     addModifiedFile(modifiedFolders, f);
                                     if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
                                         locallyNewFiles++;
-                                        addLocallyNewFile(locallyNewFolders, info.isDirectory() ? f.getAbsolutePath() : f.getParent());
+                                        addLocallyNewFile(locallyNewFolders, info.isDirectory() ? f.getPath() : f.getParentFile().getPath());
                                     }
                                 }
                             }
@@ -228,22 +242,22 @@ class DiskMapTurboProvider implements TurboProvider {
 
     @Override
     public boolean recognizesEntity(Object key) {
-        return key instanceof File;
+        return key instanceof VCSFileProxy;
     }
 
     @Override
     public synchronized Object readEntry(Object key, String name, MemoryCache memoryCache) {
-        assert key instanceof File;
+        assert key instanceof VCSFileProxy;
         assert name != null;
 
         boolean readFailed = false;
-        File dir = (File) key;
+        VCSFileProxy dir = (VCSFileProxy) key;
         File store = getStore(dir);
         if (!store.isFile()) {
             return null;
         }
 
-        String dirPath = dir.getAbsolutePath();
+        String dirPath = dir.getPath();
         int dirPathLen = dirPath.length();
         DataInputStream dis = null;
         int itemIndex = -1;
@@ -300,7 +314,7 @@ class DiskMapTurboProvider implements TurboProvider {
 
     @Override
     public synchronized boolean writeEntry(Object key, String name, Object value) {
-        assert key instanceof File;
+        assert key instanceof VCSFileProxy;
         assert name != null;
 
         if (value != null) {
@@ -308,8 +322,8 @@ class DiskMapTurboProvider implements TurboProvider {
             if (!isValuable(value)) value = null;
         }
 
-        File dir = (File) key;
-        String dirPath = dir.getAbsolutePath();
+        VCSFileProxy dir = (VCSFileProxy) key;
+        String dirPath = dir.getPath();
         int dirPathLen = dirPath.length();
         File store = getStore(dir);
 
@@ -327,7 +341,7 @@ class DiskMapTurboProvider implements TurboProvider {
         try {
             oos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(storeNew)));
             if (value != null) {
-                writeEntry(oos, dirPath, value);
+                writeEntry(oos, dirPath, value, dir);
             }
             if (store.exists()) {
                 int retry = 0;
@@ -402,21 +416,20 @@ class DiskMapTurboProvider implements TurboProvider {
         return true;
     }
 
-    private void adjustIndex(File dir, Object value) {
+    private void adjustIndex(VCSFileProxy dir, Object value) {
         // the file must be a folder or must not exist
         // adding existing file is forbidden
         assert !dir.isFile();
-        Map map = (Map) value;
-        Set set = map != null ? map.keySet() : null;
+        Map<VCSFileProxy, FileInformation> map = (Map) value;
 
         // all modified files
-        Set<File> conflictedSet = new HashSet<>();
-        Set<File> newSet = new HashSet<>();
-        Set<File> ignoredSet = new HashSet<>();
-        if(set != null) {
-            for (Iterator i = set.iterator(); i.hasNext();) {
-                File file = (File) i.next();
-                FileInformation info = (FileInformation) map.get(file);
+        Set<VCSFileProxy> conflictedSet = new HashSet<>();
+        Set<VCSFileProxy> newSet = new HashSet<>();
+        Set<VCSFileProxy> ignoredSet = new HashSet<>();
+        if(map != null) {
+            for(Map.Entry<VCSFileProxy, FileInformation> entry : map.entrySet()) {
+                VCSFileProxy file = entry.getKey();
+                FileInformation info = entry.getValue();
 
                 // conflict
                 if((info.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) != 0) {
@@ -483,13 +496,15 @@ class DiskMapTurboProvider implements TurboProvider {
         return sb.toString();
     }
 
-    private Map<File, FileInformation> readValue(DataInputStream dis, String dirPath) throws IOException {
-        Map<File, FileInformation> map = new HashMap<>();
+    private Map<VCSFileProxy, FileInformation> readValue(DataInputStream dis, String dirPath) throws IOException {
+        Map<VCSFileProxy, FileInformation> map = new HashMap<>();
+        FileSystem fs = VCSFileProxySupport.readFileSystem(dis);
+        VCSFileProxy dir = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fs.getRoot()), dirPath);
         int len = dis.readInt();
         while (len-- > 0) {
             int nameLen = dis.readInt();
             String name = readChars(dis, nameLen);
-            File file = new File(dirPath, name);
+            VCSFileProxy file = VCSFileProxy.createFileProxy(dir, name);
             int status = dis.readInt();
             FileInformation info = new FileInformation(status & (DIRECTORY - 1), status > (DIRECTORY - 1));
             map.put(file, info);
@@ -497,17 +512,16 @@ class DiskMapTurboProvider implements TurboProvider {
         return map;
     }
 
-    private void writeEntry(DataOutputStream dos, String dirPath, Object value) throws IOException {
+    private void writeEntry(DataOutputStream dos, String dirPath, Object value, VCSFileProxy dir) throws IOException {
 
-        Map map = (Map) value;
-        Set set = map.keySet();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(set.size() * 50);
+        Map<VCSFileProxy, FileInformation> map = (Map) value;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(map.size() * 50);
         DataOutputStream temp = new DataOutputStream(baos);
-
-        temp.writeInt(set.size());
-        for (Iterator i = set.iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) map.get(file);
+        VCSFileProxySupport.writeFileSystem(temp, VCSFileProxySupport.getFileSystem(dir));
+        temp.writeInt(map.size());
+        for(Map.Entry<VCSFileProxy, FileInformation> entry:map.entrySet()) {
+            VCSFileProxy file = entry.getKey();
+            FileInformation info = entry.getValue();
             temp.writeInt(file.getName().length());
             temp.writeChars(file.getName());
             temp.writeInt(info.getStatus() + (info.isDirectory() ? DIRECTORY : 0));
@@ -530,8 +544,8 @@ class DiskMapTurboProvider implements TurboProvider {
         return false;
     }
 
-    private File getStore(File dir) {
-        String dirPath = dir.getAbsolutePath();
+    private File getStore(VCSFileProxy dir) {
+        String dirPath = dir.getPath();
         int dirHash = dirPath.hashCode();
         return new File(cacheStore, Integer.toString(dirHash % 173 + 172) + ".bin"); // NOI18N
     }
@@ -590,10 +604,10 @@ class DiskMapTurboProvider implements TurboProvider {
         }
     }
 
-    private void addModifiedFile (Map<String, Integer> modifiedFolders, File file) {
-        File topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
+    private void addModifiedFile (Map<String, Integer> modifiedFolders, VCSFileProxy file) {
+        VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
         if (topmost != null) {
-            String path = topmost.getAbsolutePath();
+            String path = topmost.getPath();
             Integer val = modifiedFolders.get(path);
             if (val == null) {
                 modifiedFolders.put(path, 1);

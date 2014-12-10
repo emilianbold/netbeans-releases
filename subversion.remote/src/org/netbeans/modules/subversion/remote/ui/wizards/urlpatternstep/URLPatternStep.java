@@ -58,6 +58,7 @@ import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -68,6 +69,11 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
     
     private URLPatternPanel urlPatternPanel;
     private RepositoryPaths repositoryPaths;
+    private final FileSystem fileSystem;
+
+    public URLPatternStep(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
 
     @Override
     public HelpCtx getHelp() {    
@@ -92,7 +98,7 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
         if(repositoryPaths == null) {                    
             repositoryPaths = 
                 new RepositoryPaths(
-                        repositoryFile, 
+                        fileSystem, repositoryFile, 
                         urlPatternPanel.repositoryPathTextField, 
                         urlPatternPanel.browseRepositoryButton,
                         null, 

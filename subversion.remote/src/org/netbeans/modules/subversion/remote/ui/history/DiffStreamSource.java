@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.remote.ui.history;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -56,6 +57,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.*;
@@ -197,7 +199,9 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      * Loads data over network.
      */
     public synchronized void init() throws IOException {
-        if (remoteFile != null || revision == null) return;
+        if (remoteFile != null || revision == null) {
+            return;
+        }
         if (isDirectory || baseFile != null && baseFile.isDirectory()) {
             mimeType = "content/unknown"; //NOI18N
             return;
@@ -207,19 +211,21 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
             mimeType = SvnUtils.getMimeType(baseFile);
         }
         try {
-            VCSFileProxy rf = VersionsCache.getInstance().getFileRevision(repoUrl, url, revision, pegRevision, baseFileName);
+            File rf = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(baseFile)).getFileRevision(repoUrl, url, revision, pegRevision, baseFileName);
             if (rf == null) {
                 remoteFile = null;
                 return;
             }
-            remoteFile = rf;
+            remoteFile = VCSFileProxy.createFileProxy(rf);
             if (baseFile != null) {
-                Utils.associateEncoding(baseFile, rf);
+                Utils.associateEncoding(baseFile, remoteFile);
             }
         } catch (IOException e) {
             if ((e.getCause() != null && SvnClientExceptionHandler.isTargetDirectory(e.getCause().getMessage()) || SvnClientExceptionHandler.isTargetDirectory(e.getMessage()))) {
                 // target is a directory, but locally deleted
-                Subversion.LOG.log(Level.FINE, "", e);
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, "", e);
+                }
                 mimeType = "content/unknown"; // NOI18N
                 isDirectory = true;
                 return;

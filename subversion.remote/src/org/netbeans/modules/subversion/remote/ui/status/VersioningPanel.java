@@ -82,6 +82,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.filesystems.FileSystem;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
@@ -446,7 +447,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             if (context.getRoots().isEmpty()) {
                 return;
             }
-            Subversion.LOG.info("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getPath()); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.info("VersioningPanel.refreshStatuses: null repositoryUrl for " + context.getRootFiles()[0].getPath()); //NOI18N}
+            }
             boolean allUnmanaged = true;
             for (VCSFileProxy root : context.getRootFiles()) {
                 if (SvnUtils.isManaged(root)) {
@@ -461,7 +464,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         final boolean contactServer = remoteStatusCalled = FileInformation.STATUS_LOCAL_CHANGE != displayStatuses;
-        svnProgressSupport = new VersioningPanelProgressSupport() {
+        svnProgressSupport = new VersioningPanelProgressSupport(context.getFileSystem()) {
             @Override
             public void perform() {
                 try {
@@ -814,6 +817,10 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
 
     private abstract class VersioningPanelProgressSupport extends SvnProgressSupport {
+
+        private VersioningPanelProgressSupport(FileSystem fileSystem) {
+            super(fileSystem);
+        }
         private boolean finished;
 
         public boolean isFinished() {

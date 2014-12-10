@@ -78,11 +78,11 @@ public class ClientCheckSupport {
      * @param runnable runnable started if a client is available
      */
     public void runInAWTIfAvailable (final Node[] nodes, final String progressName, final Runnable runnable) {
-        SvnProgressSupport supp = new SvnProgressSupport() {
+        final Context ctx = SvnUtils.getCurrentContext(nodes);
+        SvnProgressSupport supp = new SvnProgressSupport(ctx.getFileSystem()) {
             @Override
             protected void perform() {
                 setDisplayName(NbBundle.getMessage(ClientCheckSupport.class, "MSG_ClientCheckSupport.progressDescription")); //NOI18N
-                Context ctx = SvnUtils.getCurrentContext(nodes);
                 if (!Subversion.getInstance().checkClientAvailable(ctx)) {
                     LOG.log(Level.FINE, "Client is unavailable, cannot perform {0}", progressName); //NOI18N
                     return;

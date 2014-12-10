@@ -153,7 +153,7 @@ public class IgnoreAction extends ContextAction {
         }
         final VCSFileProxy files[] = ctx.getRootFiles();
 
-        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
+        ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, getCachedContext(nodes)) {
             @Override
             public void perform() {
                 Map<VCSFileProxy, Set<String>> names = splitByParent(files);

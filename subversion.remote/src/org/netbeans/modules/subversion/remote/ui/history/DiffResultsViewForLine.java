@@ -64,6 +64,7 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
@@ -98,7 +99,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
     @Override
     protected SvnProgressSupport createShowDiffTask (RepositoryRevision.Event revision1, RepositoryRevision.Event revision2, boolean showLastDifference) {
         if (revision1 == null) {
-            return new ShowDiffTask(revision2, revision2.getLogInfoHeader().getLog().getRevision().toString(), showLastDifference);
+            return new ShowDiffTask(parent.getFileSystem(), revision2, revision2.getLogInfoHeader().getLog().getRevision().toString(), showLastDifference);
         } else {
             return super.createShowDiffTask(revision1, revision2, showLastDifference);
         }
@@ -133,7 +134,8 @@ final class DiffResultsViewForLine extends DiffResultsView {
         private final RepositoryRevision.Event header;
         private final String revision2;
 
-        public ShowDiffTask(RepositoryRevision.Event header, String revision2, boolean showLastDifference) {
+        private ShowDiffTask(FileSystem fileSystem, RepositoryRevision.Event header, String revision2, boolean showLastDifference) {
+            super(fileSystem);
             this.header = header;
             this.revision2 = revision2;
         }

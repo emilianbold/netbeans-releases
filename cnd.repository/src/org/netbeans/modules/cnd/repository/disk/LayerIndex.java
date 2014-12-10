@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitDescriptorsList;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
@@ -70,7 +71,7 @@ public final class LayerIndex {
     private static final String INDEX_FILE_NAME = "index";//NOI18N
     private long lastModificationTime;
     private final List<FileSystem> fileSystems = new ArrayList<FileSystem>();
-    private final List<UnitDescriptor> units = new ArrayList<UnitDescriptor>();
+    private final UnitDescriptorsListImpl units = new UnitDescriptorsListImpl();
     private final Map<Integer, List<Integer>> dependencies = new HashMap<Integer, List<Integer>>();
 
     LayerIndex(URI cacheDirectory) {
@@ -113,6 +114,8 @@ public final class LayerIndex {
             }
             lastModificationTime = in.readLong();
             int unitsCount = in.readInt();
+            int unitsMax = in.readInt();
+            units.setMaxValue(unitsMax);
             int fileSystemsCount = in.readInt();
 
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -127,23 +130,24 @@ public final class LayerIndex {
             }
 
             for (int i = 0; i < unitsCount; i++) {
+                int unitID = in.readInt();
                 String unitName = in.readUTF();
                 int fsIdx = in.readInt();
                 long unitModificationTime = in.readLong();
                 if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-                    trace("\tRead %s@%s ts=%d\n", unitName, fileSystems.get(fsIdx), unitModificationTime); // NOI18N
-                }
-                units.add(new UnitDescriptor(unitName, fileSystems.get(fsIdx)));
+                    trace("\tRead %d@%s@%s ts=%d\n", unitID, unitName, fileSystems.get(fsIdx), unitModificationTime); // NOI18N
+                } 
+                units.addUnitDescriptor(unitID, new UnitDescriptor(unitName, fileSystems.get(fsIdx)));
                 List<Integer> depList = new ArrayList<Integer>();
                 int depListSize = in.readInt();
                 for (int j = 0; j < depListSize; j++) {
-                    int unitID = in.readInt();
+                    unitID = in.readInt();
                     long ts = in.readLong();
                     // TODO: timestamp for validation!
                     depList.add(unitID);
                 }
 
-                dependencies.put(i, depList);
+                dependencies.put(unitID, depList);
             }
             return true;
         } catch (IOException ex) {
@@ -177,9 +181,11 @@ public final class LayerIndex {
             out = RepositoryImplUtil.getBufferedDataOutputStream(indexFile);
             out.writeInt(version);
             out.writeLong(currentTime);
-
-            int unitsCount = units.size();
+            Map<UnitDescriptor, Integer> map = units.getMap();
+            int unitsCount = map.size();
+            //ned to know how many records we have
             out.writeInt(unitsCount);
+            out.writeInt(units.getMaxValue());
 
             int fileSystemsCount = fileSystems.size();
             out.writeInt(fileSystemsCount);
@@ -189,14 +195,16 @@ public final class LayerIndex {
                 out.writeUTF(CndFileUtils.codeFileSystem(fileSystems.get(i)).toString());
             }
 
-            for (int i = 0; i < unitsCount; i++) {
-                UnitDescriptor ud = units.get(i);
+            for (Map.Entry<UnitDescriptor, Integer> entry : map.entrySet()) {
+                int unitID = entry.getValue();
+                UnitDescriptor ud = entry.getKey();
+                out.writeInt(unitID);
                 out.writeUTF(ud.getName().toString());
                 out.writeInt(fileSystems.indexOf(ud.getFileSystem()));
 
                 out.writeLong(currentTime); // TODO: This is wrong ;)
 
-                List<Integer> depMap = dependencies.get(i);
+                List<Integer> depMap = dependencies.get(unitID);
                 out.writeInt(depMap == null ? 0 : depMap.size());
                 if (depMap != null) {
                     for (Integer depID : depMap) {
@@ -219,8 +227,8 @@ public final class LayerIndex {
         System.err.printf("MasterIndex [%d] " + format, newArgs);
     }
 
-    List<UnitDescriptor> getUnitsTable() {
-        return Collections.unmodifiableList(units);
+    UnitDescriptorsList getUnitsTable() {
+        return units;
     }
 
     List<FileSystem> getFileSystemsTable() {
@@ -229,12 +237,12 @@ public final class LayerIndex {
 
 
     int registerUnit(UnitDescriptor unitDescriptor) {
-        units.add(unitDescriptor);
-        return units.size() - 1;
+        int unitID = units.registerNewUnitDescriptor(unitDescriptor);
+        return unitID;
     }
 
     void removeUnit(int unitIDInLayer) {
-        if (unitIDInLayer >= units.size()) {
+        if (!units.getUnitIDs().contains(unitIDInLayer)) {
             return;
         }
         units.remove(unitIDInLayer);

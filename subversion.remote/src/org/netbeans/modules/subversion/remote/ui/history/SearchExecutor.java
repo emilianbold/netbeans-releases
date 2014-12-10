@@ -67,6 +67,7 @@ import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 
 /**
@@ -100,9 +101,12 @@ class SearchExecutor extends SvnProgressSupport {
     private final SVNRevision toRevision;
     private final int limit;
     private SvnProgressSupport currentSearch;
+    private final FileSystem fileSystem;
 
-    public SearchExecutor(SearchHistoryPanel master) {
+    public SearchExecutor(FileSystem fileSystem, SearchHistoryPanel master) {
+        super(fileSystem);
         this.master = master;
+        this.fileSystem = fileSystem;
         criteria = master.getCriteria();
         fromRevision = criteria.getFrom();
         toRevision = criteria.getTo();
@@ -188,7 +192,7 @@ class SearchExecutor extends SvnProgressSupport {
         completedSearches = 0;
         if (searchingUrl()) {
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(master.getRepositoryUrl());
-            currentSearch = new SvnProgressSupport() {
+            currentSearch = new SvnProgressSupport(fileSystem) {
                 @Override
                 public void perform() {
                     search(master.getRepositoryUrl(), null, fromRevision, toRevision, this, false, limit);
@@ -201,7 +205,7 @@ class SearchExecutor extends SvnProgressSupport {
                 final SVNUrl rootUrl = (SVNUrl) i.next();
                 final Set<VCSFileProxy> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
-                currentSearch = new SvnProgressSupport() {
+                currentSearch = new SvnProgressSupport(fileSystem) {
                     @Override
                     public void perform() {
                         search(rootUrl, files, fromRevision, toRevision, this, false, limit);

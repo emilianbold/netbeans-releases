@@ -70,7 +70,7 @@ public class UpdateTo implements PropertyChangeListener {
 
     /** Creates a new instance of UpdateTo */
     public UpdateTo(RepositoryFile repositoryFile, boolean localChanges) {
-        revisionPath = new RepositoryPaths(repositoryFile, null, null, getPanel().revisionTextField, getPanel().revisionSearchButton);
+        revisionPath = new RepositoryPaths(repositoryFile.getFileSystem(), repositoryFile, null, null, getPanel().revisionTextField, getPanel().revisionSearchButton);
         revisionPath.setupBehavior(null, 0, null, SvnSearch.SEARCH_HELP_ID_UPDATE);
         revisionPath.addPropertyChangeListener(this);
         getPanel().warningLabel.setVisible(localChanges);

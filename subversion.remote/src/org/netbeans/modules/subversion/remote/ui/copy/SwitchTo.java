@@ -59,6 +59,7 @@ import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
 
@@ -85,7 +86,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
         
         repositoryPaths = 
             new RepositoryPaths(
-                repositoryFile, 
+                VCSFileProxySupport.getFileSystem(root), repositoryFile, 
                 (JTextField) panel.urlComboBox.getEditor().getEditorComponent(),
                 panel.browseRepositoryButton,
                 panel.revisionTextField,
@@ -118,7 +119,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
                     return null;
                 }
                 SVNUrl url = SvnUtils.getRepositoryUrl(root);
-                RepositoryFile rf = new RepositoryFile(repositoryFile.getRepositoryUrl(), url, revision);
+                RepositoryFile rf = new RepositoryFile(VCSFileProxySupport.getFileSystem(root), repositoryFile.getRepositoryUrl(), url, revision);
                 return rf;
             }
         } catch (SVNClientException ex) {            

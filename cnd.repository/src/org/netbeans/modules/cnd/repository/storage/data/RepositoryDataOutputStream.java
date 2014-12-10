@@ -46,31 +46,35 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
-import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.storage.FSConverter;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.LocalFileSystem;
 
 /**
  *
  * @author Alexander Simon
  */
 public final class RepositoryDataOutputStream extends DataOutputStream implements RepositoryDataOutput {
-
-    private final UnitsConverter unitIDConverter;
-    private final FSConverter fsConverter;
+    private final LayerConvertersProvider layersConverterProvider;
     private final WriteLayerCapability wc;
     private final LayerKey layerKey;
     private static final OutputStreamEx outputStream = new OutputStreamEx();
 
-    public RepositoryDataOutputStream(LayerKey layerKey, WriteLayerCapability wc, UnitsConverter unitIDConverter, FSConverter fsConverter) {
-        super(outputStream.reset());
-        this.unitIDConverter = unitIDConverter == null ? new NoopUnitIDConverter() : unitIDConverter;
-        this.fsConverter = fsConverter == null ? new NoopFSConverter() : fsConverter;
+    private RepositoryDataOutputStream(OutputStream outputStream, LayerKey layerKey, WriteLayerCapability wc, LayerConvertersProvider layersConverterProvider) {
+        super(outputStream);
+        this.layersConverterProvider = layersConverterProvider;
+        //wc can be null
         this.wc = wc;
         this.layerKey = layerKey;
+    }
+
+    public RepositoryDataOutputStream(LayerKey layerKey, WriteLayerCapability wc, LayerConvertersProvider layersConverterProvider) {
+        this(outputStream.reset(), layerKey, wc,  layersConverterProvider);
+    }
+
+    public RepositoryDataOutputStream(OutputStream outputStream, LayerConvertersProvider layersConverterProvider) {
+        this(outputStream, null, null, layersConverterProvider);
     }
 
     @Override
@@ -80,44 +84,21 @@ public final class RepositoryDataOutputStream extends DataOutputStream implement
 
     @Override
     public void writeUnitId(int unitId) throws IOException {
-        writeInt(unitIDConverter.clientToLayer(unitId));
+        writeInt(layersConverterProvider.getWriteUnitsConverter().clientToLayer(unitId));
     }
 
     @Override
     public void writeFileSystem(FileSystem fileSystem) throws IOException {
-        writeInt(fsConverter.clientToLayer(fileSystem));
+        writeInt(layersConverterProvider.getWriteFSConverter().clientToLayer(fileSystem));
     }
 
     @Override
     public void commit() {
-        wc.write(layerKey, outputStream.getBuffer());
-    }
-
-    private static final class NoopUnitIDConverter implements UnitsConverter {
-
-        @Override
-        public int clientToLayer(int clientUnitID) {
-            return clientUnitID;
-        }
-
-        @Override
-        public int layerToClient(int unitIDInLayer) {
-            return unitIDInLayer;
+        if (wc != null && layerKey != null) {
+            wc.write(layerKey, outputStream.getBuffer());
         }
     }
 
-    private static final class NoopFSConverter implements FSConverter {
-
-        @Override
-        public FileSystem layerToClient(int fsIdx) {
-            return new LocalFileSystem();
-        }
-
-        @Override
-        public int clientToLayer(FileSystem fileSystem) {
-            return 0;
-        }
-    }
 
     private static class OutputStreamEx extends OutputStream {
 

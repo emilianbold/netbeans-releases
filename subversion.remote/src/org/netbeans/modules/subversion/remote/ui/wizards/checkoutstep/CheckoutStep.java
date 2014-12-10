@@ -119,7 +119,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         if(repositoryPaths == null) {                    
             repositoryPaths = 
                 new RepositoryPaths(
-                        repositoryFile, 
+                        fileSystem, repositoryFile, 
                         workdirPanel.repositoryPathTextField, 
                         workdirPanel.browseRepositoryButton, 
                         workdirPanel.revisionTextField, 

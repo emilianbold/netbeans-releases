@@ -879,7 +879,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         LifecycleManager.getDefault().saveAll();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
         final boolean contactServer = currentType != Setup.DIFFTYPE_LOCAL;
-        SvnProgressSupport supp = new SvnProgressSupport() {
+        SvnProgressSupport supp = new SvnProgressSupport(fileSystem) {
             @Override
             public void perform() {                                         
                 if (currentType != -1) {
@@ -1006,20 +1006,20 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             List<Object> modelLeft = new ArrayList<>(10);
             modelLeft.add(repositoryTreeOriginalLeft);
             if (!SVNRevision.BASE.equals(repositoryTreeOriginalLeft.getRevision())) {
-                modelLeft.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE));
+                modelLeft.add(new RepositoryFile(fileSystem, repositoryUrl, fileUrl, SVNRevision.BASE));
             }
             if (!SVNRevision.HEAD.equals(repositoryTreeOriginalLeft.getRevision())) {
-                modelLeft.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD));
+                modelLeft.add(new RepositoryFile(fileSystem, repositoryUrl, fileUrl, SVNRevision.HEAD));
             }
             modelRight.add(repositoryTreeOriginalRight);            
             if (!SVNRevision.WORKING.equals(repositoryTreeOriginalRight.getRevision())) {
-                modelRight.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.WORKING));
+                modelRight.add(new RepositoryFile(fileSystem, repositoryUrl, fileUrl, SVNRevision.WORKING));
             }
             if (!SVNRevision.BASE.equals(repositoryTreeOriginalRight.getRevision())) {
-                modelRight.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.BASE));
+                modelRight.add(new RepositoryFile(fileSystem, repositoryUrl, fileUrl, SVNRevision.BASE));
             }
             if (!SVNRevision.HEAD.equals(repositoryTreeOriginalRight.getRevision())) {
-                modelRight.add(new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD));
+                modelRight.add(new RepositoryFile(fileSystem, repositoryUrl, fileUrl, SVNRevision.HEAD));
             }
             modelLeft.add(REVISION_SELECT_SEP);
             modelLeft.add(REVISION_SELECT);
@@ -1153,6 +1153,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private class SetupsPrepareSupport extends SvnProgressSupport {
+
+        private SetupsPrepareSupport() {
+            super(fileSystem);
+        }
         
         @Override
         protected void perform() {
@@ -1267,9 +1271,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 try {
                     SwingUtilities.invokeAndWait(runnable);
                 } catch (InterruptedException ex) {
-                    Subversion.LOG.log(Level.FINE, null, ex);
+                    if (Subversion.LOG.isLoggable(Level.FINE)) {
+                        Subversion.LOG.log(Level.FINE, null, ex);
+                    }
                 } catch (InvocationTargetException ex) {
-                    Subversion.LOG.log(Level.FINE, null, ex);
+                    if (Subversion.LOG.isLoggable(Level.FINE)) {
+                        Subversion.LOG.log(Level.FINE, null, ex);
+                    }
                 }
             }
         }

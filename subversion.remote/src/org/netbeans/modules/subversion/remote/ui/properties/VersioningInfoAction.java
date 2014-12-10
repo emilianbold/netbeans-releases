@@ -131,7 +131,7 @@ public final class VersioningInfoAction extends ContextAction {
             return;
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(ctx.getFileSystem()) {
             private FileStatusCache cache;
             @Override
             protected void perform() {

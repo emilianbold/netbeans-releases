@@ -138,7 +138,7 @@ public class RevertModificationsAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }
-        final RepositoryFile repositoryFile = new RepositoryFile(rootUrl, url, SVNRevision.HEAD);
+        final RepositoryFile repositoryFile = new RepositoryFile(ctx.getFileSystem(), rootUrl, url, SVNRevision.HEAD);
         
         final RevertModifications revertModifications = new RevertModifications(repositoryFile);
         if(!revertModifications.showDialog()) {

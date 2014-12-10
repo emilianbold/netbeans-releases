@@ -51,6 +51,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -66,7 +67,8 @@ public abstract class PanelProgressSupport extends SvnProgressSupport implements
      *
      * @param panel if null, progress will be displayed in the progress bar
      */
-    public PanelProgressSupport(JPanel panel) {
+    public PanelProgressSupport(FileSystem fileSystem, JPanel panel) {
+        super(fileSystem);
         this.panel = panel;        
     }
 

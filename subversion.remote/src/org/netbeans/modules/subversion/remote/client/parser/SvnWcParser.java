@@ -51,6 +51,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.ISVNInfo;
 import org.netbeans.modules.subversion.remote.api.ISVNStatus;
@@ -282,14 +283,18 @@ public class SvnWcParser {
     }
 
     private boolean isUnderParent (VCSFileProxy file) {
-        Subversion.LOG.fine("SvnWcParser:isUnderParent: 168248 hook");  //NOI18N
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.fine("SvnWcParser:isUnderParent: 168248 hook");  //NOI18N
+        }
         VCSFileProxy parentFile = file.getParentFile();
         if (parentFile != null) {
             VCSFileProxy[] children = parentFile.listFiles();
             if (children != null) {
                 for (VCSFileProxy child : children) {
                     if (file.equals(child)) {
-                        Subversion.LOG.fine("SvnWcParser:isUnderParent: file " + file.getPath() + " seems to be a broken link"); //NOI18N
+                        if (Subversion.LOG.isLoggable(Level.FINE)) {
+                            Subversion.LOG.fine("SvnWcParser:isUnderParent: file " + file.getPath() + " seems to be a broken link"); //NOI18N
+                        }
                         return true;
                     }
                 }
