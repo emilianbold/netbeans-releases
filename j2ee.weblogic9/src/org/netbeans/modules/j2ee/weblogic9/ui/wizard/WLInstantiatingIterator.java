@@ -153,6 +153,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
         props.put(WLPluginProperties.PORT_ATTR, port);
         props.put(WLPluginProperties.HOST_ATTR, host);
         props.put(WLPluginProperties.REMOTE_ATTR, Boolean.toString(remote));
+        props.put(WLPluginProperties.SECURED_ATTR, remote ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
         props.put(WLPluginProperties.REMOTE_DEBUG_ENABLED, Boolean.toString(remoteDebug));
         props.put(WLPluginProperties.PROXY_ENABLED, DEFAULT_PROXY_ENABLED);
         if (remoteDebug) {

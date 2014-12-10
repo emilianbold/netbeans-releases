@@ -598,7 +598,8 @@ public final class WebLogicDeployer {
                 // XXX authentication
                 // t3 and t3s is afaik sits on top of http and https (source ?)
                 List<Proxy> proxies = ProxySelector.getDefault().select(
-                        new URI("http://" + config.getHost() + ":" + config.getPort())); // NOI18N
+                        new URI((config.isSecured() ? "https://" : "http://")
+                                + config.getHost() + ":" + config.getPort())); // NOI18N
                 if (!proxies.isEmpty()) {
                     Proxy first = proxies.get(0);
                     if (first.type() != Proxy.Type.DIRECT) {
@@ -626,6 +627,52 @@ public final class WebLogicDeployer {
             }
         }
 
+        if (config.isSecured()) {
+            boolean weblogicSpecific = false;
+            String[] sslProperties = new String[] {
+                "weblogic.security.TrustKeyStore", // NOI18N
+                "weblogic.security.JavaStandardTrustKeystorePassPhrase", // NOI18N
+                "weblogic.security.CustomTrustKeyStoreFileName", // NOI18N
+                "weblogic.security.TrustKeystoreType", // NOI18N
+                "weblogic.security.CustomTrustKeystorePassPhrase", // NOI18N
+                "weblogic.security.SSL.hostnameVerifier", // NOI18N
+                "weblogic.security.SSL.ignoreHostnameVerification", // NOI18N
+//                "javax.net.ssl.keyStore", // NOI18N
+//                "javax.net.ssl.keyStorePassword", // NOI18N
+//                "javax.net.ssl.keyStoreType", // NOI18N
+                "javax.net.ssl.trustStore", // NOI18N
+                "javax.net.ssl.trustStorePassword", // NOI18N
+                "javax.net.ssl.trustStoreType" // NOI18N
+            };
+
+            for (String prop : sslProperties) {
+                String value = System.getProperty(prop);
+                if (value != null) {
+                    arguments.add("-D" + prop + "=" + value); // NOI18N
+                    if (!weblogicSpecific && prop.startsWith("weblogic.security")) { // NOI18N
+                        weblogicSpecific = true;
+                    }
+                }
+            }
+
+            if (!weblogicSpecific) {
+                String trustStore = System.getProperty("javax.net.ssl.trustStore"); // NOI18N
+                if (trustStore != null) {
+                    arguments.add("-Dweblogic.security.TrustKeyStore=CustomTrust"); // NOI18N
+                    arguments.add("-Dweblogic.security.CustomTrustKeyStoreFileName=" + trustStore); // NOI18N
+                    String pass = System.getProperty("javax.net.ssl.trustStorePassword"); // NOI18N
+                    if (pass != null) {
+                        arguments.add("-Dweblogic.security.CustomTrustKeystorePassPhrase=" + pass); // NOI18N
+                    }
+                } else {
+                    String pass = System.getProperty("javax.net.ssl.trustStorePassword"); // NOI18N
+                    if (pass != null) {
+                        arguments.add("-Dweblogic.security.JavaStandardTrustKeystorePassPhrase=" + pass); // NOI18N
+                    }
+                }
+            }
+        }
+
         arguments.add("-cp"); // NOI18N
         arguments.add(getClassPath());
         arguments.add("weblogic.Deployer"); // NOI18N
@@ -638,6 +685,14 @@ public final class WebLogicDeployer {
         arguments.add(command);
 
         arguments.addAll(Arrays.asList(parameters));
+
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Java CL deployer arguments");
+            for (String arg : arguments) {
+                LOGGER.log(Level.FINE, arg);
+            }
+        }
+
         builder.setArguments(arguments);
 
         final LineProcessor realProcessor;
