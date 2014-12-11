@@ -222,12 +222,11 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 addConfigureGruntMenuItem();
                 return;
             }
-            // default task?
+            // default task
+            addDefaultMenuItem();
+            addSeparator();
             Set<String> allTasks = new LinkedHashSet<>(tasks);
-            if (allTasks.remove(GruntTasks.DEFAULT_TASK)) {
-                addTaskMenuItem(GruntTasks.DEFAULT_TASK);
-                addSeparator();
-            }
+            allTasks.remove(GruntTasks.DEFAULT_TASK);
             for (String task : allTasks) {
                 addTaskMenuItem(task);
             }
@@ -235,6 +234,27 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 addSeparator();
             }
             addReloadTasksMenuItem();
+        }
+
+        @NbBundle.Messages("LazyMenu.tasks.default=default")
+        private void addDefaultMenuItem() {
+            JMenuItem menuitem = new JMenuItem(Bundle.LazyMenu_tasks_default());
+            menuitem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            GruntExecutable grunt = GruntExecutable.getDefault(project, true);
+                            if (grunt != null) {
+                                GruntUtils.logUsageGruntBuild();
+                                grunt.run();
+                            }
+                        }
+                    });
+                }
+            });
+            add(menuitem);
         }
 
         private void addTaskMenuItem(final String task) {
