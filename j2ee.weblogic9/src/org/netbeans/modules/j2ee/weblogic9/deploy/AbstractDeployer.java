@@ -41,15 +41,11 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
-import org.openide.util.RequestProcessor;
-
 /**
  *
  * @author Petr Hejl
  */
 abstract class AbstractDeployer {
-
-    protected static RequestProcessor DEPLOYMENT_RP = new RequestProcessor("Weblogic Deployment", 1); // NOI18N
 
     protected static final int TIMEOUT = 300000;
     
