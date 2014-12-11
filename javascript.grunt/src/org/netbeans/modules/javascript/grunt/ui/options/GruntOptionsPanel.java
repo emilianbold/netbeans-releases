@@ -237,7 +237,7 @@ public class GruntOptionsPanel extends JPanel {
     @NbBundle.Messages("GruntOptionsPanel.grunt.none=No Grunt executable was found.")
     private void gruntSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_gruntSearchButtonActionPerformed
         assert EventQueue.isDispatchThread();
-        for (String grunt : FileUtils.findFileOnUsersPath("grunt")) { // XXX
+        for (String grunt : FileUtils.findFileOnUsersPath(GruntExecutable.GRUNT_NAME)) {
             gruntTextField.setText(new File(grunt).getAbsolutePath());
             return;
         }
