@@ -87,11 +87,11 @@ public final class ErrorInfoImpl implements CsmErrorInfo, DisableHintFix.CodeAud
 
     @Override
     public int getStartOffset() {
-        return startOffset;
+        return startOffset < 0 ? 0 : startOffset;
     }
 
     @Override
     public int getEndOffset() {
-        return endOffset;
+        return startOffset < 0 ? 1 : endOffset;
     }
 }
