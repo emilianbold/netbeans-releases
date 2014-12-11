@@ -414,26 +414,8 @@ public final class WebLogicDeployer {
                     parameters.add("-remote"); // NOI18N
                 }
 
-                // #249066
-                // during the remote deployment from windows to linux file is
-                // properly uploaded but the name of the app is set to the whole
-                // path using windows separator (WLS bug?)
-                // this causes java.lang.IllegalArgumentException: Unexpected character
-                // when the server is starting the app
-                // to prevent that we always compute a default name - should be
-                // the same way WLS is using
-                String realName = name;
-                if (realName == null) {
-                    realName = file.getName();
-                    if (!file.isDirectory()) {
-                        int dot = realName.lastIndexOf('.'); // NOI18N
-                        if (dot > 0) {
-                            realName = realName.substring(0, dot);
-                        }
-                    }
-                }
                 parameters.add("-name"); // NOI18N
-                parameters.add(realName);
+                parameters.add(getName(file, name));
 
                 if (file.isDirectory()) {
                     parameters.add("-nostage"); // NOI18N
@@ -578,6 +560,86 @@ public final class WebLogicDeployer {
         });
     }
 
+    public Future<Void> deploy(@NonNull final List<Artifact> artifacts,
+            @NullAllowed final BatchDeployListener listener) {
+
+        if (listener != null) {
+            listener.onStart();
+        }
+
+        return DEPLOYMENT_RP.submit(new Callable<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                LastLineProcessor lineProcessor = new LastLineProcessor();
+                for (Artifact artifact : artifacts) {
+                    List<String> parameters = new ArrayList<>();
+                    parameters.add("-upload"); // NOI18N
+                    if (config.isRemote()) {
+                        parameters.add("-remote"); // NOI18N
+                    }
+                    String name = getName(artifact.getFile(), artifact.getName());
+                    parameters.add("-name"); // NOI18N
+                    parameters.add(name);
+                    if (artifact.isLibrary()) {
+                        parameters.add("-library"); // NOI18N
+                    }
+                    parameters.add(artifact.getFile().getAbsolutePath());
+
+                    BaseExecutionService service = createService("-deploy", // NOI18N
+                            lineProcessor, parameters.toArray(new String[parameters.size()]));
+                    if (listener != null) {
+                        listener.onStepStart(name);
+                    }
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value != 0) {
+                            if (listener != null) {
+                                listener.onFail(lineProcessor.getLastLine());
+                            }
+                            throw new IOException("Command failed: " + lineProcessor.getLastLine());
+                        } else {
+                            if (listener != null) {
+                                listener.onStepFinish(name);
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        if (listener != null) {
+                            listener.onInterrupted();
+                        }
+                        result.cancel(true);
+                        throw ex;
+                    } catch (TimeoutException ex) {
+                        if (listener != null) {
+                            listener.onTimeout();
+                        }
+                        result.cancel(true);
+                        throw ex;
+                    } catch (ExecutionException ex) {
+                        Throwable cause = ex.getCause();
+                        if (cause instanceof Exception) {
+                            if (listener != null) {
+                                listener.onException((Exception) cause);
+                            }
+                            throw (Exception) cause;
+                        } else {
+                            if (listener != null) {
+                                listener.onException(ex);
+                            }
+                            throw ex;
+                        }
+                    }
+                }
+                if (listener != null) {
+                    listener.onFinish();
+                }
+                return null;
+            }
+        });
+    }
+
     private BaseExecutionService createService(final String command,
             final LineProcessor processor, String... parameters) {
 
@@ -687,7 +749,56 @@ public final class WebLogicDeployer {
         return BaseUtilities.isWindows() ? "java.exe" : "java"; // NOI18N
     }
 
-    public static class Application {
+    private static String getName(File file, String name) {
+        // #249066
+        // during the remote deployment from windows to linux file is
+        // properly uploaded but the name of the app is set to the whole
+        // path using windows separator (WLS bug?)
+        // this causes java.lang.IllegalArgumentException: Unexpected character
+        // when the server is starting the app
+        // to prevent that we always compute a default name - should be
+        // the same way WLS is using
+        String realName = name;
+        if (realName == null) {
+            realName = file.getName();
+            if (!file.isDirectory()) {
+                int dot = realName.lastIndexOf('.'); // NOI18N
+                if (dot > 0) {
+                    realName = realName.substring(0, dot);
+                }
+            }
+        }
+        return realName;
+    }
+
+    public static final class Artifact {
+
+        private final File file;
+
+        private final String name;
+
+        private final boolean library;
+
+        public Artifact(File file, String name, boolean library) {
+            this.file = file;
+            this.name = name;
+            this.library = library;
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean isLibrary() {
+            return library;
+        }
+    }
+
+    public static final class Application {
 
         private final String name;
 
@@ -727,6 +838,11 @@ public final class WebLogicDeployer {
 
         private String last = "";
 
+        private LastLineProcessor() {
+            super();
+        }
+
+
         @Override
         public synchronized void processLine(String line) {
             if (line.length() != 0 && !STACK_TRACE_PATTERN.matcher(line).matches()) {
@@ -751,7 +867,7 @@ public final class WebLogicDeployer {
 
         private final Level level;
 
-        public LoggingLineProcessor(Level level) {
+        private LoggingLineProcessor(Level level) {
             this.level = level;
         }
 
