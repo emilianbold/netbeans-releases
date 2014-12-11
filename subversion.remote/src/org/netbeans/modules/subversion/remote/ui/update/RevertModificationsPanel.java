@@ -70,7 +70,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
 
         buttonGroup.add(localChangesRadioButton);
         localChangesRadioButton.setSelected(true);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/update/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(localChangesRadioButton, bundle.getString("CTL_RevertPanel_RevertLocal")); // NOI18N
 
         buttonGroup.add(moreCommitsRadioButton);

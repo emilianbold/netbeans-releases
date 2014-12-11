@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.subversion.remote.api;
 
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import org.openide.util.NotImplementedException;
 
 /**
@@ -81,6 +84,28 @@ public class SVNRevision {
     public Kind getKind() {
         return kind;
     }
+
+    @Override
+    public String toString() {
+        switch(kind) {
+            case base:
+                return "BASE";
+            case committed:
+                return "COMMITTED";
+            case head:
+                return "HEAD";
+            case previous:
+                return "PREV";
+            case unspecified:
+                return "START";
+            case working:
+                return "WORKING";
+            case date:
+            case number:
+            default:
+                return super.toString();
+        }
+    }
     
     public static class Number extends SVNRevision implements Comparable<Number> {
         private final long number;
@@ -96,9 +121,16 @@ public class SVNRevision {
         public int compareTo(Number o) {
             return (int)(number - o.number);
         }
+
+        @Override
+        public String toString() {
+            return Long.toString(number);
+        }
+        
     }
     
     public static class DateSpec extends SVNRevision {
+        private static final DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US);
 
         protected final Date revDate;
 
@@ -109,6 +141,11 @@ public class SVNRevision {
 
         public Date getDate() {
             return revDate;
+        }
+
+        @Override
+        public String toString() {
+            return "{"+dateFormat.format(revDate)+"}";
         }
     }
 }

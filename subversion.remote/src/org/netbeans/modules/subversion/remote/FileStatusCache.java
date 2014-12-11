@@ -145,7 +145,7 @@ public class FileStatusCache {
 
     private final Turbo     turbo;
     
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.FileStatusCache"); //NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.FileStatusCache"); //NOI18N
     /**
      * Indicates if the cache index is ready 
      */

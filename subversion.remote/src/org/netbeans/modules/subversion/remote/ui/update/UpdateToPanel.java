@@ -67,7 +67,7 @@ public class UpdateToPanel extends javax.swing.JPanel {
         jLabel4 = new javax.swing.JLabel();
 
         jLabel4.setLabelFor(revisionTextField);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/update/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/update/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("CTL_UpdateToPanel_Revision")); // NOI18N
 
         revisionTextField.setText(SVNRevision.HEAD.toString());

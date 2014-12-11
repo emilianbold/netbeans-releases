@@ -59,7 +59,7 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 public class SubversionVisibilityQuery extends VCSVisibilityQuery implements VersioningListener {
 
     private FileStatusCache       cache;
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.SubversionVisibilityQuery"); //NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.SubversionVisibilityQuery"); //NOI18N
 
     public SubversionVisibilityQuery() {
     }

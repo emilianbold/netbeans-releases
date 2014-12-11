@@ -137,7 +137,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                 }
 
                 DialogDescriptor.InputLine input = 
-                    new DialogDescriptor.InputLine(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_NewFolder_Prompt"), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_NewFolder_Title"));
+                    new DialogDescriptor.InputLine(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/browser/Bundle").getString("CTL_Browser_NewFolder_Prompt"), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/browser/Bundle").getString("CTL_Browser_NewFolder_Title"));
                 input.setInputText(defaultFolderName);
                 DialogDisplayer.getDefault().notify(input);                    
                 String newDir = input.getInputText().trim();                    
@@ -171,7 +171,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                     if( i == segments.length - 1 ) {
                         
                         if(allNodesExists) {
-                            JButton ok = new JButton(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_Browser_OK"));
+                            JButton ok = new JButton(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/browser/Bundle").getString("CTL_Browser_OK"));
                             NotifyDescriptor descriptor = new NotifyDescriptor(
                                     org.openide.util.NbBundle.getMessage(CreateFolderAction.class, "MSG_Browser_FolderExists", newDir), // NOI18N
                                     org.openide.util.NbBundle.getMessage(CreateFolderAction.class, "MSG_Browser_WrongFolerName"), // NOI18N

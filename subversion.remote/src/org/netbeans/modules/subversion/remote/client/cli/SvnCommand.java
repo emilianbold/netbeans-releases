@@ -302,7 +302,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
         PrintWriter writer = null; 
         try {
-            writer = new PrintWriter(new OutputStreamWriter(targetFile.toFileObject().getOutputStream()));
+            writer = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(targetFile)));
             for (int i = 0; i < lines.length; i++) {
                 writer.print(i < lines.length -1 ? lines[i] + "\n" : lines[i]);
             }

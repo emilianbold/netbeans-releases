@@ -873,7 +873,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         setLayout(new java.awt.GridBagLayout());
 
         tgbAll.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/remote_vs_local.png"))); // NOI18N
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/status/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/status/Bundle"); // NOI18N
         tgbAll.setToolTipText(bundle.getString("CTL_Synchronize_Action_All_Tooltip")); // NOI18N
         tgbAll.setFocusable(false);
         tgbAll.addActionListener(this);

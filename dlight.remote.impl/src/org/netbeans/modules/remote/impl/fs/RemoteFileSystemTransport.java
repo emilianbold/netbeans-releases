@@ -152,12 +152,17 @@ public abstract class RemoteFileSystemTransport {
      * fs_server, can do copy and return refreshed content in one call. It can
      * return null if there is no way of doing that more effective than just
      * calling RemoteFileSystemTransport.readDirectory
+     * @param  subdirectoryExceptions if we are copying a directory, 
+     * problems that occur inside are to be re reported via this list;
+     * if we are unable to create directory itself, then exception is thrown.
+     * Can be null.
      *
      * @return parent directory content (can be null - see above)
      */
-    public static DirEntryList copy(ExecutionEnvironment execEnv, String from, String to)
+    public static DirEntryList copy(ExecutionEnvironment execEnv, String from, String to, 
+            Collection<IOException> subdirectoryExceptions)
             throws IOException, InterruptedException, CancellationException, ExecutionException {
-        return getInstance(execEnv).copy(from, to);
+        return getInstance(execEnv).copy(from, to, subdirectoryExceptions);
     }
 
     public static class MoveInfo {
@@ -188,7 +193,8 @@ public abstract class RemoteFileSystemTransport {
 
     protected abstract boolean canCopy(String from, String to);
 
-    protected abstract DirEntryList copy(String from, String to)
+    protected abstract DirEntryList copy(String from, String to, 
+            Collection<IOException> subdirectoryExceptions)
             throws IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract boolean canMove(String from, String to);
