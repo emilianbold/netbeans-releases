@@ -192,7 +192,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
     private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
 
         public RepositoryStepProgressSupport(JPanel panel) {
-            super(panel);
+            super(fileSystem, panel);
         }
 
         @Override
@@ -258,7 +258,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                                      repositoryFolder, 0,
                                      repositoryFolder.length);
 
-                    repositoryFile = new RepositoryFile(repositoryUrl, repositoryFolder, revision);
+                    repositoryFile = new RepositoryFile(fileSystem, repositoryUrl, repositoryFolder, revision);
                 } else {
                     invalidMsg = new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Invalid", rc.getUrl()), false); // NOI18N
                     return;

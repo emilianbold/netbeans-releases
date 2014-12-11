@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.repository.impl.spi.Layer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitDescriptorsList;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.openide.filesystems.FileSystem;
 
@@ -131,7 +132,7 @@ final class DiskLayerImplDelegate implements Layer {
 
 
     @Override
-    public List<UnitDescriptor> getUnitsTable() {
+    public UnitDescriptorsList getUnitsTable() {
         return impl.getUnitsTable();
     }
 

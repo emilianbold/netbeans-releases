@@ -64,6 +64,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -274,14 +275,14 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         String title = destination == tfFrom ? NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_StartTag") : NbBundle.getMessage(SearchCriteriaPanel.class, "CTL_BrowseTag_EndTag"); // NOI18N
         final Browser browser;
-        RepositoryFile repoFile = new RepositoryFile(repositoryUrl, SVNRevision.HEAD);
+        RepositoryFile repoFile = new RepositoryFile(VCSFileProxySupport.getFileSystem(roots[0]), repositoryUrl, SVNRevision.HEAD);
         int browserMode;
         if(roots[0].isFile()) {
             browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY | Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;                        
         } else {
             browserMode = Browser.BROWSER_SHOW_FILES;                        
         }        
-        browser = new Browser(title, browserMode, repoFile, null, null, Browser.BROWSER_HELP_ID_SEARCH_HISTORY);        
+        browser = new Browser(VCSFileProxySupport.getFileSystem(roots[0]), title, browserMode, repoFile, null, null, Browser.BROWSER_HELP_ID_SEARCH_HISTORY);        
         final RepositoryFile[] repositoryFiles = browser.getRepositoryFiles();
         if(repositoryFiles == null || repositoryFiles.length == 0) {
             return;

@@ -42,22 +42,27 @@
 package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.FSConverter;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -68,6 +73,8 @@ import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStre
 import org.netbeans.modules.cnd.repository.test.TestObject;
 import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -89,6 +96,32 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
     }
     private final DiskLayerImpl diskLayerImpl;
     private File tmpDir;
+    
+    private static final class NoopUnitIDConverter implements UnitsConverter {
+
+        @Override
+        public int clientToLayer(int clientUnitID) {
+            return clientUnitID;
+        }
+
+        @Override
+        public int layerToClient(int unitIDInLayer) {
+            return unitIDInLayer;
+        }
+    }
+
+    private static final class NoopFSConverter implements FSConverter {
+
+        @Override
+        public FileSystem layerToClient(int fsIdx) {
+            return new LocalFileSystem();
+        }
+
+        @Override
+        public int clientToLayer(FileSystem fileSystem) {
+            return 0;
+        }
+    }    
 
     @Override
     protected void setUp() throws Exception {
@@ -99,7 +132,39 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
     public FilesAccessStrategyTest(String testName) throws IOException {
         super(testName);
         tmpDir = createTempFile("FilesAccessStrategyTest", "", true);
-        diskLayerImpl = new DiskLayerImpl(new LayerDescriptor(tmpDir.toURI()));
+        final LayerDescriptor layerDescriptor = new LayerDescriptor(tmpDir.toURI());
+        diskLayerImpl = new DiskLayerImpl(layerDescriptor, new LayeringSupport() {
+
+            @Override
+            public List<LayerDescriptor> getLayerDescriptors() {
+                return Arrays.asList(layerDescriptor);
+            }
+
+            @Override
+            public int getStorageID() {
+                return 1;
+            }
+
+            @Override
+            public UnitsConverter getReadUnitsConverter(LayerDescriptor layerDescriptor) {
+                return new NoopUnitIDConverter();
+            }
+
+            @Override
+            public UnitsConverter getWriteUnitsConverter(LayerDescriptor layerDescriptor) {
+                return new NoopUnitIDConverter();
+            }
+
+            @Override
+            public FSConverter getReadFSConverter(LayerDescriptor layerDescriptor) {
+                return new NoopFSConverter();
+            }
+
+            @Override
+            public FSConverter getWriteFSConverter(LayerDescriptor layerDescriptor) {
+                return new NoopFSConverter();
+            }
+        });
         diskLayerImpl.startup(0, false, true);
     }
 
@@ -277,7 +342,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         RepositoryDataOutput out = new RepositoryDataOutputStream(
                 object.getLayerKey(),
                 diskLayerImpl.getWriteCapability(),
-                null, null);
+                LayerConvertersProvider.getInstance(null, null, null, null));
 
         try {
             object.getLayerKey().getPersistentFactory().write(out, object);

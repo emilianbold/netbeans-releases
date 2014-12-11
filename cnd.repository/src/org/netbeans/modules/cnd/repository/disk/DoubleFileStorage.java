@@ -54,7 +54,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.disk.index.ChunkInfo;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.testbench.WriteStatistics;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -73,6 +75,8 @@ public final class DoubleFileStorage implements FileStorage {
     private static final long SIZE_INCREASE_STEP = 256*1024*1024;//256Mb
     private final AtomicLong lastDefragmentationTime = new AtomicLong(0);
     private final File baseDir;
+    private final LayeringSupport layeringSupport;
+    private final LayerDescriptor layerDescriptor;
     private IndexedStorageFile cache_0_dataFile;
     private IndexedStorageFile cache_1_dataFile;
     private final AtomicBoolean cache_1_dataFileIsActive = new AtomicBoolean();
@@ -89,8 +93,10 @@ public final class DoubleFileStorage implements FileStorage {
      * opened
      */
     //TODO: make it so that cache_X_dataFile is never null...
-    DoubleFileStorage(File baseDir) {
+    DoubleFileStorage(File baseDir, LayerDescriptor layerDescriptor, LayeringSupport layeringSupport) {
         this.baseDir = baseDir;
+        this.layeringSupport = layeringSupport;
+        this.layerDescriptor = layerDescriptor;
     }
 
     boolean isOpened() {
@@ -115,9 +121,9 @@ public final class DoubleFileStorage implements FileStorage {
             IndexedStorageFile cache0 = null;
             IndexedStorageFile cache1 = null;
             try {
-                cache0 = new IndexedStorageFile(baseDir, "cache-0", // NOI18N
+                cache0 = new IndexedStorageFile(layeringSupport, layerDescriptor, baseDir, "cache-0", // NOI18N
                         writable);
-                cache1 = new IndexedStorageFile(baseDir, "cache-1", // NOI18N
+                cache1 = new IndexedStorageFile(layeringSupport, layerDescriptor, baseDir, "cache-1", // NOI18N
                         writable);
 
                 boolean cache0IsEmpty = cache0.getDataFileUsedSize() == 0;

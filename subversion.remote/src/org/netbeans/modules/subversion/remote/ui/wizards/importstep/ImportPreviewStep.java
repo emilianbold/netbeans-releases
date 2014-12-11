@@ -142,7 +142,7 @@ public class ImportPreviewStep extends AbstractStep {
      */
     public void setup(final String repositoryPath, final String rootLocalPath, final SVNUrl repository, String importMessage, final boolean startCommitWhenFinished) {
         this.importMessage = importMessage;
-        support = new PanelProgressSupport(startCommitWhenFinished ? null : previewPanel.progressPanel) {
+        support = new PanelProgressSupport(context.getFileSystem(), startCommitWhenFinished ? null : previewPanel.progressPanel) {
             @Override
             protected void perform() {
                 FileStatusCache cache = Subversion.getInstance().getStatusCache();
@@ -211,7 +211,7 @@ public class ImportPreviewStep extends AbstractStep {
      * @param repository repository url
      */
     public void startCommitTask (SVNUrl repository) {
-        SvnProgressSupport commitTask = new SvnProgressSupport() {
+        SvnProgressSupport commitTask = new SvnProgressSupport(context.getFileSystem()) {
             @Override
             public void perform() {
                 CommitAction.performCommit(importMessage, getCommitFiles(), context, this, true);

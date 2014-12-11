@@ -46,7 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.storage.FSConverter;
+import org.netbeans.modules.cnd.repository.impl.spi.FSConverter;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -54,13 +55,33 @@ import org.openide.filesystems.FileSystem;
  * @author Alexander Simon
  */
 public final class RepositoryDataInputStream extends DataInputStream implements RepositoryDataInput {
-    private final UnitsConverter unitIDConverter;
-    private final FSConverter fsConverter;
+    private final LayerConvertersProvider layersConverterProvider;
+    private static final UnitsConverter noConversionUnits = new UnitsConverter() {
+        @Override
+        public int clientToLayer(int unitID) {
+            return unitID;
+        }
 
-    public RepositoryDataInputStream(InputStream in, UnitsConverter unitIDConverter, FSConverter fsConverter) {
+        @Override
+        public int layerToClient(int unitID) {
+            return unitID;
+        }
+    };
+    private static final FSConverter noConversionsFS = new FSConverter() {
+        @Override
+        public FileSystem layerToClient(int readInt) {
+            throw new InternalError();
+        }
+
+        @Override
+        public int clientToLayer(FileSystem fileSystem) {
+            throw new InternalError();
+        }
+    };
+
+    public RepositoryDataInputStream(InputStream in, LayerConvertersProvider layersConverterProvider) {
         super(in);
-        this.unitIDConverter = unitIDConverter;
-        this.fsConverter = fsConverter;
+        this.layersConverterProvider = layersConverterProvider;
     }
 
     /**
@@ -70,27 +91,7 @@ public final class RepositoryDataInputStream extends DataInputStream implements 
      * @param in
      */
     public RepositoryDataInputStream(DataInputStream in) {
-        this(in, new UnitsConverter() {
-            @Override
-            public int clientToLayer(int unitID) {
-                return unitID;
-            }
-
-            @Override
-            public int layerToClient(int unitID) {
-                return unitID;
-            }
-        }, new FSConverter() {
-            @Override
-            public FileSystem layerToClient(int readInt) {
-                throw new InternalError();
-            }
-
-            @Override
-            public int clientToLayer(FileSystem fileSystem) {
-                throw new InternalError();
-            }
-        });
+        this(in, LayerConvertersProvider.getInstance(noConversionUnits, noConversionUnits, noConversionsFS, noConversionsFS));
     }
 
     @Override
@@ -101,11 +102,13 @@ public final class RepositoryDataInputStream extends DataInputStream implements 
     @Override
     public int readUnitId() throws IOException {
         int rawData = readInt();
+        UnitsConverter unitIDConverter = layersConverterProvider.getReadUnitsConverter();
         return unitIDConverter == null ? rawData : unitIDConverter.layerToClient(rawData);
     }
 
     @Override
     public FileSystem readFileSystem() throws IOException {
+        FSConverter fsConverter = layersConverterProvider.getReadFSConverter();
         return fsConverter.layerToClient(readInt());
     }
 }

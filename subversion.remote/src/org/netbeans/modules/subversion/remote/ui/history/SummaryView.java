@@ -512,11 +512,11 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
      *
      * @param event
      */
-    private static void rollback(final RepositoryRevision.Event[] events) {
+    private void rollback(final RepositoryRevision.Event[] events) {
         // TODO: confirmation
         SVNUrl repository = events[0].getLogInfoHeader().getRepositoryRootUrl();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(master.getFileSystem()) {
             @Override
             public void perform() {
                 for(RepositoryRevision.Event event : events) {
@@ -558,7 +558,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             return;
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(master.getFileSystem()) {
             @Override
             public void perform() {
                 revertImpl(master, revisions, events, this);

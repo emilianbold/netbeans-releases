@@ -66,11 +66,11 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.remote.util.Context;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.Visualizer;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -119,6 +119,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
     private final List<SvnProgressSupport> supportList = new ArrayList<>();
     private volatile boolean cancelled = false;
     private Node[] selectedNodes;
+    private final FileSystem fileSystem;
     /**
      * Creates a new instance
      *
@@ -131,16 +132,12 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
      * @param nodeActions an array of actions from which the context menu on the tree items will be created
      *
      */
-    public Browser(String title,
-                   int mode,
-                   RepositoryFile repositoryRoot,
-                   RepositoryFile[] select,
-                   BrowserAction[] nodeActions,
-                   String helpID) {
-        this(title, mode, repositoryRoot, select, null, null, nodeActions, helpID);
+    public Browser(FileSystem fileSystem, String title, int mode, RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions, String helpID) {
+        this(fileSystem, title, mode, repositoryRoot, select, null, null, nodeActions, helpID);
     }
 
-    public Browser(String title,
+    private Browser(FileSystem fileSystem, 
+                   String title,
                    int mode,
                    RepositoryFile repositoryRoot,
                    RepositoryFile[] select,
@@ -150,6 +147,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
                    String helpID) {
         this.mode = mode;
         this.helpID = helpID;
+        this.fileSystem = fileSystem;
 
         /*
          * This should ensure that either both username and password are null,
@@ -351,7 +349,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
                         ((mode & BROWSER_SHOW_FILES) == BROWSER_SHOW_FILES)) )
                 {
                     RepositoryFile repositoryFile = new RepositoryFile(
-                            entry.getRepositoryFile().getRepositoryUrl(),
+                            fileSystem, entry.getRepositoryFile().getRepositoryUrl(),
                             entry.getRepositoryFile().getFileUrl().appendPath(dirEntry.getPath()),
                             dirEntry.getLastChangedRevision());
                     RepositoryPathNode.RepositoryPathEntry e =

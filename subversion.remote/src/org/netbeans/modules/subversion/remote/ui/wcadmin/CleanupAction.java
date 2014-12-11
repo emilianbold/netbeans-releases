@@ -54,6 +54,7 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -91,7 +92,9 @@ public class CleanupAction extends ContextAction {
         final Context ctx = getContext(nodes);
         final VCSFileProxy[] roots = ctx.getRootFiles();
         if (roots == null || roots.length == 0) {
-            Subversion.LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "No versioned folder in the selected context for {0}", nodes); //NOI18N
+            }
             return;
         }
 
@@ -109,7 +112,7 @@ public class CleanupAction extends ContextAction {
             Subversion.LOG.log(Level.WARNING, "Could not retrieve repository root for context file {0}", new Object[]{ root }); //NOI18N
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(VCSFileProxySupport.getFileSystem(root)) {
             @Override
             protected void perform() {
                 for (VCSFileProxy root : roots) {

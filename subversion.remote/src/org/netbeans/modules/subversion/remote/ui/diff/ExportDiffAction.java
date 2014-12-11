@@ -148,7 +148,7 @@ public class ExportDiffAction extends ContextAction {
     void performContextAction (final Node[] nodes, final boolean singleDiffSetup) {
         // reevaluate fast enablement logic guess
         boolean noop;
-        Context context = getContext(nodes);
+        final Context context = getContext(nodes);
         if(!Subversion.getInstance().checkClientAvailable(context)) {            
             return;
         }
@@ -168,7 +168,7 @@ public class ExportDiffAction extends ContextAction {
             @Override
             public void writeDiffFile(final VCSFileProxy toFile) {
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
-                SvnProgressSupport ps = new SvnProgressSupport() {
+                SvnProgressSupport ps = new SvnProgressSupport(context.getFileSystem()) {
                     @Override
                     protected void perform() {
                         async(this, nodes, toFile, singleDiffSetup);

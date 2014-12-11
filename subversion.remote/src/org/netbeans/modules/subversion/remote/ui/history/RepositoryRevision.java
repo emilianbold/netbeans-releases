@@ -66,8 +66,10 @@ import org.netbeans.modules.subversion.remote.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,12 +97,14 @@ final class RepositoryRevision {
     private final VCSFileProxy[] selectionRoots;
     private final Map<String,VCSFileProxy> pathToRoot;
     private final Map<String, SVNRevision> pegRevisions;
+    private final FileSystem fileSystem;
 
     public RepositoryRevision(ISVNLogMessage message, SVNUrl rootUrl, VCSFileProxy[] selectionRoots,
             Map<String,VCSFileProxy> pathToRoot, Map<String, SVNRevision> pegRevisions) {
         this.message = message;
         this.repositoryRootUrl = rootUrl;
         this.selectionRoots = selectionRoots;
+        fileSystem = VCSFileProxySupport.getFileSystem(selectionRoots[0]);
         support = new PropertyChangeSupport(this);
         this.pathToRoot = pathToRoot;
         this.pegRevisions = pegRevisions;
@@ -178,7 +182,7 @@ final class RepositoryRevision {
         actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_RollbackChange")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                SvnProgressSupport support = new SvnProgressSupport() {
+                SvnProgressSupport support = new SvnProgressSupport(fileSystem) {
                     @Override
                     public void perform() {
                         RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(getLog().getRevision());
@@ -358,7 +362,7 @@ final class RepositoryRevision {
         }
         
         void rollback () {
-            SvnProgressSupport support = new SvnProgressSupport() {
+            SvnProgressSupport support = new SvnProgressSupport(fileSystem) {
                 @Override
                 public void perform() {
                     VCSFileProxy file = getFile();
@@ -374,7 +378,7 @@ final class RepositoryRevision {
         }
 
         void revert () {
-            SvnProgressSupport support = new SvnProgressSupport() {
+            SvnProgressSupport support = new SvnProgressSupport(fileSystem) {
                 @Override
                 public void perform() {
                     RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(getLogInfoHeader().getLog().getRevision());
@@ -446,6 +450,10 @@ final class RepositoryRevision {
     }
     
     private class Search extends SvnProgressSupport {
+
+        private Search() {
+            super(fileSystem);
+        }
 
         @Override
         protected void perform () {

@@ -166,14 +166,18 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     @Override
     public void outputText(String lineString) {
-        Subversion.LOG.fine("outputText [" + lineString + "]");
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.fine("outputText [" + lineString + "]");
+        }
         if(!notifyOutput()) {
             return;
         }
         Line line = Parser.getInstance().parse(lineString);
         if(line != null) {
             if(notificationHandler != null && line.getPath() != null) {
-                Subversion.LOG.fine("outputText [" + line.getPath() + "]");
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.fine("outputText [" + line.getPath() + "]");
+                }
                 notificationHandler.notifyListenersOfChange(line.getPath());
             }
             notify(line);

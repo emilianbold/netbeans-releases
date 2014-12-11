@@ -127,7 +127,7 @@ public class CreateCopyAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }                   
-        final RepositoryFile repositoryFile = new RepositoryFile(repositoryUrl, fileUrl, SVNRevision.HEAD);        
+        final RepositoryFile repositoryFile = new RepositoryFile(ctx.getFileSystem(), repositoryUrl, fileUrl, SVNRevision.HEAD);        
 
         final RequestProcessor rp = createRequestProcessor(ctx);
         final boolean hasChanges = files.length > 0;
@@ -145,7 +145,7 @@ public class CreateCopyAction extends ContextAction {
             public void run() {
                 String errorText = validateTargetPath(createCopy, roots);
                 if (errorText == null) {
-                    ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes) {
+                    ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(CreateCopyAction.this, nodes, getCachedContext(nodes)) {
                         @Override
                         public void perform() {
                             performCopy(createCopy, this, roots);

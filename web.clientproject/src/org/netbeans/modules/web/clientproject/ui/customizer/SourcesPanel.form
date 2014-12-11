@@ -68,9 +68,9 @@
                       <Component id="testSeleniumFolderBrowseButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="testSeleniumFolderRemoveButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
           </Group>
-      </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">

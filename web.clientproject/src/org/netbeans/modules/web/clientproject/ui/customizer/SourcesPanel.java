@@ -110,6 +110,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         siteRootFolderTextField.getDocument().addDocumentListener(documentListener);
         sourceFolderTextField.getDocument().addDocumentListener(documentListener);
         testFolderTextField.getDocument().addDocumentListener(documentListener);
+        testSeleniumFolderTextField.getDocument().addDocumentListener(documentListener);
         encodingComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

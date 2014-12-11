@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -408,5 +410,13 @@ public final class VCSFileProxySupport {
                 return null;
             }
         }
+    }
+    
+    public static FileSystem readFileSystem(DataInputStream is) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static void writeFileSystem(DataOutputStream os, FileSystem fs) {
+        throw new UnsupportedOperationException();
     }
 }

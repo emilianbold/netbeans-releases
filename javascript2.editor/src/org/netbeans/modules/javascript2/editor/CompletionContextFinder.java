@@ -101,6 +101,22 @@ public class CompletionContextFinder {
         }
         
         if (tokenId == JsTokenId.STRING || tokenId == JsTokenId.STRING_END) {
+            token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.STRING, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END));
+            if (token == null) {
+                return CompletionContext.STRING;
+            }
+            token = LexUtilities.findPreviousNonWsNonComment(ts);
+            if (token.id() == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
+                token = LexUtilities.findPreviousNonWsNonComment(ts);
+                tokenId = token.id();
+                if (tokenId == JsTokenId.IDENTIFIER) {
+                    if ("getElementById".equals(token.text().toString())) {
+                        return CompletionContext.STRING_ELEMENTS_BY_ID;
+                    } else if ("getElementsByClassName".equals(token.text().toString())) {
+                        return CompletionContext.STRING_ELEMENTS_BY_CLASS_NAME;
+                    }
+                }
+            }
             return CompletionContext.STRING;
         }
         

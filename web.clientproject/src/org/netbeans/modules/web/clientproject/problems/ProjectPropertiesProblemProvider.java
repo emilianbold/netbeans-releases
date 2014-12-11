@@ -174,7 +174,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         "ProjectPropertiesProblemProvider.invalidTestSeleniumDir.description=The directory \"{0}\" does not exist and cannot be used for Selenium Tests."
     })
     private void checkTestSeleniumDir(Collection<ProjectProblem> currentProblems) {
-        File invalidDirectory = getInvalidDirectory(project.getTestsFolder(false), ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER);
+        File invalidDirectory = getInvalidDirectory(project.getTestsSeleniumFolder(false), ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER);
         if (invalidDirectory != null) {
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidTestSeleniumDir_title(),
@@ -219,6 +219,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_SOURCE_FOLDER));
         addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER));
         addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_TEST_FOLDER));
+        addFileChangeListener(resolveFile(ClientSideProjectConstants.PROJECT_TEST_SELENIUM_FOLDER));
     }
 
     private void addFileChangeListener(File file) {

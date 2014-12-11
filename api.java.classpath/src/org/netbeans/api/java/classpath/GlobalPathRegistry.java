@@ -193,7 +193,9 @@ public final class GlobalPathRegistry {
     @NonNull
     public Set<ClassPath> getPaths(@NonNull final String id) {
         Parameters.notNull("id", id);   //NOI18N
-        return SPIAccessor.getInstance().getPaths(spi, id);
+        synchronized (this) {
+            return SPIAccessor.getInstance().getPaths(spi, id);
+        }
     }
 
     /**

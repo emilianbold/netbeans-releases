@@ -485,6 +485,54 @@ public class JsCompletionItem implements CompletionProposal {
         }
     }
 
+    static class CssCompletionItem extends JsCompletionItem {
+        
+        private static ImageIcon cssIcon = null;
+        
+        private final String name;
+        
+        public CssCompletionItem(String name, CompletionRequest request) {
+            super(null, request);
+            this.name = name;
+        }
+        
+        @Override
+        public ImageIcon getIcon() {
+            if (cssIcon == null) {
+                cssIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/jquery/resources/style_sheet_16.png")); //NOI18N
+            }
+            return cssIcon;
+        }
+        
+        @Override
+        public String getName() {
+            return name;
+        }
+        
+        @Override
+        public String getInsertPrefix() {
+            return getName();
+        }
+        
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getName());
+            return formatter.getText();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.RULE;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return null;
+        }
+        
+    }
+    
     public static class JsPropertyCompletionItem extends JsCompletionItem {
 
         private final Set<String> resolvedTypes;

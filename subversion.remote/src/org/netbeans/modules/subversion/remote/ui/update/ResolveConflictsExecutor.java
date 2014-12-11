@@ -100,7 +100,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     private static final String NESTED_CONFLICT = "NESTED_CONFLICT";
 
     public ResolveConflictsExecutor(VCSFileProxy file) {
-        super();
+        super(VCSFileProxySupport.getFileSystem(file));
         this.file = file;
     }
 

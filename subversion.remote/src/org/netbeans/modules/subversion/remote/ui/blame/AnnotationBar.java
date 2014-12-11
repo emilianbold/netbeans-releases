@@ -661,7 +661,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }
-        final RepositoryFile repositoryFile = new RepositoryFile(url, url, SVNRevision.HEAD);
+        final RepositoryFile repositoryFile = new RepositoryFile(ctx.getFileSystem(), url, url, SVNRevision.HEAD);
 
         final RevertModifications revertModifications = new RevertModifications(repositoryFile, revision);
         if(!revertModifications.showDialog()) {
@@ -669,7 +669,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(url);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(ctx.getFileSystem()) {
             @Override
             public void perform() {
                 RevertModificationsAction.performRevert(revertModifications.getRevisionInterval(), revertModifications.revertNewFiles(), !revertModifications.revertRecursively(), ctx, this);
@@ -683,19 +683,20 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final SVNUrl repoUrl;
         final SVNUrl fileUrl;
         final SVNRevision svnRev;
+        final Context context = new Context(file);
         try {
             repoUrl = SvnUtils.getRepositoryRootUrl(file);
             fileUrl = SvnUtils.getRepositoryUrl(file);
             svnRev = SVNRevision.getRevision(revision);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         } catch (ParseException ex) {
             Subversion.LOG.log(Level.WARNING, null, ex);
             return;
         }
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repoUrl);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(context.getFileSystem()) {
             @Override
             public void perform() {
                 SvnUtils.rollback(file, repoUrl, fileUrl, svnRev, false, getLogger());
@@ -708,11 +709,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final SVNRevision svnRevision;
         final SVNUrl repositoryRoot;
         final SVNUrl repositoryUrl;
+        final Context context = new Context(file);
         try {
             repositoryRoot = SvnUtils.getRepositoryRootUrl(file);
             repositoryUrl = SvnUtils.getRepositoryUrl(file);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
             return;
         }
         try {
@@ -723,7 +725,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryRoot);
-        SvnProgressSupport support = new SvnProgressSupport() {
+        SvnProgressSupport support = new SvnProgressSupport(context.getFileSystem()) {
             @Override
             public void perform() {
                 try {

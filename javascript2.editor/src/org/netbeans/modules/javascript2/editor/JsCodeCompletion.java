@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -51,10 +52,13 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
@@ -81,6 +85,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -171,6 +176,12 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
                     // create code completion results
                     JsCompletionItem.Factory.create(toAdd, request, resultList);
+                    break;
+                case STRING_ELEMENTS_BY_ID:
+                    completeTagIds(request, resultList);
+                    break;
+                case STRING_ELEMENTS_BY_CLASS_NAME:
+                    completeCSSClassNames(request, resultList);
                     break;
                 case GLOBAL:
                     HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
@@ -865,6 +876,62 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         for (String keyword : JsKeyWords.KEYWORDS.keySet()) {
             if (startsWith(keyword, request.prefix)) {
                 resultList.add(new JsCompletionItem.KeywordItem(keyword, request));
+            }
+        }
+    }
+    
+    private void completeTagIds(CompletionRequest request, List<CompletionProposal> resultList) {
+        FileObject fo = request.result.getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return;
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        HashSet<String> unique = new HashSet<String>();
+        try {
+            CssIndex cssIndex = CssIndex.create(project);
+            Map<FileObject, Collection<String>> findIdsByPrefix = cssIndex.findIdsByPrefix(request.prefix);
+
+            for (Collection<String> ids : findIdsByPrefix.values()) {
+                for (String id : ids) {
+                    if (!id.isEmpty()) {
+                        unique.add(id);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (!unique.isEmpty()) {
+            for (Iterator<String> iterator = unique.iterator(); iterator.hasNext();) {
+                resultList.add(new JsCompletionItem.CssCompletionItem(iterator.next(), request));
+            }
+        }
+    }
+    
+    private void completeCSSClassNames(CompletionRequest request, List<CompletionProposal> resultList) {
+        FileObject fo = request.result.getSnapshot().getSource().getFileObject();
+        if(fo == null) {
+            return;
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        HashSet<String> unique = new HashSet<String>();
+        try {
+            CssIndex cssIndex = CssIndex.create(project);
+            Map<FileObject, Collection<String>> findIdsByPrefix = cssIndex.findClassesByPrefix(request.prefix);
+
+            for (Collection<String> ids : findIdsByPrefix.values()) {
+                for (String id : ids) {
+                    if (!id.isEmpty()) {
+                        unique.add(id);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (!unique.isEmpty()) {
+            for (Iterator<String> iterator = unique.iterator(); iterator.hasNext();) {
+                resultList.add(new JsCompletionItem.CssCompletionItem(iterator.next(), request));
             }
         }
     }

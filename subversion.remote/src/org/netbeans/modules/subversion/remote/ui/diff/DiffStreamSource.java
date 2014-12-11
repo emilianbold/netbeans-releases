@@ -216,7 +216,7 @@ public class DiffStreamSource extends StreamSource {
         try {
             if (isEditable()) {
                 // we cannot move editable documents because that would break Document sharing
-                remoteFile = VersionsCache.getInstance().getFileRevision(baseFile, revision);
+                remoteFile = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(baseFile)).getFileRevision(baseFile, revision);
             } else {
                 VCSFileProxy tempFolder = VCSFileProxySupport.getTempFolder(baseFile, true);
                 // To correctly get content of the base file, we need to checkout all files that belong to the same
@@ -226,7 +226,7 @@ public class DiffStreamSource extends StreamSource {
                 for (VCSFileProxy file : allFiles) {
                     boolean isBase = file.equals(baseFile);
                     try {
-                        VCSFileProxy rf = VersionsCache.getInstance().getFileRevision(file, revision);
+                        VCSFileProxy rf = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(file)).getFileRevision(file, revision);
                         if(rf == null) {
                             remoteFile = null;
                             return;

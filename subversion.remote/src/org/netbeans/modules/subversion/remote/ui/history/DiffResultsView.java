@@ -67,6 +67,7 @@ import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.history.RepositoryRevision.Event;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.NoContentPanel;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Cancellable;
 import org.openide.util.WeakListeners;
 
@@ -300,7 +301,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     protected SvnProgressSupport createShowDiffTask(Event revision1, Event revision2, boolean showLastDifference) {
-        return new ShowDiffTask(revision1, revision2, showLastDifference);
+        return new ShowDiffTask(parent.getFileSystem(), revision1, revision2, showLastDifference);
     }
 
     protected final void setBottomComponent(Component component) {
@@ -461,7 +462,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
         private String filePath1;
         private String name1;
 
-        public ShowDiffTask(RepositoryRevision.Event event1, RepositoryRevision.Event event2, boolean showLastDifference) {
+        private ShowDiffTask(FileSystem fileSystem, RepositoryRevision.Event event1, RepositoryRevision.Event event2, boolean showLastDifference) {
+            super(fileSystem);
             this.event2 = event2;
             if (event1 != null) {
                 revision1 = event1.getLogInfoHeader().getLog().getRevision().toString();

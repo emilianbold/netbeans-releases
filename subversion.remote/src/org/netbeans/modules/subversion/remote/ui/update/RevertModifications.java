@@ -316,7 +316,7 @@ public class RevertModifications implements PropertyChangeListener {
             super(button);
             oneRevisionPath =
                 new RepositoryPaths(
-                    repositoryFile,
+                    repositoryFile.getFileSystem(), repositoryFile,
                     null,
                     null,
                     getPanel().oneRevisionTextField,
@@ -357,7 +357,7 @@ public class RevertModifications implements PropertyChangeListener {
             super(button);
             startPath =
                 new RepositoryPaths(
-                    repositoryFile,
+                    repositoryFile.getFileSystem(), repositoryFile,
                     null,
                     null,
                     getPanel().startRevisionTextField,
@@ -368,7 +368,7 @@ public class RevertModifications implements PropertyChangeListener {
 
             endPath =
                 new RepositoryPaths(
-                    repositoryFile,
+                    repositoryFile.getFileSystem(), repositoryFile,
                     null,
                     null,
                     getPanel().endRevisionTextField,

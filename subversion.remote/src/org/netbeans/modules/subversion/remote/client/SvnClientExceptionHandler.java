@@ -227,7 +227,9 @@ public class SvnClientExceptionHandler {
             return support.showLogin() && handleKenaiAuthorization(support, sUrl);
         } else {
             if (Thread.interrupted()) {
-                Subversion.LOG.log(Level.FINE, "SvnClientExceptionHandler.handleRepositoryConnectError(): canceled"); //NOI18N
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, "SvnClientExceptionHandler.handleRepositoryConnectError(): canceled"); //NOI18N
+                }
                 return false;
             }
             Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
@@ -434,7 +436,9 @@ public class SvnClientExceptionHandler {
                 directWorks = true;
             } catch (IOException e) {
                 // do nothing
-                Subversion.LOG.log(Level.FINE, null, e);
+                if (Subversion.LOG.isLoggable(Level.FINE)) {
+                    Subversion.LOG.log(Level.FINE, null, e);
+                }
             }
             if(!directWorks) {
                 proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916

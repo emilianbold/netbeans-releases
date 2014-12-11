@@ -63,6 +63,7 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -84,10 +85,12 @@ class BranchPicker {
     private static final String PREFIX_TAGS = "tags"; //NOI18N
     private SvnProgressSupport loadingSupport;
     private final String branchesFolderPrefix;
+    private final FileSystem fileSystem;
 
-    public BranchPicker (RepositoryFile repositoryFile, String branchesFolderPrefix) {
+    public BranchPicker (FileSystem fileSystem, RepositoryFile repositoryFile, String branchesFolderPrefix) {
         this.repositoryFile = repositoryFile;
         this.branchesFolderPrefix = branchesFolderPrefix;
+        this.fileSystem = fileSystem;
         this.panel = new BranchPickerPanel();
         this.panel.lstBranches.setCellRenderer(new Renderer(branchesFolderPrefix));
     }
@@ -135,7 +138,7 @@ class BranchPicker {
         model.addElement(ITEM_TAGS);
         model.addElement(ITEM_LOADING);
         panel.lstBranches.setModel(model);
-        SvnProgressSupport supp = new PanelProgressSupport(panel.pnlProgress) {
+        SvnProgressSupport supp = new PanelProgressSupport(fileSystem, panel.pnlProgress) {
             @Override
             protected void perform () {
                 try {

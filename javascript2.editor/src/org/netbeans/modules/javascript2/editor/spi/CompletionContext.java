@@ -63,6 +63,8 @@ public enum CompletionContext {
     OBJECT_PROPERTY_NAME, 
     DOCUMENTATION, // inside documentation blocks
     GLOBAL,
-    STRING      // inside a string
+    STRING,      // inside a string
+    STRING_ELEMENTS_BY_ID, // should offers css elements by id from project
+    STRING_ELEMENTS_BY_CLASS_NAME // should offers css elements by class name from project
 
 }

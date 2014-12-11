@@ -42,14 +42,11 @@
 package org.netbeans.modules.html.ojet.data;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -106,19 +103,19 @@ public class DataItemImpl implements DataItem {
             InputStream in = null;
             try {
                 in = getInputStream(new URL(getDocUrl()));
-                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
                 String line;
 
                 StringBuilder content = new StringBuilder();
                 int countHeader = 0;
 
                 while ((line = br.readLine()) != null) {
-                    if (line.contains("<header>")) {
+                    if (line.contains("<header>")) {    //NOI18N
                         countHeader++;
                     }
                     if (countHeader > 1) {
                         content.append(line);
-                        if (line.contains("</header")) {
+                        if (line.contains("</header")) {    //NOI18N
                             countHeader--;
                             if (countHeader == 1) {
                                 break;
@@ -133,7 +130,9 @@ public class DataItemImpl implements DataItem {
                 Exceptions.printStackTrace(ex);
             } finally {
                 try {
-                    in.close();
+                    if (in != null) {
+                        in.close();
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -147,23 +146,23 @@ public class DataItemImpl implements DataItem {
                 InputStream in = null;
                 try {
                     in = getInputStream(new URL(getDocUrl()));
-                    BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
                     String line;
                     boolean inMembers = false;
 
                     while ((line = br.readLine()) != null) {
-                        if (!inMembers && line.contains("<a href=\"#members-section\">")) {
+                        if (!inMembers && line.contains("<a href=\"#members-section\">")) { //NOI18N
                             inMembers = true;
                         }
                         if (inMembers) {
-                            if (line.contains("<li>")) {
-                                String name = line.substring(line.indexOf("<li"));
-                                name = name.substring(name.indexOf(">") + 1); // end of li tag
-                                name = name.substring(name.indexOf(">") + 1); // end of a tag
-                                name = name.substring(0, name.indexOf('<'));
+                            if (line.contains("<li>")) {    //NI18N
+                                String name = line.substring(line.indexOf("<li"));  //NOI18N
+                                name = name.substring(name.indexOf(">") + 1); // end of li tag  //NOI18N
+                                name = name.substring(name.indexOf(">") + 1); // end of a tag   //NOI18N
+                                name = name.substring(0, name.indexOf('<'));                    //NOI18N
                                 options.add(new DataItemOption(name, getDocUrl()));
                             }
-                            if (line.contains("</ul>")) {
+                            if (line.contains("</ul>")) {   //NOI18N
                                 break;
                             }
                         }
@@ -174,7 +173,9 @@ public class DataItemImpl implements DataItem {
                     Exceptions.printStackTrace(ex);
                 } finally {
                     try {
-                        in.close();
+                        if (in != null) {
+                            in.close();
+                        }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -195,13 +196,13 @@ public class DataItemImpl implements DataItem {
             InputStream in = null;
             try {
                 in = getInputStream(new URL(getDocUrl()));
-                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
                 String line;
 
                 StringBuilder content = new StringBuilder();
-                String startText = "<h4 id=\"" + getName() + "\" class=\"name\">";
+                String startText = "<h4 id=\"" + getName() + "\" class=\"name\">";  //NOI18N
                 boolean inSection = false;
-                content.append("<dt>");
+                content.append("<dt>"); //NOI18N
                 int ddCount = 0;
                 while ((line = br.readLine()) != null) {
                     if (!inSection && line.contains(startText)) {
@@ -213,10 +214,10 @@ public class DataItemImpl implements DataItem {
 //                            line.replace("class=\"name\"", "style=font-family: Consolas, \"Lucida Console\", Monaco, monospace;");
 //                        }
                         content.append(line);
-                        if (line.contains("<dd")) {
+                        if (line.contains("<dd")) { //NOI18N
                             ddCount++;
                         }
-                        if (line.contains("</dd")) {
+                        if (line.contains("</dd")) {    //NOI18N
                             ddCount--;
                             if (ddCount == 0) {
                                 break;
@@ -234,7 +235,9 @@ public class DataItemImpl implements DataItem {
                 Exceptions.printStackTrace(ex);
             } finally {
                 try {
-                    in.close();
+                    if (in != null) {
+                        in.close();
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

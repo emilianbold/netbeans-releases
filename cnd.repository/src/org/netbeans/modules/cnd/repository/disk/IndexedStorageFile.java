@@ -43,12 +43,8 @@
  */
 package org.netbeans.modules.cnd.repository.disk;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
@@ -65,14 +61,15 @@ import org.netbeans.modules.cnd.repository.disk.index.CompactFileIndex;
 import org.netbeans.modules.cnd.repository.disk.index.FileIndex;
 import org.netbeans.modules.cnd.repository.disk.index.FileIndexFactory;
 import org.netbeans.modules.cnd.repository.disk.index.SimpleFileIndex;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
+import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.storage.data.UTF;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
+import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataInputStream;
+import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStream;
 import org.netbeans.modules.cnd.repository.testbench.FileStatistics;
 import org.netbeans.modules.cnd.repository.testbench.RangeStatistics;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.openide.filesystems.FileSystem;
 
 /**
  * Represents the data file with the indexed access
@@ -93,12 +90,17 @@ import org.openide.filesystems.FileSystem;
     // is necessary for tracking fragmentation
     private long usedSize;
     private final FileIndex index;
+    private final LayeringSupport layeringSupport;
+    private final LayerDescriptor layerDescriptor;
 
-    public IndexedStorageFile(final File basePath, final String name, boolean writable) throws IOException {
+    public IndexedStorageFile(LayeringSupport layeringSupport, LayerDescriptor layerDescriptor,
+            final File basePath, final String name, boolean writable) throws IOException {
         if (writable && basePath.exists() && !basePath.canWrite()) {
             writable = false;
             RepositoryImplUtil.warnNotWritable(basePath);
         }
+        this.layeringSupport = layeringSupport;
+        this.layerDescriptor = layerDescriptor;
         this.writable = writable;
         dataFile = new File(basePath, name + "-data"); // NOI18N
         indexFile = new File(basePath, name + "-index"); // NOI18N
@@ -374,14 +376,16 @@ import org.openide.filesystems.FileSystem;
     }
 
     // returns null of failed to load
-    private static FileIndex loadIndex(File indexFile) {
+    private FileIndex loadIndex(File indexFile) {
         FileIndex idx = null;
-        RepositoryDataInputImpl din = null;
+        RepositoryDataInputStream din = null;
         try {
-            din = new RepositoryDataInputImpl(RepositoryImplUtil.getBufferedDataInputStream(indexFile));
+            din = new RepositoryDataInputStream(RepositoryImplUtil.getBufferedDataInputStream(indexFile),
+                    LayerConvertersProvider.getInstance(layeringSupport, layerDescriptor));
+                    //new RepositoryDataInputImpl(RepositoryImplUtil.getBufferedDataInputStream(indexFile));
             idx = FileIndexFactory.getDefaultFactory().readIndex(din);
         } catch (IOException ex) {
-            RepositoryExceptions.throwException("IndexedStorageFile", ex);//NOI18N
+            RepositoryExceptions.throwException("IndexedStorageFile for file " + indexFile, ex);//NOI18N
         } finally {
             if (din != null) {
                 try {
@@ -394,10 +398,13 @@ import org.openide.filesystems.FileSystem;
     }
 
     private void storeIndex() throws IOException {
-        RepositoryDataOutputImpl dos = null;
+        RepositoryDataOutputStream dos = null;
 
         try {
-            dos = new RepositoryDataOutputImpl(RepositoryImplUtil.getBufferedDataOutputStream(indexFile));
+            //i do not think this is correct need to write unit id not client long id
+            //as a result of such usage of RepositoryDataOutput we will write on disk unit id = 1000012 (so called long unit id)
+            dos = new RepositoryDataOutputStream(RepositoryImplUtil.getBufferedDataOutputStream(indexFile),
+                    LayerConvertersProvider.getInstance(layeringSupport, layerDescriptor));
             FileIndexFactory.getDefaultFactory().writeIndex(index, dos);
         } finally {
             if (dos != null) {
@@ -440,52 +447,5 @@ import org.openide.filesystems.FileSystem;
     public String toString() {
         return getClass().getSimpleName() + ' ' + dataFile + " usedSize=" + usedSize + " size=" + dataFile.length(); //NOI18N
     }
-
-    private static class RepositoryDataOutputImpl extends DataOutputStream implements RepositoryDataOutput {
-
-        private RepositoryDataOutputImpl(OutputStream out) {
-            super(out);
-        }
-
-        @Override
-        public void writeCharSequenceUTF(CharSequence s) throws IOException {
-            UTF.writeUTF(s, this);
-        }
-
-        @Override
-        public void writeUnitId(int unitID) throws IOException {
-            writeInt(unitID);
-        }
-
-        @Override
-        public void writeFileSystem(FileSystem fileSystem) throws IOException {
-            writeInt(0);
-        }
-
-        @Override
-        public void commit() {
-        }
-    }
-
-    private static class RepositoryDataInputImpl extends DataInputStream implements RepositoryDataInput {
-
-        public RepositoryDataInputImpl(InputStream in) {
-            super(in);
-        }
-
-        @Override
-        public CharSequence readCharSequenceUTF() throws IOException {
-            return UTF.readUTF(this);
-        }
-
-        @Override
-        public int readUnitId() throws IOException {
-            return readInt();
-        }
-
-        @Override
-        public FileSystem readFileSystem() throws IOException {
-            throw new InternalError();
-        }
-    }
+    
 }

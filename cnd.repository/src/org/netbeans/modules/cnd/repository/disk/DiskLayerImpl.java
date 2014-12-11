@@ -50,7 +50,9 @@ import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
+import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
+import org.netbeans.modules.cnd.repository.impl.spi.UnitDescriptorsList;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.openide.filesystems.FileSystem;
 
@@ -64,11 +66,11 @@ public final class DiskLayerImpl {
     private final LayerDescriptor layerDescriptor;
     private final LayerIndex layerIndex;
 
-    public DiskLayerImpl(LayerDescriptor layerDescriptor) {
+    public DiskLayerImpl(LayerDescriptor layerDescriptor, LayeringSupport layeringSupport) {
         this.layerDescriptor = layerDescriptor;
         URI cacheDirectory = layerDescriptor.getURI();
         layerIndex = new LayerIndex(cacheDirectory);
-        fas = new FilesAccessStrategyImpl(layerIndex, cacheDirectory, layerDescriptor);
+        fas = new FilesAccessStrategyImpl(layerIndex, cacheDirectory, layerDescriptor, layeringSupport);
     }
         
     
@@ -104,7 +106,7 @@ public final class DiskLayerImpl {
     }
 
 
-    public List<UnitDescriptor> getUnitsTable() {
+    public UnitDescriptorsList getUnitsTable() {
         return layerIndex.getUnitsTable();
     }
 
