@@ -182,6 +182,37 @@ import org.openide.filesystems.FileSystem;
         assert (matchError || LA(1) == GREATERTHAN);
     }
 
+    protected final void balanceCurliesAndCreateFolders(int folderType, int level, boolean foldCurrent) throws TokenStreamException {
+        if (LA(0) != LCURLY) {
+            matchError = true;
+            return;
+        }
+
+        int startType = LCURLY;
+        int endType = RCURLY;
+
+        APTToken startToken = (APTToken) LT(0);
+
+        int LA1 = LA(1);
+        for (; LA1 != EOF; LA1 = LA(1)) {
+            if (LA1 == endType) {
+                APTToken endToken = (APTToken) LT(1);
+                if (foldCurrent) {
+                    createFolder(folderType, startToken, endToken);
+                }
+                break;
+            } else if (LA1 == startType) {
+                consume();
+                balanceCurliesAndCreateFolders(folderType, level + 1, true);
+                continue;
+            } else {
+                // eat token
+            }
+            consume();
+        }
+        match(RCURLY);
+    }
+
     private void balanceBracket(int startType, int endType) throws TokenStreamException {
         int level = 0;
         int LA1 = LA(1);
@@ -611,64 +642,6 @@ import org.openide.filesystems.FileSystem;
         }
     }
 
-    /*
-     * Curly braced sections:
-     * Functions, conditional statements, iteration statements
-     */
-    @SuppressWarnings("fallthrough")
-    protected final void block() throws TokenStreamException {
-        main_loop:
-        while (true) {
-            if (matchError) {
-                break main_loop;
-            }
-            switch (LA(1)) {
-                case RCURLY:
-                    break main_loop;
-                case LITERAL_else:
-                case LITERAL_do:
-                    consume();
-                    if (LA(1) == LCURLY) {
-                        blockFold(COMPOUND_BLOCK_FOLD);
-                    } else {
-                        // see COMMENT-1
-                    }
-                    break;
-                case LITERAL_if:
-                case LITERAL_switch:
-                case LITERAL_while:
-                case LITERAL_for:
-                    consume();
-                    if (LA(1) == LPAREN) {
-                        /* if ( condition ) ... */
-                        consume(); // LPAREN
-                        balanceParens();
-                        consume(); // RPAREN
-                        if (LA(1) == LCURLY) {
-                            /* if ( condition ) { statement } ... */
-                            blockFold(COMPOUND_BLOCK_FOLD);
-                        } else {
-                            /* if ( condition ) statement ... */
-
-                            /* COMMENT-1
-                             * No braces after current statement, but we continue 
-                             * to look up for nested blocks
-                             * if (1)
-                             *      if (1) {
-                             *          int a = 1;
-                             *      }
-                             */
-                        }
-                    } else {
-                        matchError = true;
-                    }
-                    break;
-                default:
-                    consume();
-            }
-        }
-    }
-
     protected final void blockFold(int foldType) throws TokenStreamException {
         // LA(1) = LCURLY
         main_loop:
@@ -688,7 +661,7 @@ import org.openide.filesystems.FileSystem;
                 }
 
                 if ((LA(1) >= FIRST_TOKEN && LA(1) <= LAST_TOKEN)) {
-                    block();
+                    balanceCurliesAndCreateFolders(COMPOUND_BLOCK_FOLD, 0, false);
                     if (matchError) {
                         break main_loop;
                     }
@@ -697,9 +670,10 @@ import org.openide.filesystems.FileSystem;
                 }
             } while (true);
 
-            APTToken end = (APTToken) LT(1);
-            match(RCURLY);
-            if (matchError) {
+            APTToken end = (APTToken) LT(0);
+
+            if (LA(0) != RCURLY) {
+                matchError = true;
                 break main_loop;
             }
 
