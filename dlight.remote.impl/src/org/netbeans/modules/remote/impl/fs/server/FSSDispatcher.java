@@ -221,12 +221,14 @@ import org.openide.util.RequestProcessor;
                     return;
                 }
                 BufferedReader reader = server.getReader();
+                String prevLine = null;
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.isEmpty()) {
-                        RemoteLogger.info("error: empty line for " + traceName);
+                        RemoteLogger.info("error: empty line for {0} prev.line was {1}" ,traceName, prevLine);
                         continue;
                     }
+                    prevLine = line;
                     Buffer buf = new Buffer(line);
                     char respKind = buf.getChar();
                     int respId = buf.getInt();
