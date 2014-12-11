@@ -105,6 +105,14 @@ public abstract class ProgressMonitor {
     public abstract void notifyWarning (String message);
 
     /**
+     * Notifies about an informational message passed from the running command.
+     * @param message informational message
+     * @since 1.30
+     */
+    public void notifyMessage (String message) {
+    }
+
+    /**
      * Implementors may override this to be notified when a task is started
      * during a command execution. The task may or may not know its precise
      * number of steps. {@link #UNKNOWN_WORK_UNITS} as the value of

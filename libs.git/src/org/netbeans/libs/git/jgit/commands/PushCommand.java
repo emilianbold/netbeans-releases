@@ -119,12 +119,7 @@ public class PushCommand extends TransportCommand {
             transport.setTagOpt(TagOpt.AUTO_FOLLOW);
             PushResult pushResult = transport.push(new DelegatingProgressMonitor(monitor), fetchSpecs.isEmpty() ? transport.findRemoteRefUpdatesFor(specs) : Transport.findRemoteRefUpdatesFor(getRepository(), specs, fetchSpecs));
             Map<String, GitBranch> remoteBranches = Utils.refsToBranches(pushResult.getAdvertisedRefs(), Constants.R_HEADS, getClassFactory());
-            for (String msg : pushResult.getMessages().split("\n")) { //NOI18N
-                if (!msg.isEmpty()) {
-                    // these are not warnings, i guess, just plain informational messages
-//                    monitor.notifyWarning(msg);
-                }
-            }
+            processMessages(pushResult.getMessages());
             Map<String, GitTransportUpdate> remoteRepositoryUpdates = new HashMap<String, GitTransportUpdate>(pushResult.getRemoteUpdates().size());
             for (RemoteRefUpdate update : pushResult.getRemoteUpdates()) {
                 GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update, remoteBranches);

@@ -280,8 +280,10 @@ public class PushAction extends SingleRepositoryAction {
                     while (cont && !isCanceled()) {
                         setDisplayName(Bundle.MSG_PushAction_pushing());
                         GitPushResult result = client.push(target, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
+                        getLogger().outputLine("");
                         logUpdates(getRepositoryRoot(), result.getRemoteRepositoryUpdates(),
                                 "MSG_PushAction.updates.remoteUpdates", true); //NOI18N
+                        getLogger().outputLine("");
                         logUpdates(getRepositoryRoot(), result.getLocalRepositoryUpdates(),
                                 "MSG_PushAction.updates.localUpdates", false); //NOI18N
                         cont = reportRemoteConflicts(result.getRemoteRepositoryUpdates());
@@ -328,6 +330,9 @@ public class PushAction extends SingleRepositoryAction {
                     GitBranch currBranch = RepositoryInfo.getInstance(repository).getActiveBranch();
                     for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                         GitTransportUpdate update = e.getValue();
+                        if (update.getResult() == GitRefUpdateResult.NOT_ATTEMPTED) {
+                            continue;
+                        }
                         if (update.getType() == Type.BRANCH) {
                             if (update.getNewObjectId() == null && update.getOldObjectId() != null) {
                                 // delete
@@ -556,9 +561,9 @@ public class PushAction extends SingleRepositoryAction {
                     pullBtn.getAccessibleContext().setAccessibleDescription(Bundle.CTL_PushAction_report_pullButton_desc());
                     Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor(message, Bundle.LBL_PushAction_report_error_title(),
                             NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.ERROR_MESSAGE,
-                            allowSync ? new Object[] { pullBtn, outputBtn, NotifyDescriptor.CANCEL_OPTION }
+                            allowSync && !conflicts.isEmpty() ? new Object[] { pullBtn, outputBtn, NotifyDescriptor.CANCEL_OPTION }
                                     : new Object[] { outputBtn, NotifyDescriptor.CANCEL_OPTION },
-                            allowSync ? pullBtn : outputBtn));
+                            allowSync && !conflicts.isEmpty() ? pullBtn : outputBtn));
                     if (o == outputBtn) {
                         getLogger().getOpenOutputAction().actionPerformed(new ActionEvent(PushAction.this, ActionEvent.ACTION_PERFORMED, null));
                     } else if (o == pullBtn) {

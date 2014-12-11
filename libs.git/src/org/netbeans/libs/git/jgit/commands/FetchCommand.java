@@ -101,12 +101,7 @@ public class FetchCommand extends TransportCommand {
             transport.setFetchThin(true);
             transport.setTagOpt(TagOpt.FETCH_TAGS);
             result = transport.fetch(new DelegatingProgressMonitor(monitor), specs);
-            for (String msg : result.getMessages().split("\n")) { //NOI18N
-                if (!msg.isEmpty()) {
-                    // these are not warnings, i guess, just plain informational messages
-//                    monitor.notifyWarning(msg);
-                }
-            }
+            processMessages(result.getMessages());
             updates = new HashMap<String, GitTransportUpdate>(result.getTrackingRefUpdates().size());
             for (TrackingRefUpdate update : result.getTrackingRefUpdates()) {
                 GitTransportUpdate upd = getClassFactory().createTransportUpdate(transport.getURI(), update);

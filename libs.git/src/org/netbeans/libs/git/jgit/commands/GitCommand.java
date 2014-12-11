@@ -117,4 +117,19 @@ public abstract class GitCommand {
     protected final GitClassFactory getClassFactory () {
         return gitFactory;
     }
+
+    protected final void processMessages (String messages) {
+        for (String msg : messages.split("\n")) { //NOI18N
+            if (msg.startsWith(MSG_ERROR)) { //NOI18N
+                monitor.notifyError(msg.substring(MSG_ERROR.length()).trim());
+            } else if (msg.startsWith(MSG_WARNING)) { //NOI18N
+                monitor.notifyWarning(msg.substring(MSG_WARNING.length()).trim());
+            } else if (!msg.isEmpty()) {
+                // these are not warnings, i guess, just plain informational messages
+                monitor.notifyMessage(msg);
+            }
+        }
+    }
+    private static final String MSG_WARNING = "warning:"; //NOI18N
+    private static final String MSG_ERROR = "error:"; //NOI18N
 }

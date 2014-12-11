@@ -111,6 +111,23 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>Passing messages from running commands to the caller.</summary>
+            <version major="1" minor="30"/>
+            <date day="11" month="12" year="2014"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                    <li>ProgressMonitor now delivers also informational messages from running commands.
+                    This is useful to obtain messages during e.g. push process when a remote repository
+                    notifies about run push hooks.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git.progress" name="ProgressMonitor"/>
+            <issue number="233106"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>New method exporting a diff between two arbitrary commits or trees.</summary>
             <version major="1" minor="29"/>
             <date day="27" month="10" year="2014"/>
