@@ -103,5 +103,10 @@ public class MochaSeleniumTestingProvider implements SeleniumTestingProviderImpl
     public void runTests(FileObject[] activatedFOs) {
         MochaRunner.runTests(activatedFOs, true);
     }
+
+    @Override
+    public void debugTests(FileObject[] activatedFOs) {
+        MochaRunner.debugTests(activatedFOs, true);
+    }
     
 }
