@@ -157,6 +157,7 @@ public class GruntExecutable {
                     }
                 });
         Future<Integer> task = getExecutable("list grunt tasks") // NOI18N
+                .noInfo(true)
                 .additionalParameters(Arrays.asList(NO_COLOR_PARAM, HELP_PARAM))
                 .redirectErrorStream(false)
                 .run(descriptor);
