@@ -225,7 +225,7 @@ import org.openide.util.RequestProcessor;
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.isEmpty()) {
-                        RemoteLogger.info("error: empty line for {0} prev.line was {1}" ,traceName, prevLine);
+                        RemoteLogger.fine("error: empty line for {0} prev.line was {1}" ,traceName, prevLine);
                         continue;
                     }
                     prevLine = line;
