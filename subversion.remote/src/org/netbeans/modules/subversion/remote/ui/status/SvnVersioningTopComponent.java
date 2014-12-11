@@ -70,6 +70,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 public class SvnVersioningTopComponent extends TopComponent implements Externalizable {
    
     private static final long serialVersionUID = 1L;    
+    private static final String ID = "svn-remote-versioning";
     
     private final VersioningPanel         syncPanel;
     private Context                 context;
@@ -84,7 +85,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         putClientProperty("SlidingName", NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); //NOI18N
         
         setName(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
-        setIcon(ImageUtilities.loadImage("org/netbeans/modules/subversion/resources/icons/versioning-view.png"));  // NOI18N
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/subversion/remote/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SvnVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"));
         syncPanel = new VersioningPanel(this);
@@ -218,7 +219,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
 
     public static synchronized SvnVersioningTopComponent getInstance() {
         if (instance == null) {
-            instance = (SvnVersioningTopComponent) WindowManager.getDefault().findTopComponent("svnversioning"); // NOI18N
+            instance = (SvnVersioningTopComponent) WindowManager.getDefault().findTopComponent(SvnVersioningTopComponent.ID); // NOI18N
             if (instance == null) {
                 Subversion.LOG.log(Level.INFO, null, new IllegalStateException("Can not find Versioning component")); // NOI18N
                 instance = new SvnVersioningTopComponent();
