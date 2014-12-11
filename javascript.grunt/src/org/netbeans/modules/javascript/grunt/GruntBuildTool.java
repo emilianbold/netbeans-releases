@@ -86,6 +86,21 @@ public final class GruntBuildTool implements BuildToolImplementation {
         return new GruntBuildTool(project);
     }
 
+    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
+    public static BuildToolImplementation forPhpProject(Project project) {
+        return new GruntBuildTool(project);
+    }
+
+    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-project") // NOI18N
+    public static BuildToolImplementation forWebProject(Project project) {
+        return new GruntBuildTool(project);
+    }
+
+    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-maven") // NOI18N
+    public static BuildToolImplementation forMavenProject(Project project) {
+        return new GruntBuildTool(project);
+    }
+
     public static GruntBuildTool forProject(Project project) {
         GruntBuildTool buildTool = project.getLookup().lookup(GruntBuildTool.class);
         assert buildTool != null : "GruntBuildTool should be found in project " + project.getClass().getName() + " (lookup: " + project.getLookup() + ")";
