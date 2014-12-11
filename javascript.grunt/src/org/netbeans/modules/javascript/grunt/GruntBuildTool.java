@@ -92,7 +92,13 @@ public final class GruntBuildTool implements BuildToolImplementation {
 
     @CheckForNull
     public static GruntBuildTool inProject(Project project) {
-        return project.getLookup().lookup(GruntBuildTool.class);
+        assert project != null;
+        for (BuildToolImplementation buildTool : project.getLookup().lookupAll(BuildToolImplementation.class)) {
+            if (buildTool instanceof GruntBuildTool) {
+                return (GruntBuildTool) buildTool;
+            }
+        }
+        return null;
     }
 
     @Override
