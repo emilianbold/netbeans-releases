@@ -62,7 +62,6 @@ import org.netbeans.modules.subversion.remote.options.AnnotationExpression;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbPreferences;
@@ -151,7 +150,7 @@ public class SvnModuleConfig {
     public void addExclusionPaths(Collection<String> paths) {
         Set<String> exclusions = getCommitExclusions();
         if (exclusions.addAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(exclusions));
+            org.netbeans.modules.subversion.remote.versioning.util.Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(exclusions));
         }
     }
 
@@ -161,12 +160,12 @@ public class SvnModuleConfig {
     public void removeExclusionPaths(Collection<String> paths) {
         Set<String> exclusions = getCommitExclusions();
         if (exclusions.removeAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(exclusions));
+            org.netbeans.modules.subversion.remote.versioning.util.Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(exclusions));
         }
     }
 
     public String getExecutableBinaryPath() {
-        return (String) getPreferences().get(KEY_EXECUTABLE_BINARY, "");        
+        return getPreferences().get(KEY_EXECUTABLE_BINARY, "");        
     }
     
     public void setExecutableBinaryPath(String path) {
@@ -174,7 +173,7 @@ public class SvnModuleConfig {
     }
 
     public String getAnnotationFormat() {
-        return (String) getPreferences().get(KEY_ANNOTATION_FORMAT, getDefaultAnnotationFormat());                
+        return getPreferences().get(KEY_ANNOTATION_FORMAT, getDefaultAnnotationFormat());                
     }
     
     public String getDefaultAnnotationFormat() {
@@ -237,7 +236,7 @@ public class SvnModuleConfig {
     public void insertRecentUrl(final RepositoryConnection rc) {
         Preferences prefs = getPreferences();
 
-        List<String> urlValues = Utils.getStringList(prefs, KEY_RECENT_URL);
+        List<String> urlValues = org.netbeans.modules.subversion.remote.versioning.util.Utils.getStringList(prefs, KEY_RECENT_URL);
         for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
             String rcOldString = it.next();
             RepositoryConnection rcOld =  RepositoryConnection.parse(rcOldString);
@@ -278,7 +277,7 @@ public class SvnModuleConfig {
         }
         Preferences prefs = getPreferences();
         try {
-            Utils.put(prefs, KEY_RECENT_URL, urls);
+            org.netbeans.modules.subversion.remote.versioning.util.Utils.put(prefs, KEY_RECENT_URL, urls);
         } finally {
             SvnConfigFiles.getInstance(fileSystem).reset();
         }
@@ -286,7 +285,7 @@ public class SvnModuleConfig {
     
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
-        List<String> urls = Utils.getStringList(prefs, KEY_RECENT_URL);
+        List<String> urls = org.netbeans.modules.subversion.remote.versioning.util.Utils.getStringList(prefs, KEY_RECENT_URL);
         List<RepositoryConnection> ret = new ArrayList<>(urls.size());
         List<RepositoryConnection> withPassword = new LinkedList<>();
         for (String urlString : urls) {
@@ -332,14 +331,14 @@ public class SvnModuleConfig {
         }
 
         Preferences prefs = getPreferences();
-        Utils.put(prefs, URL_EXP, urlExp);        
-        Utils.put(prefs, ANNOTATION_EXP, annotationExp);                
+        org.netbeans.modules.subversion.remote.versioning.util.Utils.put(prefs, URL_EXP, urlExp);        
+        org.netbeans.modules.subversion.remote.versioning.util.Utils.put(prefs, ANNOTATION_EXP, annotationExp);                
     }
 
     public List<AnnotationExpression> getAnnotationExpresions() {
         Preferences prefs = getPreferences();
-        List<String> urlExp = Utils.getStringList(prefs, URL_EXP);
-        List<String> annotationExp = Utils.getStringList(prefs, ANNOTATION_EXP);        
+        List<String> urlExp = org.netbeans.modules.subversion.remote.versioning.util.Utils.getStringList(prefs, URL_EXP);
+        List<String> annotationExp = org.netbeans.modules.subversion.remote.versioning.util.Utils.getStringList(prefs, ANNOTATION_EXP);        
                 
         List<AnnotationExpression> ret = new ArrayList<>(urlExp.size());                
         for (int i = 0; i < urlExp.size(); i++) {                                        
@@ -471,7 +470,7 @@ public class SvnModuleConfig {
     
     private synchronized Set<String> getCommitExclusions() {
         if (exclusions == null) {
-            exclusions = new HashSet<>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
+            exclusions = new HashSet<>(org.netbeans.modules.subversion.remote.versioning.util.Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
         }
         return exclusions;
     }

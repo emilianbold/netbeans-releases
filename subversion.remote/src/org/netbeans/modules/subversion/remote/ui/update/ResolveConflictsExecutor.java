@@ -225,7 +225,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     private Difference[] copyParts(boolean generateDiffs, VCSFileProxy source,
                                    VCSFileProxy dest, boolean leftPart, Charset charset) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(source.getInputStream(false), charset));
-        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(dest.toFileObject().getOutputStream(), charset));
+        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(dest), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
             diffList = new ArrayList<>();
@@ -483,7 +483,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             if (fo != null) {
                 w = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
             } else {
-                w = new OutputStreamWriter(outputFile.toFileObject().getOutputStream(), encoding);
+                w = new OutputStreamWriter(VCSFileProxySupport.getOutputStream(outputFile), encoding);
             }
             if (conflicts == null || conflicts.length == 0) {
                 fileToRepairEntriesOf = outputFile;

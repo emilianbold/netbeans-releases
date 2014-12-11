@@ -73,7 +73,7 @@ import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkProvider;
-import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
@@ -647,7 +647,7 @@ public class Subversion {
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
             }
-            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(originalFile.toFileObject().getOutputStream(), original.getInputStream(false));
+            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(VCSFileProxySupport.getOutputStream(originalFile), original.getInputStream(false));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
         } catch (SVNClientException ex) {

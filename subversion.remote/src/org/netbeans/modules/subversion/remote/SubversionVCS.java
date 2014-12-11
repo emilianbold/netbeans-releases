@@ -61,6 +61,8 @@ import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,7 +71,7 @@ import org.netbeans.spi.queries.CollocationQueryImplementation2;
 @VersioningSystem.Registration(displayName="#CTL_Subversion_DisplayName", 
     menuLabel="#CTL_Subversion_MainMenu", 
     metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"}, 
-    actionsCategory="Subversion")
+    actionsCategory="RemoteSubversion")
 public class SubversionVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener, PreferenceChangeListener {
 
     /**
@@ -81,12 +83,14 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
     private VCSVisibilityQuery visibilityQuery;
 
     public SubversionVCS() {
-        SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
+        for(FileSystem fileSystem : VCSFileProxySupport.getFileSystems()) {
+            SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
+        }
         Subversion.getInstance().attachListeners(this);
     }
 
     public static String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName");
     }
 
     /**
@@ -192,8 +196,8 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
 
     @Override
     public void versioningEvent(VersioningEvent event) {
-        if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(event.getPropertyName())) {
-            VCSFileProxy file = event.getFile();
+        if (FileStatusCache.EVENT_FILE_STATUS_CHANGED.equals(event.getId())) {
+            VCSFileProxy file = (VCSFileProxy) event.getParams()[0];
             if (file != null) {
                 fireStatusChanged(file);
             }

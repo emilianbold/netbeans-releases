@@ -150,7 +150,7 @@ public final class MacroMap implements Cloneable {
         }
 
         if (value == null) {
-            log.log(Level.INFO, "Attempt to set env variable '%s' with null value", key); // NOI18N
+            log.log(Level.INFO, "Attempt to set env variable {0} with null value", key); // NOI18N
         }
 
         String result = value;

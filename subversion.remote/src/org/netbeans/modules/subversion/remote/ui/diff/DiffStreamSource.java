@@ -233,7 +233,7 @@ public class DiffStreamSource extends StreamSource {
                         }
                         VCSFileProxy newRemoteFile = VCSFileProxy.createFileProxy(tempFolder, file.getName());
                         VCSFileProxySupport.deleteOnExit(newRemoteFile);
-                        org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(newRemoteFile.toFileObject().getOutputStream(), rf.getInputStream(false));
+                        org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(VCSFileProxySupport.getOutputStream(newRemoteFile), rf.getInputStream(false));
                         if (isBase) {
                             remoteFile = newRemoteFile;
                             Utils.associateEncoding(file, newRemoteFile);                            

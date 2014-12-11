@@ -71,7 +71,7 @@ public class URLPatternPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/wizards/urlpatternstep/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/wizards/urlpatternstep/Bundle"); // NOI18N
         setName(bundle.getString("CTL_Name")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(URLPatternPanel.class, "CTL_URLPattern_RepositoryHint")); // NOI18N

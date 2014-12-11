@@ -98,7 +98,7 @@ class Commandline {
     // so it may (and it does) happen that two commands run simultaneously and eventually a wrong output is read (because cli is an instance field)
     // this is a hotfix, cli should probably be turned into a local var, but how would we interrupt the command in that case???
     synchronized void exec(SvnCommand command) throws IOException {
-        canceled = new Canceler();;
+        canceled = new Canceler();
         command.prepareCommand();        
         
         String cmd = executable + " " + command.getStringCommand();
@@ -114,7 +114,7 @@ class Commandline {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.fine("cli: process created");                        // NOI18N
             }
-            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(cmd, getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args);
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(null, getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args);
 
             if(command.hasBinaryOutput()) {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
@@ -164,9 +164,9 @@ class Commandline {
 
     private Map<String, String> getEnvVar() {
         Map<String,String> ret = new HashMap<>();
-        ret.put("LC_ALL", null);                // NOI18N    
-        ret.put("LC_MESSAGES", "C");                // NOI18N    
-        ret.put("LC_TIME", "C");                // NOI18N    
+        ret.put("LC_ALL", "");                // NOI18N    
+        ret.put("LC_MESSAGES", "C");          // NOI18N    
+        ret.put("LC_TIME", "C");              // NOI18N    
         return ret;
     }	    
 }

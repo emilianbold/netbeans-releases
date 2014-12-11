@@ -72,6 +72,7 @@ import org.openide.filesystems.FileSystem;
     private static final int CLASS_FOLD = CppFoldRecord.CLASS_FOLD;
     private static final int NAMESPACE_FOLD = CppFoldRecord.NAMESPACE_FOLD;
     private static final int FUNCTION_FOLD = CppFoldRecord.FUNCTION_FOLD;
+    private static final int COMPOUND_BLOCK_FOLD = CppFoldRecord.COMPOUND_BLOCK_FOLD;
     private static final int FIRST_TOKEN = APTTokenTypes.NULL_TREE_LOOKAHEAD+1;
     private static final int LAST_TOKEN = APTTokenTypes.LAST_LEXER_FAKE_RULE;
     //private int curCurlyLevel = 0;
@@ -179,6 +180,37 @@ import org.openide.filesystems.FileSystem;
         assert (LA(0) == LESSTHAN);
         balanceBracket(LESSTHAN, GREATERTHAN);
         assert (matchError || LA(1) == GREATERTHAN);
+    }
+
+    protected final void balanceCurliesAndCreateFolders(int folderType, int level, boolean foldCurrent) throws TokenStreamException {
+        if (LA(0) != LCURLY) {
+            matchError = true;
+            return;
+        }
+
+        int startType = LCURLY;
+        int endType = RCURLY;
+
+        APTToken startToken = (APTToken) LT(0);
+
+        int LA1 = LA(1);
+        for (; LA1 != EOF; LA1 = LA(1)) {
+            if (LA1 == endType) {
+                APTToken endToken = (APTToken) LT(1);
+                if (foldCurrent) {
+                    createFolder(folderType, startToken, endToken);
+                }
+                break;
+            } else if (LA1 == startType) {
+                consume();
+                balanceCurliesAndCreateFolders(folderType, level + 1, true);
+                continue;
+            } else {
+                // eat token
+            }
+            consume();
+        }
+        match(RCURLY);
     }
 
     private void balanceBracket(int startType, int endType) throws TokenStreamException {
@@ -541,7 +573,7 @@ import org.openide.filesystems.FileSystem;
                     }
                     switch (LA(1)) {
                         case LCURLY: {
-                            createCurlyFolder(FUNCTION_FOLD);
+                            blockFold(FUNCTION_FOLD);
                             if (matchError) {
                                 break main_loop;
                             }
@@ -609,6 +641,52 @@ import org.openide.filesystems.FileSystem;
             resetMatchError();
         }
     }
+
+    protected final void blockFold(int foldType) throws TokenStreamException {
+        // LA(1) = LCURLY
+        main_loop:
+        while (true) {
+            APTToken begin = (APTToken) LT(1);
+            /* LCURLY - left balance (enter) */
+            match(LCURLY);
+            if (matchError) {
+                break main_loop;
+            }
+
+            do {
+                // nongreedy exit test
+                if (LA(1) == RCURLY) {
+                    /* RCURLY - right balance (exit) */
+                    break;
+                }
+
+                if ((LA(1) >= FIRST_TOKEN && LA(1) <= LAST_TOKEN)) {
+                    balanceCurliesAndCreateFolders(COMPOUND_BLOCK_FOLD, 0, false);
+                    if (matchError) {
+                        break main_loop;
+                    }
+                } else {
+                    break;
+                }
+            } while (true);
+
+            APTToken end = (APTToken) LT(0);
+
+            if (LA(0) != RCURLY) {
+                matchError = true;
+                break main_loop;
+            }
+
+            createFolder(foldType, begin, end);
+
+            break;
+        }
+        if (matchError) {
+            reportError(matchException);
+            resetMatchError();
+        }
+    }
+
 //    protected final void namespaceFold() throws TokenStreamException {
 //        
 //        Token  bb = null;

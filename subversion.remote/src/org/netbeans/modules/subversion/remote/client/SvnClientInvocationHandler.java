@@ -61,6 +61,7 @@ import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -306,7 +307,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             return;
         }
         try {
-            SvnClientFactory.checkClientAvailable(null);
+            SvnClientFactory.checkClientAvailable(new Context(VCSFileProxy.createFileProxy(adapter.getFileSystem().getRoot())));
         } catch (SVNClientException e) {
             return;
         }

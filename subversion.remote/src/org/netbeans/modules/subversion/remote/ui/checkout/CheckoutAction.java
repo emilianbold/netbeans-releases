@@ -171,7 +171,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
             @Override
             public void perform() {
                 try {
-                    setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
+                    setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
                     setCancellableDelegate(client);
                     client.addNotifyListener(this);
                     checkout(client, repository, repositoryFiles, workingDir, atWorkingDirLevel, doExport, this);
@@ -185,11 +185,11 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
                 if(isCanceled()) {
                     return;
                 }
-                setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
+                setDisplayName(java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/checkout/Bundle").getString("LBL_ScanFolders_Progress"));
                 if(showCheckoutCompleted) showCheckoutCompletet(repositoryFiles, workingDir, atWorkingDirLevel, doExport, this);
             }
         };
-        return support.start(Subversion.getInstance().getRequestProcessor(repository), repository, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
+        return support.start(Subversion.getInstance().getRequestProcessor(repository), repository, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/checkout/Bundle").getString("LBL_Checkout_Progress"));
     }
 
     public static void checkout(final SvnClient client,

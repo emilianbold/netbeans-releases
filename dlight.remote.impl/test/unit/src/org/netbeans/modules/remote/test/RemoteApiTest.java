@@ -64,6 +64,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            // some tests moved to RemoteApiLinksAndListenersTest
            AdeMockupTestCase.class,
            RemoteFileSystemTestCase.class,
+           CopyTestCase.class,
            RemotePathTestCase.class,
            RemoteURLTestCase.class,
            RenameTestCase.class,

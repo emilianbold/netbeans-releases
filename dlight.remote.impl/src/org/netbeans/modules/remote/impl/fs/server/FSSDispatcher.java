@@ -125,7 +125,7 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
-    private static final String MIN_SERVER_VERSION = "1.2.1"; // NOI18N
+    private static final String MIN_SERVER_VERSION = "1.3.0"; // NOI18N
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
@@ -221,12 +221,14 @@ import org.openide.util.RequestProcessor;
                     return;
                 }
                 BufferedReader reader = server.getReader();
+                String prevLine = null;
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.isEmpty()) {
-                        RemoteLogger.info("error: empty line for " + traceName);
+                        RemoteLogger.fine("error: empty line for {0} prev.line was {1}" ,traceName, prevLine);
                         continue;
                     }
+                    prevLine = line;
                     Buffer buf = new Buffer(line);
                     char respKind = buf.getChar();
                     int respId = buf.getInt();
@@ -528,6 +530,7 @@ import org.openide.util.RequestProcessor;
                 //}
             }
         } else {
+            RemoteLogger.fine("Reading handshake response from {0}:{1} -> {2}", env, server.path, line);
             Buffer buf = new Buffer(line);
             char respKind = buf.getChar();
             RemoteLogger.assertTrue(respKind == FSSResponseKind.FS_RSP_SERVER_INFO.getChar());
