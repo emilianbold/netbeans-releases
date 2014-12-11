@@ -74,7 +74,6 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
 @ActionID(id = "org.netbeans.modules.javascript.grunt.ui.actions.RunGruntTaskAction", category = "Build")
@@ -115,30 +114,39 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
     @Override
     public Action createContextAwareInstance(Lookup context) {
         Project contextProject = context.lookup(Project.class);
-        Gruntfile gruntfile = null;
         if (contextProject != null) {
             // project action
-            gruntfile = new Gruntfile(contextProject.getProjectDirectory());
-        } else {
-            // gruntfile directly
-            FileObject file = context.lookup(FileObject.class);
-            if (file == null) {
-                DataObject dataObject = context.lookup(DataObject.class);
-                if (dataObject != null) {
-                    file = dataObject.getPrimaryFile();
-                }
-            }
-            if (file != null) {
-                gruntfile = new Gruntfile(file.getParent());
+            return createAction(contextProject);
+        }
+        // gruntfile directly
+        FileObject file = context.lookup(FileObject.class);
+        if (file == null) {
+            DataObject dataObject = context.lookup(DataObject.class);
+            if (dataObject != null) {
+                file = dataObject.getPrimaryFile();
             }
         }
-        if (gruntfile == null) {
+        if (file == null) {
             return this;
         }
+        contextProject = FileOwnerQuery.getOwner(file);
+        if (contextProject == null) {
+            return null;
+        }
+        if (!contextProject.getProjectDirectory().equals(file.getParent())) {
+            // not a main project gruntfile
+            return this;
+        }
+        return createAction(contextProject);
+    }
+
+    private Action createAction(Project contextProject) {
+        assert contextProject != null;
+        Gruntfile gruntfile = new Gruntfile(contextProject.getProjectDirectory());
         if (!gruntfile.exists()) {
             return this;
         }
-        return new RunGruntTaskAction(contextProject != null ? contextProject : FileOwnerQuery.getOwner(Utilities.toURI(gruntfile.getFile())));
+        return new RunGruntTaskAction(contextProject);
     }
 
     @Override
