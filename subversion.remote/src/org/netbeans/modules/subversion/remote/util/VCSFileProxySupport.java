@@ -500,12 +500,17 @@ public final class VCSFileProxySupport {
         }
     }
     
-    public static FileSystem readFileSystem(DataInputStream is) {
-        throw new UnsupportedOperationException();
+    public static FileSystem readFileSystem(DataInputStream is) throws IOException {
+        String uri = is.readUTF();
+        try {
+            return FileSystemProvider.getFileSystem(new URI(uri));
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
     }
 
     public static void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
         //TODO: implement it!
-        os.writeChars(fs.getRoot().toURI().toString());
+        os.writeUTF(fs.getRoot().toURI().toString());
     }
 }

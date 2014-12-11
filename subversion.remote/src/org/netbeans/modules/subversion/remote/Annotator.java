@@ -51,6 +51,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -146,28 +147,38 @@ public class Annotator extends VCSAnnotator {
 
     public void refresh() {
         for(FileSystem fileSystem : VCSFileProxySupport.getFileSystems()) {
-            AnnotationFormat af = annotationFormat.get(fileSystem);
-            if (af == null) {
-                af = new AnnotationFormat();
-                annotationFormat.put(fileSystem, af);
-            }
-            String string = SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
-            if (string != null && !string.trim().equals("")) { // NOI18N
-                af.mimeTypeFlag = string.contains("{mime_type}");
-                string = SvnUtils.createAnnotationFormat(string);
-                if (!SvnUtils.isAnnotationFormatValid(string)) {
-                    Subversion.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
-                    string = org.openide.util.NbBundle.getMessage(Annotator.class, "Annotator.defaultFormat"); // NOI18N
-                    af.mimeTypeFlag = string.contains("{4}");
-                }
-                af.format = new MessageFormat(string);
-                af.emptyFormat = af.format.format(new String[] {"", "", "", "", "", "", "", "", ""} , new StringBuffer(), null).toString().trim();
-            }
+            initFormat(fileSystem);
         }
     }
 
+    private AnnotationFormat initFormat(FileSystem fileSystem) {
+        AnnotationFormat af = annotationFormat.get(fileSystem);
+        if (af == null) {
+            af = new AnnotationFormat();
+            annotationFormat.put(fileSystem, af);
+        }
+        String string = SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
+        if (string != null && !string.trim().equals("")) { // NOI18N
+            af.mimeTypeFlag = string.contains("{mime_type}");
+            string = SvnUtils.createAnnotationFormat(string);
+            if (!SvnUtils.isAnnotationFormatValid(string)) {
+                Subversion.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
+                string = org.openide.util.NbBundle.getMessage(Annotator.class, "Annotator.defaultFormat"); // NOI18N
+                af.mimeTypeFlag = string.contains("{4}");
+            }
+            af.format = new MessageFormat(string);
+            af.emptyFormat = af.format.format(new String[] {"", "", "", "", "", "", "", "", ""} , new StringBuffer(), null).toString().trim();
+        }
+        return af;
+    }
+
     public AnnotationFormat getAnnotationFormat(FileSystem fileSystem) {
-        return annotationFormat.get(fileSystem);
+        AnnotationFormat af = annotationFormat.get(fileSystem);
+        if (af == null) {
+            af = initFormat(fileSystem);
+            annotationFormat.put(fileSystem, af);
+        }
+        return af;
     }
     
     /**
@@ -192,7 +203,7 @@ public class Annotator extends VCSAnnotator {
         FileSystem fileSystem = null;
         if (annotationsVisible && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             fileSystem = VCSFileProxySupport.getFileSystem(file);
-            AnnotationFormat af = annotationFormat.get(fileSystem);
+            AnnotationFormat af = getAnnotationFormat(fileSystem);
             if (af != null && af.format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
@@ -272,7 +283,7 @@ public class Annotator extends VCSAnnotator {
             statusString = info.getShortStatusText();
         }
         String lockString = getLockString(status);
-        AnnotationFormat af = annotationFormat.get(VCSFileProxySupport.getFileSystem(file));
+        AnnotationFormat af = getAnnotationFormat(VCSFileProxySupport.getFileSystem(file));
         FileStatusCache.FileLabelInfo labelInfo;
         labelInfo = cache.getLabelsCache().getLabelInfo(file, af.mimeTypeFlag);
         String revisionString = labelInfo.getRevisionString();
@@ -309,7 +320,7 @@ public class Annotator extends VCSAnnotator {
         FileSystem fileSystem = null;
         if (annotationsVisible && file != null && (status & FileInformation.STATUS_MANAGED) != 0) {
             fileSystem = VCSFileProxySupport.getFileSystem(file);
-            AnnotationFormat af = annotationFormat.get(fileSystem);
+            AnnotationFormat af = getAnnotationFormat(fileSystem);
 
             if (af.format != null) {
                 textAnnotation = formatAnnotation(info, file);
