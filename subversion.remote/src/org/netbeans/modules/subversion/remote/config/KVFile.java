@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.remote.config;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -187,7 +188,7 @@ public class KVFile {
     private void parse() throws IOException {        
         InputStream is = null;        
         try {            
-            is = file.getInputStream(false);                                    
+            is = new BufferedInputStream(file.getInputStream(false));
             int keyIdx = 0;
             while(!checkEOF(is)) {                      
                int keyLength = readEntryLength(is);     // key length
