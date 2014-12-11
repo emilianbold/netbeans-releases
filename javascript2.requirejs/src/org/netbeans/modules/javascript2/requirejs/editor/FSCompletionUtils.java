@@ -77,6 +77,7 @@ public class FSCompletionUtils {
             final String prefix,
             int anchor,
             boolean addExtensions,
+            boolean addRelativePrefix,
             FileObjectFilter filter) throws IOException {
 
         assert relativeTo != null;
@@ -143,7 +144,7 @@ public class FSCompletionUtils {
 //                    if (lastSlash == 1 && prefix.charAt(0) == '.') {
                         int newAnchor = anchor - prefix.length();
 //                    }
-                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + SLASH : (filePrefix.isEmpty() ? "./" : ""), addExtensions, newAnchor)); //NOI18N
+                    result.add(new FSCompletionItem(current, pathPrefix != null ? pathPrefix + SLASH : ((filePrefix.isEmpty() && addRelativePrefix) ? "./" : ""), addExtensions, newAnchor)); //NOI18N
                 }
             }
         }
@@ -259,10 +260,10 @@ public class FSCompletionUtils {
                 if (basePaths.isEmpty()) {
                     result = findFileObject(parent, composePath(path), false);
                     if (result != null) {
-                        return result;
+                            return result;
+                        }
                     }
                 }
-            }
             // try directly the base path
             for (String value : basePaths) {
                 String composedPath = composePath(value, path);

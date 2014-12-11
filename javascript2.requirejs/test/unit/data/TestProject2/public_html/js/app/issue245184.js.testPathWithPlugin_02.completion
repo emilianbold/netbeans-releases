@@ -3,3 +3,4 @@ Code completion result for source line:
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 FILE       issue245156.js                             
+FILE       issue249282.js                             

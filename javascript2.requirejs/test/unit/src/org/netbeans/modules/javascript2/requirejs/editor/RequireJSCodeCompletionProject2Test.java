@@ -88,6 +88,14 @@ public class RequireJSCodeCompletionProject2Test extends JsCodeCompletionBase {
         checkCompletion("TestProject2/public_html/js/app/issue245156.js", "module1.^first;", false);
     }
 
+    public void testIssue249282_01() throws Exception {
+        checkCompletion("TestProject2/public_html/js/app/issue249282.js", "'ojs/^'", false);
+    }
+    
+    public void testIssue249282_02() throws Exception {
+        checkCompletion("TestProject2/public_html/js/app/issue249282.js", "'ojs/oj^'", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();

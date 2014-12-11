@@ -214,7 +214,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 List<CompletionProposal> result = new ArrayList();
 
                 try {
-                    result = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), addExtensionInCC, new FSCompletionUtils.JSIncludesFilter(fo));
+                    result = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), addExtensionInCC, true, new FSCompletionUtils.JSIncludesFilter(fo));
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -251,22 +251,22 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                     }
                 }
                 
-                FileObject fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath, fo);
                 String prefixAfterMapping = "";
-                if (fromMapping == null) {
-                    // try to find file withouth the last part of part
-                    int index = writtenPath.lastIndexOf('/');
-                    if (index > -1) {
-                        fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath.substring(0, index), fo);
-                        prefixAfterMapping = writtenPath.substring(index + 1);
-                    }
+                FileObject fromMapping;
+                int index = writtenPath.lastIndexOf('/');
+                if (index > -1) {
+                    fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath.substring(0, index), fo);
+                    prefixAfterMapping = writtenPath.substring(index + 1);
+                } else {
+                    fromMapping = FSCompletionUtils.findMappedFileObject(writtenPath, fo);
                 }
+                
                 if (fromMapping != null) {
                     // try the whole prefix
                     relativeTo.clear();
                     relativeTo.add(fromMapping);
                     try {
-                        List<CompletionProposal> newItems = FSCompletionUtils.computeRelativeItems(relativeTo, prefixAfterMapping, ccContext.getCaretOffset(), addExtensionInCC, new FSCompletionUtils.JSIncludesFilter(fo));
+                        List<CompletionProposal> newItems = FSCompletionUtils.computeRelativeItems(relativeTo, prefixAfterMapping, ccContext.getCaretOffset(), addExtensionInCC, false, new FSCompletionUtils.JSIncludesFilter(fo));
                         for (Iterator<CompletionProposal> it = newItems.iterator(); it.hasNext();) {
                             CompletionProposal proposel = it.next();
                             if (!result.contains(proposel)) {

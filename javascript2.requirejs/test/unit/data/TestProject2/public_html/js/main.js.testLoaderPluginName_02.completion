@@ -11,6 +11,8 @@ FILE       js
 FILE       lib                                        
 FILE       moduleLib1.js                              
 FILE       moduleLib2.js                              
+FILE       oj                                         
+FILE       ojs                                        
 FILE       picnic.js                                  
 FILE       piknic                                     
 FILE       proto                                      
