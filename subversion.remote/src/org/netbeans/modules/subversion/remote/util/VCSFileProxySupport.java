@@ -92,7 +92,7 @@ public final class VCSFileProxySupport {
             javaFile.delete();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "rm", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "rm", "-rf", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
             }
