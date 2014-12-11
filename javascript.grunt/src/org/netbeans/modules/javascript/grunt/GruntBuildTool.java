@@ -46,6 +46,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.file.GruntTasks;
@@ -81,30 +83,16 @@ public final class GruntBuildTool implements BuildToolImplementation {
         gruntPreferences = new GruntPreferences(project);
     }
 
-    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-    public static BuildToolImplementation forHtml5Project(Project project) {
-        return new GruntBuildTool(project);
-    }
-
-    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
-    public static BuildToolImplementation forPhpProject(Project project) {
-        return new GruntBuildTool(project);
-    }
-
-    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-project") // NOI18N
-    public static BuildToolImplementation forWebProject(Project project) {
-        return new GruntBuildTool(project);
-    }
-
-    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-maven") // NOI18N
-    public static BuildToolImplementation forMavenProject(Project project) {
-        return new GruntBuildTool(project);
-    }
-
+    @NonNull
     public static GruntBuildTool forProject(Project project) {
-        GruntBuildTool buildTool = project.getLookup().lookup(GruntBuildTool.class);
+        GruntBuildTool buildTool = inProject(project);
         assert buildTool != null : "GruntBuildTool should be found in project " + project.getClass().getName() + " (lookup: " + project.getLookup() + ")";
         return buildTool;
+    }
+
+    @CheckForNull
+    public static GruntBuildTool inProject(Project project) {
+        return project.getLookup().lookup(GruntBuildTool.class);
     }
 
     @Override
@@ -170,6 +158,32 @@ public final class GruntBuildTool implements BuildToolImplementation {
             }
         }
         return true;
+    }
+
+    //~ Inner classes
+
+    public static final class Registration {
+
+        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+        public static BuildToolImplementation forHtml5Project(Project project) {
+            return new GruntBuildTool(project);
+        }
+
+        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
+        public static BuildToolImplementation forPhpProject(Project project) {
+            return new GruntBuildTool(project);
+        }
+
+        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-project") // NOI18N
+        public static BuildToolImplementation forWebProject(Project project) {
+            return new GruntBuildTool(project);
+        }
+
+        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-maven") // NOI18N
+        public static BuildToolImplementation forMavenProject(Project project) {
+            return new GruntBuildTool(project);
+        }
+
     }
 
 }
