@@ -43,6 +43,7 @@ package org.netbeans.modules.subversion.remote.api;
 
 import com.sun.org.apache.xml.internal.utils.URI;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -154,7 +155,7 @@ public class SVNUrl {
     }
 
     public SVNUrl appendPath(String append) {
-        List<String> res = Arrays.asList(path);
+        List<String> res = new ArrayList<>(Arrays.asList(path));
         for(String s : append.split("/")) {
             if (!s.isEmpty()) {
                 res.add(s);

@@ -78,7 +78,34 @@ public class SVNRevision {
     }
     
     public static SVNRevision getRevision(String revision) throws ParseException {
-        throw new NotImplementedException();
+         return getRevision(revision, DateSpec.dateFormat);
+    }
+    
+    public static SVNRevision getRevision(String revision, SimpleDateFormat aDateFormat) throws ParseException {
+        if (revision == null || revision.equals("")) {
+            return null;
+        }
+        if (revision.compareToIgnoreCase("HEAD") == 0) {
+            return HEAD;
+        }
+        if (revision.compareToIgnoreCase("BASE") == 0) {
+            return BASE;
+        }
+        if (revision.compareToIgnoreCase("COMMITED") == 0) {
+            return COMMITTED;
+        }
+        if (revision.compareToIgnoreCase("PREV") == 0) {
+            return PREVIOUS;
+        }
+        int revisionNumber = Integer.parseInt(revision);
+        if (revisionNumber >= 0) {
+            return new Number(revisionNumber);
+        }
+        if (aDateFormat == null) {
+            aDateFormat = DateSpec.dateFormat;
+        }
+        Date revisionDate = aDateFormat.parse(revision);
+        return new DateSpec(revisionDate);
     }
     
     public Kind getKind() {
@@ -130,7 +157,7 @@ public class SVNRevision {
     }
     
     public static class DateSpec extends SVNRevision {
-        private static final DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US);
+        private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US);
 
         protected final Date revDate;
 

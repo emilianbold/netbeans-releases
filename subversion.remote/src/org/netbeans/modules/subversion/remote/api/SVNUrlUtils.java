@@ -46,12 +46,25 @@ package org.netbeans.modules.subversion.remote.api;
  * @author alsimon
  */
 public class SVNUrlUtils {
+    
     private SVNUrlUtils(){
     }
-    public static String getRelativePath(SVNUrl repositoryUrl, SVNUrl fileUrl) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+    public static String getRelativePath(SVNUrl rootUrl, SVNUrl fileUrl) {
+        return getRelativePath(rootUrl, fileUrl, false);
     }
-    public static SVNUrl getRelativePath(SVNUrl rootUrl, SVNUrl url, boolean b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+    public static String getRelativePath(SVNUrl rootUrl, SVNUrl url, boolean includeStartingSlash) {
+        String rootUrlStr = rootUrl.toString();
+        String urlStr = url.toString();
+        if(!urlStr.contains(rootUrlStr)) {
+            return null;
+        }
+        if(urlStr.length() == rootUrlStr.length()) {
+            return "";
+        } else {
+            return urlStr.substring(rootUrlStr.length() + (includeStartingSlash ? 0 : 1));
+
+        }
     }
 }
