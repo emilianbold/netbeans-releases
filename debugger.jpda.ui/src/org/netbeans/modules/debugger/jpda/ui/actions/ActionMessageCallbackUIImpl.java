@@ -42,22 +42,40 @@
 
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
+import org.netbeans.modules.debugger.jpda.actions.ActionErrorMessageCallback;
 import org.netbeans.modules.debugger.jpda.actions.ActionMessageCallback;
+import org.netbeans.modules.debugger.jpda.actions.ActionStatusDisplayCallback;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 
 /**
  *
  * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path = "netbeans-JPDASession", types=ActionMessageCallback.class)
-public class ActionMessageCallbackUIImpl implements ActionMessageCallback {
+@DebuggerServiceRegistration(path = "netbeans-JPDASession", types={ ActionMessageCallback.class,
+                                                                    ActionErrorMessageCallback.class,
+                                                                    ActionStatusDisplayCallback.class })
+public class ActionMessageCallbackUIImpl implements ActionMessageCallback,
+                                                    ActionErrorMessageCallback,
+                                                    ActionStatusDisplayCallback {
 
     @Override
     public void messageCallback(Object action, String message) {
         NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
         DialogDisplayer.getDefault().notify(descriptor);
+    }
+
+    @Override
+    public void errorMessageCallback(Object action, String message) {
+        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notifyLater(descriptor);
+    }
+
+    @Override
+    public void statusDisplayCallback(Object action, String status) {
+        StatusDisplayer.getDefault().setStatusText(status);
     }
     
 }

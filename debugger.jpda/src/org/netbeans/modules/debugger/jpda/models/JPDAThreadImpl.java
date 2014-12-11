@@ -62,7 +62,6 @@ import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
-import java.awt.Image;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -86,7 +85,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -129,6 +127,7 @@ import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -1548,7 +1547,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
      */
     @Override
     public void makeCurrent () {
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (Mutex.EVENT.isReadAccess()) {
             debugger.getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {

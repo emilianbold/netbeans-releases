@@ -57,9 +57,11 @@ import java.io.InputStream;
 import java.io.ObjectInputValidation;
 import java.io.OutputStream;
 import java.io.SyncFailedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 import java.util.logging.Level;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.BaseUtilities;
 
@@ -485,6 +487,16 @@ public class LocalFileSystem extends AbstractFileSystem {
     protected void markUnimportant(String name) {
     }
 
+    /**
+     * Creates path for given string name.
+     *
+     * @param name File name.
+     * @return The path.
+     */
+    private Path getPath(String name) {
+        return Paths.get(rootFile.getPath(), name);
+    }
+
     /** Creates file for given string name.
     * @param name the name
     * @return the file
@@ -519,8 +531,10 @@ public class LocalFileSystem extends AbstractFileSystem {
     * and Change interfaces and delegates all the methods
     * to appropriate methods of LocalFileSystem.
     */
-    public static class Impl extends Object implements AbstractFileSystem.List, AbstractFileSystem.Info,
-        AbstractFileSystem.Change {
+    public static class Impl extends Object implements AbstractFileSystem.List,
+            AbstractFileSystem.Info, AbstractFileSystem.SymlinkInfo,
+            AbstractFileSystem.Change {
+
         /** generated Serialized Version UID */
         static final long serialVersionUID = -8432015909317698511L;
 
@@ -689,6 +703,21 @@ public class LocalFileSystem extends AbstractFileSystem {
         */
         public void markUnimportant(String name) {
             fs.markUnimportant(name);
+        }
+
+        @Override
+        public boolean isSymbolicLink(String name) throws IOException {
+            return Files.isSymbolicLink(fs.getPath(name));
+        }
+
+        @Override
+        public String readSymbolicLink(String name) throws IOException {
+            return Files.readSymbolicLink(fs.getPath(name)).toString();
+        }
+
+        @Override
+        public String getCanonicalName(String name) throws IOException {
+            return fs.getPath(name).toRealPath().toString();
         }
     }
 
