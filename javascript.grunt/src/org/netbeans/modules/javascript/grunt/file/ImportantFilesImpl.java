@@ -63,7 +63,7 @@ public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
     public ImportantFilesImpl(Project project) {
         assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), "Gruntfile.js"); // NOI18N
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), Gruntfile.FILE_NAME);
     }
 
     @Override
