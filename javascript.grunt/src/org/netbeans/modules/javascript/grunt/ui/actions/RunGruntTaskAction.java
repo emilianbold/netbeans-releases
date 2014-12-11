@@ -141,7 +141,7 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
 
     private Action createAction(Project contextProject) {
         assert contextProject != null;
-        GruntBuildTool gruntBuildTool = GruntBuildTool.inProject(project);
+        GruntBuildTool gruntBuildTool = GruntBuildTool.inProject(contextProject);
         if (gruntBuildTool == null) {
             return this;
         }
