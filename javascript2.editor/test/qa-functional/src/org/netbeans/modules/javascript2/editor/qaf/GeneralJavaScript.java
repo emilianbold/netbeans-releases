@@ -49,18 +49,20 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
 import javax.swing.text.BadLocationException;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.modules.javascript2.editor.qaf.cc.ExtendsTest;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.openide.util.Exceptions;
 
 /**
@@ -76,6 +78,7 @@ public class GeneralJavaScript extends JellyTestCase {
     public static String currentFile = "";
     public final String TEST_BASE_NAME = "js2_";
     public static int NAME_ITERATOR = 0;
+    public static int currentLine = -1;
 
     public GeneralJavaScript(String arg0) {
         super(arg0);
@@ -124,8 +127,8 @@ public class GeneralJavaScript extends JellyTestCase {
             }
         }
     }
-    
-      public void doTest(EditorOperator eo, int lineNumber) {
+
+    public void doTest(EditorOperator eo, int lineNumber) {
         waitScanFinished();
         String rawLine = eo.getText(lineNumber);
         int start = rawLine.indexOf("//cc;");
@@ -144,7 +147,7 @@ public class GeneralJavaScript extends JellyTestCase {
             eo.pressKey(KeyEvent.VK_BACK_SPACE);
         }
     }
-      
+
     public void openFile(String fileName, String projectName) {
         if (projectName == null) {
             throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
@@ -194,7 +197,6 @@ public class GeneralJavaScript extends JellyTestCase {
 
 //        t.setTimeout("JTextComponentOperator.TypeTextTimeout", lBack);
 //        jcPath.setTimeouts(t);
-
         opNewProjectWizard.finish();
         waitScanFinished();
 
@@ -225,6 +227,142 @@ public class GeneralJavaScript extends JellyTestCase {
             edit.typeKey(code.charAt(i));
         }
         evt.waitNoEvent(100);
+    }
+
+    public void testCompletion(EditorOperator eo, int lineNumber) throws Exception {
+        waitScanFinished();
+        GeneralJavaScript.currentLine = lineNumber + 1;
+        String rawLine = eo.getText(lineNumber);
+        int start = rawLine.indexOf("//cc;");
+        String rawConfig = rawLine.substring(start + 2);
+        String[] config = rawConfig.split(";");
+        eo.setCaretPosition(lineNumber + 1, Integer.parseInt(config[1]));
+        type(eo, config[2]);
+        evt.waitNoEvent(500);
+        eo.pressKey(KeyEvent.VK_ESCAPE);
+        int back = Integer.parseInt(config[3]);
+        for (int i = 0; i < back; i++) {
+            eo.pressKey(KeyEvent.VK_LEFT);
+        }
+
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        CompletionInfo completion = getCompletion();
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionItems(cjo, config[4].split(","));
+        completion.listItself.hideAll();
+
+        eo.pressKey(KeyEvent.VK_ESCAPE);
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        completion = getCompletion();
+        cjo = completion.listItself;
+        String negResult = findNonmatchingItems(cjo, config[7].split(","));
+
+        eo.pressKey(KeyEvent.VK_ESCAPE);
+        if (config[5].length() > 0 && config[6].length() > 0) {
+            String prefix = Character.toString(config[5].charAt(0));
+            type(eo, prefix);
+            evt.waitNoEvent(50);
+            eo.typeKey(' ', InputEvent.CTRL_MASK);
+            evt.waitNoEvent(20);
+            if (!isSingleOption(prefix, cjo)) {
+                completion = getCompletion();
+                cjo = completion.listItself;
+                checkCompletionMatchesPrefix(cjo.getCompletionItems(), prefix);
+                evt.waitNoEvent(500);
+                cjo.clickOnItem(config[5]);
+                eo.pressKey(KeyEvent.VK_ENTER);
+            }
+
+            assertTrue("Wrong completion result: '" + eo.getText(lineNumber + 1) + "'", eo.getText(lineNumber + 1).contains(config[6].replaceAll("\\|", "")));
+            completion.listItself.hideAll();
+        }
+
+        if (negResult.length() > 0) {
+            fail("Completion list contains invalid items: " + negResult);
+        }
+
+    }
+
+    public void testGoToDeclaration(EditorOperator eo, int lineNumber) throws Exception {
+        waitScanFinished();
+        String rawLine = eo.getText(lineNumber);
+        int start = rawLine.indexOf("//gt;");
+        String rawConfig = rawLine.substring(start + 2);
+        String[] config = rawConfig.split(";");
+        eo.setCaretPosition(lineNumber, Integer.parseInt(config[1]));
+
+        evt.waitNoEvent(200);
+        new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(eo);
+        evt.waitNoEvent(500);
+        long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
+        try {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
+            EditorOperator ed = new EditorOperator(config[2]);
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
+            int position = ed.txtEditorPane().getCaretPosition();
+            ed.setCaretPosition(Integer.valueOf(config[3]), Integer.valueOf(config[4].trim()));
+            int expectedPosition = ed.txtEditorPane().getCaretPosition();
+            assertTrue("Incorrect caret position. Expected position " + expectedPosition + " but was " + position, position == expectedPosition);
+
+            if (!config[2].equals(GeneralJavaScript.currentFile)) {
+                ed.close(false);
+            }
+
+        } catch (Exception e) {
+            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", defaultTimeout);
+            fail(e.getMessage());
+        }
+
+    }
+
+    protected void checkCompletionMatchesPrefix(List list, String prefix) {
+        StringBuilder sb = new StringBuilder();
+        prefix = prefix.toLowerCase();
+        String item = "";
+        for (int i = 0; i < list.size(); i++) {
+            item = list.get(i).toString().toLowerCase();
+            if (!item.startsWith(prefix)) {
+                sb.append(item).append("\n");
+            }
+        }
+
+        if (sb.toString().length() > 1) {
+            fail("Completion contains nonmatching items for prefix " + prefix + ". Completion list is " + sb.toString());
+        }
+    }
+
+    protected boolean isSingleOption(String pattern, CompletionJListOperator jList) {
+        try {
+            pattern = pattern.toLowerCase();
+            List items = jList.getCompletionItems();
+            Object item;
+            int matches = 0;
+            for (int i = 0; i < items.size(); i++) {
+                item = items.get(i);
+                if (item instanceof HtmlCompletionItem) {
+                    if (((HtmlCompletionItem) item).getItemText().toLowerCase().startsWith(pattern)) {
+                        matches++;
+                    }
+                } else if (item.toString().toLowerCase().startsWith(pattern)) {
+                    matches++;
+                }
+            }
+            return matches == 1;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    protected String findNonmatchingItems(CompletionJListOperator jlist, String[] invalidList) {
+        StringBuilder sb = new StringBuilder();
+        for (String sCode : invalidList) {
+            int iIndex = jlist.findItemIndex(sCode, new CFulltextStringComparator());
+            if (-1 != iIndex) {
+                sb.append(sCode).append(",");
+
+            }
+        }
+        return sb.toString();
     }
 
     private class DummyClick implements Runnable {
@@ -366,7 +504,7 @@ public class GeneralJavaScript extends JellyTestCase {
         }
     }
 
-    protected void cleanFile(EditorOperator eo){
+    protected void cleanFile(EditorOperator eo) {
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
     }
