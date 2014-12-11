@@ -104,7 +104,9 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected DirEntryList copy(String from, String to) throws InterruptedException, CancellationException, ExecutionException {
+    protected DirEntryList copy(String from, String to, 
+            Collection<IOException> subdirectoryExceptions) 
+            throws InterruptedException, CancellationException, ExecutionException {
         throw new UnsupportedOperationException();
     }
 

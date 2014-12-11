@@ -288,7 +288,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }
                                
         final DialogDescriptor dialogDescriptor = 
-                new DialogDescriptor(svnSearch.getSearchPanel(), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_SearchRevisions")); 
+                new DialogDescriptor(svnSearch.getSearchPanel(), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/browser/Bundle").getString("CTL_RepositoryPath_SearchRevisions")); 
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(searchHelpID));
         dialogDescriptor.setValid(false);

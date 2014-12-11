@@ -73,7 +73,6 @@ import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.StringSelector;
 import org.openide.DialogDisplayer;
@@ -246,7 +245,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(importDirectory)).getPreferences());
         String message = selector.getRecentMessage(NbBundle.getMessage(ImportStep.class, "CTL_ImportPanel_RecentTitle"), //NOI18N
                                                NbBundle.getMessage(ImportStep.class, "CTL_ImportPanel_RecentPrompt"), //NOI18N
-            Utils.getStringList(SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(importDirectory)).getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
+            org.netbeans.modules.subversion.remote.versioning.util.Utils.getStringList(SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(importDirectory)).getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             importPanel.messageTextArea.replaceSelection(message);
         }

@@ -70,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.remote.actions.FastPasteAction;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
@@ -680,10 +681,11 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         SystemAction[] result = status.getActions (foSet);
         SystemAction refreshAction = isManualRefresh() ? null :  FileSystemRefreshAction.get(FileSystemRefreshAction.class);                 
         if (result == null) {
-            return (refreshAction == null) ? result : append(result, refreshAction);
+            result = (refreshAction == null) ? result : append(result, refreshAction);
         } else {
-            return (refreshAction == null) ? new SystemAction[] {} : new SystemAction[] { refreshAction };
-        }        
+            result = (refreshAction == null) ? new SystemAction[] {} : new SystemAction[] { refreshAction };
+        }
+        return append(result, FastPasteAction.get(FastPasteAction.class));
     }
 
     private static boolean isManualRefresh() {

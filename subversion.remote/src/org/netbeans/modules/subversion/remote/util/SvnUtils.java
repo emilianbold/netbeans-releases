@@ -103,8 +103,8 @@ import org.netbeans.modules.subversion.remote.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.remote.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
+import org.netbeans.modules.subversion.remote.util.projects.ProjectOpener;
 import org.netbeans.modules.subversion.remote.versioning.util.FileSelector;
-import org.netbeans.modules.versioning.core.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -1837,7 +1837,8 @@ public class SvnUtils {
             }
         }
         // open project selection
-        ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
+        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.CHECKOUT, checkedOutProjects, workingFolder);
+        opener.openProjects();
     }
 
     /*
@@ -1922,7 +1923,7 @@ public class SvnUtils {
                     public void run() {
                         long t = System.currentTimeMillis();
                         try {
-                            FileUtil.refreshFor(parents.toArray(new File[parents.size()]));
+                            VersioningSupport.refreshFor(parents.toArray(new VCSFileProxy[parents.size()]));
                         } finally {                                
                             if ( Subversion.LOG.isLoggable(Level.FINE)) {
                                 Subversion.LOG.fine(" refreshing " + parents.size() + " parents took " + (System.currentTimeMillis() - t) + " millis.");
@@ -1939,7 +1940,7 @@ public class SvnUtils {
             if (!recursiveRoots.contains(f)) {
                 boolean contained = false;
                 for (VCSFileProxy root : recursiveRoots) {
-                    if (Utils.isAncestorOrEqual(root, f)) {
+                    if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(root, f)) {
                         contained = true;
                         break;
                     }

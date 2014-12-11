@@ -180,7 +180,7 @@ public final class Browser implements VetoableChangeListener, BrowserClient, Tre
 
         Node[] selected = getSelectedNodes(rootNode, repositoryRoot, select);
         getExplorerManager().setRootContext(rootNode);
-        panel.expandNode((RepositoryPathNode) rootNode);
+        panel.expandNode(rootNode);
 
         if(selected == null) {
             selected = new Node[] { rootNode }; // allways expand the root node

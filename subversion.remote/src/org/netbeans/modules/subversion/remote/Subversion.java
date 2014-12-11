@@ -73,7 +73,7 @@ import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkProvider;
-import org.netbeans.modules.versioning.core.Utils;
+import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;

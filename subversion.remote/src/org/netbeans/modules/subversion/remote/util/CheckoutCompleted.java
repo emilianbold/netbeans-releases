@@ -43,14 +43,15 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
-import org.netbeans.modules.versioning.util.ProjectUtilities;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.remote.util.projects.ProjectOpener;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -100,12 +101,14 @@ public class CheckoutCompleted {
         }
         // open project selection
         switch(type) {
-            case EXPORT:
-                ProjectUtilities.openExportedProjects(checkedOutProjects, workingFolder);
-                break;
-            case CHECKOUT:
-                ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
-                break;
+            case EXPORT:{
+                ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.EXPORT, checkedOutProjects, workingFolder);
+                opener.openProjects();
+                break;}
+            case CHECKOUT:{
+                ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.CHECKOUT, checkedOutProjects, workingFolder);
+                opener.openProjects();
+                break;}
         }
     }
 }

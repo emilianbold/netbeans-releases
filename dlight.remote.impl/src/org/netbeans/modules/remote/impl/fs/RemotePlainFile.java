@@ -118,6 +118,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         if (relativePath.startsWith("/")) { //NOI18N
             relativePath = relativePath.substring(1);
         }
+        if (!relativePath.equals(".") && !relativePath.contains("..") && !relativePath.contains("/")) {
+            return null;
+        }
         RemoteFileObject res = this.getOwnerFileObject();
         StringTokenizer st = new StringTokenizer(relativePath, "/"); //NOI18N
         while ((res != null) && st.hasMoreTokens()) {
