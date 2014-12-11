@@ -46,7 +46,7 @@ package org.netbeans.modules.subversion.remote.api;
  * @author Alexander Simon
  */
 public enum SVNStatusKind {
-    NONE("non-svn"),
+    NONE("none"),
     NORMAL("normal"),
     ADDED("added"),
     MISSING("missing"),
@@ -70,6 +70,9 @@ public enum SVNStatusKind {
             if (r.value.equals(s)) {
                 return r;
             }
+        }
+        if ("non-svn".equals(s)) {
+            return NONE;
         }
         return null;
     }
