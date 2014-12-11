@@ -83,7 +83,9 @@ public class CppFile {
     public final static int FUNCTION_FOLD = 7;
     public final static int CONSTRUCTOR_FOLD = 8;
     public final static int DESTRUCTOR_FOLD = 9;
-    public static final int NAMESPACE_FOLD = 10;
+    public final static int NAMESPACE_FOLD = 10;
+    public final static int COMPOUND_BLOCK_FOLD = 11;
+    
     /** parsing state information */
     private int state;
     /** the file being parsed */
@@ -279,6 +281,7 @@ public class CppFile {
             case CONSTRUCTOR_FOLD:
             case DESTRUCTOR_FOLD:
             case FUNCTION_FOLD:
+            case COMPOUND_BLOCK_FOLD:
                 blockFoldRecords.add(fold);
                 break;
         }

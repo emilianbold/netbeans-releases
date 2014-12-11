@@ -553,6 +553,7 @@ final class CppFoldManager extends CppFoldManagerBase
                 case CppFoldRecord.CONSTRUCTOR_FOLD:
                 case CppFoldRecord.DESTRUCTOR_FOLD:
                 case CppFoldRecord.CLASS_FOLD:
+                case CppFoldRecord.COMPOUND_BLOCK_FOLD:
                 case CppFoldRecord.NAMESPACE_FOLD:
                     template = CODE_BLOCK_FOLD_TEMPLATE;
                     collapse = foldCodeBlocksPreset;

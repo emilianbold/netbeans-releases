@@ -96,7 +96,7 @@ public class KVFile {
      * @return the value stored under the given Key
      */
     protected byte[] getValue(Key key) {
-        return (byte[]) getMap().get(key);
+        return getMap().get(key);
     }
 
     /**
@@ -262,7 +262,7 @@ public class KVFile {
             os = file.toFileObject().getOutputStream();            
             for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {
                 Key key = (Key) it.next();
-                byte[] value = (byte[]) getMap().get(key);                
+                byte[] value = getMap().get(key);                
                 
                 StringBuffer sb = new StringBuffer();
                 sb.append("K "); // NOI18N

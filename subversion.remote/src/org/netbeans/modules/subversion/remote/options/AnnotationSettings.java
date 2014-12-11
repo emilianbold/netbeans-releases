@@ -65,6 +65,7 @@ import org.netbeans.modules.subversion.remote.ui.wizards.URLPatternWizard;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -77,9 +78,10 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
     private final AnnotationSettingsPanel panel; 
     private DialogDescriptor dialogDescriptor;
     private boolean valid;
+    private final FileSystem fileSystem;
     
-    public AnnotationSettings() {
-        
+    public AnnotationSettings(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
         panel = new AnnotationSettingsPanel();
         getModel().addTableModelListener(this); 
         getSelectionModel().addListSelectionListener(this);         

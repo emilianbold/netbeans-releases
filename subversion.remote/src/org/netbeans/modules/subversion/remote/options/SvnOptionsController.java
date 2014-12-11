@@ -72,6 +72,7 @@ import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
@@ -79,6 +80,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -95,10 +97,12 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private static final HashSet<String> allowedExecutables = new HashSet<>(Arrays.asList(new String[] {"svn", "svn.exe"} )); //NOI18N
     private static final HashSet<String> allowedLibs = new HashSet<>(Arrays.asList(new String[] {"libsvnjavahl-1.dll", "libsvnjavahl-1.so"} )); //NOI18N
     private Object currentClient;
+    private final FileSystem fileSystem;
         
-    public SvnOptionsController() {        
+    public SvnOptionsController() {    
+        fileSystem = VCSFileProxySupport.getDefaultFileSystem();
         
-        annotationSettings = new AnnotationSettings();
+        annotationSettings = new AnnotationSettings(fileSystem);
         
         panel = new SvnOptionsPanel();
         panel.browseButton.addActionListener(this);

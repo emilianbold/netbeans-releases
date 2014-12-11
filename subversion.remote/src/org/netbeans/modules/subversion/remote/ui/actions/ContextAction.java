@@ -216,7 +216,7 @@ public abstract class ContextAction extends NodeAction {
         boolean projectsOnly = true;
         for (int i = 0; i < activatedNodes.length; i++) {
             Node activatedNode = activatedNodes[i];
-            Project project =  (Project) activatedNode.getLookup().lookup(Project.class);
+            Project project =  activatedNode.getLookup().lookup(Project.class);
             if (project == null) {
                 projectsOnly = false;
                 break;
@@ -230,16 +230,16 @@ public abstract class ContextAction extends NodeAction {
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         } else if (objectCount == 1) {
             if (projectsOnly) {
-                String dispName = ProjectUtils.getInformation((Project) activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
+                String dispName = ProjectUtils.getInformation(activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
                 return NbBundle.getMessage(this.getClass(), baseName + "_Context",  // NOI18N
                                                 dispName);
             }
             String name;
-            FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
+            FileObject fo = activatedNodes[0].getLookup().lookup(FileObject.class);
             if (fo != null) {
                 name = fo.getNameExt();
             } else {
-                DataObject dao = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                DataObject dao = activatedNodes[0].getLookup().lookup(DataObject.class);
                 if (dao instanceof DataShadow) {
                     dao = ((DataShadow) dao).getOriginal();
                 }
@@ -282,7 +282,7 @@ public abstract class ContextAction extends NodeAction {
         boolean projectsOnly = true;
         for (int i = 0; i < activatedNodes.length; i++) {
             Node activatedNode = activatedNodes[i];
-            Project project =  (Project) activatedNode.getLookup().lookup(Project.class);
+            Project project =  activatedNode.getLookup().lookup(Project.class);
             if (project == null) {
                 projectsOnly = false;
                 break;
@@ -296,13 +296,13 @@ public abstract class ContextAction extends NodeAction {
             return null;
         } else if (objectCount == 1) {
             if (projectsOnly) {
-                return ProjectUtils.getInformation((Project) activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
+                return ProjectUtils.getInformation(activatedNodes[0].getLookup().lookup(Project.class)).getDisplayName();
             }
-            FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
+            FileObject fo = activatedNodes[0].getLookup().lookup(FileObject.class);
             if (fo != null) {
                 return fo.getNameExt();
             } else {
-                DataObject dao = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                DataObject dao = activatedNodes[0].getLookup().lookup(DataObject.class);
                 if (dao instanceof DataShadow) {
                     dao = ((DataShadow) dao).getOriginal();
                 }

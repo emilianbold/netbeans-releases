@@ -493,7 +493,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private void initNextPrevActions() {
         nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-next.png"))) {  // NOI18N
             {
-                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle").
+                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/diff/Bundle").
                                                    getString("CTL_DiffPanel_Next_Tooltip"));                
             }
             @Override
@@ -503,7 +503,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         };
         prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-prev.png"))) { // NOI18N
             {
-                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/diff/Bundle").
+                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/diff/Bundle").
                                                    getString("CTL_DiffPanel_Prev_Tooltip"));                
             }
             @Override

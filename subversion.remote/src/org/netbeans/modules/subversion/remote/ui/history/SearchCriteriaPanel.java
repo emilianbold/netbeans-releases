@@ -185,7 +185,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         tfFrom.setColumns(20);
         tfTo.setColumns(20);
 
-        ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/history/Bundle"); // NOI18N
+        ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/history/Bundle"); // NOI18N
 
         Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_UseFrom")); // NOI18N
         jLabel3.setToolTipText(bundle.getString("TT_From")); // NOI18N
