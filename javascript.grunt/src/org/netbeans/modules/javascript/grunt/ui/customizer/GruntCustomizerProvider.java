@@ -77,7 +77,8 @@ public final class GruntCustomizerProvider implements ProjectCustomizer.Composit
         return new GruntCustomizerProvider();
     }
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+    // not ready for it yet (requires support for Build etc. actions)
+    /*@ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-php-project", // NOI18N
             position = 400)
     public static ProjectCustomizer.CompositeCategoryProvider forPhpProject() {
@@ -96,6 +97,6 @@ public final class GruntCustomizerProvider implements ProjectCustomizer.Composit
             position = 500)
     public static ProjectCustomizer.CompositeCategoryProvider forMavenProject() {
         return new GruntCustomizerProvider();
-    }
+    }*/
 
 }
