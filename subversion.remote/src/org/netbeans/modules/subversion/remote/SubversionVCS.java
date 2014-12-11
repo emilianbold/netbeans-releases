@@ -62,6 +62,7 @@ import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,7 +71,7 @@ import org.openide.filesystems.FileSystem;
 @VersioningSystem.Registration(displayName="#CTL_Subversion_DisplayName", 
     menuLabel="#CTL_Subversion_MainMenu", 
     metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"}, 
-    actionsCategory="Subversion")
+    actionsCategory="RemoteSubversion")
 public class SubversionVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener, PreferenceChangeListener {
 
     /**
@@ -89,7 +90,7 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
     }
 
     public static String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName");
     }
 
     /**
