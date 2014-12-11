@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -75,7 +76,7 @@ public class PasswordFile extends SVNCredentialFile {
 
     private PasswordFile (VCSFileProxy file) throws FileStateInvalidException {
         super(file);
-        this.fileSystem = file.toFileObject().getFileSystem();
+        this.fileSystem = VCSFileProxySupport.getFileSystem(file);
     }
 
     /**

@@ -45,8 +45,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -86,6 +88,7 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             javaFile.delete();
         } else {
+            // TODO: rewrite it with using sftp
             ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "rm", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
@@ -106,11 +109,13 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             return javaFile.mkdir();
         } else {
+            // TODO: rewrite it with using sftp
             ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
             } else {
+                // TODO: make sure that file.exists() returns true
                 return true;
             }
         }
@@ -121,11 +126,13 @@ public final class VCSFileProxySupport {
         if (javaFile != null) {
             return javaFile.mkdirs();
         } else {
+            // TODO: rewrite it with using sftp
             ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
             } else {
+                // TODO: make sure that file.exists() returns true
                 return true;
             }
         }
@@ -226,7 +233,32 @@ public final class VCSFileProxySupport {
     public static boolean canRead(VCSFileProxy file) {
         throw new UnsupportedOperationException();
     }
-
+    
+    public static OutputStream getOutputStream(VCSFileProxy file) throws IOException {
+        if (isRemoteFileSystem(file)) {
+            FileObject fo = file.toFileObject();
+            if (fo != null) {
+                return fo.getOutputStream();
+            }
+            VCSFileProxy parentFile = file.getParentFile();
+            if (!parentFile.exists()) {
+                mkdirs(parentFile);
+            }
+            // TODO: rewrite it with using sftp
+            ExitStatus status = ProcessUtils.executeInDir(parentFile.getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "touch", file.getName());
+            if (!status.isOK()) {
+                ProcessUtils.LOG.log(Level.INFO, status.toString());
+                throw new IOException(status.toString());
+            } else {
+                // TODO: make sure that file.exists() returns true
+                return file.toFileObject().getOutputStream();
+            }
+        } else {
+            File toFile = file.toFile();
+            return new FileOutputStream(toFile);
+        }
+    }
+    
     public static long length(VCSFileProxy file) {
         throw new UnsupportedOperationException();
     }

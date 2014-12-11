@@ -647,7 +647,7 @@ public class Subversion {
             if (original == null) {
                 throw new IOException("Unable to get BASE revision of " + workingCopy);
             }
-            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(originalFile.toFileObject().getOutputStream(), original.getInputStream(false));
+            org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(VCSFileProxySupport.getOutputStream(originalFile), original.getInputStream(false));
         } catch (IOException e) {
             LOG.log(Level.INFO, "Unable to get original file", e);
         } catch (SVNClientException ex) {

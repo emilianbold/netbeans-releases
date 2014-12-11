@@ -259,7 +259,7 @@ public class KVFile {
             if(parent!=null && !parent.exists()) {
                 VCSFileProxySupport.mkdirs(parent);
             }
-            os = file.toFileObject().getOutputStream();            
+            os = VCSFileProxySupport.getOutputStream(file);
             for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {
                 Key key = (Key) it.next();
                 byte[] value = getMap().get(key);                
