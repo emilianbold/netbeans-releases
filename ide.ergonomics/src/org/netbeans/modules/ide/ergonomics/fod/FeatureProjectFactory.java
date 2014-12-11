@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -88,6 +89,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.ProjectConvertor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
@@ -106,7 +108,14 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
     public FeatureProjectFactory() {
         OpenProjects.getDefault().addPropertyChangeListener(this);
     }
-
+    
+    static Icon loadIcon() {
+        return ImageUtilities.loadImageIcon(
+            "org/netbeans/modules/ide/ergonomics/fod/project.png" // NOI18N
+            , false
+        );
+    }
+    
     final static class Data {
         private final boolean deepCheck;
         private final FileObject dir;
@@ -513,9 +522,7 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
             if (info != null && info != this) {
                 return info.getIcon();
             }
-            return ImageUtilities.loadImageIcon(
-                "org/netbeans/modules/ide/ergonomics/fod/project.png" // NOI18N
-            , false);
+            return loadIcon();
         }
 
         @Override
