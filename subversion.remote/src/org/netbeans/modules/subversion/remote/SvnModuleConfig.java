@@ -129,7 +129,11 @@ public class SvnModuleConfig {
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     public Preferences getPreferences() {
-        return NbPreferences.forModule(SvnModuleConfig.class).node(VCSFileProxySupport.getFileSystemKey(fileSystem));
+        if (fileSystem == null) {
+            return NbPreferences.forModule(SvnModuleConfig.class).node("commonRemoteSubversion");
+        } else {
+            return NbPreferences.forModule(SvnModuleConfig.class).node(VCSFileProxySupport.getFileSystemKey(fileSystem));
+        }
     }
     
     public boolean getShowCheckoutCompleted() {

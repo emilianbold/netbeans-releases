@@ -127,7 +127,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
         initColors();
     }
     
-    public static synchronized AnnotationColorProvider getInstance(FileSystem fileSystem) {
+    public static synchronized AnnotationColorProvider getInstance() {
         if (INSTANCE == null) {
             INSTANCE = Lookup.getDefault().lookup(AnnotationColorProvider.class);
             if (INSTANCE == null) {
@@ -147,8 +147,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
 
     @Override
     protected Color getSavedColor (String key, Color defaultColor) {
-        FileSystem fileSystem = VCSFileProxySupport.getDefaultFileSystem();
-        return SvnModuleConfig.getDefault(fileSystem).getColor(key, defaultColor);
+        return SvnModuleConfig.getDefault(null).getColor(key, defaultColor);
     }
 
     @Override
@@ -172,8 +171,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     protected void saveColors (Collection<OptionsPanelColorProvider.AnnotationFormat> colors) {
         for (OptionsPanelColorProvider.AnnotationFormat af : colors) {
             if (af != null) {
-                FileSystem fileSystem = VCSFileProxySupport.getDefaultFileSystem();
-                SvnModuleConfig.getDefault(fileSystem).setColor(getColorKey(af.getKey()), af.getActualColor());
+                SvnModuleConfig.getDefault(null).setColor(getColorKey(af.getKey()), af.getActualColor());
             }
         }
         Subversion.getInstance().getRequestProcessor().post(new Runnable() {
