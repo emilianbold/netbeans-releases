@@ -176,6 +176,7 @@ public class GruntExecutable {
     private ExecutionDescriptor getDescriptor() {
         assert project != null;
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .showSuspended(true)
                 .optionsPath(GruntOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
