@@ -58,6 +58,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
+import org.netbeans.modules.remote.api.ServerList;
+import org.netbeans.modules.remote.api.ServerRecord;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.subversion.remote.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -110,7 +113,7 @@ public final class VCSFileProxySupport {
             return javaFile.mkdir();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
@@ -127,7 +130,7 @@ public final class VCSFileProxySupport {
             return javaFile.mkdirs();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-f", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-p", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
@@ -231,11 +234,18 @@ public final class VCSFileProxySupport {
     }
     
     public static boolean canRead(VCSFileProxy file) {
-        throw new UnsupportedOperationException();
+        if (file.exists()) {
+            //TODO: implement it!
+            return true;
+        }
+        return false;
     }
     
     public static OutputStream getOutputStream(VCSFileProxy file) throws IOException {
-        if (isRemoteFileSystem(file)) {
+        File toFile = file.toFile();
+        if (toFile != null) {
+            return new FileOutputStream(toFile);
+        } else {
             FileObject fo = file.toFileObject();
             if (fo != null) {
                 return fo.getOutputStream();
@@ -253,9 +263,6 @@ public final class VCSFileProxySupport {
                 // TODO: make sure that file.exists() returns true
                 return file.toFileObject().getOutputStream();
             }
-        } else {
-            File toFile = file.toFile();
-            return new FileOutputStream(toFile);
         }
     }
     
@@ -282,7 +289,8 @@ public final class VCSFileProxySupport {
             res.deleteOnExit();
             return VCSFileProxy.createFileProxy(res);
         } else {
-            throw new UnsupportedOperationException();
+            // TODO: review it!
+            return VCSFileProxy.createFileProxy(file.toFileObject().createData(prefix+Long.toString(System.currentTimeMillis()), suffix));
         }
     }
     
@@ -360,11 +368,13 @@ public final class VCSFileProxySupport {
             }
             file = parent;
         }
-        return VCSFileProxy.createFileProxy(parent, absPath);
+        return VCSFileProxy.createFileProxy(parent, absPath.substring(1));
     }
     
     public static VCSFileProxy getHome(VCSFileProxy file){
-        throw new UnsupportedOperationException();
+        //TODO: implement it!
+        // temporary use local home path for remote home
+        return VCSFileProxySupport.getResource(file, System.getProperty("user.home"));
     }
 
     /**
@@ -384,15 +394,18 @@ public final class VCSFileProxySupport {
     }
     
     public static boolean isMac(VCSFileProxy file) {
-        throw new UnsupportedOperationException();
+        //TODO: implement it!
+        return false;
     }
     
     public static boolean isUnix(VCSFileProxy file){
-        throw new UnsupportedOperationException();
+        //TODO: implement it!
+        return true;
     }
     
     public static String getFileSystemKey(FileSystem file) {
-        throw new UnsupportedOperationException();
+        //TODO implement it!
+        return file.toString();
     }
     
     public static String toString(VCSFileProxy file) {
@@ -417,13 +430,23 @@ public final class VCSFileProxySupport {
     }
     
     public static FileSystem getDefaultFileSystem() {
-        // return default remote file system.
-        throw new UnsupportedOperationException();
+        // TODO: remove dependencies!
+        FileSystem[] fileSystems = getFileSystems();
+        if (fileSystems.length == 0) {
+            return null;
+        }
+        return fileSystems[0];
     }
 
     public static FileSystem[] getFileSystems() {
-        // return default remote file system.
-        throw new UnsupportedOperationException();
+        // TODO: return list of remote file systems
+        List<FileSystem> res = new ArrayList<>();
+        for(ServerRecord s : ServerList.getRecords()) {
+            if (s.getExecutionEnvironment().isRemote()) {
+                res.add(FileSystemProvider.getFileSystem(s.getExecutionEnvironment()));
+            }
+        }
+        return res.toArray(new FileSystem[res.size()]);
     }
 
     public static FileSystem getFileSystem(VCSFileProxy file) {
@@ -448,7 +471,8 @@ public final class VCSFileProxySupport {
         throw new UnsupportedOperationException();
     }
 
-    public static void writeFileSystem(DataOutputStream os, FileSystem fs) {
-        throw new UnsupportedOperationException();
+    public static void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
+        //TODO: implement it!
+        os.writeChars(fs.getRoot().toURI().toString());
     }
 }
