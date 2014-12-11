@@ -2,7 +2,8 @@ requirejs.config({
     baseUrl: 'js/lib',
     paths: {
         app: '../app',
-        piknic: '../picnic'
+        piknic: '../picnic',
+        ojs: 'oj/min/'
     }
 });
  

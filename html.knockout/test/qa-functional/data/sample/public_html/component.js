@@ -30,5 +30,17 @@ ko.applyBindings();
         });
     }
     test();
+    
+    
+    ko.components.register("yetanother", {
+        viewModel : function(params){
+            console.log(params.par1);
+            console.log(params.test);
+            console.log(params.par);
+        },
+        template : ""
+    });
+    
+    
     ko.applyBindings();
 })();

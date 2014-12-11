@@ -71,7 +71,7 @@ import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
 import org.netbeans.modules.javascript.grunt.util.FileUtils;
 import org.netbeans.modules.javascript.grunt.util.GruntUtils;
-import org.netbeans.modules.javascript.grunt.util.StringUtils;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileUtil;
@@ -157,6 +157,7 @@ public class GruntExecutable {
                     }
                 });
         Future<Integer> task = getExecutable("list grunt tasks") // NOI18N
+                .noInfo(true)
                 .additionalParameters(Arrays.asList(NO_COLOR_PARAM, HELP_PARAM))
                 .redirectErrorStream(false)
                 .run(descriptor);
@@ -247,7 +248,7 @@ public class GruntExecutable {
             sb.append("\""); // NOI18N
             sb.append(gruntPath);
             sb.append("\" \""); // NOI18N
-            sb.append(StringUtils.implode(super.getParams(params), "\" \"")); // NOI18N
+            sb.append(StringUtilities.implode(super.getParams(params), "\" \"")); // NOI18N
             sb.append("\""); // NOI18N
             return Collections.singletonList(sb.toString());
         }
@@ -273,13 +274,13 @@ public class GruntExecutable {
                     }
                     break;
                 case 1:
-                    if (!StringUtils.hasText(line)) {
+                    if (!StringUtilities.hasText(line)) {
                         state = 2;
                     } else if (NO_TASKS.equals(line.trim())) {
                         tasks.add(GruntTasks.DEFAULT_TASK);
                         state = 2;
                     } else {
-                        List<String> parts = StringUtils.explode(line.trim(), " "); // NOI18N
+                        List<String> parts = StringUtilities.explode(line.trim(), " "); // NOI18N
                         tasks.add(parts.get(0));
                     }
                     break;

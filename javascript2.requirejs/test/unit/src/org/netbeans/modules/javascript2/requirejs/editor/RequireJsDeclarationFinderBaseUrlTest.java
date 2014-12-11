@@ -132,6 +132,10 @@ public class RequireJsDeclarationFinderBaseUrlTest extends JsCodeCompletionBase 
         checkDeclaration("TestProject2/public_html/js/app/issue245184.js", "'text!pik^nic'", "picnic.js", 0);
     }
     
+    public void testIssue249282_01() throws Exception {
+        checkDeclaration("TestProject2/public_html/js/app/issue249282.js", "'ojs/^oj'", "oj.js", 0);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();

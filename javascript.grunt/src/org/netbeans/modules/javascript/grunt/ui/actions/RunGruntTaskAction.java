@@ -59,7 +59,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.GruntBuildTool;
 import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.file.GruntTasks;
-import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
 import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.openide.awt.ActionID;
@@ -74,7 +73,6 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
 @ActionID(id = "org.netbeans.modules.javascript.grunt.ui.actions.RunGruntTaskAction", category = "Build")
@@ -115,30 +113,42 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
     @Override
     public Action createContextAwareInstance(Lookup context) {
         Project contextProject = context.lookup(Project.class);
-        Gruntfile gruntfile = null;
         if (contextProject != null) {
             // project action
-            gruntfile = new Gruntfile(contextProject.getProjectDirectory());
-        } else {
-            // gruntfile directly
-            FileObject file = context.lookup(FileObject.class);
-            if (file == null) {
-                DataObject dataObject = context.lookup(DataObject.class);
-                if (dataObject != null) {
-                    file = dataObject.getPrimaryFile();
-                }
-            }
-            if (file != null) {
-                gruntfile = new Gruntfile(file.getParent());
+            return createAction(contextProject);
+        }
+        // gruntfile directly
+        FileObject file = context.lookup(FileObject.class);
+        if (file == null) {
+            DataObject dataObject = context.lookup(DataObject.class);
+            if (dataObject != null) {
+                file = dataObject.getPrimaryFile();
             }
         }
-        if (gruntfile == null) {
+        if (file == null) {
             return this;
         }
-        if (!gruntfile.exists()) {
+        contextProject = FileOwnerQuery.getOwner(file);
+        if (contextProject == null) {
+            return null;
+        }
+        if (!contextProject.getProjectDirectory().equals(file.getParent())) {
+            // not a main project gruntfile
             return this;
         }
-        return new RunGruntTaskAction(contextProject != null ? contextProject : FileOwnerQuery.getOwner(Utilities.toURI(gruntfile.getFile())));
+        return createAction(contextProject);
+    }
+
+    private Action createAction(Project contextProject) {
+        assert contextProject != null;
+        GruntBuildTool gruntBuildTool = GruntBuildTool.inProject(contextProject);
+        if (gruntBuildTool == null) {
+            return this;
+        }
+        if (!gruntBuildTool.getGruntfile().exists()) {
+            return this;
+        }
+        return new RunGruntTaskAction(contextProject);
     }
 
     @Override
@@ -214,12 +224,11 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 addConfigureGruntMenuItem();
                 return;
             }
-            // default task?
+            // default task
+            addDefaultMenuItem();
+            addSeparator();
             Set<String> allTasks = new LinkedHashSet<>(tasks);
-            if (allTasks.remove(GruntTasks.DEFAULT_TASK)) {
-                addTaskMenuItem(GruntTasks.DEFAULT_TASK);
-                addSeparator();
-            }
+            allTasks.remove(GruntTasks.DEFAULT_TASK);
             for (String task : allTasks) {
                 addTaskMenuItem(task);
             }
@@ -227,6 +236,27 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                 addSeparator();
             }
             addReloadTasksMenuItem();
+        }
+
+        @NbBundle.Messages("LazyMenu.tasks.default=default")
+        private void addDefaultMenuItem() {
+            JMenuItem menuitem = new JMenuItem(Bundle.LazyMenu_tasks_default());
+            menuitem.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            GruntExecutable grunt = GruntExecutable.getDefault(project, true);
+                            if (grunt != null) {
+                                GruntUtils.logUsageGruntBuild();
+                                grunt.run();
+                            }
+                        }
+                    });
+                }
+            });
+            add(menuitem);
         }
 
         private void addTaskMenuItem(final String task) {

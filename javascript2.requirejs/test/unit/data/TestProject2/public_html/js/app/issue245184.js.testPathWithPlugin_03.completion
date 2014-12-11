@@ -5,5 +5,6 @@ Code completion result for source line:
 CLASS      prototype                       [PUBLIC]   require.js
 FILE       moduleLib1.js                              
 FILE       moduleLib2.js                              
+FILE       oj                                         
 FILE       proto                                      
 FILE       require.js                                 

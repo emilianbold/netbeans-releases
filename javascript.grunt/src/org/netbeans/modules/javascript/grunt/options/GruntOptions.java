@@ -62,6 +62,7 @@ public final class GruntOptions {
 
     private volatile boolean gruntSearched = false;
 
+
     private GruntOptions() {
         preferences = NbPreferences.forModule(GruntOptions.class).node(PREFERENCES_PATH);
     }

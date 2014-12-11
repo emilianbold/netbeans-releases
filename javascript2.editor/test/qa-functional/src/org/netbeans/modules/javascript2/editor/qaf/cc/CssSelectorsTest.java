@@ -39,46 +39,67 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.grunt.file;
+package org.netbeans.modules.javascript2.editor.qaf.cc;
 
-import java.util.Collection;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
-import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
+import java.awt.event.KeyEvent;
+import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
-@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-public final class ImportantFilesImpl implements ImportantFilesImplementation {
+/**
+ *
+ * @author vriha
+ */
+public class CssSelectorsTest extends GeneralJavaScript{
 
-    private final ImportantFilesSupport support;
-    private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
-        @Override
-        public FileInfo create(FileObject fileObject) {
-            return new FileInfo(fileObject, fileObject.getName(), null);
+    public CssSelectorsTest(String arg0) {
+        super(arg0);
+    }
+    
+     public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(CssSelectorsTest.class).addTest(
+                "openProject",
+                "testClass",
+                "testId").enableModules(".*").clusters(".*"));
+    }
+
+  public void openProject() throws Exception {
+        startTest();
+        JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
+        openDataProjects("completionTest");
+        evt.waitNoEvent(2000);
+        openFile("css.js", "completionTest");
+        endTest();
+    }
+
+
+    public void testId() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("css.js"), 1);
+        endTest();
+    }
+    public void testClass() throws Exception {
+        startTest();
+        testCompletion(new EditorOperator("css.js"), 3);
+        endTest();
+    }
+
+    @Override
+    public void tearDown() {
+        if (GeneralJavaScript.currentLine < 1) {
+            return;
         }
-    };
+        EditorOperator eo = new EditorOperator("css.js");
+        eo.setCaretPositionToEndOfLine(GeneralJavaScript.currentLine);
+        String l = eo.getText(eo.getLineNumber());
+        for (int i = 0; i < l.length() - 1; i++) {
+            eo.pressKey(KeyEvent.VK_BACK_SPACE);
+        }
 
+        evt.waitNoEvent(1000);
 
-    public ImportantFilesImpl(Project project) {
-        assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), Gruntfile.FILE_NAME);
     }
-
-    @Override
-    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
-        return support.getFiles(fileInfoCreator);
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        support.addChangeListener(listener);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        support.removeChangeListener(listener);
-    }
-
 }

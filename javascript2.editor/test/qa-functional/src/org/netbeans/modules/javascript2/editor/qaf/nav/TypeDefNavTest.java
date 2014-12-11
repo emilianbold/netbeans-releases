@@ -39,46 +39,64 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.grunt.file;
+package org.netbeans.modules.javascript2.editor.qaf.nav;
 
-import java.util.Collection;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
-import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
+import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
-@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-public final class ImportantFilesImpl implements ImportantFilesImplementation {
+/**
+ *
+ * @author vriha
+ */
+public class TypeDefNavTest extends GeneralJavaScript {
 
-    private final ImportantFilesSupport support;
-    private final ImportantFilesSupport.FileInfoCreator fileInfoCreator = new ImportantFilesSupport.FileInfoCreator() {
-        @Override
-        public FileInfo create(FileObject fileObject) {
-            return new FileInfo(fileObject, fileObject.getName(), null);
-        }
-    };
-
-
-    public ImportantFilesImpl(Project project) {
-        assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), Gruntfile.FILE_NAME);
+    public TypeDefNavTest(String arg0) {
+        super(arg0);
     }
 
-    @Override
-    public Collection<ImportantFilesImplementation.FileInfo> getFiles() {
-        return support.getFiles(fileInfoCreator);
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(TypeDefNavTest.class).addTest(
+                        "openProject",
+                        "testTypDef1",
+                        "testTypDef2",
+                        "testTypDef3",
+                        "testTypDef4").enableModules(".*").clusters(".*"));
     }
 
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        support.addChangeListener(listener);
+    public void openProject() throws Exception {
+        startTest();
+        JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
+        openDataProjects("completionTest");
+        evt.waitNoEvent(2000);
+        GeneralJavaScript.currentFile = "typdef.js";
+        openFile("typdef.js", "completionTest");
+        endTest();
     }
 
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        support.removeChangeListener(listener);
+    public void testTypDef1() throws Exception {
+        startTest();
+        testGoToDeclaration(new EditorOperator("typdef.js"), 94);
+        endTest();
     }
-
+    public void testTypDef2() throws Exception {
+        startTest();
+        testGoToDeclaration(new EditorOperator("typdef.js"), 96);
+        endTest();
+    }
+    public void testTypDef3() throws Exception {
+        startTest();
+        testGoToDeclaration(new EditorOperator("typdef.js"), 100);
+        endTest();
+    }
+    public void testTypDef4() throws Exception {
+        startTest();
+        testGoToDeclaration(new EditorOperator("typdef.js"), 102);
+        endTest();
+    }
+ 
+    
 }

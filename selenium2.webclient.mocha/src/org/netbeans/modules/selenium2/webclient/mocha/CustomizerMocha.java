@@ -136,9 +136,20 @@ public final class CustomizerMocha extends javax.swing.JPanel {
     private void init() {
         assert EventQueue.isDispatchThread();
         String mochaDir;
+        // get saved mocha install dir if previously set from selenium/unit mocha preferences
         mochaDir = isSelenium ? MochaSeleniumPreferences.getMochaDir(project) : MochaJSPreferences.getMochaDir(project);
         if(mochaDir == null) {
+            // that did not work so try to get saved mocha install dir from unit/selenium mocha preferences
             mochaDir = isSelenium ? MochaJSPreferences.getMochaDir(project) : MochaSeleniumPreferences.getMochaDir(project);
+        }
+        if(mochaDir == null) { // mocha dir not set yet, try searching for it in project's local node_modules dir
+            String dir = new File(FileUtil.toFile(project.getProjectDirectory()), "node_modules/mocha").getAbsolutePath();
+            ValidationResult result = new MochaPreferencesValidator()
+                .validateMochaInstallFolder(dir)
+                .getResult();
+            if(result.isFaultless()) { // mocha is installed in project's local node_modules dir
+                mochaDir = dir;
+            }
         }
         mochaDirTextField.setText(mochaDir);
         mochaDirInfoLabel.setText(Bundle.CustomizerMocha_mocha_dir_info());

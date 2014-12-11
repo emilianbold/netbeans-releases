@@ -67,17 +67,19 @@ public class CustomComponentTest extends GeneralKnockout {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(CustomComponentTest.class).addTest(
                         "createApplication",
-                        //                        "testComponentCont",
-                        //                        "testComponent",
-                        //                        "testParams",
-                        //                        "testAttributesCont",
-                        //                        "testCompBinding",
-                        //                        "testCompBindingParam",
-                        //                        "testCompBindingName",
-                        "testCompBindingName2"
-                //                        "testCompBindingParams",
-                //                        "testCompBindingNameCont",
-                //                        "testCompBindingName2Cont"
+                        "testComponentCont",
+                        "testComponent",
+//                        "testParams"
+                        "testAttributesCont",
+                        "testCompBinding",
+                        "testCompBindingParam",
+                        "testCompBindingName",
+                        "testCompBindingName2",
+                        "testCompBindingParams",
+                        "testCompBindingNameCont",
+                        "testCompBindingName2Cont",
+                        "testParamsCompletion1",
+                        "testParamsCompletion2"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
@@ -133,6 +135,18 @@ public class CustomComponentTest extends GeneralKnockout {
     public void testCompBindingName() {
         startTest();
         testHtmlCompletion(20, new EditorOperator("component.html"), false, true);
+        endTest();
+    }
+    
+    public void testParamsCompletion1() {
+        startTest();
+        testHtmlCompletion(27, new EditorOperator("component.html"), false, false);
+        endTest();
+    }
+    
+    public void testParamsCompletion2() {
+        startTest();
+        testHtmlCompletion(29, new EditorOperator("component.html"), false, true);
         endTest();
     }
 
