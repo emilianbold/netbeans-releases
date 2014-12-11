@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 <filesystem>
 
     <folder name="Actions">
-        <folder name="Subversion">
+        <folder name="SubversionRemote">
            
             <file name="org-netbeans-modules-subversion-remote-ui-update-UpdateWithDependenciesAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.remote.ui.update.UpdateWithDependenciesAction"/>
@@ -151,14 +151,14 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="VersioningOptionsDialog">
-        <file name="Subversion.instance">
+        <file name="SubversionRemote.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.subversion.remote.options.SvnOptions"/>
         </file>
     </folder>        
 
     <folder name="OptionsDialog">
         <folder name="Actions">
-            <folder name="Subversion">
+            <folder name="SubversionRemote">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.remote.resources.Bundle"/>
 
                 <file name="UpdateWithDependenciesAction.shadow">
