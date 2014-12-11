@@ -681,9 +681,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         SystemAction[] result = status.getActions (foSet);
         SystemAction refreshAction = isManualRefresh() ? null :  FileSystemRefreshAction.get(FileSystemRefreshAction.class);                 
         if (result == null) {
-            result = (refreshAction == null) ? result : append(result, refreshAction);
-        } else {
             result = (refreshAction == null) ? new SystemAction[] {} : new SystemAction[] { refreshAction };
+        } else {
+            result = (refreshAction == null) ? result : append(result, refreshAction);
         }
         return append(result, FastPasteAction.get(FastPasteAction.class));
     }

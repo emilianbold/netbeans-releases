@@ -164,9 +164,9 @@ class Commandline {
 
     private Map<String, String> getEnvVar() {
         Map<String,String> ret = new HashMap<>();
-        ret.put("LC_ALL", null);                // NOI18N    
-        ret.put("LC_MESSAGES", "C");                // NOI18N    
-        ret.put("LC_TIME", "C");                // NOI18N    
+        ret.put("LC_ALL", "");                // NOI18N    
+        ret.put("LC_MESSAGES", "C");          // NOI18N    
+        ret.put("LC_TIME", "C");              // NOI18N    
         return ret;
     }	    
 }

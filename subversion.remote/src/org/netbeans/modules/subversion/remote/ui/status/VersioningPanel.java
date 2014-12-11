@@ -120,7 +120,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         explorerManager = new ExplorerManager ();
         displayStatuses = getDefaultDisplayStatus();
         noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
-        modeKeeper = new ModeKeeper(SvnModuleConfig.getDefault(context.getFileSystem()).getLastUsedModificationContext());
+        modeKeeper = new ModeKeeper(context == null ? Setup.DIFFTYPE_LOCAL : SvnModuleConfig.getDefault(context.getFileSystem()).getLastUsedModificationContext());
         syncTable = new SyncTable(modeKeeper);
 
         initComponents();
@@ -602,14 +602,14 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
 
     private int getDefaultDisplayStatus () {
-        int displayStatus;
-        int selectedMode = SvnModuleConfig.getDefault(context.getFileSystem()).getLastUsedModificationContext();
-        if (selectedMode == Setup.DIFFTYPE_ALL) {
-            displayStatus = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
-        } else if (selectedMode == Setup.DIFFTYPE_REMOTE) {
-            displayStatus = FileInformation.STATUS_REMOTE_CHANGE;
-        } else {
-            displayStatus = FileInformation.STATUS_LOCAL_CHANGE;
+        int displayStatus = FileInformation.STATUS_LOCAL_CHANGE;
+        if (context != null) {
+            int selectedMode = SvnModuleConfig.getDefault(context.getFileSystem()).getLastUsedModificationContext();
+            if (selectedMode == Setup.DIFFTYPE_ALL) {
+                displayStatus = FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
+            } else if (selectedMode == Setup.DIFFTYPE_REMOTE) {
+                displayStatus = FileInformation.STATUS_REMOTE_CHANGE;
+            }
         }
         return displayStatus;
     }
