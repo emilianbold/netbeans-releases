@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -355,19 +357,12 @@ public class RemoteFileSystemUtils {
    /** Copy-paste from FileObject.copy */
     public static FileObject copy(FileObject source, FileObject target, String name, String ext) throws IOException {
 
-        // copying via transport isn't yet supported for folders -
-        // which is a pity, but, on the other hand, client code in IDE always copy-pastes file by file,
-        // so there is no harm for end user
         if (source.isFolder()) {
             if (FileUtil.isParentOf(source, target)) {
-                throw new IOException(NbBundle.getMessage(RemoteFileSystemUtils.class, "EXC_OperateChild", source, target)); // NOI18N
+                IOException ioe = new IOException(NbBundle.getMessage(RemoteFileSystemUtils.class, "EXC_OperateChild", // NOI18N
+                        source.getPath(), target.getPath()));
+                throw RemoteIOException.annotateException(ioe);
             }
-            FileObject peer = target.createFolder(name);
-            FileUtil.copyAttributes(source, peer);
-            for (FileObject fo : source.getChildren()) {
-                fo.copy(peer, fo.getName(), fo.getExt());
-            }
-            return peer;
         }
 
         final String from = source.getPath();
@@ -378,13 +373,17 @@ public class RemoteFileSystemUtils {
             if (env.equals(((RemoteFileObject) target).getExecutionEnvironment())
                     && RemoteFileSystemTransport.canCopy(env, from, newPath)) {
                 try {
-                    DirEntryList entries = RemoteFileSystemTransport.copy(env, from, newPath);
+                    List<IOException> subdirectoryExceptions = new ArrayList<IOException>();
+                    DirEntryList entries = RemoteFileSystemTransport.copy(env, from, newPath, subdirectoryExceptions);
                     ((RemoteFileObject) target).getImplementor().postDeleteOrCreateChild(null, entries);
                     FileObject fo = target.getFileObject(newNameExt);
                     if (fo == null) {
                         throw new IOException("Null file object after copy " + env + ':' + newPath); //NOI18N
                     } else {
                         FileUtil.copyAttributes(source, fo);
+                        if (!subdirectoryExceptions.isEmpty()) {
+                            throw subdirectoryExceptions.get(0);
+                        }
                         return fo;
                     }
                 } catch (InterruptedException ex) {
@@ -401,9 +400,17 @@ public class RemoteFileSystemUtils {
             }
         }
 
-        FileObject dest = RemoteFileSystemUtils.copyFileImpl(source, target, name, ext);
-
-        return dest;
+        if (source.isFolder()) {
+            FileObject peer = target.createFolder(name);
+            FileUtil.copyAttributes(source, peer);
+            for (FileObject fo : source.getChildren()) {
+                fo.copy(peer, fo.getName(), fo.getExt());
+            }
+            return peer;
+        } else {        
+            FileObject dest = RemoteFileSystemUtils.copyFileImpl(source, target, name, ext);
+            return dest;
+        }
     }
 
     /** Copies file to the selected folder.
