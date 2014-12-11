@@ -59,7 +59,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.GruntBuildTool;
 import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
 import org.netbeans.modules.javascript.grunt.file.GruntTasks;
-import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
 import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.openide.awt.ActionID;
@@ -142,8 +141,11 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
 
     private Action createAction(Project contextProject) {
         assert contextProject != null;
-        Gruntfile gruntfile = new Gruntfile(contextProject.getProjectDirectory());
-        if (!gruntfile.exists()) {
+        GruntBuildTool gruntBuildTool = GruntBuildTool.inProject(project);
+        if (gruntBuildTool == null) {
+            return this;
+        }
+        if (!gruntBuildTool.getGruntfile().exists()) {
             return this;
         }
         return new RunGruntTaskAction(contextProject);
