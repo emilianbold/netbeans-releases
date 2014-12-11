@@ -100,7 +100,7 @@ public final class VCSFileProxySupport {
     }
     
     public static void deleteOnExit(VCSFileProxy file) {
-        throw new UnsupportedOperationException();
+        //TODO: implemetn it!
     }
 
     public static void setLastModified(VCSFileProxy file, long time) {
@@ -261,6 +261,7 @@ public final class VCSFileProxySupport {
                 throw new IOException(status.toString());
             } else {
                 // TODO: make sure that file.exists() returns true
+                parentFile.toFileObject().refresh();
                 return file.toFileObject().getOutputStream();
             }
         }
@@ -351,7 +352,39 @@ public final class VCSFileProxySupport {
      * It <b>closes</b> the input stream.
      */
     public static void copyStreamToFile(InputStream inputStream, VCSFileProxy targetFile) throws IOException {
-        throw new UnsupportedOperationException();
+        OutputStream outputStream = null;
+        try {            
+            outputStream = VCSFileProxySupport.getOutputStream(targetFile);
+            try {
+                byte[] buffer = new byte[32768];
+                for (int readBytes = inputStream.read(buffer);
+                     readBytes > 0;
+                     readBytes = inputStream.read(buffer)) {
+                    outputStream.write(buffer, 0, readBytes);
+                }
+            } catch (IOException ex) {
+                VCSFileProxySupport.delete(targetFile);
+                throw ex;
+            }
+        }
+        finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                }
+                catch (IOException ex) {
+                    // ignore
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                }
+                catch (IOException ex) {
+                    // ignore
+                }
+            }
+        }
     }
     
     public static boolean isRemoteFileSystem(VCSFileProxy file) {

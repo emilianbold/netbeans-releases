@@ -283,7 +283,7 @@ public class VersionsCache {
                 return null;
             }
             if (newMetadataFormat) {
-            return getContentBase(referenceFile, new File(Utils.getTempFolder(), referenceFile.getName() + ".netbeans-base")); //NOI18N
+                return getContentBase(referenceFile, new File(Utils.getTempFolder(), referenceFile.getName() + ".netbeans-base")); //NOI18N
             } else {
                 VCSFileProxy svnBase = VCSFileProxy.createFileProxy(svnDir, "text-base/" + referenceFile.getName() + ".svn-base"); //NOI18N
                 if (!svnBase.exists()) {

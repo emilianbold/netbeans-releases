@@ -720,7 +720,7 @@ public class Annotator extends VCSAnnotator {
     }
 
     private AnnotationColorProvider getAnnotationProvider(FileSystem fileSystem) {
-        return AnnotationColorProvider.getInstance(fileSystem);
+        return AnnotationColorProvider.getInstance();
     }
 
     private String getLockString (int status) {

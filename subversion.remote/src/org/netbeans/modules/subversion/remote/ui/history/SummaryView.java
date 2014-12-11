@@ -317,12 +317,12 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
         final Map<String, String> colors = new HashMap<>();
-        colors.put("A", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).ADDED_LOCALLY_FILE.getActualColor()));
-        colors.put("C", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("R", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("M", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).MODIFIED_LOCALLY_FILE.getActualColor()));
-        colors.put("D", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).REMOVED_LOCALLY_FILE.getActualColor()));
-        colors.put("?", SvnUtils.getColorString(AnnotationColorProvider.getInstance(master.getFileSystem()).EXCLUDED_FILE.getActualColor()));
+        colors.put("A", SvnUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
+        colors.put("C", SvnUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("R", SvnUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("M", SvnUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
+        colors.put("D", SvnUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
+        colors.put("?", SvnUtils.getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 
