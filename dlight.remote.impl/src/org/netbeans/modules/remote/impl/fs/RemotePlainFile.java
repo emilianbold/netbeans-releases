@@ -118,7 +118,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         if (relativePath.startsWith("/")) { //NOI18N
             relativePath = relativePath.substring(1);
         }
-        if (!relativePath.equals(".") && !relativePath.contains("..") && !relativePath.contains("/")) {
+        if (!relativePath.equals(".") && !relativePath.contains("..") && !relativePath.contains("/")) { // NOI18N
             return null;
         }
         RemoteFileObject res = this.getOwnerFileObject();
