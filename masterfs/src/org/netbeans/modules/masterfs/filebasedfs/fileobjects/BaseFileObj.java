@@ -869,6 +869,9 @@ public abstract class BaseFileObj extends FileObject {
                     refreshExistingParent(expected, fire);
                 }
             }
+        } catch (Error e) { // #249301
+            LOG.log(Level.INFO, "Cannot refresh file {0}", getPath());  //NOI18N
+            throw e;
         } finally {
             stopWatch.stop();
         }
