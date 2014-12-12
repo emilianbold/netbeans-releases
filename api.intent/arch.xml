@@ -248,10 +248,7 @@
 
 
     <!--
-            <question id="compat-i18n" when="impl">-<replacefilter token="@org-netbeans-modules-masterfs-ui@" value="${javadoc.docs.org-netbeans-modules-masterfs-ui}"/>
--<replacefilter token="@org-netbeans-modules-parsing-nb@" value="${javadoc.docs.org-netbeans-modules-parsing-nb}"/>
--<replacefilter token="@org-netbeans-modules-project-libraries-ui@" value="${javadoc.docs.org-netbeans-modules-project-libraries-ui}"/>
--<replacefilter token="@org-openide-filesystems-nb@" value="${javadoc.docs.org-openide-filesystems-nb}"/>
+            <question id="compat-i18n" when="impl">
                 Is your module correctly internationalized?
                 <hint>
                 Correct internationalization means that it obeys instructions

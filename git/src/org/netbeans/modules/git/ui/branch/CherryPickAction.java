@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.branch;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,6 +76,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -342,11 +344,18 @@ public class CherryPickAction extends SingleRepositoryAction {
                     Bundle.LBL_CherryPickResultProcessor_commit(),
                     NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
                     new Object[] { commit, review, NotifyDescriptor.CANCEL_OPTION }, commit));
-            VCSContext context = GitUtils.getContextForFile(repository);
+            final VCSContext context = GitUtils.getContextForFile(repository);
             if (o == commit) {
                 SystemAction.get(CommitAction.class).performAction(context);
             } else if (o == review) {
-                SystemAction.get(StatusAction.class).performContextAction(context);
+                Mutex.EVENT.readAccess(new Runnable () {
+
+                    @Override
+                    public void run () {
+                        SystemAction.get(StatusAction.class).performContextAction(context);
+                    }
+                    
+                });
             }
         }
         

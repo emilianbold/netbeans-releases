@@ -811,8 +811,14 @@ public final class MainWindow {
                    }
                    ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                    isSwitchingFullScreenMode = false;
-                   if( null != activeTc )
-                       activeTc.requestFocusInWindow();
+                   SwingUtilities.invokeLater(new Runnable() {
+                       @Override
+                       public void run() {
+                            if( null != activeTc ) {
+                                activeTc.requestFocusInWindow();
+                            }
+                       }
+                   });
                }
            });
        } else {
@@ -825,8 +831,14 @@ public final class MainWindow {
                    frame.repaint();
                    ToolbarPool.getDefault().setConfiguration( toolbarConfigName );
                    isSwitchingFullScreenMode = false;
-                   if( null != activeTc )
-                       activeTc.requestFocusInWindow();
+                   SwingUtilities.invokeLater(new Runnable() {
+                       @Override
+                       public void run() {
+                            if( null != activeTc ) {
+                                activeTc.requestFocusInWindow();
+                            }
+                       }
+                   });
                 }
            });
        }
