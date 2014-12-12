@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.repository.storage;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.repository.disk.RepositoryImplUtil;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -79,4 +80,8 @@ public class FilePathsDictionaryPersistentFactory implements PersistentFactory {
         return obj;
     }
 
+    public static String getFilePathsDictionaryKeyFileName () throws IOException {
+        FilePathsDictionaryKey key = new FilePathsDictionaryKey(0);
+        return RepositoryImplUtil.getKeyFileName(key);
+    }
 }
