@@ -133,7 +133,7 @@ public class TooStrongCast {
         TypeCastTree tct = (TypeCastTree)ctx.getPath().getLeaf();
         TreePath realExpressionPath = new TreePath(ctx.getPath(), tct.getExpression());
         TypeMirror casteeType = info.getTrees().getTypeMirror(realExpressionPath);
-        if (casteeType == null) {
+        if (!Utilities.isValidType(casteeType)) {
             return null;
         }
         String lst = null;
@@ -143,7 +143,7 @@ public class TooStrongCast {
         CharSequence currentTypeName = info.getTypeUtilities().getTypeName(castType);
         for (Iterator<? extends TypeMirror> it = types.iterator(); it.hasNext(); ) {
             TypeMirror tm = it.next();
-            if (tm.getKind() == TypeKind.ERROR) {
+            if (!Utilities.isValidType(tm)) {
                 continue;
             }
             if (tm.getKind() == TypeKind.TYPEVAR) {
