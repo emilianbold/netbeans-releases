@@ -67,22 +67,17 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-
+import java.util.regex.Pattern;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-
-import org.netbeans.spi.debugger.jpda.SourcePathProvider;
-import org.netbeans.spi.debugger.ContextProvider;
-
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.BuildArtifactMapper;
@@ -91,18 +86,19 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 
@@ -409,7 +405,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private ClassPath getAdditionalClassPath(File baseDir) {
         try {
-            String root = Utilities.toURI(baseDir).toURL().toExternalForm();
+            String root = BaseUtilities.toURI(baseDir).toURL().toExternalForm();
             Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
             List<String> additionalSourceRoots = (List<String>) sourcesProperties.
                     getProperties("additional_source_roots").
@@ -460,7 +456,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (baseDir != null) {
             String projectRoot;
             try {
-                projectRoot = Utilities.toURI(baseDir).toURL().toExternalForm();
+                projectRoot = BaseUtilities.toURI(baseDir).toURL().toExternalForm();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
                 return ;
@@ -487,7 +483,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private Set<String> getDisabledSourceRoots(File baseDir) {
         try {
-            String root = Utilities.toURI(baseDir).toURL().toExternalForm();
+            String root = BaseUtilities.toURI(baseDir).toURL().toExternalForm();
             Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
             return (Set<String>) sourcesProperties.getProperties("source_roots").
                 getMap("project_disabled", Collections.emptyMap()).
@@ -509,7 +505,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (baseDir != null) {
             String projectRoot;
             try {
-                projectRoot = Utilities.toURI(baseDir).toURL().toExternalForm();
+                projectRoot = BaseUtilities.toURI(baseDir).toURL().toExternalForm();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
                 return ;
@@ -527,7 +523,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private static Map<String, Integer> getSourceRootsOrder(File baseDir) {
         try {
-            String root = Utilities.toURI(baseDir).toURL().toExternalForm();
+            String root = BaseUtilities.toURI(baseDir).toURL().toExternalForm();
             return getSourceRootsOrder(root);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
@@ -535,14 +531,14 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
     }
 
-    static Map<String, Integer> getSourceRootsOrder(String root) {
+    public static Map<String, Integer> getSourceRootsOrder(String root) {
         Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
         return (Map<String, Integer>) sourcesProperties.getProperties("source_roots").
             getMap("project_order", Collections.emptyMap()).
             get(root);
     }
 
-    static Map<String, Integer> getRemoteSourceRootsOrder() {
+    public static Map<String, Integer> getRemoteSourceRootsOrder() {
         Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
         return (Map<String, Integer>) sourcesProperties.getProperties("source_roots").
             getMap("remote_order", Collections.emptyMap());
@@ -552,7 +548,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         String projectRoot;
         if (baseDir != null) {
             try {
-                projectRoot = Utilities.toURI(baseDir).toURL().toExternalForm();
+                projectRoot = BaseUtilities.toURI(baseDir).toURL().toExternalForm();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
                 return ;
@@ -563,7 +559,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         storeSourceRootsOrder(projectRoot, roots, permutation);
     }
 
-    static void storeSourceRootsOrder(String projectRoot, String[] roots, int[] permutation) {
+    public static void storeSourceRootsOrder(String projectRoot, String[] roots, int[] permutation) {
         Map<String, Integer> sourceOrder = new HashMap<String, Integer>();
         if (roots.length != permutation.length) {
             throw new IllegalArgumentException("Incompatible array length: roots = "+roots.length+", permutation = "+permutation.length);
@@ -878,7 +874,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return getSourceRoots(smartSteppingSourcePath);
     }
 
-    synchronized Set<FileObject> getSourceRootsFO() {
+    public synchronized Set<FileObject> getSourceRootsFO() {
         return new HashSet<FileObject>(Arrays.asList(smartSteppingSourcePath.getRoots()));
     }
     
@@ -1260,7 +1256,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     /**
      * Returns source root for given ClassPath root as String, or <code>null</code>.
      */
-    static String getRoot(FileObject fileObject) {
+    public static String getRoot(FileObject fileObject) {
         File f = null;
         String path = "";
         try {
@@ -1303,7 +1299,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         return fo;
     }
 
-    static int[] createPermutation(String[] roots, Map<String, Integer> orderIndexes, String[] sortedRoots) {
+    public static int[] createPermutation(String[] roots, Map<String, Integer> orderIndexes, String[] sortedRoots) {
         int n = roots.length;
         if (orderIndexes == null) {
             int[] perm = new int[n];
@@ -1483,7 +1479,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         if (fo != null) {
                             String className = fileToClassName(fo);
                             if (className != null) {
-                                FixActionProvider.ClassesToReload.getInstance().addClassToReload(
+                                FixClassesSupport.ClassesToReload.getInstance().addClassToReload(
                                         debugger, src, className, fo);
                             }
                         }
@@ -1500,13 +1496,13 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                         }
                     }
                 }
-                FixActionProvider.reloadClasses(debugger, classes);
+                FixClassesSupport.reloadClasses(debugger, classes);
             } else {
                 BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
             }
 
             if (error != null && canFixClasses) {
-                FixActionProvider.notifyError(error);
+                FixClassesSupport.notifyError(debugger, error);
             }
         }
 
@@ -1697,7 +1693,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
     }
     
-    static final class FileObjectComparator implements Comparator<FileObject> {
+    public static final class FileObjectComparator implements Comparator<FileObject> {
 
         @Override
         public int compare(FileObject fo1, FileObject fo2) {

@@ -332,6 +332,11 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         }
 
         @Override
+        public void notifyMessage (String message) {
+            getLogger().outputLine(message);
+        }
+
+        @Override
         public void beginTask (String title, int totalWork) {
             currentTaskTotalUnits = totalWork;
             currentTaskTitle = title;

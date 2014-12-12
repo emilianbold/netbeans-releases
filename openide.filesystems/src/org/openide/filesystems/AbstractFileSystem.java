@@ -659,6 +659,66 @@ public abstract class AbstractFileSystem extends FileSystem {
         public void markUnimportant(String name);
     }
 
+    /**
+     * Information about files related to symbolic links.
+     *
+     * @since openide.filesystem/9.4
+     */
+    @SuppressWarnings("PublicInnerClass")
+    public interface SymlinkInfo extends Serializable {
+
+        /**
+         * Check whether a file represents a symbolic link.
+         *
+         * @param name Name of the file.
+         *
+         * @return True if this file represents a symbolic link, false
+         * otherwise.
+         * @throws java.io.IOException If some I/O problem occurs.
+         * @since openide.filesystem/9.4
+         *
+         * @see #readSymbolicLink(java.lang.String)
+         * @see #getCanonicalName(java.lang.String)
+         */
+        boolean isSymbolicLink(String name) throws IOException;
+
+        /**
+         * Read symbolic link.
+         *
+         * If the file represents a symbolic link, return its target path.
+         * Otherwise the return value is undefined, or
+         * {@link IllegalArgumentException} can be thrown.
+         *
+         * This method does not perform any normalization. If the target of
+         * symbolic link is defined using relative path, this relative path will
+         * be returned.
+         *
+         * @param name Name of the file.
+         *
+         * @throws java.io.IOException If some I/O problem occurs.
+         * @since openide.filesystem/9.4
+         *
+         * @return Target of the symbolic link (as absolute or relative path),
+         * or some undefined value if {@code name} does not represent symbolic
+         * link.
+         *
+         * @see #isSymbolicLink(java.lang.String)
+         */
+        String readSymbolicLink(String name) throws IOException;
+
+        /**
+         * Get canonical file name (resolve all symbolic links).
+         *
+         * @param name Name of the file.
+         *
+         * @return Path that represents the same file as {@code name} and
+         * where all symbolic links are resolved.
+         * @throws java.io.IOException If some I/O problem occurs.
+         * @since openide.filesystem/9.4
+         */
+        String getCanonicalName(String name) throws IOException;
+    }
+
     /** Handle attributes of files.
     */
     public interface Attr extends Serializable {

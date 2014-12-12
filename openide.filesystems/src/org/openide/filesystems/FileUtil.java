@@ -58,11 +58,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1446,6 +1441,41 @@ public final class FileUtil extends Object {
         return false;
     }
 
+    /**
+     * Check whether some FileObject is a recursive symbolic link.
+     *
+     * @param fo FileObject to check.
+     *
+     * @return True if the FileObject represents a symbolic link referring to a
+     * directory that is parent of this FileObject, false otherwise.
+     * @throws java.io.IOException If some I/O problem occurs.
+     * @since openide.filesystem/9.4
+     */
+    public static boolean isRecursiveSymbolicLink(FileObject fo)
+            throws IOException {
+
+        if (!fo.isFolder()) {
+            return false;
+        } else if (fo.isSymbolicLink()) {
+            FileObject parent = fo.getParent();
+            if (parent == null) {
+                return false;
+            }
+            FileObject target = fo.readSymbolicLink();
+            if (target != null) {
+                FileObject realParent = parent.getCanonicalFileObject();
+                FileObject realTarget = target.getCanonicalFileObject();
+                return realParent != null && realTarget != null
+                        && (realTarget.equals(realParent)
+                        || FileUtil.isParentOf(realTarget, realParent));
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
     /** Creates a weak implementation of FileChangeListener.
      *
      * @param l the listener to delegate to
@@ -2231,58 +2261,5 @@ public final class FileUtil extends Object {
     private static boolean isArchiveFile (final String path) {
         int index = path.lastIndexOf('.');  //NOI18N
         return (index != -1) && (index > path.lastIndexOf('/') + 1);    //NOI18N
-    }
-
-    /**
-     * Check whether this file is a symbolic link that targets to a folder
-     * higher in the path. Such link, in case of recursive folder traversing,
-     * would cause infinite recursion. The method should not be called from
-     * Event Dispatch Thread.
-     *
-     * @param fileObject FileObject to check.
-     * @return True if the file is a link that could cause infinite recursion,
-     * false otherwise.
-     */
-    static boolean isRecursiveSymlink(FileObject fileObject) {
-        File file = (File) fileObject.getAttribute("java.io.File"); // NOI18N
-        if (file == null) {
-            return false;
-        }
-        final Path path;
-        try {
-            path = file.toPath();
-        } catch (RuntimeException e) {
-            LOG.log(Level.INFO, "Cannot get path for {0}", file);       //NOI18N
-            LOG.log(Level.FINE, null, e);
-            return false;
-        }
-        if (Files.isSymbolicLink(path)) {
-            try {
-                return AccessController.doPrivileged(new PrivilegedExceptionAction<Boolean>() {
-                    @Override
-                    public Boolean run () throws IOException {
-                        Path target = Files.readSymbolicLink(path);
-                        if (!target.isAbsolute()) {
-                            target = path.resolve(target);
-                        }
-                        target = target.toRealPath();
-                        for (Path ancestor = path.getParent();
-                                ancestor != null; ancestor = ancestor.getParent()) {
-                            if (target.equals(ancestor)) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-                });
-            } catch (PrivilegedActionException ex) {
-                LOG.log(Level.INFO, "Cannot read symbolic link {0}",//NOI18N
-                        path);
-                LOG.log(Level.FINE, null, ex.getException());
-            } catch (SecurityException ex) {
-                LOG.log(Level.INFO, null, ex);
-            }
-        }
-        return false;
     }
 }
