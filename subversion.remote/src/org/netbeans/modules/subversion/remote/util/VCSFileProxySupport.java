@@ -67,7 +67,6 @@ import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
@@ -390,7 +389,7 @@ public final class VCSFileProxySupport {
     }
     
     public static boolean isRemoteFileSystem(VCSFileProxy file) {
-        throw new UnsupportedOperationException();
+        return file.toFile() == null;
     }
     
     public static VCSFileProxy getResource(VCSFileProxy file, String absPath) {
