@@ -143,7 +143,7 @@ static const char* err_get_message() {
 
 static const char* err_to_string(int err_no) {
 #if __linux__
-    return strerror_r(err_no, err_info.errmsg, thread_emsg_bufsize);
+    return strerror_r(err_no, err_info.strerr, thread_emsg_bufsize);
 #else
     if (strerror_r(err_no, err_info.strerr, thread_emsg_bufsize)) {
         return "";
@@ -515,7 +515,7 @@ static bool response_entry_create(buffer response_buf,
             ssize_t sz = readlink(abspath, link, work_buf_size);
             if (sz == -1) {
                 report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
-                err_set(errno, "error performing readlink for %s: %s\n", abspath, err_to_string(errno));
+                err_set(errno, "error performing readlink for %s: %s", abspath, err_to_string(errno));
                 strcpy(work_buf.data, "?");
             } else {
                 link[sz] = 0;
@@ -523,7 +523,7 @@ static bool response_entry_create(buffer response_buf,
                 work_buf_size -= (sz + escaped_link_size + 1);
                 if (work_buf_size < 0) {
                     report_error("insufficient space in buffer for %s\n", abspath);
-                    err_set(-1, "insufficient space in buffer for %s\n", abspath);
+                    err_set(-1, "insufficient space in buffer for %s", abspath);
                     return false;
                 }
                 escaped_link = link + sz + 1;
@@ -542,7 +542,7 @@ static bool response_entry_create(buffer response_buf,
                 escaped_link);
         return true;
     } else {
-        err_set(errno, "error getting lstat for '%s': %s\n", abspath, err_to_string(errno));
+        err_set(errno, "error getting lstat for '%s': %s", abspath, err_to_string(errno));
         report_error("error getting lstat for '%s': %s\n", abspath, err_get_message());
         return false;
     }
