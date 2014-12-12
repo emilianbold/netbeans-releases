@@ -26,6 +26,7 @@ import org.eclipse.mylyn.commons.net.WebUtil;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.team.commons.LogUtils;
+import org.openide.util.Lookup;
 
 public class ODCSClientImpl implements ODCSClient {
     
@@ -106,31 +107,37 @@ public class ODCSClientImpl implements ODCSClient {
 
     @Override
     public List<ProjectActivity> getRecentActivities(String projectId) throws ODCSException {
+        ClassLoader originalContextCL = null;
         try {
             if(mockDelegate != null) {
                 return mockDelegate.getRecentActivities(projectId);
             }
-                        
+            originalContextCL = setupContextClassLoader();
             return getActivityClient().getRecentActivity(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
         } catch(RuntimeException e) {
             throw new ODCSException(e);
+        } finally {
+            restoreContextClassLoader(originalContextCL);
         }
     }
 
     @Override
     public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODCSException {
+        ClassLoader originalContextCL = null;
         try {
             if(mockDelegate != null) {
                 return mockDelegate.getRecentShortActivities(projectId);
             }
-            
+            originalContextCL = setupContextClassLoader();
             return getActivityClient().getShortActivityList(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
         } catch(RuntimeException e) {
             throw new ODCSException(e);
+        } finally {
+            restoreContextClassLoader(originalContextCL);
         }
     }
 
@@ -353,4 +360,26 @@ public class ODCSClientImpl implements ODCSClient {
         return query;
     }
 
+    // JDev bug 19823944
+    // We need to set the NetBeans system classloader as the thread context
+    // classloader when running in JDeveloper (the Equinox' ContextFinder used in
+    // JDev does not work for the jackson mapper lib to load deserialized classes).
+    // Here is the only entry point we can do it (unfortunately not in JDev).
+    private static ClassLoader setupContextClassLoader() {
+        ClassLoader systemCL = Lookup.getDefault().lookup(ClassLoader.class);
+        if (systemCL != null) {
+            ClassLoader currentContextCL = Thread.currentThread().getContextClassLoader();
+            if (currentContextCL != null && currentContextCL != systemCL) {
+                Thread.currentThread().setContextClassLoader(systemCL);
+                return currentContextCL;
+            }
+        }
+        return null;
+    }
+
+    private static void restoreContextClassLoader(ClassLoader originalContextCL) {
+        if (originalContextCL != null) {
+            Thread.currentThread().setContextClassLoader(originalContextCL);
+        }
+    }
 }
