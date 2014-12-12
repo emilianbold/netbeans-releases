@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -184,7 +183,8 @@ public class LibraryProvider {
                 JSONObject details = executable.view(libraryName);
                 if (details != null) {
                     result = parseLibraryDetails(details);
-                    detailCache.put(libraryName, new WeakReference(result));
+                    reference = new WeakReference<>(result);
+                    detailCache.put(libraryName, reference);
                 }
             }
         }
@@ -192,19 +192,20 @@ public class LibraryProvider {
     }
 
     /**
-     * Returns the list of installed libraries/packages.
+     * Returns the installed libraries/packages.
      * 
-     * @return array with the installed libraries. Returns {@code null} when
-     * the attempt to determine the installed libraries failed. When no library
-     * is installed then an empty array is returned.
+     * @return map that maps the library name to the installed version.
+     * Returns {@code null} when the attempt to determine the installed
+     * libraries failed. When no library is installed then an empty array
+     * is returned.
      */
-    public Library.Version[] installedLibraries() {
-        Library.Version[] result = null;
+    public Map<String,String> installedLibraries() {
+        Map<String,String> result = null;
         NpmExecutable executable = NpmExecutable.getDefault(project, false);
         if (executable != null) {
             JSONObject json = executable.list();
             if (json != null) {
-                List<Library.Version> libraries = new ArrayList<>();
+                result = new HashMap<>();
                 JSONObject dependencies = (JSONObject)json.get("dependencies"); // NOI18N
                 if (dependencies != null) {
                     for (Object key : dependencies.keySet()) {
@@ -214,14 +215,11 @@ public class LibraryProvider {
                             String versionName = (String)libraryInfo.get("version"); // NOI18N
                             if (versionName != null) {
                                 String libraryName = key.toString();
-                                Library library = new Library(libraryName);
-                                Library.Version version = new Library.Version(library, versionName);
-                                libraries.add(version);
+                                result.put(libraryName, versionName);
                             }
                         }
                     }
                 }
-                result = libraries.toArray(new Library.Version[libraries.size()]);
             }
         }
         return result;
@@ -241,15 +239,22 @@ public class LibraryProvider {
         String latestVersionName = (String)viewInfo.get("version"); // NOI18N
         Library.Version latestVersion = null;
 
-        JSONArray versionArray = (JSONArray)viewInfo.get("versions"); // NOI18N
-        Library.Version[] versions = new Library.Version[versionArray.size()];
-        for (int i=0; i<versionArray.size(); i++) {
-            String versionName = (String)versionArray.get(i);
-            Library.Version version = new Library.Version(library, versionName);
-            if (versionName.equals(latestVersionName)) {
-                latestVersion = version;
+        Library.Version[] versions;
+        Object versionsObject = viewInfo.get("versions"); // NOI18N
+        if (versionsObject instanceof JSONArray) {
+            JSONArray versionArray = (JSONArray)viewInfo.get("versions"); // NOI18N
+            versions = new Library.Version[versionArray.size()];
+            for (int i=0; i<versionArray.size(); i++) {
+                String versionName = (String)versionArray.get(i);
+                Library.Version version = new Library.Version(library, versionName);
+                if (versionName.equals(latestVersionName)) {
+                    latestVersion = version;
+                }
+                versions[i] = version;
             }
-            versions[i] = version;
+        } else {
+            latestVersion = new Library.Version(library, versionsObject.toString());
+            versions = new Library.Version[] { latestVersion };
         }
         library.setVersions(versions);
         library.setLatestVersion(latestVersion);
