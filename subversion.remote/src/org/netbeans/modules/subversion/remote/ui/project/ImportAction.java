@@ -77,7 +77,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Kuzel
  */
-@ActionID(id = "org.netbeans.modules.subversion.ui.project.ImportAction", category = "Subversion")
+@ActionID(id = "org.netbeans.modules.subversion.remote.ui.project.ImportAction", category = "Subversion")
 @ActionRegistration(displayName = "#BK0006", popupText="#CTL_PopupMenuItem_Import", menuText="#BK0006")
 @ActionReferences({
    @ActionReference(path="Versioning/Subversion/Actions/Unversioned", position=1)
