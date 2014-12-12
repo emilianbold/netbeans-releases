@@ -1006,14 +1006,15 @@ cp_variable
         //every token which might possibly begin with the at sign
         {isLessSource()}? ( AT_IDENT | IMPORT_SYM | PAGE_SYM | MEDIA_SYM | NAMESPACE_SYM | CHARSET_SYM | COUNTER_STYLE_SYM | FONT_FACE_SYM | TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM | MOZ_DOCUMENT_SYM | WEBKIT_KEYFRAMES_SYM | SASS_CONTENT | SASS_MIXIN | SASS_INCLUDE | SASS_EXTEND | SASS_DEBUG | SASS_WARN | SASS_IF | SASS_ELSE | SASS_FOR | SASS_FUNCTION | SASS_RETURN | SASS_EACH | SASS_WHILE | SASS_AT_ROOT )
         |
-        {isScssSource()}? ( SASS_VAR )
+        {isScssSource()}? ( SASS_VAR | LESS_AND)
     ;
 
 //comma separated list of cp_expression-s
 cp_expression_list
     :
-    cp_expression
+    (cp_expression) => cp_expression
     ((ws? COMMA ws? cp_expression)=>ws? COMMA ws? cp_expression)*
+    | {isScssSource()}? LPAREN ws? syncToFollow sass_map_pairs? RPAREN
     ;
 
 //expression:
