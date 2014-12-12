@@ -97,6 +97,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -132,6 +133,12 @@ public class ImportExecutable implements PropertyChangeListener {
         } else {
             addSourceRoot = true;
             createProjectMode = false;
+            try {
+                sourceFileSystem = lastSelectedProject.getProjectDirectory().getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                ex.printStackTrace(System.err);
+            }
+            extension = Lookup.getDefault().lookup(IteratorExtension.class);
         }
     }
 

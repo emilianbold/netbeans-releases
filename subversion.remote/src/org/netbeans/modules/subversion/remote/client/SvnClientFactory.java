@@ -78,7 +78,7 @@ public class SvnClientFactory {
     private SVNClientException exception;
     private final FileSystem fileSystem;
 
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.client.SvnClientFactory");
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.client.SvnClientFactory");
     public static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
     public static final String DEFAULT_FACTORY = FACTORY_TYPE_COMMANDLINE; // javahl is default
     private static boolean cli16Version;

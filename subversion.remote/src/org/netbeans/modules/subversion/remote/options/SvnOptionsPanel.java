@@ -59,8 +59,8 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-@OptionsPanelController.Keywords(keywords={"svn", "subversion", "#SvnOptionsPanel.kw1", "#SvnOptionsPanel.kw2", "#SvnOptionsPanel.kw3",
-    "#SvnOptionsPanel.kw4", "#SvnOptionsPanel.kw5"}, location="Team", tabTitle="#CTL_OptionsPanel.title")
+//@OptionsPanelController.Keywords(keywords={"svn", "subversion", "#SvnOptionsPanel.kw1", "#SvnOptionsPanel.kw2", "#SvnOptionsPanel.kw3",
+//    "#SvnOptionsPanel.kw4", "#SvnOptionsPanel.kw5"}, location="Team", tabTitle="#CTL_OptionsPanel.title")
 @NbBundle.Messages({
     "CTL_OptionsPanel.title=Versioning",
     "SvnOptionsPanel.kw1=versioning",

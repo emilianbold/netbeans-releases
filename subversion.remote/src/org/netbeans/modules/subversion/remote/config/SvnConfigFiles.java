@@ -514,7 +514,10 @@ public class SvnConfigFiles {
         try {
             VCSFileProxy file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), fileName);
             VCSFileProxySupport.mkdirs(file.getParentFile());
-            FileObject fo = file.getParentFile().toFileObject().createData(file.getName());
+            FileObject fo = file.toFileObject();
+            if (fo == null || !fo.isValid()) {
+                fo = file.getParentFile().toFileObject().createData(file.getName());
+            }
             bos = new BufferedOutputStream(fo.getOutputStream());
             systemIniFile.store(bos);
         } catch (IOException ex) {

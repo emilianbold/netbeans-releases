@@ -73,7 +73,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Ondra Vrabec
  */
-@ActionID(id = "org.netbeans.modules.subversion.remote.ui.wcadmin.UpgradeAction", category = "Subversion")
+@ActionID(id = "org.netbeans.modules.subversion.remote.ui.wcadmin.UpgradeAction", category = "SubversionRemote")
 @ActionRegistration(displayName = "CTL_Upgrade_Title")
 public class UpgradeAction extends ContextAction {
 

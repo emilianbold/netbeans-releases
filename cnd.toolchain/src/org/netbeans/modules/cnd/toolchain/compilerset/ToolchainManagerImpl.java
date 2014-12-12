@@ -1448,6 +1448,8 @@ public final class ToolchainManagerImpl {
         public String[] values() {
             if (isValid()) {
                 return new String[]{cppDefault, cpp98, cpp11, cpp14};
+            } else if (cppDefault != null && cpp98 != null && cpp11 != null) {
+                return new String[]{cppDefault, cpp98, cpp11};
             }
             return null;
         }
@@ -1471,6 +1473,8 @@ public final class ToolchainManagerImpl {
         public String[] values() {
             if (isValid()) {
                 return new String[]{cDefault, c89, c99, c11};
+            } else if (cDefault != null && c89 != null && c99 != null) {
+                return new String[]{cDefault, c89, c99};
             }
             return null;
         }

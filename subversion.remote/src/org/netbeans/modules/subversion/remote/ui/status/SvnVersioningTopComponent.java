@@ -70,7 +70,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 public class SvnVersioningTopComponent extends TopComponent implements Externalizable {
    
     private static final long serialVersionUID = 1L;    
-    private static final String ID = "svn-remote-versioning";
+    private static final String ID = "svnremoteversioning";
     
     private final VersioningPanel         syncPanel;
     private Context                 context;
