@@ -49,9 +49,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,11 +69,13 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayeringSupport;
 import org.netbeans.modules.cnd.repository.impl.spi.ReadLayerCapability;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.storage.FilePathsDictionaryPersistentFactory;
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataInputStream;
 import org.netbeans.modules.cnd.repository.storage.data.RepositoryDataOutputStream;
 import org.netbeans.modules.cnd.repository.testbench.BaseStatistics;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -323,9 +327,6 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
         unitStorage.cleanUnitDirectory();
     }
 
-    public void purgeAllDiskStorage() {
-        RepositoryImplUtil.deleteDirectory(cacheLocationFile, false);
-    }
 
     /**
      * For test purposes ONLY! - gets read hit count
@@ -506,7 +507,12 @@ public final class FilesAccessStrategyImpl implements ReadLayerCapability, Write
         }
 
         private void cleanUnitDirectory() {
-            RepositoryImplUtil.deleteDirectory(baseDir, true);
+            ArrayList<String> excludedNames = new ArrayList<String>();
+            try{
+                excludedNames.add(FilePathsDictionaryPersistentFactory.getFilePathsDictionaryKeyFileName());
+            } catch (IOException ex) {
+            }
+            RepositoryImplUtil.deleteDirectory(baseDir, excludedNames, false);
         }
     }
 

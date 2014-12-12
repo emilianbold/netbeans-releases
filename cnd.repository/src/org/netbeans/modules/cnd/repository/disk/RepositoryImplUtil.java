@@ -49,7 +49,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.List;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
@@ -58,7 +62,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author vkvashin
  */
 public class RepositoryImplUtil {
-
+    
     private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static final int BUFFER_SIZE = 64 * 1024;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
@@ -79,6 +83,71 @@ public class RepositoryImplUtil {
 
     public static void warnNotWritable(File file) {
         CndUtils.getLogger().log(Level.WARNING, "Can not write to {0}", file.getAbsolutePath());
+    }
+
+    private static String reduceString(String name) {
+        if (name.length() > 128) {
+            int hashCode = name.hashCode();
+            name = name.substring(0, 64) + "--" + name.substring(name.length() - 32); // NOI18N
+            name += hashCode;
+        }
+        return name;
+    }
+
+    private final static char SEPARATOR_CHAR = '-';
+
+    public static String getKeyFileName(Key key) throws IOException {
+        assert key != null;
+        int size = key.getDepth();
+
+        StringBuilder nameBuffer = new StringBuilder(""); // NOI18N
+
+        for (int j = 0; j < key.getSecondaryDepth(); ++j) {
+            nameBuffer.append(key.getSecondaryAt(j)).append(SEPARATOR_CHAR);
+        }
+
+        if (size != 0) {
+            for (int i = 0; i < size; ++i) {
+                nameBuffer.append(key.getAt(i)).append(SEPARATOR_CHAR);
+            }
+        }
+
+        String fileName = nameBuffer.toString();
+        fileName = URLEncoder.encode(fileName, Stats.ENCODING);
+        return reduceString(fileName);
+    }
+
+    public static void deleteDirectory(File path, List<String> doNotDeleteFilesList, boolean deleteDirItself) {
+        if (path.exists()) {
+            File[] files = path.listFiles();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    //check if we should not delete, only for the top level files?
+                    if (doNotDeleteFilesList != null && doNotDeleteFilesList.contains(files[i].getName())) {
+                        //do not delete file
+                        continue;
+                    }
+                    if (files[i].isDirectory()) {
+                        deleteDirectory(files[i], true);
+                    } else {
+                        if (!files[i].delete()) {
+                            if (!CndUtils.isUnitTestMode() || Stats.TRACE_IZ_224249) {
+                                System.err.println("Cannot delete repository file " + files[i].getAbsolutePath());
+                                if (Stats.TRACE_IZ_224249) {
+                                    CndUtils.threadsDump();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //do not delete folder if there are some files which should not be deleted
+            if ((doNotDeleteFilesList == null || doNotDeleteFilesList.isEmpty()) && deleteDirItself) {
+                if (!path.delete()) {
+                    System.err.println("Cannot delete repository folder " + path.getAbsolutePath());
+                }
+            }
+        }
     }
 
     public static void deleteDirectory(File path, boolean deleteDirItself) {

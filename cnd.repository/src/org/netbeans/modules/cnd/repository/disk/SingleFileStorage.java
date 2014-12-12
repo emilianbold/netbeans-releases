@@ -45,10 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
-import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
-import org.netbeans.modules.cnd.repository.testbench.Stats;
 
 /**
  *
@@ -56,7 +54,6 @@ import org.netbeans.modules.cnd.repository.testbench.Stats;
  */
 public final class SingleFileStorage implements FileStorage {
 
-    private final static char SEPARATOR_CHAR = '-';
     private final File baseDir;
 
     SingleFileStorage(File baseDir) {
@@ -141,23 +138,8 @@ public final class SingleFileStorage implements FileStorage {
 
     private File getFile(LayerKey key) throws IOException {
         assert key != null;
-        int size = key.getDepth();
-
-        StringBuilder nameBuffer = new StringBuilder(""); // NOI18N
-
-        for (int j = 0; j < key.getSecondaryDepth(); ++j) {
-            nameBuffer.append(key.getSecondaryAt(j)).append(SEPARATOR_CHAR);
-        }
-
-        if (size != 0) {
-            for (int i = 0; i < size; ++i) {
-                nameBuffer.append(key.getAt(i)).append(SEPARATOR_CHAR);
-            }
-        }
-
-        String fileName = nameBuffer.toString();
-        fileName = URLEncoder.encode(fileName, Stats.ENCODING);
-        return new File(baseDir, reduceString(fileName));
+        String fileName = RepositoryImplUtil.getKeyFileName(key);
+        return new File(baseDir, fileName);
     }
 
     @Override
@@ -165,14 +147,6 @@ public final class SingleFileStorage implements FileStorage {
         throw new UnsupportedOperationException("Not implemented yet."); // NOI18N
     }
 
-    private String reduceString(String name) {
-        if (name.length() > 128) {
-            int hashCode = name.hashCode();
-            name = name.substring(0, 64) + "--" + name.substring(name.length() - 32); // NOI18N
-            name += hashCode;
-        }
-        return name;
-    }
 
     @Override
     public void dump(PrintStream ps) throws IOException {
