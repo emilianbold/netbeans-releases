@@ -112,7 +112,7 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
      */
     @Override
     public VCSAnnotator getVCSAnnotator() {
-        return Subversion.getInstance().getAnnotator();
+        return Subversion.getInstance().getVCSAnnotator();
     }
 
     /**
