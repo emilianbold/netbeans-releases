@@ -186,6 +186,9 @@ public final class AddCast implements ErrorRule<Void> {
                     targetType.clear();//clean up, - may be related to test136313
                     
                     for (TypeMirror expectedType : expected) {
+                        if (!org.netbeans.modules.java.hints.errors.Utilities.isValidType(expectedType)) {
+                            continue;
+                        }
                         if (info.getTypeUtilities().isCastable(resolved, expectedType)) {
                             if (!info.getTypes().isAssignable(foundTM, expectedType)
                                     /*#85346: cast hint should not be proposed for error types:*/

@@ -165,13 +165,15 @@ public class EqualsHint {
             }
 
             thsType = ctx.getInfo().getTrees().getTypeMirror(cls);
-
-            if (thsType == null || thsType.getKind() != TypeKind.DECLARED) {
-                return null;
-            }
+        }
+        if (thsType == null || thsType.getKind() != TypeKind.DECLARED) {
+            return null;
         }
         
         TypeMirror parType = ctx.getInfo().getTrees().getTypeMirror(par);
+        if (parType == null || parType.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
         if (ctx.getPreferences().getBoolean(ERASURE_PREFS_KEY, ERASURE_PREFS_DEFAULT)) {
             Types types = ctx.getInfo().getTypes();
             thsType = types.erasure(thsType);

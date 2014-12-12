@@ -362,7 +362,7 @@ public class Tiny {
     }
     
     private static boolean isAcceptable(CompilationInfo info, TypeMirror type) {
-        if (type == null) return false;
+        if (!Utilities.isValidType(type)) return false;
         TypeKind typeKind = type.getKind();
         return typeKind != TypeKind.EXECUTABLE && typeKind != TypeKind.PACKAGE;
     }

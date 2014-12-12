@@ -99,6 +99,9 @@ final class TypeErroneous implements OverrideErrorMessage<Void> {
             return null;
         }
         TypeMirror mt = info.getTrees().getTypeMirror(treePath);
+        if (!Utilities.isValidType(mt)) {
+            return null;
+        }
         Collection<TypeMirror> unreachables = Collections.emptyList();
         if (mt.getKind() == TypeKind.EXECUTABLE) {
             ExecutableType etype = (ExecutableType)mt;

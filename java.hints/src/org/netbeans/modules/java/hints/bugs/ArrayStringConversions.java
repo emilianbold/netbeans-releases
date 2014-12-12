@@ -115,7 +115,7 @@ public class ArrayStringConversions {
      */
     static boolean canContainArrays(CompilationInfo ci, TreePath tp) {
         TypeMirror tm = ci.getTrees().getTypeMirror(tp);
-        if (tm == null) {
+        if (!Utilities.isValidType(tm)) {
             return false;
         }
         tm = ci.getTypes().erasure(tm);

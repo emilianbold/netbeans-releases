@@ -49,6 +49,7 @@ import java.util.Map;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
@@ -83,6 +84,9 @@ public class ShiftOutOfRange {
         Trees trees = compilationInfo.getTrees ();
         TreePath identifierTreePath = tree;
         TypeMirror typeMirror = trees.getTypeMirror (identifierTreePath);
+        if (!Utilities.isValidType(typeMirror)) {
+            return null;
+        }
         if (typeMirror.toString ().equals ("int")) {
             if (value < 0 || value > 31)
                 return ErrorDescriptionFactory.forName (

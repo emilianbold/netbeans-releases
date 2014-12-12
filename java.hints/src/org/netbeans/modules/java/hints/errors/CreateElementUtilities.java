@@ -565,7 +565,7 @@ public final class CreateElementUtilities {
         }
         TreePath parentParent = parent.getParentPath();
         TypeMirror m = info.getTrees().getTypeMirror(parentParent);
-        if (m.getKind() != TypeKind.ERROR && m.getKind() != TypeKind.OTHER) {
+        if (org.netbeans.modules.java.hints.errors.Utilities.isValidType(m)) {
             return Collections.singletonList(m);
         }
         return resolveType(types, info, parentParent, let, offset, null, null);
