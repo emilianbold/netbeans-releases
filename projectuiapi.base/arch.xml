@@ -955,6 +955,16 @@ Nothing.
        <li>Actions/Project/org-netbeans-modules-project-ui-RunProject.instance</li>
    </ul>
   </api>
+  <api group="layer" name="RegistrationOfConvertors" type="export" category="friend">
+      This module provides an 
+      <a href="@TOP@/org/netbeans/spi/project/ui/ProjectConvertor.Registration.html">annotation</a>
+      to register 
+      <a href="@TOP@/org/netbeans/spi/project/ui/ProjectConvertor.html">project convertor</a>s
+      which generates registration in layer. This registration is used and
+      processed by <em>ide.ergonomics</em> module. The module especially relies
+      on the location of the registration (e.g. <code>Services/ProjectConvertors/</code>)
+      and <code>requiredFiles</code> and <code>delegate</code> attributes.
+  </api>
  </answer>
 
 
