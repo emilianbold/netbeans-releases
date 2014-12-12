@@ -129,8 +129,8 @@ public class SvnWcParser {
     }
 
     public ISVNStatus getSingleStatus(VCSFileProxy file) throws LocalSubversionException {
-        String finalTextStatus = SVNStatusKind.NORMAL.toString();
-        String finalPropStatus = SVNStatusKind.NONE.toString();
+        SVNStatusKind finalTextStatus = SVNStatusKind.NORMAL;
+        SVNStatusKind finalPropStatus = SVNStatusKind.NONE;
 
         try {
             WorkingCopyDetails wcDetails = getWCDetails(file);
@@ -139,51 +139,51 @@ public class SvnWcParser {
                     (wcDetails.getBasePropertiesFile() != null &&     // or there were some 
                      wcDetails.getBasePropertiesFile().exists()))    
                 {
-                    finalPropStatus = SVNStatusKind.NORMAL.toString();
+                    finalPropStatus = SVNStatusKind.NORMAL;
                     //See if props have been modified
                     if (wcDetails.propertiesModified()) {
-                        finalPropStatus = SVNStatusKind.MODIFIED.toString();
+                        finalPropStatus = SVNStatusKind.MODIFIED;
                     }
                 }                
                 if (wcDetails.isFile()) {
                     //Find Text Status
                     // XXX what if already added
                     if (wcDetails.textModified()) {
-                        finalTextStatus = SVNStatusKind.MODIFIED.toString();
+                        finalTextStatus = SVNStatusKind.MODIFIED;
                     }
                 } 
 
                 String value = wcDetails.getValue("schedule");  // NOI18N
                 if (value != null) {
                     if (value.equals("add")) {  // NOI18N
-                        finalTextStatus = SVNStatusKind.ADDED.toString();
-                        finalPropStatus = SVNStatusKind.NONE.toString();
+                        finalTextStatus = SVNStatusKind.ADDED;
+                        finalPropStatus = SVNStatusKind.NONE;
                     } else if (value.equals("delete")) {  // NOI18N
-                        finalTextStatus = SVNStatusKind.DELETED.toString();
-                        finalPropStatus = SVNStatusKind.NONE.toString();
+                        finalTextStatus = SVNStatusKind.DELETED;
+                        finalPropStatus = SVNStatusKind.NONE;
                     } else if (value.equals("replace")) {  // NOI18N
-                        finalTextStatus = SVNStatusKind.REPLACED.toString();
-                        finalPropStatus = SVNStatusKind.NONE.toString();
+                        finalTextStatus = SVNStatusKind.REPLACED;
+                        finalPropStatus = SVNStatusKind.NONE;
                     }
                 }
                 
                 // what if the file does not exist and is not deleted?
                 // now status can be NORMAL, MODIFIED, ADDED, REPLACED, DELETED
                 // it is missing then
-                assert finalTextStatus.equals(SVNStatusKind.NORMAL.toString())
-                        || finalTextStatus.equals(SVNStatusKind.MODIFIED.toString())
-                        || finalTextStatus.equals(SVNStatusKind.ADDED.toString())
-                        || finalTextStatus.equals(SVNStatusKind.REPLACED.toString())
-                        || finalTextStatus.equals(SVNStatusKind.DELETED.toString());
-                if (!SVNStatusKind.DELETED.toString().equals(finalTextStatus) && !file.exists() && !isUnderParent(file)) {
-                    finalTextStatus = SVNStatusKind.MISSING.toString();
+                assert finalTextStatus.equals(SVNStatusKind.NORMAL)
+                        || finalTextStatus.equals(SVNStatusKind.MODIFIED)
+                        || finalTextStatus.equals(SVNStatusKind.ADDED)
+                        || finalTextStatus.equals(SVNStatusKind.REPLACED)
+                        || finalTextStatus.equals(SVNStatusKind.DELETED);
+                if (!SVNStatusKind.DELETED.equals(finalTextStatus) && !file.exists() && !isUnderParent(file)) {
+                    finalTextStatus = SVNStatusKind.MISSING;
                 }
 
                 value = wcDetails.getValue("deleted");  // NOI18N
                 if (value != null) {
                     if (value.equals("true")) {  // NOI18N
-                        finalTextStatus = SVNStatusKind.UNVERSIONED.toString();
-                        finalPropStatus = SVNStatusKind.NONE.toString();
+                        finalTextStatus = SVNStatusKind.UNVERSIONED;
+                        finalPropStatus = SVNStatusKind.NONE;
                     }
                 }    
 
@@ -217,7 +217,7 @@ public class SvnWcParser {
                     conflictOld = VCSFileProxy.createFileProxy(file.getParentFile(), value);
                 }
                 if ((conflictNew != null) || (conflictOld != null)) {
-                    finalTextStatus = SVNStatusKind.CONFLICTED.toString();                
+                    finalTextStatus = SVNStatusKind.CONFLICTED;                
                 }
 
                 Date lockCreationDate = wcDetails.getDateValue("lock-creation-date");  // NOI18N
@@ -256,8 +256,8 @@ public class SvnWcParser {
                         wcDetails.getValue("url"),            // NOI18N
                         0,
                         "unknown",                            // NOI18N   
-                        SVNStatusKind.UNVERSIONED.toString(),
-                        SVNStatusKind.UNVERSIONED.toString(),
+                        SVNStatusKind.UNVERSIONED,
+                        SVNStatusKind.UNVERSIONED,
                         null,
                         0,
                         null,
@@ -342,17 +342,17 @@ public class SvnWcParser {
 
                 String nodeKind = wcDetails.getValue("kind", "normal");     // NOI18N             
                 returnValue = new ParserSvnInfo(file, fileUrl, reposUrl, reposUuid,
-                    schedule, revision, isCopied, urlCopiedFrom, revisionCopiedFrom,
+                    SVNScheduleKind.fromString(schedule), revision, isCopied, urlCopiedFrom, revisionCopiedFrom,
                     lastCommittedDate, lastChangedRevision, lastCommitAuthor,
                     lastDatePropsUpdate, lastDateTextUpdate, lockCreationDate,
-                    lockOwner, lockComment, nodeKind, wcDetails.getPropertiesFile(), wcDetails.getBasePropertiesFile());
+                    lockOwner, lockComment, SVNNodeKind.fromString(nodeKind), wcDetails.getPropertiesFile(), wcDetails.getBasePropertiesFile());
             } else {
                 String fileUrl = wcDetails.getValue("url");  // NOI18N
                 String reposUrl = wcDetails.getValue("repos");  // NOI18N
                 String reposUuid = wcDetails.getValue("uuid");  // NOI18N
                 returnValue = new ParserSvnInfo(file, fileUrl, reposUrl, reposUuid,
-                    SVNScheduleKind.NORMAL.toString(), 0, false, null, 0, null, 0, null,
-                    null, null, null, null, null, SVNNodeKind.UNKNOWN.toString(), null, null);
+                    SVNScheduleKind.NORMAL, 0, false, null, 0, null, 0, null,
+                    null, null, null, null, null, SVNNodeKind.UNKNOWN, null, null);
             }
         } catch (IOException ex) {
             throw new LocalSubversionException(ex);
@@ -364,8 +364,8 @@ public class SvnWcParser {
 
     public ISVNInfo getUnknownInfo (VCSFileProxy file) {
         return new ParserSvnInfo(file, null, null, null,
-                    SVNScheduleKind.NORMAL.toString(), 0, false, null, 0, null, 0, null,
-                    null, null, null, null, null, SVNNodeKind.UNKNOWN.toString(), null, null);
+                    SVNScheduleKind.NORMAL, 0, false, null, 0, null, 0, null,
+                    null, null, null, null, null, SVNNodeKind.UNKNOWN, null, null);
     }
     
 }

@@ -82,7 +82,7 @@ public class ParserSvnStatus implements ISVNStatus {
 
     /** Creates a new instance of LocalSvnStatusImpl */
     public ParserSvnStatus(VCSFileProxy file, String url, long revision, String kind,
-            String textStatus, String propStatus,
+            SVNStatusKind textStatus, SVNStatusKind propStatus,
             String lastCommitAuthor, long lastChangedRevision, Date lastChangedDate,
             boolean isCopied, String urlCopiedFrom,
             VCSFileProxy conflictNew, VCSFileProxy conflictOld, VCSFileProxy conflictWorking,
@@ -102,8 +102,8 @@ public class ParserSvnStatus implements ISVNStatus {
         this.revision = new SVNRevision.Number(revision);
         this.kind = SVNNodeKind.fromString(kind);
 
-        this.textStatus = SVNStatusKind.fromString(textStatus);
-        this.propStatus = SVNStatusKind.fromString(propStatus);
+        this.textStatus = textStatus;
+        this.propStatus = propStatus;
         this.lastCommitAuthor = lastCommitAuthor;
 
         this.lastChangedRevision = new SVNRevision.Number(lastChangedRevision);

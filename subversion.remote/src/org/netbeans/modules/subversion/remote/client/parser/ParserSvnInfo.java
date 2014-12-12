@@ -81,10 +81,10 @@ public class ParserSvnInfo implements ISVNInfo{
     
     /** Creates a new instance of LocalSvnInfoImpl */
     public ParserSvnInfo(VCSFileProxy file, String url, String reposUrl, String reposUuid,
-        String schedule, long revision, boolean isCopied, String urlCopiedFrom, 
+        SVNScheduleKind schedule, long revision, boolean isCopied, String urlCopiedFrom, 
         long revisionCopiedFrom, Date lastChangedDate, long lastChangedRevision,
         String lastCommitAuthor, Date lastDatePropsUpdate, Date lastDateTextUpdate,
-        Date lockCreationDate, String lockOwner, String lockComment, String nodeKind, 
+        Date lockCreationDate, String lockOwner, String lockComment, SVNNodeKind nodeKind, 
         VCSFileProxy propertiesFile, VCSFileProxy basePropertiesFile) {
         this.file = file;
         try {
@@ -99,7 +99,7 @@ public class ParserSvnInfo implements ISVNInfo{
         }
         this.reposUuid = reposUuid;
         
-        this.schedule = SVNScheduleKind.fromString(schedule);
+        this.schedule = schedule;
         this.revision = new SVNRevision.Number(revision);
         
         this.isCopied = isCopied;
@@ -121,7 +121,7 @@ public class ParserSvnInfo implements ISVNInfo{
         this.lockOwner = lockOwner;
         this.lockComment = lockComment;
         
-        this.nodeKind = SVNNodeKind.fromString(nodeKind);
+        this.nodeKind = nodeKind;
         this.propertiesFile = propertiesFile;
         this.basePropertiesFile = basePropertiesFile;
     }

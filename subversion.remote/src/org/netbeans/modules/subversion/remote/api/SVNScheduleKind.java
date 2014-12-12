@@ -63,4 +63,9 @@ public enum SVNScheduleKind {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }
