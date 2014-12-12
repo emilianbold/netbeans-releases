@@ -135,7 +135,7 @@ public class DynamicVerifyTest extends NbTestCase {
         Map<String,String> all = FeatureManager.projectFiles();
 
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
-        all.put("Fine", "org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory");
+        all.put("FineToo", "org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory");
 
         iterateRegistrations(sb, ProjectFactory.class, null, all);
         
