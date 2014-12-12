@@ -47,6 +47,7 @@ import java.awt.EventQueue;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -59,7 +60,9 @@ public class EditPanel extends javax.swing.JPanel {
     private static final RequestProcessor RP = new RequestProcessor(EditPanel.class);
     /** Provider of library details. */
     private LibraryProvider libraryProvider;
+    /** Library details. */
     private Library libraryDetails;
+    /** Determines whether we are loading the library details. */
     private boolean loadingLibraryDetails;
 
     /**
@@ -70,47 +73,112 @@ public class EditPanel extends javax.swing.JPanel {
         installVersionCombo.setRenderer(new VersionRenderer());
     }
 
+    /**
+     * Sets the library provider.
+     * 
+     * @param libraryProvider library provider.
+     */
     void setLibraryProvider(LibraryProvider libraryProvider) {
         this.libraryProvider = libraryProvider;
     }
 
-    void setData(Library.Version installedVersion, String requiredVersion, Library libraryDetails) {
-        Library details;
-        if (libraryDetails.getVersions() == null) {
-            details = libraryProvider.libraryDetails(libraryDetails.getName(), true);
-            if (details == null) {
-                details = libraryDetails;
+    /**
+     * Sets the dependency to edit.
+     * 
+     * @param dependency dependency to edit.
+     */
+    void setDependency(Dependency dependency) {
+        Library.Version versionToSelect = null;
+        String installedVersionName = dependency.getInstalledVersion();
+        libraryDetails = libraryProvider.libraryDetails(dependency.getName(), true);
+        if (libraryDetails == null) {
+            // Temporary library details
+            libraryDetails = new Library(dependency.getName());
+            if (installedVersionName != null) {
+                versionToSelect = new Library.Version(libraryDetails, installedVersionName);
             }
         } else {
-            details = libraryDetails;
+            if (installedVersionName == null) {
+                versionToSelect = libraryDetails.getLatestVersion();
+            } else {
+                versionToSelect = findVersion(installedVersionName);
+            }
         }
-        this.libraryDetails = details;
 
-        if (installedVersion == null) {
-            installedVersion = libraryDetails.getLatestVersion();
-        }
-        if (requiredVersion == null) {
-            requiredVersion = installedVersion.getName();
-        }
-        requiredVersionField.setText(requiredVersion);
-        updateInstalledCombo(installedVersion);
+        requiredVersionField.setText(dependency.getRequiredVersion());
+        updateInstalledCombo(versionToSelect);
         loadingLibraryDetails = false;
     }
 
+    /**
+     * Returns the required version of the dependency.
+     * 
+     * @return required version of the dependency.
+     */
+    String getRequiredVersion() {
+        return requiredVersionField.getText();
+    }
+
+    /**
+     * Returns the installed version of the dependency.
+     * 
+     * @return installed version of the dependency.
+     */
+    String getInstalledVersion() {
+        Library.Version selectedVersion = (Library.Version)installVersionCombo.getSelectedItem();
+        return (selectedVersion == null) ? null : selectedVersion.getName();
+    }
+
+    /**
+     * Finds the version with the specified name among the versions
+     * in library details.
+     * 
+     * @param versionName name of the version to find.
+     * @return version with the specified name or {@code null} when there
+     * is no such version.
+     */
+    private Library.Version findVersion(String versionName) {
+        for (Library.Version version : libraryDetails.getVersions()) {
+            if (versionName.equals(version.getName())) {
+                return version;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Updates the library details (invoked when library details are provided).
+     * 
+     * @param libraryDetails library details.
+     */
     private void updateLibraryDetails(Library libraryDetails) {
         this.libraryDetails = libraryDetails;
+        loadingLibraryDetails = false;
         if (libraryDetails != null) {
             Library.Version installedVersion = (Library.Version)installVersionCombo.getSelectedItem();
             updateInstalledCombo(installedVersion);
         }
     }
 
+    /** The last selected version. */
     private Library.Version lastSelectedVersion;
+
+    /**
+     * Updates the version combo-box. It sets its model (to match the versions
+     * in library details) and selected item (to match the specified installed
+     * version). 
+     * 
+     * @param installedVersion version to select in version combo-box.
+     */
     private void updateInstalledCombo(Library.Version installedVersion) {
         DefaultComboBoxModel<Library.Version> model = new DefaultComboBoxModel<>();
         Library.Version[] versions = libraryDetails.getVersions();
         if (versions == null) {
-            model.addElement(installedVersion);
+            if (installedVersion == null) {
+                // PENDING insert dummy item that will show 'Loading versions'
+            } else {
+                model.addElement(installedVersion);
+            }
         } else {
             for (Library.Version version : versions) {
                 model.addElement(version);
@@ -121,6 +189,11 @@ public class EditPanel extends javax.swing.JPanel {
         installVersionCombo.setSelectedItem(installedVersion);
     }
 
+    /**
+     * Loads details of the given library.
+     * 
+     * @param library library whose details should be loaded.
+     */
     private void loadLibraryDetails(final Library library) {
         final Library details = libraryProvider.libraryDetails(library.getName(), false);
         EventQueue.invokeLater(new Runnable() {
@@ -198,7 +271,7 @@ public class EditPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void installVersionComboPopupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_installVersionComboPopupMenuWillBecomeVisible
-        if (libraryDetails.getVersions() == null && !loadingLibraryDetails) {
+        if (libraryDetails != null && libraryDetails.getVersions() == null && !loadingLibraryDetails) {
             loadingLibraryDetails = true;
             final Library library = libraryDetails;
             RP.post(new Runnable() {
@@ -211,10 +284,11 @@ public class EditPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_installVersionComboPopupMenuWillBecomeVisible
 
     private void installVersionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installVersionComboActionPerformed
-        String lastSelectedVersionName = lastSelectedVersion.getName();
+        String lastSelectedVersionName = lastSelectedVersion == null ? null : lastSelectedVersion.getName();
         String requiredVersion = requiredVersionField.getText();
         lastSelectedVersion = (Library.Version)installVersionCombo.getSelectedItem();
-        if (lastSelectedVersionName.equals(requiredVersion)) {
+        if ((lastSelectedVersionName == null || lastSelectedVersionName.equals(requiredVersion))
+                && lastSelectedVersion != null) {
             requiredVersionField.setText(lastSelectedVersion.getName());
         }
     }//GEN-LAST:event_installVersionComboActionPerformed
@@ -226,8 +300,12 @@ public class EditPanel extends javax.swing.JPanel {
     private javax.swing.JLabel requiredVersionLabel;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Renderer of the versions in version combo-box.
+     */
     private class VersionRenderer extends DefaultListCellRenderer {
 
+        @NbBundle.Messages({"EditPanel.loadingVersions=Loading..."})
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Object renderedValue;
@@ -235,6 +313,9 @@ public class EditPanel extends javax.swing.JPanel {
                 renderedValue = ((Library.Version)value).getName();
             } else {
                 renderedValue = value;
+            }
+            if (loadingLibraryDetails) {
+                renderedValue = Bundle.EditPanel_loadingVersions();
             }
             return super.getListCellRendererComponent(list, renderedValue, index, isSelected, cellHasFocus); //To change body of generated methods, choose Tools | Templates.
         }

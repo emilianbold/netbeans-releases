@@ -41,13 +41,11 @@
  */
 package org.netbeans.modules.subversion.remote.api;
 
-import com.sun.org.apache.xml.internal.utils.URI;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import org.openide.util.Exceptions;
 
 /**
  *

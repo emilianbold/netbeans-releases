@@ -76,5 +76,9 @@ public enum SVNStatusKind {
         }
         return null;
     }
-    
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

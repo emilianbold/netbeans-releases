@@ -39,33 +39,74 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.api;
+
+package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
 /**
+ * Dependency.
  *
- * @author Alexander Simon
+ * @author Jan Stola
  */
-public enum SVNNodeKind {
-    NONE("none"),
-    FILE("file"),
-    DIR("dir"),
-    UNKNOWN("unknown");
-    
-    private final String value;
-    private SVNNodeKind(String value) {
-        this.value = value;
-    }
-    public static SVNNodeKind fromString(String s) {
-        for(SVNNodeKind r : SVNNodeKind.values()) {
-            if (r.value.equals(s)) {
-                return r;
-            }
-        }
-        return null;
+public class Dependency {
+    /** Name of the package. */
+    private final String name;
+    /** Required version of the package. */
+    private String requiredVersion;
+    /** Installed version of the package. */
+    private String installedVersion;
+
+    /**
+     * Creates a new {@code Dependency}.
+     * 
+     * @param name name of a package.
+     */
+    Dependency(String name) {
+        this.name = name;
     }
 
-    @Override
-    public String toString() {
-        return value;
+    /**
+     * Returns the name of the package.
+     * 
+     * @return name of the package.
+     */
+    public String getName() {
+        return name;
     }
+
+    /**
+     * Returns the required version of the package.
+     * 
+     * @return required version of the package.
+     */
+    public String getRequiredVersion() {
+        return requiredVersion;
+    }
+
+    /**
+     * Sets the required version of the package.
+     * 
+     * @param requiredVersion required version of the package.
+     */
+    public void setRequiredVersion(String requiredVersion) {
+        this.requiredVersion = requiredVersion;
+    }
+
+    /**
+     * Returns the installed version of the package.
+     * 
+     * @return installed version of the package.
+     */
+    public String getInstalledVersion() {
+        return installedVersion;
+    }
+
+    /**
+     * Sets the installed version of the package.
+     * 
+     * @param installedVersion installed version of the package.
+     */
+    public void setInstalledVersion(String installedVersion) {
+        this.installedVersion = installedVersion;
+    }
+
 }

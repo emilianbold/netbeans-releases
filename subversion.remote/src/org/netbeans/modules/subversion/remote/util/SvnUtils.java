@@ -961,6 +961,9 @@ public class SvnUtils {
     }
 
     public static boolean hasMetadata (VCSFileProxy file) {
+        if (file.isFile()) {
+            return false;
+        }
         return VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR)) || VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_WC_DB));
     }
 

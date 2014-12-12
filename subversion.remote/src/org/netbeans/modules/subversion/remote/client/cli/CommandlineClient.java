@@ -861,8 +861,8 @@ public class CommandlineClient implements SvnClient {
                     null,
                     0,
                     "unknown",                            // NOI18N   
-                    SVNStatusKind.UNVERSIONED.toString(),
-                    SVNStatusKind.UNVERSIONED.toString(),
+                    SVNStatusKind.UNVERSIONED,
+                    SVNStatusKind.UNVERSIONED,
                     null,
                     0,
                     null,

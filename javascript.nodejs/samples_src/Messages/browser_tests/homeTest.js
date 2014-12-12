@@ -39,33 +39,25 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.api;
 
-/**
- *
- * @author Alexander Simon
- */
-public enum SVNNodeKind {
-    NONE("none"),
-    FILE("file"),
-    DIR("dir"),
-    UNKNOWN("unknown");
-    
-    private final String value;
-    private SVNNodeKind(String value) {
-        this.value = value;
-    }
-    public static SVNNodeKind fromString(String s) {
-        for(SVNNodeKind r : SVNNodeKind.values()) {
-            if (r.value.equals(s)) {
-                return r;
-            }
-        }
-        return null;
-    }
+var test = require('selenium-webdriver/testing');
+var until = require('selenium-webdriver').until;
+var browser = require('./browser');
 
-    @Override
-    public String toString() {
-        return value;
-    }
-}
+test.describe('Homepage tests', function () {
+    var driver;
+
+    test.before(function () {
+        driver = browser.get();
+    });
+
+    test.it('should find correct title', function () {
+        driver.get("http://www.netbeans.org");
+        // checking that page title contains word 'NetBeans'
+        driver.wait(until.titleContains('NetBeans'), 1000);
+    });
+
+    test.after(function () {
+        driver.quit();
+    });
+});

@@ -39,33 +39,26 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.subversion.remote.api;
 
-/**
- *
- * @author Alexander Simon
- */
-public enum SVNNodeKind {
-    NONE("none"),
-    FILE("file"),
-    DIR("dir"),
-    UNKNOWN("unknown");
+var test = require('selenium-webdriver/testing');
+var until = require('selenium-webdriver').until;
+var browser = require('./browser');
+
+test.describe('Download page test', function () {
+    var driver;
+
+    test.before(function () {
+        driver = browser.get();
+    });
+
+    test.it('should find correct title', function () {
+        driver.get("https://netbeans.org/downloads");
+        // checking that page title contains 'NetBeans IDE download', which is not true
+        driver.wait(until.titleContains('NetBeans IDE download'), 1000);
+    });
     
-    private final String value;
-    private SVNNodeKind(String value) {
-        this.value = value;
-    }
-    public static SVNNodeKind fromString(String s) {
-        for(SVNNodeKind r : SVNNodeKind.values()) {
-            if (r.value.equals(s)) {
-                return r;
-            }
-        }
-        return null;
-    }
 
-    @Override
-    public String toString() {
-        return value;
-    }
-}
+    test.after(function () {
+        driver.quit();
+    });
+});
