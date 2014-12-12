@@ -51,8 +51,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.swing.BorderFactory;
 import javax.swing.JTable;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
 import static javax.swing.SwingConstants.CENTER;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -74,13 +80,11 @@ public class DependenciesPanel extends javax.swing.JPanel {
     /** Request processor for this class. */
     private static final RequestProcessor RP = new RequestProcessor(DependenciesPanel.class.getName(), 3);
     /** Selected dependencies. */
-    private final List<Library.Version> dependencies = new ArrayList<>();
+    private final List<Dependency> dependencies = new ArrayList<>();
     /** Model for a table of selected dependencies. */
     private final DependencyTableModel tableModel;
     /** Maps the name of the library to its npm meta-data. */
     private final Map<String,Library> dependencyInfo = new HashMap<>();
-    /** Map of the installed libraries. */
-    private Map<String,Library.Version> installedLibraries;
     /** Determines whether the installed libraries were set. */
     private boolean installedLibrariesSet;
     /** Owning project. */
@@ -94,6 +98,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
     public DependenciesPanel() {
         tableModel = new DependencyTableModel();
         initComponents();
+        table.getSelectionModel().addListSelectionListener(new Listener());
         TableCellRenderer versionColumnRenderer = new VersionColumnRenderer();
         TableColumnModel tableColumnModel = table.getColumnModel();
         tableColumnModel.getColumn(1).setCellRenderer(versionColumnRenderer);
@@ -113,39 +118,54 @@ public class DependenciesPanel extends javax.swing.JPanel {
     /**
      * Sets the existing dependencies.
      * 
-     * @param dependencies existing dependencies.
+     * @param dependencyMap existing dependencies (maps name of the dependency
+     * to the required version).
      */
-    void setDependencies(List<Library.Version> dependencies) {
-        this.dependencies.addAll(dependencies);
+    void setDependencies(Map<String,String> dependencyMap) {
+        for (Map.Entry<String,String> entry : dependencyMap.entrySet()) {
+            String name = entry.getKey();
+            String requiredVersion = entry.getValue();
+            Dependency dependency = new Dependency(name);
+            dependency.setRequiredVersion(requiredVersion);
+            dependencies.add(dependency);
+        }
         sortDependencies();
-        loadDependencyInfo(dependencies);
+        loadDependencyInfo(dependencyMap.keySet());
+    }
+
+    /**
+     * Returns the selected dependencies.
+     * 
+     * @return selected dependencies.
+     */
+    List<Dependency> getSelectedDependencies() {
+        return dependencies;
     }
 
     /**
      * Sorts the list of dependencies.
      */
     private void sortDependencies() {
-        Collections.sort(dependencies, new LibraryVersionComparator());
+        Collections.sort(dependencies, new DependencyComparator());
     }
 
     /**
      * Loads information about given libraries/dependencies/packages.
      * 
-     * @param dependencies dependencies to load information about.
+     * @param dependencyNames names of the dependencies to load information about.
      */
-    private void loadDependencyInfo(final List<Library.Version> dependencies) {
+    private void loadDependencyInfo(final Set<String> dependencyNames) {
         if (RP.isRequestProcessorThread()) {
             LibraryProvider provider = LibraryProvider.forProject(project);
-            for (Library.Version dependency : dependencies) {
-                String libraryName = dependency.getLibrary().getName();
-                Library library = provider.libraryDetails(libraryName, false);
-                updateDependencyInfo(libraryName, library);
+            for (String dependencyName : dependencyNames) {
+                Library library = provider.libraryDetails(dependencyName, false);
+                updateDependencyInfo(dependencyName, library);
             }
         } else {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    loadDependencyInfo(dependencies);
+                    loadDependencyInfo(dependencyNames);
                 }
             });
         }
@@ -175,12 +195,26 @@ public class DependenciesPanel extends javax.swing.JPanel {
      * Sets the map of the installed libraries.
      * 
      * @param installedLibraries installed libraries (maps name
-     * of the library/package to the library).
+     * of the library/package to the name of the installed version).
      */
-    void setInstalledLibraries(Map<String,Library.Version> installedLibraries) {
-        this.installedLibraries = installedLibraries;
+    void setInstalledLibraries(Map<String,String> installedLibraries) {
         this.installedLibrariesSet = true;
+        if (installedLibraries != null) {
+            for (Dependency dependency : dependencies) {
+                String name = dependency.getName();
+                String installedVersion = installedLibraries.get(name);
+                dependency.setInstalledVersion(installedVersion);
+            }
+        }
         tableModel.fireTableDataChanged();
+    }
+
+    /**
+     * Updates the state of the buttons.
+     */
+    void updateButtons() {
+        int selectedRows = table.getSelectedRowCount();
+        editButton.setEnabled(selectedRows == 1);
     }
 
     /**
@@ -199,7 +233,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
      * Shows the search panel.
      */
     @NbBundle.Messages({"DependenciesPanel.searchDialog.title=Add npm package"})
-    private void showSearchPanel() {
+    private void showSearchDialog() {
         SearchPanel panel = getSearchPanel();
         panel.activate();
         DialogDescriptor descriptor = new DialogDescriptor(
@@ -219,12 +253,88 @@ public class DependenciesPanel extends javax.swing.JPanel {
         dialog.setVisible(true);
         panel.deactivate();
         if (descriptor.getValue() == panel.getAddButton()) {
-            Library.Version selectedVersion = panel.getSelectedVersion();
-            if (selectedVersion != null) {
-// PENDING
-//                addLibrary(selectedVersion);
+            String libraryName = panel.getSelectedLibrary();
+            if (libraryName != null) {
+                String requiredVersion = panel.getRequiredVersion();
+                String installedVersion = panel.getInstalledVersion();
+                addLibrary(libraryName, requiredVersion, installedVersion);
             }
         }
+    }
+
+    /**
+     * Shows the search panel.
+     */
+    @NbBundle.Messages({
+        "DependenciesPanel.editDialog.title=Edit npm package",
+        "DependenciesPanel.editDialog.update=Update",
+        "DependenciesPanel.editDialog.cancel=Cancel"
+    })
+    private void showEditDialog() {
+        EditPanel panel = new EditPanel();
+        int border = LayoutStyle.getInstance().getContainerGap(panel, SwingConstants.NORTH, null);
+        panel.setBorder(BorderFactory.createEmptyBorder(border, border, border, border));
+        panel.setLibraryProvider(LibraryProvider.forProject(project));
+
+        int selectedRow = table.getSelectedRow();
+        Dependency dependency = dependencies.get(selectedRow);
+        panel.setDependency(dependency);
+
+        String update = Bundle.DependenciesPanel_editDialog_update();
+        String cancel = Bundle.DependenciesPanel_editDialog_cancel();
+        DialogDescriptor descriptor = new DialogDescriptor(
+                panel,
+                Bundle.DependenciesPanel_editDialog_title(),
+                true,
+                new Object[] { update, cancel},
+                update,
+                DialogDescriptor.DEFAULT_ALIGN,
+                HelpCtx.DEFAULT_HELP,
+                null
+        );
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.setVisible(true);
+        if (update.equals(descriptor.getValue())) {
+            addLibrary(dependency.getName(), panel.getRequiredVersion(), panel.getInstalledVersion());
+        }
+    }
+
+    /**
+     * Adds the given selected dependency.
+     * 
+     * @param libraryName library/package name.
+     * @param requiredVersion required version of the library/package.
+     * @param installedVersion installed version of the library/package.
+     */
+    private void addLibrary(String libraryName, String requiredVersion, String installedVersion) {
+        Dependency dependency = findDependency(libraryName);
+        if (dependency == null) {
+            dependency = new Dependency(libraryName);
+            dependencies.add(dependency);
+            loadDependencyInfo(Collections.singleton(libraryName));
+            sortDependencies();
+        }
+        dependency.setRequiredVersion(requiredVersion);
+        dependency.setInstalledVersion(installedVersion);
+        tableModel.fireTableDataChanged();
+    }
+
+    /**
+     * Finds a selected dependency with the specified name.
+     * 
+     * @param name name of the dependency to find.
+     * @return dependency with the specified name or {@code null} if there
+     * is no such selected dependency.
+     */
+    private Dependency findDependency(String name) {
+        Dependency result = null;
+        for (Dependency dependency : dependencies) {
+            if (dependency.getName().equals(name)) {
+                result = dependency;
+                break;
+            }
+        }
+        return result;
     }
 
     /**
@@ -239,6 +349,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
         scrollPane = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
         addButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
 
         table.setModel(tableModel);
         scrollPane.setViewportView(table);
@@ -250,6 +361,13 @@ public class DependenciesPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.editButton.text")); // NOI18N
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -258,9 +376,14 @@ public class DependenciesPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(scrollPane)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(addButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(addButton)
+                    .addComponent(editButton, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addButton, editButton});
+
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -268,6 +391,8 @@ public class DependenciesPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(editButton)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(scrollPane))
                 .addContainerGap())
@@ -275,23 +400,28 @@ public class DependenciesPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        showSearchPanel();
+        showSearchDialog();
     }//GEN-LAST:event_addButtonActionPerformed
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        showEditDialog();
+    }//GEN-LAST:event_editButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JButton editButton;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
 
     /**
-     * Comparator of {@code Library.Version}s.
+     * Comparator of {@code Dependency} objects.
      */
-    static class LibraryVersionComparator implements Comparator<Library.Version> {
+    static class DependencyComparator implements Comparator<Dependency> {
         @Override
-        public int compare(Library.Version o1, Library.Version o2) {
-            String name1 = o1.getLibrary().getName();
-            String name2 = o2.getLibrary().getName();
+        public int compare(Dependency o1, Dependency o2) {
+            String name1 = o1.getName();
+            String name2 = o2.getName();
             return name1.compareTo(name2);
         }        
     }
@@ -378,26 +508,23 @@ public class DependenciesPanel extends javax.swing.JPanel {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            Library.Version libraryVersion = dependencies.get(rowIndex);
+            Dependency dependency = dependencies.get(rowIndex);
             Object value;
             switch (columnIndex) {
-                case 0: value = libraryVersion.getLibrary().getName(); break;
-                case 1: value = libraryVersion.getName(); break;
+                case 0: value = dependency.getName(); break;
+                case 1: value = dependency.getRequiredVersion(); break;
                 case 2:
                     if (installedLibrariesSet) {
-                        String libraryName = libraryVersion.getLibrary().getName();
-                        Library.Version installedVersion = installedLibraries.get(libraryName);
-                        if (installedVersion == null) {
+                        value = dependency.getInstalledVersion();
+                        if (value == null) {
                             value = VersionColumnRenderer.NO_VERSION;
-                        } else {
-                            value = installedVersion.getName();
                         }
                     } else {
                         value = VersionColumnRenderer.CHECKING;
                     }
                     break;
                 case 3:
-                    String libraryName = libraryVersion.getLibrary().getName();
+                    String libraryName = dependency.getName();
                     Library library = dependencyInfo.get(libraryName);
                     if (library == null) {
                         value = dependencyInfo.containsKey(libraryName)
@@ -405,8 +532,11 @@ public class DependenciesPanel extends javax.swing.JPanel {
                                 : VersionColumnRenderer.CHECKING;
                     } else {
                         String latestVersion = library.getLatestVersion().getName();
-                        value = latestVersion;
-                        // PENDING VersionColumnRenderer.UP_TO_DATE
+                        if (latestVersion.equals(dependency.getInstalledVersion())) {
+                            value = VersionColumnRenderer.UP_TO_DATE;
+                        } else {
+                            value = latestVersion;
+                        }
                     }
                     break;
                 default: throw new IllegalArgumentException();
@@ -414,6 +544,16 @@ public class DependenciesPanel extends javax.swing.JPanel {
             return value;
         }
 
+    }
+
+    /**
+     * Selection listener for the table.
+     */
+    class Listener implements ListSelectionListener {
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            updateButtons();
+        }
     }
 
 }
