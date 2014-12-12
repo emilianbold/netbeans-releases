@@ -127,7 +127,7 @@ made subject to such option by the copyright holder.
         <folder name="Modes">
             <folder name="output">
                 <file name="svnremoteversioning.wstcref" url="svn_remote_wstcref.xml">
-                    <attr name="position" intvalue="3110"/>
+                    <attr name="position" intvalue="3107"/>
                 </file>
             </folder>
         </folder>
@@ -162,57 +162,57 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.subversion.remote.resources.Bundle"/>
 
                 <file name="UpdateWithDependenciesAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-update-UpdateWithDependenciesAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-update-UpdateWithDependenciesAction.instance"/>
                 </file>
 
                 <file name="StatusAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-status-StatusAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-status-StatusAction.instance"/>
                 </file>
                 <file name="DiffAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-diff-DiffAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-diff-DiffAction.instance"/>
                 </file>
                 <file name="UpdateAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-update-UpdateAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-update-UpdateAction.instance"/>
                 </file>
                 <file name="CommitAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-commit-CommitAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-commit-CommitAction.instance"/>
                 </file>
                 <file name="ExcludeFromCommitAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-commit-ExcludeFromCommitAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-commit-ExcludeFromCommitAction.instance"/>
                 </file>
                 <file name="ConflictResolvedAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-commit-ConflictResolvedAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-commit-ConflictResolvedAction.instance"/>
                 </file>
             
                 <file name="CreateCopyAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-copy-CreateCopyAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-copy-CreateCopyAction.instance"/>
                 </file>
                 <file name="SwitchToAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-copy-SwitchToAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-copy-SwitchToAction.instance"/>
                 </file>
                 <file name="MergeAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-copy-MergeAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-copy-MergeAction.instance"/>
                 </file>
                 <file name="BlameAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-blame-BlameAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-blame-BlameAction.instance"/>
                 </file>
                 <file name="SearchHistoryAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-history-SearchHistoryAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-history-SearchHistoryAction.instance"/>
                 </file>
                 <file name="RevertModificationsAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-update-RevertModificationsAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-update-RevertModificationsAction.instance"/>
                 </file>
                 <file name="ResolveConflictsAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-update-ResolveConflictsAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-update-ResolveConflictsAction.instance"/>
                 </file>
                 <file name="IgnoreAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-ignore-IgnoreAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-ignore-IgnoreAction.instance"/>
                 </file>
                 <file name="SvnPropertiesAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-properties-SvnPropertiesAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-properties-SvnPropertiesAction.instance"/>
                 </file>
                 <file name="VersioningInfoAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Subversion/org-netbeans-modules-subversion-remote-ui-properties-VersioningInfoAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-properties-VersioningInfoAction.instance"/>
                 </file>
             </folder>
         </folder>

@@ -77,10 +77,10 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Kuzel
  */
-@ActionID(id = "org.netbeans.modules.subversion.remote.ui.project.ImportAction", category = "Subversion")
+@ActionID(id = "org.netbeans.modules.subversion.remote.ui.project.ImportAction", category = "SubversionRemote")
 @ActionRegistration(displayName = "#BK0006", popupText="#CTL_PopupMenuItem_Import", menuText="#BK0006")
 @ActionReferences({
-   @ActionReference(path="Versioning/Subversion/Actions/Unversioned", position=1)
+   @ActionReference(path="Versioning/SubversionRemote/Actions/Unversioned", position=1)
 })
 public final class ImportAction implements ActionListener, HelpCtx.Provider {
     
