@@ -59,7 +59,7 @@ import org.openide.util.lookup.implspi.ActiveQueue;
  * 
  * @author Martin Entlicher
  */
-public class WeakHashMapActive<K,V> extends AbstractMap<K,V> {
+public final class WeakHashMapActive<K,V> extends AbstractMap<K,V> {
     
     private final ReferenceQueue<Object> queue;
     private final Map<Reference<K>, V> map;

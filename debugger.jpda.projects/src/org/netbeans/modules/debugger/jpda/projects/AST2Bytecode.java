@@ -73,7 +73,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 
 /**
@@ -93,7 +92,7 @@ class AST2Bytecode {
             CompilationUnitTree cu, CompilationController ci,
             List<Tree> treeNodes, ExpressionScanner.ExpressionsInfo info,
             byte[] bytecodes, int[] indexes, byte[] constantPoolBytes,
-            OperationCreationDelegate opCreationDelegate,
+            ASTOperationCreationDelegate opCreationDelegate,
             Map<Tree, EditorContext.Operation> nodeOperations) {
         
         Trees trees = ci.getTrees();
@@ -266,7 +265,7 @@ class AST2Bytecode {
                                     type = getUnionType(types, ut.getAlternatives());
                                     if (type == null) {
                                         // No union super type found.
-                                        ErrorManager.getDefault().notify(new IllegalStateException("No union type found from "+ut+", alternatives = "+ut.getAlternatives()));
+                                        Exceptions.printStackTrace(new IllegalStateException("No union type found from "+ut+", alternatives = "+ut.getAlternatives()));
                                         return null;
                                     }
                                     TypeElement te = (TypeElement) types.asElement(type);
@@ -274,7 +273,7 @@ class AST2Bytecode {
                                 } else if (type instanceof PrimitiveType) {
                                     methodClassType = type.toString()+array;
                                 } else {
-                                    ErrorManager.getDefault().notify(new IllegalStateException("Unexpected type "+type+" of kind "+type.getKind()+" in "+treeNodes));
+                                    Exceptions.printStackTrace(new IllegalStateException("Unexpected type "+type+" of kind "+type.getKind()+" in "+treeNodes));
                                     return null;
                                 }
                             }
@@ -597,28 +596,4 @@ class AST2Bytecode {
                 (bytecodes[pos + 3] & 0xFF);
     }
 
-    
-    static interface OperationCreationDelegate {
-        
-        /*
-            EditorContext.Operation createOperation(
-                    EditorContext.Position startPosition,
-                    EditorContext.Position endPosition,
-                    int bytecodeIndex);
-         */
-            
-            EditorContext.Operation createMethodOperation(
-                    EditorContext.Position startPosition,
-                    EditorContext.Position endPosition,
-                    EditorContext.Position methodStartPosition,
-                    EditorContext.Position methodEndPosition,
-                    String methodName, String methodClassType,
-                    int bytecodeIndex, boolean isNative);
-            
-            EditorContext.Position createPosition(int offset, int line, int column);
-            
-            void addNextOperationTo(EditorContext.Operation operation,
-                                    EditorContext.Operation next);
-
-    }
 }

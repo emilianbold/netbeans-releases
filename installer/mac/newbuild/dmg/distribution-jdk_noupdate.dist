@@ -170,13 +170,13 @@ function pm_choice1_enabled() {
     <choice id="postinstallscripts" title="postinstallscripts-title" description="postinstallscripts-description" start_selected="true" start_enabled="true" start_visible="false" selected="true" enabled="true" visible="false">
         <pkg-ref id="ident.pkg.postinstallscripts"></pkg-ref>
     </choice>
-    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@" installKBytes="317316" version="1.1" auth="Root">jdk.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@" installKBytes="319736" version="1.1" auth="Root">jdk.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@">
         <relocate search-id="pkmktoken6">
             <bundle id="com.oracle.jmc"/>
         </relocate>
     </pkg-ref>
-    <pkg-ref id="com.oracle.jre" installKBytes="162092" version="1.1" auth="Root">javaappletplugin.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jre" installKBytes="161840" version="1.1" auth="Root">javaappletplugin.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jre">
         <relocate search-id="pkmktoken18">
             <bundle id="org.andymatuschak.sparkle.finish-installation"/>

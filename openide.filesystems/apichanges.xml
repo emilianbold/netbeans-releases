@@ -49,6 +49,40 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileObject.symbolicLinks">
+            <api name="filesystems"/>
+            <summary>Support detection and reading of symbolic links.</summary>
+            <version major="9" minor="4"/>
+            <date year="2014" month="11" day="27"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Add methods to <code>FileObject</code> for handling of
+                    symbolic links:
+                </p>
+                <ul>
+                    <li><code>isSymbolicLink()</code></li>
+                    <li><code>readSymbolicLink()</code></li>
+                    <li><code>readSymbolicLinkPath()</code></li>
+                    <li><code>getCanonicalFileObject()</code></li>
+                </ul>
+                <p>
+                    Add utility method to <code>FileUtil</code> for dealing with
+                    recursive symbolic links.
+                </p>
+                <ul>
+                    <li><code>isRecursiveSymbolicLink()</code></li>
+                </ul>
+                <p>
+                    Introduce new interface <a href="@TOP@org/openide/filesystems/AbstractFileSystem.SymlinkInfo.html">AbstractFileSystem.SymlinkInfo</a>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <class package="org.openide.filesystems" name="AbstractFileSystem"/>
+            <issue number="237882"/>
+        </change>
         <change id="FileLock.closeable">
             <api name="filesystems"/>
             <summary>FileLock implements AutoCloseable</summary>

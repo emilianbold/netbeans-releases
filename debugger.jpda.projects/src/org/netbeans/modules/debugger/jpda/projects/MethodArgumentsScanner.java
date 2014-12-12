@@ -71,14 +71,14 @@ class MethodArgumentsScanner extends TreeScanner<MethodArgument[], Object> {
     private SourcePositions positions;
     private LineMap lineMap;
     private boolean methodInvocation;
-    private AST2Bytecode.OperationCreationDelegate positionDelegate;
+    private ASTOperationCreationDelegate positionDelegate;
     
     private MethodArgument[] arguments;
     
     /** Creates a new instance of MethodArgumentsScanner */
     public MethodArgumentsScanner(int offset, CompilationUnitTree tree,
                                   SourcePositions positions, boolean methodInvocation,
-                                  AST2Bytecode.OperationCreationDelegate positionDelegate) {
+                                  ASTOperationCreationDelegate positionDelegate) {
         this.offset = offset;
         this.tree = tree;
         this.positions = positions;

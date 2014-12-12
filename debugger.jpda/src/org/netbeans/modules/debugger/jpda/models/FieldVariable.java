@@ -52,7 +52,6 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
-import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.RefreshFailedException;
@@ -72,6 +71,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.openide.util.Mutex;
 
 
 /**
@@ -233,7 +233,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
                         logger.fine("STARTED (FV): "+objectReference+".getValue("+field+")");
                     }
                 }
-                assert !EventQueue.isDispatchThread() : "Debugger communication in AWT Event Queue!";
+                assert !Mutex.EVENT.isReadAccess() : "Debugger communication in AWT Event Queue!";
                 try {
                     if (objectReference == null) {
                         v = ReferenceTypeWrapper.getValue (getTheDeclaringClassType(), field);

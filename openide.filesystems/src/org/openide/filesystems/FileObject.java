@@ -902,8 +902,12 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
             public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 if (rec && fo.isFolder()) {
                     for (FileObject child : fo.getChildren()) {
-                        if (!FileUtil.isRecursiveSymlink(child)) { // #218795
-                            toAdd.add(child);
+                        try {
+                            if (!FileUtil.isRecursiveSymbolicLink(child)) { // #218795
+                                toAdd.add(child);
+                            }
+                        } catch (IOException ex) {
+                            ExternalUtil.LOG.log(Level.INFO, null, ex);
                         }
                     }
                 }
@@ -1251,6 +1255,73 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
      */
     public boolean isVirtual() {
         return false;
+    }
+
+    /**
+     * Check whether this FileObject is a symbolic link.
+     *
+     * The default implementation returns false, but on filesystems that support
+     * symbolic links this method should be overriden.
+     *
+     * @return True if this FileObject represents a symbolic link, false
+     * otherwise.
+     * @throws java.io.IOException If some I/O problem occurs.
+     * @since openide.filesystem/9.4
+     */
+    public boolean isSymbolicLink() throws IOException {
+        return false;
+    }
+
+    /**
+     * Read symbolic link.
+     *
+     * If this FileObject represents a symbolic link, return a FileObject it
+     * refers to, or null if the referred file or directory does not exist. If
+     * this FileObject doesn't represent a symbolic link, the return value is
+     * undefined.
+     *
+     * The default implementation returns null, but on filesystems that support
+     * symbolic links this method should be overriden.
+     *
+     * @return The referred FileObject, or null if it is not available.
+     * @throws java.io.IOException If some I/O problem occurs.
+     * @since openide.filesystem/9.4
+     */
+    public FileObject readSymbolicLink() throws IOException {
+        return null;
+    }
+
+    /**
+     * Read symbolic link path.
+     *
+     * If this FileObject represents a symbolic link, return the path it refers
+     * to, which can be absolute or relative. If this FileObject doesn't
+     * represent a symbolic link, the return value is undefined.
+     *
+     * The default implementation returns this FileObject's path, but on
+     * filesystems that support symbolic links this method should be overriden.
+     *
+     * @return The referred FileObject path.
+     * @throws java.io.IOException If some I/O problem occurs.
+     * @since openide.filesystem/9.4
+     */
+    public String readSymbolicLinkPath() throws IOException {
+        return this.getPath();
+    }
+
+    /**
+     * Return a FileObject with path where all symbolic links are resolved.
+     *
+     * The default implementation returns this object, but on filesystems that
+     * support symbolic links this method should be overriden.
+     *
+     * @return The FileObject with path where all symlinks are resolved, or null
+     * if it doesn't exist.
+     * @throws java.io.IOException If some I/O problem occurs.
+     * @since openide.filesystem/9.4
+     */
+    public FileObject getCanonicalFileObject() throws IOException {
+        return this;
     }
 
     /** Listeners registered from MultiFileObject are considered as priority

@@ -102,6 +102,7 @@ import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 
@@ -202,7 +203,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     */
     public synchronized String getClassName () {
         if (!valid && sfLocation == null) return "";
-        assert !java.awt.EventQueue.isDispatchThread();
+        assert !Mutex.EVENT.isReadAccess();
         try {
             Location l = getStackFrameLocation();
             return ReferenceTypeWrapper.name(LocationWrapper.declaringType(l));
@@ -351,7 +352,7 @@ public class CallStackFrameImpl implements CallStackFrame {
     */
     public synchronized String getSourceName (String stratum) throws AbsentInformationException {
         if (!valid && sfLocation == null) return "";
-        assert !java.awt.EventQueue.isDispatchThread();
+        assert !Mutex.EVENT.isReadAccess();
         try {
             Location l = getStackFrameLocation();
             return LocationWrapper.sourceName(l, stratum);
@@ -373,7 +374,7 @@ public class CallStackFrameImpl implements CallStackFrame {
      */
     public synchronized String getSourcePath (String stratum) throws AbsentInformationException {
         if (!valid && sfLocation == null) return "";
-        assert !java.awt.EventQueue.isDispatchThread();
+        assert !Mutex.EVENT.isReadAccess();
         try {
             Location l = getStackFrameLocation();
             return LocationWrapper.sourcePath(l, stratum);
