@@ -57,12 +57,11 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  * A SvnClient factory
@@ -102,22 +101,15 @@ public class SvnClientFactory {
      * Initializes the SvnClientFactory instance
      */
     private synchronized static SvnClientFactory getFactory(Context context) {
-        VCSFileProxy[] rootFiles = context.getRootFiles();
-        if (rootFiles.length > 0) {
-            VCSFileProxy root = rootFiles[0];
-            FileObject fo = root.toFileObject();
-            try {
-                FileSystem fs = fo.getFileSystem();
-                SvnClientFactory fac = instances.get(fs);
-                if (fac == null) {
-                    fac = new SvnClientFactory(fs);
-                    fac.setup();
-                    instances.put(fs, fac);
-                }
-                return fac;
-            } catch (FileStateInvalidException ex) {
-                ex.printStackTrace(System.err);
+        FileSystem fs = context.getFileSystem();
+        if (fs != null) {
+            SvnClientFactory fac = instances.get(fs);
+            if (fac == null) {
+                fac = new SvnClientFactory(fs);
+                fac.setup();
+                instances.put(fs, fac);
             }
+            return fac;
         }
         return null;
     }
