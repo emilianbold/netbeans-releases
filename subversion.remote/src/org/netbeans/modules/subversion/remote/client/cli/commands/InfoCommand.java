@@ -182,7 +182,9 @@ public class InfoCommand extends SvnCommand {
             }
             
             String infoValue = outputLine.substring(idx + 1);
-            map.put(info, infoValue.trim());                                
+            if (map != null) {
+                map.put(info, infoValue.trim());
+            }
         }
         if(map != null) {
             infos.add(new Info(map));

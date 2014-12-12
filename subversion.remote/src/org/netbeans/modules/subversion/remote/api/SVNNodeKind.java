@@ -63,4 +63,9 @@ public enum SVNNodeKind {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

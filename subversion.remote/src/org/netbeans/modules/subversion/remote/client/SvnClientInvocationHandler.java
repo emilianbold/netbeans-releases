@@ -284,7 +284,10 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             // whatever command was invoked, whatever the result is - 
             // call refresh for all files notified by the client adapter
             if (fsReadOnlyAction) {
-                Subversion.getInstance().getRefreshHandler().refresh();
+                final SvnClientRefreshHandler refreshHandler = Subversion.getInstance().getRefreshHandler();
+                if (refreshHandler != null) {
+                    refreshHandler.refresh();
+                }
             }
         }
     }

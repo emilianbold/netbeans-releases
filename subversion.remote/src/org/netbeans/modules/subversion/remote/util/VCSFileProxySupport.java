@@ -276,7 +276,8 @@ public final class VCSFileProxySupport {
     }
 
     public static VCSFileProxy getCanonicalFile(VCSFileProxy file) throws IOException {
-        throw new UnsupportedOperationException();
+        //TODO: implement it!
+        return file.normalizeFile();
     }
     
     public static VCSFileProxy generateTemporaryFile(VCSFileProxy file, String name) {
@@ -388,7 +389,7 @@ public final class VCSFileProxySupport {
     }
     
     public static boolean isRemoteFileSystem(VCSFileProxy file) {
-        throw new UnsupportedOperationException();
+        return file.toFile() == null;
     }
     
     public static VCSFileProxy getResource(VCSFileProxy file, String absPath) {
@@ -484,6 +485,9 @@ public final class VCSFileProxySupport {
 
     public static FileSystem getFileSystem(VCSFileProxy file) {
         while(true) {
+            if (file == null) {
+                return null;
+            }
             FileObject fo = file.toFileObject();
             if (fo != null) {
                 try {
@@ -494,9 +498,6 @@ public final class VCSFileProxySupport {
                 }
             }
             file = file.getParentFile();
-            if (file == null) {
-                return null;
-            }
         }
     }
     
