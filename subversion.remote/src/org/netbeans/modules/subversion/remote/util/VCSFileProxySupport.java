@@ -485,6 +485,9 @@ public final class VCSFileProxySupport {
 
     public static FileSystem getFileSystem(VCSFileProxy file) {
         while(true) {
+            if (file == null) {
+                return null;
+            }
             FileObject fo = file.toFileObject();
             if (fo != null) {
                 try {
@@ -495,9 +498,6 @@ public final class VCSFileProxySupport {
                 }
             }
             file = file.getParentFile();
-            if (file == null) {
-                return null;
-            }
         }
     }
     
