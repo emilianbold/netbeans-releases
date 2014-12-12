@@ -51,6 +51,8 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.FrameUtil;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrument.StandardSyntaxTag;
+import com.oracle.truffle.api.instrument.SyntaxTag;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.LineLocation;
@@ -81,6 +83,8 @@ public class JPDATruffleAccessor extends Object {
     private static JPDATruffleDebugManager debugManager;
     /** Explicitly set this field to true to step into script calls. */
     static boolean isSteppingInto = false; // Step into was issued in JPDA debugger
+    static int steppingIntoTruffle = 0; // = 0 no stepping change, > 0 set step into, < 0 unset stepping into
+    private static boolean stepIntoPrepared;
     /** A step command:
      * 0 no step (continue)
      * 1 step into
@@ -150,12 +154,13 @@ public class JPDATruffleAccessor extends Object {
     }
     
     private static void setCommand() {
+        stepIntoPrepared = false;
         switch (stepCmd) {
             case 0: debugManager.prepareContinue();
                     break;
-            case 1: debugManager.prepareStepInto(1);
+            case 1: debugManager.prepareStepInto(StandardSyntaxTag.STATEMENT, 1);
                     break;
-            case 2: debugManager.prepareStepOver(1);
+            case 2: debugManager.prepareStepOver(StandardSyntaxTag.STATEMENT, 1);
                     break;
             case 3: boolean success = debugManager.prepareStepOut();
                     //System.err.println("Successful step out = "+success);
@@ -390,7 +395,7 @@ public class JPDATruffleAccessor extends Object {
     }
     
     private static class AccessLoop implements Runnable {
-
+        
         @Override
         public void run() {
             while (accessLoopRunning) {
@@ -398,6 +403,23 @@ public class JPDATruffleAccessor extends Object {
                 try {
                     Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException iex) {}
+                //System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
+                if (steppingIntoTruffle != 0) {
+                    if (steppingIntoTruffle > 0) {
+                        if (!stepIntoPrepared) {
+                            debugManager.prepareStepInto(StandardSyntaxTag.CALL, 1);
+                            stepIntoPrepared = true;
+                            //System.err.println("Prepared step into and continue.");
+                        }
+                        isSteppingInto = true;
+                    } else {
+                        // un-prepare step into, if possible.
+                        isSteppingInto = false;
+                    }
+                    steppingIntoTruffle = 0;
+                    continue;
+                }
+                //System.err.println("accessLoopRunning = "+accessLoopRunning+", possible debugger access...");
                 if (accessLoopRunning) {
                     debuggerAccess();
                 }

@@ -46,9 +46,14 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.InvocationException;
+import com.sun.jdi.Method;
+import com.sun.jdi.ObjectReference;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
@@ -111,13 +116,18 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                 if (serviceClassRef != null) {
                     try {
                         serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassRef);
-                        steppingField = ReferenceTypeWrapper.fieldByName(serviceClass, "isSteppingInto");
-                        serviceClass.setValue(steppingField, serviceClass.virtualMachine().mirrorOf(true));
+                        steppingField = ReferenceTypeWrapper.fieldByName(serviceClass, "steppingIntoTruffle");
+                        serviceClass.setValue(steppingField, serviceClass.virtualMachine().mirrorOf(1));
+                        RemoteServices.getServiceAccessThread(debugger).interrupt();
+                        //Method setSteppingIntoMethod = serviceClass.concreteMethodByName("setSteppingInto", "()V");
+                        //serviceClass.invokeMethod(RemoteServices.getServiceAccessThread(debugger), setSteppingIntoMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                         LOG.fine("StepIntoScriptHandler: isSteppingInto set to true.");
                     } catch (ClassNotLoadedException | ClassNotPreparedExceptionWrapper |
                              InternalExceptionWrapper | InvalidTypeException |
                              ObjectCollectedExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
                         Exceptions.printStackTrace(ex);
+                    //} catch (IncompatibleThreadStateException | InvocationException ex) {
+                    //    Exceptions.printStackTrace(ex);
                     }
                 }
             }
@@ -137,10 +147,16 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
             LOG.fine("Current frame changed>");
             if (steppingField != null) {
                 try {
-                    serviceClass.setValue(steppingField, serviceClass.virtualMachine().mirrorOf(false));
+                    serviceClass.setValue(steppingField, serviceClass.virtualMachine().mirrorOf(-1));
+                    steppingField = null;
+                    RemoteServices.getServiceAccessThread(debugger).interrupt();
+                    //Method unsetSteppingIntoMethod = serviceClass.concreteMethodByName("unsetSteppingInto", "()V");
+                    //serviceClass.invokeMethod(RemoteServices.getServiceAccessThread(debugger), unsetSteppingIntoMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                     LOG.fine("StepIntoScriptHandler: isSteppingInto set to false.");
                 } catch (InvalidTypeException | ClassNotLoadedException ex) {
                     Exceptions.printStackTrace(ex);
+                //} catch (IncompatibleThreadStateException | InvocationException ex) {
+                //    Exceptions.printStackTrace(ex);
                 }
             }
         }

@@ -191,12 +191,21 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
             
             FrameInfo fi = new FrameInfo(frame, visualizer, astNode);
             
-            JPDATruffleAccessor.executionHalted(astNode, frame,
-                    position.id, position.name, position.path,
-                    position.line, position.code,
-                    fi.slots, fi.slotNames, fi.slotTypes,
-                    fi.stackTrace, fi.topFrame,
-                    new TruffleObject(context, "this", fi.thisObject));
+            if (JPDATruffleAccessor.isSteppingInto) {
+                JPDATruffleAccessor.executionStepInto(astNode, visualizer.displayMethodName(astNode), //name,
+                        position.id, position.name, position.path,
+                        position.line, position.code,
+                        fi.slots, fi.slotNames, fi.slotTypes,
+                        fi.stackTrace, fi.topFrame,
+                        new TruffleObject(context, "this", fi.thisObject));
+            } else {
+                JPDATruffleAccessor.executionHalted(astNode, frame,
+                        position.id, position.name, position.path,
+                        position.line, position.code,
+                        fi.slots, fi.slotNames, fi.slotTypes,
+                        fi.stackTrace, fi.topFrame,
+                        new TruffleObject(context, "this", fi.thisObject));
+            }
             
             topFrameHolder.currentTopFrame = null;
             topFrameHolder.currentNode = null;
@@ -208,6 +217,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         
     }
     
+    /*
     private static class JPDAInstrumentProxy implements DebugInstrumentCallback {
         
         private final DebugInstrumentCallback delegateCallback;
@@ -262,6 +272,7 @@ class JPDATruffleDebugManager extends AbstractDebugManager {
         }
         
     }
+    */
     
     private static final class FrameInfo {
         
