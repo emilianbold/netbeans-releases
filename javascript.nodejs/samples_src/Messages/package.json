@@ -13,8 +13,8 @@
         "grunt-contrib-jshint": "^0.10.0",
         "jshint-stylish": "^0.2.0",
         "time-grunt": "^0.3.2",
-        "mocha" : "*",
-        "selenium-webdriver" : "*"
+        "mocha" : "~2.0.1",
+        "selenium-webdriver" : "~2.44.0"
     },
     "scripts": {
         "start": "node server\/server.js",
