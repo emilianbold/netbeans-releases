@@ -54,7 +54,7 @@ test.describe('Download page test', function () {
     test.it('should find correct title', function () {
         driver.get("https://netbeans.org/downloads");
         // checking that page title contains 'NetBeans IDE download', which is not true
-        driver.wait(until.titleContains('NetBeans IDE Download'), 1000);
+        driver.wait(until.titleContains('NetBeans IDE download'), 1000);
     });
     
 
