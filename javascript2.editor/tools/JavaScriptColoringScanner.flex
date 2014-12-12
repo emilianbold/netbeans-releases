@@ -98,7 +98,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 && !JsTokenId.BLOCK_COMMENT.equals(token)
                 && !JsTokenId.DOC_COMMENT.equals(token)) {
             canFollowLiteral = canFollowLiteral(token);
-            canFollowKeyword = canFollowKeyword(token);
+            if (!JsTokenId.EOL.equals(token)) {
+                canFollowKeyword = canFollowKeyword(token);
+            }
         }
         return token;
     }

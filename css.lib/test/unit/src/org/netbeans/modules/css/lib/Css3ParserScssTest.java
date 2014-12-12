@@ -874,7 +874,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
         CssParserResult result = TestUtil.parse(source);
 
-//        NodeUtil.dumpTree(result.getParseTree());
+        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
     }
@@ -1741,6 +1741,22 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    @if ($name == \"anchor\") { @return \"a\"; }\n"
                 + "    @else if ($name == \"quote\") { @return \"\\\"\"; }\n"
                 + "    @else if ($name == \"volume_mute\") { @return \"<\"; }}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testEachWithMapPairs() {
+      String source = "@each $header, $size in (h1: 2em, h2: 1.5em, h3: 1.2em) {\n"
+              + "  #{$header} {\n"
+              + "    font-size: $size;\n"
+              + "  }\n"
+              + "}";
+      CssParserResult result = TestUtil.parse(source);
+      assertResultOK(result);
+    }
+    
+    public void testParenSelectorAsPropertyValue() {
+        String source = ".foo .bar, .baz { $selector: & }";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
