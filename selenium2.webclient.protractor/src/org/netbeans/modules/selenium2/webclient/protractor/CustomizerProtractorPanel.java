@@ -39,48 +39,85 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.server.api;
+package org.netbeans.modules.selenium2.webclient.protractor;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.selenium2.server.Selenium2ServerSupport;
+import java.awt.EventQueue;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.selenium2.webclient.protractor.preferences.ProtractorPreferences;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Theofanis Oikonomou
  */
-public class Selenium2Server {
-    private static final Logger LOGGER = Logger.getLogger(Selenium2Server.class.getName());
+@NbBundle.Messages("CustomizerProtractorPanel.displayName=Protractor")
+public class CustomizerProtractorPanel implements CustomizerPanelImplementation {
+    
+    public static final String IDENTIFIER = "Protractor"; // NOI18N
 
-    private static Selenium2Server INSTANCE;
+    private final Project project;
 
-    private Selenium2Server() {
+    // creation @GuardedBy("this")
+    private volatile CustomizerProtractor customizerProtractor;
+
+
+    public CustomizerProtractorPanel(Project project) {
+        assert project != null;
+        this.project = project;
     }
 
-    public static Selenium2Server getInstance() {
-        if(INSTANCE == null) {
-            INSTANCE = new Selenium2Server();
+    @Override
+    public String getIdentifier() {
+        return IDENTIFIER;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return Bundle.CustomizerProtractorPanel_displayName();
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        getComponent().addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        getComponent().removeChangeListener(listener);
+    }
+
+    @Override
+    public synchronized CustomizerProtractor getComponent() {
+        if (customizerProtractor == null) {
+            customizerProtractor = new CustomizerProtractor(project);
         }
-        return INSTANCE;
+        return customizerProtractor;
     }
-    
-    public void startServer() {
-        Selenium2ServerSupport.getInstance().startServer();
+
+    @Override
+    public boolean isValid() {
+        return getErrorMessage() == null;
     }
-    
-    public void restartServer() {
-        Selenium2ServerSupport.getInstance().restartServer();
+
+    @Override
+    public String getErrorMessage() {
+        return getComponent().getErrorMessage();
     }
-    
-    public void stopServer() {
-        Selenium2ServerSupport.getInstance().stopServer();
+
+    @Override
+    public String getWarningMessage() {
+        return getComponent().getWarningMessage();
     }
-    
-    public boolean configureServer() {
-        return Selenium2ServerSupport.getInstance().configureServer();
+
+    @Override
+    public void save() {
+        assert !EventQueue.isDispatchThread();
+        assert customizerProtractor != null;
+        ProtractorPreferences.setProtractor(project, customizerProtractor.getProtractor());
+        ProtractorPreferences.setSeleniumServerJar(project, customizerProtractor.getSeleniumServerJar());
     }
-    
-    public String getServerJarLocation() {
-        return Selenium2ServerSupport.getPrefs().get(Selenium2ServerSupport.SELENIUM_SERVER_JAR, null);
-    }
-    
+
 }
+

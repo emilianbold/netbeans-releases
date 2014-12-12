@@ -75,6 +75,7 @@ public class Selenium2WebClientSupportImpl extends Selenium2SupportImpl {
     
     static final Logger LOGGER = Logger.getLogger(Selenium2WebClientSupportImpl.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(Selenium2WebClientSupportImpl.class.getName(), 1);
+    private WizardDescriptor wizard;
 
     @Override
     public boolean isSupportActive(Project p) {
@@ -98,6 +99,7 @@ public class Selenium2WebClientSupportImpl extends Selenium2SupportImpl {
     "# {0} - project",
     "NO_SELENIUM_TESTS_FOLDER=No Selenium Tests Folder set for project: {0}"})
     public WizardDescriptor.Panel createTargetChooserPanel(WizardDescriptor wiz) {
+        wizard = wiz;
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
         FileObject testsFolder = Utilities.getTestsSeleniumFolder(project, true);
@@ -111,7 +113,7 @@ public class Selenium2WebClientSupportImpl extends Selenium2SupportImpl {
 
     @Override
     public String getTemplateID() {
-        return "Templates/SeleniumTests/SeleneseTest.js";
+        return Templates.getTemplate(wizard).getPath();
     }
 
     @Override

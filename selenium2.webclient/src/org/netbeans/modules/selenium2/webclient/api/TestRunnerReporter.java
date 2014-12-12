@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.webclient.mocha.run;
+package org.netbeans.modules.selenium2.webclient.api;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -55,9 +55,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
-import org.netbeans.modules.selenium2.webclient.api.RunInfo;
 import org.netbeans.modules.selenium2.webclient.spi.JumpToCallStackCallback;
-import org.netbeans.modules.selenium2.webclient.api.Utilities;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -69,11 +67,11 @@ import org.openide.util.Pair;
  * @author Theofanis Oikonomou
  */
 @NbBundle.Messages("TestRunner.noName=<no name>")
-public final class MochaTestRunner {
+public final class TestRunnerReporter {
 
-    static final Logger LOGGER = Logger.getLogger(MochaTestRunner.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TestRunnerReporter.class.getName());
 
-    public static final String NB_LINE = "mocha-netbeans-reporter "; // NOI18N
+    private final String NB_LINE;
     
     static final Pattern OK_PATTERN = Pattern.compile("^ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
     static final Pattern OK_SKIP_PATTERN = Pattern.compile("^ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*) # SKIP -, suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*)"); // NOI18N
@@ -96,9 +94,10 @@ public final class MochaTestRunner {
     private long duration;
 
 
-    public MochaTestRunner(RunInfo runInfo) {
+    public TestRunnerReporter(RunInfo runInfo, String reporterSuffix) {
         assert runInfo != null;
         this.runInfo = runInfo;
+        this.NB_LINE = reporterSuffix;
     }
     
     public String processLine(String logMessage) {
@@ -334,3 +333,4 @@ public final class MochaTestRunner {
     }
 
 }
+

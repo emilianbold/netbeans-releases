@@ -39,48 +39,67 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.server.api;
+package org.netbeans.modules.selenium2.webclient.protractor.preferences;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.selenium2.server.Selenium2ServerSupport;
+import java.io.File;
+import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.support.*;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Theofanis Oikonomou
  */
-public class Selenium2Server {
-    private static final Logger LOGGER = Logger.getLogger(Selenium2Server.class.getName());
-
-    private static Selenium2Server INSTANCE;
-
-    private Selenium2Server() {
+public class ProtractorPreferences {
+    
+    private static final String ENABLED = "enabled"; // NOI18N
+    private static final String PROTRACTOR = "protractor"; // NOI18N
+    private static final String SELENIUM_SERVER_JAR = "selenium.server.jar"; // NOI18N
+    
+    private ProtractorPreferences() {
     }
 
-    public static Selenium2Server getInstance() {
-        if(INSTANCE == null) {
-            INSTANCE = new Selenium2Server();
+    public static boolean isEnabled(Project project) {
+        return getPreferences(project).getBoolean(ENABLED, false);
+    }
+
+    public static void setEnabled(Project project, boolean enabled) {
+        getPreferences(project).putBoolean(ENABLED, enabled);
+    }
+
+    @CheckForNull
+    public static String getProtractor(Project project) {
+        return resolvePath(project, getPreferences(project).get(PROTRACTOR, null));
+    }
+
+    public static void setProtractor(Project project, String protractor) {
+        getPreferences(project).put(PROTRACTOR, protractor);
+    }
+
+    @CheckForNull
+    public static String getSeleniumServerJar(Project project) {
+        return resolvePath(project, getPreferences(project).get(SELENIUM_SERVER_JAR, null));
+    }
+
+    public static void setSeleniumServerJar(Project project, String seleniumServerJar) {
+        getPreferences(project).put(SELENIUM_SERVER_JAR, seleniumServerJar);
+    }
+    
+    private static Preferences getPreferences(final Project project) {
+        assert project != null;
+        return ProjectUtils.getPreferences(project, ProtractorPreferences.class, false);
+    }
+
+    private static String resolvePath(Project project, String filePath) {
+        if (filePath == null
+                || filePath.trim().isEmpty()) {
+            return null;
         }
-        return INSTANCE;
-    }
-    
-    public void startServer() {
-        Selenium2ServerSupport.getInstance().startServer();
-    }
-    
-    public void restartServer() {
-        Selenium2ServerSupport.getInstance().restartServer();
-    }
-    
-    public void stopServer() {
-        Selenium2ServerSupport.getInstance().stopServer();
-    }
-    
-    public boolean configureServer() {
-        return Selenium2ServerSupport.getInstance().configureServer();
-    }
-    
-    public String getServerJarLocation() {
-        return Selenium2ServerSupport.getPrefs().get(Selenium2ServerSupport.SELENIUM_SERVER_JAR, null);
+        return PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), filePath).getAbsolutePath();
     }
     
 }
