@@ -42,15 +42,31 @@
 
 package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
+import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.GroupLayout;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -61,6 +77,10 @@ import org.openide.util.RequestProcessor;
 public class LibrariesPanel extends javax.swing.JPanel {
     /** Request processor used by this class. */
     private static final RequestProcessor RP = new RequestProcessor(LibrariesPanel.class);
+    /** Project whose npm libraries are being customized. */
+    private final Project project;
+    /** Installed npm libraries (maps the name to the installed version). */
+    private Map<String,String> installedLibraries;
 
     /**
      * Creates a new {@code LibrariesPanel}.
@@ -68,24 +88,51 @@ public class LibrariesPanel extends javax.swing.JPanel {
      * @param project project whose libraries should be customized.
      */
     public LibrariesPanel(Project project) {
-        initComponents();
-        PackageJson packagejson = getPackageJson(project);
+        this.project = project;
+        initComponents();        
+        PackageJson packagejson = getPackageJson();
         if (packagejson.exists()) {
             PackageJson.NpmDependencies dependencies = packagejson.getDependencies();
             regularPanel.setProject(project);
             developmentPanel.setProject(project);
             optionalPanel.setProject(project);
-            regularPanel.setDependencies(toLibraries(dependencies.dependencies));
-            developmentPanel.setDependencies(toLibraries(dependencies.devDependencies));
-            optionalPanel.setDependencies(toLibraries(dependencies.optionalDependencies));
-            loadInstalledLibraries(project);
+            regularPanel.setDependencies(new HashMap<>(dependencies.dependencies));
+            developmentPanel.setDependencies(new HashMap<>(dependencies.devDependencies));
+            optionalPanel.setDependencies(new HashMap<>(dependencies.optionalDependencies));
+            loadInstalledLibraries();
         } else {
-            GroupLayout layout = (GroupLayout)getLayout();
-            layout.replace(tabbedPane, messageLabel);
+            show(packageJsonProblemLabel);
         }
     }
 
-    private PackageJson getPackageJson(Project project) {
+    /**
+     * Shows the given component in the main area of the customizer.
+     * 
+     * @param component component to show.
+     */
+    private void show(Component component) {
+        assert EventQueue.isDispatchThread();
+        GroupLayout layout = (GroupLayout)getLayout();
+        Component currentComponent = getComponent(0);
+        layout.replace(currentComponent, component);
+    }
+
+    /**
+     * Creates a store listener (the listener that is invoked when
+     * the changes in the project customizer are confirmed).
+     * 
+     * @return store listener.
+     */
+    ActionListener createStoreListener() {
+        return new StoreListener();
+    }
+
+    /**
+     * Returns {@code package.json} for the project.
+     * 
+     * @return {@code package.json} for the project.
+     */
+    private PackageJson getPackageJson() {
         NodeJsSupport nodeJsSupport = project.getLookup().lookup(NodeJsSupport.class);
         if (nodeJsSupport != null) {
             return nodeJsSupport.getPackageJson();
@@ -110,37 +157,157 @@ public class LibrariesPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Loads the libraries installed in the given project. Updates
+     * Loads the libraries installed in the project. Updates
      * the view once the installed libraries are determined.
-     * 
-     * @param project project we are interested in.
      */
-    private void loadInstalledLibraries(final Project project) {
+    private void loadInstalledLibraries() {
+        show(loadingLabel);
         RP.post(new Runnable() {
             @Override
             public void run() {
                 LibraryProvider provider = LibraryProvider.forProject(project);
-                Library.Version[] libraries = provider.installedLibraries();
-                final Map<String,Library.Version> map;
-                if (libraries == null) {
-                    map = null;
-                } else {
-                    map = new HashMap<>();
-                    for (Library.Version libraryVersion : libraries) {
-                        map.put(libraryVersion.getLibrary().getName(), libraryVersion);
-                    }
-                }
+                installedLibraries = provider.installedLibraries();
 
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        regularPanel.setInstalledLibraries(map);
-                        developmentPanel.setInstalledLibraries(map);
-                        optionalPanel.setInstalledLibraries(map);
+                        if (installedLibraries == null) {
+                            show(npmProblemPanel);
+                        } else {
+                            regularPanel.setInstalledLibraries(installedLibraries);
+                            developmentPanel.setInstalledLibraries(installedLibraries);
+                            optionalPanel.setInstalledLibraries(installedLibraries);
+                            show(tabbedPane);
+                        }
                     }
                 });
             }
         });
+    }
+
+    /** Progress handle used when storing changes. */
+    private ProgressHandle progressHandle;
+
+    /**
+     * Performs/stores the changes requested by the user in the customizer.
+     */
+    @NbBundle.Messages("LibrariesPanel.updatingPackages=Updating npm packages...")
+    void storeChanges() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                progressHandle = ProgressHandle.createHandle(Bundle.LibrariesPanel_updatingPackages());
+                progressHandle.start();
+                try {
+                    PackageJson packagejson = getPackageJson();
+                    if (packagejson.exists()) {
+                        PackageJson.NpmDependencies dependencies = packagejson.getDependencies();
+                        List<String> errors = new ArrayList<>();
+                        storeChanges(dependencies.dependencies,
+                                regularPanel.getSelectedDependencies(),
+                                PackageJson.FIELD_DEPENDENCIES, errors);
+                        storeChanges(dependencies.devDependencies,
+                                developmentPanel.getSelectedDependencies(),
+                                PackageJson.FIELD_DEV_DEPENDENCIES, errors);
+                        storeChanges(dependencies.optionalDependencies,
+                                optionalPanel.getSelectedDependencies(),
+                                PackageJson.FIELD_OPTIONAL_DEPENDENCIES, errors);
+                        reportErrors(errors);
+                    }
+                } finally {
+                    progressHandle.finish();
+                    progressHandle = null;
+                }
+            }
+        });
+    }
+
+    /**
+     * Notifies the user about errors that occurred while storing changes.
+     * 
+     * @param errors list of error messages (possibly empty).
+     */
+    private void reportErrors(List<String> errors) {
+        if (!errors.isEmpty()) {
+            StringBuilder message = new StringBuilder();
+            for (String error : errors) {
+                if (message.length() != 0) {
+                    message.append('\n');
+                }
+                message.append(error);
+            }
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                    message.toString(), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(descriptor);
+        }
+    }
+
+    /**
+     * Performs/stores the changes requested by the user for the specified
+     * type of dependencies.
+     * 
+     * @param originalDependencies original dependencies.
+     * @param selectedDependencies requested list of dependencies.
+     * @param dependencyType dependency type (name of the corresponding field
+     * in {@code package.json}).
+     * @param errors collection that should be populated with errors that occurred.
+     */
+    @NbBundle.Messages({
+        "# {0} - library name",
+        "# {1} - library version",
+        "LibrariesPanel.dependencyNotSet=Unable to set {0}@{1} dependency in package.json!",
+        "# {0} - library name",
+        "# {1} - library version",
+        "LibrariesPanel.installationFailed=Installation of version {1} of package {0} failed!"
+    })
+    private void storeChanges(Map<String,String> originalDependencies,
+            List<Dependency> selectedDependencies,
+            String dependencyType, List<String> errors) {
+        // Update package.json
+        PackageJson packagejson = getPackageJson();
+        if (packagejson.exists()) {
+            // PENDING Remove obsolete dependencies
+            
+            // Add new/update existing dependencies
+            for (Dependency dependency : selectedDependencies) {
+                String name = dependency.getName();
+                String oldRequiredVersion = originalDependencies.get(name);
+                String newRequiredVersion = dependency.getRequiredVersion();
+                if (!newRequiredVersion.equals(oldRequiredVersion)) {
+                    try {
+                        packagejson.setContent(Arrays.asList(dependencyType, name), newRequiredVersion);
+                    } catch (IOException ioex) {
+                        Logger.getLogger(LibrariesPanel.class.getName()).log(Level.INFO, null, ioex);
+                        errors.add(Bundle.LibrariesPanel_dependencyNotSet(name, newRequiredVersion));
+                    }
+                }
+            }
+        }
+
+        // Install missing packages
+        NpmExecutable executable = NpmExecutable.getDefault(project, false);
+        if (executable != null) {
+            for (Dependency dependency : selectedDependencies) {
+                String name = dependency.getName();
+                String versionToInstall = dependency.getInstalledVersion();
+                String installedVersion = installedLibraries.get(name);
+                if (versionToInstall != null && !versionToInstall.equals(installedVersion)) {
+                    Integer result = null;
+                    try {
+                        // npm install name@versionToInstall
+                        Future<Integer> future = executable.install(name + "@" + versionToInstall); // NOI18N
+                        if (future != null) {
+                            result = future.get();
+                        }
+                    } catch (InterruptedException | ExecutionException ex) {
+                        Logger.getLogger(LibrariesPanel.class.getName()).log(Level.INFO, null, ex);
+                    }
+                    if (result == null || result != 0) {
+                        errors.add(Bundle.LibrariesPanel_installationFailed(name, versionToInstall));
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -152,16 +319,83 @@ public class LibrariesPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        messageLabel = new javax.swing.JLabel();
+        packageJsonProblemLabel = new javax.swing.JLabel();
+        npmProblemPanel = new javax.swing.JPanel();
+        buttonPanel = new javax.swing.JPanel();
+        configureButton = new javax.swing.JButton();
+        retryButton = new javax.swing.JButton();
+        npmProblemLabel = new javax.swing.JLabel();
+        loadingLabel = new javax.swing.JLabel();
         tabbedPane = new javax.swing.JTabbedPane();
         regularPanel = new org.netbeans.modules.javascript.nodejs.ui.libraries.DependenciesPanel();
         developmentPanel = new org.netbeans.modules.javascript.nodejs.ui.libraries.DependenciesPanel();
         optionalPanel = new org.netbeans.modules.javascript.nodejs.ui.libraries.DependenciesPanel();
 
-        messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(LibrariesPanel.class, "LibrariesPanel.messageLabel.text")); // NOI18N
-        messageLabel.setEnabled(false);
-        messageLabel.setMaximumSize(new java.awt.Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
+        packageJsonProblemLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(packageJsonProblemLabel, org.openide.util.NbBundle.getMessage(LibrariesPanel.class, "LibrariesPanel.packageJsonProblemLabel.text")); // NOI18N
+        packageJsonProblemLabel.setEnabled(false);
+        packageJsonProblemLabel.setMaximumSize(new java.awt.Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
+
+        org.openide.awt.Mnemonics.setLocalizedText(configureButton, org.openide.util.NbBundle.getMessage(LibrariesPanel.class, "LibrariesPanel.configureButton.text")); // NOI18N
+        configureButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configureButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(retryButton, org.openide.util.NbBundle.getMessage(LibrariesPanel.class, "LibrariesPanel.retryButton.text")); // NOI18N
+        retryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                retryButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout buttonPanelLayout = new javax.swing.GroupLayout(buttonPanel);
+        buttonPanel.setLayout(buttonPanelLayout);
+        buttonPanelLayout.setHorizontalGroup(
+            buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPanelLayout.createSequentialGroup()
+                .addComponent(configureButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(retryButton))
+        );
+
+        buttonPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {configureButton, retryButton});
+
+        buttonPanelLayout.setVerticalGroup(
+            buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(buttonPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(configureButton)
+                .addComponent(retryButton))
+        );
+
+        org.openide.awt.Mnemonics.setLocalizedText(npmProblemLabel, org.openide.util.NbBundle.getMessage(LibrariesPanel.class, "LibrariesPanel.npmProblemLabel.text")); // NOI18N
+
+        javax.swing.GroupLayout npmProblemPanelLayout = new javax.swing.GroupLayout(npmProblemPanel);
+        npmProblemPanel.setLayout(npmProblemPanelLayout);
+        npmProblemPanelLayout.setHorizontalGroup(
+            npmProblemPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(npmProblemPanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(npmProblemPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(npmProblemLabel)
+                    .addComponent(buttonPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        npmProblemPanelLayout.setVerticalGroup(
+            npmProblemPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(npmProblemPanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(npmProblemLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(buttonPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        loadingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        org.openide.awt.Mnemonics.setLocalizedText(loadingLabel, org.openide.util.NbBundle.getMessage(LibrariesPanel.class, "LibrariesPanel.loadingLabel.text")); // NOI18N
+        loadingLabel.setEnabled(false);
+        loadingLabel.setMaximumSize(new java.awt.Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
 
         tabbedPane.addTab(org.openide.util.NbBundle.getMessage(LibrariesPanel.class, "LibrariesPanel.regularPanel.TabConstraints.tabTitle"), regularPanel); // NOI18N
         tabbedPane.addTab(org.openide.util.NbBundle.getMessage(LibrariesPanel.class, "LibrariesPanel.developmentPanel.TabConstraints.tabTitle"), developmentPanel); // NOI18N
@@ -179,12 +413,39 @@ public class LibrariesPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void configureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
+        OptionsDisplayer.getDefault().open(NodeJsOptionsPanelController.OPTIONS_PATH);
+    }//GEN-LAST:event_configureButtonActionPerformed
+
+    private void retryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_retryButtonActionPerformed
+        loadInstalledLibraries();
+    }//GEN-LAST:event_retryButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JButton configureButton;
     private org.netbeans.modules.javascript.nodejs.ui.libraries.DependenciesPanel developmentPanel;
-    private javax.swing.JLabel messageLabel;
+    private javax.swing.JLabel loadingLabel;
+    private javax.swing.JLabel npmProblemLabel;
+    private javax.swing.JPanel npmProblemPanel;
     private org.netbeans.modules.javascript.nodejs.ui.libraries.DependenciesPanel optionalPanel;
+    private javax.swing.JLabel packageJsonProblemLabel;
     private org.netbeans.modules.javascript.nodejs.ui.libraries.DependenciesPanel regularPanel;
+    private javax.swing.JButton retryButton;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * Listener invoked when the changes in the project customizer are confirmed.
+     */
+    private class StoreListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            storeChanges();
+        }
+        
+    }
+
 }

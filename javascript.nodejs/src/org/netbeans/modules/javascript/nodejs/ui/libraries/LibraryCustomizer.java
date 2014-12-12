@@ -80,7 +80,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         Project project = context.lookup(Project.class);
-        return new LibrariesPanel(project);
+        LibrariesPanel librariesPanel = new LibrariesPanel(project);
+        category.setStoreListener(librariesPanel.createStoreListener());
+        return librariesPanel;
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

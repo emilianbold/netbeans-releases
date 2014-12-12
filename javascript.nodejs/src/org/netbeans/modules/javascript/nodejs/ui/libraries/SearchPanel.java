@@ -66,7 +66,7 @@ public class SearchPanel extends javax.swing.JPanel {
     /** The last search term. */
     private String lastSearchTerm;
     /** Library provider used by this panel. */
-    private LibraryProvider libraryProvider;
+    private final LibraryProvider libraryProvider;
 
     /**
      * Creates a new {@code SearchPanel}.
@@ -97,13 +97,32 @@ public class SearchPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Returns the selected library version.
+     * Returns the name of the selected library.
      * 
-     * @return selected library version.
+     * @return name of the selected library (or {@code null} when no library
+     * is selected).
      */
-    Library.Version getSelectedVersion() {
+    String getSelectedLibrary() {
         Library library = librariesList.getSelectedValue();
-        return (library == null) ? null : library.getLatestVersion();
+        return (library == null) ? null : library.getName();
+    }
+
+    /**
+     * Returns the required version of the library.
+     * 
+     * @return required version of the library.
+     */
+    String getRequiredVersion() {
+        return editPanel.getRequiredVersion();
+    }
+
+    /**
+     * Returns the installed version of the library.
+     * 
+     * @return installed version of the library.
+     */
+    String getInstalledVersion() {
+        return editPanel.getInstalledVersion();
     }
 
     /**
@@ -197,7 +216,14 @@ public class SearchPanel extends javax.swing.JPanel {
                 }
                 keywords = keywordsText.toString();
             }
-            editPanel.setData(null, null, library);
+            Dependency dependency = new Dependency(library.getName());
+            Library.Version latestVersion = library.getLatestVersion();
+            if (latestVersion != null) {
+                String versionName = latestVersion.getName();
+                dependency.setInstalledVersion(versionName);
+                dependency.setRequiredVersion(versionName);
+            }
+            editPanel.setDependency(dependency);
         }
         descriptionComponent.setText(description);
         keywordsComponent.setText(keywords);

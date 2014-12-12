@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,76 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.openide.filesystems;
-
-import java.util.HashSet;
-import java.util.Set;
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.TypeElement;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.javascript.nodejs.ui.libraries;
 
 /**
+ * Dependency.
  *
- * @author lahvac
+ * @author Jan Stola
  */
-@SupportedAnnotationTypes("*")
-@ServiceProvider(service=Processor.class)
-public class CleaningAnnotationProcessor extends AbstractProcessor {
+public class Dependency {
+    /** Name of the package. */
+    private final String name;
+    /** Required version of the package. */
+    private String requiredVersion;
+    /** Installed version of the package. */
+    private String installedVersion;
 
-    private final Set<String> seenElements = new HashSet<String>();
-
-    @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
-        super.init(processingEnv);
-        seenElements.clear();
+    /**
+     * Creates a new {@code Dependency}.
+     * 
+     * @param name name of a package.
+     */
+    Dependency(String name) {
+        this.name = name;
     }
 
-    @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (roundEnv.processingOver()) {
-            return false;
-        }
-        
-        try {
-            Runnable impl = new CleaningAnnotationProcessorImpl(processingEnv, roundEnv, seenElements);
-            impl.run();
-        } catch (LinkageError t) {
-            // not enough classes on classpath. Happens in core.startup tests.
-            System.err.println(t);
-        }
-
-        return false;
+    /**
+     * Returns the name of the package.
+     * 
+     * @return name of the package.
+     */
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latest();
+    /**
+     * Returns the required version of the package.
+     * 
+     * @return required version of the package.
+     */
+    public String getRequiredVersion() {
+        return requiredVersion;
     }
+
+    /**
+     * Sets the required version of the package.
+     * 
+     * @param requiredVersion required version of the package.
+     */
+    public void setRequiredVersion(String requiredVersion) {
+        this.requiredVersion = requiredVersion;
+    }
+
+    /**
+     * Returns the installed version of the package.
+     * 
+     * @return installed version of the package.
+     */
+    public String getInstalledVersion() {
+        return installedVersion;
+    }
+
+    /**
+     * Sets the installed version of the package.
+     * 
+     * @param installedVersion installed version of the package.
+     */
+    public void setInstalledVersion(String installedVersion) {
+        this.installedVersion = installedVersion;
+    }
+
 }
