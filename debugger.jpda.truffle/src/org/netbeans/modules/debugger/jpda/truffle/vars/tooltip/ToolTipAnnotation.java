@@ -61,6 +61,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleEval;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariableImpl;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -200,7 +201,18 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
             toolTipText = expression + " = " + DebuggerSupport.getVarValue(d, result);
                     */
-            toolTipText = expression + " = " + TruffleEval.evaluate(d, expression).getValue();
+            Variable result = TruffleEval.evaluate(d, expression);
+            if (result == null) {
+                return ; // Something went wrong...
+            }
+            TruffleVariableImpl tv = TruffleVariableImpl.get(result);
+            String displayVal;
+            if (tv != null) {
+                displayVal = tv.getDisplayValue();
+            } else {
+                displayVal = result.getValue();
+            }
+            toolTipText = expression + " = " + displayVal;
         } catch (InvalidExpressionException ex) {
             toolTipText = expression + " = >" + ex.getMessage () + "<";
         }

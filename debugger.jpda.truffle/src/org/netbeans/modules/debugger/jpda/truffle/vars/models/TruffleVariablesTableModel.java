@@ -44,14 +44,19 @@ package org.netbeans.modules.debugger.jpda.truffle.vars.models;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariable;
+import org.netbeans.modules.debugger.jpda.truffle.vars.TruffleVariableImpl;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TYPE_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_VALUE_COLUMN_ID;
+import static org.netbeans.spi.debugger.ui.Constants.WATCH_TO_STRING_COLUMN_ID;
+import static org.netbeans.spi.debugger.ui.Constants.WATCH_TYPE_COLUMN_ID;
+import static org.netbeans.spi.debugger.ui.Constants.WATCH_VALUE_COLUMN_ID;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableHTMLModel;
 import org.netbeans.spi.viewmodel.TableHTMLModelFilter;
@@ -79,17 +84,29 @@ public class TruffleVariablesTableModel implements TableModelFilter, TableHTMLMo
 
     @Override
     public Object getValueAt(TableModel original, Object node, String columnID) throws UnknownTypeException {
-        /*if (node instanceof JPDAWatch && !isEnabled((JPDAWatch) node)) {
-            return original.getValueAt(node, columnID);
-        }*/
+        TruffleVariable tv = null;
+        if (node instanceof JPDAWatch) {// && !isEnabled((JPDAWatch) node)) {
+            Object orig = original.getValueAt(node, columnID); // Call in any case because of error displaying
+            if (node instanceof Variable) {
+                tv = TruffleVariableImpl.get((Variable) node);
+            }
+            if (tv == null) {
+                return orig;
+            }
+        }
         if (node instanceof TruffleVariable) {
-            TruffleVariable tv = (TruffleVariable) node;
+            tv = (TruffleVariable) node;
+        }
+        if (tv != null) {
             switch (columnID) {
                 case LOCALS_TYPE_COLUMN_ID:
+                case WATCH_TYPE_COLUMN_ID:
                     return tv.getType();
                 case LOCALS_VALUE_COLUMN_ID:
+                case WATCH_VALUE_COLUMN_ID:
                     return tv.getValue();
                 case LOCALS_TO_STRING_COLUMN_ID:
+                case WATCH_TO_STRING_COLUMN_ID:
                     Object var = tv.getValue();
                     return String.valueOf(var);
             }

@@ -59,7 +59,7 @@ import org.openide.util.Exceptions;
 public class TruffleEval {
     
     private static final String METHOD_EVALUATE = "evaluate";                   // NOI18N
-    private static final String METHOD_EVALUATE_SIG = "(Ljava/lang/String;)Ljava/lang/String;"; // NOI18N
+    private static final String METHOD_EVALUATE_SIG = "(Ljava/lang/String;)Ljava/lang/Object;"; // NOI18N
     private static final String METHOD_EVALUATE_ON_FRAME_SIG = "(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;"; // NOI18N
     
     private TruffleEval() {}

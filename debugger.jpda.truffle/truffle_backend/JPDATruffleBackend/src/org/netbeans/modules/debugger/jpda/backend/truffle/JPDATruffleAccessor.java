@@ -335,7 +335,7 @@ public class JPDATruffleAccessor extends Object {
         ((Breakpoint) br).dispose();
     }
     
-    static String evaluate(String expression) {
+    static String evaluateToStr(String expression) {
         //System.err.println("evaluate("+expression+")");
         final Source source = Source.fromText(expression, "EVAL");
         Object value = debugManager.eval(source);
@@ -347,6 +347,21 @@ public class JPDATruffleAccessor extends Object {
         String strValue = visualizer.displayValue(debugManager.getContext(), value);
         //System.err.println("evaluate("+expression+") = "+strValue);
         return strValue;
+    }
+    
+    static Object evaluate(String expression) {
+        //System.err.println("evaluate("+expression+")");
+        final Source source = Source.fromText(expression, "EVAL");
+        Object value = debugManager.eval(source);
+        //System.err.println("  value = "+value);
+        if (value == null) {
+            return null;
+        }
+        ExecutionContext context = debugManager.getContext();
+        Visualizer visualizer = context.getVisualizer();
+        String strValue = visualizer.displayValue(context, value);
+        TruffleObject to = new TruffleObject(context, strValue, value);
+        return to;
     }
     
     static Object evaluate(String expression, Object frameInstance) {

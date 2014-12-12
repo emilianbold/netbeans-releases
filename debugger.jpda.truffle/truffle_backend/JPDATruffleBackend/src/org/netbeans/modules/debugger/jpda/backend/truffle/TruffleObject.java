@@ -35,6 +35,8 @@ public class TruffleObject {
         this.displayValue = context.getVisualizer().displayValue(context, object);
         if (object instanceof String) {
             this.type = String.class.getSimpleName();
+        } else if (object instanceof Number) {
+            this.type = object.getClass().getSimpleName();
         } else {
             this.type = FrameSlotKind.Object.name();
         }

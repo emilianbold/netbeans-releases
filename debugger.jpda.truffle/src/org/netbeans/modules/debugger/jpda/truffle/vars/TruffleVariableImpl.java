@@ -81,24 +81,33 @@ public class TruffleVariableImpl implements TruffleVariable {
     public static TruffleVariableImpl get(Variable var) {
         if (TRUFFLE_OBJECT_TYPE.equals(var.getType())) {
             ObjectVariable truffleObj = (ObjectVariable) var;
-            String name = (String) truffleObj.getField(FIELD_NAME).createMirrorObject();
-            String type = (String) truffleObj.getField(FIELD_TYPE).createMirrorObject();
-            String dispVal = (String) truffleObj.getField(FIELD_DISPLAY_VALUE).createMirrorObject();
+            //System.err.println("TruffleVariableImpl.get("+var+") fields on "+truffleObj+", class "+truffleObj.getClassType().getName());
+            // The inner value can change in watches.
+            Field f = truffleObj.getField(FIELD_NAME);
+            if (f == null) {
+                return null;
+            }
+            String name = (String) f.createMirrorObject();
+            f = truffleObj.getField(FIELD_TYPE);
+            if (f == null) {
+                return null;
+            }
+            String type = (String) f.createMirrorObject();
+            f = truffleObj.getField(FIELD_DISPLAY_VALUE);
+            if (f == null) {
+                return null;
+            }
+            String dispVal = (String) f.createMirrorObject();
+            f = truffleObj.getField(FIELD_LEAF);
+            if (f == null) {
+                return null;
+            }
+            Boolean mirrorLeaf = (Boolean) f.createMirrorObject();
             boolean leaf;
-            if (truffleObj.getField(FIELD_LEAF) == null) {
-                System.err.println("No "+FIELD_LEAF+" field on "+truffleObj+", class "+truffleObj.getClassType().getName());
+            if (mirrorLeaf == null) {
                 leaf = false;
             } else {
-                try {
-                    leaf = (Boolean) truffleObj.getField(FIELD_LEAF).createMirrorObject();
-                } catch (NullPointerException npe) {
-                    Boolean mirrorLeaf = (Boolean) truffleObj.getField(FIELD_LEAF).createMirrorObject();
-                    if (mirrorLeaf == null) {
-                        leaf = false;
-                    } else {
-                        leaf = mirrorLeaf;
-                    }
-                }
+                leaf = mirrorLeaf;
             }
             return new TruffleVariableImpl(truffleObj, name, type, dispVal, leaf);
         } else {
