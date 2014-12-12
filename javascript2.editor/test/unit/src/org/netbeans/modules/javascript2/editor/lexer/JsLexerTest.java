@@ -576,4 +576,19 @@ public class JsLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.STRING_END, "\"");
         assertFalse(ts.moveNext());
     }
+
+    @SuppressWarnings("unchecked")
+    public void testCallFunctionWithKeywordName() {
+        String text = "obj.\ncatch();";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.javascriptLanguage());
+        TokenSequence<? extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "obj");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_DOT, ".");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "catch");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_SEMICOLON, ";");
+        assertFalse(ts.moveNext());
+    }
 }
