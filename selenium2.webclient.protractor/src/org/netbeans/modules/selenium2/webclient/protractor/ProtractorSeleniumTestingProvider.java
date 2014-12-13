@@ -39,48 +39,74 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.server.api;
+package org.netbeans.modules.selenium2.webclient.protractor;
 
 import java.util.logging.Logger;
-import org.netbeans.modules.selenium2.server.Selenium2ServerSupport;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
+import org.netbeans.modules.selenium2.webclient.protractor.preferences.ProtractorPreferences;
+import org.netbeans.modules.selenium2.webclient.spi.SeleniumTestingProviderImplementation;
+import org.netbeans.modules.web.clientproject.spi.CustomizerPanelImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Theofanis Oikonomou
  */
-public class Selenium2Server {
-    private static final Logger LOGGER = Logger.getLogger(Selenium2Server.class.getName());
+@ServiceProvider(service = SeleniumTestingProviderImplementation.class, path = SeleniumTestingProviders.SELENIUM_TESTING_PATH, position = 10)
+public class ProtractorSeleniumTestingProvider implements SeleniumTestingProviderImplementation {
+    
+    private static final Logger LOGGER = Logger.getLogger(ProtractorSeleniumTestingProvider.class.getName());
 
-    private static Selenium2Server INSTANCE;
-
-    private Selenium2Server() {
+    @Override
+    public String getIdentifier() {
+        return CustomizerProtractorPanel.IDENTIFIER;
     }
 
-    public static Selenium2Server getInstance() {
-        if(INSTANCE == null) {
-            INSTANCE = new Selenium2Server();
-        }
-        return INSTANCE;
+    @Override
+    public String getDisplayName() {
+        return Bundle.CustomizerProtractorPanel_displayName();
     }
-    
-    public void startServer() {
-        Selenium2ServerSupport.getInstance().startServer();
+
+    @Override
+    public boolean isEnabled(Project project) {
+        return ProtractorPreferences.isEnabled(project);
     }
-    
-    public void restartServer() {
-        Selenium2ServerSupport.getInstance().restartServer();
+
+    @Override
+    public boolean isCoverageSupported(Project project) {
+        return false;
     }
-    
-    public void stopServer() {
-        Selenium2ServerSupport.getInstance().stopServer();
+
+    @Override
+    public CustomizerPanelImplementation createCustomizerPanel(Project project) {
+        return new CustomizerProtractorPanel(project);
     }
-    
-    public boolean configureServer() {
-        return Selenium2ServerSupport.getInstance().configureServer();
+
+    @Override
+    public void notifyEnabled(Project project, boolean enabled) {
+        ProtractorPreferences.setEnabled(project, enabled);
     }
-    
-    public String getServerJarLocation() {
-        return Selenium2ServerSupport.getPrefs().get(Selenium2ServerSupport.SELENIUM_SERVER_JAR, null);
+
+    @Override
+    public void projectOpened(Project project) {
+        // noop
+    }
+
+    @Override
+    public void projectClosed(Project project) {
+        // noop
+    }
+
+    @Override
+    public void runTests(FileObject[] activatedFOs) {
+        ProtractorRunner.runTests(activatedFOs);
+    }
+
+    @Override
+    public void debugTests(FileObject[] activatedFOs) {
+        ProtractorRunner.debugTests(activatedFOs);
     }
     
 }

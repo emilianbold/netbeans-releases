@@ -203,6 +203,7 @@
                 <friend>org.netbeans.modules.selenium2.java</friend>
                 <friend>org.netbeans.modules.selenium2.webclient</friend>
                 <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
                 <friend>org.netbeans.modules.testng.ui</friend>
                 <package>org.netbeans.modules.gsf.testrunner.ui.api</package>
                 <package>org.netbeans.modules.gsf.testrunner.ui.spi</package>
