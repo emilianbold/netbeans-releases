@@ -14,6 +14,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.selenium2.api.Selenium2Support;
 import org.netbeans.modules.selenium2.spi.Selenium2SupportImpl;
@@ -27,14 +28,24 @@ import org.openide.util.NbBundle;
  *
  * @author Theofanis Oikonomou
  */
-@TemplateRegistration(folder = "SeleniumTests",
-        displayName = "#SeleniumTestCase_displayName",
-        content = "SeleneseTest.js.template",
-        description = "SeleneseTestWebclient.html",
+@TemplateRegistrations( {
+    @TemplateRegistration(folder = "SeleniumTests",
+        displayName = "#SeleniumMochaTestCase_displayName",
+        content = "SeleneseMochaTest.js.template",
+        description = "SeleneseMochaTestWebclient.html",
         position = 20,
         scriptEngine = "freemarker",
+        category = "html5"),
+    @TemplateRegistration(folder = "SeleniumTests",
+        displayName = "#SeleniumJasmineTestCase_displayName",
+        content = "SeleneseJasmineTest.js.template",
+        description = "SeleneseJasmineTestWebclient.html",
+        position = 30,
+        scriptEngine = "freemarker",
         category = "html5")
-@NbBundle.Messages({"SeleniumTestCase_displayName=Selenium Test Case",
+})
+@NbBundle.Messages({"SeleniumMochaTestCase_displayName=Selenium Mocha Test Case",
+    "SeleniumJasmineTestCase_displayName=Selenium Jasmine Test Case",
     "# {0} - project",
     "NO_SELENIUM_SUPPORT=No Selenium 2.0 support for project {0}"})
 public class Selenium2WebClientTestWizardIterator implements WizardDescriptor.InstantiatingIterator {

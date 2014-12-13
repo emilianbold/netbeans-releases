@@ -82,6 +82,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.selenium2.php</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
                 <package>org.netbeans.modules.selenium2.server.api</package>
             </friend-packages>
         </data>

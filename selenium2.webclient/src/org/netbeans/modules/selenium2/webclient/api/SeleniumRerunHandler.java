@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.webclient.mocha.run;
+package org.netbeans.modules.selenium2.webclient.api;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,9 +50,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProvider;
-import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
-import org.netbeans.modules.selenium2.webclient.mocha.CustomizerMochaPanel;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.jstesting.TestRunInfo;
@@ -66,20 +63,22 @@ import org.openide.util.RequestProcessor;
  *
  * @author Theofanis Oikonomou
  */
-public class MochaRerunHandler implements RerunHandler {
+public final class SeleniumRerunHandler implements RerunHandler {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private static final RequestProcessor RP = new RequestProcessor(MochaRerunHandler.class.getName(), 1);
+    private static final RequestProcessor RP = new RequestProcessor(SeleniumRerunHandler.class.getName(), 1);
 
     private volatile boolean enabled = true;
     private final FileObject[] activatedFOs;
     private final Project project;
     private final boolean isSelenium;
+    private final String identifier;
 
-    public MochaRerunHandler(Project project, FileObject[] activatedFOs, boolean isSelenium) {
+    public SeleniumRerunHandler(Project project, FileObject[] activatedFOs, String identifier, boolean isSelenium) {
         this.project = project;
         this.activatedFOs = activatedFOs;
         this.isSelenium = isSelenium;
+        this.identifier = identifier;
     }
 
     @Override
@@ -95,7 +94,7 @@ public class MochaRerunHandler implements RerunHandler {
         ArrayList<FileObject> tests2run = new ArrayList<>();
         for (Testcase testcase : tests) {
             testcase.getTrouble().getStackTrace();
-            MochaTestRunner.CallStackCallback callStackCallback = new MochaTestRunner.CallStackCallback(project);
+            TestRunnerReporter.CallStackCallback callStackCallback = new TestRunnerReporter.CallStackCallback(project);
             for (String callstackFrameInfo : testcase.getTrouble().getStackTrace()) {
                 Pair<File, int[]> pair = callStackCallback.parseLocation(callstackFrameInfo, true);
                 if (pair != null) {
@@ -122,12 +121,12 @@ public class MochaRerunHandler implements RerunHandler {
                     return;
                 }
                 if (isSelenium) {
-                    SeleniumTestingProvider provider = SeleniumTestingProviders.getDefault().findSeleniumTestingProvider(CustomizerMochaPanel.IDENTIFIER);
+                    SeleniumTestingProvider provider = SeleniumTestingProviders.getDefault().findSeleniumTestingProvider(identifier);
                     if (provider != null) {
                         provider.runTests(testFOs);
                     }
                 } else {
-                    JsTestingProvider provider = JsTestingProviders.getDefault().findJsTestingProvider(CustomizerMochaPanel.IDENTIFIER);
+                    JsTestingProvider provider = JsTestingProviders.getDefault().findJsTestingProvider(identifier);
                     if (provider != null) {
                         provider.runTests(project, new TestRunInfo.Builder().setSessionType(TestRunInfo.SessionType.TEST).setTestFile(null).build());
                     }

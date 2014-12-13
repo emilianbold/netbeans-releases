@@ -39,10 +39,12 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.webclient.mocha.run;
+package org.netbeans.modules.selenium2.webclient.api;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import junit.framework.TestCase;
 import org.junit.Test;
 
@@ -50,14 +52,14 @@ import org.junit.Test;
  *
  * @author Theofanis Oikonomou
  */
-public class MochaTestRunnerTest extends TestCase {
+public class TestRunnerReporterTest extends TestCase {
     
-    public MochaTestRunnerTest() {
+    public TestRunnerReporterTest() {
     }
     
     @Test
     public void testFilePatternRegex() throws Exception {
-        Pattern pattern = MochaTestRunner.CallStackCallback.FILE_LINE_PATTERN;
+        Pattern pattern = TestRunnerReporter.CallStackCallback.FILE_LINE_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
             {"at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
@@ -76,7 +78,7 @@ public class MochaTestRunnerTest extends TestCase {
     
     @Test
     public void testOKRegex() throws Exception {
-        Pattern pattern = MochaTestRunner.OK_PATTERN;
+        Pattern pattern = TestRunnerReporter.OK_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
             {"ok 1 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=1234", "1", "Google Search should append query to title", "Google Search", "should append query to title", "1234"},
@@ -97,7 +99,7 @@ public class MochaTestRunnerTest extends TestCase {
     
     @Test
     public void testOKSkipRegex() throws Exception {
-        Pattern pattern = MochaTestRunner.OK_SKIP_PATTERN;
+        Pattern pattern = TestRunnerReporter.OK_SKIP_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
             {"ok 1 Google Search should append query to title # SKIP -, suite=Google Search, testcase=should append query to title", "1", "Google Search should append query to title", "Google Search", "should append query to title"}
@@ -116,7 +118,7 @@ public class MochaTestRunnerTest extends TestCase {
     
     @Test
     public void testNotOKRegex() throws Exception {
-        Pattern pattern = MochaTestRunner.NOT_OK_PATTERN;
+        Pattern pattern = TestRunnerReporter.NOT_OK_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
             {"not ok 2 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=2345", "2", "Google Search should append query to title", "Google Search", "should append query to title", "2345"},
@@ -137,7 +139,7 @@ public class MochaTestRunnerTest extends TestCase {
     
     @Test
     public void testSessionStartRegex() throws Exception {
-        Pattern pattern = MochaTestRunner.SESSION_START_PATTERN;
+        Pattern pattern = TestRunnerReporter.SESSION_START_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
             {"1..8", "8"},
@@ -154,7 +156,7 @@ public class MochaTestRunnerTest extends TestCase {
     
     @Test
     public void testSessionEndRegex() throws Exception {
-        Pattern pattern = MochaTestRunner.SESSION_END_PATTERN;
+        Pattern pattern = TestRunnerReporter.SESSION_END_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
             {"tests 8, pass 6, fail 2, skip 1", "8", "6", "2", "1"},

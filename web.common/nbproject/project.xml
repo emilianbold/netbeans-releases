@@ -343,6 +343,7 @@
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <friend>org.netbeans.modules.selenium2.webclient</friend>
                 <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
                 <friend>org.netbeans.modules.web.browser.api</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
                 <friend>org.netbeans.modules.web.clientproject.api</friend>

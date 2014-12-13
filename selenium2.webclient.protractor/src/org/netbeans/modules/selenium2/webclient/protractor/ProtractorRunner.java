@@ -39,17 +39,20 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.selenium2.webclient.mocha;
+package org.netbeans.modules.selenium2.webclient.protractor;
 
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -60,20 +63,21 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.selenium2.api.Utils;
+import org.netbeans.modules.selenium2.server.api.Selenium2Server;
 import org.netbeans.modules.selenium2.webclient.api.RunInfo;
 import org.netbeans.modules.selenium2.webclient.api.SeleniumRerunHandler;
 import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
 import org.netbeans.modules.selenium2.webclient.api.TestRunnerReporter;
 import org.netbeans.modules.selenium2.webclient.api.Utilities;
-import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaJSPreferences;
-import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaSeleniumPreferences;
-import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaPreferencesValidator;
+import org.netbeans.modules.selenium2.webclient.protractor.preferences.ProtractorPreferences;
+import org.netbeans.modules.selenium2.webclient.protractor.preferences.ProtractorPreferencesValidator;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -84,29 +88,35 @@ import org.openide.windows.OutputListener;
  *
  * @author Theofanis Oikonomou
  */
-public class MochaRunner {
-    private static final Logger LOG = Logger.getLogger(MochaRunner.class.getName());
+class ProtractorRunner {
+    private static final Logger LOG = Logger.getLogger(ProtractorRunner.class.getName());
     private static final String DEBUG_HOST = "localhost"; // NOI18N
     private static final int DEBUG_PORT = 5858;
     
-    public static void runTests(FileObject[] activatedFOs, boolean isSelenium) {
-        internalMochaRunner(activatedFOs, isSelenium, false);
+    public static void runTests(FileObject[] activatedFOs) {
+        internalProtractorRunner(activatedFOs, false);
     }
     
-    public static void debugTests(FileObject[] activatedFOs, boolean isSelenium) {
-        internalMochaRunner(activatedFOs, isSelenium, true);
+    public static void debugTests(FileObject[] activatedFOs) {
+        internalProtractorRunner(activatedFOs, true);
     }
     
-    private static void internalMochaRunner(FileObject[] activatedFOs, boolean isSelenium, boolean debug) {
+    private static void internalProtractorRunner(FileObject[] activatedFOs, boolean debug) {
         assert !EventQueue.isDispatchThread();
         Project p = FileOwnerQuery.getOwner(activatedFOs[0]);
         if (p == null) {
             return;
         }
         
-        File mochaNBReporter = InstalledFileLocator.getDefault().locate(
-                    "mocha/netbeans-reporter.js", "org.netbeans.modules.selenium2.webclient.mocha", false); // NOI18N
-        if(mochaNBReporter == null) {
+        File protractorJasmineNBReporter = InstalledFileLocator.getDefault().locate(
+                    "protractor/jasmine-netbeans-reporter.js", "org.netbeans.modules.selenium2.webclient.protractor", false); // NOI18N
+        if(protractorJasmineNBReporter == null) {
+            return;
+        }
+        
+        File protractorNBConfig = InstalledFileLocator.getDefault().locate(
+                    "protractor/netbeans-configuration.js", "org.netbeans.modules.selenium2.webclient.protractor", false); // NOI18N
+        if(protractorNBConfig == null) {
             return;
         }
         
@@ -116,32 +126,49 @@ public class MochaRunner {
             return;
         }
         
-        FileObject testsFolder = isSelenium ? Utilities.getTestsSeleniumFolder(p, true) : Utilities.getTestsFolder(p, true);
+        FileObject testsFolder = Utilities.getTestsSeleniumFolder(p, true);
         if(testsFolder == null) {
             Utilities.openCustomizer(p, WebClientProjectConstants.CUSTOMIZER_SOURCES_IDENT);
             return;
         }
         
-        String mochaInstallFolder = MochaSeleniumPreferences.getMochaDir(p);
-        ValidationResult validationResult = new MochaPreferencesValidator()
-                .validateMochaInstallFolder(mochaInstallFolder)
+        String protractor = ProtractorPreferences.getProtractor(p);
+        String seleniumServerJar = ProtractorPreferences.getSeleniumServerJar(p);
+        ValidationResult validationResult = new ProtractorPreferencesValidator()
+                .validateProtractor(protractor)
+                .validateSeleniumServerJar(seleniumServerJar)
                 .getResult();
-        if(mochaInstallFolder == null || mochaInstallFolder.isEmpty() || !validationResult.isFaultless()) {
+        if(protractor == null || protractor.isEmpty() || !validationResult.isFaultless()) {
             Utilities.openCustomizer(p, SeleniumTestingProviders.CUSTOMIZER_SELENIUM_TESTING_IDENT);
             return;
         }
         
         boolean testProject = activatedFOs.length == 1 && activatedFOs[0].equals(p.getProjectDirectory());
-        
-        RunInfo runInfo = getRunInfo(p, activatedFOs, testsFolder, mochaInstallFolder, isSelenium, testProject);
+        String specs;
+        if(testProject) {
+            specs = FileUtil.toFile(testsFolder).getAbsolutePath() + "/**/*.js";
+        } else {
+            ArrayList<String> files2test = new ArrayList<>();
+            for(FileObject fo : activatedFOs) {
+                String file2test = FileUtil.toFile(fo).getAbsolutePath();
+                if(file2test != null) {
+                    if(!files2test.contains(file2test)) {
+                        files2test.add(file2test);
+                    }
+                }
+            }
+            String specs2test = files2test.toString();
+            specs = specs2test.substring(1, specs2test.length() - 1);
+        }
+        RunInfo runInfo = getRunInfo(p, activatedFOs, testsFolder, specs, protractorJasmineNBReporter.getAbsolutePath(), seleniumServerJar, testProject);
 
-        String displayname = ProjectUtils.getInformation(runInfo.getProject()).getDisplayName() + (isSelenium ? " Selenium" : " Unit") + " Tests"; // NOI18N
+        String displayname = ProjectUtils.getInformation(runInfo.getProject()).getDisplayName() + " Selenium Tests"; // NOI18N
         final ExternalExecutable externalexecutable = new ExternalExecutable(node)
                 .workDir(FileUtil.toFile(p.getProjectDirectory()))
                 .displayName(displayname)
-                .additionalParameters(getAdditionalArguments(p, activatedFOs, testsFolder, mochaInstallFolder, mochaNBReporter, isSelenium, debug, testProject))
+                .additionalParameters(getAdditionalArguments(protractor, protractorNBConfig.getAbsolutePath(), debug))
                 .environmentVariables(runInfo.getEnvVars());
-        TestRunnerReporter testRunnerReporter = new TestRunnerReporter(runInfo, "mocha-netbeans-reporter "); // NOI18N
+        TestRunnerReporter testRunnerReporter = new TestRunnerReporter(runInfo, "jasmine-netbeans-reporter "); // NOI18N
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -201,48 +228,25 @@ public class MochaRunner {
         };
     }
     
-    private static ArrayList<String> getAdditionalArguments(Project p, FileObject[] activatedFOs, FileObject testsFolder, String mochaInstallFolder, File mochaNBReporter, boolean isSelenium, boolean debug, boolean testProject) {
+    private static ArrayList<String> getAdditionalArguments(String protractor, String config, boolean debug) {
         ArrayList<String> arguments = new ArrayList<>();
-        arguments.add(mochaInstallFolder + "/bin/mocha");
-        if(!isSelenium && MochaJSPreferences.isAutoWatch(p)) {
-            arguments.add("-w");
-        }
+        arguments.add(protractor);
         if(debug) {
             arguments.add("--debug-brk");
         }
-        arguments.add("-t");
-        arguments.add(isSelenium ? Integer.toString(MochaSeleniumPreferences.getTimeout(p)) : Integer.toString(MochaJSPreferences.getTimeout(p)));
-        arguments.add("-R");
-        arguments.add(mochaNBReporter.getPath());
-        
-        if(testProject) {
-            if(isSelenium) {
-                String testFolder = FileUtil.getRelativePath(p.getProjectDirectory(), testsFolder);
-                arguments.add(testFolder + "/**/*.js");
-            }
-        } else {
-            ArrayList<String> files2test = new ArrayList<>();
-            for(FileObject fo : activatedFOs) {
-                String file2test = FileUtil.getRelativePath(p.getProjectDirectory(), fo);
-                if(file2test != null) {
-                    if(!files2test.contains(file2test)) {
-                        files2test.add(file2test);
-                    }
-                }
-            }
-            for(String file2test : files2test) {
-                arguments.add(file2test);
-            }
-        }
+        arguments.add(config);
         
         return arguments;
     }
     
-    private static RunInfo getRunInfo(Project p, FileObject[] activatedFOs, FileObject testsFolder, String mochaInstallFolder, boolean isSelenium, boolean testProject) {
+    private static RunInfo getRunInfo(Project p, FileObject[] activatedFOs, FileObject testsFolder, String specs, String jasmineNBReporter, String seleniumServerJar, boolean testProject) {
         RunInfo.Builder builder = new RunInfo.Builder(activatedFOs).setTestingProject(testProject)
-                .addEnvVar("MOCHA_DIR", mochaInstallFolder)
-                .setRerunHandler(new SeleniumRerunHandler(p, activatedFOs, CustomizerMochaPanel.IDENTIFIER, isSelenium))
-                .setIsSelenium(isSelenium);
+                .addEnvVar("FRAMEWORK", "jasmine")
+                .addEnvVar("SPECS", specs)
+                .addEnvVar("JASMINE_NB_REPORTER", jasmineNBReporter)
+                .addEnvVar("SELENIUM_SERVER_JAR", seleniumServerJar)
+                .setRerunHandler(new SeleniumRerunHandler(p, activatedFOs, CustomizerProtractorPanel.IDENTIFIER, true))
+                .setIsSelenium(true);
         if(activatedFOs.length == 1 && !activatedFOs[0].equals(p.getProjectDirectory())) {
             String testFile = FileUtil.getRelativePath(testsFolder, activatedFOs[0]);
             builder = builder.setTestFile(testFile);

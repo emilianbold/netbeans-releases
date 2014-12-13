@@ -150,6 +150,7 @@
                 <friend>org.netbeans.modules.selenium2.php</friend>
                 <friend>org.netbeans.modules.selenium2.webclient</friend>
                 <friend>org.netbeans.modules.selenium2.webclient.mocha</friend>
+                <friend>org.netbeans.modules.selenium2.webclient.protractor</friend>
                 <package>org.netbeans.modules.selenium2.api</package>
                 <package>org.netbeans.modules.selenium2.spi</package>
             </friend-packages>
