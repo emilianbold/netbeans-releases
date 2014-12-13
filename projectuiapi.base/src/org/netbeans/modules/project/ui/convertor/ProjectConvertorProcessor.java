@@ -82,7 +82,7 @@ public class ProjectConvertorProcessor extends LayerGeneratingProcessor {
             final Types types = processingEnv.getTypeUtils();
             final TypeElement projectConvertor = elements.getTypeElement(ProjectConvertor.class.getName());
             if (types.isSubtype(((TypeElement)e).asType(), projectConvertor.asType())) {
-                final LayerBuilder.File f = layer(e).instanceFile("Services", null, null);    //NOI18N
+                final LayerBuilder.File f = layer(e).instanceFile("Services/ProjectConvertors", null, null);    //NOI18N
                 f.stringvalue("instanceOf", ProjectConvertorAcceptor.class.getName());   //NOI18N
                 f.stringvalue("instanceClass", ProjectConvertorAcceptor.class.getName());   //NOI18N
                 f.methodvalue("instanceCreate", ProjectConvertor.Result.class.getName(), "create");    //NOI18N
