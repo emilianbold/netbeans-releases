@@ -184,9 +184,11 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private DiffFileViewComponent<DiffNode> activeComponent;
     private DiffFileTable fileListComponent;
     private DiffFileTreeImpl fileTreeComponent;
-    private static final RequestProcessor RP = new RequestProcessor("GitDiffWindow", 1, true); //NOI18N
-    private final RequestProcessor.Task refreshNodesTask = RP.create(new RefreshNodesTask());
-    private final RequestProcessor.Task changeTask = RP.create(new ApplyChangesTask());
+    private static final RequestProcessor RP = new RequestProcessor("GitDiffWindow", 1); //NOI18N
+    private final RefreshNodesTask refreshNodesTask = new RefreshNodesTask();
+    private final ApplyChangesTask changeTask = new ApplyChangesTask();
+    private final RequestProcessor.Task refreshNodesRPTask = RP.create(refreshNodesTask);
+    private final RequestProcessor.Task changeRPTask = RP.create(changeTask);
     private static final String TEXT_DIFF = "text/x-diff"; //NOI18N
     private GitProgressSupport multiTextDiffSupport;
     private static final String PROP_SEARCH_CONTAINER = "diff.search.container"; //NOI18N
@@ -472,6 +474,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             supp.cancel();
         }
         refreshNodesTask.cancel();
+        refreshNodesRPTask.cancel();
     }
 
     void setFocused (boolean focused) {
@@ -483,7 +486,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             synchronized (changes) {
                 activated = true;
             }
-            changeTask.schedule(100);
+            changeRPTask.schedule(100);
         } else {
             synchronized (changes) {
                 activated = false;
@@ -1120,7 +1123,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 start = activated;
             }
             if (start) {
-                changeTask.schedule(1000);
+                changeRPTask.schedule(1000);
             }
         }
     }
@@ -1276,7 +1279,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 changes.clear();
             }
             changeTask.cancel();
+            changeRPTask.cancel();
             refreshNodesTask.cancel();
+            refreshNodesRPTask.cancel();
             panel.btnCommit.setEnabled(false);
             panel.btnRevert.setEnabled(false);
             panel.btnRefresh.setEnabled(false);
@@ -1284,7 +1289,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             panel.tgbHeadVsIndex.setEnabled(enabledToggles);
             panel.tgbHeadVsWorking.setEnabled(enabledToggles);
             panel.tgbIndexVsWorking.setEnabled(enabledToggles);
-            refreshNodesTask.schedule(0);
+            refreshNodesRPTask.schedule(0);
         }
     }
 
@@ -1399,10 +1404,12 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         });
     }
 
-    private final class RefreshNodesTask implements Runnable {
+    private final class RefreshNodesTask implements Runnable, Cancellable {
+        private volatile boolean canceled;
 
         @Override
         public void run() {
+            canceled = false;
             final List<DiffNode> nodes = new LinkedList<DiffNode>();
             final Map<File, Setup> localSetups;
             if (isLocal()) {
@@ -1414,7 +1421,16 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             } else {
                 localSetups = getRevisionToRevisionSetups(nodes);
             }
+            if (canceled) {
+                return;
+            }
             setupsChanged(localSetups, nodes);
+        }
+
+        @Override
+        public boolean cancel () {
+            this.canceled = true;
+            return true;
         }
 
         private Map<File, Setup> getLocalToBaseSetups (final List<DiffNode> nodes) {
@@ -1422,6 +1438,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
             final Map<File, Setup> localSetups = new HashMap<File, Setup>(interestingFiles.length);
             for (File f : interestingFiles) {
+                if (canceled) {
+                    break;
+                }
                 File root = git.getRepositoryRoot(f);
                 if (root != null) {
                     GitUtils.logRemoteRepositoryAccess(root);
@@ -1449,6 +1468,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 final Map<File, Setup> localSetups = new HashMap<File, Setup>(statuses.size());
                 for (Map.Entry<File, GitStatus> e : statuses.entrySet()) {
+                    if (canceled) {
+                        break;
+                    }
                     File f = e.getKey();
                     GitStatus status = e.getValue();
                     if (status.isFolder()) {
@@ -1492,6 +1514,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                         revisionLeft.getCommitId(), revisionRight.getCommitId(), GitUtils.NULL_PROGRESS_MONITOR);
                 final Map<File, Setup> historySetups = new HashMap<File, Setup>();
                 for (Map.Entry<File, GitRevisionInfo.GitFileInfo> e : statuses.entrySet()) {
+                    if (canceled) {
+                        break;
+                    }
                     File f = e.getKey();
                     GitRevisionInfo.GitFileInfo info = e.getValue();
                     GitFileNode.HistoryFileInformation fi = new GitFileNode.HistoryFileInformation(info);
@@ -1521,10 +1546,13 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     /**
      * Eliminates unnecessary cache.listFiles call as well as the whole node creation process ()
      */
-    private final class ApplyChangesTask implements Runnable {
+    private final class ApplyChangesTask implements Runnable, Cancellable {
+        
+        private volatile boolean canceled;
 
         @Override
         public void run() {
+            canceled = false;
             final Set<FileStatusCache.ChangedEvent> events;
             synchronized (changes) {
                 events = new HashSet<FileStatusCache.ChangedEvent>(changes.values());
@@ -1538,7 +1566,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     it.remove();
                 }
             }
-            if (events.isEmpty()) {
+            if (canceled || events.isEmpty()) {
                 return;
             }
             Git git = Git.getInstance();
@@ -1554,6 +1582,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             final List<DiffNode> toAdd = new LinkedList<DiffNode>();
             final Map<File, Setup> localSetups = new HashMap<File, Setup>(nodes.size());
             for (FileStatusCache.ChangedEvent evt : events) {
+                if (canceled) {
+                    break;
+                }
                 FileInformation newInfo = evt.getNewInfo();
                 DiffNode node = nodes.get(evt.getFile());
                 if (newInfo.containsStatus(displayStatuses)) {
@@ -1584,6 +1615,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     LOG.log(Level.FINE, "ApplyChanges: removing node {0}", node);
                 }
             }
+            if (canceled) {
+                return;
+            }
             for (DiffNode n : toRemove) {
                 nodes.remove(n.getFile());
             }
@@ -1597,7 +1631,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             final Object modelDataTree = fileTreeComponent.prepareModel(diffNodes);
 
             final Map<File, EditorCookie> cookies = getCookiesFromSetups(localSetups);
-            if (Thread.interrupted()) {
+            if (canceled) {
                 return;
             }
             Mutex.EVENT.readAccess(new Runnable() {
@@ -1619,6 +1653,12 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     updateView();
                 }
             });
+        }
+
+        @Override
+        public boolean cancel () {
+            this.canceled = true;
+            return true;
         }
     }
     
@@ -1678,7 +1718,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
         private final Setup[] prepareSetups;
         private Setup selectedSetup;
-        private boolean canceled;
+        private volatile boolean canceled;
 
         public DiffPrepareTask(Setup[] prepareSetups) {
             assert EventQueue.isDispatchThread();
@@ -1694,13 +1734,13 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             DiffNode[] neighbourNodes = prepareSetupsToRefresh();
             for (DiffNode n : neighbourNodes) {
                 final Setup s = n.getSetup();
-                if (Thread.interrupted()) return;
+                if (canceled) return;
                 if (s.getView() != null) {
                     continue;
                 }
                 try {
                     s.initSources();  // slow network I/O
-                    if (Thread.interrupted() || canceled) {
+                    if (canceled) {
                         return;
                     }
                     StreamSource ss1 = s.getFirstSource();
@@ -1710,7 +1750,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     }
                     final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                     view.addPropertyChangeListener(MultiDiffPanelController.this);
-                    if (Thread.interrupted() || canceled) {
+                    if (canceled) {
                         return;
                     }
                     s.setView(view);

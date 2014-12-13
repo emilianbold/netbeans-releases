@@ -64,10 +64,10 @@ import org.openide.awt.ActionRegistration;
  *
  * @author Petr Kuzel
  */
-@ActionID(id = "org.netbeans.modules.subversion.remote.ui.status.OpenVersioningAction", category = "Subversion")
+@ActionID(id = "org.netbeans.modules.subversion.remote.ui.status.OpenVersioningAction", category = "SubversionRemote")
 @ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
 @ActionReferences({
-   @ActionReference(path="OptionsDialog/Actions/Subversion")
+   @ActionReference(path="OptionsDialog/Actions/SubversionRemote")
 })
 public class OpenVersioningAction extends ShowAllChangesAction {
     

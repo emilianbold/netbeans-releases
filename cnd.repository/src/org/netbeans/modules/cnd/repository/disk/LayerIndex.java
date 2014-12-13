@@ -242,10 +242,11 @@ public final class LayerIndex {
     }
 
     void removeUnit(int unitIDInLayer) {
-        if (!units.getUnitIDs().contains(unitIDInLayer)) {
-            return;
-        }
-        units.remove(unitIDInLayer);
+        //DO NOTHING HERE, we will not remove unit ever frim the list because of preproc state
+//        if (!units.getUnitIDs().contains(unitIDInLayer)) {
+//            return;
+//        }
+//        units.remove(unitIDInLayer);
     }
 
 

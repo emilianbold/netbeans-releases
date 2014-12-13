@@ -700,7 +700,11 @@ import org.openide.util.lookup.Lookups;
                 }
             }
         } finally {
-            clientUnitDescriptorsDictionary.remove(storageMask.clientToLayer(clientLongUnitID));
+            //do not delete from the descrriptors dictionary ever
+            //clientUnitDescriptorsDictionary.remove(storageMask.clientToLayer(clientLongUnitID));
+            //!!
+            //what we need is to put files dictionary on disk as it was removed from the writer queue
+           flush();
         }
     }
 
