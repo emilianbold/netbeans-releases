@@ -82,6 +82,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(ServersNodeActionsCheck.class, "testGetAll", "testCheckAllPretest").
             addTest(MenuProfileActionsCheck.class, "testGetAll", "testCheckAllPretest").
             addTest(LibrariesCheck.class, "testGetLibraries", "testCheckLibrariesPretest").
+            addTest(ProjectConvertorCheck.class, "testGetConvertors", "testCheckConvertorsPretest").
             addTest(OptionsCheck.class, "testGetKeywords", "testCheckKeywordsPretest").
             gui(false).
             clusters("ergonomics.*").
@@ -100,6 +101,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(ServersNodeActionsCheck.class, "testCheckAllReal").
             addTest(MenuProfileActionsCheck.class, "testCheckAllReal").
             addTest(LibrariesCheck.class, "testCheckLibrariesReal").
+            addTest(ProjectConvertorCheck.class, "testCheckConvertorsReal").
             addTest(OptionsCheck.class, "testCheckKeywordsReal").
             addTest(BundleFormatCheck.class).
             gui(false).
@@ -133,6 +135,7 @@ public class DynamicVerifyTest extends NbTestCase {
         Map<String,String> all = FeatureManager.projectFiles();
 
         all.put("Fine", "org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton");
+        all.put("FineToo", "org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory");
 
         iterateRegistrations(sb, ProjectFactory.class, null, all);
         
@@ -146,7 +149,7 @@ public class DynamicVerifyTest extends NbTestCase {
             );
         }
     }
-
+    
     public void testGetAllNbProjects() throws Exception {
         Map<String,String> all = FeatureManager.nbprojectTypes();
         StringBuilder sb = new StringBuilder();
@@ -175,12 +178,6 @@ public class DynamicVerifyTest extends NbTestCase {
             if (f.getClass().getPackage().getName().equals("org.netbeans.modules.ide.ergonomics.fod")) {
                 continue;
             }
-            // defect #248615: ProjectConvertorFactory is exempt from this test, until
-            // support is provided in the ergonomics
-            if (f.getClass().getName().equals("org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory")) {
-                continue;
-            }
-
             sb.append(f.getClass().getName());
             if (info != null) {
                 Object more = info.invoke(f);

@@ -170,6 +170,16 @@ made subject to such option by the copyright holder.
             </xsl:element>
         </xsl:element>
     </xsl:template>
+    
+    <xsl:template match="filesystem/folder[@name='Services']/folder[@name='ProjectConvertors']">
+        <xsl:element name="folder">
+            <xsl:attribute name="name">Services</xsl:attribute>
+            <xsl:element name="folder">
+                <xsl:attribute name="name">ProjectConvertors</xsl:attribute>
+                <xsl:apply-templates mode="project-convertors"/>
+            </xsl:element>
+        </xsl:element>
+    </xsl:template>
 
     <xsl:template match="filesystem/folder[@name='Loaders']/folder/folder/folder[@name='Factories']">
         <xsl:element name="folder">
@@ -466,14 +476,47 @@ made subject to such option by the copyright holder.
     <xsl:template match="attr[@name='instanceClass']" mode="project-types">
         <xsl:element name="attr">
             <xsl:attribute name="name">instanceClass</xsl:attribute>
-            <xsl:attribute name="methodvalue">org.netbeans.spi.project.ProjectFactory</xsl:attribute>
+            <xsl:attribute name="stringvalue">org.netbeans.spi.project.ProjectFactory</xsl:attribute>
         </xsl:element>
     </xsl:template>
 
     <xsl:template match="attr" mode="project-types">
         <xsl:copy-of select="."/>
     </xsl:template>
+    
+    <!-- project convertor -->
+    <xsl:template match="file" mode="project-convertors">
+        <xsl:element name="file">
+            <xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute>
+            <xsl:call-template name="url">
+                <xsl:with-param name="url" select="@url"/>
+            </xsl:call-template>
+            <xsl:apply-templates mode="project-convertors"/>
+        </xsl:element>
+    </xsl:template>
 
+    <xsl:template match="attr[@name='delegate']" mode="project-convertors">
+        <xsl:element name="attr">
+            <xsl:attribute name="name">delegate</xsl:attribute>
+            <xsl:attribute name="methodvalue">org.netbeans.modules.ide.ergonomics.fod.FeatureProjectConvertor.create</xsl:attribute>
+        </xsl:element>
+        <xsl:text>
+</xsl:text>
+        <xsl:element name="attr">
+            <xsl:attribute name="name">fod</xsl:attribute>
+            <xsl:if test="./@methodvalue">
+                <xsl:attribute name="methodvalue"><xsl:value-of select="./@methodvalue"/></xsl:attribute>
+            </xsl:if>
+            <xsl:if test="./@newvalue">
+                <xsl:attribute name="newvalue"><xsl:value-of select="./@newvalue"/></xsl:attribute>
+            </xsl:if>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template match="attr" mode="project-convertors">
+        <xsl:copy-of select="."/>
+    </xsl:template>
+    
     <!-- convert relative URLs to absolute -->
     <xsl:template name="url">
         <xsl:param name="url"/>
