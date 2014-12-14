@@ -202,7 +202,7 @@ public final class Log extends Handler {
     }
     
     /** Starts to listen on given log and collect parameters of messages that
-     * were send to it. This is supposed to be called at the begining of a test,
+     * were send to it. This is supposed to be called at the beginning of a test,
      * to get messages from the programs that use 
      * <a href="http://wiki.netbeans.org/wiki/view/FitnessViaTimersCounters">timers/counters</a>
      * infrastructure. At the end one should call {@link #assertInstances}.
