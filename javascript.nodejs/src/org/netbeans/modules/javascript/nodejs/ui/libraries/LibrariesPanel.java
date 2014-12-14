@@ -260,7 +260,10 @@ public class LibrariesPanel extends javax.swing.JPanel {
         "LibrariesPanel.dependencyNotSet=Unable to set {0}@{1} dependency in package.json!",
         "# {0} - library name",
         "# {1} - library version",
-        "LibrariesPanel.installationFailed=Installation of version {1} of package {0} failed!"
+        "LibrariesPanel.installationFailed=Installation of version {1} of package {0} failed!",
+        "# {0} - library name",
+        "# {1} - library version",
+        "LibrariesPanel.installingPackage=Installing version {1} of package {0}."
     })
     private void storeChanges(Map<String,String> originalDependencies,
             List<Dependency> selectedDependencies,
@@ -304,6 +307,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
                 String versionToInstall = dependency.getInstalledVersion();
                 String installedVersion = installedLibraries.get(name);
                 if (versionToInstall != null && !versionToInstall.equals(installedVersion)) {
+                    progressHandle.progress(Bundle.LibrariesPanel_installingPackage(name, versionToInstall));
                     Integer result = null;
                     try {
                         // npm install name@versionToInstall
