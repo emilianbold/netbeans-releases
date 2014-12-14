@@ -101,10 +101,10 @@ public class DiffTest extends AbstractGitTestCase {
             }
         });
         MultiDiffPanelController controller = controllers[0];
-        Field f = MultiDiffPanelController.class.getDeclaredField("refreshNodesTask");
+        Field f = MultiDiffPanelController.class.getDeclaredField("refreshNodesRPTask");
         f.setAccessible(true);
         refreshNodesTask = (Task) f.get(controller);
-        f = MultiDiffPanelController.class.getDeclaredField("changeTask");
+        f = MultiDiffPanelController.class.getDeclaredField("changeRPTask");
         f.setAccessible(true);
         changeTask = (Task) f.get(controller);
         f = MultiDiffPanelController.class.getDeclaredField("fileListComponent");
