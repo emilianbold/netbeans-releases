@@ -50,8 +50,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -266,7 +268,17 @@ public class LibrariesPanel extends javax.swing.JPanel {
         // Update package.json
         PackageJson packagejson = getPackageJson();
         if (packagejson.exists()) {
-            // PENDING Remove obsolete dependencies
+            // Remove obsolete dependencies
+            Set<String> selectedSet = new HashSet<>();
+            for (Dependency dependency : selectedDependencies) {
+                selectedSet.add(dependency.getName());
+            }
+            for (String name : originalDependencies.keySet()) {
+                if (!selectedSet.contains(name)) {
+                    // PENDING PackageJson.removeContent(Arrays.asList(dependencyType, name));
+                    errors.add("Cannot remove "+name+" - removal of dependencies not implemented yet!");
+                }
+            }
             
             // Add new/update existing dependencies
             for (Dependency dependency : selectedDependencies) {
