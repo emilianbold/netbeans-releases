@@ -49,7 +49,6 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +82,8 @@ public class LibrariesPanel extends javax.swing.JPanel {
     private final Project project;
     /** Installed npm libraries (maps the name to the installed version). */
     private Map<String,String> installedLibraries;
+    /** Panels for customization of dependencies. */
+    private DependenciesPanel[] dependencyPanels;
 
     /**
      * Creates a new {@code LibrariesPanel}.
@@ -94,13 +95,15 @@ public class LibrariesPanel extends javax.swing.JPanel {
         initComponents();        
         PackageJson packagejson = getPackageJson();
         if (packagejson.exists()) {
+            dependencyPanels = new DependenciesPanel[] {regularPanel, developmentPanel, optionalPanel};
+            regularPanel.setDependencyType(Dependency.Type.REGULAR);
+            developmentPanel.setDependencyType(Dependency.Type.DEVELOPMENT);
+            optionalPanel.setDependencyType(Dependency.Type.OPTIONAL);
             PackageJson.NpmDependencies dependencies = packagejson.getDependencies();
-            regularPanel.setProject(project);
-            developmentPanel.setProject(project);
-            optionalPanel.setProject(project);
-            regularPanel.setDependencies(new HashMap<>(dependencies.dependencies));
-            developmentPanel.setDependencies(new HashMap<>(dependencies.devDependencies));
-            optionalPanel.setDependencies(new HashMap<>(dependencies.optionalDependencies));
+            for (DependenciesPanel dependencyPanel : dependencyPanels) {
+                dependencyPanel.setProject(project);
+                dependencyPanel.setDependencies(getPackageJsonDependencies(dependencies, dependencyPanel.getDependencyType()));
+            }
             loadInstalledLibraries();
         } else {
             show(packageJsonProblemLabel);
@@ -193,7 +196,10 @@ public class LibrariesPanel extends javax.swing.JPanel {
     /**
      * Performs/stores the changes requested by the user in the customizer.
      */
-    @NbBundle.Messages("LibrariesPanel.updatingPackages=Updating npm packages...")
+    @NbBundle.Messages({
+        "LibrariesPanel.updatingPackages=Updating npm packages...",
+        "LibrariesPanel.updatingPackageJson=Updating package.json."
+    })
     void storeChanges() {
         RP.post(new Runnable() {
             @Override
@@ -201,30 +207,35 @@ public class LibrariesPanel extends javax.swing.JPanel {
                 progressHandle = ProgressHandle.createHandle(Bundle.LibrariesPanel_updatingPackages());
                 progressHandle.start();
                 try {
-                    PackageJson packagejson = getPackageJson();
-                    if (packagejson.exists()) {
-                        PackageJson.NpmDependencies dependencies = packagejson.getDependencies();
+                    PackageJson packageJson = getPackageJson();
+                    if (packageJson.exists()) {
+                        PackageJson.NpmDependencies dependencies = packageJson.getDependencies();
                         List<String> errors = new ArrayList<>();
 
-                        removeDependencies(dependencies.dependencies,
-                                regularPanel.getSelectedDependencies(),
-                                NpmExecutable.SAVE_PARAM, errors);
-                        removeDependencies(dependencies.devDependencies,
-                                developmentPanel.getSelectedDependencies(),
-                                NpmExecutable.SAVE_DEV_PARAM, errors);
-                        removeDependencies(dependencies.optionalDependencies,
-                                optionalPanel.getSelectedDependencies(),
-                                NpmExecutable.SAVE_OPTIONAL_PARAM, errors);
+                        // Uninstall packages that are no longer needed
+                        for (DependenciesPanel dependencyPanel : dependencyPanels) {
+                            Dependency.Type dependencyType = dependencyPanel.getDependencyType();
+                            uninstallDependencies(getPackageJsonDependencies(dependencies, dependencyType),
+                                    dependencyPanel.getSelectedDependencies(),
+                                    dependencyType, errors);
+                        }
 
-                        storeChanges(dependencies.dependencies,
-                                regularPanel.getSelectedDependencies(),
-                                PackageJson.FIELD_DEPENDENCIES, errors);
-                        storeChanges(dependencies.devDependencies,
-                                developmentPanel.getSelectedDependencies(),
-                                PackageJson.FIELD_DEV_DEPENDENCIES, errors);
-                        storeChanges(dependencies.optionalDependencies,
-                                optionalPanel.getSelectedDependencies(),
-                                PackageJson.FIELD_OPTIONAL_DEPENDENCIES, errors);
+                        // Install missing packages
+                        for (DependenciesPanel dependencyPanel : dependencyPanels) {
+                            Dependency.Type dependencyType = dependencyPanel.getDependencyType();
+                            installDependencies(dependencyPanel.getSelectedDependencies(),
+                                    dependencyType, errors);
+                        }
+
+                        // Update (required versions in) package.json
+                        progressHandle.progress(Bundle.LibrariesPanel_updatingPackageJson());
+                        // Both unistallDependencies and installDependencies modify package.json externally => refresh
+                        packageJson.refresh();
+                        for (DependenciesPanel dependencyPanel : dependencyPanels) {
+                            Dependency.Type dependencyType = dependencyPanel.getDependencyType();
+                            updatePackageJson(dependencyPanel.getSelectedDependencies(),
+                                    dependencyType, errors);
+                        }
 
                         reportErrors(errors);
                     }
@@ -234,6 +245,61 @@ public class LibrariesPanel extends javax.swing.JPanel {
                 }
             }
         });
+    }
+
+    /**
+     * Returns dependencies from {@code package.json} of the given type.
+     * 
+     * @param dependencies dependencies from {@code package.json}.
+     * @param dependencyType requested type of dependencies.
+     * @return dependencies of the given type.
+     */
+    private Map<String,String> getPackageJsonDependencies(
+            PackageJson.NpmDependencies dependencies,
+            Dependency.Type dependencyType) {
+        Map<String,String> map;
+        switch (dependencyType) {
+            case REGULAR: map = dependencies.dependencies; break;
+            case DEVELOPMENT: map = dependencies.devDependencies; break;
+            case OPTIONAL: map = dependencies.optionalDependencies; break;
+            default: throw new IllegalArgumentException();
+        }
+        return map;
+    }
+
+    /**
+     * Returns save parameter ({@code --save(-dev/-optional)}) for the given dependency type.
+     * 
+     * @param dependencyType requested type of save parameter.
+     * @return save parameter for the given dependency type.
+     */
+    private String getSaveParameter(Dependency.Type dependencyType) {
+        String saveParameter;
+        switch (dependencyType) {
+            case REGULAR: saveParameter = NpmExecutable.SAVE_PARAM; break;
+            case DEVELOPMENT: saveParameter = NpmExecutable.SAVE_DEV_PARAM; break;
+            case OPTIONAL: saveParameter = NpmExecutable.SAVE_OPTIONAL_PARAM; break;
+            default: throw new IllegalArgumentException();
+        }
+        return saveParameter;
+    }
+
+    /**
+     * Returns the name of the {@code package.json} section where the dependencies
+     * of the given type are stored.
+     * 
+     * @param dependencyType requested type of the section.
+     * @return name of the section where the dependencies of the given type are stored.
+     */
+    private String getPackageJsonSection(Dependency.Type dependencyType) {
+        String section;
+        switch (dependencyType) {
+            case REGULAR: section = PackageJson.FIELD_DEPENDENCIES; break;
+            case DEVELOPMENT: section = PackageJson.FIELD_DEV_DEPENDENCIES; break;
+            case OPTIONAL: section = PackageJson.FIELD_OPTIONAL_DEPENDENCIES; break;
+            default: throw new IllegalArgumentException();
+        }
+        return section;
     }
 
     /**
@@ -261,7 +327,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
      * 
      * @param originalDependencies original dependencies.
      * @param selectedDependencies requested list of dependencies.
-     * @param dependencyType dependency type (corresponding field in {@code NpmExecutable}).
+     * @param dependencyType dependency type.
      * @param errors collection that should be populated with errors that occurred.
      */
     @NbBundle.Messages({
@@ -270,24 +336,23 @@ public class LibrariesPanel extends javax.swing.JPanel {
         "# {0} - library name",
         "LibrariesPanel.uninstallingPackage=Un-installing package {0}."
     })
-    private void removeDependencies(Map<String,String> originalDependencies,
+    private void uninstallDependencies(Map<String,String> originalDependencies,
             List<Dependency> selectedDependencies,
-            String dependencyType, List<String> errors) {
-        // Remove obsolete dependencies
+            Dependency.Type dependencyType, List<String> errors) {
         NpmExecutable executable = NpmExecutable.getDefault(project, false);
         if (executable != null) {
             Set<String> selectedSet = new HashSet<>();
             for (Dependency dependency : selectedDependencies) {
                 selectedSet.add(dependency.getName());
             }
-            boolean packageJsonModified = false;
+            String saveParameter = getSaveParameter(dependencyType);
             for (String name : originalDependencies.keySet()) {
                 if (!selectedSet.contains(name)) {
                     progressHandle.progress(Bundle.LibrariesPanel_uninstallingPackage(name));
                     Integer result = null;
                     try {
                         // npm uninstall --save(-dev/-optional) name
-                        Future<Integer> future = executable.uninstall(dependencyType, name);
+                        Future<Integer> future = executable.uninstall(saveParameter, name);
                         if (future != null) {
                             result = future.get();
                         }
@@ -297,26 +362,16 @@ public class LibrariesPanel extends javax.swing.JPanel {
                     if (result == null || result != 0) {
                         errors.add(Bundle.LibrariesPanel_uninstallationFailed(name));
                     }
-                    packageJsonModified = true;
-                }
-            }
-            if (packageJsonModified) {
-                PackageJson packagejson = getPackageJson();
-                if (packagejson.exists()) {
-                    packagejson.refresh();
                 }
             }
         }
     }
 
     /**
-     * Performs/stores the changes requested by the user for the specified
-     * type of dependencies (with the exception of package removal).
+     * Installs the missing dependencies.
      * 
-     * @param originalDependencies original dependencies.
      * @param selectedDependencies requested list of dependencies.
-     * @param dependencyType dependency type (name of the corresponding field
-     * in {@code package.json}).
+     * @param dependencyType dependency type.
      * @param errors collection that should be populated with errors that occurred.
      */
     @NbBundle.Messages({
@@ -330,29 +385,8 @@ public class LibrariesPanel extends javax.swing.JPanel {
         "# {1} - library version",
         "LibrariesPanel.installingPackage=Installing version {1} of package {0}."
     })
-    private void storeChanges(Map<String,String> originalDependencies,
-            List<Dependency> selectedDependencies,
-            String dependencyType, List<String> errors) {
-        // Update package.json
-        PackageJson packagejson = getPackageJson();
-        if (packagejson.exists()) {
-            // Add new/update existing dependencies
-            for (Dependency dependency : selectedDependencies) {
-                String name = dependency.getName();
-                String oldRequiredVersion = originalDependencies.get(name);
-                String newRequiredVersion = dependency.getRequiredVersion();
-                if (!newRequiredVersion.equals(oldRequiredVersion)) {
-                    try {
-                        packagejson.setContent(Arrays.asList(dependencyType, name), newRequiredVersion);
-                    } catch (IOException ioex) {
-                        Logger.getLogger(LibrariesPanel.class.getName()).log(Level.INFO, null, ioex);
-                        errors.add(Bundle.LibrariesPanel_dependencyNotSet(name, newRequiredVersion));
-                    }
-                }
-            }
-        }
-
-        // Install missing packages
+    private void installDependencies(List<Dependency> selectedDependencies,
+            Dependency.Type dependencyType, List<String> errors) {
         NpmExecutable executable = NpmExecutable.getDefault(project, false);
         if (executable != null) {
             for (Dependency dependency : selectedDependencies) {
@@ -364,7 +398,8 @@ public class LibrariesPanel extends javax.swing.JPanel {
                     Integer result = null;
                     try {
                         // npm install name@versionToInstall
-                        Future<Integer> future = executable.install(name + "@" + versionToInstall); // NOI18N
+                        String saveParameter = getSaveParameter(dependencyType);
+                        Future<Integer> future = executable.install(saveParameter, name + "@" + versionToInstall); // NOI18N
                         if (future != null) {
                             result = future.get();
                         }
@@ -373,6 +408,36 @@ public class LibrariesPanel extends javax.swing.JPanel {
                     }
                     if (result == null || result != 0) {
                         errors.add(Bundle.LibrariesPanel_installationFailed(name, versionToInstall));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates required versions in {@code package.json} (to match the ones
+     * required by the user).
+     * 
+     * @param selectedDependencies requested list of dependencies.
+     * @param dependencyType dependency type.
+     * @param errors collection that should be populated with errors that occurred.
+     */
+    private void updatePackageJson(List<Dependency> selectedDependencies,
+            Dependency.Type dependencyType, List<String> errors) {
+        PackageJson packageJson = getPackageJson();
+        if (packageJson.exists()) {
+            String section = getPackageJsonSection(dependencyType);
+            Map<String,String> currentDependencies = getPackageJsonDependencies(packageJson.getDependencies(), dependencyType);
+            for (Dependency dependency : selectedDependencies) {
+                String name = dependency.getName();
+                String currentRequiredVersion = currentDependencies.get(name);
+                String newRequiredVersion = dependency.getRequiredVersion();
+                if (!newRequiredVersion.equals(currentRequiredVersion)) {
+                    try {
+                        packageJson.setContent(Arrays.asList(section, name), newRequiredVersion);
+                    } catch (IOException ioex) {
+                        Logger.getLogger(LibrariesPanel.class.getName()).log(Level.INFO, null, ioex);
+                        errors.add(Bundle.LibrariesPanel_dependencyNotSet(name, newRequiredVersion));
                     }
                 }
             }
