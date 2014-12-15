@@ -79,6 +79,7 @@ abstract class AbstractWizard
 implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private int index;
     private List<String> steps = Collections.emptyList();
+    private String current;
     private List<HTMLPanel> panels;
     private Object data;
     private JFXPanel p;
@@ -358,6 +359,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         return steps.toArray(new String[0]);
     }
     
+    final String currentStep() {
+        return current;
+    }
+    
     private void onStepsChange(Object[] obj) {
         if (obj != null) {
             List<String> arr = new ArrayList<>();
@@ -372,7 +377,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         }
         p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
         if (steps != null && steps.size() > index) {
-            final String current = steps.get(index);
+            current = steps.get(index);
             FXBrowsers.runInBrowser(v, new Runnable() {
                 @Override
                 public void run() {

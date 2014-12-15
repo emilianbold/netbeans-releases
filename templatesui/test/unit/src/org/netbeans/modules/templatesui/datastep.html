@@ -74,7 +74,11 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
             </section>
         </div>        
         <script>
-            function init() { return {}; }
+            function init() { 
+                return {
+                    'errorCode': ko.observable(0)
+                }; 
+            }
         </script>
     </body>
 </html>

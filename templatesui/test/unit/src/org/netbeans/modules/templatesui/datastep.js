@@ -45,3 +45,7 @@ assertEquals('init', tck.steps()[0], "First data-step");
 assertEquals('info', tck.steps()[1], "Second data-step");
 assertEquals('summary', tck.steps()[2], "3rd data-step");
 
+assertEquals('init', tck.current(), "Current step is 1st one");
+tck.next();
+assertEquals('info', tck.current(), "Moved to 2nd panel");
+

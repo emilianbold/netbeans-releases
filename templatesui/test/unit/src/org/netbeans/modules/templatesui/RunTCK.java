@@ -124,5 +124,19 @@ final class RunTCK extends AbstractWizard {
         public String[] steps() {
             return RunTCK.this.steps();
         }
+        
+        public String current() {
+            return RunTCK.this.currentStep();
+        }
+        
+        public void next() {
+            if (RunTCK.this.isValid()) {
+                RunTCK.this.nextPanel();
+            }
+        }
+        
+        public void previous() {
+            RunTCK.this.previousPanel();
+        }
     }
 }
