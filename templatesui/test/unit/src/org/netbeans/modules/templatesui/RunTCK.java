@@ -41,45 +41,68 @@
  */
 package org.netbeans.modules.templatesui;
 
-import java.lang.reflect.Method;
+import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
+import java.util.concurrent.CountDownLatch;
 
 /**
+ *
+ * @author Jaroslav Tulach
  */
-public final class HTMLWizard extends AbstractWizard {
-    private static final Logger LOG = Logger.getLogger(HTMLWizard.class.getName());
-    /** publicly known factory method */
-    public static WizardDescriptor.InstantiatingIterator<?> create(FileObject data) {
-        return new HTMLWizard(data);
+final class RunTCK extends AbstractWizard {
+    private final URL html;
+    private final URL test;
+    private final String init;
+    private final CountDownLatch ready = new CountDownLatch(1);
+    private Throwable error;
+    
+    static void test(String prefix, String init) throws Throwable {
+        new RunTCK(
+            RunTCK.class.getResource(prefix + ".html"),
+            RunTCK.class.getResource(prefix + ".js"),
+            init
+        ).test();
     }
     
-    private final FileObject def;
+    private RunTCK(URL html, URL test, String init) throws Exception {
+        this.html = html;
+        this.test = test;
+        this.init = init;
+        component(0);
+    }
 
-    private HTMLWizard(FileObject definition) {
-        this.def = definition;
-    }
-    
+    @Override
     protected Object initSequence(ClassLoader l) throws Exception {
-        String clazz = (String) def.getAttribute("class");
-        String method = (String) def.getAttribute("method");
-        Method m = Class.forName(clazz, true, l).getDeclaredMethod(method);
-        m.setAccessible(true);
-        Object ret = m.invoke(null);
-        return ret;
+        return init;
     }
+
+    @Override
     protected URL initPage(ClassLoader l) {
-        String page = (String) def.getAttribute("page");
-        return l.getResource(page);
+        return html;
     }
 
     @Override
     protected void initializationDone(Throwable t) {
-        if (t != null) {
-            LOG.log(Level.SEVERE, "Problems initializing HTML wizard", t);
+        error = t;
+        ready.countDown();
+    }
+    
+    
+    private void test() throws Throwable {
+        ready.await();
+        if (error != null) {
+            throw error;
         }
+        
+        InputStreamReader r = new InputStreamReader(test.openStream());
+        StringBuilder sb = new StringBuilder();
+        for (;;) {
+            int ch = r.read();
+            if (ch == -1) {
+                break;
+            }
+            sb.append((char)ch);
+        }
+        executeScript(sb.toString());
     }
 }

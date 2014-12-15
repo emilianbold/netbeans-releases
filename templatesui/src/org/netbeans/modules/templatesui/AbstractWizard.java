@@ -87,9 +87,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private ChangeListener listener;
     private int errorCode = -1;
     private WizardDescriptor wizard;
-
+    
     protected abstract Object initSequence(ClassLoader l) throws Exception;
     protected abstract URL initPage(ClassLoader l);
+    protected abstract void initializationDone(Throwable error);
 
     @Override
     public Set<? extends Object> instantiate() throws IOException {
@@ -265,8 +266,11 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                                     boolean stepsOK = listenOnProp(data, AbstractWizard.this, "steps");
                                     boolean errorCodeOK = listenOnProp(data, AbstractWizard.this, "errorCode");
                                     
+                                    initializationDone(null);
                                 } catch (Exception ex) {
-                                    Exceptions.printStackTrace(ex);
+                                    initializationDone(ex);
+                                } catch (Error ex) {
+                                    initializationDone(ex);
                                 }
                             }
                         });
@@ -283,7 +287,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             onStepsChange((Object[])data);
         }
         if ("errorCode".equals(prop)) {
-            errorCode = ((Number)data).intValue();
+            errorCode = data instanceof Number ? ((Number)data).intValue() : -1;
             fireChange();
         }
     }
@@ -292,6 +296,16 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         return errorCode == 0;
     }
     
+    final Object executeScript(final String prop) throws InterruptedException, ExecutionException {
+        FutureTask<?> t = new FutureTask<Object>(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return v.getEngine().executeScript(prop);
+            }
+        });
+        FXBrowsers.runInBrowser(v, t);
+        return t.get();
+    }
     final Object evaluateProp(final String prop) throws InterruptedException, ExecutionException {
         FutureTask<?> t = new FutureTask<Object>(new Callable<Object>() {
             @Override

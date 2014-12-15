@@ -41,45 +41,14 @@
  */
 package org.netbeans.modules.templatesui;
 
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
+import org.junit.Test;
 
 /**
+ *
+ * @author Jaroslav Tulach
  */
-public final class HTMLWizard extends AbstractWizard {
-    private static final Logger LOG = Logger.getLogger(HTMLWizard.class.getName());
-    /** publicly known factory method */
-    public static WizardDescriptor.InstantiatingIterator<?> create(FileObject data) {
-        return new HTMLWizard(data);
-    }
-    
-    private final FileObject def;
-
-    private HTMLWizard(FileObject definition) {
-        this.def = definition;
-    }
-    
-    protected Object initSequence(ClassLoader l) throws Exception {
-        String clazz = (String) def.getAttribute("class");
-        String method = (String) def.getAttribute("method");
-        Method m = Class.forName(clazz, true, l).getDeclaredMethod(method);
-        m.setAccessible(true);
-        Object ret = m.invoke(null);
-        return ret;
-    }
-    protected URL initPage(ClassLoader l) {
-        String page = (String) def.getAttribute("page");
-        return l.getResource(page);
-    }
-
-    @Override
-    protected void initializationDone(Throwable t) {
-        if (t != null) {
-            LOG.log(Level.SEVERE, "Problems initializing HTML wizard", t);
-        }
+public class CompatibilityKitTest {
+    @Test public void fallbacksToDataStep() throws Throwable {
+        RunTCK.test("datastep", "init()");
     }
 }
