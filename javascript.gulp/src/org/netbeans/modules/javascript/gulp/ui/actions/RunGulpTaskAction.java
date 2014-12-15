@@ -80,10 +80,10 @@ import org.openide.util.actions.Presenter;
 @ActionReferences({
     @ActionReference(path = "Editors/text/gulp+javascript/Popup", position = 900),
     @ActionReference(path = "Loaders/text/gulp+javascript/Actions", position = 150),
-    @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 180),
-    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 670),
-    @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 670),
-    @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 770),
+    @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 181),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 671),
+    @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 671),
+    @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 771),
 })
 @NbBundle.Messages("RunGulpTaskAction.name=Gulp Tasks")
 public final class RunGulpTaskAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
