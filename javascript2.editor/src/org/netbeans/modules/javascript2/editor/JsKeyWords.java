@@ -82,6 +82,7 @@ public class JsKeyWords {
         KEYWORDS.put(JsTokenId.KEYWORD_IN.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_INSTANCEOF.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_NEW.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_NULL.fixedText(), CompletionType.SIMPLE);
         KEYWORDS.put(JsTokenId.KEYWORD_RETURN.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_SWITCH.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_THIS.fixedText(), CompletionType.ENDS_WITH_DOT);
