@@ -1009,9 +1009,9 @@ public final class Terminal extends JComponent {
 		final int CLOSE = 1;
 		final int CANCEL = 2;
 
-		final String CMD_CLOSE_AND_UNPIN = "CloseAndUnpin";
-		final String CMD_CLOSE = "Close";
-		final String CMD_CANCEL = "Cancel";
+		final String CMD_CLOSE_AND_UNPIN = "CloseAndUnpin"; //NOI18N
+		final String CMD_CLOSE = "Close"; //NOI18N
+		final String CMD_CANCEL = "Cancel"; //NOI18N
 
 		JButton[] options = new JButton[]{
 		    new JButton(NbBundle.getMessage(Terminal.class, "TXT_CloseAndUnpin")),

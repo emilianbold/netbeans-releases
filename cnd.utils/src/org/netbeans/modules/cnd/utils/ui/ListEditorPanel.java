@@ -919,7 +919,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
 
         @Override
         public final E addAction() {
-            throw new UnsupportedOperationException("Single choise is not suppoted");
+            throw new UnsupportedOperationException("Single choise is not suppoted. Use method addSeveralAction."); // NOI18N
         }
 
         @Override
