@@ -3557,7 +3557,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     private void getMILocals(final boolean update_var) {
         MICommand cmd =
-            new MiCommandImpl("-stack-list-locals 2") { // NOI18N
+            new MiCommandImpl(peculiarity.stackListLocalsCommand()) {
             @Override
                     protected void onDone(MIRecord record) {
                         setLocals(update_var, record);
