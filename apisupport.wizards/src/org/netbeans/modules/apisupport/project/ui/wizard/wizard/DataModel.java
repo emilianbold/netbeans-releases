@@ -73,7 +73,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     // first panel data (Wizard Type)
     private boolean branching;
-    private boolean fileTemplateType;
+    private TemplateType fileTemplateType;
     private int nOfSteps;
     
     // second panel data (Name, Icon and Location)
@@ -84,6 +84,16 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     DataModel(final WizardDescriptor wiz) {
         super(wiz);
+        fileTemplateType = isHTMLUIPossible() ? TemplateType.HTML4J : TemplateType.FILE;
+    }
+    
+    final boolean isHTMLUIPossible() {
+        try {
+            SpecificationVersion templates = getModuleInfo().getDependencyVersion("org.netbeans.api.templates");
+            return templates != null;
+        } catch (IOException ex) {
+            return false;
+        }
     }
     
     CreatedModifiedFiles getCreatedModifiedFiles() {
@@ -138,11 +148,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         replaceTokens.put("panelClassNames", panelClassNames); // NOI18N
 
         // generate .java for wizard iterator
-        if (fileTemplateType || branching) {
+        if (fileTemplateType == TemplateType.FILE || branching) {
             String iteratorClass = prefix + "WizardIterator"; // NOI18N
             replaceTokens.put("ITERATOR_CLASS", iteratorClass); // NOI18N
             
-            if (fileTemplateType) {
+            if (fileTemplateType == TemplateType.FILE) {
                 // generate .html description for the template
                 String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase(Locale.ENGLISH) + prefix.substring(1);
                 cmf.add(cmf.createFileWithSubstitutions(getDefaultPackagePath(lowerCasedPrefix, true) + ".html", CreatedModifiedFiles.getTemplate("wizardDescription.html"), Collections.<String,String>emptyMap())); // NOI18N
@@ -191,7 +201,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     }
                 }
             }
-            FileObject template = CreatedModifiedFiles.getTemplate(fileTemplateType ? "instantiatingIterator.java" : "wizardIterator.java"); // NOI18N
+            FileObject template = CreatedModifiedFiles.getTemplate(
+                fileTemplateType == TemplateType.FILE ? 
+                "instantiatingIterator.java" : "wizardIterator.java" // NOI18N
+            );
             String path = getDefaultPackagePath(iteratorClass + ".java", false); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         } else {
@@ -213,11 +226,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         return branching;
     }
     
-    void setFileTemplateType(boolean fileTemplateType) {
+    void setFileTemplateType(TemplateType fileTemplateType) {
         this.fileTemplateType = fileTemplateType;
     }
     
-    boolean isFileTemplateType() {
+    TemplateType getFileTemplateType() {
         return fileTemplateType;
     }
     
@@ -247,5 +260,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         super.setPackageName(packageName);
         reset();
     }
-    
+
+    enum TemplateType {
+        HTML4J, HTML, CUSTOM, FILE
+    }
 }
