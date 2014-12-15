@@ -66,8 +66,9 @@ BUNDLE_IDS [0] = "javase";
 BUNDLE_IDS [1] = "javaee";
 //BUNDLE_IDS [2] = "ruby";
 BUNDLE_IDS [2] = "cpp";
-BUNDLE_IDS [3] = "php";
-BUNDLE_IDS [4] = "all";
+BUNDLE_IDS [3] = "html";
+BUNDLE_IDS [4] = "php";
+BUNDLE_IDS [5] = "all";
 
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";

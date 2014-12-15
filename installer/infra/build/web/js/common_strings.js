@@ -51,16 +51,18 @@ BUNDLE_SHORT_NAMES[0] = "Java&nbsp;SE";
 BUNDLE_SHORT_NAMES[1] = "Java&nbsp;EE";
 //BUNDLE_SHORT_NAMES[2] = "Ruby";
 BUNDLE_SHORT_NAMES[2] = "C/C++";
-BUNDLE_SHORT_NAMES[3] = "HTML5&nbsp;&amp;&nbsp;PHP";
-BUNDLE_SHORT_NAMES[4] = "";
+BUNDLE_SHORT_NAMES[3] = "HTML5/JS";
+BUNDLE_SHORT_NAMES[4] = "PHP";
+BUNDLE_SHORT_NAMES[5] = "";
 
 BUNDLE_LONG_NAMES[0] = "Java&nbsp;SE";
 //BUNDLE_LONG_NAMES[1] = "JavaFX";
 BUNDLE_LONG_NAMES[1] = "Java&nbsp;EE";
 //BUNDLE_LONG_NAMES[2] = "Ruby";
 BUNDLE_LONG_NAMES[2] = "C/C++";
-BUNDLE_LONG_NAMES[3] = "HTML5&nbsp;&amp;&nbsp;PHP";
-BUNDLE_LONG_NAMES[4] = "All";
+BUNDLE_LONG_NAMES[3] = "HTML5/JavaScript";
+BUNDLE_LONG_NAMES[4] = "PHP";
+BUNDLE_LONG_NAMES[5] = "All";
 
 var RELEASE_NOTES_LINK  = "http://netbeans.org/community/releases/74/relnotes.html";
 var INSTALL_NOTES_LINK  = "http://netbeans.org/community/releases/74/install.html";
