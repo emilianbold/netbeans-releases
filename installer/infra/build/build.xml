@@ -684,8 +684,14 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
-    <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase javaee cpp html php full" separator=" " property="bundle.type">
+    <target name="generate-netbeans-bundles" if="do.build.netbeans">        
+        <for-each list="javase javaee full" separator=" " property="bundle.type">
+	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
+        </for-each>
+        
+        <!-- Build bundles with nested JRE -->
+        <property name="bundled.jvm.file.prefix" value="jre-7u71"/>
+        <for-each list="html php cpp" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1200,87 +1206,8 @@ jarsigner.storepass=${jarsigner.storepass}
             <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>	
 	<antcall target="convert-netbeans-bundle"/>
-    </target>    
-
-<!--    <target name="generate-netbeans-javame-bundle">
-	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mobility-${bundle.platform}"/>
-
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="${bundle.platform}" 
-                       target="${bundle.prefix}.${bundle.extension}">
-            <component uid="nb-base"   version="${nb.full.version}"/>
-            <component uid="nb-javase" version="${nb.full.version}"/>
-            <component uid="nb-javame" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="javame"/>
-        </create-bundle>
-	<antcall target="convert-netbeans-bundle"/>
-    </target>-->
-
-<!--    <target name="generate-netbeans-ruby-bundle">
-	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-${bundle.platform}"/>
-
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="${bundle.platform}" 
-                       target="${bundle.prefix}.${bundle.extension}">
-            <component uid="nb-base"        version="${nb.full.version}"/>
-            <component uid="nb-webcommon"   version="${nb.full.version}"/>
-            <component uid="nb-ruby"        version="${nb.full.version}"/>
-            <component uid="glassfish-mod"  version="${glassfish-mod.release.number}.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-	    <bundleProperty name="${welcome.type}" value="ruby"/>
-        </create-bundle>
-	<antcall target="convert-netbeans-bundle"/>
-    </target>-->
-
-    <target name="generate-netbeans-cpp-bundle">
-	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-${bundle.platform}"/>
-
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="${bundle.platform}" 
-                       target="${bundle.prefix}.${bundle.extension}">
-            <component uid="nb-base" version="${nb.full.version}"/>
-            <component uid="nb-cnd"  version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="cnd"/>
-        </create-bundle>
-
-	<antcall target="convert-netbeans-bundle"/>
-    </target>
-
-    <target name="generate-netbeans-html-bundle">
-	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-html-${bundle.platform}"/>
-
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="${bundle.platform}" 
-                       target="${bundle.prefix}.${bundle.extension}">
-            <component uid="nb-base"      version="${nb.full.version}"/>
-            <component uid="nb-extide"  version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="html"/>
-        </create-bundle>
-
-	<antcall target="convert-netbeans-bundle"/>
     </target>
     
-    <target name="generate-netbeans-php-bundle">
-	<property name="bundle.prefix" 
-             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-${bundle.platform}"/>
-
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="${bundle.platform}" 
-                       target="${bundle.prefix}.${bundle.extension}">
-            <component uid="nb-base"      version="${nb.full.version}"/>
-            <component uid="nb-extide"  version="${nb.full.version}"/>
-            <component uid="nb-webcommon" version="${nb.full.version}"/>
-            <component uid="nb-php"       version="${nb.full.version}"/>
-	    <bundleProperty name="${welcome.type}" value="php"/>
-        </create-bundle>
-
-	<antcall target="convert-netbeans-bundle"/>
-    </target>
-
     <target name="generate-netbeans-full-bundle">
 	<property name="bundle.prefix" 
              value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-${bundle.platform}"/>
@@ -1400,7 +1327,89 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         </if>
 	<antcall target="convert-netbeans-bundle"/>
+    </target>    
+
+<!--    <target name="generate-netbeans-javame-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-mobility-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"   version="${nb.full.version}"/>
+            <component uid="nb-javase" version="${nb.full.version}"/>
+            <component uid="nb-javame" version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="javame"/>
+        </create-bundle>
+	<antcall target="convert-netbeans-bundle"/>
+    </target>-->
+
+<!--    <target name="generate-netbeans-ruby-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-ruby-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"        version="${nb.full.version}"/>
+            <component uid="nb-webcommon"   version="${nb.full.version}"/>
+            <component uid="nb-ruby"        version="${nb.full.version}"/>
+            <component uid="glassfish-mod"  version="${glassfish-mod.release.number}.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
+	    <bundleProperty name="${welcome.type}" value="ruby"/>
+        </create-bundle>
+	<antcall target="convert-netbeans-bundle"/>
+    </target>-->
+
+    <target name="generate-netbeans-cpp-bundle" depends="init-bundled-jvms, get-bundled-jvm">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-cpp-${bundle.platform}-${bundle.arch}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base" version="${nb.full.version}"/>
+            <component uid="nb-cnd"  version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="cnd"/>
+            <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
     </target>
+
+    <target name="generate-netbeans-html-bundle" depends="init-bundled-jvms, get-bundled-jvm">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-html-${bundle.platform}-${bundle.arch}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"      version="${nb.full.version}"/>
+            <component uid="nb-extide"  version="${nb.full.version}"/>
+            <component uid="nb-webcommon" version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="html"/>
+            <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+    
+    <target name="generate-netbeans-php-bundle" depends="init-bundled-jvms, get-bundled-jvm">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-${bundle.platform}-${bundle.arch}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"      version="${nb.full.version}"/>
+            <component uid="nb-extide"  version="${nb.full.version}"/>
+            <component uid="nb-webcommon" version="${nb.full.version}"/>
+            <component uid="nb-php"       version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="php"/>
+            <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>   
 
     <target name="convert-netbeans-bundle" depends="convert-zip-to-tgz"/>
 
@@ -1464,8 +1473,21 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
 
-    <target name="generate-netbeans-java-bundles">
-        <!-- JavaEE bundles -->        
+    <target name="generate-netbeans-full-bundles">
+        <!-- Full bundles -->
+	<antcall target="generate-netbeans-full-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-full-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+    </target>
+
+
+<!--    <target name="generate-netbeans-java-bundles">
+         JavaEE bundles         
 	<antcall target="generate-netbeans-java-bundle">	
 	    <param name="bundle.platform"  value="windows"/>
 	    <param name="bundle.extension" value="exe"/>
@@ -1474,7 +1496,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <param name="bundle.platform"  value="linux"/>
 	    <param name="bundle.extension" value="sh"/>
         </antcall>
-    </target>
+    </target>-->
 
 
 <!--    <target name="generate-netbeans-javame-bundles">
@@ -1521,53 +1543,64 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-netbeans-cpp-bundles">
         <!-- CPP bundles -->
-	<antcall target="generate-netbeans-cpp-bundle">	
-	    <param name="bundle.platform"  value="windows"/>
-	    <param name="bundle.extension" value="exe"/>
-        </antcall>
-	<antcall target="generate-netbeans-cpp-bundle">	
-	    <param name="bundle.platform"  value="linux"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
+        <for-each list="i586 x64" separator=" " property="bundle.arch">
+            <antcall target="generate-netbeans-cpp-bundle">
+                <param name="bundled.jvm.file.suffix" value="windows-${bundle.arch}.exe"/>	
+                <param name="bundle.platform"  value="windows"/>
+                <param name="bundle.arch" value="${bundle.arch}"/>
+                <param name="bundle.extension" value="exe"/>
+            </antcall>
+        </for-each>        
+        <for-each list="i586 x64" separator=" " property="bundle.arch">
+            <antcall target="generate-netbeans-cpp-bundle">
+                <param name="bundled.jvm.file.suffix" value="linux-${bundle.arch}.bin"/>	
+                <param name="bundle.platform"  value="linux"/>
+                <param name="bundle.arch" value="${bundle.arch}"/>
+                <param name="bundle.extension" value="sh"/>
+            </antcall>
+        </for-each>
     </target>
 
     
     <target name="generate-netbeans-html-bundles">
         <!-- HTML bundles -->
-	<antcall target="generate-netbeans-html-bundle">	
-	    <param name="bundle.platform"  value="windows"/>
-	    <param name="bundle.extension" value="exe"/>
-        </antcall>
-	<antcall target="generate-netbeans-html-bundle">	
-	    <param name="bundle.platform"  value="linux"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
+        <for-each list="i586 x64" separator=" " property="bundle.arch">
+            <antcall target="generate-netbeans-html-bundle">
+                <param name="bundled.jvm.file.suffix" value="windows-${bundle.arch}.exe"/>	
+                <param name="bundle.platform"  value="windows"/>
+                <param name="bundle.arch" value="${bundle.arch}"/>
+                <param name="bundle.extension" value="exe"/>
+            </antcall>
+        </for-each>        
+        <for-each list="i586 x64" separator=" " property="bundle.arch">
+            <antcall target="generate-netbeans-html-bundle">
+                <param name="bundled.jvm.file.suffix" value="linux-${bundle.arch}.bin"/>	
+                <param name="bundle.platform"  value="linux"/>
+                <param name="bundle.arch" value="${bundle.arch}"/>
+                <param name="bundle.extension" value="sh"/>
+            </antcall>
+        </for-each>
     </target>
     
     
     <target name="generate-netbeans-php-bundles">
         <!-- PHP bundles -->
-	<antcall target="generate-netbeans-php-bundle">	
-	    <param name="bundle.platform"  value="windows"/>
-	    <param name="bundle.extension" value="exe"/>
-        </antcall>
-	<antcall target="generate-netbeans-php-bundle">	
-	    <param name="bundle.platform"  value="linux"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
-    </target>
-
-
-    <target name="generate-netbeans-full-bundles">
-        <!-- Full bundles -->
-	<antcall target="generate-netbeans-full-bundle">	
-	    <param name="bundle.platform"  value="windows"/>
-	    <param name="bundle.extension" value="exe"/>
-        </antcall>
-	<antcall target="generate-netbeans-full-bundle">	
-	    <param name="bundle.platform"  value="linux"/>
-	    <param name="bundle.extension" value="sh"/>
-        </antcall>
+        <for-each list="i586 x64" separator=" " property="bundle.arch">
+            <antcall target="generate-netbeans-php-bundle">
+                <param name="bundled.jvm.file.suffix" value="windows-${bundle.arch}.exe"/>	
+                <param name="bundle.platform"  value="windows"/>
+                <param name="bundle.arch" value="${bundle.arch}"/>
+                <param name="bundle.extension" value="exe"/>
+            </antcall>
+        </for-each>        
+        <for-each list="i586 x64" separator=" " property="bundle.arch">
+            <antcall target="generate-netbeans-php-bundle">
+                <param name="bundled.jvm.file.suffix" value="linux-${bundle.arch}.bin"/>	
+                <param name="bundle.platform"  value="linux"/>
+                <param name="bundle.arch" value="${bundle.arch}"/>
+                <param name="bundle.extension" value="sh"/>
+            </antcall>
+        </for-each>
     </target>
 
   
@@ -1795,13 +1828,13 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="convert-netbeans-bundle"/>
     </target>-->
 
-    <target name="init-bundled-jvms" if="do.build.jdk">
+    <target name="init-bundled-jvms">
         <set property="jvm.cache.dir" 
              value="${nbi.cache.dir}/jvm"/>
 	<mkdir dir="${jvm.cache.dir}"/>
     </target>
 
-    <target name="get-bundled-jvm" if="do.build.jdk">
+    <target name="get-bundled-jvm">
 	<get src="${binary.cache.host}/bundledjvm/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"
 	     dest="${jvm.cache.dir}/${bundled.jvm.file.prefix}-${bundled.jvm.file.suffix}"
 	     usetimestamp="true"/>
