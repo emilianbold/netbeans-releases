@@ -82,7 +82,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Lookup
+import org.openide.util.Lookup;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
