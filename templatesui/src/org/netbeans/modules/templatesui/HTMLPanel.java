@@ -48,9 +48,9 @@ import org.openide.util.HelpCtx;
 
 final class HTMLPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     private final int index;
-    private final HTMLWizard it;
+    private final AbstractWizard it;
 
-    public HTMLPanel(int index, HTMLWizard it) {
+    public HTMLPanel(int index, AbstractWizard it) {
         this.index = index;
         this.it = it;
     }
@@ -89,7 +89,7 @@ final class HTMLPanel implements WizardDescriptor.Panel<WizardDescriptor> {
     public void storeSettings(WizardDescriptor wiz) {
     }
 
-    final HTMLWizard getWizard() {
+    final AbstractWizard getWizard() {
         return it;
     }
 }
