@@ -92,13 +92,8 @@ public class MochaJSTestingProvider implements JsTestingProviderImplementation {
         String testFile = runInfo.getTestFile();
         FileObject[] activatedFOs = new FileObject[1];
         if(testFile == null) {
-            FileObject testsFolder = Utilities.getTestsFolder(project, false);
-            if(testsFolder == null) {
-                return;
-            }
             activatedFOs[0] = project.getProjectDirectory();
         } else {
-            activatedFOs = new FileObject[1];
             activatedFOs[0] = FileUtil.toFileObject(new File(testFile));
         }
         MochaRunner.runTests(activatedFOs, false);
