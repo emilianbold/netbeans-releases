@@ -553,6 +553,13 @@ public final class PackageJson {
         }
     }
 
+    /**
+     * Refreshes the {@code package.json} (when it was modified externally).
+     */
+    public void refresh() {
+        FileUtil.toFileObject(getPackageJson()).refresh();
+    }
+
     //~ Inner classes
 
     public static final class NpmDependencies {

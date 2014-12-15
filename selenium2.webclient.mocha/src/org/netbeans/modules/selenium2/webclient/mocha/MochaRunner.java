@@ -111,7 +111,7 @@ public class MochaRunner {
         }
         
         String node = Utilities.getNode(p);
-        if(node == null || !Utilities.isEnabled(p)) {
+        if(node == null) {
             Utilities.openNodeSettings(p);
             return;
         }
@@ -216,10 +216,9 @@ public class MochaRunner {
         arguments.add(mochaNBReporter.getPath());
         
         if(testProject) {
-            if(isSelenium) {
-                String testFolder = FileUtil.getRelativePath(p.getProjectDirectory(), testsFolder);
-                arguments.add(testFolder + "/**/*.js");
-            }
+            // run *.js files recursively under testsFolder. This could be Unit or Selenium Tests Folder set in project properties.
+            String testFolder = FileUtil.getRelativePath(p.getProjectDirectory(), testsFolder);
+            arguments.add(testFolder + "/**/*.js");
         } else {
             ArrayList<String> files2test = new ArrayList<>();
             for(FileObject fo : activatedFOs) {

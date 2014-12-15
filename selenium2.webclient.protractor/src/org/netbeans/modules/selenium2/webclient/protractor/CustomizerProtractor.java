@@ -144,14 +144,13 @@ public class CustomizerProtractor extends javax.swing.JPanel {
             // user hopefully has configured protractor and run "webdriver-manager update"
             File seleniumFolder = new File(FileUtil.toFile(project.getProjectDirectory()), "node_modules/protractor/selenium");
             FileObject seleniumFO = FileUtil.toFileObject(seleniumFolder);
-            if (seleniumFO == null) {
-                return;
-            }
-            ArrayList<? extends FileObject> fos = Collections.list(seleniumFO.getData(false));
-            for (FileObject fo : fos) {
-                if (fo.getName().startsWith("selenium-server-standalone-") && fo.getExt().equals("jar")) {
-                    serverJar = FileUtil.toFile(fo).getAbsolutePath();
-                    break;
+            if (seleniumFO != null) {
+                ArrayList<? extends FileObject> fos = Collections.list(seleniumFO.getData(false));
+                for (FileObject fo : fos) {
+                    if (fo.getName().startsWith("selenium-server-standalone-") && fo.getExt().equals("jar")) {
+                        serverJar = FileUtil.toFile(fo).getAbsolutePath();
+                        break;
+                    }
                 }
             }
             if(serverJar == null) {
