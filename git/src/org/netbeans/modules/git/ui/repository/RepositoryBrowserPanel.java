@@ -880,6 +880,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 @Override
                 protected void perform () {
                     RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    if (info == null) {
+                        LOG.log(Level.INFO, "BranchesTopChildren.refreshBranches() : Null info for {0}", repository); //NOI18N
+                        return;
+                    }
                     info.refresh();
                     java.util.Map<String, GitBranch> branches = info.getBranches();
                     if (!isCanceled()) {
@@ -1565,6 +1569,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 @Override
                 protected void perform () {
                     RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    if (info == null) {
+                        LOG.log(Level.INFO, "TagChildren.refreshTags() : Null info for {0}", repository); //NOI18N
+                        return;
+                    }
                     info.refresh();
                     java.util.Map<String, GitTag> tags = info.getTags();
                     if (!isCanceled()) {
@@ -1868,6 +1876,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 @Override
                 protected void perform () {
                     RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    if (info == null) {
+                        LOG.log(Level.INFO, "AllRemotesChildren.refreshRemotes() : Null info for {0}", repository); //NOI18N
+                        return;
+                    }
                     refreshing = true;
                     try {
                         info.refreshRemotes();
