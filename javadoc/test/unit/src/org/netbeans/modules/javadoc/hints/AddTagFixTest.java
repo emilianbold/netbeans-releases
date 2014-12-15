@@ -46,6 +46,40 @@ public class AddTagFixTest extends NbTestCase {
     public AddTagFixTest(String name) {
         super(name);
     }
+    
+    public void testInherited() throws Exception {
+        HintTest.create()
+                .input("package test;\n"
+                    + "import java.io.IOException;\n"
+                    + "public class Test implements CustomFileReader {\n"
+                    + "    /**\n"
+                    + "     * {@inheritDoc}\n"
+                    + "     */\n"
+                    + "    @Override\n"
+                    + "    public String readFile(String path) throws IOException {\n"
+                    + "\n"
+                    + "        System.out.println(\"Fake reading file [\" + path + \"]\");\n"
+                    + "        return \"\";\n"
+                    + "    }\n"
+                    + "}\n")
+                .input("test/CustomFileReader.java", "package test;\n"
+                    + "import java.io.IOException;\n"
+                    + "\n"
+                    + "public interface CustomFileReader {\n"
+                    + "\n"
+                    + "    /**\n"
+                    + "     * Experimental operation to test Javadoc hints in NetBeans-8.0-RC1\n"
+                    + "     * @param path file path\n"
+                    + "     * @throws IOException when file cannot be read\n"
+                    + "     * @return String the file contents\n"
+                    + "     */\n"
+                    + "    public String readFile(String path) throws IOException;\n"
+                    + "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .assertNotContainsWarnings("Missing @throws tag for java.io.IOException");
+    }
 
     public void testAddReturnTagFixInEmptyJavadoc() throws Exception {
         HintTest.create()
