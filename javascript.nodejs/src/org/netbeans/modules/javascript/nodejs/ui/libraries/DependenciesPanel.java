@@ -91,6 +91,8 @@ public class DependenciesPanel extends javax.swing.JPanel {
     private Project project;
     /** Panel for searching npm libraries. */
     private SearchPanel searchPanel;
+    /** Type of dependencies customizer by this panel. */
+    private Dependency.Type dependencyType;
 
     /**
      * Creates a new {@code DependenciesPanel}.
@@ -114,6 +116,24 @@ public class DependenciesPanel extends javax.swing.JPanel {
      */
     void setProject(Project project) {
         this.project = project;
+    }
+
+    /**
+     * Sets the type of dependencies customized by this panel.
+     * 
+     * @param dependencyType type of dependencies customized by this panel.
+     */
+    void setDependencyType(Dependency.Type dependencyType) {
+        this.dependencyType = dependencyType;
+    }
+
+    /**
+     * Returns the type of dependencies customized by this panel.
+     * 
+     * @return type of dependencies customized by this panel.
+     */
+    Dependency.Type getDependencyType() {
+        return dependencyType;
     }
 
     /**
