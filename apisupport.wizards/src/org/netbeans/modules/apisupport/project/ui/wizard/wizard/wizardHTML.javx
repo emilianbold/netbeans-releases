@@ -1,0 +1,26 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "${project.licensePath}">
+
+package ${PACKAGE_NAME};
+
+import org.netbeans.api.templates.TemplateRegistration;
+import org.openide.util.NbBundle.Messages;
+
+public class ${WIZARD_PREFIX} {
+// TODO define position attribute
+@TemplateRegistration(
+  page="${TR_page}", 
+  content="${TR_content}", 
+  folder="${TR_folder}", 
+  displayName="#${WIZARD_PREFIX}_displayName", 
+  <#if TR_iconBase??>iconBase="${TR_iconBase}", </#if>
+  description="${TR_description}"
+)
+@Messages("${WIZARD_PREFIX}_displayName=${TR_displayName}")
+    public static String jsWizard() {
+        return "init();";
+    }
+}
+

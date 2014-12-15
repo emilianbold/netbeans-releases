@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -98,7 +99,16 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     CreatedModifiedFiles getCreatedModifiedFiles() {
         if (cmf == null) {
-            regenerate();
+            switch (getFileTemplateType()) {
+                case CUSTOM:
+                case FILE:
+                    regenerate();
+                    break;
+                case HTML:
+                case HTML4J:
+                    regenerateHTML();
+                    break;
+            }
         }
         return cmf;
     }
@@ -212,6 +222,61 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             FileObject template = CreatedModifiedFiles.getTemplate("sampleAction.java"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         }
+    }
+    
+    private void regenerateHTML() {
+        cmf = new CreatedModifiedFiles(getProject());
+        
+        Map<String, String> basicTokens = new HashMap<String, String>();
+        basicTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
+        basicTokens.put("WIZARD_PREFIX", prefix); // NOI18N
+
+        List<String> panelClassNames = new ArrayList<String>();
+        
+        cmf.add(cmf.addModuleDependency("org.netbeans.api.templates")); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        cmf.add(cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_NEEDS, "org.netbeans.api.templates.wizard")); // NOI18N
+        
+        Map<String,Object> replaceTokens = new HashMap<String,Object>(basicTokens);
+
+        boolean isJava = fileTemplateType == TemplateType.HTML4J;
+        
+        basicTokens.put("HTML4J", Boolean.toString(isJava));
+        
+        // generate .html description for the template
+        String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase(Locale.ENGLISH) + prefix.substring(1);
+        cmf.add(cmf.createFileWithSubstitutions(
+            getDefaultPackagePath(lowerCasedPrefix, true) + "Descr.html", // NOI18N
+            CreatedModifiedFiles.getTemplate("wizardDescription.html"), // NOI18N
+            Collections.<String,String>emptyMap())); 
+        
+        cmf.add(cmf.createFileWithSubstitutions(
+            getDefaultPackagePath(lowerCasedPrefix, true) + ".html", // NOI18N
+            CreatedModifiedFiles.getTemplate("wizardHTML.html"), // NOI18N
+            basicTokens
+        )); 
+        cmf.add(cmf.createFileWithSubstitutions(
+            getDefaultPackagePath(lowerCasedPrefix, true) + ".fmk", // NOI18N
+            CreatedModifiedFiles.getTemplate("wizardHTML.fmk"), // NOI18N
+            basicTokens
+        )); 
+        String instanceFullPath = category + '/' + lowerCasedPrefix;
+
+        replaceTokens.put("TR_folder", category.replaceFirst("^Templates/", ""));
+        replaceTokens.put("TR_displayName", displayName);
+        replaceTokens.put("TR_description", lowerCasedPrefix + "Descr.html");
+        replaceTokens.put("TR_page", lowerCasedPrefix + ".html");
+        replaceTokens.put("TR_content", lowerCasedPrefix + ".fmk");
+
+        // Copy wizard icon
+        FileObject origIcon = origIconPath != null ? FileUtil.toFileObject(origIconPath) : null;
+        if (origIcon != null) {
+            String relToSrcDir = addCreateIconOperation(cmf, origIcon);
+            replaceTokens.put("TR_iconBase", relToSrcDir);
+        }
+        FileObject template = CreatedModifiedFiles.getTemplate("wizardHTML.java"); // NOI18N
+        String path = getDefaultPackagePath(prefix + ".java", false); // NOI18N
+        cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
     }
     
     private void reset() {

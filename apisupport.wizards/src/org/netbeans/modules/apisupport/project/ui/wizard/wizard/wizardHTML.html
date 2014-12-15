@@ -1,0 +1,46 @@
+<#assign licenseFirst = "<!--">
+<#assign licensePrefix = "">
+<#assign licenseLast = "-->">
+<#include "${project.licensePath}">
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>
+            <section data-bind="step: { 'id' : 'init', text : 'Initial Page'}" >
+                <p>
+                JavaScript will ask you few questions about your mood.
+                </p>
+            </section>
+
+            <section data-bind="step: 'info'" >
+                <p>
+                Is everything OK?
+                </p>
+                <input type="checkbox" data-bind="checked: ok"/>
+                <p>How do you feel?
+                </p>
+                <input type='text' data-bind="value: msg"/>
+            </section>
+
+            <section data-bind="step: { 'id' : 'summary' }" >
+                <p>
+                You are feeling <span data-bind="text: msg"></span>!
+                </p>
+            </section>
+        </div>        
+        <script>
+            function init() { 
+                return {
+                    'current' : ko.observable(),
+                    'errorCode': ko.observable(0),
+                    'ok' : ko.observable(),
+                    'msg' : ko.observable()
+                }; 
+            }
+        </script>
+    </body>
+</html>

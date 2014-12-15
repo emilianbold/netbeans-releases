@@ -129,7 +129,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     protected void storeToDataModel() {
         data.setClassNamePrefix(getClassNamePrefix());
         data.setPackageName(packageName.getEditor().getItem().toString());
-        if (data.getFileTemplateType() == DataModel.TemplateType.FILE) {
+        if (data.getFileTemplateType() != DataModel.TemplateType.CUSTOM) {
             data.setDisplayName(displayName.getText());
             if (icon.getText().trim().length() > 0) {
                 data.setIcon(icon.getText().equals(NONE_LABEL) ? null : FileUtil.normalizeFile(new File(icon.getText())));
