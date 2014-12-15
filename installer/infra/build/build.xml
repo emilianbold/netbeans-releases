@@ -1248,6 +1248,22 @@ jarsigner.storepass=${jarsigner.storepass}
 	<antcall target="convert-netbeans-bundle"/>
     </target>
 
+    <target name="generate-netbeans-html-bundle">
+	<property name="bundle.prefix" 
+             value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-html-${bundle.platform}"/>
+
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${bundle.platform}" 
+                       target="${bundle.prefix}.${bundle.extension}">
+            <component uid="nb-base"      version="${nb.full.version}"/>
+            <component uid="nb-extide"  version="${nb.full.version}"/>
+            <component uid="nb-webcommon" version="${nb.full.version}"/>
+	    <bundleProperty name="${welcome.type}" value="html"/>
+        </create-bundle>
+
+	<antcall target="convert-netbeans-bundle"/>
+    </target>
+    
     <target name="generate-netbeans-php-bundle">
 	<property name="bundle.prefix" 
              value="${nb.bundles.output.dir}/${nb.bundle.files.prefix}-php-${bundle.platform}"/>
@@ -1515,6 +1531,19 @@ jarsigner.storepass=${jarsigner.storepass}
         </antcall>
     </target>
 
+    
+    <target name="generate-netbeans-html-bundles">
+        <!-- PHP bundles -->
+	<antcall target="generate-netbeans-html-bundle">	
+	    <param name="bundle.platform"  value="windows"/>
+	    <param name="bundle.extension" value="exe"/>
+        </antcall>
+	<antcall target="generate-netbeans-html-bundle">	
+	    <param name="bundle.platform"  value="linux"/>
+	    <param name="bundle.extension" value="sh"/>
+        </antcall>
+    </target>
+    
     
     <target name="generate-netbeans-php-bundles">
         <!-- PHP bundles -->
