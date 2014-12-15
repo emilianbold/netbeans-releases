@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.impl.spi.FSConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.FilePathConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
-import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -130,11 +130,13 @@ public final class RepositoryDataInputStream extends DataInputStream implements 
     @Override
     public CharSequence readFilePath() throws IOException {
         FilePathConverter pathConverter = layersConverterProvider.getReadFilePathConverter();
-        return pathConverter.layerToClient(readInt());
+        return FilePathCache.getManager().getString(pathConverter.layerToClient(readInt()));
     }
 
     @Override
-    public FSPath readFSPath() throws IOException {
-        return new FSPath(readFileSystem(), readFilePath().toString());
+    public CharSequence readFilePathForFileSystem(FileSystem fs) throws IOException {
+        // for now we don't distinguish path dictionaries, but could in future
+        // i.e. when system library is moved from local to remote fs
+        return readFilePath();
     }
 }

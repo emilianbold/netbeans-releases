@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.repository.spi;
 
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -59,7 +58,7 @@ public interface RepositoryDataOutput extends DataOutput {
     void writeFileSystem(FileSystem fileSystem) throws IOException;
 
     void writeFilePath(CharSequence filePath) throws IOException;
-    void writeFSPath(FSPath filePath) throws IOException;
+    void writeFilePathForFileSystem(FileSystem fs, CharSequence filePath) throws IOException;
     
     void commit();
 }

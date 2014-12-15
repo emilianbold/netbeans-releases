@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -99,9 +98,10 @@ public final class RepositoryDataOutputStream extends DataOutputStream implement
     }
 
     @Override
-    public void writeFSPath(FSPath filePath) throws IOException {
-        writeFileSystem(filePath.getFileSystem());
-        writeFilePath(filePath.getPath());
+    public void writeFilePathForFileSystem(FileSystem fileSystem, CharSequence filePath) throws IOException {
+        // for now we don't distinguish path dictionaries, but could in future
+        // i.e. when system library is moved from local to remote fs
+        writeFilePath(filePath);
     }
 
     @Override

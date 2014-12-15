@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.repository.spi;
 
 import java.io.DataInput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -55,5 +54,5 @@ public interface RepositoryDataInput extends DataInput {
     int readUnitId() throws IOException;
     FileSystem readFileSystem() throws IOException;
     CharSequence readFilePath() throws IOException;
-    FSPath readFSPath() throws IOException;
+    CharSequence readFilePathForFileSystem(FileSystem fs) throws IOException;
 }
