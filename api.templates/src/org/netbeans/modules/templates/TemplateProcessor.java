@@ -131,7 +131,7 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
         if (e.getKind() != ElementKind.PACKAGE) {
             if (t.page().isEmpty()) {
                 try {
-                    Class<?> iterClazz = Class.forName("org.openide.WizardDescriptor.InstantiatingIterator"); // NOI18N
+                    Class<?> iterClazz = Class.forName("org.openide.WizardDescriptor$InstantiatingIterator"); // NOI18N
                     f.instanceAttribute("instantiatingIterator", iterClazz);
                 } catch (ClassNotFoundException ex) {
                     Messager msg = processingEnv.getMessager();
