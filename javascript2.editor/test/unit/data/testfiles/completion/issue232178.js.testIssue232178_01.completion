@@ -27,6 +27,7 @@ KEYWORD    if                                         null
 KEYWORD    in                                         null
 KEYWORD    instanceof                                 null
 KEYWORD    new                                        null
+KEYWORD    null                                       null
 KEYWORD    return                                     null
 KEYWORD    switch                                     null
 KEYWORD    this                                       null
