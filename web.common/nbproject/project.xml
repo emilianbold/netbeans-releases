@@ -330,6 +330,7 @@
                 <friend>org.netbeans.modules.javascript.bower</friend>
                 <friend>org.netbeans.modules.javascript.cdnjs</friend>
                 <friend>org.netbeans.modules.javascript.grunt</friend>
+                <friend>org.netbeans.modules.javascript.gulp</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.javascript.karma</friend>
                 <friend>org.netbeans.modules.javascript.nodejs</friend>

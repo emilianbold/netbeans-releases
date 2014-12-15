@@ -1,0 +1,195 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.javascript.gulp;
+
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.gulp.exec.GulpExecutable;
+import org.netbeans.modules.javascript.gulp.file.GulpTasks;
+import org.netbeans.modules.javascript.gulp.file.Gulpfile;
+import org.netbeans.modules.javascript.gulp.preferences.GulpPreferences;
+import org.netbeans.modules.javascript.gulp.ui.customizer.GulpCustomizerProvider;
+import org.netbeans.modules.javascript.gulp.util.GulpUtils;
+import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+
+
+public final class GulpBuildTool implements BuildToolImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(GulpBuildTool.class.getName());
+
+    private static final String IDENTIFIER = "Gulp"; // NOI18N
+
+    private final Project project;
+    private final Gulpfile gulpfile;
+    private final GulpTasks gulpTasks;
+    private final GulpPreferences gulpPreferences;
+
+
+    private GulpBuildTool(Project project) {
+        assert project != null;
+        this.project = project;
+        gulpfile = new Gulpfile(project.getProjectDirectory());
+        gulpTasks = GulpTasks.create(project, gulpfile);
+        gulpPreferences = new GulpPreferences(project);
+    }
+
+    @NonNull
+    public static GulpBuildTool forProject(Project project) {
+        GulpBuildTool buildTool = inProject(project);
+        assert buildTool != null : "GulpBuildTool should be found in project " + project.getClass().getName() + " (lookup: " + project.getLookup() + ")";
+        return buildTool;
+    }
+
+    @CheckForNull
+    public static GulpBuildTool inProject(Project project) {
+        assert project != null;
+        for (BuildToolImplementation buildTool : project.getLookup().lookupAll(BuildToolImplementation.class)) {
+            if (buildTool instanceof GulpBuildTool) {
+                return (GulpBuildTool) buildTool;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String getIdentifier() {
+        return IDENTIFIER;
+    }
+
+    @NbBundle.Messages("GulpBuildTool.name=Gulp")
+    @Override
+    public String getDisplayName() {
+        return Bundle.GulpBuildTool_name();
+    }
+
+    public Gulpfile getGulpfile() {
+        return gulpfile;
+    }
+
+    public GulpTasks getGulpTasks() {
+        return gulpTasks;
+    }
+
+    public GulpPreferences getGulpPreferences() {
+        return gulpPreferences;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return gulpfile.exists();
+    }
+
+    @NbBundle.Messages("GulpBuildTool.configure=Do you want to configure project actions to call Gulp tasks?")
+    @Override
+    public boolean run(String commandId, boolean waitFinished, boolean warnUser) {
+        assert isEnabled() : project.getProjectDirectory().getNameExt();
+        assert gulpfile.exists() : project.getProjectDirectory().getNameExt();
+        String gulpBuild = gulpPreferences.getTask(commandId);
+        if (gulpBuild != null) {
+            GulpExecutable gulp = GulpExecutable.getDefault(project, warnUser);
+            if (gulp != null) {
+                GulpUtils.logUsageGulpBuild();
+                Future<Integer> result = gulp.run(gulpBuild.split(" ")); // NOI18N
+                if (waitFinished) {
+                    try {
+                        result.get();
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } catch (CancellationException ex) {
+                        // cancelled by user
+                        LOGGER.log(Level.FINE, null, ex);
+                    } catch (ExecutionException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                        if (warnUser) {
+                            // XXX open customizer? show error dialog?
+                        }
+                    }
+                }
+            }
+        } else if (warnUser) {
+            Object option = DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(Bundle.GulpBuildTool_configure(), NotifyDescriptor.YES_NO_OPTION));
+            if (option == NotifyDescriptor.YES_OPTION) {
+                project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(GulpCustomizerProvider.CUSTOMIZER_IDENT, null);
+            }
+        }
+        return true;
+    }
+
+    //~ Inner classes
+
+    public static final class Registration {
+
+        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+        public static BuildToolImplementation forHtml5Project(Project project) {
+            return new GulpBuildTool(project);
+        }
+
+        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
+        public static BuildToolImplementation forPhpProject(Project project) {
+            return new GulpBuildTool(project);
+        }
+
+        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-project") // NOI18N
+        public static BuildToolImplementation forWebProject(Project project) {
+            return new GulpBuildTool(project);
+        }
+
+        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-maven") // NOI18N
+        public static BuildToolImplementation forMavenProject(Project project) {
+            return new GulpBuildTool(project);
+        }
+
+    }
+
+}
