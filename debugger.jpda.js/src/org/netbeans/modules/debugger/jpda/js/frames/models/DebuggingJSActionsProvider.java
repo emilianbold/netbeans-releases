@@ -256,6 +256,7 @@ public class DebuggingJSActionsProvider implements NodeActionsProviderFilter {
                 CallStackFrame frame;
                 if (ch instanceof CallStackFrame) {
                     frame = (CallStackFrame) ch;
+                    frameStr.append("\tat ");
                     frameStr.append(frame.getClassName());
                     frameStr.append(".");
                     frameStr.append(frame.getMethodName());
@@ -267,6 +268,7 @@ public class DebuggingJSActionsProvider implements NodeActionsProviderFilter {
                     if (cName.startsWith(JSUtils.NASHORN_SCRIPT)) {
                         cName = cName.substring(JSUtils.NASHORN_SCRIPT.length());
                     }
+                    frameStr.append("\tat ");
                     frameStr.append(cName);
                     frameStr.append(".");
                     frameStr.append(frame.getMethodName());
