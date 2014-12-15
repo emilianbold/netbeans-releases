@@ -67,7 +67,7 @@ public final class HTMLWizard {
             throw new IllegalStateException(
                 "Cannot load class from 'org.netbeans.modules.templatesui' module. " + // NOI18N
                 "Fix that (in NetBeans Runtime Container) by requesting " // NOI18N
-                + "token 'org.netbeans.modules.templates.wizard'.", ex // NOI18N
+                + "token 'org.netbeans.api.templates.wizard'.", ex // NOI18N
             );
         }
         return clazz.getMethod("create", FileObject.class).invoke(null, data); // NOI18N
