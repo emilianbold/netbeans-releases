@@ -685,7 +685,7 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
     <target name="generate-netbeans-bundles" if="do.build.netbeans">
-        <for-each list="javase javaee cpp php full" separator=" " property="bundle.type">
+        <for-each list="javase javaee cpp html php full" separator=" " property="bundle.type">
 	     <antcall target="generate-netbeans-${bundle.type}-bundles"/>
         </for-each>
     </target>
@@ -1533,7 +1533,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     
     <target name="generate-netbeans-html-bundles">
-        <!-- PHP bundles -->
+        <!-- HTML bundles -->
 	<antcall target="generate-netbeans-html-bundle">	
 	    <param name="bundle.platform"  value="windows"/>
 	    <param name="bundle.extension" value="exe"/>
