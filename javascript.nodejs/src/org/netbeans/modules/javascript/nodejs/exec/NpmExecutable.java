@@ -88,6 +88,7 @@ public class NpmExecutable {
     public static final String SAVE_OPTIONAL_PARAM = "--save-optional"; // NOI18N
 
     private static final String INSTALL_PARAM = "install"; // NOI18N
+    private static final String UNINSTALL_PARAM = "uninstall"; // NOI18N
 
     protected final Project project;
     protected final String npmPath;
@@ -143,6 +144,22 @@ public class NpmExecutable {
         String projectName = NodeJsUtils.getProjectDisplayName(project);
         Future<Integer> task = getExecutable(Bundle.NpmExecutable_install(projectName))
                 .additionalParameters(getInstallParams(args))
+                .run(getDescriptor());
+        assert task != null : npmPath;
+        return task;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "NpmExecutable.uninstall=npm ({0})",
+    })
+    @CheckForNull
+    public Future<Integer> uninstall(String... args) {
+        assert !EventQueue.isDispatchThread();
+        assert project != null;
+        String projectName = NodeJsUtils.getProjectDisplayName(project);
+        Future<Integer> task = getExecutable(Bundle.NpmExecutable_uninstall(projectName))
+                .additionalParameters(getUninstallParams(args))
                 .run(getDescriptor());
         assert task != null : npmPath;
         return task;
@@ -254,6 +271,13 @@ public class NpmExecutable {
     private List<String> getInstallParams(String... args) {
         List<String> params = new ArrayList<>(args.length + 1);
         params.add(INSTALL_PARAM);
+        params.addAll(getArgsParams(args));
+        return getParams(params);
+    }
+
+    private List<String> getUninstallParams(String... args) {
+        List<String> params = new ArrayList<>(args.length + 1);
+        params.add(UNINSTALL_PARAM);
         params.addAll(getArgsParams(args));
         return getParams(params);
     }
