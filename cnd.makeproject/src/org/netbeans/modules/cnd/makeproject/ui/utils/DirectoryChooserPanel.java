@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
@@ -225,7 +226,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         inheritValues.setValue(inheritCheckBox.isSelected());
     }//GEN-LAST:event_inheritCheckBoxActionPerformed
 
-    private class MyListEditorPanel extends ListEditorPanel<String> {
+    private class MyListEditorPanel extends ListEditorPanel.MultipleChoiseListEditorPanel<String> {
 
         public MyListEditorPanel(List<String> objects) {
             super(objects);
@@ -233,7 +234,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         }
 
         @Override
-        public String addAction() {
+        public Collection<String> addSeveralAction() {
             final String chooser_key = "makeproject.DirectoryChooser"; //NOI18N
             final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
             String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
@@ -255,20 +256,25 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
                 pathPanel = new PathPanel();
             }
             fileChooser.setAccessory(pathPanel);
+            fileChooser.setMultiSelectionEnabled(true);
             int ret = fileChooser.showOpenDialog(this);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;
             }
-            final File selectedFile = fileChooser.getSelectedFile();
-            String itemPath = CndPathUtilities.naturalizeSlashes(selectedFile.getPath());
-            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
-            itemPath = ProjectSupport.toProperPath(
-                    baseDir,
-                    itemPath,
-                    MakeProjectOptions.getPathMode());
-            itemPath = CndPathUtilities.naturalizeSlashes(baseDir.getFileSystem(), itemPath);
-            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
-            return itemPath;
+            final File[] selectedFiles = fileChooser.getSelectedFiles();
+            List<String> result = new ArrayList<>();
+            for (File selectedFile : selectedFiles) {
+                String itemPath = CndPathUtilities.naturalizeSlashes(selectedFile.getPath());
+                RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
+                itemPath = ProjectSupport.toProperPath(
+                        baseDir,
+                        itemPath,
+                        MakeProjectOptions.getPathMode());
+                itemPath = CndPathUtilities.naturalizeSlashes(baseDir.getFileSystem(), itemPath);
+                itemPath = CndPathUtilities.normalizeSlashes(itemPath);
+                result.add(itemPath);
+            }
+            return result;
         }
 
         @Override

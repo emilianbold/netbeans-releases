@@ -756,7 +756,7 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         return null; // "shouldbeoverridden"; // NOI18N
     }
 
-    private void addObjectAction() {
+    /* package */ void addObjectAction() {
         addObjectAction(addAction());
     }
 
@@ -781,8 +781,9 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
         newListData.addAll(listToAdd);
         listData = newListData;
         setData(listData);
-        setSelectedIndex(addAtIndex);
-        ensureIndexIsVisible(addAtIndex);
+        int newSize = listData.size();
+        setSelectedIndex(newSize - 1);
+        ensureIndexIsVisible(newSize - 1);
         checkSelection();
         addButton.requestFocus();
     }
@@ -908,6 +909,33 @@ public class ListEditorPanel<E> extends javax.swing.JPanel {
 
     public boolean isDataValid() {
         return true;
+    }
+
+    public static abstract class MultipleChoiseListEditorPanel<E> extends ListEditorPanel<E> {
+
+        public MultipleChoiseListEditorPanel(Collection<E> objects) {
+            super(objects);
+        }
+
+        @Override
+        public final E addAction() {
+            throw new UnsupportedOperationException("Single choise is not suppoted");
+        }
+
+        @Override
+        /* package */ void addObjectAction() {
+            List<E> list = new ArrayList<E>();
+            Collection<E> addMultipleAction = addSeveralAction();
+            for (E item : addMultipleAction) {
+                if (item != null) {
+                    list.add(item);
+                }
+            }
+            addObjectsAction(list);
+        }
+
+        public abstract Collection<E> addSeveralAction();
+
     }
 
     private static final class MyModel<E> extends AbstractListModel {
