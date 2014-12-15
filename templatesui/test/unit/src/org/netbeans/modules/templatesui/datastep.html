@@ -48,15 +48,13 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
     </head>
     <body>
         <div class="someEmbeddableSelector">
-            <h1 data-step="init">Initial Page</h1>
-                <section>
+            <section data-bind="step: { 'id' : 'init', text : 'Initial Page'}" >
                 <p>
                 JavaScript will ask you few questions about your mood.
                 </p>
             </section>
 
-            <h1 data-step="info">Query Page</h1>
-            <section>
+            <section data-bind="step: 'info'" >
                 <p>
                 Is everything OK?
                 </p>
@@ -66,8 +64,7 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
                 <input type='text' data-bind="value: msg"/>
             </section>
 
-            <h1 data-step="summary">Summary Page</h1>
-            <section>
+            <section data-bind="step: { 'id' : 'summary' }" >
                 <p>
                 You are feeling <span data-bind="text: msg"></span>!
                 </p>
@@ -76,7 +73,10 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
         <script>
             function init() { 
                 return {
-                    'errorCode': ko.observable(0)
+                    'current' : ko.observable(),
+                    'errorCode': ko.observable(0),
+                    'ok' : ko.observable(),
+                    'msg' : ko.observable()
                 }; 
             }
         </script>

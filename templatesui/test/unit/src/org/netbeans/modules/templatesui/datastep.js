@@ -40,15 +40,15 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-assertEquals(3, tck.steps(false).length, "There are three data-step headers");
-assertEquals('init', tck.steps(false)[0], "First data-step");
-assertEquals('info', tck.steps(false)[1], "Second data-step");
-assertEquals('summary', tck.steps(false)[2], "3rd data-step");
+assertEquals(3, tck.steps(false).length, "There are three step directives");
+assertEquals('init', tck.steps(false)[0], "First step id");
+assertEquals('info', tck.steps(false)[1], "Second step id");
+assertEquals('summary', tck.steps(false)[2], "3rd step id");
 
 assertEquals(3, tck.steps(true).length, "There are three localized data-step headers");
-assertEquals('Initial Page', tck.steps(true)[0], "First data-step display name");
-assertEquals('Query Page', tck.steps(true)[1], "Second data-step display name");
-assertEquals('Summary Page', tck.steps(true)[2], "3rd data-step display name");
+assertEquals('Initial Page', tck.steps(true)[0], "First step has own display name");
+assertEquals('info', tck.steps(true)[1], "Second display name is taken from id string");
+assertEquals('summary', tck.steps(true)[2], "3rd display name fallbacks to id attribute");
 
 assertEquals('init', tck.current(), "Current step is 1st one");
 tck.next();
