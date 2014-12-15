@@ -1,3 +1,1 @@
-print('Hello from ');
-print(wizard.get('message'));
-println('');
+print('Hello from ' + wizard.get('message'));

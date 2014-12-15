@@ -69,8 +69,11 @@ import javax.swing.event.ChangeListener;
 import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import net.java.html.json.Models;
+import org.netbeans.api.templates.FileBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -117,14 +120,11 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             });
             FXBrowsers.runInBrowser(v, t);
             
-/*            
             TemplateWizard tw = (TemplateWizard) wizard;
             Map<String, ? extends Object> params = Collections.singletonMap(
                 "wizard", t.get()
             );
             DataObject obj = tw.getTemplate().createFromTemplate(tw.getTargetFolder(), tw.getTargetName(), params);
-        */
-            FileObject obj = null;
             return Collections.singleton(obj);
         } catch (Exception ex) {
             throw (IOException)new InterruptedIOException().initCause(ex);

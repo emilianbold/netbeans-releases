@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.templatesui;
 
-import org.netbeans.modules.templatesui.HTMLPanel;
 import java.awt.Component;
 import java.util.Arrays;
 import java.util.Set;
