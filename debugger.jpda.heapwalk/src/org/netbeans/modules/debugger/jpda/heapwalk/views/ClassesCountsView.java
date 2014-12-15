@@ -157,12 +157,15 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                             synchronized (ClassesCountsView.this) {
                                 ClassesCountsView.this.hfw = hfw;
                                 cc = hfw.getClassesController();
+                                if (content != null) {
+                                    remove(content);
+                                }
                                 content = cc.getPanel();
                                 clc = cc.getClassesListController();
                                 java.awt.Component header = cc.getClassesListController().getPanel().getComponent(0);
                                 header.setVisible(false);
                                 cc.getClassesListController().setColumnVisibility(3, false);
-                                add(content, "Center");
+                                add(content, BorderLayout.CENTER);
                             }
                             repaint();
                             revalidate();
@@ -304,6 +307,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                 @Override
                 public void run() {
                     setContent();
+                    getRefreshContentTask().schedule(10);
                 }
             });
         }

@@ -50,7 +50,8 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
         <property name="samples" location="${build.classes.dir}/org/netbeans/modules/javascript/nodejs/samples"/>
         <mkdir dir="${samples}"/>
         <zip basedir="samples_src/ListDirectory" destfile="${samples}/ListDirectory.zip"/>
-        <zip basedir="samples_src/Messages" destfile="${samples}/Messages.zip"/>
+        <zip basedir="samples_src/MessagesKnockout" destfile="${samples}/MessagesKnockout.zip"/>
+        <zip basedir="samples_src/MessagesAngular" destfile="${samples}/MessagesAngular.zip"/>
     </target>
 
 </project>

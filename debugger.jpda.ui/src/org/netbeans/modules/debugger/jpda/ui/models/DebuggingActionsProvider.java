@@ -535,6 +535,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
                 int i, k = stack.length;
 
                 for (i = 0; i < k; i++) {
+                    frameStr.append("\tat ");
                     frameStr.append(stack[i].getClassName());
                     frameStr.append(".");
                     frameStr.append(stack[i].getMethodName());

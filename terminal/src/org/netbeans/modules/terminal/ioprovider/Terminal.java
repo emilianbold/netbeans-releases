@@ -56,6 +56,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -78,17 +79,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
@@ -132,13 +138,12 @@ import org.netbeans.lib.terminalemulator.TermListener;
 import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.terminal.PinPanel;
 import org.netbeans.modules.terminal.api.IOResizable;
-import org.netbeans.modules.terminal.ioprovider.Task.ValueTask;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.DetailsStateListener;
-import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalCreationDetails;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalDetails;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalPinningDetails;
 import org.openide.DialogDescriptor;
+import static org.openide.DialogDescriptor.DEFAULT_ALIGN;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.DynamicMenuContent;
@@ -219,6 +224,8 @@ public final class Terminal extends JComponent {
 
     // properties managed by IOvisibility
     private boolean closable = true;
+
+    private boolean pinned = false;
 
     private boolean closedUnconditionally;
 
@@ -914,7 +921,7 @@ public final class Terminal extends JComponent {
 		
 		support.tabWasPinned(
 			term,
-			TerminalPinningDetails.create(
+		    TerminalPinningDetails.create(
 				chosenIsCustom,
 				chosenIsCustom ? chosenTitle : name,
 				chosenDirectory,
@@ -941,6 +948,8 @@ public final class Terminal extends JComponent {
 	    }
 	    support.findPinningDetails(term).setPinned(isPinned);
 	    putValue(NAME, getMessage(isPinned));
+
+	    pinned = isPinned;
 	}
 
 
@@ -986,8 +995,95 @@ public final class Terminal extends JComponent {
     }
 
     public void close() {
-	if (!isVisibleInContainer())
+	if (!isVisibleInContainer()) {
 	    return;
+	}
+
+	if (false) {
+	    /* Will be enabled after delegating actions from TerminalContainerTabber will 
+	     * be implemented. Enabling this now will cause inconsistensy or copy-pasting.
+	     */
+	    final AtomicBoolean canceled = new AtomicBoolean(false);
+	    if (pinned && !closedUnconditionally) {
+		final int CLOSE_AND_UNPIN = 0;
+		final int CLOSE = 1;
+		final int CANCEL = 2;
+
+		final String CMD_CLOSE_AND_UNPIN = "CloseAndUnpin"; //NOI18N
+		final String CMD_CLOSE = "Close"; //NOI18N
+		final String CMD_CANCEL = "Cancel"; //NOI18N
+
+		JButton[] options = new JButton[]{
+		    new JButton(NbBundle.getMessage(Terminal.class, "TXT_CloseAndUnpin")),
+		    new JButton(NbBundle.getMessage(Terminal.class, "TXT_Close")),
+		    new JButton(NbBundle.getMessage(Terminal.class, "TXT_Cancel"))
+		};
+
+		ActionListener commandListener = new ActionListener() {
+
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+			String command = e.getActionCommand();
+
+			if (CMD_CLOSE_AND_UNPIN.equals(command)) {
+			    if (pinTabAction != null) {
+				pinTabAction.actionPerformed(null);
+			    }
+			} else if (CMD_CANCEL.equals(command)) {
+			    canceled.set(true);
+			    return;
+			} else if (CMD_CLOSE.equals(command)){
+			    return;
+			}
+		    }
+		};
+
+		options[CLOSE_AND_UNPIN].setActionCommand(CMD_CLOSE_AND_UNPIN);
+		options[CLOSE].setActionCommand(CMD_CLOSE);
+		options[CANCEL].setActionCommand(CMD_CANCEL);
+
+		options[CLOSE_AND_UNPIN].addActionListener(commandListener);
+		options[CLOSE].addActionListener(commandListener);
+		options[CANCEL].addActionListener(commandListener);
+
+		String message = NbBundle.getMessage(Terminal.class, "LBL_CloseTerminal");
+
+		DialogDescriptor dd = new DialogDescriptor(
+			message,
+			NbBundle.getMessage(Terminal.class, "TXT_CloseTerminalTitle"),
+			true,
+			options,
+			options[CLOSE_AND_UNPIN],
+			DialogDescriptor.DEFAULT_ALIGN,
+			null,
+			null
+		);
+
+		dd.setClosingOptions(options); // all are closing
+
+		Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+
+		try {
+		    dialog.setVisible(true);
+		} catch (Throwable th) {
+		    if (!(th.getCause() instanceof InterruptedException)) {
+			throw new RuntimeException(th);
+		    }
+		    dd.setValue(options[CANCEL]);
+		} finally {
+		    dialog.dispose();
+		}
+
+		if (dd.getValue().equals(DialogDescriptor.DEFAULT_OPTION)) {
+		    canceled.set(true);
+		}
+	    }
+
+	    if (canceled.get()) {
+		return;
+	    }
+	}
+
 	ioContainer.remove(this);
     }
 

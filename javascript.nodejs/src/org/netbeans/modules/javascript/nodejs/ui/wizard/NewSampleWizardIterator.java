@@ -110,16 +110,30 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
 
     @TemplateRegistration(
             folder = "Project/Samples/HTML5",
-            content = "../../samples/Messages.zip",
-            displayName = "#NewSampleWizardIterator.newMessagesSample.displayName",
-            description = "../resources/NewMessagesSampleDescription.html",
+            content = "../../samples/MessagesKnockout.zip",
+            displayName = "#NewSampleWizardIterator.newMessagesKnockoutSample.displayName",
+            description = "../resources/NewMessagesKnockoutSampleDescription.html",
             iconBase = NODEJS_PROJECT_ICON,
             position = 1510)
-    @NbBundle.Messages("NewSampleWizardIterator.newMessagesSample.displayName=Messages Sample")
-    public static NewSampleWizardIterator newMessagesSample() {
+    @NbBundle.Messages("NewSampleWizardIterator.newMessagesKnockoutSample.displayName=Knockout Messages Sample")
+    public static NewSampleWizardIterator newMessagesKnockoutSample() {
         return new NewSampleWizardIterator(
-                Bundle.NewSampleWizardIterator_newMessagesSample_displayName(),
-                "Messages"); // NOI18N
+                Bundle.NewSampleWizardIterator_newMessagesKnockoutSample_displayName(),
+                "MessagesKnockout"); // NOI18N
+    }
+
+    @TemplateRegistration(
+            folder = "Project/Samples/HTML5",
+            content = "../../samples/MessagesAngular.zip",
+            displayName = "#NewSampleWizardIterator.newMessagesAngularSample.displayName",
+            description = "../resources/NewMessagesAngularSampleDescription.html",
+            iconBase = NODEJS_PROJECT_ICON,
+            position = 1520)
+    @NbBundle.Messages("NewSampleWizardIterator.newMessagesAngularSample.displayName=Angular Messages Sample")
+    public static NewSampleWizardIterator newMessagesAngularSample() {
+        return new NewSampleWizardIterator(
+                Bundle.NewSampleWizardIterator_newMessagesAngularSample_displayName(),
+                "MessagesAngular"); // NOI18N
     }
 
     @Override
