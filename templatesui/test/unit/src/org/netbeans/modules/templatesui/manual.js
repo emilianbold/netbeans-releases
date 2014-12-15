@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,20 +39,18 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.templatesui;
 
-import org.junit.Test;
+assertEquals(3, tck.steps(false).length, "There are three values in step property");
+assertEquals('init', tck.steps(false)[0], "First data-step");
+assertEquals('info', tck.steps(false)[1], "Second data-step");
+assertEquals('summary', tck.steps(false)[2], "3rd data-step");
 
-/**
- *
- * @author Jaroslav Tulach
- */
-public class CompatibilityKitTest {
-    @Test public void fallbacksToDataStep() throws Throwable {
-        RunTCK.test("datastep", "init()");
-    }
-    
-    @Test public void specifiedManually() throws Throwable {
-        RunTCK.test("manual", "init()");
-    }
-}
+assertEquals(3, tck.steps(true).length, "There are three localized data-step headers");
+assertEquals('Initial Page', tck.steps(true)[0], "First data-step display name");
+assertEquals('info', tck.steps(true)[1], "taken as string value");
+assertEquals('summary', tck.steps(true)[2], "fallback to id attribute");
+
+assertEquals('init', tck.current(), "Current step is 1st one");
+tck.next();
+assertEquals('info', tck.current(), "Moved to 2nd panel");
+

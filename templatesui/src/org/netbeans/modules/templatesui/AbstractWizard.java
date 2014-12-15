@@ -368,7 +368,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         if (obj != null) {
             List<String> arr = new ArrayList<>();
             for (Object s : obj) {
-                arr.add(stringOrId(s, "id"));
+                arr.add(stringOrId(s, "id", null));
             }
             if (!arr.equals(steps)) {
                 steps = arr;
@@ -376,7 +376,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             }
             List<String> names = new ArrayList<>();
             for (Object s : obj) {
-                names.add(stringOrId(s, "text"));
+                names.add(stringOrId(s, "text", "id"));
             }
             p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names.toArray(new String[names.size()]));
             if (!names.equals(steps)) {
@@ -442,9 +442,11 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     )
     static native Object[] rawProps(Object raw);
     
-    @JavaScriptBody(args = { "obj", "id" }, body = 
+    @JavaScriptBody(args = { "obj", "id", "fallback" }, body = 
         "if (typeof obj === 'string') return obj;\n"
-      + "return obj[id] ? obj[id].toString() : null;\n"
+      + "if (obj[id]) return obj[id].toString();\n"
+      + "if (fallback && obj[fallback]) return obj[fallback].toString();\n"
+      + "return null;\n"
     )
-    static native String stringOrId(Object obj, String id);
+    static native String stringOrId(Object obj, String id, String fallback);
 }
