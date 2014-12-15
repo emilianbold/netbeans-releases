@@ -54,3 +54,9 @@ assertEquals('init', tck.current(), "Current step is 1st one");
 tck.next();
 assertEquals('info', tck.current(), "Moved to 2nd panel");
 
+tck.next();
+assertEquals('info', tck.current(), "Remains on second panel");
+
+tck.data().message('Some msg');
+tck.next();
+assertEquals('summary', tck.current(), "Moved to 3rd panel");

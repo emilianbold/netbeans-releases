@@ -138,5 +138,9 @@ final class RunTCK extends AbstractWizard {
         public void previous() {
             RunTCK.this.previousPanel();
         }
+        
+        public Object data() {
+            return RunTCK.this.data();
+        }
     }
 }

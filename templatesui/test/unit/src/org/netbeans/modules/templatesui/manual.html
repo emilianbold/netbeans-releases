@@ -52,18 +52,23 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
         <script>
             function init() {
                 var current = ko.observable(null);
+                var message = ko.observable(null);
                 var data = {
-                    'errorCode' : ko.observable(0),
+                    'errorCode' : ko.computed(function() {
+                        if (current() === 'info') {
+                            if (!message()) {
+                                return 1;
+                            }
+                        }
+                        return 0;
+                    }),
                     'steps' : ko.observableArray([ 
                         { 'id' : 'init', 'text' : 'Initial Page' },
                         'info',
                         { 'id' : 'summary' }
                     ]),
                     'current' : current,
-                    'message' : ko.computed(function() {
-                        if (current() === 'Three') return 'Finished';
-                        return null;
-                    })
+                    'message' : message
                 };
                 return data;
             }

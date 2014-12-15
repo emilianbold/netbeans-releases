@@ -356,6 +356,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         t.get();
     }
     
+    final Object data() {
+        return data;
+    }
+    
     final String[] steps(boolean localized) {
         return (localized ? stepNames : steps).toArray(new String[0]);
     }
