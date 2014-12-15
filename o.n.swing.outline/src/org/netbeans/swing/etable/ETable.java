@@ -1608,8 +1608,8 @@ public class ETable extends JTable {
             if ((row >= 0) && (row < sortingPermutation.length)) {
                 return sortingPermutation[row];
             }
-            if (row > 0 && row != Integer.MAX_VALUE) {
-                LOG.log(Level.WARNING,
+            if (row > 0 && row != Integer.MAX_VALUE && LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE,
                         "Row "+row+" is bigger than sortingPermutation.length = "+sortingPermutation.length,
                         new IllegalStateException("Row = "+row+", sortingPermutation = "+Arrays.toString(sortingPermutation)));
                 //System.err.println("Row "+row+" is bigger than sortingPermutation length, sortingPermutation = "+Arrays.toString(sortingPermutation));

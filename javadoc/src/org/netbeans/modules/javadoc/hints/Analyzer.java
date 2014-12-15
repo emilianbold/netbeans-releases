@@ -148,6 +148,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     private Set<TypeMirror> foundThrows = new HashSet<>();
     private TypeMirror returnType = null;
     private boolean returnTypeFound = false;
+    private boolean foundInheritDoc = false;
     private Element currentElement;
     private final HintContext ctx;
 
@@ -229,7 +230,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                             break;
                         default:
                             if (!returnTypeFound
-                                    //                                    && !foundInheritDoc
+                                    && !foundInheritDoc
                                     && !javac.getTypes().isSameType(ee.getReturnType(), javac.getElements().getTypeElement("java.lang.Void").asType())) {
                             Tree returnTree = methodTree.getReturnType();
                             DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
@@ -264,7 +265,10 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     @Override
     public Void visitAuthor(AuthorTree node, List<ErrorDescription> errors) {
-        return super.visitAuthor(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitAuthor(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
@@ -274,7 +278,10 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     @Override
     public Void visitDeprecated(DeprecatedTree node, List<ErrorDescription> errors) {
-        return super.visitDeprecated(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitDeprecated(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
@@ -379,6 +386,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     @Override
     public Void visitInheritDoc(InheritDocTree node, List<ErrorDescription> errors) {
+        foundInheritDoc = true;
         return super.visitInheritDoc(node, errors);
     }
 
@@ -395,6 +403,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     @Override
     @NbBundle.Messages({"# {0} - tag name", "# {1} - element type", "INVALID_TAG_DESC={0} tag cannot be used on {1}."})
     public Void visitParam(ParamTree tree, List<ErrorDescription> errors) {
+        boolean oldInheritDoc = foundInheritDoc;
         DocTreePath currentDocPath = getCurrentPath();
         DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
         if(dtph == null) {
@@ -429,9 +438,10 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 break;
         }
         warnIfEmpty(tree, tree.getDescription());
-        return super.visitParam(tree, errors);
+        super.visitParam(tree, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
-    private static final Logger LOG = Logger.getLogger(Analyzer.class.getName());
     
     @NbBundle.Messages({"# {0} - @param name", "UNKNOWN_TYPEPARAM_DESC=Unknown @param: {0}",
                         "# {0} - @param name", "DUPLICATE_PARAM_DESC=Duplicate @param name: {0}"})
@@ -454,6 +464,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     }
 
     private void checkParamsDocumented(List<? extends Element> list, List<? extends Tree> trees, DocTreePath docTreePath, Set<String> inheritedParams, List<ErrorDescription> errors) {
+        if(foundInheritDoc) return;
         for (int i = 0; i < list.size(); i++) {
             if(ctx.isCanceled()) { return; }
             Element e = list.get(i);
@@ -511,6 +522,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     }
     
     private void checkThrowsDocumented(List<? extends TypeMirror> list, List<? extends ExpressionTree> trees, DocTreePath docTreePath, Set<String> inheritedThrows, List<ErrorDescription> errors) {
+        if(foundInheritDoc) return;
         for (int i = 0; i < list.size(); i++) {
             if(ctx.isCanceled()) { return; }
             TypeMirror e = list.get(i);
@@ -560,6 +572,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                         "WRONG_CONSTRUCTOR_RETURN_DESC=Illegal @return tag.",
                         "DUPLICATE_RETURN_DESC=Duplicate @return tag."})
     public Void visitReturn(ReturnTree node, List<ErrorDescription> errors) {
+        boolean oldInheritDoc = foundInheritDoc;
         DocTreePath currentDocPath = getCurrentPath();
         DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
         if(dtph == null) {
@@ -580,32 +593,49 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         } else {
             returnTypeFound = true;
         }
-        return super.visitReturn(node, errors);
+        super.visitReturn(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
     public Void visitSee(SeeTree node, List<ErrorDescription> errors) {
-        return super.visitSee(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitSee(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
     public Void visitSerial(SerialTree node, List<ErrorDescription> errors) {
-        return super.visitSerial(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitSerial(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
     public Void visitSerialData(SerialDataTree node, List<ErrorDescription> errors) {
-        return super.visitSerialData(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitSerialData(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
     public Void visitSerialField(SerialFieldTree node, List<ErrorDescription> errors) {
-        return super.visitSerialField(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitSerialField(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
     public Void visitSince(SinceTree node, List<ErrorDescription> errors) {
-        return super.visitSince(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitSince(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
@@ -643,6 +673,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     @Override
     public Void visitThrows(ThrowsTree tree, List<ErrorDescription> errors) {
+        boolean oldInheritDoc = foundInheritDoc;
         ReferenceTree exName = tree.getExceptionName();
         DocTreePath refPath = new DocTreePath(getCurrentPath(), tree.getExceptionName());
         Element ex = javac.getDocTrees().getElement(refPath);
@@ -685,12 +716,17 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 //                env.messages.error(REFERENCE, tree, "dc.invalid.throws");
         }
         warnIfEmpty(tree, tree.getDescription());
-        return super.visitThrows(tree, errors);
+        super.visitThrows(tree, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
     public Void visitUnknownBlockTag(UnknownBlockTagTree node, List<ErrorDescription> errors) {
-        return super.visitUnknownBlockTag(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitUnknownBlockTag(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
@@ -705,7 +741,10 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     @Override
     public Void visitVersion(VersionTree node, List<ErrorDescription> errors) {
-        return super.visitVersion(node, errors);
+        boolean oldInheritDoc = foundInheritDoc;
+        super.visitVersion(node, errors);
+        foundInheritDoc = oldInheritDoc;
+        return null;
     }
 
     @Override
