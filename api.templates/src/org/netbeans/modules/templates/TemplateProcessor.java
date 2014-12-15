@@ -185,8 +185,15 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
     }
 
     private void registerHTMLWizard(Element e, LayerBuilder b, LayerBuilder.File f, TemplateRegistration t) throws LayerGenerationException {
-        b.validateResource(t.page(), e, t, "page", true);
-        f.stringvalue("page", t.page());
+        String pg;
+        try {
+            b.validateResource(t.page(), e, t, "page", true);
+            pg = t.page();
+        } catch (LayerGenerationException layerGenerationException) {
+            pg = LayerBuilder.absolutizeResource(e, t.page());
+        }
+        b.validateResource(pg, e, t, "page", true);
+        f.stringvalue("page", pg);
         if (e.getKind() != ElementKind.METHOD) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
                 "page() attribute can be used only on static method", e

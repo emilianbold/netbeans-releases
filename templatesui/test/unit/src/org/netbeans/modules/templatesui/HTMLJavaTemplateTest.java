@@ -73,7 +73,7 @@ public class HTMLJavaTemplateTest {
     @TemplateRegistration(
         scriptEngine = "js",
         folder = "JavaTest", iconBase = "org/netbeans/modules/templatesui/x.png",
-        page = "org/netbeans/modules/templatesui/x.html",
+        page = "x.html",
         content = "x.js"
     )
     static XModel myMethod() {
