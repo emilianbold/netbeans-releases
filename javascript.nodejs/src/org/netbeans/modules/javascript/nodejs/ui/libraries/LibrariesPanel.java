@@ -205,6 +205,17 @@ public class LibrariesPanel extends javax.swing.JPanel {
                     if (packagejson.exists()) {
                         PackageJson.NpmDependencies dependencies = packagejson.getDependencies();
                         List<String> errors = new ArrayList<>();
+
+                        removeDependencies(dependencies.dependencies,
+                                regularPanel.getSelectedDependencies(),
+                                NpmExecutable.SAVE_PARAM, errors);
+                        removeDependencies(dependencies.devDependencies,
+                                developmentPanel.getSelectedDependencies(),
+                                NpmExecutable.SAVE_DEV_PARAM, errors);
+                        removeDependencies(dependencies.optionalDependencies,
+                                optionalPanel.getSelectedDependencies(),
+                                NpmExecutable.SAVE_OPTIONAL_PARAM, errors);
+
                         storeChanges(dependencies.dependencies,
                                 regularPanel.getSelectedDependencies(),
                                 PackageJson.FIELD_DEPENDENCIES, errors);
@@ -214,6 +225,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
                         storeChanges(dependencies.optionalDependencies,
                                 optionalPanel.getSelectedDependencies(),
                                 PackageJson.FIELD_OPTIONAL_DEPENDENCIES, errors);
+
                         reportErrors(errors);
                     }
                 } finally {
@@ -245,8 +257,61 @@ public class LibrariesPanel extends javax.swing.JPanel {
     }
 
     /**
+     * Un-installs the dependencies that are no longer needed.
+     * 
+     * @param originalDependencies original dependencies.
+     * @param selectedDependencies requested list of dependencies.
+     * @param dependencyType dependency type (corresponding field in {@code NpmExecutable}).
+     * @param errors collection that should be populated with errors that occurred.
+     */
+    @NbBundle.Messages({
+        "# {0} - library name",
+        "LibrariesPanel.uninstallationFailed=Un-installation of package {0} failed!",
+        "# {0} - library name",
+        "LibrariesPanel.uninstallingPackage=Un-installing package {0}."
+    })
+    private void removeDependencies(Map<String,String> originalDependencies,
+            List<Dependency> selectedDependencies,
+            String dependencyType, List<String> errors) {
+        // Remove obsolete dependencies
+        NpmExecutable executable = NpmExecutable.getDefault(project, false);
+        if (executable != null) {
+            Set<String> selectedSet = new HashSet<>();
+            for (Dependency dependency : selectedDependencies) {
+                selectedSet.add(dependency.getName());
+            }
+            boolean packageJsonModified = false;
+            for (String name : originalDependencies.keySet()) {
+                if (!selectedSet.contains(name)) {
+                    progressHandle.progress(Bundle.LibrariesPanel_uninstallingPackage(name));
+                    Integer result = null;
+                    try {
+                        // npm uninstall --save(-dev/-optional) name
+                        Future<Integer> future = executable.uninstall(dependencyType, name);
+                        if (future != null) {
+                            result = future.get();
+                        }
+                    } catch (InterruptedException | ExecutionException ex) {
+                        Logger.getLogger(LibrariesPanel.class.getName()).log(Level.INFO, null, ex);
+                    }
+                    if (result == null || result != 0) {
+                        errors.add(Bundle.LibrariesPanel_uninstallationFailed(name));
+                    }
+                    packageJsonModified = true;
+                }
+            }
+            if (packageJsonModified) {
+                PackageJson packagejson = getPackageJson();
+                if (packagejson.exists()) {
+                    packagejson.refresh();
+                }
+            }
+        }
+    }
+
+    /**
      * Performs/stores the changes requested by the user for the specified
-     * type of dependencies.
+     * type of dependencies (with the exception of package removal).
      * 
      * @param originalDependencies original dependencies.
      * @param selectedDependencies requested list of dependencies.
@@ -271,18 +336,6 @@ public class LibrariesPanel extends javax.swing.JPanel {
         // Update package.json
         PackageJson packagejson = getPackageJson();
         if (packagejson.exists()) {
-            // Remove obsolete dependencies
-            Set<String> selectedSet = new HashSet<>();
-            for (Dependency dependency : selectedDependencies) {
-                selectedSet.add(dependency.getName());
-            }
-            for (String name : originalDependencies.keySet()) {
-                if (!selectedSet.contains(name)) {
-                    // PENDING PackageJson.removeContent(Arrays.asList(dependencyType, name));
-                    errors.add("Cannot remove "+name+" - removal of dependencies not implemented yet!");
-                }
-            }
-            
             // Add new/update existing dependencies
             for (Dependency dependency : selectedDependencies) {
                 String name = dependency.getName();
