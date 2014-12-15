@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,18 +40,28 @@ Contributor(s):
 
 Portions Copyrighted 2014 Sun Microsystems, Inc.
 -->
-<project basedir="." default="netbeans" name="javascript.nodejs">
-    <description>Builds, tests, and runs the project org.netbeans.modules.javascript.nodejs</description>
-    <import file="../nbbuild/templates/projectized.xml"/>
+<html data-ng-app="messagesApp">
+    <head>
+        <title>NetBeans Messages Sample Application</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="styles/style.css" rel="stylesheet" type="text/css"/>
+    </head>
+    <body data-ng-controller="MessagesCtrl">
+        <div id="container">
+            <h2>Your message:</h2>
+            <div>
+                <textarea rows="1" cols="40" placeholder="Type a messsage" data-ng-model="currentMessage">
 
-    <target name="jar" depends="zip-samples,projectized-common.jar"/>
+                </textarea><br/>
+                <button type="button" data-ng-click="sendText()" data-ng-disabled="currentMessage.length < 1">Send</button>
+            </div>
 
-    <target name="zip-samples">
-        <property name="samples" location="${build.classes.dir}/org/netbeans/modules/javascript/nodejs/samples"/>
-        <mkdir dir="${samples}"/>
-        <zip basedir="samples_src/ListDirectory" destfile="${samples}/ListDirectory.zip"/>
-        <zip basedir="samples_src/MessagesKnockout" destfile="${samples}/MessagesKnockout.zip"/>
-        <zip basedir="samples_src/MessagesAngular" destfile="${samples}/MessagesAngular.zip"/>
-    </target>
+            <mytitle msg="'Messages'"></mytitle>
+            <messages></messages>
 
-</project>
+        </div>
+        <script src="libs/angular/angular.js" type="text/javascript"></script>
+        <script src="src.js" type="text/javascript"></script>
+    </body>
+</html>

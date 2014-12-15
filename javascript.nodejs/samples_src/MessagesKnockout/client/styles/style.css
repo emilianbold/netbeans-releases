@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<!--
+/*
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,14 +38,49 @@ made subject to such option by the copyright holder.
 Contributor(s):
 
 Portions Copyrighted 2014 Sun Microsystems, Inc.
--->
-<html>
-    <head>
-        <title></title>
-        <meta charset="UTF-8">
-    </head>
-    <body>
-        <b>Creates a new Node.js sample application</b> which contains server (using Express framework)
-        as well as client (using Knockout library) part.
-    </body>
-</html>
+*/
+
+body {
+    background-color: #cdcdcd;
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+textarea {
+    font-size: 18px;
+    border-radius: 0;
+    line-height: 22px;
+    background-color: #fbfbfb;
+    padding: 13px 13px 13px 54px;
+    margin-bottom: 10px;
+    width: 70%;
+    box-sizing: border-box;
+    border: 3px solid rgba(0,0,0,0);
+}
+
+textarea:focus {
+    border: 3px solid #3498db;
+}
+
+#container {
+    width: 50%;
+    margin: 0 auto;
+}
+
+button {
+    width: 30%;
+    border: #fbfbfb solid 2px;
+    cursor: pointer;
+    background-color: #3498db;
+    color: white;
+    font-size: 18px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+button:disabled {
+    background-color: #d1736d
+}
+
+td {
+    border-top: 1px solid black;
+}

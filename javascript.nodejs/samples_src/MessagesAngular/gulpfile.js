@@ -40,32 +40,57 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-/**
- * Path to ChromeDriver, see https://code.google.com/p/selenium/wiki/ChromeDriver
- */
-var PATH_TO_CHROME_DRIVER = "";
-/**
- * Path to Firefox (e.g. /usr/bin/firefox on Linux or C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe on Windows)
- */
-var PATH_TO_FIREFOX = "";
-var preferredBrowser = "chrome"; // or e.g. firefox
+var jshint = require('gulp-jshint');
+var gulp = require('gulp');
 
-var chrome = require('selenium-webdriver/chrome');
-var firefox = require('selenium-webdriver/firefox');
+gulp.task('jshint:client', function () {
+    return gulp.src('./client/*.js')
+            .pipe(jshint({
+                "strict": true,
+                "lookup": false,
+                "curly": true,
+                "eqnull": true,
+                "unused": true,
+                "eqeqeq": true,
+                "undef": true,
+                "camelcase": true,
+                "forin": true,
+                "immed": true,
+                "latedef": true,
+                "newcap": true,
+                "quotmark": "double",
+                "trailing": true,
+                "globals": {"angular": true, "window": true, "XMLHttpRequest": true},
+                '-W097': true
+            }
+            ))
+            .pipe(jshint.reporter('jshint-stylish'));
+});
 
-exports.get = function () {
-    switch (preferredBrowser.toLowerCase()) {
-        case "chrome":
-            if(PATH_TO_CHROME_DRIVER.length < 1){
-                throw new Error("\n\nPlease set path to ChromeDriver in browser.js, line 46 \n\n");
+gulp.task('jshint:server', function () {
+    return gulp.src('./server/**/*.js')
+            .pipe(jshint({
+                "lookup": false,
+                "strict": true,
+                "curly": true,
+                "eqnull": true,
+                "unused": true,
+                "eqeqeq": true,
+                "undef": true,
+                "camelcase": true,
+                "forin": true,
+                "immed": true,
+                "node": true,
+                "latedef": true,
+                "newcap": true,
+                "quotmark": "double",
+                "trailing": true,
+                "globals": {exports: true, require: true},
+                '-W097': true
             }
-            return new chrome.Driver({}, new chrome.ServiceBuilder(PATH_TO_CHROME_DRIVER).build());
-        case "firefox":
-            if(PATH_TO_FIREFOX.length < 1){
-                throw new Error("\n\nPlease set path to Firefox in browser.js, line 50 \n\n");
-            }
-            return new firefox.Driver(new firefox.Options().setBinary(PATH_TO_FIREFOX));
-        default:
-            return null;
-    }
-};
+            ))
+            .pipe(jshint.reporter('jshint-stylish'));
+});
+
+gulp.task("jshint", ["jshint:client", "jshint:server"]);
+gulp.task("default", ["jshint:client", "jshint:server"]);
