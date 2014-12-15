@@ -111,7 +111,7 @@ public class MochaRunner {
         }
         
         String node = Utilities.getNode(p);
-        if(node == null || !Utilities.isEnabled(p)) {
+        if(node == null) {
             Utilities.openNodeSettings(p);
             return;
         }
