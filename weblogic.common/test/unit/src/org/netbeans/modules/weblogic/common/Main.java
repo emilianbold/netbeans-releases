@@ -66,7 +66,7 @@ public class Main {
 //        WebLogicConfiguration config = WebLogicConfiguration.forLocalDomain(
 //                new File(serverHome), new File(domainHome), "weblogic", "welcome1");
         WebLogicConfiguration config = WebLogicConfiguration.forRemoteDomain(
-                new File(serverHome), "192.168.56.101", 7001, new WebLogicConfiguration.Credentials() {
+                new File(serverHome), "192.168.56.101", 7001, false, new WebLogicConfiguration.Credentials() {
 
             @Override
             public String getUsername() {

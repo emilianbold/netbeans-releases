@@ -91,8 +91,8 @@ public final class WebLogicRemote {
 
             @Override
             public T call() throws Exception {
-                JMXServiceURL url = new JMXServiceURL("t3", config.getHost(), // NOI18N
-                        config.getPort(), "/jndi/weblogic.management.mbeanservers.domainruntime"); // NOI18N
+                JMXServiceURL url = new JMXServiceURL(config.isSecured() ? "t3s" : "t3", // NOI18N
+                        config.getHost(), config.getPort(), "/jndi/weblogic.management.mbeanservers.domainruntime"); // NOI18N
 
                 String username = config.getUsername();
                 String password = config.getPassword();

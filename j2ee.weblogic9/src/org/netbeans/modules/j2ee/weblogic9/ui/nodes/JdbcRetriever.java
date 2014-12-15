@@ -68,7 +68,6 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.JdbcChildrenFactory.JDBCDataBean;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.UnregisterCookie;
-import org.omg.CORBA.TIMEOUT;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
