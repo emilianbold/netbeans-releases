@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module: org.netbeans.modules.templatesui
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/templatesui/Bundle.properties
+OpenIDE-Module-Provides: org.netbeans.api.templates.wizard
+OpenIDE-Module-Specification-Version: 1.0
+
