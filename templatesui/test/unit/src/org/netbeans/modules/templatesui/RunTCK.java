@@ -94,6 +94,17 @@ final class RunTCK extends AbstractWizard {
             throw error;
         }
         
+        executeScript(
+              "function assert(exp, real, msg) {\n"
+            + "  if (exp != real) {\n"
+            + "    throw msg + ' expected: ' + exp + ' real: ' + real;\n"
+            + "  }\n"
+            + "}\n"
+        );
+        
+        Object regFn = executeScript("(function(def) { window.tck = def; })");
+        evaluateCall(regFn, new TCK());
+        
         InputStreamReader r = new InputStreamReader(test.openStream());
         StringBuilder sb = new StringBuilder();
         for (;;) {
@@ -104,5 +115,14 @@ final class RunTCK extends AbstractWizard {
             sb.append((char)ch);
         }
         executeScript(sb.toString());
+    }
+    
+    public final class TCK {
+        TCK() {
+        }
+        
+        public String[] steps() {
+            return RunTCK.this.steps();
+        }
     }
 }

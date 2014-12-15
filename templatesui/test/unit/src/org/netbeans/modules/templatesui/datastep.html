@@ -47,7 +47,32 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <div>TODO write content</div>
+        <div class="someEmbeddableSelector">
+            <h1 data-step="init">Initial Page</h1>
+                <section>
+                <p>
+                JavaScript will ask you few questions about your mood.
+                </p>
+            </section>
+
+            <h1 data-step="info">Query Page</h1>
+            <section>
+                <p>
+                Is everything OK?
+                </p>
+                <input type="checkbox" data-bind="checked: ok"/>
+                <p>How do you feel?
+                </p>
+                <input type='text' data-bind="value: msg"/>
+            </section>
+
+            <h1 data-step="summary">Summary Page</h1>
+            <section>
+                <p>
+                You are feeling <span data-bind="text: msg"></span>!
+                </p>
+            </section>
+        </div>        
         <script>
             function init() { return {}; }
         </script>

@@ -70,7 +70,6 @@ import net.java.html.json.Models;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -306,6 +305,16 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         FXBrowsers.runInBrowser(v, t);
         return t.get();
     }
+    final Object evaluateCall(final Object fn, final Object... args) throws InterruptedException, ExecutionException {
+        FutureTask<?> t = new FutureTask<Object>(new Callable<Object>() {
+            @Override
+            public Object call() throws Exception {
+                return callFn(fn, args);
+            }
+        });
+        FXBrowsers.runInBrowser(v, t);
+        return t.get();
+    }
     final Object evaluateProp(final String prop) throws InterruptedException, ExecutionException {
         FutureTask<?> t = new FutureTask<Object>(new Callable<Object>() {
             @Override
@@ -326,6 +335,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         });
         FXBrowsers.runInBrowser(v, t);
         t.get();
+    }
+    
+    final String[] steps() {
+        return steps.toArray(new String[0]);
     }
     
     private void onStepsChange(Object[] obj) {
@@ -372,6 +385,11 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         + "return true;\n"
     )
     private static native boolean changeProperty(Object raw, String propName, Object value);
+
+    @JavaScriptBody(args = { "fn", "arr" }, body = ""
+        + "return fn.apply(null, arr);"
+    )
+    private static native Object callFn(Object fn, Object[] arr);
     
     @JavaScriptBody(args = { "raw", "propName" }, body = ""
         + "var fn = raw[propName];\n"

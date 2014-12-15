@@ -40,8 +40,6 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
+assert(3, tck.steps().length, "There are three data-step headers");
 
-if (!init) {
-    throw 'Not running in init mode';
-}
 
