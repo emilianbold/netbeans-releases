@@ -121,8 +121,8 @@ final class RunTCK extends AbstractWizard {
         TCK() {
         }
         
-        public String[] steps() {
-            return RunTCK.this.steps();
+        public String[] steps(boolean localized) {
+            return RunTCK.this.steps(localized);
         }
         
         public String current() {

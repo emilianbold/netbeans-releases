@@ -79,6 +79,7 @@ abstract class AbstractWizard
 implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private int index;
     private List<String> steps = Collections.emptyList();
+    private List<String> stepNames = Collections.emptyList();
     private String current;
     private List<HTMLPanel> panels;
     private Object data;
@@ -270,7 +271,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                                       + "  for (var i = 0; i < list.length; i++) {\n"
                                       + "    var e = list[i];\n"
                                       + "    var n = e.getAttribute('data-step');\n"
-                                      + "    if (n) res.push(n);\n"
+                                      + "    if (n) res.push({ 'id' : n, 'text' : e.innerHTML });\n"
                                       + "  }\n"
                                       + "  return res;\n"
                                       + "});\n";
@@ -355,8 +356,8 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         t.get();
     }
     
-    final String[] steps() {
-        return steps.toArray(new String[0]);
+    final String[] steps(boolean localized) {
+        return (localized ? stepNames : steps).toArray(new String[0]);
     }
     
     final String currentStep() {
@@ -367,11 +368,19 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         if (obj != null) {
             List<String> arr = new ArrayList<>();
             for (Object s : obj) {
-                arr.add(s.toString());
+                arr.add(stringOrId(s, "id"));
             }
-            p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, arr.toArray(new String[arr.size()]));
             if (!arr.equals(steps)) {
                 steps = arr;
+                fireChange();
+            }
+            List<String> names = new ArrayList<>();
+            for (Object s : obj) {
+                names.add(stringOrId(s, "text"));
+            }
+            p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names.toArray(new String[names.size()]));
+            if (!names.equals(steps)) {
+                stepNames = names;
                 fireChange();
             }
         }
@@ -432,4 +441,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         + "return ret;\n"
     )
     static native Object[] rawProps(Object raw);
+    
+    @JavaScriptBody(args = { "obj", "id" }, body = 
+        "if (typeof obj === 'string') return obj;\n"
+      + "return obj[id] ? obj[id].toString() : null;\n"
+    )
+    static native String stringOrId(Object obj, String id);
 }
