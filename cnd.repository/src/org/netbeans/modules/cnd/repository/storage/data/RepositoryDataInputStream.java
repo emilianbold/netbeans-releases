@@ -47,7 +47,9 @@ import java.io.InputStream;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitsConverter;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.impl.spi.FSConverter;
+import org.netbeans.modules.cnd.repository.impl.spi.FilePathConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -78,6 +80,19 @@ public final class RepositoryDataInputStream extends DataInputStream implements 
             throw new InternalError();
         }
     };
+    private static final FilePathConverter noConversionsFilePath = new FilePathConverter() {
+
+        @Override
+        public CharSequence layerToClient(int fileIdx) {
+            throw new InternalError();
+        }
+
+        @Override
+        public int clientToLayer(CharSequence filePath) {
+            throw new InternalError();
+        }
+
+    };
 
     public RepositoryDataInputStream(InputStream in, LayerConvertersProvider layersConverterProvider) {
         super(in);
@@ -91,7 +106,7 @@ public final class RepositoryDataInputStream extends DataInputStream implements 
      * @param in
      */
     public RepositoryDataInputStream(DataInputStream in) {
-        this(in, LayerConvertersProvider.getInstance(noConversionUnits, noConversionUnits, noConversionsFS, noConversionsFS));
+        this(in, LayerConvertersProvider.getReadInstance(noConversionUnits, noConversionsFS, noConversionsFilePath));
     }
 
     @Override
@@ -110,5 +125,16 @@ public final class RepositoryDataInputStream extends DataInputStream implements 
     public FileSystem readFileSystem() throws IOException {
         FSConverter fsConverter = layersConverterProvider.getReadFSConverter();
         return fsConverter.layerToClient(readInt());
+    }
+
+    @Override
+    public CharSequence readFilePath() throws IOException {
+        FilePathConverter pathConverter = layersConverterProvider.getReadFilePathConverter();
+        return pathConverter.layerToClient(readInt());
+    }
+
+    @Override
+    public FSPath readFSPath() throws IOException {
+        return new FSPath(readFileSystem(), readFilePath().toString());
     }
 }

@@ -342,7 +342,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         RepositoryDataOutput out = new RepositoryDataOutputStream(
                 object.getLayerKey(),
                 diskLayerImpl.getWriteCapability(),
-                LayerConvertersProvider.getInstance(null, null, null, null));
+                LayerConvertersProvider.getWriteInstance(null, null, null));
 
         try {
             object.getLayerKey().getPersistentFactory().write(out, object);
