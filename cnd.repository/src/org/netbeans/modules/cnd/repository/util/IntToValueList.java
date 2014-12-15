@@ -115,12 +115,7 @@ public final class IntToValueList<T> {
 
         for (int i = 0; i < size; i++) {
             T value = factory.read(stream);
-            T v;
-            if (value.equals("")) {
-                v = null;
-            } else {
-                v = factory.intern(value);
-            }
+            T v = factory.intern(value);
             cache.add(v);
         }
     }
