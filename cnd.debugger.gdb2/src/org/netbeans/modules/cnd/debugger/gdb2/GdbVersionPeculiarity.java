@@ -208,6 +208,14 @@ public class GdbVersionPeculiarity {
             return "-stack-list-frames";  // NOI18N
         }
     }
+    
+    public String stackListLocalsCommand() {
+        if (lldb) {
+            return "-stack-list-locals 2"; // NOI18N
+        } else {
+            return "-stack-list-locals --simple-values"; // NOI18N
+        }
+    }
 
     public boolean isSupported() {
         return (version >= 6.8) || (platform == Platform.MacOSX_x86 && version >= 6.3);
