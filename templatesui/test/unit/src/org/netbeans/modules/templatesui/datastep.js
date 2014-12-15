@@ -40,6 +40,8 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-assert(3, tck.steps().length, "There are three data-step headers");
-
+assertEquals(3, tck.steps().length, "There are three data-step headers");
+assertEquals('init', tck.steps()[0], "First data-step");
+assertEquals('info', tck.steps()[1], "Second data-step");
+assertEquals('summary', tck.steps()[2], "3rd data-step");
 

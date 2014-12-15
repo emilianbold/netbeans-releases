@@ -95,7 +95,7 @@ final class RunTCK extends AbstractWizard {
         }
         
         executeScript(
-              "function assert(exp, real, msg) {\n"
+              "function assertEquals(exp, real, msg) {\n"
             + "  if (exp != real) {\n"
             + "    throw msg + ' expected: ' + exp + ' real: ' + real;\n"
             + "  }\n"

@@ -262,8 +262,25 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                                         }
                                     }
                                     
-                                    boolean stepsOK = listenOnProp(data, AbstractWizard.this, "steps");
-                                    boolean errorCodeOK = listenOnProp(data, AbstractWizard.this, "errorCode");
+                                    String stepsFlbk = 
+                                        "ko.computed(function() {\n"
+                                      + "  var res = [];\n"
+                                      + "  var list = document.getElementsByTagName('h1');\n"
+                                      + "  for (var i = 0; i < list.length; i++) {\n"
+                                      + "    var e = list[i];\n"
+                                      + "    var n = e.getAttribute('data-step');\n"
+                                      + "    if (n) res.push(n);\n"
+                                      + "  }\n"
+                                      + "  return res;\n"
+                                      + "});\n";
+                                    
+                                    String errFlbk =
+                                        "ko.computed(function() {\n"
+                                      + "  return -1;\n"
+                                      + "});\n";
+                                    
+                                    boolean stepsOK = listenOnProp(data, AbstractWizard.this, "steps", stepsFlbk);
+                                    boolean errorCodeOK = listenOnProp(data, AbstractWizard.this, "errorCode", errFlbk);
                                     
                                     initializationDone(null);
                                 } catch (Exception ex) {
@@ -365,10 +382,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         }
     }
     
-    @JavaScriptBody(args = {"data", "onChange", "p" }, javacall = true, body = ""
+    @JavaScriptBody(args = {"data", "onChange", "p", "fallback" }, 
+        javacall = true, body = ""
         + "if (typeof data[p] !== 'function') {\n"
-        + "  onChange.@org.netbeans.modules.templatesui.AbstractWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, null);\n"
-        + "  return false;\n"
+        + "  data[p] = eval(fallback);\n"
         + "}\n"
         + "data[p].subscribe(function(value) {\n"
         + "  onChange.@org.netbeans.modules.templatesui.AbstractWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, value);\n"
@@ -376,7 +393,9 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         + "onChange.@org.netbeans.modules.templatesui.AbstractWizard::onChange(Ljava/lang/String;Ljava/lang/Object;)(p, data[p]());\n"
         + "return true;\n"
     )
-    static native boolean listenOnProp(Object raw, AbstractWizard onChange, String propName);
+    static native boolean listenOnProp(
+        Object raw, AbstractWizard onChange, String propName, String fallback
+    );
     
     @JavaScriptBody(args = { "raw", "propName", "value" }, body = ""
         + "var fn = raw[propName];\n"
