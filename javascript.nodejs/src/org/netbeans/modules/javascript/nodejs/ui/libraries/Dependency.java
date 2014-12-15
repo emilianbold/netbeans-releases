@@ -48,6 +48,8 @@ package org.netbeans.modules.javascript.nodejs.ui.libraries;
  * @author Jan Stola
  */
 public class Dependency {
+    /** Dependency types. */
+    public static enum Type { REGULAR, DEVELOPMENT, OPTIONAL };
     /** Name of the package. */
     private final String name;
     /** Required version of the package. */
