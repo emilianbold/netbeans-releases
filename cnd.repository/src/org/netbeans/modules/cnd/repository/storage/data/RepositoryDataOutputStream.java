@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -90,6 +91,17 @@ public final class RepositoryDataOutputStream extends DataOutputStream implement
     @Override
     public void writeFileSystem(FileSystem fileSystem) throws IOException {
         writeInt(layersConverterProvider.getWriteFSConverter().clientToLayer(fileSystem));
+    }
+
+    @Override
+    public void writeFilePath(CharSequence filePath) throws IOException {
+        writeInt(layersConverterProvider.getWriteFilePathConverter().clientToLayer(filePath));
+    }
+
+    @Override
+    public void writeFSPath(FSPath filePath) throws IOException {
+        writeFileSystem(filePath.getFileSystem());
+        writeFilePath(filePath.getPath());
     }
 
     @Override

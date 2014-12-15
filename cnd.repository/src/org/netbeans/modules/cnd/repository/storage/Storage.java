@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
+import org.netbeans.modules.cnd.repository.impl.spi.FilePathConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.Layer;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerDescriptor;
@@ -317,8 +318,10 @@ import org.openide.util.lookup.Lookups;
             if (rawData != null) {
                 return new RepositoryDataInputStream(
                         new ByteArrayInputStream(rawData.array()),
-                        LayerConvertersProvider.getInstance(new UnitIDReadConverterImpl(layer),
-                                null, new FSReadConverterImpl(ld), null));
+                        LayerConvertersProvider.getReadInstance(
+                                new UnitIDReadConverterImpl(layer), 
+                                new FSReadConverterImpl(ld), 
+                                new FilePathReadConverterImpl(unitId)));
             }
         }
         return null;
@@ -327,16 +330,17 @@ import org.openide.util.lookup.Lookups;
     // TODO: For now only single writeable layer is supported. Use multiplexer..
     public RepositoryDataOutputStream getOutputStream(Key key) {
         for (Layer layer : layers) {
-            UnitIDWriteConverterImpl unitIDConverter = new UnitIDWriteConverterImpl(layer);
-            FSConverter fsConverter = new FSWriteConverterImpl(layer);
             WriteLayerCapability wc = layer.getWriteCapability();
             if (wc != null) {
+                UnitIDWriteConverterImpl unitIDConverter = new UnitIDWriteConverterImpl(layer);
+                FSConverter fsConverter = new FSWriteConverterImpl(layer);
+                FilePathConverter filePathConverter = new FilePathWriteConverterImpl(key.getUnitId());
                 LayerKey layerKey = getWriteLayerKey(key, layer);
                 if (layerKey != null) {
                     return new RepositoryDataOutputStream(
                             layerKey,
                             wc,
-                            LayerConvertersProvider.getInstance(null, unitIDConverter, null, fsConverter));
+                            LayerConvertersProvider.getWriteInstance(unitIDConverter, fsConverter, filePathConverter));
                 }
             }
         }
@@ -502,8 +506,8 @@ import org.openide.util.lookup.Lookups;
             }
             RepositoryDataInputStream inputStream = new RepositoryDataInputStream(
                     new ByteArrayInputStream(rawData.array()),
-                    LayerConvertersProvider.getInstance(new UnitIDReadConverterImpl(layer), null,
-                            new FSReadConverterImpl(ld), null));
+                    LayerConvertersProvider.getReadInstance(new UnitIDReadConverterImpl(layer),
+                            new FSReadConverterImpl(ld), new FilePathReadConverterImpl(clientUnitID)));
             Persistent obj = key.getPersistentFactory().read(inputStream);
             assert (obj instanceof FilePathsDictionary);
             return (FilePathsDictionary) obj;
@@ -1099,6 +1103,42 @@ import org.openide.util.lookup.Lookups;
         }
     }
 
+    private final class FilePathReadConverterImpl implements FilePathConverter {
+        private final int readFromUnitClientId;
+
+        public FilePathReadConverterImpl(int readFromUnitClientId) {
+            this.readFromUnitClientId = readFromUnitClientId;
+        }
+
+        @Override
+        public CharSequence layerToClient(int fileIdx) {
+            return getFileName(readFromUnitClientId, fileIdx);
+        }
+
+        @Override
+        public int clientToLayer(CharSequence filePath) {
+            throw new InternalError("Should not be called"); // NOI18N
+        }            
+    }
+    
+    private final class FilePathWriteConverterImpl implements FilePathConverter {
+        private final int writeToUnitClientId;
+
+        public FilePathWriteConverterImpl(int writeToUnitClientId) {
+            this.writeToUnitClientId = writeToUnitClientId;
+        }
+
+        @Override
+        public CharSequence layerToClient(int fileIdx) {
+            throw new InternalError("Should not be called"); // NOI18N
+        }
+
+        @Override
+        public int clientToLayer(CharSequence filePath) {
+            return getFileID(writeToUnitClientId, filePath);
+        }            
+    }
+    
     private static int getMaintenanceWeight(Layer layer) {
         try {
             final WriteLayerCapability writeCapability = layer.getWriteCapability();
