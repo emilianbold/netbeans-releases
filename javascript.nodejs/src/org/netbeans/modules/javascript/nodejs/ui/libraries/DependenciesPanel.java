@@ -608,7 +608,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
 
         @Override
         @NbBundle.Messages({
-            "DependenciesPanel.table.libraryColumn=Library",
+            "DependenciesPanel.table.libraryColumn=Package",
             "DependenciesPanel.table.requiredVersionColumn=Required Version",
             "DependenciesPanel.table.installedVersionColumn=Installed Version",
             "DependenciesPanel.table.latestVersionColumn=Latest Version",
