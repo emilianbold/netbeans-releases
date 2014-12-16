@@ -61,9 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=TestCreatorConfigurationProvider.class, position=10)
 public class SeleniumTestCreatorConfigurationProvider extends TestCreatorConfigurationProvider {
     
-    private String selectedFramework = "";
-    private FileObject[] activatedFOs;
-
+    
     /**
      *
      * @param framework the value of framework
@@ -71,8 +69,6 @@ public class SeleniumTestCreatorConfigurationProvider extends TestCreatorConfigu
      */
     @Override
     public boolean canHandleProject(String framework) {
-        selectedFramework = framework;
-        this.activatedFOs = activatedFOs;
         return framework.equals(TestCreatorProvider.FRAMEWORK_SELENIUM);
     }
 

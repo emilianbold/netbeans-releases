@@ -69,6 +69,7 @@ public class Tools extends JPanel {
         packageJsonCheckBox.addItemListener(defaultItemListener);
         bowerJsonCheckBox.addItemListener(defaultItemListener);
         gruntfileCheckBox.addItemListener(defaultItemListener);
+        gulpfileCheckBox.addItemListener(defaultItemListener);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -103,6 +104,14 @@ public class Tools extends JPanel {
         gruntfileCheckBox.setSelected(enabled);
     }
 
+    public boolean isGulpEnabled() {
+        return gulpfileCheckBox.isSelected();
+    }
+
+    public void setGulpEnabled(boolean enabled) {
+        gulpfileCheckBox.setSelected(enabled);
+    }
+
     void fireChange() {
         changeSupport.fireChange();
     }
@@ -118,6 +127,7 @@ public class Tools extends JPanel {
         packageJsonCheckBox = new JCheckBox();
         bowerJsonCheckBox = new JCheckBox();
         gruntfileCheckBox = new JCheckBox();
+        gulpfileCheckBox = new JCheckBox();
 
         packageJsonCheckBox.setSelected(true);
         Mnemonics.setLocalizedText(packageJsonCheckBox, NbBundle.getMessage(Tools.class, "Tools.packageJsonCheckBox.text")); // NOI18N
@@ -128,12 +138,16 @@ public class Tools extends JPanel {
         gruntfileCheckBox.setSelected(true);
         Mnemonics.setLocalizedText(gruntfileCheckBox, NbBundle.getMessage(Tools.class, "Tools.gruntfileCheckBox.text")); // NOI18N
 
+        gulpfileCheckBox.setSelected(true);
+        Mnemonics.setLocalizedText(gulpfileCheckBox, NbBundle.getMessage(Tools.class, "Tools.gulpfileCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addComponent(packageJsonCheckBox)
             .addComponent(bowerJsonCheckBox)
             .addComponent(gruntfileCheckBox)
+            .addComponent(gulpfileCheckBox)
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -141,7 +155,9 @@ public class Tools extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(bowerJsonCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gruntfileCheckBox))
+                .addComponent(gruntfileCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(gulpfileCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -149,6 +165,7 @@ public class Tools extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox bowerJsonCheckBox;
     private JCheckBox gruntfileCheckBox;
+    private JCheckBox gulpfileCheckBox;
     private JCheckBox packageJsonCheckBox;
     // End of variables declaration//GEN-END:variables
 
