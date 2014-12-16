@@ -144,8 +144,8 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     public FileContainer (RepositoryDataInput input) throws IOException {
 	super(input);
         fileSystem = PersistentUtils.readFileSystem(input);
-        readStringToFileEntryMap(fileSystem, getUnitId(), input, myFiles);
-        readStringToStringsArrMap(getUnitId(), input, canonicFiles);
+        readFilePathsForFileSystemToFileEntryMap(fileSystem, input, myFiles);
+        readFilePathsForFileSystemToStringsArrMap(fileSystem, input, canonicFiles);
 	//trace(canonicFiles, "Read in ctor:");
         if (CndUtils.isDebugMode()) {
             checkConsistency();
@@ -335,8 +335,8 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 	super.write(aStream);
         PersistentUtils.writeFileSystem(fileSystem, aStream);
 	// maps are concurrent, so we don't need synchronization here
-        writeStringToFileEntryMap(getUnitId(), aStream, myFiles);
-        writeStringToStringsArrMap(getUnitId(), aStream, canonicFiles);
+        writeStringToFileEntryMap(aStream, myFiles);
+        writeStringToStringsArrMap(aStream, canonicFiles);
 	//trace(canonicFiles, "Wrote in write()");
     }
 
@@ -477,7 +477,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     }
 
     /*package*/ static void writeStringToFileEntryMap (
-            int unitIndex, final RepositoryDataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
+            final RepositoryDataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
         assert output != null;
         assert aMap != null;
         int size = aMap.size();
@@ -490,39 +490,28 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         final Iterator <Map.Entry<CharSequence, FileEntry>> setIterator = entrySet.iterator();
         while (setIterator.hasNext()) {
             final Map.Entry<CharSequence, FileEntry> anEntry = setIterator.next();
-            PersistentUtils.writeFileNameIndex(anEntry.getKey(), output, unitIndex);
+            output.writeFilePath(anEntry.getKey());
             // TODO: replace call above by the next line if no failures in following asserts
             // it allows to eleminate charSeq->fileIndex conversion when fileIndex is 
             // known from fileNew UID kept in value's FileEntry
 //            output.writeInt(UIDUtilities.getFileID(anEntry.getValue().fileNew));
             assert anEntry.getValue() != null;
-            // see IncludedFileContainer.getIncludedUnitId
-            if (false && (CndUtils.isDebugMode() || CndUtils.isUnitTestMode())) {
-                int projectIDFromFileEntry = UIDUtilities.getProjectID(anEntry.getValue().fileNew);
-                CndUtils.assertTrueInConsole(projectIDFromFileEntry == unitIndex, anEntry.getValue().fileNew + "is not from unit " + unitIndex + " but from " + projectIDFromFileEntry);
-                int fileIDFromFileEntry = UIDUtilities.getFileID(anEntry.getValue().fileNew);
-                int fileIdByNameFromUnitId = KeyUtilities.getFileIdByName(unitIndex, anEntry.getKey());
-                CndUtils.assertTrueInConsole(fileIDFromFileEntry == fileIdByNameFromUnitId, fileIDFromFileEntry + ":" + projectIDFromFileEntry + " differs from " + fileIdByNameFromUnitId + ":" + unitIndex);
-            }
-            anEntry.getValue().write(output, unitIndex);
+            anEntry.getValue().write(output);
         }
     }
     
-    /*package*/ static void  readStringToFileEntryMap(
-            FileSystem fs, int unitIndex,
+    /*package*/ static void  readFilePathsForFileSystemToFileEntryMap(FileSystem fs, 
             RepositoryDataInput input, Map<CharSequence, FileEntry> aMap) throws IOException {
         
         assert input != null; 
         assert aMap != null;
         
-        final APTStringManager pathManager = FilePathCache.getManager();
-        
         aMap.clear();
         final int size = input.readInt();
         
         for (int i = 0; i < size; i++) {
-            CharSequence key = PersistentUtils.readFileNameIndex(input, pathManager, unitIndex);
-            FileEntry value = new FileEntry(fs, input, unitIndex);
+            CharSequence key = input.readFilePathForFileSystem(fs);
+            FileEntry value = new FileEntry(input);
             
             assert key != null;
             assert value != null;
@@ -532,7 +521,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
     }
     
     private static void writeStringToStringsArrMap (
-            final int unitIndex, final RepositoryDataOutput output,
+            final RepositoryDataOutput output,
             final Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
         
         assert output != null;
@@ -554,48 +543,46 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             assert value != null;
             assert ((value instanceof CharSequence) || (value instanceof CharSequence[]));
             
-            APTSerializeUtils.writeFileNameIndex(key, output, unitIndex);
+            output.writeFilePath(key);
             
             if (value instanceof CharSequence ) {
                 output.writeInt(1);
-                APTSerializeUtils.writeFileNameIndex((CharSequence)value, output, unitIndex);
+                output.writeFilePath((CharSequence)value);
             } else if (value instanceof CharSequence[]) {
                 
                 final CharSequence[] array = (CharSequence[]) value;
                 
                 output.writeInt(array.length);
                 for (int j = 0; j < array.length; j++) {
-                    APTSerializeUtils.writeFileNameIndex(array[j], output, unitIndex);
+                    output.writeFilePath(array[j]);
                 }
             }
         }
     }
     
-    private static void readStringToStringsArrMap(
-            final int unitId, final RepositoryDataInput input, Map<CharSequence,
+    private static void readFilePathsForFileSystemToStringsArrMap(FileSystem fs, 
+            final RepositoryDataInput input, Map<CharSequence,
                     Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
         assert input != null;
         assert aMap != null;
-
-        final APTStringManager pathManager = FilePathCache.getManager();
 
         aMap.clear();
 
         final int size = input.readInt();
 
         for (int i = 0; i < size; i++) {
-            CharSequence key = APTSerializeUtils.readFileNameIndex(input, pathManager, unitId);
+            CharSequence key = input.readFilePathForFileSystem(fs);
             assert key != null;
 
             final int arraySize = input.readInt();
             assert arraySize != 0;
 
             if (arraySize == 1) {
-                aMap.put(key, APTSerializeUtils.readFileNameIndex(input, pathManager, unitId));
+                aMap.put(key, input.readFilePathForFileSystem(fs));
             } else {
                 final CharSequence[] value = new CharSequence[arraySize];
                 for (int j = 0; j < arraySize; j++) {
-                    CharSequence path = APTSerializeUtils.readFileNameIndex(input, pathManager, unitId);
+                    CharSequence path = input.readFilePathForFileSystem(fs);
                     assert path != null;
 
                     value[j] = path;
@@ -632,15 +619,15 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         private volatile int modCount;
 
         @SuppressWarnings("unchecked")
-        private FileEntry (FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
+        private FileEntry (RepositoryDataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
-            canonical = PersistentUtils.readFileNameIndex(input, FilePathCache.getManager(), unitIndex);
+            canonical = input.readFilePath();
             modCount = input.readInt();
             if (input.readBoolean()) {
                 int cnt = input.readInt();
                 assert cnt > 0;
                 if (cnt == 1) {
-                    PreprocessorStatePair pair = readStatePair(fs, input, unitIndex);
+                    PreprocessorStatePair pair = readStatePair(input);
                     if (TRACE && pair != null && !pair.state.isValid()) {
                         CndUtils.assertTrueInConsole(false, "read INVALID state for ", this.canonical);
                     }
@@ -648,7 +635,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 } else {
                     data = new ArrayList<>(cnt);
                     for (int i = 0; i < cnt; i++) {
-                        PreprocessorStatePair pair = readStatePair(fs, input, unitIndex);
+                        PreprocessorStatePair pair = readStatePair(input);
                         if (TRACE && pair != null && !pair.state.isValid()) {
                             CndUtils.assertTrueInConsole(false, "read INVALID state for ", this.canonical);
                         }
@@ -672,9 +659,9 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             this.modCount = 0;
         }
         
-        private void write(final RepositoryDataOutput output, int unitIndex) throws IOException {
+        private void write(final RepositoryDataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
-            PersistentUtils.writeFileNameIndex(canonical, output, unitIndex);
+            output.writeFilePath(canonical);
             output.writeInt(modCount);
             Object aData = data;
             output.writeBoolean(aData != null);
@@ -685,7 +672,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                     if (TRACE && !pair.state.isValid()) {
                         CndUtils.assertTrueInConsole(false, "write INVALID state for ", this.canonical);
                     }
-                    writeStatePair(output, pair, unitIndex);
+                    writeStatePair(output, pair);
                 } else {
                     @SuppressWarnings("unchecked")
                     Collection<PreprocessorStatePair> pairs = (Collection<PreprocessorStatePair>)aData;
@@ -694,17 +681,17 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                         if (TRACE && pair != null && !pair.state.isValid()) {
                             CndUtils.assertTrueInConsole(false, "write INVALID state for ", this.canonical);
                         }
-                        writeStatePair(output, pair, unitIndex);
+                        writeStatePair(output, pair);
                     }
                 }
             }
         }
         
-        private static PreprocessorStatePair readStatePair(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
+        private static PreprocessorStatePair readStatePair(RepositoryDataInput input) throws IOException {
             if (input.readBoolean()) {
                 APTPreprocHandler.State state = null;
                 if (input.readBoolean()){
-                    state = PersistentUtils.readPreprocState(fs, input, unitIndex);
+                    state = PersistentUtils.readPreprocState(input);
                 }
                 FilePreprocessorConditionState pcState = null;
                 if (input.readBoolean()){
@@ -719,12 +706,12 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             
         }
 
-        private static void writeStatePair(RepositoryDataOutput output, PreprocessorStatePair pair, int unitIndex) throws IOException {
+        private static void writeStatePair(RepositoryDataOutput output, PreprocessorStatePair pair) throws IOException {
             output.writeBoolean(pair != null);
             if (pair != null) {
                 output.writeBoolean(pair.state != null);
                 if (pair.state != null) {
-                    PersistentUtils.writePreprocState(pair.state, output, unitIndex);
+                    PersistentUtils.writePreprocState(pair.state, output);
                 }
                 output.writeBoolean(pair.pcState != FilePreprocessorConditionState.PARSING);
                 if (pair.pcState != FilePreprocessorConditionState.PARSING) {

@@ -156,15 +156,15 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     // impl of SelfPersistent
 
     // final is important here - see PersistentUtils.writeBuffer/readBuffer
-    public final void write(RepositoryDataOutput output, int unitId) throws IOException {
+    public final void write(RepositoryDataOutput output) throws IOException {
         assert this.absPath != null;
-        APTSerializeUtils.writeFileNameIndex(absPath, output, unitId);
+        output.writeFilePath(absPath);
         PersistentUtils.writeFileSystem(fileSystem, output);        
         output.writeByte((byte) bufType.ordinal());
     }  
     
-    protected AbstractFileBuffer(RepositoryDataInput input, int unitId) throws IOException {
-        this.absPath = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), unitId);
+    protected AbstractFileBuffer(RepositoryDataInput input) throws IOException {
+        this.absPath = input.readFilePath();
         this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
         fileObject = new WeakReference<>(null);
