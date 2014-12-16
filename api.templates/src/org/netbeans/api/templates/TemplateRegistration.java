@@ -47,10 +47,10 @@ import javax.script.ScriptEngineFactory;
 /**
  * Registers a template the user can select.
  * May be placed on a class (with a default constructor) or static method (with no arguments)
- * to register an {@link InstantiatingIterator} for a custom template;
- * or on a package to register a plain-file template with no custom behavior.
+ * to register an {@code InstantiatingIterator} for a custom template;
+ * or on a package to register a plain-file template with no custom behavior
+ * or define an HTML wizard using the {@link #page() page} attribute.
  * @since 7.29
- * @see TemplateWizard
  * @see TemplateRegistrations
  * @see <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/templates/support/package-summary.html"><code>org.netbeans.spi.project.ui.templates.support</code></a>
  */
@@ -80,7 +80,7 @@ public @interface TemplateRegistration {
      * A nonempty list is mandatory for a template registered on a package.
      * For a template with a custom iterator, the content may be omitted, though it may still be specified.
      * <p>Normally only a single file is specified, but for a multifile data object, list the primary entry first.
-     * <p>The file basenames (incl. extension) of the actual template files (as in {@link TemplateWizard#getTemplate})
+     * <p>The file basenames (incl. extension) of the actual template files (as in {@code TemplateWizard.getTemplate()})
      * will be taken from the basename of the content resources, though a {@code .template} suffix
      * may be appended to prevent template resources in a source project from being misinterpreted.
      * For a "pure" custom iterator with no specified content, the template basename
@@ -109,7 +109,6 @@ public @interface TemplateRegistration {
 
     /**
      * Optional but recommended relative resource path to an HTML description of the template.
-     * @see TemplateWizard#getDescription
      */
     String description() default "";
 

@@ -162,7 +162,7 @@
             method in your wizard, you can create a Map&lt;String,Object&gt; and
             fill it with parameters collected from your wizard and then pass it 
             to
-            <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html#createFromTemplate(org.openide.loaders.DataFolder,%20java.lang.String,%20java.util.Map)">                
+            <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html">                
                 createFromTemplate(targetFolder, targetName, mapWithParameters)
             </a>. This will invoke the scripting language and make the 
             <code>mapWithParameters</code> values available to it. Beyond this 
