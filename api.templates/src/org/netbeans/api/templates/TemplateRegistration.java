@@ -139,10 +139,17 @@ public @interface TemplateRegistration {
     String targetName() default "";
     
     /** Location of the HTML page that should be used as a user interface
-     * for the wizard while instantiating this template.
+     * for the wizard while instantiating this template. The page is going
+     * to be rendered in an embedded browser provided by other module. To
+     * guarantee it is present add following line into your manifest file:
+     * <pre>
+     * OpenIDE-Module-Needs: org.netbeans.api.templates.wizard
+     * </pre>
+     * There is a tutorial describing usage of HTML UI in wizards
+     * in NetBeans <a href="http://wiki.netbeans.org/HtmlUIForTemplates">wiki</a>.
      * 
      * @return location to a resource with HTML page
-     * @since XXX
+     * @since 1.2
      */
     String page() default "";
  
