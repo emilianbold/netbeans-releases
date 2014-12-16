@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.java.spi;
+package org.netbeans.modules.cnd.repository.impl.spi;
 
 /**
- * Filters used by Java Find Usages plugins.
- * 
- * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
- * @since 1.39
+ * [AbsFilePath<->Index] conversion in a layer
+ * @author Vladimir Voskresensky
  */
-public enum JavaWhereUsedFilters {
+public interface FilePathConverter {
+    public CharSequence layerToClient(int fileIdx);
 
-    IMPORT("filter-import"),
-    COMMENT("filter-comment"),
-    TESTFILE("filter-testfile"),
-    /**
-     * @since 1.54
-     */
-    SOURCEFILE("filter-sourcefile");
-    private final String key;
-
-    private JavaWhereUsedFilters(String key) {
-        this.key = key;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public static enum ReadWrite {
-
-        READ("filter-read"),
-        WRITE("filter-write"),
-        READ_WRITE("filter-readwrite");
-        private final String key;
-
-        private ReadWrite(String key) {
-            this.key = key;
-        }
-
-        public String getKey() {
-            return key;
-        }
-    }
+    public int clientToLayer(CharSequence filePath);
 }

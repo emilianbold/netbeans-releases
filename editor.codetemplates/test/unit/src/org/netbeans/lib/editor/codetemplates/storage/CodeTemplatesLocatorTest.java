@@ -95,6 +95,7 @@ public class CodeTemplatesLocatorTest extends NbTestCase {
     }
 
     public void testFullCodeTemplatesMixedLayout() throws Exception {
+        String writableUserFile = "Editors/" + LocatorTest.getWritableFileName(CodeTemplatesStorage.ID, null, null, null, false);
         String [] files = new String [] {
             "Editors/Defaults/abbreviations.xml",
             "Editors/CodeTemplates/Defaults/zz.xml",
@@ -105,12 +106,13 @@ public class CodeTemplatesLocatorTest extends NbTestCase {
             "Editors/CodeTemplates/papap.xml",
             "Editors/CodeTemplates/kekeke.xml",
             "Editors/CodeTemplates/dhdhdddd.xml",
+            writableUserFile
         };
-        String writableUserFile = "Editors/" + LocatorTest.getWritableFileName(CodeTemplatesStorage.ID, null, null, null, false);
+        
         
         LocatorTest.createOrderedFiles(files, CT_CONTENTS);
-        TestUtilities.createFile(writableUserFile, CT_CONTENTS);
-        LocatorTest.orderFiles("Editors/CodeTemplates/dhdhdddd.xml", writableUserFile);
+//        TestUtilities.createFile(writableUserFile, CT_CONTENTS);
+//        LocatorTest.orderFiles("Editors/CodeTemplates/dhdhdddd.xml", writableUserFile);
         
         FileObject baseFolder = FileUtil.getConfigFile("Editors");
         Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();

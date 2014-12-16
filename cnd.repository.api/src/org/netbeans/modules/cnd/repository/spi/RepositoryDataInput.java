@@ -53,4 +53,6 @@ public interface RepositoryDataInput extends DataInput {
     CharSequence readCharSequenceUTF() throws IOException;
     int readUnitId() throws IOException;
     FileSystem readFileSystem() throws IOException;
+    CharSequence readFilePath() throws IOException;
+    CharSequence readFilePathForFileSystem(FileSystem fs) throws IOException;
 }

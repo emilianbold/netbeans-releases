@@ -57,5 +57,8 @@ public interface RepositoryDataOutput extends DataOutput {
 
     void writeFileSystem(FileSystem fileSystem) throws IOException;
 
+    void writeFilePath(CharSequence filePath) throws IOException;
+    void writeFilePathForFileSystem(FileSystem fs, CharSequence filePath) throws IOException;
+    
     void commit();
 }
