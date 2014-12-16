@@ -180,12 +180,12 @@ public final class LibProjectImpl extends ProjectBase {
     public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         assert this.includePath != null;
-        APTSerializeUtils.writeFileNameIndex(includePath, aStream, getUnitId());
+        aStream.writeFilePath(includePath);
     }
 
     public LibProjectImpl(RepositoryDataInput aStream) throws IOException {
         super(aStream);
-        this.includePath = APTSerializeUtils.readFileNameIndex(aStream, FilePathCache.getManager(), getUnitId());
+        this.includePath = aStream.readFilePath();
         assert this.includePath != null;
         setPlatformProject(this.includePath);
     }

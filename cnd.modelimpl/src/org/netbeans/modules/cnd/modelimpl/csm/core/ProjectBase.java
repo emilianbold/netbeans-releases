@@ -3717,7 +3717,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         assert this.name != null;
-        APTSerializeUtils.writeFileNameIndex(name, aStream, unitId);
+        aStream.writeFilePath(name);
         //PersistentUtils.writeUTF(RepositoryUtils.getUnitName(getUID()), aStream);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
@@ -3728,7 +3728,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ProjectComponent.writeKey(classifierStorageKey, aStream);
         this.includedFileContainer.write(aStream);
 
-        APTSerializeUtils.writeFileNameIndex(this.uniqueName, aStream, unitId);
+        aStream.writeFilePath(this.uniqueName);
         aStream.writeBoolean(hasFileSystemProblems);
         checkUniqueNameConsistency();
     }
@@ -3753,7 +3753,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null : "default UID factory can not be bull";
 
-        this.name = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
+        this.name = aStream.readFilePath();
         assert this.name != null : "project name can not be null";
 
         //CharSequence unitName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
@@ -3787,7 +3787,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         includedFileContainer = new IncludedFileContainer(aStream);
         
-        uniqueName = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
+        uniqueName = aStream.readFilePath();
         assert uniqueName != null : "uniqueName can not be null";
 
         this.model = (ModelImpl) CsmModelAccessor.getModel();

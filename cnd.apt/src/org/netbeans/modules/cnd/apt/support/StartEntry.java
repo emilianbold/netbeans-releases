@@ -45,12 +45,11 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Parameters;
@@ -59,10 +58,7 @@ import org.openide.util.Parameters;
  *
  * @author Alexander Simon
  */
-
-// Not SelfPersistent any more because I have to pass unitIndex into write() method
-// It is private, so I don't think it's a problem. VK.
-public final class StartEntry implements Persistent {
+public final class StartEntry implements SelfPersistent {
     private final CharSequence startFile;
     //private boolean isCPP; // TODO: flag to be used for understanding C/C++ lang
     private final Key startFileProject;
@@ -91,17 +87,19 @@ public final class StartEntry implements Persistent {
         return startFileProject;
     }
     
-    public void write(RepositoryDataOutput output, int unitIndex) throws IOException {
+    @Override
+    public void write(RepositoryDataOutput output) throws IOException {
         assert output != null;
+        output.writeFileSystem(fileSystem);
+        output.writeFilePathForFileSystem(fileSystem, startFile);
         KeyFactory.getDefaultFactory().writeKey(startFileProject, output);
-        APTSerializeUtils.writeFileNameIndex(startFile, output, unitIndex);
     }
     
-    public StartEntry(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
+    public StartEntry(RepositoryDataInput input) throws IOException {
         assert input != null;
-        fileSystem = fs;
+        fileSystem = input.readFileSystem();
+        startFile = input.readFilePathForFileSystem(fileSystem);
         startFileProject = KeyFactory.getDefaultFactory().readKey(input);
-        startFile = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), unitIndex);
     }
 
     @Override
