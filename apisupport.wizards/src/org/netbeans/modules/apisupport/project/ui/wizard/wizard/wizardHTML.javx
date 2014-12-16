@@ -21,6 +21,7 @@ public class ${WIZARD_PREFIX} {
 // TODO define position attribute
 @TemplateRegistration(
   page="${TR_page}", 
+  scriptEngine = "freemarker",
   content="${TR_content}", 
   folder="${TR_folder}", 
   displayName="#${WIZARD_PREFIX}_displayName", 
