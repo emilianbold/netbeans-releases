@@ -353,7 +353,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         return current;
     }
     
-    private void onStepsChange(Object[] obj) {
+   @NbBundle.Messages({
+        "LBL_TemplatesPanel_Name=Choose File Type"
+    })
+   private void onStepsChange(Object[] obj) {
         if (obj != null) {
             List<String> arr = new ArrayList<>();
             for (Object s : obj) {
@@ -367,11 +370,10 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             for (Object s : obj) {
                 names.add(stringOrId(s, "text", "id"));
             }
+            stepNames = new ArrayList<>(names);
+            names.add(0, Bundle.LBL_TemplatesPanel_Name());
             p.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names.toArray(new String[names.size()]));
-            if (!names.equals(steps)) {
-                stepNames = names;
-                fireChange();
-            }
+            fireChange();
         }
         p.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, index);
         if (steps != null && steps.size() > index) {

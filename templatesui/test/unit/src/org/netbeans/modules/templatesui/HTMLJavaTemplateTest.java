@@ -153,21 +153,21 @@ public class HTMLJavaTemplateTest {
         cdl.await();
     }
     
-    private static void assertSelectedIndex(String msg, Component c, int index) {
+    static void assertSelectedIndex(String msg, Component c, int index) {
         Object selIndex = ((JComponent)c).getClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX);
         assertTrue(msg + selIndex, selIndex instanceof Number);
         assertEquals(msg, index, ((Number)selIndex).intValue());
     }
 
-    private static void assertSteps(String msg, Component c, Object... arr) {
+    static void assertSteps(String msg, Component c, Object... arr) {
         Object obj = ((JComponent)c).getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         assertTrue(msg + " it is array: " + obj, obj instanceof Object[]);
         Object[] real = (Object[]) obj;
-        assertEquals(msg + " same size", arr.length, real.length);
-        assertEquals(msg, Arrays.asList(arr), Arrays.asList(real));
+        assertEquals(msg + " same size", arr.length, real.length - 1);
+        assertEquals(msg, Arrays.asList(arr), Arrays.asList(real).subList(1, real.length));
     }
     
-    private static void assertCurrentStep(HTMLPanel p, String name) throws Exception {
+    static void assertCurrentStep(HTMLPanel p, String name) throws Exception {
         Object value = p.getWizard().evaluateProp("current");
         assertEquals("Current step is set properly", name, value);
     }
