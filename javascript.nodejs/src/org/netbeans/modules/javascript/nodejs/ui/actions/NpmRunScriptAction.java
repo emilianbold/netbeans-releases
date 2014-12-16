@@ -60,6 +60,7 @@ import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
+import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -87,6 +88,7 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
 
     private static final String PRE_PREFIX = "pre"; // NOI18N
     private static final String POST_PREFIX = "post"; // NOI18N
+    private static final String INSTALL_COMMAND = "install"; // NOI18N
 
     static final RequestProcessor RP = new RequestProcessor(NpmRunScriptAction.class);
 
@@ -146,11 +148,19 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
     private List<String> sanitizeScripts(Collection<String> allScripts) {
         Set<String> allCommands = new HashSet<>();
         for (String script : allScripts) {
+            String command;
             if (script.startsWith(PRE_PREFIX)) {
-                allCommands.add(script.substring(PRE_PREFIX.length()));
+                command = script.substring(PRE_PREFIX.length());
             } else if (script.startsWith(POST_PREFIX)) {
-                allCommands.add(script.substring(POST_PREFIX.length()));
+                command = script.substring(POST_PREFIX.length());
             } else {
+                command = script;
+            }
+            if (INSTALL_COMMAND.equals(command)) {
+                // we have special action for it
+                continue;
+            }
+            if (StringUtilities.hasText(command)) {
                 allCommands.add(script);
             }
         }
