@@ -657,6 +657,7 @@ import org.openide.filesystems.FileSystem;
                 // nongreedy exit test
                 if (LA(1) == RCURLY) {
                     /* RCURLY - right balance (exit) */
+                    consume();
                     break;
                 }
 
