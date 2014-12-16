@@ -54,8 +54,8 @@
                     'errorCode': ko.computed(function() {
                         if (current() === 'info') {
                             // checking the input fields
-                            if (!ok) return 1;
-                            if (!msg) return 2;
+                            if (!ok()) return 1;
+                            if (!msg()) return 2;
                         }
                         // no errors
                         return 0;
