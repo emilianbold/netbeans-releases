@@ -203,7 +203,7 @@ public class LibraryProvider {
         Map<String,String> result = null;
         NpmExecutable executable = NpmExecutable.getDefault(project, false);
         if (executable != null) {
-            JSONObject json = executable.list();
+            JSONObject json = executable.list(0);
             if (json != null) {
                 result = new HashMap<>();
                 JSONObject dependencies = (JSONObject)json.get("dependencies"); // NOI18N
