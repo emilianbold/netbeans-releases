@@ -52,6 +52,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -61,6 +62,7 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.ToolTipSupport;
@@ -267,7 +269,13 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 resultSet.setAnchorOffset(anchorOffset);
                             }
                         } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                            JavaDocumentationTask task = JavaDocumentationTask.create(caretOffset, element, new Callable<Boolean>() {
+                            JavaDocumentationTask<ElementJavadoc> task = JavaDocumentationTask.create(caretOffset, element, new JavaDocumentationTask.DocumentationFactory<ElementJavadoc>() {
+
+                                @Override
+                                public ElementJavadoc create(CompilationInfo compilationInfo, Element element, Callable<Boolean> cancel) {
+                                    return ElementJavadoc.create(compilationInfo, element, cancel);
+                                }
+                            }, new Callable<Boolean>() {
                                 @Override
                                 public Boolean call() throws Exception {
                                     return isTaskCancelled();

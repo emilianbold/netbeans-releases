@@ -48,34 +48,42 @@ import java.util.concurrent.Callable;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 /**
  *
  * @author Dusan Balek
  */
-public final class JavaDocumentationTask extends BaseTask {
+public final class JavaDocumentationTask<T> extends BaseTask {
 
-    public static JavaDocumentationTask create(final int caretOffset, @NullAllowed final ElementHandle<Element> element, @NullAllowed final Callable<Boolean> cancel) {
-        return new JavaDocumentationTask(caretOffset, element, cancel);
+    public static <I> JavaDocumentationTask<I> create(final int caretOffset, @NullAllowed final ElementHandle<Element> element, @NonNull final DocumentationFactory<I> factory, @NullAllowed final Callable<Boolean> cancel) {
+        return new JavaDocumentationTask<>(caretOffset, element, factory, cancel);
+    }
+
+    public static interface DocumentationFactory<T> {
+
+        T create(CompilationInfo compilationInfo, Element element, final Callable<Boolean> cancel);
     }
 
     private final ElementHandle<Element> element;
-    private ElementJavadoc documentation;
+    private final DocumentationFactory factory;
+    private T documentation;
 
-    private JavaDocumentationTask(final int caretOffset, final ElementHandle<Element> element, final Callable<Boolean> cancel) {
+    private JavaDocumentationTask(final int caretOffset, final ElementHandle<Element> element, final DocumentationFactory factory, final Callable<Boolean> cancel) {
         super(caretOffset, cancel);
-        this.element = element;
+        this.element = element;        
+        this.factory = factory;
     }
 
-    public ElementJavadoc getDocumentation() {
+    public T getDocumentation() {
         return documentation;
     }
-
+    
     @Override
     protected void resolve(CompilationController controller) throws IOException {
         controller.toPhase(JavaSource.Phase.RESOLVED);
@@ -101,8 +109,8 @@ public final class JavaDocumentationTask extends BaseTask {
                 case ENUM_CONSTANT:
                 case FIELD:
                 case METHOD:
-                    documentation = ElementJavadoc.create(controller, el, cancel);
+                    documentation = (T)factory.create(controller, el, cancel);
             }
         }
-    }
+    }    
 }
