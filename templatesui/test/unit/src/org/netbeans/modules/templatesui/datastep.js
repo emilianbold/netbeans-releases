@@ -40,6 +40,11 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
+function assertDisplay(id, value, msg) {
+    var e = document.getElementById(id);
+    assertEquals(value, e.style.display, msg)
+}
+
 assertEquals(3, tck.steps(false).length, "There are three step directives");
 assertEquals('init', tck.steps(false)[0], "First step id");
 assertEquals('info', tck.steps(false)[1], "Second step id");
@@ -51,6 +56,13 @@ assertEquals('info', tck.steps(true)[1], "Second display name is taken from id s
 assertEquals('summary', tck.steps(true)[2], "3rd display name fallbacks to id attribute");
 
 assertEquals('init', tck.current(), "Current step is 1st one");
+assertDisplay('s0', '', "Display characteristics of 1st panel not mangled");
+assertDisplay('s1', 'none', "Invisible s1");
+assertDisplay('s2', 'none', "Invisible s2");
+
 tck.next();
 assertEquals('info', tck.current(), "Moved to 2nd panel");
+assertDisplay('s0', 'none', "Invisible s0");
+assertDisplay('s1', '', "Display characteristics of 2nd panel not mangled");
+assertDisplay('s2', 'none', "Invisible s2");
 

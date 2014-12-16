@@ -48,13 +48,13 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
     </head>
     <body>
         <div class="someEmbeddableSelector">
-            <section data-bind="step: { 'id' : 'init', text : 'Initial Page'}" >
+            <section id='s0' data-bind="step: { 'id' : 'init', text : 'Initial Page'}" >
                 <p>
                 JavaScript will ask you few questions about your mood.
                 </p>
             </section>
 
-            <section data-bind="step: 'info'" >
+            <section id='s1' data-bind="step: 'info'" >
                 <p>
                 Is everything OK?
                 </p>
@@ -64,7 +64,7 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
                 <input type='text' data-bind="value: msg"/>
             </section>
 
-            <section data-bind="step: { 'id' : 'summary' }" >
+            <section id='s2' data-bind="step: { 'id' : 'summary' }" >
                 <p>
                 You are feeling <span data-bind="text: msg"></span>!
                 </p>
