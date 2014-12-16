@@ -29,6 +29,10 @@
                 <input type='text' data-bind="textInput: msg"/>
             </section>
 
+            <section data-bind="step: 'targetChooser'">
+                <!-- placeholder section for providing default location chooser -->
+            </section>
+            
             <section data-bind="step: { 'id' : 'summary' }" >
                 <p>
                 You are feeling <span data-bind="text: msg"></span>!

@@ -81,7 +81,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private List<String> steps = Collections.emptyList();
     private List<String> stepNames = Collections.emptyList();
     private String current;
-    private List<HTMLPanel> panels;
+    private List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private Object data;
     private JFXPanel p;
     private /* final */ WebView v;
@@ -135,15 +135,26 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     
     private List<? extends WizardDescriptor.Panel<WizardDescriptor>> getPanels() {
         panels = new ArrayList<>();
+        fillPanels((TemplateWizard)wizard, this, panels, steps);
+        return Collections.unmodifiableList(panels);
+    }
+    
+    static void fillPanels(
+        TemplateWizard wizard, AbstractWizard aw,
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels, List<String> steps
+    ) {
         int cnt = steps.size();
         if (cnt == 0) {
             cnt = 1;
         }
         for (int i = 0; i < cnt; i++) {
-            final HTMLPanel p = new HTMLPanel(i, this);
+            if (steps.size() > i && "targetChooser".equals(steps.get(i))) { // NOI18N
+                panels.add(wizard.targetChooser());
+                continue;
+            }
+            final HTMLPanel p = new HTMLPanel(i, aw);
             panels.add(p);
         }
-        return Collections.unmodifiableList(panels);
     }
     
     @Override
@@ -354,13 +365,14 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     }
     
    @NbBundle.Messages({
-        "LBL_TemplatesPanel_Name=Choose File Type"
+        "LBL_TemplatesPanel_Name=Choose File Type",
+        "LBL_TargetPanel_Name=Name and Location"
     })
    private void onStepsChange(Object[] obj) {
         if (obj != null) {
             List<String> arr = new ArrayList<>();
             for (Object s : obj) {
-                arr.add(stringOrId(s, "id", null));
+                arr.add(stringOrId(s, "id", null)); // NOI18N
             }
             if (!arr.equals(steps)) {
                 steps = arr;
@@ -368,7 +380,11 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             }
             List<String> names = new ArrayList<>();
             for (Object s : obj) {
-                names.add(stringOrId(s, "text", "id"));
+                String id = stringOrId(s, "text", "id"); // NOI18N
+                if ("targetChooser".equals(id)) { // NOI18N
+                    id = Bundle.LBL_TargetPanel_Name();
+                }
+                names.add(id);
             }
             stepNames = new ArrayList<>(names);
             names.add(0, Bundle.LBL_TemplatesPanel_Name());
