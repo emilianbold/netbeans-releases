@@ -246,7 +246,7 @@ public class EditorSettingsStorageTest extends NbTestCase {
         Listener listener = new Listener();
         
         result.addLookupListener(listener);
-        
+
         Collection<? extends FontColorSettings> instances = result.allInstances();
         assertEquals("Wrong number of FontColorSettings instances", 1, instances.size());
         
