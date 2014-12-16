@@ -130,7 +130,7 @@ public class SearchPanel extends javax.swing.JPanel {
      */
     @NbBundle.Messages({
         "# {0} - search term",
-        "SearchPanel.message.searching=Looking for \"{0}\" libraries"
+        "SearchPanel.message.searching=Looking for \"{0}\" packages"
     })
     private void startSearch() {
         librarySelected(null);
