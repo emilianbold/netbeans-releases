@@ -55,6 +55,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executor;
 import junit.framework.Assert;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.DefaultAttributes;
@@ -101,7 +102,12 @@ public class EditorTestLookup extends ProxyLookup {
             metaInfServices = Lookups.exclude(metaInfServices, exclude);
         }
         
-        DEFAULT_LOOKUP.setLookups(new Lookup[] {
+        DEFAULT_LOOKUP.setLookups(new Executor() {
+                @Override
+                public void execute(Runnable command) {
+                    // Ignore the first set of events
+                }
+            }, new Lookup[] {
             Lookups.fixed(instances),
             metaInfServices,
             Lookups.singleton(cl),
@@ -111,12 +117,18 @@ public class EditorTestLookup extends ProxyLookup {
             // DataSystems need default repository, which is read from the default lookup.
             // That's why the lookup is set first without the services lookup and then again
             // here with the FolderLookup over the Services folder.
-            Lookup services = new FolderLookup(DataFolder.findFolder(servicesFolder)).getLookup();
+//            Lookup services = new FolderLookup(DataFolder.findFolder(servicesFolder)).getLookup();
+            Lookup services = Lookups.forPath(servicesFolder.getPath());
             if (exclude != null && exclude.length > 0) {
                 services = Lookups.exclude(services, exclude);
             }
             
-            DEFAULT_LOOKUP.setLookups(new Lookup[] {
+            DEFAULT_LOOKUP.setLookups(new Executor() {
+                    @Override
+                    public void execute(Runnable command) {
+                        // Ignore the first set of events
+                    }
+                }, new Lookup[] {
                 Lookups.fixed(instances),
                 metaInfServices,
                 Lookups.singleton(cl),
