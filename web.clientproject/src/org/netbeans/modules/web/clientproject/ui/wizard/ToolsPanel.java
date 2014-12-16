@@ -78,6 +78,7 @@ public class ToolsPanel implements WizardDescriptor.FinishablePanel<WizardDescri
         getPanel().setNpmEnabled(tools.isNpm());
         getPanel().setBowerEnabled(tools.isBower());
         getPanel().setGruntEnabled(tools.isGrunt());
+        getPanel().setGulpEnabled(tools.isGulp());
     }
 
     @Override
@@ -85,6 +86,7 @@ public class ToolsPanel implements WizardDescriptor.FinishablePanel<WizardDescri
         tools.setNpm(getPanel().isNpmEnabled());
         tools.setBower(getPanel().isBowerEnabled());
         tools.setGrunt(getPanel().isGruntEnabled());
+        tools.setGulp(getPanel().isGulpEnabled());
     }
 
     @Override
