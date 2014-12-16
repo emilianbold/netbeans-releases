@@ -202,7 +202,8 @@ public class DependenciesPanel extends javax.swing.JPanel {
     private void updateDependencyInfo(final String libraryName, final Library library) {
         if (EventQueue.isDispatchThread()) {
             dependencyInfo.put(libraryName, library);
-            tableModel.fireTableDataChanged();
+            tableModel.fireTableRowsUpdated(0, dependencies.size()-1);
+            updateButtons();
         } else {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -228,7 +229,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
                 dependency.setInstalledVersion(installedVersion);
             }
         }
-        tableModel.fireTableDataChanged();
+        tableModel.fireTableRowsUpdated(0, dependencies.size()-1);
     }
 
     /**
@@ -345,34 +346,44 @@ public class DependenciesPanel extends javax.swing.JPanel {
      * @param installedVersion installed version of the library/package.
      */
     private void addLibrary(String libraryName, String requiredVersion, String installedVersion) {
-        Dependency dependency = findDependency(libraryName);
-        if (dependency == null) {
+        int index = findDependency(libraryName);
+        Dependency dependency;
+        if (index == -1) { // Add
             dependency = new Dependency(libraryName);
             dependencies.add(dependency);
             loadDependencyInfo(Collections.singleton(libraryName));
             sortDependencies();
+        } else { // Edit
+            dependency = dependencies.get(index);
         }
         dependency.setRequiredVersion(requiredVersion);
         dependency.setInstalledVersion(installedVersion);
-        tableModel.fireTableDataChanged();
+        if (index == -1) { // Add
+            tableModel.fireTableDataChanged();
+            index = findDependency(libraryName);
+            table.getSelectionModel().setSelectionInterval(index, index);
+        } else { // Edit
+            tableModel.fireTableRowsUpdated(0, dependencies.size()-1);
+        }
     }
 
     /**
-     * Finds a selected dependency with the specified name.
+     * Finds a dependency with the specified name.
      * 
      * @param name name of the dependency to find.
-     * @return dependency with the specified name or {@code null} if there
-     * is no such selected dependency.
+     * @return index of the dependency with the specified name or -1 if there
+     * is no such dependency.
      */
-    private Dependency findDependency(String name) {
-        Dependency result = null;
-        for (Dependency dependency : dependencies) {
+    private int findDependency(String name) {
+        int index = -1;
+        for (int i=0; i<dependencies.size(); i++) {
+            Dependency dependency = dependencies.get(i);
             if (dependency.getName().equals(name)) {
-                result = dependency;
+                index = i;
                 break;
             }
         }
-        return result;
+        return index;
     }
 
     /**
@@ -409,7 +420,8 @@ public class DependenciesPanel extends javax.swing.JPanel {
                 }
             }
         }
-        tableModel.fireTableDataChanged();
+        tableModel.fireTableRowsUpdated(0, dependencies.size()-1);
+        updateButtons();
     }
 
     /**
