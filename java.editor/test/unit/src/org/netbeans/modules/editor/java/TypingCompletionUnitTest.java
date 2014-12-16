@@ -1247,6 +1247,12 @@ public class TypingCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals("\" (|\"");
     }
     
+    public void testInsertBracketInChar() throws Exception {
+        Context ctx = new Context(new JavaKit(), "\'|\'");
+        ctx.typeChar('(');
+        ctx.assertDocumentTextEquals("\'(|\'");
+    }
+    
     public void testInsertBracketInComment() throws Exception {
         Context ctx = new Context(new JavaKit(), "//|");
         ctx.typeChar('(');

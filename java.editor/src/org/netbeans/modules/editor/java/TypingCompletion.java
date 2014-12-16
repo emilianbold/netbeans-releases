@@ -160,6 +160,8 @@ class TypingCompletion {
         if (isStringOrComment(javaTokenSequence(context, false).token().id())) {
             return;
         }
+        
+        
         char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
         if (chr == ')' || chr == ',' || chr == '\"' || chr == '\'' || chr == ' ' || chr == ']' || chr == '}' || chr == '\n' || chr == '\t' || chr == ';') {
             char insChr = context.getText().charAt(0);
@@ -829,7 +831,7 @@ class TypingCompletion {
         return null;
     }
     
-    private static Set<JavaTokenId> STRING_AND_COMMENT_TOKENS = EnumSet.of(JavaTokenId.STRING_LITERAL, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.BLOCK_COMMENT);
+    private static Set<JavaTokenId> STRING_AND_COMMENT_TOKENS = EnumSet.of(JavaTokenId.STRING_LITERAL, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.BLOCK_COMMENT, JavaTokenId.CHAR_LITERAL);
 
     private static boolean isStringOrComment(JavaTokenId javaTokenId) {
         return STRING_AND_COMMENT_TOKENS.contains(javaTokenId);
