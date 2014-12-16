@@ -70,6 +70,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.xml.XMLUtil;
@@ -174,14 +176,25 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
                 && !projectDir.mkdirs()) {
             throw new IOException("Cannot create project directory: " + projectDir);
         }
-        FileObject projectDirectory = FileUtil.toFileObject(projectDir);
+        final FileObject projectDirectory = FileUtil.toFileObject(projectDir);
         assert projectDirectory != null : "FileObject must be found for " + projectDir;
         files.add(projectDirectory);
 
         // unzip sample
-        FileObject template = Templates.getTemplate(wizardDescriptor);
-        String projectName = (String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME);
-        unZipFile(template, projectDirectory, projectName);
+        final FileObject template = Templates.getTemplate(wizardDescriptor);
+        final String projectName = (String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    unZipFile(template, projectDirectory, projectName);
+                    return null;
+                }
+            });
+        } catch (MutexException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            throw (IOException) ex.getException();
+        }
         ProjectManager.getDefault().clearNonProjectCache();
 
         // start file
@@ -204,7 +217,7 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
         return files;
     }
 
-    private static void unZipFile(FileObject template, FileObject projectDir, String projectName) throws IOException {
+    static void unZipFile(FileObject template, FileObject projectDir, String projectName) throws IOException {
         try (InputStream source = template.getInputStream()) {
             ZipInputStream str = new ZipInputStream(source);
             ZipEntry entry;
@@ -214,11 +227,11 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
                     FileUtil.createFolder(projectDir, name);
                 } else {
                     FileObject fo = FileUtil.createData(projectDir, name);
-                    if ("nbproject/project.xml".equals(name)) {
+                    if ("nbproject/project.xml".equals(name)) { // NOI18N
                         // set proper project name
                         filterProjectXml(fo, str, projectName);
-                    } else if ("package.json".equals(name)
-                            || "bower.json".equals(name)) {
+                    } else if ("package.json".equals(name) // NOI18N
+                            || "bower.json".equals(name)) { // NOI18N
                         // set proper project name
                         writeFile(str, fo);
                         filterJson(fo, projectName);
