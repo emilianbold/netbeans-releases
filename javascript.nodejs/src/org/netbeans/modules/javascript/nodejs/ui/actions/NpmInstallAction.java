@@ -44,23 +44,18 @@ package org.netbeans.modules.javascript.nodejs.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
-import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 @ActionID(id = "org.netbeans.modules.javascript.nodejs.ui.actions.NpmInstallAction", category = "Build")
 @ActionRegistration(displayName = "#NpmInstallAction.name", lazy = false)
@@ -109,31 +104,7 @@ public final class NpmInstallAction extends AbstractAction implements ContextAwa
 
     @Override
     public Action createContextAwareInstance(Lookup context) {
-        Project contextProject = context.lookup(Project.class);
-        PackageJson packageJson = null;
-        if (contextProject != null) {
-            // project action
-            packageJson = new PackageJson(contextProject.getProjectDirectory());
-        } else {
-            // package.json directly
-            FileObject file = context.lookup(FileObject.class);
-            if (file == null) {
-                DataObject dataObject = context.lookup(DataObject.class);
-                if (dataObject != null) {
-                    file = dataObject.getPrimaryFile();
-                }
-            }
-            if (file != null) {
-                packageJson = new PackageJson(file.getParent());
-            }
-        }
-        if (packageJson == null) {
-            return this;
-        }
-        if (!packageJson.exists()) {
-            return this;
-        }
-        return new NpmInstallAction(contextProject != null ? contextProject : FileOwnerQuery.getOwner(Utilities.toURI(packageJson.getFile())));
+        return new NpmInstallAction(NodeJsUtils.getPackageJsonProject(context));
     }
 
 }
