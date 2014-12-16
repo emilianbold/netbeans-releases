@@ -150,6 +150,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -289,6 +290,10 @@ public final class FileImpl implements CsmFile,
         } finally {
             projectLock.writeLock().unlock();
         }
+    }
+
+    private FileSystem getFileSystem() {
+        return getProjectImpl(true).getFileSystem();
     }
 
     /*package*/static enum State {
@@ -1328,7 +1333,7 @@ public final class FileImpl implements CsmFile,
             }
             APTPreprocHandler.State thisFileStartState = includeContextPair.state;
             LinkedList<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(thisFileStartState);
-            reverseInclStack.addLast(new IncludeInfoImpl(include, file.getAbsolutePath()));
+            reverseInclStack.addLast(new IncludeInfoImpl(include, file.getFileSystem(), file.getAbsolutePath()));
             ProjectBase projectImpl = getProjectImpl(true);
             if (projectImpl == null) {
                 return file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
@@ -1349,11 +1354,13 @@ public final class FileImpl implements CsmFile,
 
         private final int line;
         private final CsmInclude include;
+        private final FileSystem fs;
         private final CharSequence path;
 
-        IncludeInfoImpl(CsmInclude include, CharSequence path) {
+        IncludeInfoImpl(CsmInclude include, FileSystem fs, CharSequence path) {
             this.line = include.getStartPosition().getLine();
             this.include = include;
+            this.fs = fs;
             this.path = path;
         }
 
@@ -1362,6 +1369,11 @@ public final class FileImpl implements CsmFile,
             return path;
         }
 
+        @Override
+        public FileSystem getFileSystem() {
+            return fs;
+        }
+        
         @Override
         public int getIncludeDirectiveLine() {
             return line;
@@ -2111,7 +2123,7 @@ public final class FileImpl implements CsmFile,
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
-        PersistentUtils.writeBuffer(this.fileBuffer, output, getUnitId());
+        PersistentUtils.writeBuffer(this.fileBuffer, output);
         output.writeBoolean(hasBrokenIncludes.get());
         currentFileContent.write(output);
 
@@ -2141,7 +2153,7 @@ public final class FileImpl implements CsmFile,
         assert this.projectUID != null;
         this.projectRef = null;
 
-        this.fileBuffer = PersistentUtils.readBuffer(input, getUnitId());
+        this.fileBuffer = PersistentUtils.readBuffer(input);
 
         hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
         currentFileContent = new FileContent(this, this._getProject(false), input);

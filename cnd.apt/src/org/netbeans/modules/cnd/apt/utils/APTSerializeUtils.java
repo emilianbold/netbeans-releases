@@ -117,30 +117,6 @@ public class APTSerializeUtils {
         return Repository.getFileNameById(unitId, fileId);
     }
 
-    public static void writeFileNameIndex(CharSequence st, RepositoryDataOutput aStream, int unitId) throws IOException {
-        int id = (st == null) ? -1 : getFileIdByName(unitId, st);
-        aStream.writeInt(id);
-    }
-
-    public static CharSequence readFileNameIndex(RepositoryDataInput aStream, int unitId) throws IOException {
-        int id = aStream.readInt();
-        if (id >= 0) {
-            CharSequence path = getFileNameById(unitId, id);
-            return path;
-        }
-        return null;
-    }
-
-    public static CharSequence readFileNameIndex(RepositoryDataInput aStream, APTStringManager manager, int unitId) throws IOException {
-        CharSequence path = readFileNameIndex(aStream, unitId);
-        if (path != null) {
-            CharSequence res = manager.getString(path);
-            assert CharSequences.isCompact(res);
-            return res;
-        }
-        return null;
-    }
-
     static public void writeAPT(ObjectOutputStream out, APT apt) throws IOException {
         out.writeObject(apt);
         // the tree structure has a lot of siblings =>
@@ -294,33 +270,33 @@ public class APTSerializeUtils {
         return state;
     }
 
-    public static void writeIncludeState(APTIncludeHandler.State state, RepositoryDataOutput output, int unitIndex) throws IOException {
+    public static void writeIncludeState(APTIncludeHandler.State state, RepositoryDataOutput output) throws IOException {
         assert state != null;
         assert state instanceof APTIncludeHandlerImpl.StateImpl;
-        ((APTIncludeHandlerImpl.StateImpl)state).write(output, unitIndex);
+        ((APTIncludeHandlerImpl.StateImpl)state).write(output);
     }
     
-    public static APTIncludeHandler.State readIncludeState(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
-        APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(fs, input, unitIndex);
+    public static APTIncludeHandler.State readIncludeState(RepositoryDataInput input) throws IOException {
+        APTIncludeHandler.State state = new APTIncludeHandlerImpl.StateImpl(input);
         return state;
     }    
 
-    public static void writePreprocState(APTPreprocHandler.State state, RepositoryDataOutput output, int unitIndex) throws IOException {
+    public static void writePreprocState(APTPreprocHandler.State state, RepositoryDataOutput output) throws IOException {
         assert state != null;
         if (state instanceof APTPreprocHandlerImpl.StateImpl) {
             output.writeShort(PREPROC_STATE_STATE_IMPL);
-            ((APTPreprocHandlerImpl.StateImpl)state).write(output, unitIndex);
+            ((APTPreprocHandlerImpl.StateImpl)state).write(output);
         } else {
             throw new IllegalArgumentException("unknown preprocessor state" + state);  //NOI18N
         }        
     }
     
-    public static APTPreprocHandler.State readPreprocState(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
+    public static APTPreprocHandler.State readPreprocState(RepositoryDataInput input) throws IOException {
         int handler = input.readShort();
         APTPreprocHandler.State out;
         switch (handler) {
             case PREPROC_STATE_STATE_IMPL:
-                out = new APTPreprocHandlerImpl.StateImpl(fs, input, unitIndex);
+                out = new APTPreprocHandlerImpl.StateImpl(input);
                 break;
             default:
                 throw new IllegalArgumentException("unknown preprocessor state handler" + handler);  //NOI18N

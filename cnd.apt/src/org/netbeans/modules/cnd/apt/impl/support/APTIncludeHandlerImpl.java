@@ -62,12 +62,11 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
-import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 import org.openide.util.Parameters;
@@ -114,8 +113,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
 
     @Override
-    public IncludeState pushInclude(CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
-        return pushIncludeImpl(path, aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedDirIndex);
+    public IncludeState pushInclude(FileSystem fs, CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
+        return pushIncludeImpl(fs, path, aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedDirIndex);
     }
 
     @Override
@@ -264,9 +263,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, userIncludeFilePaths, Arrays.asList(inclStack));
         }
         
-        public void write(RepositoryDataOutput output, int unitIndex) throws IOException {
+        public void write(RepositoryDataOutput output) throws IOException {
             assert output != null;
-            startFile.write(output, unitIndex);
+            startFile.write(output);
             
             assert systemIncludePaths != null;
             assert userIncludePaths != null;
@@ -274,21 +273,27 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             int size = systemIncludePaths.size();
             output.writeInt(size);
             for (int i = 0; i < size; i++) {
-                APTSerializeUtils.writeFileNameIndex(systemIncludePaths.get(i).getAsSharedCharSequence(), output, unitIndex);
+                IncludeDirEntry inc = systemIncludePaths.get(i);
+                output.writeFileSystem(inc.getFileSystem());
+                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
             }
             
             size = userIncludePaths.size();
             output.writeInt(size);
             
             for (int i = 0; i < size; i++) {
-                APTSerializeUtils.writeFileNameIndex(userIncludePaths.get(i).getAsSharedCharSequence(), output, unitIndex);
+                IncludeDirEntry inc = userIncludePaths.get(i);
+                output.writeFileSystem(inc.getFileSystem());
+                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
             }
             
             size = userIncludeFilePaths.size();
             output.writeInt(size);
             
             for (int i = 0; i < size; i++) {
-                APTSerializeUtils.writeFileNameIndex(userIncludeFilePaths.get(i).getAsSharedCharSequence(), output, unitIndex);
+                IncludeDirEntry inc = userIncludeFilePaths.get(i);
+                output.writeFileSystem(inc.getFileSystem());
+                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
             }
 
             output.writeInt(inclStack.length);
@@ -299,39 +304,43 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                     inclInfoImpl = (IncludeInfoImpl) inclInfo;
                 } else {
                     inclInfoImpl = new IncludeInfoImpl(
+                            inclInfo.getFileSystem(),
                             inclInfo.getIncludedPath(),
                             inclInfo.getIncludeDirectiveLine(),
                             inclInfo.getIncludeDirectiveOffset(),
                             inclInfo.getIncludedDirIndex());
                 }
                 assert inclInfoImpl != null;
-                inclInfoImpl.write(output, unitIndex);
+                inclInfoImpl.write(output);
             }
         }
         
-        public StateImpl(FileSystem fs, final RepositoryDataInput input, int unitIndex) throws IOException {
+        public StateImpl(final RepositoryDataInput input) throws IOException {
             assert input != null;
             
-            startFile = new StartEntry(fs, input, unitIndex);
-
+            startFile = new StartEntry(input);
+            
             int size = input.readInt();
             systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(fs, APTSerializeUtils.readFileNameIndex(input, unitIndex).toString());
+                FileSystem fs = input.readFileSystem();
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
                 systemIncludePaths.add(i, path);
             }
             
             size = input.readInt();
             userIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(fs, APTSerializeUtils.readFileNameIndex(input, unitIndex).toString());
-                userIncludePaths.add(i, path);                
+                FileSystem fs = input.readFileSystem();
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
+                userIncludePaths.add(i, path);
             }
 
             size = input.readInt();
             userIncludeFilePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(fs, APTSerializeUtils.readFileNameIndex(input, unitIndex).toString());
+                FileSystem fs = input.readFileSystem();
+                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
                 userIncludeFilePaths.add(i, path);
             }
             
@@ -342,7 +351,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             } else {
                 inclStack = new IncludeInfo[size];
                 for (int i = 0; i < size; i++) {
-                    final IncludeInfo impl = new IncludeInfoImpl(input, unitIndex);
+                    final IncludeInfo impl = new IncludeInfoImpl(input);
                     assert impl != null;
                     inclStack[i] = impl;
                 }
@@ -420,7 +429,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
 
-    private IncludeState pushIncludeImpl(CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
+    private IncludeState pushIncludeImpl(FileSystem fs, CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
         assert CharSequences.isCompact(path) : "must be char sequence key " + path; // NOI18N
         boolean okToPush = true;
         if (CHECK_INCLUDE_DEPTH > 0) {
@@ -458,7 +467,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             }
         }
         if (okToPush) {
-            inclStack.addLast(new IncludeInfoImpl(path, directiveLine, directiveOffset, resolvedDirIndex));
+            inclStack.addLast(new IncludeInfoImpl(fs, path, directiveLine, directiveOffset, resolvedDirIndex));
             return IncludeState.Success;
         } else {
             APTUtils.LOG.log(Level.WARNING, "RECURSIVE inclusion:\n\t{0}\n\tin {1}\n", new Object[] { path , getCurPath() }); // NOI18N
@@ -466,16 +475,16 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
     }    
 
-    // Not SelfPersistent any more since I have to pass unitIndex into write method
-    // It is private, so I don't think it's a problem. VK.
-    private static final class IncludeInfoImpl implements IncludeInfo, Persistent {
+    private static final class IncludeInfoImpl implements IncludeInfo, SelfPersistent {
+        private final FileSystem fs;
         private final CharSequence path;
         private final int directiveLine;
         private final int directiveOffset;
         private final int resolvedDirIndex;
         
-        public IncludeInfoImpl(CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
+        public IncludeInfoImpl(FileSystem fs, CharSequence path, int directiveLine, int directiveOffset, int resolvedDirIndex) {
             assert path != null;
+            this.fs = fs;
             this.path = path;
             // in case of -include file we have negative line/offset
             assert directiveLine >= 0 || (directiveLine < 0 && directiveOffset < 0);
@@ -484,14 +493,20 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             this.resolvedDirIndex = resolvedDirIndex;
         }
         
-        public IncludeInfoImpl(final RepositoryDataInput input, int unitIndex) throws IOException {
+        public IncludeInfoImpl(final RepositoryDataInput input) throws IOException {
             assert input != null;
-            this.path = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), unitIndex);
+            this.fs = input.readFileSystem();
+            this.path = input.readFilePathForFileSystem(fs);
             directiveLine = input.readInt();
             directiveOffset = input.readInt();
             resolvedDirIndex = input.readInt();
         }
 
+        @Override
+        public FileSystem getFileSystem() {
+            return fs;
+        }
+        
         @Override
         public CharSequence getIncludedPath() {
             return path;
@@ -536,10 +551,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return hash;
         }
 
-        public void write(final RepositoryDataOutput output, int unitIndex) throws IOException {
+        public void write(final RepositoryDataOutput output) throws IOException {
             assert output != null;
-            
-            APTSerializeUtils.writeFileNameIndex(path, output, unitIndex);
+            output.writeFileSystem(fs);
+            output.writeFilePathForFileSystem(fs, path);
             output.writeInt(directiveLine);
             output.writeInt(directiveOffset);
             output.writeInt(resolvedDirIndex);

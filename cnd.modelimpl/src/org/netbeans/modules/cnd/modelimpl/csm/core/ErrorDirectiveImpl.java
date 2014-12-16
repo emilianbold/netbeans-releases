@@ -114,11 +114,11 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
     // serialization
     
     @SuppressWarnings("unchecked")
-    public ErrorDirectiveImpl(FileSystem fs, RepositoryDataInput input, int initIndex) throws IOException {
+    public ErrorDirectiveImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.msg = PersistentUtils.readUTF(input, DefaultCache.getManager());
         if (input.readBoolean()) {
-            this.ppState = PersistentUtils.readPreprocState(fs, input, initIndex);
+            this.ppState = PersistentUtils.readPreprocState(input);
         } else {
             this.ppState = null;
         }
@@ -126,15 +126,11 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
 
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
-        throw new UnsupportedOperationException("write with unitIndex have to be used"); // NOI18N
-    }
-    
-    public void write(RepositoryDataOutput output, int unitIndex) throws IOException {
         super.write(output);
         PersistentUtils.writeUTF(msg, output);
         output.writeBoolean(this.ppState != null);
         if (this.ppState != null) {
-            PersistentUtils.writePreprocState(this.ppState, output, unitIndex);
+            PersistentUtils.writePreprocState(this.ppState, output);
         }
     }
 }
