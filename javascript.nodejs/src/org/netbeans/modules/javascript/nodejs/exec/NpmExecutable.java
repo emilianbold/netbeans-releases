@@ -204,10 +204,11 @@ public class NpmExecutable {
     }
 
     @CheckForNull
-    public JSONObject list() {
+    public JSONObject list(int depth) {
         List<String> params = new ArrayList<>();
         params.add("list"); // NOI18N
         params.add("--json"); // NOI18N
+        params.add("--depth=" + depth); // NOI18N
         JSONObject info = null;
         try {
             StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
