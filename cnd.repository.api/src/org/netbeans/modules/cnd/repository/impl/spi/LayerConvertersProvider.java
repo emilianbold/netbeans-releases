@@ -237,12 +237,12 @@ public final class LayerConvertersProvider {
 
         @Override
         public CharSequence layerToClient(int fileIdx) {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public int clientToLayer(CharSequence filePath) {
-            throw new UnsupportedOperationException("Not supported.");
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
     }
 
