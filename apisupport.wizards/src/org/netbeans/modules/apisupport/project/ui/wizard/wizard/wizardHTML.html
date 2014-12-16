@@ -63,10 +63,10 @@
         </script>
 </#if>
         <!-- display the error message -->
-        <div data-bind="visible: errorCode === 1" style="color: red">
+        <div data-bind="visible: errorCode() === 1" style="color: red">
             Please, check the OK checkbox!
         </div>
-        <div data-bind="visible: errorCode === 2" style="color: red">
+        <div data-bind="visible: errorCode() === 2" style="color: red">
             Please, fill in the input field!
         </div>
     </body>
