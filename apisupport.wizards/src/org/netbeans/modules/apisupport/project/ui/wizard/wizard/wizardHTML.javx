@@ -7,7 +7,16 @@ package ${PACKAGE_NAME};
 
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.util.NbBundle.Messages;
-
+<#if HTML4J>
+import net.java.html.json.Model;
+import net.java.html.json.Property;
+import net.java.html.json.ComputedProperty;
+@Model(className="${WIZARD_PREFIX}Cntrl", properties = {
+  @Property(name = "current", type = String.class),
+  @Property(name = "ok", type = boolean.class),
+  @Property(name = "msg", type = String.class),
+})
+</#if>
 public class ${WIZARD_PREFIX} {
 // TODO define position attribute
 @TemplateRegistration(
@@ -19,8 +28,22 @@ public class ${WIZARD_PREFIX} {
   description="${TR_description}"
 )
 @Messages("${WIZARD_PREFIX}_displayName=${TR_displayName}")
+<#if HTML4J>
+  public static ${WIZARD_PREFIX}Cntrl javaWizard() {
+    return new ${WIZARD_PREFIX}Cntrl();
+  }
+
+  @ComputedProperty static int errorCode(String current, boolean ok, String msg) {
+    if ("info".equals(current)) {
+      if (!ok) return 1;
+      if (msg == null || msg.isEmpty()) return 2;
+    }
+    return 0;
+  }
+<#else>
     public static String jsWizard() {
         return "init();";
     }
+</#if>
 }
 

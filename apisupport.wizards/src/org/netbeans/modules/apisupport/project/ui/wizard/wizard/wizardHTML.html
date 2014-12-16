@@ -33,11 +33,13 @@
                 <p>
                 You are feeling <span data-bind="text: msg"></span>!
                 Let's proceed to create a file which will express your 
-                feeling by using Freemarker templating engine and values
-                filled in this wizard.
+                feeling by using <a href="http://freemarker.org/">Freemarker</a>
+                templating engine and values filled in this wizard.
                 </p>
             </section>
         </div>
+<#if HTML4J>
+<#else>
         <script>
             function init() { 
                 var msg = ko.observable();
@@ -59,6 +61,7 @@
                 }; 
             }
         </script>
+</#if>
         <!-- display the error message -->
         <div data-bind="visible: errorCode === 1" style="color: red">
             Please, check the OK checkbox!

@@ -225,23 +225,22 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     private void regenerateHTML() {
+        boolean isJava = fileTemplateType == TemplateType.HTML4J;
         cmf = new CreatedModifiedFiles(getProject());
         
-        Map<String, String> basicTokens = new HashMap<String, String>();
+        Map<String, Object> basicTokens = new HashMap<String, Object>();
         basicTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
         basicTokens.put("WIZARD_PREFIX", prefix); // NOI18N
 
-        List<String> panelClassNames = new ArrayList<String>();
-        
         cmf.add(cmf.addModuleDependency("org.netbeans.api.templates")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        if (isJava) {
+            cmf.add(cmf.addModuleDependency("net.java.html")); // NOI18N
+            cmf.add(cmf.addModuleDependency("net.java.html.json")); // NOI18N
+        }
         cmf.add(cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_NEEDS, "org.netbeans.api.templates.wizard")); // NOI18N
         
-        Map<String,Object> replaceTokens = new HashMap<String,Object>(basicTokens);
-
-        boolean isJava = fileTemplateType == TemplateType.HTML4J;
-        
-        basicTokens.put("HTML4J", Boolean.toString(isJava));
+        basicTokens.put("HTML4J", isJava);
         
         // generate .html description for the template
         String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase(Locale.ENGLISH) + prefix.substring(1);
@@ -262,21 +261,21 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         )); 
         String instanceFullPath = category + '/' + lowerCasedPrefix;
 
-        replaceTokens.put("TR_folder", category.replaceFirst("^Templates/", ""));
-        replaceTokens.put("TR_displayName", displayName);
-        replaceTokens.put("TR_description", lowerCasedPrefix + "Descr.html");
-        replaceTokens.put("TR_page", lowerCasedPrefix + ".html");
-        replaceTokens.put("TR_content", lowerCasedPrefix + ".fmk");
+        basicTokens.put("TR_folder", category.replaceFirst("^Templates/", ""));
+        basicTokens.put("TR_displayName", displayName);
+        basicTokens.put("TR_description", lowerCasedPrefix + "Descr.html");
+        basicTokens.put("TR_page", lowerCasedPrefix + ".html");
+        basicTokens.put("TR_content", lowerCasedPrefix + ".fmk");
 
         // Copy wizard icon
         FileObject origIcon = origIconPath != null ? FileUtil.toFileObject(origIconPath) : null;
         if (origIcon != null) {
             String relToSrcDir = addCreateIconOperation(cmf, origIcon);
-            replaceTokens.put("TR_iconBase", relToSrcDir);
+            basicTokens.put("TR_iconBase", relToSrcDir);
         }
         FileObject template = CreatedModifiedFiles.getTemplate("wizardHTML.java"); // NOI18N
         String path = getDefaultPackagePath(prefix + ".java", false); // NOI18N
-        cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
+        cmf.add(cmf.createFileWithSubstitutions(path, template, basicTokens));
     }
     
     private void reset() {
