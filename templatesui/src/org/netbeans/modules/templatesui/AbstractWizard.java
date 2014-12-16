@@ -44,8 +44,6 @@ package org.netbeans.modules.templatesui;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,15 +55,12 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
-import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -300,6 +295,9 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                     }
                 }
             });
+        }
+        if (index < stepNames.size()) {
+            p.setName(stepNames.get(index));
         }
         return p;
     }

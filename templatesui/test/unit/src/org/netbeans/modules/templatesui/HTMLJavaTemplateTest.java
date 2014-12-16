@@ -107,6 +107,7 @@ public class HTMLJavaTemplateTest {
         
         Component cmp1 = p1.getComponent();
         assertNotNull("component initialized", cmp1);
+        assertEquals("the right title", "One", cmp1.getName());
         
         while (!p1.isValid()) {
             awaitFX();
