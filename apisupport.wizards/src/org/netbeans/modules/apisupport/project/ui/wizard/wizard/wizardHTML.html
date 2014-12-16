@@ -4,7 +4,7 @@
 <#include "${project.licensePath}">
 <html>
     <head>
-        <title>TODO supply a title</title>
+        <title>${TR_displayName}</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
@@ -12,35 +12,59 @@
         <div>
             <section data-bind="step: { 'id' : 'init', text : 'Initial Page'}" >
                 <p>
-                JavaScript will ask you few questions about your mood.
+                Write your UI in portable HTML and display it in NetBeans 
+                or on web! Read more at <a href="http://wiki.netbeans.org/HtmlUIForTemplates">our wiki</a>...
                 </p>
             </section>
 
             <section data-bind="step: 'info'" >
                 <p>
-                Is everything OK?
+                    Use <a href="http://knockoutjs.com">knockout.js</a> bindings 
+                    to isolate your view model from the actual look of your HTML
+                    page. Bind your view to model written in Java or JavaScript.
                 </p>
+                <h3>Is everything OK?</h3>
                 <input type="checkbox" data-bind="checked: ok"/>
-                <p>How do you feel?
-                </p>
+                <h3>How do you feel?</h3>
                 <input type='text' data-bind="value: msg"/>
             </section>
 
             <section data-bind="step: { 'id' : 'summary' }" >
                 <p>
                 You are feeling <span data-bind="text: msg"></span>!
+                Let's proceed to create a file which will express your 
+                feeling by using Freemarker templating engine and values
+                filled in this wizard.
                 </p>
             </section>
-        </div>        
+        </div>
         <script>
             function init() { 
+                var msg = ko.observable();
+                var current = ko.observable();
+                var ok = ko.observable();
                 return {
-                    'current' : ko.observable(),
-                    'errorCode': ko.observable(0),
-                    'ok' : ko.observable(),
-                    'msg' : ko.observable()
+                    'current' : current,
+                    'errorCode': ko.computed(function() {
+                        if (current() === 'info') {
+                            // checking the input fields
+                            if (!ok) return 1;
+                            if (!msg) return 2;
+                        }
+                        // no errors
+                        return 0;
+                    }),
+                    'ok' : ok,
+                    'msg' : msg
                 }; 
             }
         </script>
+        <!-- display the error message -->
+        <div data-bind="visible: errorCode === 1" style="color: red">
+            Please, check the OK checkbox!
+        </div>
+        <div data-bind="visible: errorCode === 2" style="color: red">
+            Please, fill in the input field!
+        </div>
     </body>
 </html>

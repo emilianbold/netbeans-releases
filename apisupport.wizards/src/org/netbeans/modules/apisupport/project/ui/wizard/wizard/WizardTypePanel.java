@@ -314,6 +314,12 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
             lastStaticValue = statik.isSelected();
             dynamic.setSelected(true);
         }
+        if (newHTML.isSelected() || newHTML4J.isSelected()) {
+            numberOfSteps.setEnabled(false);
+            numberOfSteps.setText("3");
+        } else {
+            numberOfSteps.setEnabled(true);
+        }
 	}//GEN-LAST:event_typeChanged
 
     private void newHTML4JtypeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newHTML4JtypeChanged
