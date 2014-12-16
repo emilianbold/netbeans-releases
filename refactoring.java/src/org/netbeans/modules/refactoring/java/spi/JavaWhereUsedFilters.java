@@ -51,7 +51,11 @@ public enum JavaWhereUsedFilters {
 
     IMPORT("filter-import"),
     COMMENT("filter-comment"),
-    TESTFILE("filter-testfile");
+    TESTFILE("filter-testfile"),
+    /**
+     * @since 1.54
+     */
+    SOURCEFILE("filter-sourcefile");
     private final String key;
 
     private JavaWhereUsedFilters(String key) {
