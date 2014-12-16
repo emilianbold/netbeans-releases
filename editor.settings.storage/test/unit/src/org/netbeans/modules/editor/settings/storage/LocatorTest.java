@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.core.startup.Main;
@@ -129,7 +130,7 @@ public class LocatorTest extends NbTestCase {
         };
         
         FileObject baseFolder = FileUtil.getConfigFile("Editors");
-        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
+        Map<String, List<Object []>> results = new HashMap<>();
         scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
@@ -148,6 +149,7 @@ public class LocatorTest extends NbTestCase {
             "Editors/text/x-whatever/FontsColors/MyProfileA/file1.xml",
             "Editors/text/x-whatever/FontsColors/MyProfileA/file2.xml",
             "Editors/text/x-whatever/FontsColors/MyProfileA/file3.xml",
+            "Editors/text/x-whatever/FontsColors/MyProfileA/org-netbeans-modules-editor-settings-CustomFontsColors.xml",
         };
         
         String [] files2 = new String [] {
@@ -156,15 +158,14 @@ public class LocatorTest extends NbTestCase {
             "Editors/text/x-whatever/FontsColors/MyProfile2/mrkev.xml",
             "Editors/text/x-whatever/FontsColors/MyProfile2/okurka.xml",
             "Editors/text/x-whatever/FontsColors/MyProfile2/cibule.xml",
+            "Editors/text/x-whatever/FontsColors/MyProfile2/org-netbeans-modules-editor-settings-CustomFontsColors.xml",
         };
         
         createOrderedFiles(files1, FC_CONTENTS);
-        TestUtilities.createFile("Editors/text/x-whatever/FontsColors/MyProfileA/org-netbeans-modules-editor-settings-CustomFontsColors.xml", FC_CONTENTS);
         createOrderedFiles(files2, FC_CONTENTS);
-        TestUtilities.createFile("Editors/text/x-whatever/FontsColors/MyProfile2/org-netbeans-modules-editor-settings-CustomFontsColors.xml", FC_CONTENTS);
         
         FileObject baseFolder = FileUtil.getConfigFile("Editors");
-        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
+        Map<String, List<Object []>> results = new HashMap<>();
         scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
@@ -189,7 +190,7 @@ public class LocatorTest extends NbTestCase {
         createOrderedFiles(files, FC_CONTENTS);
         
         FileObject baseFolder = FileUtil.getConfigFile("Editors");
-        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
+        Map<String, List<Object []>> results = new HashMap<>();
         scan(ColoringStorage.ID, baseFolder, null, null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
@@ -200,6 +201,7 @@ public class LocatorTest extends NbTestCase {
     }
 
     public void testFullFontsColorsMixedLayout() throws Exception {
+        String writableUserFile = "Editors/" + getWritableFileName(ColoringStorage.ID, "text/x-whatever", "NetBeans", "xyz", false);
         String [] files = new String [] {
             "Editors/text/x-whatever/NetBeans/Defaults/defaultColoring.xml",
             "Editors/text/x-whatever/NetBeans/Defaults/coloring.xml",
@@ -213,16 +215,13 @@ public class LocatorTest extends NbTestCase {
             "Editors/text/x-whatever/FontsColors/NetBeans/file1.xml",
             "Editors/text/x-whatever/FontsColors/NetBeans/file2.xml",
             "Editors/text/x-whatever/FontsColors/NetBeans/file3.xml",
+            writableUserFile,
         };
-        String writableUserFile = "Editors/" + getWritableFileName(ColoringStorage.ID, "text/x-whatever", "NetBeans", "xyz", false);
         
         createOrderedFiles(files, FC_CONTENTS);
-        TestUtilities.createFile(writableUserFile, FC_CONTENTS);
-        orderFiles("Editors/text/x-whatever/FontsColors/NetBeans/file3.xml", writableUserFile);
-//"Editors/text/x-whatever/FontsColors/NetBeans/org-netbeans-modules-editor-settings-CustomFontsColors.xml"
         
         FileObject baseFolder = FileUtil.getConfigFile("Editors");
-        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
+        Map<String, List<Object []>> results = new HashMap<>();
         scan(ColoringStorage.ID, baseFolder, "text/x-whatever", null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
@@ -233,6 +232,7 @@ public class LocatorTest extends NbTestCase {
     }
     
     public void testFullKeybindingsLegacyLayout() throws Exception {
+        String writableUserFile = "Editors/" + getWritableFileName(KeyMapsStorage.ID, null, "NetBeans", null, false);
         String [] files = new String [] {
             "Editors/text/base/Defaults/keybindings.xml",
             "Editors/Keybindings/NetBeans/Defaults/zz.xml",
@@ -243,15 +243,13 @@ public class LocatorTest extends NbTestCase {
             "Editors/Keybindings/NetBeans/papap.xml",
             "Editors/Keybindings/NetBeans/kekeke.xml",
             "Editors/Keybindings/NetBeans/dhdhdddd.xml",
+            writableUserFile,
         };
-        String writableUserFile = "Editors/" + getWritableFileName(KeyMapsStorage.ID, null, "NetBeans", null, false);
         
         createOrderedFiles(files, KB_CONTENTS);
-        TestUtilities.createFile(writableUserFile, KB_CONTENTS);
-        orderFiles("Editors/Keybindings/NetBeans/dhdhdddd.xml", writableUserFile);
         
         FileObject baseFolder = FileUtil.getConfigFile("Editors");
-        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
+        Map<String, List<Object []>> results = new HashMap<>();
         scan(KeyMapsStorage.ID, baseFolder, null, null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
@@ -270,7 +268,7 @@ public class LocatorTest extends NbTestCase {
         createOrderedFiles(files, KB_CONTENTS);
         
         FileObject baseFolder = FileUtil.getConfigFile("Editors");
-        Map<String, List<Object []>> results = new HashMap<String, List<Object []>>();
+        Map<String, List<Object []>> results = new HashMap<>();
         scan(KeyMapsStorage.ID, baseFolder, null, null, true, true, true, results);
         
         assertNotNull("Scan results should not null", results);
@@ -282,10 +280,10 @@ public class LocatorTest extends NbTestCase {
 
     public static void checkProfileFiles(String [] paths, String writablePath, List<Object []> files, String profileId) {
         assertNotNull(profileId + ": No files", files);
-        assertEquals(profileId + ": Wrong number of files", 
-            writablePath != null ? paths.length + 1 : paths.length, files.size());
+        assertEquals(profileId + ": Wrong number of files", paths.length, files.size());
         
-        for(int i = 0; i < paths.length; i++) {
+        int nrOfFiles = writablePath != null ? paths.length - 1 : paths.length;
+        for(int i = 0; i < nrOfFiles; i++) {
             FileObject profileHome = (FileObject) files.get(i)[0];
             FileObject settingFile = (FileObject) files.get(i)[1];
             boolean modulesFile = ((Boolean) files.get(i)[2]).booleanValue();
@@ -294,50 +292,26 @@ public class LocatorTest extends NbTestCase {
         }
         
         if (writablePath != null) {
-            FileObject profileHome = (FileObject) files.get(paths.length)[0];
-            FileObject settingFile = (FileObject) files.get(paths.length)[1];
-            boolean modulesFile = ((Boolean) files.get(paths.length)[2]).booleanValue();
+            FileObject profileHome = (FileObject) files.get(files.size() - 1)[0];
+            FileObject settingFile = (FileObject) files.get(files.size() - 1)[1];
+            boolean modulesFile = ((Boolean) files.get(files.size() - 1)[2]).booleanValue();
 
             assertEquals(profileId + ": wrong writable file", writablePath, settingFile.getPath());
         }
     }
     
     public static void createOrderedFiles(String [] files, String contents) throws IOException {
+        LinkedList<FileObject> createdFiles = new LinkedList<>();
         for(int i = 0; i < files.length; i++) {
             FileObject f = TestUtilities.createFile(files[i], contents);
-            if (i + 1 < files.length) {
-                String [] thisFile = getNameParts(files[i]);
-                String [] nextFile = getNameParts(files[i + 1]);
-
-                if (thisFile[0].equals(nextFile[0])) {
-                    String ordering = thisFile[1] + "/" + nextFile[1];
-                    f.getParent().setAttribute(ordering, Boolean.TRUE);
-                }
+            if(!createdFiles.isEmpty() && createdFiles.getLast().getParent() != f.getParent()) {
+                FileUtil.setOrder(createdFiles);
+                createdFiles.clear();
             }
+            createdFiles.add(f);
         }
-    }
-    
-    private static String [] getNameParts(String path) {
-        int idx = path.lastIndexOf('/');
-        if (idx != -1) {
-            return new String [] { path.substring(0, idx), path.substring(idx + 1) };
-        } else {
-            return new String [] { "", path };
-        }
-    }
-    
-    public static void orderFiles(String pathA, String pathB) throws IOException {
-        FileObject fileA = FileUtil.getConfigFile(pathA);
-        FileObject fileB = FileUtil.getConfigFile(pathB);
-        assertNotNull("Can't find file '" + pathA + "'", fileA);
-        assertNotNull("Can't find file '" + pathB + "'", fileB);
-        
-        FileObject parentA = fileA.getParent();
-        FileObject parentB = fileB.getParent();
-        assertSame("Can't order files from different folder.", parentA, parentB);
-        
-        String ordering = fileA.getNameExt() + "/" + fileB.getNameExt(); //NOI18N
-        parentA.setAttribute(ordering, Boolean.TRUE);
+        FileUtil.setOrder(createdFiles);
+        createdFiles.clear();
     }
     
     private String getCurrentOsId() {

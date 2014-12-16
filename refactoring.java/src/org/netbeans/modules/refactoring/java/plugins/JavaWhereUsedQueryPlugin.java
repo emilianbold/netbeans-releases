@@ -484,6 +484,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_import.png", false));
         filtersDescription.addFilter(JavaWhereUsedFilters.COMMENT.getKey(), "Comment filter", true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_comment.png", false));
+        filtersDescription.addFilter(JavaWhereUsedFilters.SOURCEFILE.getKey(), "Source filter", true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_source.png", false));
         filtersDescription.addFilter(JavaWhereUsedFilters.TESTFILE.getKey(), "Test filter", true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_test.png", false));
     }
@@ -549,11 +551,16 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     }
                     elements.add(refactoring, el);
                 }
-                if(fromTestRoot && !foundElements.isEmpty()) {
-                    usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
-                }
-                if(!foundElements.isEmpty() && findVisitor.usagesInComments()) {
-                    usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
+                if(!foundElements.isEmpty()) {
+                    if(fromTestRoot) {
+                        usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
+                    }
+                    if(!fromTestRoot) {
+                        usedFilters.add(JavaWhereUsedFilters.SOURCEFILE.getKey());
+                    }
+                    if(findVisitor.usagesInComments()) {
+                        usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
+                    }
                 }
             }
             Collection<TreePath> result = new ArrayList<>();
@@ -572,6 +579,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             }
             if(fromTestRoot && !result.isEmpty()) {
                 usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
+            }
+            if(!fromTestRoot && !result.isEmpty()) {
+                usedFilters.add(JavaWhereUsedFilters.SOURCEFILE.getKey());
             }
             if(inImport.get()) {
                 usedFilters.add(JavaWhereUsedFilters.IMPORT.getKey());

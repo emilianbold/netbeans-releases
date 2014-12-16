@@ -424,7 +424,8 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
 
     @Override
     public boolean filter(FiltersManager manager) {
-        if(!inTestclass || (inTestclass && manager.isSelected(JavaWhereUsedFilters.TESTFILE.getKey()))) { 
+        if((!inTestclass  && manager.isSelected(JavaWhereUsedFilters.SOURCEFILE.getKey())) ||
+	    (inTestclass && (inTestclass && manager.isSelected(JavaWhereUsedFilters.TESTFILE.getKey())))) { 
             if (access != null) {
                 return manager.isSelected(access.getKey());
             } else if (inComment) {
