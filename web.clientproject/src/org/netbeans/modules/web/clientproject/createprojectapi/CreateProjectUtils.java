@@ -133,6 +133,9 @@ public final class CreateProjectUtils {
         if (tools.isGrunt()) {
             files.add(createFile(folder, "Gruntfile.js", "Templates/ClientSide/Gruntfile.js")); // NOI18N
         }
+        if (tools.isGulp()) {
+            files.add(createFile(folder, "gulpfile.js", "Templates/ClientSide/gulpfile.js")); // NOI18N
+        }
         return files;
     }
 
@@ -170,6 +173,7 @@ public final class CreateProjectUtils {
         private volatile boolean npm;
         private volatile boolean bower;
         private volatile boolean grunt;
+        private volatile boolean gulp;
 
 
         /**
@@ -182,6 +186,7 @@ public final class CreateProjectUtils {
             npm = tools.npm;
             bower = tools.bower;
             grunt = tools.grunt;
+            gulp = tools.gulp;
         }
 
         /**
@@ -192,7 +197,8 @@ public final class CreateProjectUtils {
             return new Tools()
                     .setNpm(true)
                     .setBower(true)
-                    .setGrunt(true);
+                    .setGrunt(true)
+                    .setGulp(true);
         }
 
         /**
@@ -249,9 +255,29 @@ public final class CreateProjectUtils {
             return this;
         }
 
+        /**
+         * Is Gulp tool enabled?
+         * @return {@code true} if Gulp tool is enabled
+         * @since 1.77
+         */
+        public boolean isGulp() {
+            return gulp;
+        }
+
+        /**
+         * Set Gulp tool.
+         * @param gulp {@code true} if Gulp tool is enabled
+         * @return self
+         * @since 1.77
+         */
+        public Tools setGulp(boolean gulp) {
+            this.gulp = gulp;
+            return this;
+        }
+
         @Override
         public String toString() {
-            return "Tools{" + "npm=" + npm + ", bower=" + bower + ", grunt=" + grunt + '}'; // NOI18N
+            return "Tools{" + "npm=" + npm + ", bower=" + bower + ", grunt=" + grunt + ", gulp=" + gulp + '}'; // NOI18N
         }
 
     }

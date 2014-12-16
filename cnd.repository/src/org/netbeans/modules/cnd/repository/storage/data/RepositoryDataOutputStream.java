@@ -93,6 +93,18 @@ public final class RepositoryDataOutputStream extends DataOutputStream implement
     }
 
     @Override
+    public void writeFilePath(CharSequence filePath) throws IOException {
+        writeInt(layersConverterProvider.getWriteFilePathConverter().clientToLayer(filePath));
+    }
+
+    @Override
+    public void writeFilePathForFileSystem(FileSystem fileSystem, CharSequence filePath) throws IOException {
+        // for now we don't distinguish path dictionaries, but could in future
+        // i.e. when system library is moved from local to remote fs
+        writeFilePath(filePath);
+    }
+
+    @Override
     public void commit() {
         if (wc != null && layerKey != null) {
             wc.write(layerKey, outputStream.getBuffer());

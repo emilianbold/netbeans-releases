@@ -19,6 +19,7 @@
           <Component id="packageJsonCheckBox" min="-2" max="-2" attributes="0"/>
           <Component id="bowerJsonCheckBox" min="-2" max="-2" attributes="0"/>
           <Component id="gruntfileCheckBox" min="-2" max="-2" attributes="0"/>
+          <Component id="gulpfileCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -29,6 +30,8 @@
               <Component id="bowerJsonCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="gruntfileCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="gulpfileCheckBox" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -55,6 +58,14 @@
         <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="Tools.gruntfileCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="gulpfileCheckBox">
+      <Properties>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="Tools.gulpfileCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

@@ -89,6 +89,7 @@ public class NpmExecutable {
 
     private static final String INSTALL_PARAM = "install"; // NOI18N
     private static final String UNINSTALL_PARAM = "uninstall"; // NOI18N
+    private static final String RUN_SCRIPT_PARAM = "run-script"; // NOI18N
 
     protected final Project project;
     protected final String npmPath;
@@ -131,6 +132,22 @@ public class NpmExecutable {
 
     String getCommand() {
         return npmPath;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "NpmExecutable.run.script=npm ({0})",
+    })
+    @CheckForNull
+    public Future<Integer> runScript(String... args) {
+        assert !EventQueue.isDispatchThread();
+        assert project != null;
+        String projectName = NodeJsUtils.getProjectDisplayName(project);
+        Future<Integer> task = getExecutable(Bundle.NpmExecutable_run_script(projectName))
+                .additionalParameters(getRunScriptParams(args))
+                .run(getDescriptor());
+        assert task != null : npmPath;
+        return task;
     }
 
     @NbBundle.Messages({
@@ -266,6 +283,13 @@ public class NpmExecutable {
         File workDir = FileUtil.toFile(project.getProjectDirectory());
         assert workDir != null : project.getProjectDirectory();
         return workDir;
+    }
+
+    private List<String> getRunScriptParams(String... args) {
+        List<String> params = new ArrayList<>(args.length + 1);
+        params.add(RUN_SCRIPT_PARAM);
+        params.addAll(getArgsParams(args));
+        return getParams(params);
     }
 
     private List<String> getInstallParams(String... args) {

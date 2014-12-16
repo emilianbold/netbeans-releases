@@ -45,13 +45,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
@@ -154,6 +158,36 @@ public final class NodeJsUtils {
             }
         }
         return Pair.of(startFile, startArgsBuilder.toString());
+    }
+
+    @CheckForNull
+    public static Project getPackageJsonProject(Lookup context) {
+        Project project = context.lookup(Project.class);
+        PackageJson packageJson = null;
+        if (project != null) {
+            // project action
+            packageJson = new PackageJson(project.getProjectDirectory());
+        } else {
+            // package.json directly
+            FileObject file = context.lookup(FileObject.class);
+            if (file == null) {
+                DataObject dataObject = context.lookup(DataObject.class);
+                if (dataObject != null) {
+                    file = dataObject.getPrimaryFile();
+                }
+            }
+            if (file != null) {
+                packageJson = new PackageJson(file.getParent());
+                project = FileOwnerQuery.getOwner(file);
+            }
+        }
+        if (packageJson == null) {
+            return null;
+        }
+        if (!packageJson.exists()) {
+            return null;
+        }
+        return project;
     }
 
 }

@@ -289,13 +289,13 @@ public final class IncludedFileContainer extends ProjectComponent {
         private Storage(RepositoryDataInput aStream) throws IOException {
             fileSystem = PersistentUtils.readFileSystem(aStream);
             includedProjectUID = UIDObjectFactory.getDefaultFactory().readUID(aStream);
-            FileContainer.readStringToFileEntryMap(fileSystem, getIncludedUnitId(includedProjectUID), aStream, myFiles);
+            FileContainer.readFilePathsForFileSystemToFileEntryMap(fileSystem, aStream, myFiles);
         }
 
         private void write(RepositoryDataOutput aStream) throws IOException {
             PersistentUtils.writeFileSystem(fileSystem, aStream);
             UIDObjectFactory.getDefaultFactory().writeUID(includedProjectUID, aStream);
-            FileContainer.writeStringToFileEntryMap(getIncludedUnitId(includedProjectUID), aStream, myFiles);
+            FileContainer.writeStringToFileEntryMap(aStream, myFiles);
         }
         
         @Override

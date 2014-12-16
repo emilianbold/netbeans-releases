@@ -56,10 +56,16 @@ public final class LayerConvertersProvider {
         this.layerProviderInstance = layerProviderInstance;
     }
 
-    public static LayerConvertersProvider getInstance(UnitsConverter readUnitsConverter, UnitsConverter writeUnitsConverter,
-            FSConverter readFSConverter, FSConverter writeFSConverter) {
-        return new LayerConvertersProvider(new LayerConvertersProviderInstanceImpl1(readUnitsConverter, writeUnitsConverter,
-                readFSConverter, writeFSConverter));
+    public static LayerConvertersProvider getReadInstance(UnitsConverter readUnitsConverter,
+            FSConverter readFSConverter, FilePathConverter readFilePathConverter) {
+        return new LayerConvertersProvider(new LayerConvertersProviderInstanceImpl1(readUnitsConverter, null,
+                readFSConverter, null, readFilePathConverter, null));
+    }
+
+    public static LayerConvertersProvider getWriteInstance(UnitsConverter writeUnitsConverter,
+            FSConverter writeFSConverter, FilePathConverter writeFilePathConverter) {
+        return new LayerConvertersProvider(new LayerConvertersProviderInstanceImpl1(null, writeUnitsConverter,
+                null, writeFSConverter, null, writeFilePathConverter));
     }
 
     public static LayerConvertersProvider getInstance(LayeringSupport layeringSupport, LayerDescriptor layerDescriptor) {
@@ -82,6 +88,14 @@ public final class LayerConvertersProvider {
         return layerProviderInstance.getWriteFSConverter();
     }
 
+    public FilePathConverter getReadFilePathConverter() {
+        return layerProviderInstance.getReadFilePathConverter();
+    }
+
+    public FilePathConverter getWriteFilePathConverter() {
+        return layerProviderInstance.getWriteFilePathConverter();
+    }
+
     private interface LayerConvertersProviderInstance {
 
         // 100002 <-> 5
@@ -93,6 +107,10 @@ public final class LayerConvertersProvider {
         public FSConverter getReadFSConverter();
 
         public FSConverter getWriteFSConverter();
+
+        public FilePathConverter getReadFilePathConverter();
+
+        public FilePathConverter getWriteFilePathConverter();
     }
 
     private static class LayerConvertersProviderInstanceImpl1 implements LayerConvertersProviderInstance {
@@ -101,12 +119,18 @@ public final class LayerConvertersProvider {
         private final UnitsConverter writeUnitsConverter;
         private final FSConverter readFSConverter;
         private final FSConverter writeFSConverter;
+        private final FilePathConverter readFilePathConverter;
+        private final FilePathConverter writeFilePathConverter;
 
-        public LayerConvertersProviderInstanceImpl1(UnitsConverter readUnitsConverter, UnitsConverter writeUnitsConverter, FSConverter readFSConverter, FSConverter writeFSConverter) {
+        public LayerConvertersProviderInstanceImpl1(UnitsConverter readUnitsConverter, UnitsConverter writeUnitsConverter, 
+                FSConverter readFSConverter, FSConverter writeFSConverter,
+                FilePathConverter readFilePathConverter, FilePathConverter writeFilePathConverter) {
             this.readUnitsConverter = readUnitsConverter == null ? new NoopUnitIDConverter() : readUnitsConverter;
             this.writeUnitsConverter = writeUnitsConverter == null ? new NoopUnitIDConverter() : writeUnitsConverter;
             this.readFSConverter = readFSConverter == null ? new NoopFSConverter() : readFSConverter;
             this.writeFSConverter = writeFSConverter == null ? new NoopFSConverter() : writeFSConverter;
+            this.readFilePathConverter = readFilePathConverter == null ? new UnsupportedFilePathConverter(): readFilePathConverter;
+            this.writeFilePathConverter = writeFilePathConverter == null ? new UnsupportedFilePathConverter() : writeFilePathConverter;
         }
 
         @Override
@@ -127,6 +151,16 @@ public final class LayerConvertersProvider {
         @Override
         public FSConverter getWriteFSConverter() {
             return writeFSConverter;
+        }
+
+        @Override
+        public FilePathConverter getReadFilePathConverter() {
+            return readFilePathConverter;
+        }
+
+        @Override
+        public FilePathConverter getWriteFilePathConverter() {
+            return writeFilePathConverter;
         }
 
     }
@@ -161,6 +195,16 @@ public final class LayerConvertersProvider {
             return layeringSupport.getWriteFSConverter(layerDescriptor);
         }
 
+        @Override
+        public FilePathConverter getReadFilePathConverter() {
+            return new UnsupportedFilePathConverter();
+        }
+
+        @Override
+        public FilePathConverter getWriteFilePathConverter() {
+            return new UnsupportedFilePathConverter();
+        }
+
     }
 
     private static final class NoopUnitIDConverter implements UnitsConverter {
@@ -186,6 +230,19 @@ public final class LayerConvertersProvider {
         @Override
         public int clientToLayer(FileSystem fileSystem) {
             return 0;
+        }
+    }
+
+    private static final class UnsupportedFilePathConverter implements FilePathConverter {
+
+        @Override
+        public CharSequence layerToClient(int fileIdx) {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public int clientToLayer(CharSequence filePath) {
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
     }
 
