@@ -208,6 +208,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
     }
     private void checkCanonical(FileObject orig, FileObject canonicalShouldBe) throws Exception {
         FileObject canonical = FileSystemProvider.getCanonicalFileObject(orig);
+        assertEquals(canonical, orig.getCanonicalFileObject());
         assertNotNull("Null canonical file object for " + orig, canonical);
         assertEquals("Canonical file object differs for " + orig, canonicalShouldBe, canonical);
         String path = FileSystemProvider.getCanonicalPath(orig);
