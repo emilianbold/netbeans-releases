@@ -74,7 +74,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.modules.Places;
 import org.openide.text.Line;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -90,7 +89,6 @@ public final class FileUtils {
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
     private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
-    private static final String NODEJS_DIR_NAME = "nodejs"; // NOI18N
     private static final String NODEJS_SOURCES_URL = "http://nodejs.org/dist/v%s/node-v%s.tar.gz"; // NOI18N
 
 
@@ -320,20 +318,6 @@ public final class FileUtils {
         }
     }
 
-    public static File getNodeSources() {
-        return Places.getCacheSubdirectory(NODEJS_DIR_NAME);
-    }
-
-    public static boolean hasNodeSources(Version version) {
-        assert version != null;
-        return getNodeSources(version).isDirectory();
-    }
-
-    public static File getNodeSources(Version version) {
-        assert version != null;
-        return new File(getNodeSources(), version.toString());
-    }
-
     @NbBundle.Messages({
         "# {0} - version",
         "FileUtils.sources.downloading=Downloading sources for node.js version {0}...",
@@ -342,7 +326,7 @@ public final class FileUtils {
         assert !EventQueue.isDispatchThread();
         assert version != null;
         deleteExistingNodeSources(version);
-        File nodeSources = getNodeSources();
+        File nodeSources = NodeJsUtils.getNodeSources();
         String nodeVersion = version.toString();
         File archive = new File(nodeSources, "nodejs-" + nodeVersion + ".tar.gz"); // NOI18N
         downloadNodeSources(archive, nodeVersion);
@@ -361,8 +345,8 @@ public final class FileUtils {
 
     private static void deleteExistingNodeSources(Version version) throws IOException {
         assert version != null;
-        if (hasNodeSources(version)) {
-            final FileObject fo = FileUtil.toFileObject(getNodeSources(version));
+        if (NodeJsUtils.hasNodeSources(version)) {
+            final FileObject fo = FileUtil.toFileObject(NodeJsUtils.getNodeSources(version));
             assert fo != null : version;
             FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
                 @Override

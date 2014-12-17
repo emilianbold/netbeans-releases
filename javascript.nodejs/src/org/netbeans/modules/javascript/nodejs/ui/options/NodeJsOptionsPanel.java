@@ -59,6 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.ui.NodeJsPathPanel;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
@@ -126,6 +127,15 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
 
     public void setNode(String node) {
         nodePanel.setNode(node);
+    }
+
+    @CheckForNull
+    public String getNodeSources() {
+        return nodePanel.getNodeSources();
+    }
+
+    public void setNodeSources(String nodeSources) {
+        nodePanel.setNodeSources(nodeSources);
     }
 
     public String getNpm() {

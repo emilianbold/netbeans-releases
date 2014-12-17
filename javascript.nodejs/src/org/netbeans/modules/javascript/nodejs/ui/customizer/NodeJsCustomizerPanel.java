@@ -106,6 +106,7 @@ final class NodeJsCustomizerPanel extends JPanel {
         enabledCheckBox.setSelected(enabled);
         node = preferences.getNode();
         nodeJsPathPanel.setNode(node);
+        nodeJsPathPanel.setNodeSources(preferences.getNodeSources());
         defaultNode = preferences.isDefaultNode();
         if (defaultNode) {
             defaultNodeRadioButton.setSelected(true);
@@ -166,7 +167,7 @@ final class NodeJsCustomizerPanel extends JPanel {
 
     void validateData() {
         ValidationResult result = new NodeJsPreferencesValidator()
-                .validateCustomizer(enabled, defaultNode, node, debugPort)
+                .validateCustomizer(enabled, defaultNode, node, nodeJsPathPanel.getNodeSources(), debugPort)
                 .getResult();
         if (result.hasErrors()) {
             category.setErrorMessage(result.getFirstErrorMessage());
@@ -185,6 +186,7 @@ final class NodeJsCustomizerPanel extends JPanel {
     void saveData() {
         preferences.setEnabled(enabled);
         preferences.setNode(node);
+        preferences.setNodeSources(nodeJsPathPanel.getNodeSources());
         preferences.setDefaultNode(defaultNode);
         preferences.setDebugPort(debugPort);
         preferences.setSyncEnabled(syncChanges);

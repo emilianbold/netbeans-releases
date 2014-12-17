@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.javascript.nodejs.util;
 
+import java.io.File;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSourceRoots;
 import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
@@ -48,6 +51,7 @@ import org.openide.util.NbBundle;
 public final class ValidationUtils {
 
     public static final String NODE_PATH = "node.path"; // NOI18N
+    public static final String NODE_SOURCES_PATH = "node.sources.path"; // NOI18N
     public static final String NPM_PATH = "npm.path"; // NOI18N
 
 
@@ -59,6 +63,23 @@ public final class ValidationUtils {
         String warning = ExternalExecutableValidator.validateCommand(node, Bundle.ValidationUtils_node_name());
         if (warning != null) {
             result.addWarning(new ValidationResult.Message(NODE_PATH, warning));
+        }
+    }
+
+    @NbBundle.Messages({
+        "ValidationUtils.node.sources.invalid=Node sources must be a directory",
+        "# {0} - lib subdirectory",
+        "ValidationUtils.node.sources.lib.invalid=Node sources must contain \"{0}\" subdirectory.",
+    })
+    public static void validateNodeSources(ValidationResult result, @NullAllowed String nodeSources) {
+        if (nodeSources == null) {
+            return;
+        }
+        File sources = new File(nodeSources);
+        if (!sources.isDirectory()) {
+            result.addWarning(new ValidationResult.Message(NODE_SOURCES_PATH, Bundle.ValidationUtils_node_sources_invalid()));
+        } else if (!new File(sources, NodeJsSourceRoots.LIB_DIRECTORY).isDirectory()) {
+            result.addWarning(new ValidationResult.Message(NODE_SOURCES_PATH, Bundle.ValidationUtils_node_sources_lib_invalid(NodeJsSourceRoots.LIB_DIRECTORY)));
         }
     }
 

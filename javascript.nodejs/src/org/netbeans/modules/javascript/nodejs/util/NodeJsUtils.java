@@ -49,12 +49,18 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
+import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.UsageLogger;
+import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.modules.Places;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
@@ -63,6 +69,7 @@ public final class NodeJsUtils {
 
     public static final String START_FILE_NODE_PREFIX = "node "; // NOI18N
 
+    private static final String NODEJS_DIR_NAME = "nodejs"; // NOI18N
     private static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.javascript.nodejs"; // NOI18N
     private static final UsageLogger NPM_INSTALL_USAGE_LOGGER = new UsageLogger.Builder(USAGE_LOGGER_NAME)
             .message(NodeJsUtils.class, "USG_NPM_INSTALL") // NOI18N
@@ -188,6 +195,65 @@ public final class NodeJsUtils {
             return null;
         }
         return project;
+    }
+
+    @CheckForNull
+    public static File getNodeSources(Project project) {
+        NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
+        if (preferences.isDefaultNode()) {
+            // default node
+            String nodeSources = NodeJsOptions.getInstance().getNodeSources();
+            if (nodeSources != null) {
+                return new File(nodeSources);
+            }
+            NodeExecutable node = NodeExecutable.getDefault(project, false);
+            if (node == null) {
+                return null;
+            }
+            Version version = node.getVersion();
+            if (version == null) {
+                return null;
+            }
+            return getNodeSources(version);
+        }
+        // custom node
+        String nodeSources = preferences.getNodeSources();
+        if (nodeSources != null) {
+            return new File(nodeSources);
+        }
+        NodeExecutable node = NodeExecutable.forProject(project, false);
+        if (node == null) {
+            return null;
+        }
+        Version version = node.getVersion();
+        if (version == null) {
+            return null;
+        }
+        return getNodeSources(version);
+    }
+
+    public static File getNodeSources() {
+        return Places.getCacheSubdirectory(NODEJS_DIR_NAME);
+    }
+
+    public static boolean hasNodeSources(Version version) {
+        assert version != null;
+        return getNodeSources(version).isDirectory();
+    }
+
+    public static boolean hasNodeSources(String version) {
+        assert version != null;
+        return getNodeSources(version).isDirectory();
+    }
+
+    static File getNodeSources(Version version) {
+        assert version != null;
+        return getNodeSources(version.toString());
+    }
+
+    private static File getNodeSources(String version) {
+        assert version != null;
+        return new File(getNodeSources(), version);
     }
 
 }

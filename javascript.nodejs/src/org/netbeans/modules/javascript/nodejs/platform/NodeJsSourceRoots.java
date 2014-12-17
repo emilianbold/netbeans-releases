@@ -50,15 +50,15 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
-import org.netbeans.modules.web.common.api.Version;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 public final class NodeJsSourceRoots {
 
     private static final Logger LOGGER = Logger.getLogger(NodeJsSourceRoots.class.getName());
+
+    public static final String LIB_DIRECTORY = "lib"; // NOI18N
 
     private final Project project;
 
@@ -83,18 +83,11 @@ public final class NodeJsSourceRoots {
     }
 
     private List<URL> findSourceRoots() {
-        NodeExecutable node = NodeExecutable.forProject(project, false);
-        if (node == null) {
+        File nodeSources = NodeJsUtils.getNodeSources(project);
+        if (nodeSources == null) {
             return Collections.emptyList();
         }
-        Version version = node.getVersion();
-        if (version == null) {
-            return Collections.emptyList();
-        }
-        if (!FileUtils.hasNodeSources(version)) {
-            return Collections.emptyList();
-        }
-        File lib = new File(FileUtils.getNodeSources(version), "lib"); // NOI18N
+        File lib = new File(nodeSources, LIB_DIRECTORY);
         if (!lib.isDirectory()) {
             return Collections.emptyList();
         }

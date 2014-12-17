@@ -43,13 +43,12 @@ package org.netbeans.modules.javascript.nodejs.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
+import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript2.nodejs.spi.NodeJsSupport;
-import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -77,15 +76,11 @@ public final class NodeJsSupportImpl implements NodeJsSupport {
 
     @Override
     public FileObject getDocumentationFolder() {
-        NodeExecutable node = NodeExecutable.forProject(project, false);
-        if (node == null) {
+        File nodeSources = NodeJsUtils.getNodeSources(project);
+        if (nodeSources == null) {
             return null;
         }
-        Version version = node.getVersion();
-        if (version == null) {
-            return null;
-        }
-        FileObject sources = FileUtil.toFileObject(FileUtils.getNodeSources(version));
+        FileObject sources = FileUtil.toFileObject(nodeSources);
         if (sources == null) {
             return null;
         }
