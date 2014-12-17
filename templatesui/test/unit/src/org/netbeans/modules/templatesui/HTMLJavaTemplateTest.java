@@ -42,6 +42,8 @@
 package org.netbeans.modules.templatesui;
 
 import java.awt.Component;
+import java.awt.EventQueue;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -77,7 +79,7 @@ public class HTMLJavaTemplateTest {
         content = "x.js"
     )
     static XModel myMethod() {
-        return new XModel(0, "One", "One", "Two", "Three").applyBindings();
+        return new XModel(0, "One", "One", "Two", "Three");
     }
     
     @Test public void checkTheIterator() throws Exception {
@@ -90,20 +92,31 @@ public class HTMLJavaTemplateTest {
         
         DataObject obj = DataObject.find(fo);
         
-        TemplateWizard.Iterator it = TemplateWizard.getIterator(obj);
-        assertNotNull("Iterator found", it);
-        
-        TemplateWizard tw = new TemplateWizard();
+        final TemplateWizard tw = new TemplateWizard();
         tw.setTemplate(obj);
         tw.setTargetName("test");
         tw.setTargetFolder(tmpF);
+
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                tw.doNextClick();
+            }
+        });
         
-        it.initialize(tw);
+        Field f = tw.getClass().getDeclaredField("iterator");
+        f.setAccessible(true);
+        WizardDescriptor.Iterator<?> master = (WizardDescriptor.Iterator<?>) f.get(tw);
+        assertNotNull("Master iterator found", master);
         
-        WizardDescriptor.Panel<WizardDescriptor> p1 = it.current();
+        WizardDescriptor.Panel<?> p1 = master.current();
         assertNotNull("Panel found", p1);
         assertTrue("It is HTML wizard: " + p1, p1 instanceof HTMLPanel);
         HTMLPanel h1 = (HTMLPanel) p1;
+        HTMLWizard it = (HTMLWizard) h1.getWizard();
+        
+        final CountDownLatch cdl = it.initializationDone;
+        cdl.await();
         
         Component cmp1 = p1.getComponent();
         assertNotNull("component initialized", cmp1);
