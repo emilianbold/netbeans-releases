@@ -349,6 +349,7 @@ public class LibrariesPanel extends javax.swing.JPanel {
             for (String name : originalDependencies.keySet()) {
                 if (!selectedSet.contains(name)) {
                     progressHandle.progress(Bundle.LibrariesPanel_uninstallingPackage(name));
+                    installedLibraries.remove(name);
                     Integer result = null;
                     try {
                         // npm uninstall --save(-dev/-optional) name

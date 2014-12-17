@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript.nodejs.problems;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,12 +59,10 @@ import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.ValidationResult;
-import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -121,7 +120,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
                 checkSources(currentProblems);
                 checkOptions(currentProblems);
                 checkPreferences(currentProblems);
-                checkNode(currentProblems);
+                checkNodeSources(currentProblems);
                 return currentProblems;
             }
         });
@@ -146,7 +145,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         Sources sources = ProjectUtils.getSources(project);
         sources.addChangeListener(WeakListeners.change(projectSourcesListener, sources));
         // node sources
-        FileUtil.addFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
+        FileUtil.addFileChangeListener(nodeSourcesListener, NodeJsUtils.getNodeSources());
     }
 
     @NbBundle.Messages({
@@ -204,12 +203,8 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         currentProblems.add(problem);
     }
 
-    @NbBundle.Messages({
-        "NodeJsProblemProvider.node.version=Unknown version",
-        "# {0} - version",
-        "NodeJsProblemProvider.node.sources=Missing sources for version {0}",
-    })
-    void checkNode(Collection<ProjectProblem> currentProblems) {
+    @NbBundle.Messages("NodeJsProblemProvider.node.sources=Missing node.js sources")
+    void checkNodeSources(Collection<ProjectProblem> currentProblems) {
         final NodeExecutable node = NodeExecutable.forProject(project, false);
         if (node == null) {
             // already handled
@@ -227,18 +222,11 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
             });
             return;
         }
-        Version version = node.getVersion();
-        if (version == null) {
-            String message = Bundle.NodeJsProblemProvider_error(Bundle.NodeJsProblemProvider_node_version());
-            ProjectProblem problem = ProjectProblem.createError(
-                    message,
-                    message,
-                    getNodeResolver());
-            currentProblems.add(problem);
-            return;
-        }
-        if (!FileUtils.hasNodeSources(version)) {
-            String message = Bundle.NodeJsProblemProvider_error(Bundle.NodeJsProblemProvider_node_sources(version.toString()));
+        File nodeSources = NodeJsUtils.getNodeSources(project);
+        if (nodeSources == null
+                || !nodeSources.isDirectory()) {
+            // no sources
+            String message = Bundle.NodeJsProblemProvider_error(Bundle.NodeJsProblemProvider_node_sources());
             ProjectProblem problem = ProjectProblem.createError(
                     message,
                     message,

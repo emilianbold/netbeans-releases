@@ -181,7 +181,14 @@ public class GulpExecutable {
                 .showSuspended(true)
                 .optionsPath(GulpOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
-                .errLineBased(true);
+                .errLineBased(true)
+                .postExecution(new Runnable() {
+                    @Override
+                    public void run() {
+                        // #246886
+                        FileUtil.refreshFor(getWorkDir());
+                    }
+                });
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {

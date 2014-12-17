@@ -90,7 +90,7 @@ public final class NodeJsPreferencesValidator {
         if (!preferences.isEnabled()) {
             return this;
         }
-        validateNode(preferences.isDefaultNode(), preferences.getNode());
+        validateNode(preferences.isDefaultNode(), preferences.getNode(), preferences.getNodeSources());
         return this;
     }
 
@@ -99,11 +99,11 @@ public final class NodeJsPreferencesValidator {
         return this;
     }
 
-    public NodeJsPreferencesValidator validateCustomizer(boolean enabled, boolean defaultNode, String node, int debugPort) {
+    public NodeJsPreferencesValidator validateCustomizer(boolean enabled, boolean defaultNode, String node, String nodeSources, int debugPort) {
         if (!enabled) {
             return this;
         }
-        validateNode(defaultNode, node);
+        validateNode(defaultNode, node, nodeSources);
         validateDebugPort(debugPort);
         return this;
     }
@@ -126,11 +126,12 @@ public final class NodeJsPreferencesValidator {
         return this;
     }
 
-    private void validateNode(boolean defaultNode, String node) {
+    private void validateNode(boolean defaultNode, String node, String nodeSources) {
         if (defaultNode) {
             return;
         }
         ValidationUtils.validateNode(result, node);
+        ValidationUtils.validateNodeSources(result, nodeSources);
     }
 
 }

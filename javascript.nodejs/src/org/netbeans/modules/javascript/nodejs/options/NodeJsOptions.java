@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
@@ -53,6 +54,7 @@ import org.openide.util.NbPreferences;
 public final class NodeJsOptions {
 
     public static final String NODE_PATH = "node.path"; // NOI18N
+    public static final String NODE_SOURCES_PATH = "node.sources.path"; // NOI18N
     private static final String NPM_PATH = "npm.path"; // NOI18N
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
@@ -99,6 +101,19 @@ public final class NodeJsOptions {
 
     public void setNode(String node) {
         preferences.put(NODE_PATH, node);
+    }
+
+    @CheckForNull
+    public String getNodeSources() {
+        return preferences.get(NODE_SOURCES_PATH, null);
+    }
+
+    public void setNodeSources(@NullAllowed String nodeSources) {
+        if (nodeSources == null) {
+            preferences.remove(NODE_SOURCES_PATH);
+        } else {
+            preferences.put(NODE_SOURCES_PATH, nodeSources);
+        }
     }
 
     @CheckForNull

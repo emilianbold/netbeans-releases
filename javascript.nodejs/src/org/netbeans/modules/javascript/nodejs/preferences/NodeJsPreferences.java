@@ -58,6 +58,7 @@ public final class NodeJsPreferences {
 
     public static final String ENABLED = "enabled"; // NOI18N
     public static final String NODE_PATH = "node.path"; // NOI18N
+    public static final String NODE_SOURCES_PATH = "node.sources.path"; // NOI18N
     public static final String NODE_DEFAULT = "node.default"; // NOI18N
     public static final String START_FILE = "start.file"; // NOI18N
     public static final String START_ARGS = "start.args"; // NOI18N
@@ -106,6 +107,19 @@ public final class NodeJsPreferences {
 
     public void setNode(String node) {
         getPrivatePreferences().put(NODE_PATH, FileUtils.relativizePath(project, node));
+    }
+
+    @CheckForNull
+    public String getNodeSources() {
+        return FileUtils.resolvePath(project, getPrivatePreferences().get(NODE_SOURCES_PATH, null));
+    }
+
+    public void setNodeSources(@NullAllowed String nodeSources) {
+        if (nodeSources == null) {
+            getPrivatePreferences().remove(NODE_SOURCES_PATH);
+        } else {
+            getPrivatePreferences().put(NODE_SOURCES_PATH, FileUtils.relativizePath(project, nodeSources));
+        }
     }
 
     public boolean isDefaultNode() {
