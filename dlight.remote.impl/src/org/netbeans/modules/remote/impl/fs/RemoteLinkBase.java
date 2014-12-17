@@ -294,7 +294,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     @Override
     public boolean canWriteImpl(RemoteFileObjectBase orig) {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
-        return (delegate == null) ? true : delegate.canWriteImpl(orig);
+        return (delegate == null) ? super.canWriteImpl(orig) : delegate.canWriteImpl(orig);
     }
 
     @Override
