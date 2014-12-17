@@ -42,7 +42,15 @@
 
 package org.netbeans.modules.javascript2.nodejs.editor.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
@@ -55,16 +63,15 @@ import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
  */
 @ObjectInterceptor.Registration(priority=101)
 public class NodeJsObjectInterceptor implements ObjectInterceptor {
-    private final static String EXPORTS = "exports"; //NOI18N
-    private final static String MODULE = "module"; //NOI18N
+    
     
     @Override
     public void interceptGlobal(final JsObject global, final ModelElementFactory factory) {
-        JsObject exports = global.getProperty(EXPORTS);
+        JsObject exports = global.getProperty(NodeJsUtils.EXPORTS);
         if (exports == null) {
-            JsObject module = global.getProperty(MODULE);
+            JsObject module = global.getProperty(NodeJsUtils.MODULE);
             if (module != null) {
-                exports = module.getProperty(EXPORTS);
+                exports = module.getProperty(NodeJsUtils.EXPORTS);
             }
         }
         if (exports != null && exports.getProperties().size() == 0) {
@@ -76,7 +83,7 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
                 Collection<? extends TypeUsage> assignments = variable.getAssignments();
                 boolean isThis = false;
                 for (TypeUsage type : assignments) {
-                    if (EXPORTS.equals(type.getType())) {
+                    if (NodeJsUtils.EXPORTS.equals(type.getType())) {
                         isThis = true;
                         break;
                     }
@@ -88,8 +95,21 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
             }
         }
         if (exports != null) {
-            JsObject newReference = factory.newReference(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + global.getName(), exports, true, true);
-            global.addProperty(newReference.getName(), newReference);
+            JsFunction module = factory.newFunction((DeclarationScope) global, global, NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + global.getName(), Collections.EMPTY_LIST);
+            module.setAnonymous(true);
+            List<JsObject> properties = new ArrayList(global.getProperties().values());
+            for (JsObject property : properties) {
+                if (property.isDeclared() || NodeJsUtils.MODULE.equals(property.getName())
+                        || NodeJsUtils.EXPORTS.equals(property.getName())) {
+                    global.moveProperty(property.getName(), module);
+                    if (property.isDeclared()) {
+                        Set<Modifier> modifiers = property.getModifiers();
+                        modifiers.remove(Modifier.PUBLIC);
+                        modifiers.add(Modifier.PRIVATE);
+                    }
+                }
+            }
+            global.addProperty(module.getName(), module);
         }
     }
 }

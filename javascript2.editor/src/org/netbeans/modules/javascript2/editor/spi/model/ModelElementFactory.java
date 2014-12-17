@@ -314,10 +314,20 @@ public final class ModelElementFactory {
         }
 
         @Override
+        public void clearAssignments() {
+            delegate.clearAssignments();
+        }
+        
+        @Override
         public boolean isAnonymous() {
             return delegate.isAnonymous();
         }
 
+        @Override
+        public void setAnonymous(boolean value) {
+            delegate.setAnonymous(value);
+        }
+        
         @Override
         public boolean isDeprecated() {
             return delegate.isDeprecated();
@@ -417,6 +427,12 @@ public final class ModelElementFactory {
         public boolean isVirtual() {
             return false;
         }
+
+        @Override
+        public boolean moveProperty(String name, JsObject newParent) {
+            return delegate.moveProperty(name, newParent);
+        }
+        
     }
 
     private static class GlobalFunction implements JsFunction {
@@ -529,8 +545,18 @@ public final class ModelElementFactory {
         }
 
         @Override
+        public void clearAssignments() {
+            delegate.clearAssignments();
+        }
+
+        @Override
         public boolean isAnonymous() {
             return delegate.isAnonymous();
+        }
+
+        @Override
+        public void setAnonymous(boolean value) {
+            delegate.setAnonymous(value);
         }
 
         @Override
@@ -631,6 +657,11 @@ public final class ModelElementFactory {
         @Override
         public boolean isVirtual() {
             return false;
+        }
+
+        @Override
+        public boolean moveProperty(String name, JsObject newParent) {
+            return delegate.moveProperty(name, newParent);
         }
         
     }

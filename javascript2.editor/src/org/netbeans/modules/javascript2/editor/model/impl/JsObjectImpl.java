@@ -64,6 +64,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     private Documentation documentation;
     protected JsElement.Kind kind;
     private boolean isVirtual;
+    private boolean isAnonymous;
 
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
             String mimeType, String sourceLabel) {
@@ -74,6 +75,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
         this.isVirtual = false;
+        this.isAnonymous = false;
     }
 
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
@@ -238,6 +240,11 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
 
     @Override
+    public void clearAssignments() {
+        assignments.clear();
+    }
+
+    @Override
     public void addAssignment(TypeUsage typeName, int offset) {
         Collection<TypeUsage> types = assignments.get(offset);
         if (types == null) {
@@ -311,7 +318,12 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public boolean isAnonymous() {
-        return false;
+        return isAnonymous;
+    }
+
+    @Override
+    public void setAnonymous(boolean value) {
+        this.isAnonymous = value;
     }
 
     @Override
@@ -685,9 +697,25 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             getModifiers().remove(Modifier.DEPRECATED);
         }
     }
+    
+    
 
 //    @Override
 //    public String toString() {
 //        return "JsObjectImpl{" + "declarationName=" + declarationName + ", parent=" + parent + ", kind=" + kind + '}';
 //    }
+
+    @Override
+    public boolean moveProperty(String name, JsObject newParent) {
+        JsObject property = getProperty(name);
+        if (property == null) {
+            return false;
+        }
+        if (property instanceof JsObjectImpl) {
+            ((JsObjectImpl)property).setParent(newParent);
+            newParent.addProperty(name, property);
+            return properties.remove(name) != null;
+        }
+        return false;
+    }
 }

@@ -64,7 +64,7 @@ public class Utils {
         List<String> displayNames = new ArrayList<String>(types.size());
         for (Type type : types) {
             String displayName = type.getDisplayName();
-            if (!displayName.isEmpty()) {
+            if (!displayName.isEmpty() && !displayNames.contains(displayName)) {
                 displayNames.add(displayName);
             }
         }

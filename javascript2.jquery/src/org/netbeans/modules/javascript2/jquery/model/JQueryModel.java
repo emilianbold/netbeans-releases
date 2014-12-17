@@ -210,10 +210,20 @@ public class JQueryModel {
         public void addAssignment(TypeUsage typeName, int offset) {
             delegate.addAssignment(typeName, offset);
         }
+        
+        @Override
+        public void clearAssignments() {
+            delegate.clearAssignments();
+        }
 
         @Override
         public boolean isAnonymous() {
             return delegate.isAnonymous();
+        }
+
+        @Override
+        public void setAnonymous(boolean value) {
+            delegate.setAnonymous(value);
         }
 
         @Override
@@ -313,6 +323,12 @@ public class JQueryModel {
         public boolean containsOffset(int offset) {
             return delegate.containsOffset(offset);
         }
+
+        @Override
+        public boolean moveProperty(String name, JsObject newParent) {
+            return delegate.moveProperty(name, newParent);
+        }
+        
     }
 
 }

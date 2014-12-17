@@ -77,9 +77,10 @@ public interface JsObject extends JsElement {
     Collection<? extends TypeUsage> getAssignments();
     
     public void addAssignment(TypeUsage typeName, int offset);
+    public void clearAssignments();
     
     public boolean isAnonymous();
-    
+    public void setAnonymous(boolean value);
     public boolean isDeprecated();
     
     
@@ -100,4 +101,6 @@ public interface JsObject extends JsElement {
     public void setDocumentation(Documentation documentation);
     
     public boolean containsOffset(int offset);
+    
+    public boolean moveProperty(String name, JsObject newParent);
 }

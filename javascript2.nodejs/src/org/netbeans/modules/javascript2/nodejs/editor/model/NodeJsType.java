@@ -51,11 +51,13 @@ import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
  */
 public class NodeJsType implements TypeUsage {
     private final String module;
+    private final String property;
     private final int offset;
 
-    public NodeJsType(String module, int offset) {
+    public NodeJsType(String module, String property, int offset) {
         this.module = module;
         this.offset = offset;
+        this.property = property;
     }
     
     @Override
@@ -65,7 +67,7 @@ public class NodeJsType implements TypeUsage {
 
     @Override
     public String getType() {
-        return NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + module;
+        return NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + module + (property != null && !property.isEmpty() ? "." + property : "");
     }
 
     @Override
