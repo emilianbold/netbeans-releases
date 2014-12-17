@@ -77,6 +77,9 @@ public class NodeJsUtils {
     public static String NODE_EXT = ".node"; //NOI18N
     
     private static String MAIN_FIELD = "main"; //NOI18N
+    
+    public final static String EXPORTS = "exports"; //NOI18N
+    public final static String MODULE = "module"; //NOI18N
 
     private static final String NODEJS_ICON_PATH = "org/netbeans/modules/javascript2/nodejs/resources/nodeJs16.png"; //NOI18N
     private static ImageIcon NODEJS_ICON = null;

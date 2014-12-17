@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.javascript2.nodejs.editor.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -108,7 +110,12 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                                 JsObject jsObject = ((JsObject)scope).getProperty(objectName);
                                 if (jsObject != null) {
                                     int assignmentOffset =  ts.offset() + token.length();
-                                    TypeUsage modelType = new NodeJsType(NodeJsUtils.getModuleName(module), assignmentOffset);
+                                    List<TypeUsage> modelTypes = new ArrayList();
+                                    StringBuilder sb = new StringBuilder();
+                                    sb.append(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX).append(NodeJsUtils.getModuleName(module)).append('.');
+                                    modelTypes.add(factory.newType(sb.toString() + NodeJsUtils.EXPORTS, assignmentOffset, true));
+                                    sb.append(NodeJsUtils.MODULE).append('.').append(NodeJsUtils.EXPORTS);
+                                    modelTypes.add(factory.newType(sb.toString(), assignmentOffset, true));
                                     ts.move(theFirst.getOffset());
                                     int balance = 1;
                                     while (ts.moveNext() && balance > 0) {
@@ -122,9 +129,11 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                                     ts.movePrevious();
                                     token = LexUtilities.findNextIncluding(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_SEMICOLON, JsTokenId.OPERATOR_DOT));
                                     if (token != null && token.id() != JsTokenId.OPERATOR_DOT) {
-                                        jsObject.addAssignment( modelType, assignmentOffset);
+                                        jsObject.clearAssignments();
+                                        jsObject.addAssignment( modelTypes.get(0), assignmentOffset);
+                                        jsObject.addAssignment( modelTypes.get(1), assignmentOffset);
                                     }
-                                    return Collections.singletonList(modelType);
+                                    return modelTypes;
                                 }
                             }
                         }

@@ -57,7 +57,6 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     final private HashMap <String, JsObject> parametersByName;
     final private List<JsObject> parameters;
     final private Set<TypeUsage> returnTypes;
-    private boolean isAnonymous;
 
     public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name,
             List<Identifier> parameters, OffsetRange offsetRange, String mimeType, String sourceLabel) {
@@ -68,7 +67,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             JsObject parameter = new ParameterObject(this, identifier, mimeType, sourceLabel);
             addParameter(parameter);
         }
-        this.isAnonymous = false;
+        setAnonymous(false);
         this.returnTypes = new HashSet<TypeUsage>();
         setDeclared(true);
         if (parentObject != null) {
@@ -151,15 +150,6 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             result = JsElement.Kind.METHOD;
         }
         return result;
-    }
-
-    @Override
-    public boolean isAnonymous() {
-        return isAnonymous;
-    }
-
-    public void setAnonymous(boolean isAnonymous) {
-        this.isAnonymous = isAnonymous;
     }
 
     @Override
