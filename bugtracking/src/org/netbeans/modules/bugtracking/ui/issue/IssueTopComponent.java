@@ -93,6 +93,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Cancellable;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -651,6 +652,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 }
             }
         });
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(issue != null && !issue.isNew()
+                     ? "o.n.m.bugtracking.ui.issue.IssueTopComponent.edit" // NOI18N
+                     : "o.n.m.bugtracking.ui.issue.IssueTopComponent.new"); // NOI18N
     }
 
     @Override
