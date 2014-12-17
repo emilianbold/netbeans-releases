@@ -93,7 +93,7 @@ void report_error(const char *format, ...) {
     if (!is_broken_pipe()) {
         va_list args;
         va_start (args, format);
-        fprintf(stderr, "fs_server[%li]: ", (long) getpid());
+        fprintf(stderr, "fs_server [%li %li]: ", (long) getpid(), (long) pthread_self());
         vfprintf(stderr, format, args);
         va_end (args);
     }
@@ -103,7 +103,8 @@ void trace(TraceLevel level, const char *format, ...) {
     if (trace_level >= level && !is_broken_pipe()) {
         va_list args;
         va_start(args, format);
-        fprintf(stderr, "fs_server[%li]: ", (long) getpid());
+        //fprintf(stderr, "fs_server [pid=%li, tid=%li]: ", (long) getpid(), (long) pthread_self());
+        fprintf(stderr, "fs_server [%li %li]: ", (long) getpid(), (long) pthread_self());
         vfprintf(stderr, format, args);
         va_end(args);  
         fflush(stderr);
