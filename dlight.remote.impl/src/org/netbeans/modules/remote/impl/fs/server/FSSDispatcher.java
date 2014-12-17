@@ -125,7 +125,7 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
-    private static final String MIN_SERVER_VERSION = "1.3.0"; // NOI18N
+    private static final String MIN_SERVER_VERSION = "1.4.0"; // NOI18N
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;

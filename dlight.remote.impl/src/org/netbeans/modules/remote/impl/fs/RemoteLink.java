@@ -123,4 +123,19 @@ public final class RemoteLink extends RemoteLinkBase {
         RemoteFileObjectBase delegate = getFileSystem().findResourceImpl(normalizedTargetPath, antiLoop);
         return delegate;
     }
+    
+    @Override
+    public boolean isSymbolicLink() {
+        return true;
+    }
+
+    @Override
+    public RemoteFileObjectBase readSymbolicLink()  {
+        return getDelegateImpl();
+    }
+
+    @Override
+    public String readSymbolicLinkPath()  {
+        return getDelegateNormalizedPath();
+    }    
 }
