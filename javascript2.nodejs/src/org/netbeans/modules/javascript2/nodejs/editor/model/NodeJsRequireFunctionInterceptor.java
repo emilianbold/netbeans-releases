@@ -111,8 +111,11 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                                 if (jsObject != null) {
                                     int assignmentOffset =  ts.offset() + token.length();
                                     List<TypeUsage> modelTypes = new ArrayList();
-                                    modelTypes.add (new NodeJsType(NodeJsUtils.getModuleName(module), NodeJsUtils.EXPORTS, assignmentOffset));        
-                                    modelTypes.add (new NodeJsType(NodeJsUtils.getModuleName(module), NodeJsUtils.MODULE + "." + NodeJsUtils.EXPORTS, assignmentOffset));
+                                    StringBuilder sb = new StringBuilder();
+                                    sb.append(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX).append(NodeJsUtils.getModuleName(module)).append('.');
+                                    modelTypes.add(factory.newType(sb.toString() + NodeJsUtils.EXPORTS, assignmentOffset, true));
+                                    sb.append(NodeJsUtils.MODULE).append('.').append(NodeJsUtils.EXPORTS);
+                                    modelTypes.add(factory.newType(sb.toString(), assignmentOffset, true));
                                     ts.move(theFirst.getOffset());
                                     int balance = 1;
                                     while (ts.moveNext() && balance > 0) {

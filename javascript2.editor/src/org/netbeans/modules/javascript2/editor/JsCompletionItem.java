@@ -590,7 +590,7 @@ public class JsCompletionItem implements CompletionProposal {
                                         Set<String> resolvedType = resolvedTypes.get(type.getType());
                                         if (resolvedType == null) {
                                             resolvedType = new HashSet(1);
-                                            String displayName = type.getDisplayName();
+                                            String displayName = Utils.getDisplayName(type);
                                             if (!displayName.isEmpty()) {
                                                 resolvedType.add(displayName);
                                             }
@@ -654,7 +654,7 @@ public class JsCompletionItem implements CompletionProposal {
                                 HashSet<TypeUsage> toResolve = new HashSet<TypeUsage>();
                                 for (TypeUsage type : assignment) {
                                     if (type.isResolved()) {
-                                        typesToDisplay.add(type.getDisplayName());
+                                        typesToDisplay.add(Utils.getDisplayName(type));
                                     } else {
                                         Set<String> resolvedType = resolvedTypes.get(type.getType());
                                         if (resolvedType == null) {
@@ -664,7 +664,7 @@ public class JsCompletionItem implements CompletionProposal {
                                             Collection<TypeUsage> resolved = ModelUtils.resolveTypes(toResolve, request.result,
                                                     OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
                                             for (TypeUsage rType : resolved) {
-                                                String displayName = rType.getDisplayName();
+                                                String displayName = Utils.getDisplayName(rType);
                                                 if (!displayName.isEmpty()) {
                                                     resolvedType.add(displayName);
                                                 }

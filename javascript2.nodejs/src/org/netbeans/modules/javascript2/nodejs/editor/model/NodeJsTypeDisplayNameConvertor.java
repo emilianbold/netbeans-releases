@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,85 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.nodejs.editor.model;
 
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.spi.model.TypeDisplayNameConvertor;
+import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
 
 /**
  *
  * @author Petr Pisl
  */
-public class TypeUsageImpl implements TypeUsage {
-    
-    private final String type;
-
-    private final int offset;
-    
-    private final boolean resolved;
-    
-    public TypeUsageImpl(String type, int offset, boolean resolved) {
-        this.type = type;
-        this.offset = offset;
-        this.resolved = resolved;
-    }
-    
-    public TypeUsageImpl(String type, int offset) {
-        this(type, offset, false);
-    }
-    
-    public TypeUsageImpl(String type) {
-        this(type, -1, false);
-    }
+@TypeDisplayNameConvertor.Registration(priority=200)
+public class NodeJsTypeDisplayNameConvertor implements TypeDisplayNameConvertor {
 
     @Override
-    public String getType() {
-        return type;
+    public String getDisplayName(Type type) {
+        String typeString = type.getType();
+        String displayName = null;
+        if (typeString != null && typeString.startsWith(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX)) {
+            displayName = typeString.substring(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX.length());
+            int index = displayName.indexOf('.');
+            if (index > 0) {
+                displayName = "Module " + displayName.substring(0, index);  //NOI18N
+            }
+        }
+        return displayName;
     }
     
-    @Override
-    public int getOffset() {
-        return offset;
-    }
-
-    @Override
-    public boolean isResolved() {
-        return resolved;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TypeUsageImpl other = (TypeUsageImpl) obj;
-        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
-            return false;
-        }
-        if (this.offset != other.offset) {
-            return false;
-        }
-        if (this.resolved != other.resolved) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + (this.type != null ? this.type.hashCode() : 0);
-        hash = 83 * hash + this.offset;
-        hash = 83 * hash + (this.resolved ? 1 : 0);
-        return hash;
-    }
-
-    @Override
-    public String toString() {
-        return "TypeUsageImpl{" + "type=" + type + ", offset=" + offset + ", resolved=" + resolved + '}';
-    }
 }

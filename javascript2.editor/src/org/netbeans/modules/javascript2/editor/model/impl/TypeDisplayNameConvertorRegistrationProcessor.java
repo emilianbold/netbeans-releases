@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,85 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.javascript2.editor.spi.model.TypeDisplayNameConvertor;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Petr Pisl
  */
-public class TypeUsageImpl implements TypeUsage {
-    
-    private final String type;
 
-    private final int offset;
-    
-    private final boolean resolved;
-    
-    public TypeUsageImpl(String type, int offset, boolean resolved) {
-        this.type = type;
-        this.offset = offset;
-        this.resolved = resolved;
-    }
-    
-    public TypeUsageImpl(String type, int offset) {
-        this(type, offset, false);
-    }
-    
-    public TypeUsageImpl(String type) {
-        this(type, -1, false);
-    }
+@ServiceProvider(service=Processor.class)
+@SupportedAnnotationTypes("org.netbeans.modules.javascript2.editor.spi.model.TypeDisplayNameConvertor.Registration") //NOI18N
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
+public class TypeDisplayNameConvertorRegistrationProcessor extends LayerGeneratingProcessor {
 
-    @Override
-    public String getType() {
-        return type;
+    public TypeDisplayNameConvertorRegistrationProcessor() {
+        super();
     }
     
     @Override
-    public int getOffset() {
-        return offset;
-    }
-
-    @Override
-    public boolean isResolved() {
-        return resolved;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TypeUsageImpl other = (TypeUsageImpl) obj;
-        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
-            return false;
-        }
-        if (this.offset != other.offset) {
-            return false;
-        }
-        if (this.resolved != other.resolved) {
-            return false;
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(TypeDisplayNameConvertor.Registration.class)) {
+            layer(element)
+                    .instanceFile(ModelExtender.TYPE_DISPLAY_NAME_CONVERTORS_PATH, null, TypeDisplayNameConvertor.class)
+                    .position(element.getAnnotation(TypeDisplayNameConvertor.Registration.class).priority())
+                    .write();
         }
         return true;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 83 * hash + (this.type != null ? this.type.hashCode() : 0);
-        hash = 83 * hash + this.offset;
-        hash = 83 * hash + (this.resolved ? 1 : 0);
-        return hash;
-    }
-
-    @Override
-    public String toString() {
-        return "TypeUsageImpl{" + "type=" + type + ", offset=" + offset + ", resolved=" + resolved + '}';
-    }
+    
 }
