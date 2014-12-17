@@ -65,6 +65,7 @@ public class RunInfo {
     private boolean testingProject;
     private FileObject[] activatedFOs;
     private boolean isSelenium;
+    private boolean showOutput;
 
     private volatile boolean absoluteUrls = false;
 
@@ -80,6 +81,7 @@ public class RunInfo {
         envVars.putAll(builder.envVars);
         testingProject = builder.testingProject;
         isSelenium = builder.isSelenium;
+        showOutput = builder.showOutput;
     }
 
     public FileObject[] getActivatedFOs() {
@@ -119,6 +121,10 @@ public class RunInfo {
         return isSelenium;
     }
 
+    public boolean isShowOutput() {
+        return showOutput;
+    }
+
     @Override
     public String toString() {
 //        return "RunInfo{" + "project=" + project + ", rerunHandler=" + rerunHandler + ", nbConfigFile=" + nbConfigFile // NOI18N
@@ -140,12 +146,18 @@ public class RunInfo {
         boolean testingProject;
         FileObject[] activatedFOs;
         boolean isSelenium;
+        boolean showOutput = true;
 
         public Builder(FileObject[] activatedFOs) {
             assert activatedFOs != null;
             assert activatedFOs.length > 0;
             this.activatedFOs = activatedFOs;
             project = FileOwnerQuery.getOwner(activatedFOs[0]);
+        }
+
+        public Builder setShowOutput(boolean showOutput) {
+            this.showOutput = showOutput;
+            return this;
         }
 
         public Builder setIsSelenium(boolean isSelenium) {

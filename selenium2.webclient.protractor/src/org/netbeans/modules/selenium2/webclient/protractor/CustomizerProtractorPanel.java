@@ -116,7 +116,7 @@ public class CustomizerProtractorPanel implements CustomizerPanelImplementation 
         assert !EventQueue.isDispatchThread();
         assert customizerProtractor != null;
         ProtractorPreferences.setProtractor(project, customizerProtractor.getProtractor());
-        ProtractorPreferences.setSeleniumServerJar(project, customizerProtractor.getSeleniumServerJar());
+        ProtractorPreferences.setUserConfigurationFile(project, customizerProtractor.getUserConfigurationFile());
     }
 
 }

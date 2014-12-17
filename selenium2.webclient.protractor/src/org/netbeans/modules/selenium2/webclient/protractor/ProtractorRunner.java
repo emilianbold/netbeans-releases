@@ -46,13 +46,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -63,7 +60,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.selenium2.api.Utils;
-import org.netbeans.modules.selenium2.server.api.Selenium2Server;
 import org.netbeans.modules.selenium2.webclient.api.RunInfo;
 import org.netbeans.modules.selenium2.webclient.api.SeleniumRerunHandler;
 import org.netbeans.modules.selenium2.webclient.api.SeleniumTestingProviders;
@@ -77,7 +73,6 @@ import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
@@ -133,10 +128,10 @@ class ProtractorRunner {
         }
         
         String protractor = ProtractorPreferences.getProtractor(p);
-        String seleniumServerJar = ProtractorPreferences.getSeleniumServerJar(p);
+        String userConfigurationFile = ProtractorPreferences.getUserConfigurationFile(p);
         ValidationResult validationResult = new ProtractorPreferencesValidator()
                 .validateProtractor(protractor)
-                .validateSeleniumServerJar(seleniumServerJar)
+                .validateUserConfigurationFile(p, userConfigurationFile)
                 .getResult();
         if(protractor == null || protractor.isEmpty() || !validationResult.isFaultless()) {
             Utilities.openCustomizer(p, SeleniumTestingProviders.CUSTOMIZER_SELENIUM_TESTING_IDENT);
@@ -160,7 +155,7 @@ class ProtractorRunner {
             String specs2test = files2test.toString();
             specs = specs2test.substring(1, specs2test.length() - 1);
         }
-        RunInfo runInfo = getRunInfo(p, activatedFOs, testsFolder, specs, protractorJasmineNBReporter.getAbsolutePath(), seleniumServerJar, testProject);
+        RunInfo runInfo = getRunInfo(p, activatedFOs, testsFolder, specs, protractorJasmineNBReporter.getAbsolutePath(), userConfigurationFile, testProject);
 
         String displayname = ProjectUtils.getInformation(runInfo.getProject()).getDisplayName() + " Selenium Tests"; // NOI18N
         final ExternalExecutable externalexecutable = new ExternalExecutable(node)
@@ -239,14 +234,14 @@ class ProtractorRunner {
         return arguments;
     }
     
-    private static RunInfo getRunInfo(Project p, FileObject[] activatedFOs, FileObject testsFolder, String specs, String jasmineNBReporter, String seleniumServerJar, boolean testProject) {
+    private static RunInfo getRunInfo(Project p, FileObject[] activatedFOs, FileObject testsFolder, String specs, String jasmineNBReporter, String userConfigurationFile, boolean testProject) {
         RunInfo.Builder builder = new RunInfo.Builder(activatedFOs).setTestingProject(testProject)
-                .addEnvVar("FRAMEWORK", "jasmine")
                 .addEnvVar("SPECS", specs)
                 .addEnvVar("JASMINE_NB_REPORTER", jasmineNBReporter)
-                .addEnvVar("SELENIUM_SERVER_JAR", seleniumServerJar)
+                .addEnvVar("USER_CONFIGURATION_FILE", userConfigurationFile)
                 .setRerunHandler(new SeleniumRerunHandler(p, activatedFOs, CustomizerProtractorPanel.IDENTIFIER, true))
-                .setIsSelenium(true);
+                .setIsSelenium(true)
+                .setShowOutput(false);
         if(activatedFOs.length == 1 && !activatedFOs[0].equals(p.getProjectDirectory())) {
             String testFile = FileUtil.getRelativePath(testsFolder, activatedFOs[0]);
             builder = builder.setTestFile(testFile);
@@ -345,6 +340,9 @@ class ProtractorRunner {
                 debuggerStartTask = null;
             }
             String output2display = testRunnerReporter.processLine(line);
+            if(output2display == null) {
+                return Collections.EMPTY_LIST;
+            }
             TestRunnerReporter.CallStackCallback callStackCallback = new TestRunnerReporter.CallStackCallback(runInfo.getProject());
             Pair<File, int[]> parsedLocation = callStackCallback.parseLocation(line, false);
             FileOutputListener fileOutputListener = parsedLocation == null ? null : new FileOutputListener(parsedLocation.first(), parsedLocation.second()[0], parsedLocation.second()[1]);
