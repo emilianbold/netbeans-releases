@@ -161,7 +161,7 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
                 continue;
             }
             if (StringUtilities.hasText(command)) {
-                allCommands.add(script);
+                allCommands.add(command);
             }
         }
         List<String> commands = new ArrayList<>(allCommands);
