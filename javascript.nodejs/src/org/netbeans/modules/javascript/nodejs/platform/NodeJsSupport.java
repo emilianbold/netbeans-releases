@@ -167,12 +167,15 @@ public final class NodeJsSupport {
         }
     }
 
-    public void projectClosed() {
+    void projectClosed() {
         FileUtil.removeFileChangeListener(nodeSourcesListener, NodeJsUtils.getNodeSources());
         preferences.removePreferenceChangeListener(preferencesListener);
         packageJson.removePropertyChangeListener(packageJsonListener);
         // cleanup
         packageJson.cleanup();
+        if (currentNodeInfo.isRunning()) {
+            currentNodeInfo.stop();
+        }
     }
 
     public NodeInfo getCurrentNodeInfo() {
