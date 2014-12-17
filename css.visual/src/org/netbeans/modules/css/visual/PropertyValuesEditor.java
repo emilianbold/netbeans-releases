@@ -432,8 +432,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
             Component res = peer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (res instanceof JLabel) {
                 JLabel label = (JLabel) res;
-                assert value instanceof String; //the ComboBoxModel is created over getTags() array
-                String strval = (String) value;
+                String strval = (value == null) ? "null" : value.toString(); // NOI18N
 
                 Icon icon = null;
 
