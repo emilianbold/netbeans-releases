@@ -82,6 +82,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         if (firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
             firstOpening = false;
             getPanel().setNode(getNodeJsOptions().getNode());
+            getPanel().setNodeSources(getNodeJsOptions().getNodeSources());
             getPanel().setNpm(getNodeJsOptions().getNpm());
         }
         changed = false;
@@ -93,6 +94,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
             @Override
             public void run() {
                 getNodeJsOptions().setNode(getPanel().getNode());
+                getNodeJsOptions().setNodeSources(getPanel().getNodeSources());
                 getNodeJsOptions().setNpm(getPanel().getNpm());
                 changed = false;
             }
@@ -103,6 +105,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
     public void cancel() {
         if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
             getPanel().setNode(getNodeJsOptions().getNode());
+            getPanel().setNodeSources(getNodeJsOptions().getNodeSources());
             getPanel().setNpm(getNodeJsOptions().getNpm());
         }
     }
@@ -112,7 +115,7 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         assert EventQueue.isDispatchThread();
         NodeJsOptionsPanel panel = getPanel();
         ValidationResult result = new NodeJsOptionsValidator()
-                .validateNode(panel.getNode())
+                .validateNode(panel.getNode(), panel.getNodeSources())
                 .validateNpm(panel.getNpm())
                 .getResult();
         // errors
@@ -135,6 +138,11 @@ public final class NodeJsOptionsPanelController extends OptionsPanelController i
         String saved = getNodeJsOptions().getNode();
         String current = getPanel().getNode().trim();
         if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        saved = getNodeJsOptions().getNodeSources();
+        current = getPanel().getNodeSources();
+        if (saved == null ? current != null : !saved.equals(current)) {
             return true;
         }
         saved = getNodeJsOptions().getNpm();

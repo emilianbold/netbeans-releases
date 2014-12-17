@@ -17,7 +17,10 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="nodeLabel" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="nodeLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="sourcesLabel" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
@@ -25,11 +28,10 @@
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="versionLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="nodeVersionLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace min="63" max="32767" attributes="0"/>
                       <Component id="downloadSourcesButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="selectSourcesButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Component id="nodeTextField" max="32767" attributes="0"/>
@@ -42,6 +44,10 @@
                       <Component id="nodeHintLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="nodeInstallLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="sourcesTextField" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="201" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -63,9 +69,10 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="nodeVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sourcesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="downloadSourcesButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="selectSourcesButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="sourcesTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="versionInfoLabel" min="-2" max="-2" attributes="0"/>
@@ -119,16 +126,17 @@
         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="nodeInstallLabelMouseEntered"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JLabel" name="versionLabel">
+    <Component class="javax.swing.JLabel" name="sourcesLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/Bundle.properties" key="NodeJsPathPanel.versionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/Bundle.properties" key="NodeJsPathPanel.sourcesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="nodeVersionLabel">
+    <Component class="javax.swing.JTextField" name="sourcesTextField">
       <Properties>
-        <Property name="text" type="java.lang.String" value="VERSION" noResource="true"/>
+        <Property name="editable" type="boolean" value="false"/>
+        <Property name="columns" type="int" value="30"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="downloadSourcesButton">
@@ -140,6 +148,16 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="downloadSourcesButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="selectSourcesButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/Bundle.properties" key="NodeJsPathPanel.selectSourcesButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectSourcesButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="versionInfoLabel">

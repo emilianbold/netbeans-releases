@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.nodejs.options;
 
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.common.api.ValidationResult;
 
@@ -51,16 +52,18 @@ public class NodeJsOptionsValidator {
 
 
     public NodeJsOptionsValidator validate() {
-        validateNode(NodeJsOptions.getInstance().getNode());
-        return validateNpm(NodeJsOptions.getInstance().getNpm());
+        validateNode();
+        return validateNpm();
     }
 
     public NodeJsOptionsValidator validateNode() {
-        return validateNode(NodeJsOptions.getInstance().getNode());
+        NodeJsOptions nodeJsOptions = NodeJsOptions.getInstance();
+        return validateNode(nodeJsOptions.getNode(), nodeJsOptions.getNodeSources());
     }
 
-    public NodeJsOptionsValidator validateNode(String node) {
+    public NodeJsOptionsValidator validateNode(String node, @NullAllowed String nodeSources) {
         ValidationUtils.validateNode(result, node);
+        ValidationUtils.validateNodeSources(result, nodeSources);
         return this;
     }
 

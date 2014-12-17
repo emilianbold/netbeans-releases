@@ -63,7 +63,6 @@ import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.Notifications;
 import org.netbeans.modules.javascript.nodejs.ui.actions.NodeJsActionProvider;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
-import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeInfo;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
@@ -158,7 +157,7 @@ public final class NodeJsSupport {
     }
 
     void projectOpened() {
-        FileUtil.addFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
+        FileUtil.addFileChangeListener(nodeSourcesListener, NodeJsUtils.getNodeSources());
         preferences.addPreferenceChangeListener(preferencesListener);
         packageJson.addPropertyChangeListener(packageJsonListener);
         // init node version
@@ -169,7 +168,7 @@ public final class NodeJsSupport {
     }
 
     public void projectClosed() {
-        FileUtil.removeFileChangeListener(nodeSourcesListener, FileUtils.getNodeSources());
+        FileUtil.removeFileChangeListener(nodeSourcesListener, NodeJsUtils.getNodeSources());
         preferences.removePreferenceChangeListener(preferencesListener);
         packageJson.removePropertyChangeListener(packageJsonListener);
         // cleanup
@@ -199,8 +198,8 @@ public final class NodeJsSupport {
             }
             String key = evt.getKey();
             LOGGER.log(Level.FINE, "Processing change event {0} in node.js options in project {1}", new Object[] {key, projectName});
-            if (NodeJsOptions.NODE_PATH.equals(key)
-                    && preferences.isDefaultNode()) {
+            if (preferences.isDefaultNode()
+                    && (NodeJsOptions.NODE_PATH.equals(key) || NodeJsOptions.NODE_SOURCES_PATH.equals(key))) {
                 fireSourceRootsChanged();
             }
         }
@@ -239,8 +238,8 @@ public final class NodeJsSupport {
                 LOGGER.log(Level.FINE, "Change event in node.js preferences ignored, node.js not enabled in project {0}", projectName);
             } else if (NodeJsPreferences.NODE_DEFAULT.equals(key)) {
                 fireSourceRootsChanged();
-            } else if (NodeJsPreferences.NODE_PATH.equals(key)
-                    && !preferences.isDefaultNode()) {
+            } else if (!preferences.isDefaultNode()
+                    && (NodeJsPreferences.NODE_PATH.equals(key) || NodeJsPreferences.NODE_SOURCES_PATH.equals(key))) {
                 fireSourceRootsChanged();
             } else if (NodeJsPreferences.START_FILE.equals(key)
                     || NodeJsPreferences.START_ARGS.equals(key)) {
