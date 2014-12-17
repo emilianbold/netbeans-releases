@@ -44,9 +44,10 @@ package org.netbeans.modules.templatesui;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
-final class HTMLPanel implements WizardDescriptor.Panel<WizardDescriptor> {
+final class HTMLPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor> {
     private final int index;
     private final AbstractWizard it;
 
@@ -91,5 +92,15 @@ final class HTMLPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     final AbstractWizard getWizard() {
         return it;
+    }
+
+    @Override
+    public void prepareValidation() {
+        it.prepareValidation();
+    }
+
+    @Override
+    public void validate() throws WizardValidationException {
+        it.waitForValidation();
     }
 }

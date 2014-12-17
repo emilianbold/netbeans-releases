@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
@@ -39,24 +39,42 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.templatesui;
 
-import org.junit.Test;
-
-/**
- *
- * @author Jaroslav Tulach
- */
-public class CompatibilityKitTest {
-    @Test public void fallbacksToDataStep() throws Throwable {
-        RunTCK.test("datastep", "init()");
-    }
-    
-    @Test public void specifiedManually() throws Throwable {
-        RunTCK.test("manual", "init()");
-    }
-    
-    @Test public void validateOnNextButton() throws Throwable {
-        RunTCK.test("validation", "init()");
-    }
+function assertDisplay(id, value, msg) {
+    var e = document.getElementById(id);
+    assertEquals(value, e.style.display, msg)
 }
+
+assertEquals(3, tck.steps(false).length, "There are three step directives");
+assertEquals('init', tck.steps(false)[0], "First step id");
+assertEquals('info', tck.steps(false)[1], "Second step id");
+assertEquals('summary', tck.steps(false)[2], "3rd step id");
+
+assertEquals(3, tck.steps(true).length, "There are three localized data-step headers");
+assertEquals('Initial Page', tck.steps(true)[0], "First step has own display name");
+assertEquals('info', tck.steps(true)[1], "Second display name is taken from id string");
+assertEquals('summary', tck.steps(true)[2], "3rd display name fallbacks to id attribute");
+
+assertEquals('init', tck.current(), "Current step is 1st one");
+assertDisplay('s0', '', "Display characteristics of 1st panel not mangled");
+assertDisplay('s1', 'none', "Invisible s1");
+assertDisplay('s2', 'none', "Invisible s2");
+
+tck.next();
+assertEquals('info', tck.current(), "Moved to 2nd panel");
+assertDisplay('s0', 'none', "Invisible s0");
+assertDisplay('s1', '', "Display characteristics of 2nd panel not mangled");
+assertDisplay('s2', 'none', "Invisible s2");
+
+assertEquals(-1, tck.data().errorCode(), "error state -1 means we require validation");
+tck.next();
+assertEquals('checking!', tck.data().msg(), "validation method has been called");
+assertEquals('info', tck.current(), "Still remains on 2nd panel");
+
+// process tasks registered by invokeLater by the tested page
+tck.invokeNow();
+
+assertEquals('summary', tck.current(), "Moved to 3nd panel");
+assertEquals(true, tck.data().ok(), "ok assigned to true");
+assertEquals('Validated!', tck.data().msg(), "message changed");
+assertEquals(0, tck.data().errorCode(), "no error");

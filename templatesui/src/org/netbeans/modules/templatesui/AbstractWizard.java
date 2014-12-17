@@ -55,6 +55,7 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
@@ -69,6 +70,7 @@ import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
 import net.java.html.json.Models;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
@@ -89,7 +91,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private JFXPanel p;
     private /* final */ WebView v;
     private ChangeListener listener;
-    private int errorCode = -1;
+    private int errorCode = 0;
     private WizardDescriptor wizard;
     
     protected abstract Object initSequence(ClassLoader l) throws Exception;
@@ -204,20 +206,24 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     }
 
     @Override
-    public void addChangeListener(ChangeListener l) {
+    public synchronized void addChangeListener(ChangeListener l) {
         assert this.listener == null;
         this.listener = l;
     }
 
     @Override
-    public void removeChangeListener(ChangeListener l) {
+    public synchronized void removeChangeListener(ChangeListener l) {
         if (this.listener == l) {
             this.listener = null;
         }
     }
     
     private void fireChange() {
-        ChangeListener l = this.listener;
+        ChangeListener l;
+        synchronized (this) {
+            l = this.listener;
+            notifyAll();
+        }
         if (l != null) {
             l.stateChanged(new ChangeEvent(this));
         }
@@ -409,7 +415,46 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
             });
         }
     }
+
+    boolean validationRequested;
+    boolean prepareValidation() {
+        return validationRequested = callValidate(data);
+    }
+
+    synchronized void waitForValidation() throws WizardValidationException {
+        if (!validationRequested) {
+            return;
+        }
+        while (errorCode == -1) {
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+        }
+        if (errorCode != 0) {
+            throw new WizardValidationException(p, null, null);
+        }
+    }
     
+    @JavaScriptBody(args = { "arr" }, body = 
+        "for (var i = 0; i < arr.length; i++) {\n" +
+        "  arr[i]();\n" +
+        "}\n" +
+        ""
+    )
+    native void invokeFn(Object[] arr);
+    
+    @JavaScriptBody(args = { "raw" }, body = 
+        "if (raw.errorCode() !== -1) return false;" +
+        "if (raw.validate) {" +
+        "  raw.validate();" +
+        "  return true;" +
+        "}" +
+        "return false;"
+    )
+    static native boolean callValidate(Object raw);
+   
     @JavaScriptBody(args = {"data", "onChange", "p" }, 
         javacall = true, body = ""
         + "if (typeof data[p] !== 'function') {\n"
@@ -471,7 +516,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
         + "var current = raw.current || (raw.current = ko.observable());\n"
         + "var steps = raw.steps || (raw.steps = ko.observableArray());\n"
         + "if (!raw.errorCode) raw.errorCode = ko.computed(function() {\n"
-        + "  return -1;\n"
+        + "  return 1;\n"
         + "});\n"
         + "ko.bindingHandlers.step = {\n"
         + "  init : function(element, valueAccessor, allBindings, viewModel, bindingContext) {\n"

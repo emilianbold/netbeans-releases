@@ -43,6 +43,7 @@ package org.netbeans.modules.templatesui;
 
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.WizardDescriptor;
@@ -58,6 +59,7 @@ public final class HTMLWizard extends AbstractWizard {
     }
     
     private final FileObject def;
+    final CountDownLatch initializationDone = new CountDownLatch(1);
 
     private HTMLWizard(FileObject definition) {
         this.def = definition;
@@ -81,5 +83,6 @@ public final class HTMLWizard extends AbstractWizard {
         if (t != null) {
             LOG.log(Level.SEVERE, "Problems initializing HTML wizard", t);
         }
+        initializationDone.countDown();
     }
 }

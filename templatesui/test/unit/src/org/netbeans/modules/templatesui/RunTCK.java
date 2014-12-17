@@ -41,9 +41,16 @@
  */
 package org.netbeans.modules.templatesui;
 
+import com.sun.xml.internal.ws.api.message.Packet;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -118,6 +125,8 @@ final class RunTCK extends AbstractWizard {
     }
     
     public final class TCK {
+        final RequestProcessor rp = new RequestProcessor("Validating");
+        
         TCK() {
         }
         
@@ -129,9 +138,24 @@ final class RunTCK extends AbstractWizard {
             return RunTCK.this.currentStep();
         }
         
-        public void next() {
-            if (RunTCK.this.isValid()) {
-                RunTCK.this.nextPanel();
+        public void next() throws InterruptedException {
+            final WizardDescriptor.AsynchronousValidatingPanel<?> avp = (WizardDescriptor.AsynchronousValidatingPanel<?>) RunTCK.this.current();
+            if (RunTCK.this.prepareValidation()) {
+                RequestProcessor.Task task = rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            avp.validate();
+                            RunTCK.this.nextPanel();
+                        } catch (WizardValidationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } else {
+                if (RunTCK.this.isValid()) {
+                    RunTCK.this.nextPanel();
+                }
             }
         }
         
@@ -141,6 +165,15 @@ final class RunTCK extends AbstractWizard {
         
         public Object data() {
             return RunTCK.this.data();
+        }
+        
+        private final List<Object> later = new ArrayList<>();
+        public void invokeLater(Object fn) {
+            later.add(fn);
+        }
+        
+        public void invokeNow() {
+            RunTCK.this.invokeFn(later.toArray());
         }
     }
 }
