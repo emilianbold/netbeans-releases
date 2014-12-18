@@ -67,7 +67,6 @@ public class NodeJsDeclarationFinder implements DeclarationFinder {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot, caretOffset);
         Token<? extends JsTokenId> pathToken = getModeluPath(ts, caretOffset);
         if (pathToken != null) {
-            System.out.println(pathToken.text().toString());
             String module = pathToken.text().toString();
             FileObject moduleFO = NodeJsUtils.findModuleFile(snapshot.getSource().getFileObject(), module);
             if (moduleFO != null) {
