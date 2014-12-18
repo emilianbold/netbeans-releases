@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.support.RemoteLogger;
@@ -415,7 +416,11 @@ public final class FileSystemProvider {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {
                 absPath = provider.normalizeAbsolutePath(absPath, fileSystem);
-                provider.addRecursiveListener(listener, fileSystem, absPath, recurseInto, interrupter);
+                try {
+                    provider.addRecursiveListener(listener, fileSystem, absPath, recurseInto, interrupter);
+                } catch (Throwable e) {
+                    DLightLibsCommonLogger.printStackTraceOnce(e, Level.INFO, true);
+                }
                 return;
             }
         }
@@ -426,7 +431,11 @@ public final class FileSystemProvider {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {
                 absPath = provider.normalizeAbsolutePath(absPath, fileSystem);
-                provider.removeRecursiveListener(listener, fileSystem, absPath);
+                try {
+                    provider.removeRecursiveListener(listener, fileSystem, absPath);
+                } catch (Throwable e) {
+                    DLightLibsCommonLogger.printStackTraceOnce(e, Level.INFO, true);
+                }
                 return;
             }
         }
