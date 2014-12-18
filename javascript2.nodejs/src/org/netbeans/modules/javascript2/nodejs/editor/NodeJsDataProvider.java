@@ -56,6 +56,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -656,6 +657,11 @@ public class NodeJsDataProvider {
         String moduleName = fqn.startsWith(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX)
                 ? fqn.substring(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX.length()) : fqn;
         String[] parts = moduleName.split("\\.");
+        if (parts.length > 2 && parts[0].equals(parts[1])) {
+            // remove the first part of the fqn, because it's artificially added 
+            // to the model to keep the global context clean
+            parts = Arrays.copyOfRange(parts, 1, parts.length);
+        }
         JSONArray modules = getModules();
         JSONObject module = null;
         if (modules != null) {
