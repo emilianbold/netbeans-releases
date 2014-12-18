@@ -582,6 +582,7 @@ void unpackJars(LauncherProperties * props, WCHAR * jvmDir, WCHAR * startDir, WC
                         
                         
                         appendCommandLineArgument(&unpackCommand, unpack200exe);
+                        appendCommandLineArgument(&unpackCommand, L"-r"); // remove input file
                         appendCommandLineArgument(&unpackCommand, child);
                         appendCommandLineArgument(&unpackCommand, jarName);
                         

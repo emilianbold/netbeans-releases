@@ -727,7 +727,7 @@ installJVM() {
 			debug "... unpacked file = $unpacked"
 			fEsc=`escapeString "$f"`
 			uEsc=`escapeString "$unpacked"`
-			cmd="$jvmDirEscaped/bin/unpack200 $fEsc $uEsc"
+			cmd="$jvmDirEscaped/bin/unpack200 -r $fEsc $uEsc"
 			runCommand "$cmd"
 			if [ $? != 0 ] ; then
 			    message "$MSG_ERROR_UNPACK_JVM_FILE" "$f"
