@@ -3490,6 +3490,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         null :
                         Source.create(doc);
         }
+        
+        protected void refreshAffectedDocuments(Set<URL> roots) {
+            Collection<? extends ActiveDocumentProvider.IndexingAware> toNotify = Lookup.getDefault().lookupAll(ActiveDocumentProvider.IndexingAware.class);
+            for (ActiveDocumentProvider.IndexingAware o : toNotify) {
+                o.indexingComplete(roots);
+            }
+            refreshActiveDocument();
+        }
 
         protected void refreshActiveDocument() {
             final Source source = getActiveSource();
@@ -3772,7 +3780,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
                 TEST_LOGGER.log(Level.FINEST, "filelist"); //NOI18N
-                refreshActiveDocument();
+                refreshAffectedDocuments(Collections.singleton(root));
             }
             return true;
         }
@@ -3804,6 +3812,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             }
             return false;
+        }
+
+        @Override
+        protected void refreshAffectedDocuments(Set<URL> roots) {
+            if (shouldRefresh()) {
+                super.refreshAffectedDocuments(roots);
+            }
         }
 
         @Override
@@ -3841,7 +3856,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected @Override boolean getDone() {
             boolean result = scanBinary(root, BinaryIndexers.load(), null);
             TEST_LOGGER.log(Level.FINEST, "binary", Collections.<URL>singleton(root));       //NOI18N
-            refreshActiveDocument();
+            refreshAffectedDocuments(Collections.singleton(root));
             return result;
         }
 
@@ -4616,7 +4631,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
 
-            refreshActiveDocument();
+            Set<URL> affectedRoots = new HashSet<>();
+            affectedRoots.addAll(depCtx.newRootsToScan);
+            affectedRoots.addAll(depCtx.newBinariesToScan);
+            affectedRoots.addAll(depCtx.scannedRoots);
+            affectedRoots.addAll(depCtx.scannedBinaries);
+            affectedRoots.addAll(depCtx.oldBinaries);
+            affectedRoots.addAll(depCtx.oldRoots);
+            refreshAffectedDocuments(affectedRoots);
             return finished;
         }
 
@@ -5085,7 +5107,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 LOGGER.log(logLevel, "} ===="); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "RootsWork-finished");       //NOI18N
-            refreshActiveDocument();
+            Set<URL> affectedRoots = new HashSet<>();
+            affectedRoots.addAll(depCtx.newRootsToScan);
+            affectedRoots.addAll(depCtx.newBinariesToScan);
+            affectedRoots.addAll(depCtx.scannedRoots);
+            affectedRoots.addAll(depCtx.scannedBinaries);
+            affectedRoots.addAll(depCtx.oldBinaries);
+            affectedRoots.addAll(depCtx.oldRoots);
+            refreshAffectedDocuments(affectedRoots);
             return finished;
             } finally {
                 if (previousLevel != null) {
