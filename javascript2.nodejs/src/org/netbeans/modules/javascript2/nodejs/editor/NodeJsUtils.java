@@ -72,11 +72,12 @@ public class NodeJsUtils {
     public static String FAKE_OBJECT_NAME_PREFIX = "nm$_"; //NOI18N
     public static String NODEJS_NAME = "NodeJS"; //NOI18N
     
-    public static String JS_EXT = ".js"; //NOI18N
-    public static String JSON_EXT = ".json"; //NOI18N
-    public static String NODE_EXT = ".node"; //NOI18N
+    public static String JS_EXT = "js"; //NOI18N
+    public static String JSON_EXT = "json"; //NOI18N
+    public static String NODE_EXT = "node"; //NOI18N
     
     private static String MAIN_FIELD = "main"; //NOI18N
+    private static final String SLASH = "/"; //NOI18N
     
     public final static String EXPORTS = "exports"; //NOI18N
     public final static String MODULE = "module"; //NOI18N
@@ -135,15 +136,15 @@ public class NodeJsUtils {
             if (resultFO != null && !resultFO.isFolder()) {
                 return resultFO;
             }
-            resultFO = parentFO.getFileObject(module + JS_EXT);
+            resultFO = parentFO.getFileObject(module + '.' + JS_EXT);
             if (resultFO != null && !resultFO.isFolder()) {
                 return resultFO;
             }
-            resultFO = parentFO.getFileObject(module + JSON_EXT);
+            resultFO = parentFO.getFileObject(module + '.' + JSON_EXT);
             if (resultFO != null && !resultFO.isFolder()) {
                 return resultFO;
             }
-            resultFO = parentFO.getFileObject(module + NODE_EXT);
+            resultFO = parentFO.getFileObject(module + '.' + NODE_EXT);
             if (resultFO != null && !resultFO.isFolder()) {
                 return resultFO;
             }
@@ -158,7 +159,7 @@ public class NodeJsUtils {
         }
         FileObject moduleFolderFO = parentFO.getFileObject(module);
         if (moduleFolderFO != null && moduleFolderFO.isFolder()) {
-            FileObject packageFO = moduleFolderFO.getFileObject(PACKAGE_NAME + JSON_EXT);
+            FileObject packageFO = moduleFolderFO.getFileObject(PACKAGE_NAME + '.' + JSON_EXT);
             FileObject resultFO = null;
             if (packageFO != null && !packageFO.isFolder()) {
                 // need to parser package.json
@@ -169,11 +170,11 @@ public class NodeJsUtils {
                     return resultFO;
                 }
             }
-            resultFO = parentFO.getFileObject(module + "/" + INDEX_NAME + JS_EXT);
+            resultFO = parentFO.getFileObject(module + "/" + INDEX_NAME + '.' + JS_EXT);
             if (resultFO != null && !resultFO.isFolder()) {
                 return resultFO;
             }
-            resultFO = parentFO.getFileObject(module + "/" + INDEX_NAME + NODE_EXT);
+            resultFO = parentFO.getFileObject(module + "/" + INDEX_NAME + '.' + NODE_EXT);
             if (resultFO != null && !resultFO.isFolder()) {
                 return resultFO;
             }
@@ -273,5 +274,24 @@ public class NodeJsUtils {
             name = name.substring(0, name.lastIndexOf('.'));
         }
         return name;
+    }
+    
+    public static String writeFilePathForDocWindow(final FileObject fo) {
+        String path = fo.getPath();
+        String[] parts = path.split(SLASH);
+        StringBuilder sb = new StringBuilder();
+        sb.append("<pre>"); // NOI18N
+        int length = 0;
+        for (String part : parts) {
+            if ((length + part.length()) > 50) {
+                sb.append("\n    "); // NOI18N
+                length = 4;
+            }
+            sb.append(part).append('/');
+            length += part.length() + 1;
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append("</pre>"); // NOI18N
+        return sb.toString();
     }
 }

@@ -144,6 +144,7 @@ public class NodeJsCompletionItem implements CompletionProposal {
     }
     
     public static class NodeJsModuleCompletionItem extends NodeJsCompletionItem {
+        
         public NodeJsModuleCompletionItem(NodeJsElement element, int anchorOffset) {
             super(element, anchorOffset);
         }
