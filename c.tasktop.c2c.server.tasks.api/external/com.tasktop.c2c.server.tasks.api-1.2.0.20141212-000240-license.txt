@@ -1,5 +1,5 @@
 Name: ODCS Server Cloud API
-Version: 1.1.0
+Version: 1.2.0
 License: EPL-v10
 OSR: 15896
 Origin: Oracle
