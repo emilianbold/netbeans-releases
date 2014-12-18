@@ -73,6 +73,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -418,7 +419,18 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
     boolean validationRequested;
     boolean prepareValidation() {
-        return validationRequested = callValidate(data);
+        FutureTask<Boolean> t = new FutureTask<Boolean>(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return validationRequested = callValidate(data);
+            }
+        });
+        FXBrowsers.runInBrowser(v, t);
+        try {
+            return t.get();
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     synchronized void waitForValidation() throws WizardValidationException {
