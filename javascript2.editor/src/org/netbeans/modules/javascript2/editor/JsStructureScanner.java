@@ -118,7 +118,9 @@ public class JsStructureScanner implements StructureScanner {
                 processedObjects.add(original.getFullyQualifiedName());
             }
         } else {
-            processedObjects.add(jsObject.getFullyQualifiedName());
+            if (jsObject.getJSKind() != JsElement.Kind.FILE) {
+                processedObjects.add(jsObject.getFullyQualifiedName());
+            }
         }
         if (jsObject.isVirtual()) {
             return collectedItems;

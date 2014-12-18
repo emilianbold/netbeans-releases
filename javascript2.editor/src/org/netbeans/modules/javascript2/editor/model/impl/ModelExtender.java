@@ -48,6 +48,7 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
+import org.netbeans.modules.javascript2.editor.spi.model.TypeDisplayNameConvertor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -56,16 +57,18 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Hejl, Petr Pisl
  */
 public final class ModelExtender {
 
-    public static final String MODEL_INTERCEPTORS_PATH = "JavaScript/Model/ModelInterceptors";
+    public static final String MODEL_INTERCEPTORS_PATH = "JavaScript/Model/ModelInterceptors";                      //NOI18N
 
-    public static final String FUNCTION_INTERCEPTORS_PATH = "JavaScript/Model/FunctionInterceptors";
+    public static final String FUNCTION_INTERCEPTORS_PATH = "JavaScript/Model/FunctionInterceptors";                //NOI18N
     
-    public static final String OBJECT_INTERCEPTORS_PATH = "JavaScript/Model/ObjectInterceptors";
+    public static final String OBJECT_INTERCEPTORS_PATH = "JavaScript/Model/ObjectInterceptors";                    //NOI18N
 
+    public static final String TYPE_DISPLAY_NAME_CONVERTORS_PATH = "JavaScript/Model/TypeDisplayNameConvertors";    //NOI18N
+    
     private static final Lookup.Result<ModelInterceptor> MODEL_INTERCEPTORS =
             Lookups.forPath(MODEL_INTERCEPTORS_PATH).lookupResult(ModelInterceptor.class);
 
@@ -74,6 +77,9 @@ public final class ModelExtender {
 
     private static final Lookup.Result<ObjectInterceptor> OBJECT_INTERCEPTORS =
             Lookups.forPath(OBJECT_INTERCEPTORS_PATH).lookupResult(ObjectInterceptor.class);
+    
+    private static final Lookup.Result<TypeDisplayNameConvertor> TYPE_DISPLAY_NAME_CONVERTORS =
+            Lookups.forPath(TYPE_DISPLAY_NAME_CONVERTORS_PATH).lookupResult(TypeDisplayNameConvertor.class);
     
     private static ModelExtender instance;
 
@@ -119,6 +125,10 @@ public final class ModelExtender {
         return new ArrayList<ObjectInterceptor>(OBJECT_INTERCEPTORS.allInstances());
     }
 
+    public List<TypeDisplayNameConvertor> getTypeDisplayNameConvertors() {
+        return new ArrayList<TypeDisplayNameConvertor>(TYPE_DISPLAY_NAME_CONVERTORS.allInstances());
+    }
+    
     public synchronized List<? extends JsObject> getExtendingGlobalObjects(FileObject fo) {
         if (extendingObjects == null) {
             Collection<? extends ModelInterceptor> interceptors = MODEL_INTERCEPTORS.allInstances();
