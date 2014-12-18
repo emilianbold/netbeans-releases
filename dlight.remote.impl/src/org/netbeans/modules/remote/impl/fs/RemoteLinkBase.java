@@ -193,7 +193,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         if (delegate != null) {
             return delegate.lockImpl(orig);
         } else {
-            throw fileNotFoundException("lock"); //NOI18N
+            return super.lockImpl(orig);
         }
     }
 
@@ -294,7 +294,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     @Override
     public boolean canWriteImpl(RemoteFileObjectBase orig) {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
-        return (delegate == null) ? false : delegate.canWriteImpl(orig);
+        return (delegate == null) ? super.canWriteImpl(orig) : delegate.canWriteImpl(orig);
     }
 
     @Override
