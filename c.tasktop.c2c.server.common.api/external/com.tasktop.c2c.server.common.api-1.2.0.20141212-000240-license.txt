@@ -1,9 +1,9 @@
-Name: ODCS Deployment API
-Version: 1.1.0
+Name: ODCS Server Common API
+Version: 1.2.0
 License: EPL-v10
 OSR: 15896
 Origin: Oracle
-Description: ODCS Deployment API
+Description: ODCS Server Common API
 
 Eclipse Public License - v 1.0
 
