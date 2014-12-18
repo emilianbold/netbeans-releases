@@ -101,7 +101,7 @@
         <node name="org.netbeans.modules.java.hints.suggestions.Lambda.expression2Return"/>
         <node name="org.netbeans.modules.java.hints.suggestions.Tiny.convertToDifferentBase"/>
         <node name="org.netbeans.modules.java.hints.encapsulation.ClassEncapsulation.publicCls">
-            <attribute name="enabled" value="true"/>
+            <attribute name="enabled" value="false"/>
         </node>
         <node name="org.netbeans.modules.java.hints.ThisInAnonymous"/>
         <node name="org.netbeans.modules.java.hints.EqualsHint"/>
