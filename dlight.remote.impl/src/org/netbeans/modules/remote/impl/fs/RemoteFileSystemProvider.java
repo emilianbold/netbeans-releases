@@ -476,20 +476,16 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public boolean isLink(FileObject fo) {
-        if (fo instanceof RemoteFileObject) {
-            return ((RemoteFileObject) fo).getImplementor().getType() == FileInfoProvider.StatInfo.FileType.SymbolicLink;
+        try {
+            return fo.isSymbolicLink();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex); // should never be the case, so let's report it that way
+            return false; // as in java.nio.file.Files
         }
-        return false;
     }
 
     @Override
     public String resolveLink(FileObject fo) throws IOException {
-        if (fo instanceof RemoteFileObject) {
-            RemoteFileObjectBase impl = ((RemoteFileObject) fo).getImplementor();
-            if (impl instanceof RemoteLink) {
-                return ((RemoteLink) impl).getDelegateNormalizedPath();
-            }
-        }
-        return null;
+        return fo.readSymbolicLinkPath();
     }
 }

@@ -99,6 +99,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -351,6 +352,11 @@ public final class QueryTopComponent extends TopComponent
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("o.n.m.bugtracking.ui.query.QueryTopComponent"); // NOI18N
     }
 
     @Override

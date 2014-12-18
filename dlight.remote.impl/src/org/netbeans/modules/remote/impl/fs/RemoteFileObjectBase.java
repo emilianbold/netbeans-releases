@@ -868,6 +868,18 @@ public abstract class RemoteFileObjectBase {
     public void warmup(FileSystemProvider.WarmupMode mode, Collection<String> extensions) {        
     }
     
+    public boolean isSymbolicLink() {
+        return false;
+    }
+
+    public RemoteFileObjectBase readSymbolicLink() {
+        return null;
+    }
+
+    public String readSymbolicLinkPath() {
+        return null;
+    }
+    
     @Override
     public boolean equals(Object obj) {
         return this == obj;

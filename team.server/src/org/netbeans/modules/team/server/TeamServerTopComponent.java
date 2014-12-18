@@ -51,6 +51,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import static org.netbeans.modules.team.server.Bundle.*;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -123,6 +124,11 @@ public final class TeamServerTopComponent extends TopComponent {
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("o.n.m.team.server.TeamServerTopComponent"); // NOI18N
     }
 
     @Override

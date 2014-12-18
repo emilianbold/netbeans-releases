@@ -81,6 +81,7 @@ import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.settings.OdcsSettings;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
@@ -503,6 +504,11 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     private javax.swing.JTextField textArtifacts;
     private javax.swing.JTextField textMaven;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("o.n.m.odcs.ui.project.ProjectDetailsTopComponent"); // NOI18N
+    }
 
     @Override
     public void componentOpened() {

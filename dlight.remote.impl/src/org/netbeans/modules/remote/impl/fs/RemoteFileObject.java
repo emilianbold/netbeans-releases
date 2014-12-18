@@ -60,6 +60,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.FileStatistics;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -470,6 +471,28 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     public void addFileChangeListener(FileChangeListener fcl) {
         getImplementor().addFileChangeListener(fcl);
     }
+    
+    @Override
+    public boolean isSymbolicLink() {
+        return getImplementor().isSymbolicLink();
+    }
+
+    @Override
+    public FileObject readSymbolicLink() {
+        RemoteFileObjectBase target = getImplementor().readSymbolicLink();
+        return (target == null) ? null : target.getOwnerFileObject();
+    }
+
+    @Override
+    public String readSymbolicLinkPath() {
+        return getImplementor().readSymbolicLinkPath();
+    }
+
+    @Override
+    public FileObject getCanonicalFileObject() throws IOException {
+        return RemoteFileSystemUtils.getCanonicalFileObject(this);
+    }
+    
     // </editor-fold>
     
    /* Java serialization*/ Object writeReplace() throws ObjectStreamException {

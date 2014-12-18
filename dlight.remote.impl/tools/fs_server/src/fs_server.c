@@ -63,7 +63,7 @@
 #include <fcntl.h>
 #include <signal.h>
 
-#define MAX_THREAD_COUNT 32
+#define MAX_THREAD_COUNT 80
 #define DEFAULT_THREAD_COUNT 4
 
 typedef struct {
@@ -71,7 +71,10 @@ typedef struct {
     pthread_t id;
 } thread_info;
 
+/** Current threads count. NOT synchronized. To be accessed only from main thread */
 static int rp_thread_count = DEFAULT_THREAD_COUNT;
+
+/** Threads. NOT synchronized. To be accessed only from main thread */
 static thread_info rp_threads[MAX_THREAD_COUNT];
 
 static blocking_queue req_queue;
@@ -86,7 +89,7 @@ static int refresh_sleep = 1;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 3
+#define FS_SERVER_MID_VERSION 4
 #define FS_SERVER_MINOR_VERSION 0
 
 typedef struct fs_entry {
@@ -103,9 +106,11 @@ typedef struct fs_entry {
 } fs_entry;
 
 static struct {
-    /** This mutex to be used ONLY to guard access to proceed field.
-     * NO other activity should be done under this mutex except for getting/setting proceed field. */
+    /** This mutex to be used ONLY to guard access to proceed field
+     * or busy_threads fiels
+     * NO other activity should be done under this mutex. */
     pthread_mutex_t mutex;
+    int busy_threads;
     bool proceed;
 } state;
 
@@ -181,7 +186,30 @@ static bool need_to_proceed() {
 
 static void state_init() {
     pthread_mutex_init(&state.mutex, NULL);
-    state_set_proceed(true);
+    mutex_lock(&state.mutex);
+    state.proceed = true;
+    state.busy_threads = 0;
+    mutex_unlock(&state.mutex);
+}
+
+static void decrement_busy_threads() {
+    mutex_lock(&state.mutex);
+    state.busy_threads--;
+    mutex_unlock(&state.mutex);
+}
+
+static void increment_busy_threads() {
+    mutex_lock(&state.mutex);
+    state.busy_threads++;
+    mutex_unlock(&state.mutex);
+}
+
+static int get_busy_threads() {
+    int result;
+    mutex_lock(&state.mutex);
+    result = state.busy_threads;
+    mutex_unlock(&state.mutex);
+    return result;
 }
 
 #define DECLARE_DECODE(type, type_name, maxlen) \
@@ -1082,8 +1110,7 @@ static void thread_shutdown() {
     err_shutdown();
 }
 
-static void refresh_cycle(fs_request* request) {
-    dirtab_flush(); // TODO: find the appropriate place
+static void refresh_cycle_impl(fs_request* request) {
     stopwatch_start();
     if (request && request->id) { // zero id means nobody is waiting, so no need for header and end marker
         my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_REFRESH, request->id, (long) utf8_strlen(request->path), request->path);
@@ -1093,6 +1120,60 @@ static void refresh_cycle(fs_request* request) {
         response_end(request->id, request->path);
     }
     stopwatch_stop(TRACE_FINE, "refresh cycle");
+}
+
+static void refresh_cycle(fs_request* request) {
+    
+    dirtab_flush(); // TODO: find the appropriate place
+    dirtab_element* el = dirtab_get_element(request->path);
+
+    // analyze and set refresh_state;
+    dirtab_lock(el);
+    dirtab_refresh_state refresh_state = dirtab_get_refresh_state(el);
+    if (refresh_state == DRS_REFRESHING) {
+        // already refreshing => set pending flag,
+        // so the thread that refreshes will repeat once again
+        trace(TRACE_FINEST, "refresh[1] %s already refreshing: setting pending flag\n", request->path);
+        dirtab_set_refresh_state(el, DRS_PENDING_REFRESH);
+        dirtab_unlock(el);
+        return;
+    } else if (refresh_state == DRS_PENDING_REFRESH) {
+        // nothing: the thread that refreshes will repeat once again
+        trace(TRACE_FINEST, "refresh[1] %s already pending: nothing to do\n", request->path);
+        dirtab_unlock(el);
+        return;
+    } else {
+        soft_assert(refresh_state == DRS_NONE, "unexpected refresh_state for %s : %d\n", request->path, refresh_state);
+        dirtab_set_refresh_state(el, DRS_REFRESHING);
+        dirtab_unlock(el);
+    }
+    
+    while (true) {        
+        trace(TRACE_FINEST, "refreshing %s...\n", request->path);
+        refresh_cycle_impl(request);
+        trace(TRACE_FINEST, "refreshing %s completed\n", request->path);
+        
+        dirtab_lock(el);
+        dirtab_refresh_state refresh_state = dirtab_get_refresh_state(el);
+        if (refresh_state == DRS_REFRESHING) {
+            // no new refresh request has come => just exit
+            trace(TRACE_FINEST, "refresh[2] %s no new request => exiting\n", request->path);
+            dirtab_set_refresh_state(el, DRS_NONE);
+            dirtab_unlock(el);
+            return;
+        } else if (refresh_state == DRS_PENDING_REFRESH) {
+            // while we refreshed, new request has come
+            trace(TRACE_FINEST, "refresh[2] %s pending request => once more\n", request->path);
+            dirtab_set_refresh_state(el, DRS_REFRESHING);
+            dirtab_unlock(el);
+            continue;
+        } else {
+            soft_assert(false, "unexpected refresh_state for %s : %d, should be either %d or %d\n", 
+                    request->path, refresh_state, DRS_REFRESHING, DRS_PENDING_REFRESH);
+            dirtab_unlock(el);
+            return;
+        }        
+    }
 }
 
 static void *refresh_loop(void *data) {
@@ -1165,8 +1246,10 @@ static void *rp_loop(void *data) {
         if (request) {
             trace(TRACE_FINE, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n",
                     ti->no, request->id, request->size, request->kind, request->len, request->path);
+            increment_busy_threads();            
             process_request(request);
             free(request);
+            decrement_busy_threads();            
         } else {
             if (!state_get_proceed()) {
                 break;
@@ -1239,7 +1322,14 @@ static void main_loop() {
                 }
                 continue;
             }
-            if (rp_thread_count > 1) {
+            if (rp_thread_count > 1) {                
+                int busy = get_busy_threads();
+                if (busy >= rp_thread_count && rp_thread_count < MAX_THREAD_COUNT) {                    
+                    int curr_thread = rp_thread_count++;
+                    trace(TRACE_FINE, "Starting thread #%d...\n", curr_thread);
+                    rp_threads[curr_thread].no = curr_thread;
+                    pthread_create(&rp_threads[curr_thread].id, NULL, &rp_loop, &rp_threads[curr_thread]);
+                }
                 fs_request* new_request = malloc(request->size);
                 clone_request(new_request, request);
                 blocking_queue_add(&req_queue, new_request);

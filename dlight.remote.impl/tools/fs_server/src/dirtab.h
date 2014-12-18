@@ -71,6 +71,19 @@ typedef enum {
     DE_WSTATE_WATCH = 2
 } dirtab_watch_state;
 
+/** 
+ * refresh state; concerns only directory refresh is called for -
+ * not its subdirectories
+ */
+typedef enum {
+    /** refresh for this path is not in progress now */
+    DRS_NONE = 0,
+    /** refresh for this path is in progress now */
+    DRS_REFRESHING = 1,
+    /** refresh for this path is in progress and a new refresh is scheduled */
+    DRS_PENDING_REFRESH = 2
+} dirtab_refresh_state;
+
 typedef struct dirtab_element dirtab_element;
     
 void dirtab_set_persistence_dir(const char* dir);
@@ -113,6 +126,12 @@ dirtab_watch_state dirtab_get_watch_state(dirtab_element *el);
 
 /** call dirtab_lock() before!  */
 void dirtab_set_watch_state(dirtab_element *el, dirtab_watch_state state);
+
+/** call dirtab_lock() before!  */
+dirtab_refresh_state dirtab_get_refresh_state(dirtab_element *el);
+
+/** call dirtab_lock() before!  */
+void dirtab_set_refresh_state(dirtab_element *el, dirtab_refresh_state state);
 
 #ifdef	__cplusplus
 }

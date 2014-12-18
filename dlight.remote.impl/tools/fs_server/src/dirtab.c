@@ -62,6 +62,7 @@ struct dirtab_element {
     pthread_mutex_t mutex;
     dirtab_state state;
     dirtab_watch_state watch_state;
+    dirtab_refresh_state refresh_state;
     char abspath[];
 };
 
@@ -134,6 +135,7 @@ static dirtab_element *new_dirtab_element(const char* path, int index) {
     dirtab_element *el = malloc(size);
     el->index = index;
     el->state = DE_STATE_INITIAL;
+    el->refresh_state = DRS_NONE;
     el->watch_state = DE_WSTATE_NONE;
     strcpy(el->abspath, path);
     el->cache_path = el->abspath + path_len + 1;
@@ -233,6 +235,16 @@ static bool flush_impl() {
 /** call dirtab_lock() before!  */
 dirtab_state dirtab_get_state(dirtab_element *el) {
     return el->state;
+}
+
+/** call dirtab_lock() before!  */
+dirtab_refresh_state dirtab_get_refresh_state(dirtab_element *el) {
+    return el->refresh_state;
+}
+
+/** call dirtab_lock() before!  */
+void dirtab_set_refresh_state(dirtab_element *el, dirtab_refresh_state state) {
+    el->refresh_state = state;
 }
 
 /** call dirtab_lock() before!  */
