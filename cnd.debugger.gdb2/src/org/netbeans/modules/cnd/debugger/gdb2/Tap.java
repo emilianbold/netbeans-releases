@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 import java.util.LinkedList;
 import java.util.Arrays;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MICommandInjector;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIProxy;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -124,6 +125,7 @@ import org.openide.util.RequestProcessor;
         toDCE.sendChar(c);
     }
 
+    private boolean showMessage = true;
     /**
      * Send character typed into console to gdb
      *
@@ -133,6 +135,11 @@ import org.openide.util.RequestProcessor;
      */
     @Override
     public void sendChars(char c[], int offset, int count) {
+        if (showMessage && !debugger.getGdbVersionPeculiarity().supports(GdbVersionPeculiarity.Feature.BREAKPOINT_NOTIFICATIONS)) {
+            // IDE is unable to detect that something should be updated without a notification
+            NativeDebuggerManager.warning(Catalog.get("MSG_OldGdbVersionConsole")); // NOI18N
+            showMessage = false;
+        }
         prompted = false;
 
         final String line = String.valueOf(c, offset, count);

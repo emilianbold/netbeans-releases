@@ -544,16 +544,20 @@ import org.openide.util.lookup.Lookups;
 //                ? Collections.<CharSequence>emptyList() : files.toList();
         for (Layer layer : layers) {
             Map<Integer, Integer> map = unitsTranslationMap.get(layer.getLayerDescriptor());
-            final Integer unitIDInLayer = map.get(clientShortUnitID);
             // map: clientShortUnitID => unitIDInLayer
-            layer.closeUnit(unitIDInLayer, cleanRepository, requiredUnits);
-            //no need to store file tables, we will add it to the writer queue
-//            WriteLayerCapability writeCapability = layer.getWriteCapability();
-//            if (writeCapability != null) {
-//                if (!cleanRepository) {
-//                    writeCapability.storeFilesTable(unitIDInLayer, flist);
-//                }
-//            }
+            final Integer unitIDInLayer = map.get(clientShortUnitID);            
+            // check for null in case we recover from broken repository read
+            // #249412 NullPointerException at org.netbeans.modules.cnd.repository.storage.Storage.closeUnit
+            if (unitIDInLayer != null) { 
+                layer.closeUnit(unitIDInLayer, cleanRepository, requiredUnits);
+                //no need to store file tables, we will add it to the writer queue
+    //            WriteLayerCapability writeCapability = layer.getWriteCapability();
+    //            if (writeCapability != null) {
+    //                if (!cleanRepository) {
+    //                    writeCapability.storeFilesTable(unitIDInLayer, flist);
+    //                }
+    //            }
+            }
         }
     }
 
@@ -717,8 +721,11 @@ import org.openide.util.lookup.Lookups;
         Map<Integer, Integer> unitsMap = unitsTranslationMap.get(layerDescriptor);
         if (unitsMap == null) {
             return -1;
-        }
-        return unitsMap.get(clientShortUnitID);
+        }        
+        Integer out = unitsMap.get(clientShortUnitID);
+        // check for null in case we recover from broken repository read
+        // #249412 NullPointerException at org.netbeans.modules.cnd.repository.storage.Storage.closeUnit        
+        return out == null ? -1 : out;
     }
 
     UnitsConverter getStorageMask() {
