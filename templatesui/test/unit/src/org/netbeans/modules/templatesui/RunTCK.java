@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.templatesui;
 
-import com.sun.xml.internal.ws.api.message.Packet;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
