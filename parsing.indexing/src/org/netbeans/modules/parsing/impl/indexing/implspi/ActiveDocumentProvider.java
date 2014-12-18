@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.parsing.impl.indexing.implspi;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.EventListener;
 import java.util.EventObject;
@@ -61,7 +62,7 @@ public interface ActiveDocumentProvider {
     Set<? extends Document> getActiveDocuments();
     void addActiveDocumentListener(@NonNull ActiveDocumentListener listener);
     void removeActiveDocumentListener(@NonNull ActiveDocumentListener listener);
-
+    
     interface ActiveDocumentListener extends EventListener {
         void activeDocumentChanged(@NonNull ActiveDocumentEvent event);
     }
@@ -97,5 +98,22 @@ public interface ActiveDocumentProvider {
         public Collection<? extends Document> getDocumentsToRefresh() {
             return refresh;
         }
+    }
+    
+    /**
+     * The implementation will be informed when the indexing finishes
+     * to update any documents it decides to be affected by the indexing operation.
+     * It is recommended to update all currently visible documents, and
+     * to schedule update of documents that are not visible as soon as the user
+     * switches to their editor/view, not waiting on a caret or text change.
+     */
+    public interface IndexingAware {
+        /**
+         * Notifies that the indexing has completed. The implementation may
+         * decide to refresh information for certain documents
+         * 
+         * @param indexedRoots set of roots which were affected (indexed, updated or removed)
+         */
+        public void indexingComplete(Set<URL> indexedRoots);
     }
 }
