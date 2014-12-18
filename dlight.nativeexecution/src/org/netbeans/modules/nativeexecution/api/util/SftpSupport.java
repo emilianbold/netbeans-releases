@@ -346,7 +346,7 @@ class SftpSupport {
                 }
                 time = System.currentTimeMillis();
                 put(cftp);
-                if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Uploading {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
+                if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Uploading {0} took {1} ms", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
                 if (parameters.dstFileToRename != null) {
                     time = System.currentTimeMillis();
                     ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv,

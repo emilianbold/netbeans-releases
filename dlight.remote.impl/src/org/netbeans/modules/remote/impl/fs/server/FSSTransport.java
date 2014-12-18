@@ -283,7 +283,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         AtomicInteger realCnt = new AtomicInteger(0);
         FSSResponse response = null;
         try {
-            RemoteLogger.finest("Sending request #{0} for directry {1} to fs_server", 
+            RemoteLogger.finest("Sending request #{0} for directory {1} to fs_server", 
                     request.getId(), path);
             // XXX: a temporary simplistic solution
             response = dispatcher.dispatch(request);
@@ -305,7 +305,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 response.dispose();
             }
             RemoteStatistics.stopChannelActivity(activityID, 0);
-            RemoteLogger.finest("Communication #{0} with fs_server for directry {1} ({2} entries read) took {3} ms",
+            RemoteLogger.finest("Communication #{0} with fs_server for directory {1} ({2} entries read) took {3} ms",
                     request.getId(), path, realCnt.get(), System.currentTimeMillis() - time);
         }
     }
@@ -313,7 +313,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     private DirEntryList readEntries(FSSResponse response, String path, long reqId, AtomicInteger cnt) 
             throws IOException, InterruptedException, ExecutionException {
         try {
-            RemoteLogger.finest("Reading response #{0} from fs_server for directry {1})",
+            RemoteLogger.finest("Reading response #{0} from fs_server for directory {1})",
                     reqId, path);
             List<FSSResponse.Package> packages = new ArrayList<FSSResponse.Package>();
             for (FSSResponse.Package pkg = response.getNextPackage(); 
@@ -332,7 +332,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 }
                 packages.add(pkg);
             }
-            RemoteLogger.finest("Processing response #{0} from fs_server for directry {1}",
+            RemoteLogger.finest("Processing response #{0} from fs_server for directory {1}",
                     reqId, path);
             List<DirEntry> result = new ArrayList<DirEntry>();
             for (FSSResponse.Package pkg : packages) {
@@ -582,7 +582,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 CancellationException, InterruptedException {
 
             FSSRequest request = new FSSRequest(FSSRequestKind.FS_REQ_RECURSIVE_LS, path);
-                RemoteLogger.finest("Sending recursive request #{0} for directry {1} to fs_server",
+                RemoteLogger.finest("Sending recursive request #{0} for directory {1} to fs_server",
                         request.getId(), path);
             return dispatcher.dispatch(request, this);
         }
@@ -630,7 +630,7 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                 if (r != null) {
                     r.dispose();
                 }
-                RemoteLogger.finest("Warming up directry {1}:{2}: ({3} entries) took {4} ms",
+                RemoteLogger.finest("Warming up directory {1}:{2}: ({3} entries) took {4} ms",
                         env, path, realCnt.get(), System.currentTimeMillis() - time);
             }
         }
