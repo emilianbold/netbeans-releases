@@ -57,6 +57,9 @@
                         errorMessage += '\n  '+ stackMessage;
                     }
                 }
+                // add REPORTER_MESSAGE in the beginning of each stacktrace line
+                // so that they can be filtered out in TestRunnerReporter
+                errorMessage = errorMessage.replace(/\n/g, '\n' + this.REPORTER_MESSAGE);
                 this.log(errorMessage);
             }
         },

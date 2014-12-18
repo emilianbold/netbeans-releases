@@ -43,9 +43,11 @@ package org.netbeans.modules.selenium2.webclient.protractor.preferences;
 
 import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,7 +65,7 @@ public class ProtractorPreferencesValidator {
     
     public ProtractorPreferencesValidator validate(Project project) {
         validateProtractor(ProtractorPreferences.getProtractor(project));
-        validateSeleniumServerJar(ProtractorPreferences.getSeleniumServerJar(project));
+        validateUserConfigurationFile(project, ProtractorPreferences.getUserConfigurationFile(project));
         return this;
     }
 
@@ -76,11 +78,11 @@ public class ProtractorPreferencesValidator {
         return this;
     }
 
-    @NbBundle.Messages("ProtractorPreferencesValidator.seleniumServerJar.name=Selenium Server Jar")
-    public ProtractorPreferencesValidator validateSeleniumServerJar(String seleniumServerJar) {
-        String warning = validateFile(Bundle.ProtractorPreferencesValidator_seleniumServerJar_name(), seleniumServerJar, false);
+    @NbBundle.Messages("ProtractorPreferencesValidator.userConfigurationFile.name=Configuration File")
+    public ProtractorPreferencesValidator validateUserConfigurationFile(Project project, String userConfigurationFile) {
+        String warning = validateFile(project, Bundle.ProtractorPreferencesValidator_userConfigurationFile_name(), userConfigurationFile, false);
         if (warning != null) {
-            result.addWarning(new ValidationResult.Message("webdriver manager", warning)); // NOI18N
+            result.addWarning(new ValidationResult.Message("configuration file", warning)); // NOI18N
         }
         return this;
     }
@@ -97,31 +99,36 @@ public class ProtractorPreferencesValidator {
      */
     @NbBundle.Messages({
         "# {0} - source",
-        "FileUtils.validateFile.missing={0} must be selected.",
+        "ProtractorPreferencesValidator.validateFile.missing={0} must be selected.",
         "# {0} - source",
-        "FileUtils.validateFile.notAbsolute={0} must be an absolute path.",
+        "ProtractorPreferencesValidator.validateFile.notAbsolute={0} must be an absolute path.",
         "# {0} - source",
-        "FileUtils.validateFile.notFile={0} must be a valid file.",
+        "ProtractorPreferencesValidator.validateFile.notFile={0} must be a valid file.",
         "# {0} - source",
-        "FileUtils.validateFile.notReadable={0} is not readable.",
+        "ProtractorPreferencesValidator.validateFile.notReadable={0} is not readable.",
         "# {0} - source",
-        "FileUtils.validateFile.notWritable={0} is not writable."
+        "ProtractorPreferencesValidator.validateFile.notWritable={0} is not writable.",
+        "# {0} - source",
+        "ProtractorPreferencesValidator.validateFile.notUnderProject={0} is not under project's directory."
     })
     @CheckForNull
-    private static String validateFile(String source, String filePath, boolean writable) {
+    private static String validateFile(Project project, String source, String filePath, boolean writable) {
         if (filePath == null || filePath.trim().isEmpty()) {
-            return Bundle.FileUtils_validateFile_missing(source);
+            return Bundle.ProtractorPreferencesValidator_validateFile_missing(source);
         }
 
         File file = new File(filePath);
         if (!file.isAbsolute()) {
-            return Bundle.FileUtils_validateFile_notAbsolute(source);
+            return Bundle.ProtractorPreferencesValidator_validateFile_notAbsolute(source);
         } else if (!file.isFile()) {
-            return Bundle.FileUtils_validateFile_notFile(source);
+            return Bundle.ProtractorPreferencesValidator_validateFile_notFile(source);
         } else if (!file.canRead()) {
-            return Bundle.FileUtils_validateFile_notReadable(source);
+            return Bundle.ProtractorPreferencesValidator_validateFile_notReadable(source);
         } else if (writable && !file.canWrite()) {
-            return Bundle.FileUtils_validateFile_notWritable(source);
+            return Bundle.ProtractorPreferencesValidator_validateFile_notWritable(source);
+        }
+        if(project != null && !project.equals(FileOwnerQuery.getOwner(FileUtil.toFileObject(file)))) {
+            return Bundle.ProtractorPreferencesValidator_validateFile_notUnderProject(source);
         }
         return null;
     }

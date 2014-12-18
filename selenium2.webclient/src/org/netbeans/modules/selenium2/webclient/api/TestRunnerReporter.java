@@ -92,35 +92,47 @@ public final class TestRunnerReporter {
     private String runningSuite;
     private String testcase;
     private long duration;
-
+    private final boolean showOutput;
 
     public TestRunnerReporter(RunInfo runInfo, String reporterSuffix) {
         assert runInfo != null;
         this.runInfo = runInfo;
+        this.showOutput = runInfo.isShowOutput();
         this.NB_LINE = reporterSuffix;
     }
     
+    /**
+     *
+     * @return {@code null} if logMessage should not be shown in the output window
+     */
     public String processLine(String logMessage) {
-        String line = removeEscapeCharachters(logMessage).replace(NB_LINE, "");
+        int index = logMessage.indexOf(NB_LINE);
+        if(index == -1) {
+            return logMessage;
+        }
+        String line = removeEscapeCharachters(logMessage.substring(index)).replace(NB_LINE, "");
         
         Matcher matcher;
         matcher = SESSION_START_PATTERN.matcher(line);
         if (matcher.find()) {
             sessionStarted(line);
-            return line;
+            return showOutput ? line : null;
         }
 
         matcher = SESSION_END_PATTERN.matcher(line);
         if (matcher.find()) {
             handleTrouble();
             sessionFinished(line);
-            return "";
+            return showOutput ? "" : null;
         }
 
         matcher = OK_PATTERN.matcher(line);
         if (matcher.find()) {
             String output2display = parseTestResult(matcher);
             addTestCase(testcase, Status.PASSED, duration);
+            if(!showOutput) {
+                return null;
+            }
             getManager().displayOutput(testSession, output2display, false);
             return output2display;
         }
@@ -129,6 +141,9 @@ public final class TestRunnerReporter {
         if (matcher.find()) {
             String output2display = parseTestResult(matcher).concat(SKIP);
             addTestCase(testcase, Status.SKIPPED, duration);
+            if(!showOutput) {
+                return null;
+            }
             getManager().displayOutput(testSession, output2display, false);
             return output2display;
         }
@@ -136,13 +151,16 @@ public final class TestRunnerReporter {
         matcher = NOT_OK_PATTERN.matcher(line);
         if (matcher.find()) {
             String output2display = parseTestResult(matcher);
+            if(!showOutput) {
+                return null;
+            }
             getManager().displayOutput(testSession, output2display, false);
             return output2display;
         }
         if(trouble != null) {
             stackTrace.add(line);
         }
-        return line;
+        return showOutput ? line : null;
     }
     
     private String parseTestResult(Matcher matcher) {
@@ -213,7 +231,9 @@ public final class TestRunnerReporter {
         testSession = new TestSession(getOutputTitle(), runInfo.getProject(), TestSession.SessionType.TEST);
         testSession.setRerunHandler(runInfo.getRerunHandler());
         getManager().testStarted(testSession);
-        getManager().displayOutput(testSession, line, false);
+        if(showOutput) {
+            getManager().displayOutput(testSession, line, false);
+        }
     }
 
     @NbBundle.Messages({

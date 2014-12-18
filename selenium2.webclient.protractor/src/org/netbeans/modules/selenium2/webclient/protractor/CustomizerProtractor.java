@@ -43,21 +43,15 @@ package org.netbeans.modules.selenium2.webclient.protractor;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.selenium2.server.api.Selenium2Server;
 import org.netbeans.modules.selenium2.webclient.protractor.preferences.ProtractorPreferences;
 import org.netbeans.modules.selenium2.webclient.protractor.preferences.ProtractorPreferencesValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -72,7 +66,7 @@ public class CustomizerProtractor extends javax.swing.JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     private volatile String protractor;
-    private volatile String seleniumServerJar;
+    private volatile String userConfigurationFile;
 
     // @GuardedBy("EDT")
     private ValidationResult validationResult;
@@ -99,8 +93,8 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         return protractor;
     }
 
-    public String getSeleniumServerJar() {
-        return seleniumServerJar;
+    public String getUserConfigurationFile() {
+        return userConfigurationFile;
     }
 
     public String getWarningMessage() {
@@ -119,8 +113,8 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         return null;
     }
 
-    @NbBundle.Messages({"CustomizerMocha.protractor.dir.info=Full path of protractor (typically node_modules/.bin/protractor).",
-    "CustomizerMocha.selenium.server.jar.info=Full path to selenium server standalone jar file."})
+    @NbBundle.Messages({"CustomizerProtractor.protractor.dir.info=Full path of protractor (typically node_modules/.bin/protractor).",
+    "CustomizerProtractor.user.configuration.file.info=Full path to configuration file."})
     private void init() {
         assert EventQueue.isDispatchThread();
         // get saved protractor executable if previously set from protractor preferences
@@ -135,31 +129,12 @@ public class CustomizerProtractor extends javax.swing.JPanel {
             }
         }
         protractorDirTextField.setText(protractorExec);
-        protractorDirInfoLabel.setText(Bundle.CustomizerMocha_protractor_dir_info());
+        protractorDirInfoLabel.setText(Bundle.CustomizerProtractor_protractor_dir_info());
         
-        // get saved selenium server jar if previously set from protractor preferences
-        String serverJar = ProtractorPreferences.getSeleniumServerJar(project);
-        if(serverJar == null) {  
-            // selenium server jar not set yet, try searching for it in project's local node_modules dir
-            // user hopefully has configured protractor and run "webdriver-manager update"
-            File seleniumFolder = new File(FileUtil.toFile(project.getProjectDirectory()), "node_modules/protractor/selenium");
-            FileObject seleniumFO = FileUtil.toFileObject(seleniumFolder);
-            if (seleniumFO != null) {
-                ArrayList<? extends FileObject> fos = Collections.list(seleniumFO.getData(false));
-                for (FileObject fo : fos) {
-                    if (fo.getName().startsWith("selenium-server-standalone-") && fo.getExt().equals("jar")) {
-                        serverJar = FileUtil.toFile(fo).getAbsolutePath();
-                        break;
-                    }
-                }
-            }
-            if(serverJar == null) {
-                // last effort - user hopefully has configured selenium server jar in Selenium node under Services Tab
-                serverJar = Selenium2Server.getInstance().getServerJarLocation();
-            }
-        }
-        seleniumServerJarTextField.setText(serverJar);
-        seleniumServerJarInfoLabel.setText(Bundle.CustomizerMocha_selenium_server_jar_info());
+        // get saved user configuration file if previously set from protractor preferences
+        String serverJar = ProtractorPreferences.getUserConfigurationFile(project);
+        userConfigurationFileTextField.setText(serverJar);
+        userConfigurationFileInfoLabel.setText(Bundle.CustomizerProtractor_user_configuration_file_info());
         // listeners
         addListeners();
         // initial validation
@@ -169,16 +144,16 @@ public class CustomizerProtractor extends javax.swing.JPanel {
     private void addListeners() {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         protractorDirTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        seleniumServerJarTextField.getDocument().addDocumentListener(defaultDocumentListener);
+        userConfigurationFileTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
     void validateData() {
         assert EventQueue.isDispatchThread();
         protractor = protractorDirTextField.getText();
-        seleniumServerJar = seleniumServerJarTextField.getText();
+        userConfigurationFile = userConfigurationFileTextField.getText();
         validationResult = new ProtractorPreferencesValidator()
                 .validateProtractor(protractor)
-                .validateSeleniumServerJar(seleniumServerJar)
+                .validateUserConfigurationFile(project, userConfigurationFile)
                 .getResult();
         changeSupport.fireChange();
     }
@@ -196,10 +171,10 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         protractorDirTextField = new javax.swing.JTextField();
         protractorDirBrowseButton = new javax.swing.JButton();
         protractorDirInfoLabel = new javax.swing.JLabel();
-        seleniumServerJarLabel = new javax.swing.JLabel();
-        seleniumServerJarTextField = new javax.swing.JTextField();
-        seleniumServerJarBrowseButton = new javax.swing.JButton();
-        seleniumServerJarInfoLabel = new javax.swing.JLabel();
+        userConfigurationFileLabel = new javax.swing.JLabel();
+        userConfigurationFileTextField = new javax.swing.JTextField();
+        userConfigurationFileBrowseButton = new javax.swing.JButton();
+        userConfigurationFileInfoLabel = new javax.swing.JLabel();
 
         protractorDirLabel.setLabelFor(protractorDirTextField);
         org.openide.awt.Mnemonics.setLocalizedText(protractorDirLabel, org.openide.util.NbBundle.getMessage(CustomizerProtractor.class, "CustomizerProtractor.protractorDirLabel.text")); // NOI18N
@@ -213,19 +188,19 @@ public class CustomizerProtractor extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(protractorDirInfoLabel, org.openide.util.NbBundle.getMessage(CustomizerProtractor.class, "CustomizerProtractor.protractorDirInfoLabel.text")); // NOI18N
 
-        seleniumServerJarLabel.setLabelFor(protractorDirTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(seleniumServerJarLabel, org.openide.util.NbBundle.getMessage(CustomizerProtractor.class, "CustomizerProtractor.seleniumServerJarLabel.text")); // NOI18N
+        userConfigurationFileLabel.setLabelFor(protractorDirTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(userConfigurationFileLabel, org.openide.util.NbBundle.getMessage(CustomizerProtractor.class, "CustomizerProtractor.userConfigurationFileLabel.text")); // NOI18N
 
-        seleniumServerJarTextField.setColumns(15);
+        userConfigurationFileTextField.setColumns(15);
 
-        org.openide.awt.Mnemonics.setLocalizedText(seleniumServerJarBrowseButton, org.openide.util.NbBundle.getMessage(CustomizerProtractor.class, "CustomizerProtractor.seleniumServerJarBrowseButton.text")); // NOI18N
-        seleniumServerJarBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(userConfigurationFileBrowseButton, org.openide.util.NbBundle.getMessage(CustomizerProtractor.class, "CustomizerProtractor.userConfigurationFileBrowseButton.text")); // NOI18N
+        userConfigurationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                seleniumServerJarBrowseButtonActionPerformed(evt);
+                userConfigurationFileBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(seleniumServerJarInfoLabel, org.openide.util.NbBundle.getMessage(CustomizerProtractor.class, "CustomizerProtractor.seleniumServerJarInfoLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(userConfigurationFileInfoLabel, org.openide.util.NbBundle.getMessage(CustomizerProtractor.class, "CustomizerProtractor.userConfigurationFileInfoLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -235,15 +210,15 @@ public class CustomizerProtractor extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(seleniumServerJarLabel)
+                        .addComponent(userConfigurationFileLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(seleniumServerJarInfoLabel)
+                                .addComponent(userConfigurationFileInfoLabel)
                                 .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(seleniumServerJarTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE))
+                            .addComponent(userConfigurationFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(seleniumServerJarBrowseButton))
+                        .addComponent(userConfigurationFileBrowseButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(protractorDirLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -268,11 +243,11 @@ public class CustomizerProtractor extends javax.swing.JPanel {
                 .addComponent(protractorDirInfoLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(seleniumServerJarLabel)
-                    .addComponent(seleniumServerJarBrowseButton)
-                    .addComponent(seleniumServerJarTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(userConfigurationFileLabel)
+                    .addComponent(userConfigurationFileBrowseButton)
+                    .addComponent(userConfigurationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(seleniumServerJarInfoLabel))
+                .addComponent(userConfigurationFileInfoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -290,20 +265,21 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_protractorDirBrowseButtonActionPerformed
 
-    @NbBundle.Messages("CustomizerProtractor.chooser.seleniumServerJar=Select Selenium Server Jar file")
-    private void seleniumServerJarBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_seleniumServerJarBrowseButtonActionPerformed
+    @NbBundle.Messages("CustomizerProtractor.chooser.userConfigurationFile=Select Configuration file")
+    private void userConfigurationFileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userConfigurationFileBrowseButtonActionPerformed
         assert EventQueue.isDispatchThread();
         File file = new FileChooserBuilder(CustomizerProtractor.class)
-        .setTitle(Bundle.CustomizerProtractor_chooser_seleniumServerJar())
+        .setTitle(Bundle.CustomizerProtractor_chooser_userConfigurationFile())
         .setFilesOnly(true)
         .setDefaultWorkingDirectory(FileUtil.toFile(project.getProjectDirectory()))
         .forceUseOfDefaultWorkingDirectory(true)
-        .addFileFilter(new FileNameExtensionFilter("Jar File", "jar"))
+        .addFileFilter(new FileNameExtensionFilter("JS File", "js"))
+        .setAcceptAllFileFilterUsed(false)
         .showOpenDialog();
         if (file != null) {
-            seleniumServerJarTextField.setText(file.getAbsolutePath());
+            userConfigurationFileTextField.setText(file.getAbsolutePath());
         }
-    }//GEN-LAST:event_seleniumServerJarBrowseButtonActionPerformed
+    }//GEN-LAST:event_userConfigurationFileBrowseButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -311,10 +287,10 @@ public class CustomizerProtractor extends javax.swing.JPanel {
     private javax.swing.JLabel protractorDirInfoLabel;
     private javax.swing.JLabel protractorDirLabel;
     private javax.swing.JTextField protractorDirTextField;
-    private javax.swing.JButton seleniumServerJarBrowseButton;
-    private javax.swing.JLabel seleniumServerJarInfoLabel;
-    private javax.swing.JLabel seleniumServerJarLabel;
-    private javax.swing.JTextField seleniumServerJarTextField;
+    private javax.swing.JButton userConfigurationFileBrowseButton;
+    private javax.swing.JLabel userConfigurationFileInfoLabel;
+    private javax.swing.JLabel userConfigurationFileLabel;
+    private javax.swing.JTextField userConfigurationFileTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
