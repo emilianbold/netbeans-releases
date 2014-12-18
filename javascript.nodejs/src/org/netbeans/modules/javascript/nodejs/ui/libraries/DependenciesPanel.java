@@ -48,16 +48,21 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JTable;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import static javax.swing.SwingConstants.CENTER;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -65,8 +70,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -80,8 +87,10 @@ import org.openide.util.RequestProcessor;
 public class DependenciesPanel extends javax.swing.JPanel {
     /** Request processor for this class. */
     private static final RequestProcessor RP = new RequestProcessor(DependenciesPanel.class.getName(), 3);
+    /** All selected dependencies (not just of the type customized by this panel). */
+    private Dependencies allDependencies;
     /** Selected dependencies. */
-    private final List<Dependency> dependencies = new ArrayList<>();
+    private List<Dependency> dependencies;
     /** Model for a table of selected dependencies. */
     private final DependencyTableModel tableModel;
     /** Maps the name of the library to its npm meta-data. */
@@ -140,19 +149,23 @@ public class DependenciesPanel extends javax.swing.JPanel {
     /**
      * Sets the existing dependencies.
      * 
-     * @param dependencyMap existing dependencies (maps name of the dependency
-     * to the required version).
+     * @param allDependencies existing dependencies.
      */
-    void setDependencies(Map<String,String> dependencyMap) {
-        for (Map.Entry<String,String> entry : dependencyMap.entrySet()) {
-            String name = entry.getKey();
-            String requiredVersion = entry.getValue();
-            Dependency dependency = new Dependency(name);
-            dependency.setRequiredVersion(requiredVersion);
-            dependencies.add(dependency);
-        }
+    void setDependencies(Dependencies allDependencies) {
+        this.allDependencies = allDependencies;
+        this.dependencies = allDependencies.forType(dependencyType);
         sortDependencies();
-        loadDependencyInfo(dependencyMap.keySet());
+        Set<String> dependencyNames = new HashSet<>();
+        for (Dependency dependency : dependencies) {
+            dependencyNames.add(dependency.getName());
+        }
+        loadDependencyInfo(dependencyNames);
+        allDependencies.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                tableModel.fireTableDataChanged();
+            }
+        });
     }
 
     /**
@@ -349,6 +362,9 @@ public class DependenciesPanel extends javax.swing.JPanel {
         int index = findDependency(libraryName);
         Dependency dependency;
         if (index == -1) { // Add
+            if (!checkOtherDependencyTypes(libraryName)) {
+                return;
+            }
             dependency = new Dependency(libraryName);
             dependencies.add(dependency);
             loadDependencyInfo(Collections.singleton(libraryName));
@@ -365,6 +381,72 @@ public class DependenciesPanel extends javax.swing.JPanel {
         } else { // Edit
             tableModel.fireTableRowsUpdated(0, dependencies.size()-1);
         }
+    }
+
+    /**
+     * Checks whether there is already dependency of the same name but
+     * of a different type. If so then a dialog is displayed to determine
+     * what should happen.
+     * 
+     * @param libraryName name of the dependency to check.
+     * @return {@code true} when the new dependency should be added,
+     * returns {@code false} when the user decided to cancel addition
+     * of the dependency.
+     */
+    @NbBundle.Messages({
+        "DependenciesPanel.otherDependencyTitle=Another Dependency Type",
+        "# {0} - library name",
+        "# {1} - other dependencies message",
+        "DependenciesPanel.otherDependencyWarning=There is another type "
+                + "of dependency for \"{0}\" package. "
+                + "{1}Do you want to remove these existing dependencies?",
+        "DependenciesPanel.otherRegularDependency=a regular",
+        "DependenciesPanel.otherDevelopmentDependency=a development",
+        "DependenciesPanel.otherOptionalDependency=an optional",
+        "# {0} - type of dependency",
+        "DependenciesPanel.alsoDependency=It is also {0} dependency. ",
+        "DependenciesPanel.addAndKeep=Add and Keep Existing",
+        "DependenciesPanel.addAndRemove=Add and Remove Existing",
+        "DependenciesPanel.cancel=Cancel",
+    })
+    private boolean checkOtherDependencyTypes(String libraryName) {
+        List<Dependency.Type> types = allDependencies.otherDependencyTypes(libraryName, dependencyType);
+        if (!types.isEmpty()) {
+            String dependencyTypesMessage = "";
+            for (Dependency.Type type : types) {
+                String dependencyTypeMessage;
+                switch(type) {
+                    case REGULAR: dependencyTypeMessage = Bundle.DependenciesPanel_otherRegularDependency(); break;
+                    case DEVELOPMENT: dependencyTypeMessage = Bundle.DependenciesPanel_otherDevelopmentDependency(); break;
+                    case OPTIONAL: dependencyTypeMessage = Bundle.DependenciesPanel_otherOptionalDependency(); break;
+                    default: throw new InternalError();
+                }
+                dependencyTypesMessage += Bundle.DependenciesPanel_alsoDependency(dependencyTypeMessage);
+            }
+            String message = Bundle.DependenciesPanel_otherDependencyWarning(libraryName, dependencyTypesMessage);
+            NotifyDescriptor descriptor = new NotifyDescriptor(
+                    message,
+                    Bundle.DependenciesPanel_otherDependencyTitle(),
+                    -1,
+                    NotifyDescriptor.INFORMATION_MESSAGE,
+                    new Object[] {
+                        Bundle.DependenciesPanel_addAndRemove(),
+                        Bundle.DependenciesPanel_addAndKeep(),
+                        Bundle.DependenciesPanel_cancel()
+                    },
+                    Bundle.DependenciesPanel_addAndRemove()
+            );
+            DialogDisplayer.getDefault().notify(descriptor);
+            Object retVal = descriptor.getValue();
+            if (Bundle.DependenciesPanel_addAndKeep().equals(retVal)){
+                return true;
+            } else if (Bundle.DependenciesPanel_addAndRemove().equals(retVal)) {
+                allDependencies.removeOtherDependencies(libraryName, dependencyType);
+                return true;
+            }
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -673,6 +755,122 @@ public class DependenciesPanel extends javax.swing.JPanel {
         public void valueChanged(ListSelectionEvent e) {
             updateButtons();
         }
+    }
+
+    /**
+     * npm dependencies.
+     */
+    static class Dependencies {
+        /** npm dependencies - maps the type of dependency to the list of dependencies of this type. */
+        private final Map<Dependency.Type,List<Dependency>> dependencies = new EnumMap<>(Dependency.Type.class);
+        /** Change listeners. */
+        private final List<ChangeListener> listeners = new CopyOnWriteArrayList<>();
+
+        /**
+         * Creates a new {@code Dependencies} object.
+         * 
+         * @param npmDependencies npm dependencies.
+         */
+        Dependencies(PackageJson.NpmDependencies npmDependencies) {
+            dependencies.put(Dependency.Type.REGULAR, toList(npmDependencies.dependencies));
+            dependencies.put(Dependency.Type.DEVELOPMENT, toList(npmDependencies.devDependencies));
+            dependencies.put(Dependency.Type.OPTIONAL, toList(npmDependencies.optionalDependencies));
+        }
+
+        /**
+         * Converts name-to-version map of dependencies to list of {@code Dependency} objects.
+         * 
+         * @param map name-to-version map of dependencies.
+         * @return list of {@code Dependency} objects that correspond
+         * to the given map.
+         */
+        private List<Dependency> toList(Map<String,String> map) {
+            List<Dependency> list = new ArrayList<>();
+            for (Map.Entry<String,String> entry : map.entrySet()) {
+                String name = entry.getKey();
+                String requiredVersion = entry.getValue();
+                Dependency dependency = new Dependency(name);
+                dependency.setRequiredVersion(requiredVersion);
+                list.add(dependency);
+            }
+            return list;
+        }
+
+        /**
+         * Returns dependencies of the given type.
+         * 
+         * @param type type of dependencies.
+         * @return dependencies of the given type.
+         */
+        List<Dependency> forType(Dependency.Type type) {
+            return dependencies.get(type);
+        }
+
+        /**
+         * Collects dependency types (different from the given type)
+         * for which a dependency with the specified name exists.
+         * 
+         * @param dependencyName dependency name to check.
+         * @param dependencyType dependency type to skip.
+         * @return dependency types for which a dependency with the specified
+         * name exists.
+         */
+        List<Dependency.Type> otherDependencyTypes(String dependencyName, Dependency.Type dependencyType) {
+            List<Dependency.Type> types = new ArrayList<>();
+            for (Map.Entry<Dependency.Type,List<Dependency>> entry : dependencies.entrySet()) {
+                Dependency.Type type = entry.getKey();
+                if (dependencyType != type) {
+                    for (Dependency dependency : entry.getValue()) {
+                        if (dependencyName.equals(dependency.getName())) {
+                            types.add(type);
+                            break;
+                        }
+                    }
+                }
+            }
+            return types;
+        }
+
+        /**
+         * Removes the dependencies with the specified name that are
+         * of a different type than the given type.
+         * 
+         * @param dependencyName name of the dependencies to remove.
+         * @param dependencyType type of the dependencies to keep.
+         */
+        void removeOtherDependencies(String dependencyName, Dependency.Type dependencyType) {
+            for (Map.Entry<Dependency.Type,List<Dependency>> entry : dependencies.entrySet()) {
+                Dependency.Type type = entry.getKey();
+                if (dependencyType != type) {
+                    for (Dependency dependency : entry.getValue()) {
+                        if (dependencyName.equals(dependency.getName())) {
+                            entry.getValue().remove(dependency);
+                            break;
+                        }
+                    }
+                }
+            }
+            fireChange();
+        }
+
+        /**
+         * Adds a listener for the changes done through {@code removeOtherDependencies()} method.
+         * 
+         * @param changeListener listener to register.
+         */
+        void addChangeListener(ChangeListener changeListener) {
+            listeners.add(changeListener);
+        }
+
+        /**
+         * Notifies all registered listeners about a change.
+         */
+        private void fireChange() {
+            for (ChangeListener listener : listeners) {
+                listener.stateChanged(null);
+            }
+        }
+        
     }
 
 }

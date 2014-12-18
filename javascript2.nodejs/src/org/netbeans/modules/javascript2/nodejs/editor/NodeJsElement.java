@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -165,7 +166,25 @@ public class NodeJsElement implements ElementHandle {
             FileObject fo = getFileObject();    
             return fo == null ? null : NodeJsDataProvider.getDefault(fo).getDocForModule(getName());
         }
+    }
+    
+    public static class NodeJsLocalModuleElement extends NodeJsElement {
 
+        public NodeJsLocalModuleElement(final FileObject fo, final String name) {
+            super(fo, name, null, ElementKind.MODULE);
+        }
+
+        @NbBundle.Messages("NodeJsLocalModuleElement.lbl.location=Module located at {0}") //NOI18N
+        @Override
+        public String getDocumentation() {
+            StringBuilder sb = new StringBuilder();
+            if (getFileObject() != null) {
+                sb.append(NodeJsDataProvider.getDefault(getFileObject()).getDocForLocalModule(getFileObject()));
+                sb.append("<br/><br/>");
+            }
+            sb.append(Bundle.NodeJsLocalModuleElement_lbl_location(NodeJsUtils.writeFilePathForDocWindow(getFileObject())));
+            return sb.toString();
+        }
     }
 
 }

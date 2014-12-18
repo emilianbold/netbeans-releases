@@ -93,16 +93,17 @@ public class LibrariesPanel extends javax.swing.JPanel {
     public LibrariesPanel(Project project) {
         this.project = project;
         initComponents();        
-        PackageJson packagejson = getPackageJson();
-        if (packagejson.exists()) {
+        PackageJson packageJson = getPackageJson();
+        if (packageJson.exists()) {
             dependencyPanels = new DependenciesPanel[] {regularPanel, developmentPanel, optionalPanel};
             regularPanel.setDependencyType(Dependency.Type.REGULAR);
             developmentPanel.setDependencyType(Dependency.Type.DEVELOPMENT);
             optionalPanel.setDependencyType(Dependency.Type.OPTIONAL);
-            PackageJson.NpmDependencies dependencies = packagejson.getDependencies();
+            PackageJson.NpmDependencies npmDependencies = packageJson.getDependencies();
+            DependenciesPanel.Dependencies dependencies = new DependenciesPanel.Dependencies(npmDependencies);
             for (DependenciesPanel dependencyPanel : dependencyPanels) {
                 dependencyPanel.setProject(project);
-                dependencyPanel.setDependencies(getPackageJsonDependencies(dependencies, dependencyPanel.getDependencyType()));
+                dependencyPanel.setDependencies(dependencies);
             }
             loadInstalledLibraries();
         } else {

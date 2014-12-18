@@ -109,10 +109,18 @@ public class NodeJsCodeCompletion implements CompletionProvider {
                 switch (nodeContext) {
                     case MODULE_PATH:
                         if (wholePrefix.isEmpty() || (wholePrefix.charAt(0) != '.' && wholePrefix.charAt(0) != '/')) {
-                            Collection<String> modules = NodeJsDataProvider.getDefault(fo).getRuntimeModules();
+                            NodeJsDataProvider dataProvider = NodeJsDataProvider.getDefault(fo);
+                            Collection<String> modules = dataProvider.getRuntimeModules();
                             for(String module: modules) {
                                 if (module.startsWith(prefix)) {
                                     NodeJsElement handle = new NodeJsElement.NodeJsModuleElement(fo, module);
+                                    result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));
+                                }
+                            }
+                            Collection<FileObject>localModuleFolders = dataProvider.getLocalModules(fo);
+                            for(FileObject module: localModuleFolders) {
+                                if (module.getName().startsWith(prefix)) {
+                                    NodeJsElement handle = new NodeJsElement.NodeJsLocalModuleElement(module, module.getName());
                                     result.add(new NodeJsCompletionItem.NodeJsModuleCompletionItem(handle, eOffset - prefix.length()));
                                 }
                             }
