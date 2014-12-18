@@ -182,6 +182,11 @@ public class NodeJsUtils {
     }
 
     private static FileObject findNodeModule(final FileObject fromModule, final String module) {
+        FileObject runtimeModule = getRuntimeModuleFile(fromModule, module);
+        if (runtimeModule != null) {
+            // the runtime modules has the biggest priority 
+            return runtimeModule;
+        }
         FileObject parentFolder = fromModule.isFolder() ? fromModule : fromModule.getParent();
         // we have to go through parent/node_modules/modulePath
         while (parentFolder != null) {
@@ -200,6 +205,15 @@ public class NodeJsUtils {
         return null;
     }
 
+    private static FileObject getRuntimeModuleFile(final FileObject fromModule, final String module) {
+        FileObject runtime = NodeJsDataProvider.getDefault(fromModule).getFolderWithRuntimeSources();
+        FileObject result = null;
+        if (runtime != null && runtime.isFolder()) {
+            result = runtime.getFileObject(module, "js");   //NOI18N
+        }
+        return result;
+    }
+    
     private static String getValueOfMain(final FileObject file) {
         String content = loadFileContent(file);
         String value = null;

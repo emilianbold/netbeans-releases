@@ -200,10 +200,21 @@ public class NodeJsDataProvider {
         return result;
     }
 
+    /**
+     * 
+     * @return folder with the sources of the runtime modules or null
+     */
+    public FileObject getFolderWithRuntimeSources () {
+        if (docFolder != null) {
+            return docFolder.getFileObject("../lib"); //NOI18N
+        }
+        return null;
+    }
+    
     public Collection<String> getRuntimeModules() {
         HashSet<String> modules = new HashSet<String>();
         if (docFolder != null) {
-            FileObject libFolder = docFolder.getFileObject("../lib"); // NOI18N
+            FileObject libFolder = getFolderWithRuntimeSources();
             if (libFolder != null) {
                 FileObject[] children = libFolder.getChildren();
                 for (int i = 0; i < children.length; i++) {
