@@ -239,6 +239,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             cmf.add(cmf.addModuleDependency("net.java.html.json")); // NOI18N
         }
         cmf.add(cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_NEEDS, "org.netbeans.api.templates.wizard")); // NOI18N
+        cmf.add(cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_NEEDS, "javax.script.ScriptEngine.freemarker")); // NOI18N
         
         basicTokens.put("HTML4J", isJava);
         
