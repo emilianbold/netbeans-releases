@@ -59,8 +59,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -134,6 +136,10 @@ public class NodeJsDataProvider {
     private static final String PROPERTIES = "properties";  //NOI18N
     private static final String CLASSES = "classes";    //NOI18N
     private static final String EVENTS = "events";    //NOI18N
+    
+    // name of the json fields in package.json
+    private static final String MODULE_VERSION = "version"; //NOI18N
+    private static final String MODULE_DESCRIPTION = "description"; //NOI18N
 
     private static final WeakHashMap<Project, NodeJsDataProvider> cache = new WeakHashMap<Project, NodeJsDataProvider>();
     private static NodeJsDataProvider noProjectInstance = null;
@@ -211,6 +217,12 @@ public class NodeJsDataProvider {
         return null;
     }
     
+    /**
+     * 
+     * @return list of names of runtime modules. These names are obtained as names of
+     * files from ${docfolder}/../lib or from the documentation if the doc folder doesn't
+     * exist
+     */
     public Collection<String> getRuntimeModules() {
         HashSet<String> modules = new HashSet<String>();
         if (docFolder != null) {
@@ -249,6 +261,35 @@ public class NodeJsDataProvider {
         return modules;
     }
 
+    /**
+     * 
+     * @return collection of local modules, that are obtained from the first node_modules folder
+     */
+    public Collection<FileObject> getLocalModules(FileObject forFile) {
+        HashSet<FileObject> modules = new HashSet<FileObject>();
+        Project project = FileOwnerQuery.getOwner(forFile);
+        FileObject nodeModulesFolder = null;
+        FileObject parent = forFile.getParent();
+        if (project != null) {
+            FileObject projectDirectory = project.getProjectDirectory();
+            String pathToProject = projectDirectory.getPath();
+            while (parent.getPath().startsWith(pathToProject) && nodeModulesFolder == null) {
+                nodeModulesFolder = parent.getFileObject(NodeJsUtils.NODE_MODULES_NAME);
+                parent = parent.getParent();
+            }
+        }
+        if (nodeModulesFolder != null) {
+            Enumeration<? extends FileObject> moduleFolders = nodeModulesFolder.getFolders(false);
+            while (moduleFolders.hasMoreElements()) {
+                FileObject moduleFolder = moduleFolders.nextElement();
+                if (moduleFolder.getFileObject(NodeJsUtils.PACKAGE_NAME, NodeJsUtils.JSON_EXT) != null) {
+                    modules.add(moduleFolder);
+                }
+            }
+        }
+        return modules;
+    }
+    
     public Map<String, Collection<String>> getAllEvents() {
         HashMap<String, Collection<String>> result = new HashMap<>();
         String content = getContentApiFile();
@@ -330,6 +371,30 @@ public class NodeJsDataProvider {
                             return (String) jsonValue;
                         }
                     }
+                }
+            }
+        }
+        return null;
+    }
+    
+    @NbBundle.Messages({"NodeJsDataprovider.lbl.name=Name:", "NodeJsDataprovider.lbl.version=Version:"}) //NOI18N
+    public String getDocForLocalModule(final FileObject moduleFolder) {
+        FileObject packageFO = moduleFolder.getFileObject(NodeJsUtils.PACKAGE_NAME, NodeJsUtils.JSON_EXT);
+        if (packageFO != null) {
+            String content = null;
+            try {
+                content = getFileContent(FileUtil.toFile(packageFO));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (content != null && !content.isEmpty()) {
+                JSONObject root = (JSONObject) JSONValue.parse(content);
+                if (root != null) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(Bundle.NodeJsDataprovider_lbl_name()).append(" <b>").append(getJSONStringProperty(root, NAME)).append("</b><br/>");
+                    sb.append(Bundle.NodeJsDataprovider_lbl_version()).append(" ").append(getJSONStringProperty(root, MODULE_VERSION)).append("<br/><br/>");
+                    sb.append(getJSONStringProperty(root, MODULE_DESCRIPTION));
+                    return sb.toString();
                 }
             }
         }
