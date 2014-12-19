@@ -867,12 +867,9 @@ import org.openide.util.lookup.Lookups;
          */
         @Override
         public int clientToLayer(int clientLongUnitID) {
-            if (false) {
-                int clientShortUnitID = storageMask.clientToLayer(clientLongUnitID);
-                final Integer result = map.get(clientShortUnitID);
-                return result == null ? -1 : result.intValue();
-            }
-            throw new InternalError("Should not be called"); // NOI18N
+            int clientShortUnitID = storageMask.clientToLayer(clientLongUnitID);
+            final Integer result = map.get(clientShortUnitID);
+            return result == null ? -1 : result.intValue();
         }
 
         // Gets  as a parameter 5
