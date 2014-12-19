@@ -112,6 +112,8 @@ import org.netbeans.modules.git.ui.push.PushAction;
 import org.netbeans.modules.git.ui.push.PushMapping;
 import org.netbeans.modules.git.ui.push.PushToUpstreamAction;
 import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
+import org.netbeans.modules.git.ui.stash.ApplyStashAction;
+import org.netbeans.modules.git.ui.stash.SaveStashAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -169,6 +171,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_COMMIT_IDS,
         DISPLAY_REMOTES,
         DISPLAY_REVISIONS,
+        DISPLAY_STASH,
         DISPLAY_TAGS,
         DISPLAY_TOOLBAR,
         EXPAND_BRANCHES,
@@ -721,6 +724,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 }
                 if (options.contains(Option.DISPLAY_TAGS)) {
                     keys.add(new TagsNode(((RepositoryNode) getNode()).getRepository()));
+                }
+                if (options.contains(Option.DISPLAY_STASH)) {
+                    keys.add(new StashesNode(((RepositoryNode) getNode()).getRepository()));
                 }
                 if (options.contains(Option.DISPLAY_REMOTES)) {
                     keys.add(new RemotesNode(((RepositoryNode) getNode()).getRepository()));
@@ -1830,6 +1836,276 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
         
     }
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="stashes">
+    @NbBundle.Messages({
+        "LBL_RepositoryPanel.StashesNode.name=Stashes",
+        "LBL_RepositoryPanel.RefreshStashesAction.name=Refresh Stashes"
+    })
+    private class StashesNode extends RepositoryBrowserNode {
+
+        public StashesNode (File repository) {
+            super(new StashesChildren(repository), repository);
+            assert repository != null;
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/stashes.png"); //NOI18N
+        }
+
+        @Override
+        public String getDisplayName () {
+            return getName();
+        }
+
+        @Override
+        public String getName () {
+            return Bundle.LBL_RepositoryPanel_StashesNode_name();
+        }
+
+        @Override
+        public Action[] getPopupActions (boolean context) {
+            if (currRepository != null) {
+                return new Action[] {
+                    new AbstractAction(Bundle.LBL_RepositoryPanel_RefreshStashesAction_name()) {
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            ((StashesChildren) getChildren()).refreshStashes();
+                        }
+                    },
+                    new AbstractAction(NbBundle.getMessage(SaveStashAction.class, "LBL_SaveStashAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            Utils.post(new Runnable () {
+
+                                @Override
+                                public void run () {
+                                    SystemAction.get(SaveStashAction.class).saveStash(currRepository);
+                                }
+
+                            });
+                        }
+                    }
+                };
+            } else {
+                return new Action[0];
+            }
+        }
+    }
+
+    @NbBundle.Messages({
+        "MSG_RepositoryPanel.refreshingStashes=Refreshing Git Stashes"
+    })
+    private class StashesChildren extends Children.Keys<Stash> implements PropertyChangeListener {
+        private final File repository;
+
+        private StashesChildren (File repository) {
+            this.repository = repository;
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            if (info == null) {
+                LOG.log(Level.INFO, "StashesNode() : Null info for {0}", repository); //NOI18N
+            } else {
+                info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
+            }
+        }
+        
+        @Override
+        protected void addNotify () {
+            super.addNotify();
+            refreshStashes();
+        }
+
+        @Override
+        protected void removeNotify () {
+            setKeys(Collections.<Stash>emptySet());
+            super.removeNotify();
+        }
+
+        @Override
+        protected Node[] createNodes (Stash key) {
+            return new Node[] { new StashNode(repository, key) };
+        }
+
+        private void refreshStashes () {
+            new GitProgressSupport.NoOutputLogging() {
+                @Override
+                protected void perform () {
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    try {
+                        List<GitRevisionInfo> stash = info.refreshStashes();
+                        if (!isCanceled()) {
+                            refreshStash(stash);
+                        }
+                    } catch (GitException ex) {
+                        LOG.log(Level.INFO, null, ex);
+                    }
+                }
+            }.start(RP, repository, Bundle.MSG_RepositoryPanel_refreshingStashes());
+        }
+        
+        private void refreshStash (List<GitRevisionInfo> stash) {
+            int i = 0;
+            List<Stash> items = new ArrayList<>(stash.size());
+            for (GitRevisionInfo info : stash) {
+                items.add(new Stash(info, i++));
+            }
+            setKeys(items);
+        }
+
+        @Override
+        public void propertyChange (final PropertyChangeEvent evt) {
+            if (RepositoryInfo.PROPERTY_STASH.equals(evt.getPropertyName())) {
+                RP.post(new Runnable() {
+                    @Override
+                    @SuppressWarnings("unchecked")
+                    public void run () {
+                        refreshStash((List<GitRevisionInfo>) evt.getNewValue());
+                    }
+                });
+            }
+        }
+    }
+
+    @NbBundle.Messages({
+        "# {0} - stash name", "# {1} - stash message", "CTL_StashNode.name={0}: {1}",
+        "MSG_StashNode.drop.progress=Dropping Stashed Changes",
+        "# {0} - stash name", "MSG_StashNode.drop.confirmation=Do you really want to drop the selected stash: {0}?",
+        "LBL_StashNode.drop.action=Drop Stash...",
+        "LBL_StashNode.drop.confirmation=Drop Stash",
+        "LBL_StashNode.parent.name=Stash parent",
+        "LBL_StashNode.show.action=Show Changes"
+    })
+    private class StashNode extends RepositoryBrowserNode {
+        private final Stash item;
+
+        public StashNode (File repository, Stash item) {
+            super(Children.LEAF, repository);
+            this.item = item;
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/stash.png"); //NOI18N
+        }
+
+        @Override
+        public String getDisplayName () {
+            return getName(false);
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return getName(true);
+        }
+
+        @Override
+        public String getName() {
+            return getName(false);
+        }
+        
+        public String getName (boolean html) {
+            String retval = Bundle.CTL_StashNode_name(item.name, item.info.getShortMessage());
+            if (retval.length() > 75) {
+                retval = retval.substring(0, 72) + "...";
+            }
+            return retval;
+        }
+
+        @Override
+        public String getShortDescription () {
+            return item.info.getFullMessage();
+        }
+
+        @Override
+        protected Action[] getPopupActions (boolean context) {
+            List<Action> actions = new LinkedList<Action>();
+            if (currRepository != null && item != null) {
+                final File repo = currRepository;
+                final Stash stash = item;
+                actions.add(new AbstractAction(NbBundle.getMessage(ApplyStashAction.class, "LBL_ApplyStashAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Utils.postParallel(new Runnable () {
+                            @Override
+                            public void run() {
+                                ApplyStashAction action = SystemAction.get(ApplyStashAction.class);
+                                action.applyStash(repo, stash.index, false);
+                            }
+                        }, 0);
+                    }
+                });
+//                actions.add(new AbstractAction(Bundle.LBL_StashNode_show_action()) {
+//                    @Override
+//                    public void actionPerformed (ActionEvent e) {
+//                        GitRevisionInfo info = stash.info;
+//                        if (info.getParents().length > 0) {
+//                            String original = info.getParents()[0];
+//                            SearchHistoryAction.openSearch(repo, repo, repo.getName(), original, info.getRevision());
+//                        }
+//                    }
+//                });
+                Action a = new AbstractAction(Bundle.LBL_StashNode_drop_action()) {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        EventQueue.invokeLater(new Runnable() {
+                            
+                            @Override
+                            public void run () {
+                                if (JOptionPane.showConfirmDialog(RepositoryBrowserPanel.this, Bundle.MSG_StashNode_drop_confirmation(stash.name),
+                                        Bundle.LBL_StashNode_drop_confirmation(),
+                                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {                                     
+                                    new GitProgressSupport() {
+
+                                        @Override
+                                        protected void perform () {
+                                            try {
+                                                getClient().stashDrop(stash.index, GitUtils.NULL_PROGRESS_MONITOR);
+                                                RepositoryInfo.getInstance(currRepository).refreshStashes();
+                                            } catch (GitException ex) {
+                                                GitClientExceptionHandler.notifyException(ex, false);
+                                            }
+                                        }
+                                    }.start(Git.getInstance().getRequestProcessor(currRepository), currRepository,
+                                            Bundle.MSG_StashNode_drop_progress());
+                                }
+                            }
+                        });
+                    }
+                };
+                a.putValue(PROP_DELETE_ACTION, Boolean.TRUE);
+                actions.add(null);
+                actions.add(a);
+            }
+            return actions.toArray(new Action[actions.size()]);
+        }
+
+        @Override
+        public Action getPreferredAction () {
+            if (options.contains(Option.ENABLE_POPUP)) {
+                if (currRepository != null && item != null) {
+                    final File repo = currRepository;
+                    final int index = item.index;
+                    return new AbstractAction(NbBundle.getMessage(ApplyStashAction.class, "LBL_ApplyStashAction_PopupName")) { //NOI18N
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            SystemAction.get(ApplyStashAction.class).applyStash(repo, index, false);
+                        }
+                    };
+                }
+            }
+            return null;
+        }
+        
+    }
+    
+    private static class Stash {
+        
+        private final GitRevisionInfo info;
+        private final int index;
+        private final String name;
+        
+        Stash (GitRevisionInfo info, int index) {
+            this.info = info;
+            this.index = index;
+            this.name = "stash@{" + index + "}"; //NOI18N
+        }
+        
+    }
+    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="remotes">

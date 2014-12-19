@@ -89,13 +89,13 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextArea" name="messageTextArea">
+        <Component class="org.netbeans.modules.git.ui.commit.MessageArea" name="messageTextArea">
           <Properties>
             <Property name="columns" type="int" value="20"/>
             <Property name="rows" type="int" value="5"/>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new CommitMessageArea()"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.git.ui.commit.MessageAreaBuilder()&#xa;    .setWraplineHint(MESSAGE_WIDTH)&#xa;    .setAccessibleName(getMessage(&quot;ACSN_CommitForm_Message&quot;))&#xa;    .setAccessibleDescription(getMessage(&quot;ACSD_CommitForm_Message&quot;))&#xa;    .build()&#xa;"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>

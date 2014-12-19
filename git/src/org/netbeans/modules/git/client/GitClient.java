@@ -129,7 +129,8 @@ public final class GitClient {
             "removeNotificationListener", //NOI18N
             "removeRemote", //NOI18N - i guess there's no need to mke this an exclusive command
             "setCallback", //NOI18N
-            "setRemote")); //NOI18N - i guess there's no need to mke this an exclusive command
+            "setRemote", //NOI18N - i guess there's no need to mke this an exclusive command
+            "stashList")); //NOI18N
     /**
      * Commands triggering last cached timestamp of the index file. This means that after every command that somehow modifies the index, we need to refresh the timestamp
      * otherwise a FS event will come to Interceptor and trigger the full scan.
@@ -167,7 +168,10 @@ public final class GitClient {
             "removeNotificationListener", //NOI18N
             "removeRemote", //NOI18N - does not update index or files in WT
             "setCallback", //NOI18N
-            "setRemote")); //NOI18N - does not update index or files in WT
+            "setRemote", //NOI18N - does not update index or files in WT
+            "stashDrop", //NOI18N
+            "stashDropAll", //NOI18N
+            "stashList")); //NOI18N
     /**
      * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.
      */
@@ -772,6 +776,59 @@ public final class GitClient {
                 return null;
             }
         }, "setRemote"); //NOI18N
+    }
+    
+    public void stashApply (final int stashIndex, final boolean drop, final ProgressMonitor monitor) throws GitException {
+        new CommandInvoker().runMethod(new Callable<Void>() {
+
+            @Override
+            public Void call () throws Exception {
+                delegate.stashApply(stashIndex, drop, monitor);
+                return null;
+            }
+        }, "stashApply"); //NOI18N
+    }
+    
+    public void stashDrop (final int stashIndex, final ProgressMonitor monitor) throws GitException {
+        new CommandInvoker().runMethod(new Callable<Void>() {
+
+            @Override
+            public Void call () throws Exception {
+                delegate.stashDrop(stashIndex, monitor);
+                return null;
+            }
+        }, "stashDrop"); //NOI18N
+    }
+    
+    public void stashDropAll (final ProgressMonitor monitor) throws GitException {
+        new CommandInvoker().runMethod(new Callable<Void>() {
+
+            @Override
+            public Void call () throws Exception {
+                delegate.stashDropAll(monitor);
+                return null;
+            }
+        }, "stashDropAll"); //NOI18N
+    }
+    
+    public GitRevisionInfo[] stashList (final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<GitRevisionInfo[]>() {
+
+            @Override
+            public GitRevisionInfo[] call () throws Exception {
+                return delegate.stashList(monitor);
+            }
+        }, "stashList"); //NOI18N
+    }
+    
+    public GitRevisionInfo stashSave (final String message, final boolean includeUntracked, final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<GitRevisionInfo>() {
+
+            @Override
+            public GitRevisionInfo call () throws Exception {
+                return delegate.stashSave(message, includeUntracked, monitor);
+            }
+        }, "stashSave"); //NOI18N
     }
 
     public File[] unignore (final File[] files, final ProgressMonitor monitor) throws GitException {

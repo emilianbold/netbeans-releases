@@ -48,28 +48,18 @@
 
 package org.netbeans.modules.git.ui.commit;
 
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.StringSelector;
 import org.netbeans.modules.versioning.util.TemplateSelector;
-import org.netbeans.modules.versioning.util.UndoRedoSupport;
-import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -79,7 +69,6 @@ import org.openide.util.NbBundle;
  */
 public class CommitPanel extends javax.swing.JPanel {
     private final GitCommitParameters parameters;
-    private UndoRedoSupport um; 
     private String headCommitMessage;
     private boolean commitMessageEdited;
     private static final int MESSAGE_WIDTH;
@@ -92,29 +81,14 @@ public class CommitPanel extends javax.swing.JPanel {
         }
         MESSAGE_WIDTH = width;
     }
+    private boolean opened;
 
     /** Creates new form CommitPanel */
     public CommitPanel(GitCommitParameters parameters, String commitMessage, boolean preferredMessage, String user) {
         this.parameters = parameters;
         
         initComponents();
-        if (MESSAGE_WIDTH > 0) {
-            Font orig = messageTextArea.getFont();
-            Font f = Font.decode(Font.MONOSPACED).deriveFont(orig.getStyle(), orig.getSize());
-            messageTextArea.setFont(f);
-        }
         Mnemonics.setLocalizedText(messageLabel, getMessage("CTL_CommitForm_Message")); // NOI18N
-        
-        messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
-        messageTextArea.setLineWrap(true);
-        messageTextArea.setRows(4);
-        messageTextArea.setTabSize(4);
-        messageTextArea.setWrapStyleWord(true);
-        messageTextArea.setMinimumSize(new Dimension(100, 18));
-        
-        messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
-        messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
-        messageTextArea.addMouseListener(new CommitMessageMouseAdapter());
         
         authorComboBox.setModel(prepareUserModel(GitModuleConfig.getDefault().getRecentCommitAuthors(), user));
         setCaretPosition(authorComboBox);
@@ -122,7 +96,6 @@ public class CommitPanel extends javax.swing.JPanel {
         commiterComboBox.setModel(prepareUserModel(GitModuleConfig.getDefault().getRecentCommiters(), user));
         setCaretPosition(commiterComboBox);
         
-        Spellchecker.register (messageTextArea);  
         initCommitMessage(commitMessage, preferredMessage);
         attacheMessageListener();
     }
@@ -161,8 +134,9 @@ public class CommitPanel extends javax.swing.JPanel {
     @Override
     public void addNotify() {
         super.addNotify();
-        if (um == null) {
-            um = UndoRedoSupport.register(messageTextArea);
+        if (!opened) {
+            opened = true;
+            messageTextArea.open();
         }
     }
 
@@ -170,11 +144,8 @@ public class CommitPanel extends javax.swing.JPanel {
     public void removeNotify() {
         // kind of a work-around, removeNotify is called even when a diff view is opened in the commit dialog
         // we may unregister only when the whole dialog is shut down
-        if (getParent() == null || !getParent().isShowing()) {
-            if (um != null) {
-                um.unregister();
-                um = null;
-            }
+        if (getParent() == null || !getParent().isShowing() && opened) {
+            messageTextArea.close();
         }
         super.removeNotify();
     }
@@ -316,7 +287,12 @@ public class CommitPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel messageLabel;
-    final javax.swing.JTextArea messageTextArea = new CommitMessageArea();
+    final org.netbeans.modules.git.ui.commit.MessageArea messageTextArea = new org.netbeans.modules.git.ui.commit.MessageAreaBuilder()
+    .setWraplineHint(MESSAGE_WIDTH)
+    .setAccessibleName(getMessage("ACSN_CommitForm_Message"))
+    .setAccessibleDescription(getMessage("ACSD_CommitForm_Message"))
+    .build()
+    ;
     private javax.swing.JLabel recentLabel;
     private javax.swing.JLabel templatesLabel;
     // End of variables declaration//GEN-END:variables
@@ -345,20 +321,5 @@ public class CommitPanel extends javax.swing.JPanel {
         return model;
     }
     
-    private static class CommitMessageArea extends JTextArea {
-
-        @Override
-        public void paint (Graphics g) {
-            super.paint(g);
-            if (MESSAGE_WIDTH > 0) {
-                int x = MESSAGE_WIDTH * g.getFontMetrics().charWidth(' ');
-                Rectangle rect = getVisibleRect();
-                if (rect.contains(new Point(x, rect.y))) {
-                    g.setColor(Color.red);
-                    g.drawLine(x, rect.y, x, rect.y + rect.height);
-                }
-            }
-        }
-        
-    }
+    
 }
