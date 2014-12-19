@@ -3859,7 +3859,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         state().isRunning = false;
         
         // detect first stop (in _start or main)
-        if (firstBreakpointId != null) {
+        if (firstBreakpointId != null && "breakpoint-hit".equals(results.getConstValue("reason"))) { // NOI18N
             if (ATTACH_ID.equals(firstBreakpointId)) {
                 attachDone();
                 return;
