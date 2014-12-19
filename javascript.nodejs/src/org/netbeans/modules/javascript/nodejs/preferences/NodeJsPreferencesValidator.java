@@ -69,6 +69,7 @@ public final class NodeJsPreferencesValidator {
         for (ValidationResult.Message message : messages) {
             switch (message.getSource().toString()) {
                 case ValidationUtils.NODE_PATH:
+                case ValidationUtils.NODE_SOURCES_PATH:
                 case DEBUG_PORT:
                     return NodeJsCustomizerProvider.CUSTOMIZER_IDENT;
                 case START_FILE:
