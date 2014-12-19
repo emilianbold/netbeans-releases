@@ -295,7 +295,7 @@ public final class IncludedFileContainer extends ProjectComponent {
         private void write(RepositoryDataOutput aStream) throws IOException {
             PersistentUtils.writeFileSystem(fileSystem, aStream);
             UIDObjectFactory.getDefaultFactory().writeUID(includedProjectUID, aStream);
-            FileContainer.writeStringToFileEntryMap(aStream, myFiles);
+            FileContainer.writeFilePathsForFileSystemToFileEntryMap(fileSystem, aStream, myFiles);
         }
         
         @Override

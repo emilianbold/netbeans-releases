@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -66,6 +67,9 @@ import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferSnapshot2;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -79,8 +83,21 @@ import org.openide.util.RequestProcessor.Task;
  */
 public final class ProjectImpl extends ProjectBase {
 
+    private static void cleanProjectRepository(NativeProject platformProject) {
+        Key key = createProjectKey(platformProject);
+        RepositoryUtils.closeUnit(key, null, true);
+    }
+
+    private static Key createProjectKey(NativeProject platfProj) {
+         return KeyUtilities.createProjectKey(platfProj);
+    }
+
+    private static ProjectBase readProjectInstance(ModelImpl model, NativeProject platformProject, String name) {
+        return readInstance(model, createProjectKey(platformProject), platformProject, name);
+    }
+
     private ProjectImpl(ModelImpl model, NativeProject platformProject, CharSequence name) {
-        super(model, platformProject, name);
+        super(model, platformProject.getFileSystem(), (Object) platformProject, name, createProjectKey(platformProject));
     // RepositoryUtils.put(this);
     }
 
@@ -88,19 +105,19 @@ public final class ProjectImpl extends ProjectBase {
         ProjectBase instance = null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
-                instance = readInstance(model, platformProject, name);
+                instance = readProjectInstance(model, platformProject, name);
             } catch (Exception e) {
                 // just report to console;
                 // the code below will create project "from scratch"
-                cleanRepository(platformProject, false);
                 DiagnosticExceptoins.register(e);
+                cleanProjectRepository(platformProject);
             }
         }
         if (instance != null && !(instance instanceof ProjectImpl)) {
             DiagnosticExceptoins.register(new IllegalStateException(
                     "Expected " + ProjectImpl.class.getName() + //NOI18N
                     " but restored from repository " + instance.getClass().getName())); //NOI18N
-            cleanRepository(platformProject, false);
+            cleanProjectRepository(platformProject);
             instance = null;
         }
         if (instance == null) {
@@ -109,6 +126,28 @@ public final class ProjectImpl extends ProjectBase {
         return (ProjectImpl) instance;
     }
 
+    @Override
+    protected Collection<Key> getLibrariesKeys() {
+        List<Key> res = new ArrayList<>();
+        assert (getPlatformProject() instanceof NativeProject);
+        for (NativeProject nativeLib : ((NativeProject) getPlatformProject()).getDependences()) {
+            final Key key = createProjectKey(nativeLib);
+            if (key != null) {
+                res.add(key);
+            }
+        }
+        // Last dependent project is common library.
+        //final Key lib = KeyUtilities.createProjectKey("/usr/include"); // NOI18N
+        //if (lib != null) {
+        //    res.add(lib);
+        //}
+        for (CsmUID<CsmProject> library : getLibraryManager().getLirariesKeys(getUID())) {
+            res.add(RepositoryUtils.UIDtoKey(library));
+        }
+        return res;
+    }
+
+    
     @Override
     protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
         return ParserQueue.Position.HEAD;
@@ -390,7 +429,7 @@ public final class ProjectImpl extends ProjectBase {
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //aFactory.writeUID(getUID(), aStream);
-        getLibraryManager().writeProjectLibraries(getUID(), aStream, getUnitId());
+        getLibraryManager().writeProjectLibraries(getUID(), aStream);
     }
 
     public ProjectImpl(RepositoryDataInput input) throws IOException {
@@ -399,7 +438,7 @@ public final class ProjectImpl extends ProjectBase {
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
-        getLibraryManager().readProjectLibraries(getUID(), input, getUnitId());
+        getLibraryManager().readProjectLibraries(getUID(), input);
     //nativeFiles = new NativeFileContainer();
     }
 

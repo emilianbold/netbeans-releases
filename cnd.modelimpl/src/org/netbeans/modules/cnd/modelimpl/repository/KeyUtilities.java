@@ -53,11 +53,11 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.openide.filesystems.FileSystem;
@@ -114,8 +114,12 @@ public class KeyUtilities {
         return new UnitDescriptor(uniqueName, nativeProject.getFileSystem());
     }
 
-    public static Key createProjectKey(UnitDescriptor unitDescriptor, int sourceUnitId) {
-        return new ProjectKey(KeyUtilities.getUnitId(unitDescriptor, sourceUnitId));
+    public static Key createLibraryProjectKey(UnitDescriptor unitDescriptor, int storageID) {
+        return new ProjectKey(KeyUtilities.getLibraryUnitId(unitDescriptor, storageID));
+    }
+
+    public static Key createProjectKey(UnitDescriptor unitDescriptor) {
+        return new ProjectKey(KeyUtilities.getUnitId(unitDescriptor));
     }
 
     public static Key createProjectKey(NativeProject nativeProject) {
@@ -169,31 +173,32 @@ public class KeyUtilities {
      * ${userdir}/var/cache/cnd/model will be used
      */
     public static int getUnitId(UnitDescriptor unitDescriptor) {
-        return APTSerializeUtils.getUnitId(unitDescriptor);
+        return Repository.getUnitId(unitDescriptor);
     }
 
-    public static int getUnitId(UnitDescriptor unitDescriptor, int sourceUnitId) {
-        return APTSerializeUtils.getUnitId(unitDescriptor, sourceUnitId);
+    public static int getLibraryUnitId(UnitDescriptor unitDescriptor, int storageID) {
+        return Repository.getUnitIdForStorage(unitDescriptor, storageID);
     }
 
     public static CharSequence getUnitName(int unitIndex) {
-        return APTSerializeUtils.getUnitName(unitIndex);
+        return Repository.getUnitName(unitIndex);
     }
 
     public static CharSequence getUnitNameSafe(int unitIndex) {
-        return APTSerializeUtils.getUnitNameSafe(unitIndex);
+        CharSequence unitName = Repository.getUnitName(unitIndex);
+        return unitName == null ? "Unit-" + unitIndex : unitName; // NOI18N
     }
 
-    public static int getFileIdByName(final int unitId, final CharSequence fileName) {
-        return APTSerializeUtils.getFileIdByName(unitId, fileName);
+    public static int getFileIdByName(int unitId, CharSequence fileName) {
+        return Repository.getFileIdByName(unitId, fileName);
     }
 
-    public static CharSequence getFileNameById(final int unitId, final int fileId) {
-        return APTSerializeUtils.getFileNameById(unitId, fileId);
+    public static CharSequence getFileNameByIdSafe(int unitId, int fileId) {
+        return Repository.getFileNameByIdSafe(unitId, fileId);
     }
 
-    public static CharSequence getFileNameByIdSafe(final int unitId, final int fileId) {
-        return APTSerializeUtils.getFileNameByIdSafe(unitId, fileId);
+    public static CharSequence getFileNameById(int unitId, int fileId) {
+        return Repository.getFileNameById(unitId, fileId);
     }
 
     public static CsmDeclaration.Kind getKeyKind(Key key) {

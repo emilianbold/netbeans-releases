@@ -292,7 +292,7 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    private FileSystem getFileSystem() {
+    public FileSystem getFileSystem() {
         return getProjectImpl(true).getFileSystem();
     }
 

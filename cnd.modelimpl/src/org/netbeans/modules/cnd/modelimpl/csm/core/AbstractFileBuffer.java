@@ -158,14 +158,14 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     // final is important here - see PersistentUtils.writeBuffer/readBuffer
     public final void write(RepositoryDataOutput output) throws IOException {
         assert this.absPath != null;
-        output.writeFilePath(absPath);
         PersistentUtils.writeFileSystem(fileSystem, output);        
+        output.writeFilePathForFileSystem(fileSystem, absPath);
         output.writeByte((byte) bufType.ordinal());
     }  
     
     protected AbstractFileBuffer(RepositoryDataInput input) throws IOException {
-        this.absPath = input.readFilePath();
         this.fileSystem = PersistentUtils.readFileSystem(input);
+        this.absPath = input.readFilePathForFileSystem(fileSystem);
         assert this.absPath != null;
         fileObject = new WeakReference<>(null);
         bufType = BufferType.values()[input.readByte()];
