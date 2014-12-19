@@ -251,8 +251,14 @@ public final class LayerIndex {
 
 
     int registerFileSystem(FileSystem fileSystem) {
-        fileSystems.add(fileSystem);
-        return fileSystems.size() - 1;
+        synchronized (fileSystems) {
+            int index = fileSystems.indexOf(fileSystems);
+            if (index == -1) {
+                index = fileSystems.size();
+                fileSystems.add(fileSystem);
+            }
+            return index;
+        }
     }
 
     void closeUnit(int unitIdx, boolean cleanRepository, Set<Integer> requiredUnits) {
