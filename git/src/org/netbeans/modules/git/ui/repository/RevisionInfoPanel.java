@@ -78,6 +78,7 @@ public class RevisionInfoPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
+        lblDate = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -85,13 +86,11 @@ public class RevisionInfoPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevisionInfoPanel.class, "RevisionInfoPanel.jLabel1.text")); // NOI18N
 
         tbRevisionId.setEditable(false);
-        tbRevisionId.setText(org.openide.util.NbBundle.getMessage(RevisionInfoPanel.class, "RevisionInfoPanel.tbRevisionId.text")); // NOI18N
 
         jLabel2.setLabelFor(tbAuthor);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RevisionInfoPanel.class, "RevisionInfoPanel.jLabel2.text")); // NOI18N
 
         tbAuthor.setEditable(false);
-        tbAuthor.setText(org.openide.util.NbBundle.getMessage(RevisionInfoPanel.class, "RevisionInfoPanel.tbAuthor.text")); // NOI18N
 
         jLabel3.setLabelFor(taMessage);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(RevisionInfoPanel.class, "RevisionInfoPanel.jLabel3.text")); // NOI18N
@@ -100,6 +99,12 @@ public class RevisionInfoPanel extends javax.swing.JPanel {
         taMessage.setColumns(1);
         taMessage.setRows(1);
         jScrollPane1.setViewportView(taMessage);
+
+        lblDate.setLabelFor(tbDate);
+        org.openide.awt.Mnemonics.setLocalizedText(lblDate, org.openide.util.NbBundle.getMessage(RevisionInfoPanel.class, "RevisionInfoPanel.lblDate.text")); // NOI18N
+
+        tbDate.setEditable(false);
+        tbDate.setToolTipText(org.openide.util.NbBundle.getMessage(RevisionInfoPanel.class, "RevisionInfoPanel.tbDate.TTtext")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -110,11 +115,13 @@ public class RevisionInfoPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
                     .addComponent(jLabel2)
-                    .addComponent(jLabel3))
+                    .addComponent(jLabel3)
+                    .addComponent(lblDate))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tbAuthor, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
                     .addComponent(tbRevisionId, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                    .addComponent(tbAuthor, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
+                    .addComponent(tbDate, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -130,9 +137,13 @@ public class RevisionInfoPanel extends javax.swing.JPanel {
                     .addComponent(jLabel2)
                     .addComponent(tbAuthor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblDate)
+                    .addComponent(tbDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel3)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -143,8 +154,10 @@ public class RevisionInfoPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblDate;
     final javax.swing.JTextArea taMessage = new javax.swing.JTextArea();
     final javax.swing.JTextField tbAuthor = new javax.swing.JTextField();
+    final javax.swing.JTextField tbDate = new javax.swing.JTextField();
     final javax.swing.JTextField tbRevisionId = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
 

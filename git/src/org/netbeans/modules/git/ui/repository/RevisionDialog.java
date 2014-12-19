@@ -127,7 +127,7 @@ public class RevisionDialog extends javax.swing.JPanel {
                     .addComponent(lblBranch)
                     .addComponent(branchesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revisionInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                .addComponent(revisionInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
