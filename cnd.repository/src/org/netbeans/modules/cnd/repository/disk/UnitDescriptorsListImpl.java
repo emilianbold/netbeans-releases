@@ -73,8 +73,11 @@ public final class UnitDescriptorsListImpl implements UnitDescriptorsList{
 
     /*package*/ int registerNewUnitDescriptor(UnitDescriptor unitDescriptor) {
         synchronized (lock) {
-            Integer result = counter.getAndIncrement();
-            map.put(unitDescriptor, result);
+            Integer result = map.get(unitDescriptor);
+            if (result == null) {
+                result = counter.getAndIncrement();
+                map.put(unitDescriptor, result);
+            }
             return result;
         }
     }
