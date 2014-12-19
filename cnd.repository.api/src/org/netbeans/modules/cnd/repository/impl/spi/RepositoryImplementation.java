@@ -95,7 +95,7 @@ public interface RepositoryImplementation {
 
     public CharSequence getUnitName(int unitId);
 
-    public int getUnitID(UnitDescriptor unitDescriptor, int sourceUnitId);
+    public int getUnitID(UnitDescriptor unitDescriptor, int storageID);
 
     public int getUnitID(UnitDescriptor unitDescriptor);
     

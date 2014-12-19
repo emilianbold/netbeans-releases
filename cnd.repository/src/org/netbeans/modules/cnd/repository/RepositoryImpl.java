@@ -325,12 +325,12 @@ public final class RepositoryImpl implements RepositoryImplementation, RemoveKey
      * Returns a UnitID of the 'dependent' Unit (described by UnitDescriptor).
      *
      * @param unitDescriptor - descriptor of a Unit to get ID for.
-     * @param sourceUnitId - an ID of the 'root' Unit that this Unit relates to.
+     * @param storageID - an ID of the 'root' Unit that this Unit relates to.
      * @return ID of descriptor - a 'long' ID. i.e. 100001
      */
     @Override
-    public int getUnitID(UnitDescriptor unitDescriptor, int sourceUnitId) {
-        return storage.getUnitID(unitDescriptor, sourceUnitId);
+    public int getUnitID(UnitDescriptor unitDescriptor, int storageID) {
+        return storage.getUnitID(unitDescriptor, storageID);
     }
 
     @Override

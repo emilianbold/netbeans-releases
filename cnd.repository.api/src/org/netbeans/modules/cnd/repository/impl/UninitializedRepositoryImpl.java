@@ -130,7 +130,7 @@ public final class UninitializedRepositoryImpl implements RepositoryImplementati
     }
 
     @Override
-    public int getUnitID(UnitDescriptor unitDescriptor, int sourceUnitId) {
+    public int getUnitID(UnitDescriptor unitDescriptor, int storageID) {
         throw new IllegalStateException(msg);
     }
 

@@ -122,7 +122,7 @@ public final class ShuttedDownRepositoryImpl implements RepositoryImplementation
     }
 
     @Override
-    public int getUnitID(UnitDescriptor unitDescriptor, int sourceUnitId) {
+    public int getUnitID(UnitDescriptor unitDescriptor, int storageID) {
         return -1;
     }
 
