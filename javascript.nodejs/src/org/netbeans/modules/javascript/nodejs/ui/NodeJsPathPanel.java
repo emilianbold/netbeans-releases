@@ -98,7 +98,12 @@ public final class NodeJsPathPanel extends JPanel {
         versionTask = RP.create(new Runnable() {
             @Override
             public void run() {
-                setVersion();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setVersion();
+                    }
+                });
             }
         });
     }
@@ -155,6 +160,7 @@ public final class NodeJsPathPanel extends JPanel {
     }
 
     public void enablePanel(boolean enabled) {
+        assert EventQueue.isDispatchThread();
         nodeLabel.setEnabled(enabled);
         nodeTextField.setEnabled(enabled);
         nodeBrowseButton.setEnabled(enabled);
@@ -184,6 +190,7 @@ public final class NodeJsPathPanel extends JPanel {
 
     @NbBundle.Messages("NodeJsPathPanel.version.detecting=detecting...")
     void setVersion() {
+        assert EventQueue.isDispatchThread();
         downloadSourcesButton.setEnabled(false);
         if (nodeSources == null) {
             setNodeSourcesDescription(Bundle.NodeJsPathPanel_version_detecting());
@@ -223,6 +230,7 @@ public final class NodeJsPathPanel extends JPanel {
         "NodeJsPathPanel.download.error=Error occured during download (see IDE log).",
     })
     private void downloadSources() {
+        assert EventQueue.isDispatchThread();
         downloadSourcesButton.setEnabled(false);
         String nodePath = getNode();
         NodeExecutable node = NodeExecutable.forPath(nodePath);
@@ -246,7 +254,6 @@ public final class NodeJsPathPanel extends JPanel {
                 try {
                     FileUtils.downloadNodeSources(version);
                     nodeSources = null;
-                    setNodeSourcesDescription(version.toString());
                     StatusDisplayer.getDefault().setStatusText(Bundle.NodeJsPathPanel_download_success());
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
@@ -256,6 +263,7 @@ public final class NodeJsPathPanel extends JPanel {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        setNodeSourcesDescription(version.toString());
                         downloadSourcesButton.setEnabled(true);
                     }
                 });
@@ -264,6 +272,7 @@ public final class NodeJsPathPanel extends JPanel {
     }
 
     private void setNodeSourcesDescription() {
+        assert EventQueue.isDispatchThread();
         File nodeSourcesRef = nodeSources;
         assert nodeSourcesRef != null;
         sourcesTextField.setText(nodeSourcesRef.getAbsolutePath());
@@ -277,6 +286,7 @@ public final class NodeJsPathPanel extends JPanel {
         "NodeJsPathPanel.sources.na=Not available",
     })
     private void setNodeSourcesDescription(@NullAllowed String version) {
+        assert EventQueue.isDispatchThread();
         String text;
         if (version == null) {
             text = Bundle.NodeJsPathPanel_sources_na();

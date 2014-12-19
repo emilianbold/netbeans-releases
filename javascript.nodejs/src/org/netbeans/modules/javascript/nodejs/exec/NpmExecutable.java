@@ -191,7 +191,7 @@ public class NpmExecutable {
         JSONObject info = null;
         try {
             StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
-            Integer exitCode = getExecutable("npm view").additionalParameters(params).
+            Integer exitCode = getExecutable("npm view").additionalParameters(getParams(params)).
                     redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
             String result = factory.getResult();
             if (exitCode != null && exitCode == 0) {
@@ -212,7 +212,7 @@ public class NpmExecutable {
         JSONObject info = null;
         try {
             StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
-            getExecutable("npm list").additionalParameters(params).
+            getExecutable("npm list").additionalParameters(getParams(params)).
                     redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
             String result = factory.getResult();
             info = (JSONObject)new JSONParser().parse(result);
@@ -231,7 +231,7 @@ public class NpmExecutable {
         String result = null;
         StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
         try {
-            Integer exitCode = getExecutable("npm search").additionalParameters(params).
+            Integer exitCode = getExecutable("npm search").additionalParameters(getParams(params)).
                     redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
             result = factory.getResult();
             if (result.length() == 0 && exitCode != null && exitCode != 0) {

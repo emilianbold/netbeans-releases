@@ -69,6 +69,7 @@ public final class NodeJsPreferencesValidator {
         for (ValidationResult.Message message : messages) {
             switch (message.getSource().toString()) {
                 case ValidationUtils.NODE_PATH:
+                case ValidationUtils.NODE_SOURCES_PATH:
                 case DEBUG_PORT:
                     return NodeJsCustomizerProvider.CUSTOMIZER_IDENT;
                 case START_FILE:
@@ -85,12 +86,12 @@ public final class NodeJsPreferencesValidator {
         return result;
     }
 
-    public NodeJsPreferencesValidator validate(Project project) {
+    public NodeJsPreferencesValidator validate(Project project, boolean validateNodeSources) {
         NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
         if (!preferences.isEnabled()) {
             return this;
         }
-        validateNode(preferences.isDefaultNode(), preferences.getNode(), preferences.getNodeSources());
+        validateNode(preferences.isDefaultNode(), preferences.getNode(), validateNodeSources ? preferences.getNodeSources() : null);
         return this;
     }
 

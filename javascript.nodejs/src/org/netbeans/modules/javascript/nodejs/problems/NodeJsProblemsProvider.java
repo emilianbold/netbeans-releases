@@ -58,13 +58,12 @@ import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
-import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.filesystems.FileChangeAdapter;
@@ -117,7 +116,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
                     return Collections.emptyList();
                 }
                 Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>();
-                checkSources(currentProblems);
+                checkProjectSources(currentProblems);
                 checkOptions(currentProblems);
                 checkPreferences(currentProblems);
                 checkNodeSources(currentProblems);
@@ -153,7 +152,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         "# {0} - project name",
         "NodeJsProblemProvider.sources.none.description=Node.js runs JavaScript files underneath Source folder. But no Source folder is defined in project {0}.",
     })
-    void checkSources(Collection<ProjectProblem> currentProblems) {
+    void checkProjectSources(Collection<ProjectProblem> currentProblems) {
         if (NodeJsUtils.getSourceRoots(project).isEmpty()) {
             ProjectProblem problem = ProjectProblem.createWarning(
                     Bundle.NodeJsProblemProvider_sources_none_title(),
@@ -164,8 +163,10 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
     }
 
     void checkOptions(Collection<ProjectProblem> currentProblems) {
+        NodeJsPreferences preferences = getNodeJsSupport().getPreferences();
+        assert preferences.isEnabled() : project.getProjectDirectory().getNameExt();
         ValidationResult validationResult = new NodeJsOptionsValidator()
-                .validate()
+                .validate(preferences.isDefaultNode(), false)
                 .getResult();
         if (validationResult.isFaultless()) {
             return;
@@ -185,7 +186,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
     void checkPreferences(Collection<ProjectProblem> currentProblems) {
         ValidationResult validationResult = new NodeJsPreferencesValidator()
-                .validate(project)
+                .validate(project, false)
                 .getResult();
         if (validationResult.isFaultless()) {
             return;
@@ -230,19 +231,9 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
             ProjectProblem problem = ProjectProblem.createError(
                     message,
                     message,
-                    getNodeResolver());
+                    new NodeSourcesProblemResolver(project));
             currentProblems.add(problem);
         }
-    }
-
-    private ProjectProblemResolver getNodeResolver() {
-        if (getNodeJsSupport().getPreferences().isDefaultNode()) {
-            return new OptionsProblemResolver();
-        }
-        // pretend invalid node path
-        ValidationResult result = new ValidationResult();
-        ValidationUtils.validateNode(result, null);
-        return new CustomizerProblemResolver(project, "INVALID_NODE", result); // NOI18N
     }
 
     void fireProblemsChanged() {
