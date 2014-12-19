@@ -286,7 +286,6 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <package>org.netbeans.api.templates</package>
                 <package>org.openide.actions</package>
                 <package>org.openide.awt</package>
                 <package>org.openide.loaders</package>
