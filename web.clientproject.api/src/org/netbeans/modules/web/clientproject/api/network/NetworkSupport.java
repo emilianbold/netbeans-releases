@@ -158,7 +158,7 @@ public final class NetworkSupport {
      * @since 1.25
      */
     public static void download(@NonNull String url, @NonNull File target) throws NetworkException, IOException, InterruptedException {
-        downloadInternal(url, target, null, false);
+        downloadInternal(url, target, null);
     }
 
     /**
@@ -179,13 +179,19 @@ public final class NetworkSupport {
             throws NetworkException, IOException, InterruptedException {
         Parameters.notNull("displayName", displayName);
         final Thread downloadThread = Thread.currentThread();
-        downloadInternal(url, target, ProgressHandleFactory.createHandle(displayName, new Cancellable() {
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
             @Override
             public boolean cancel() {
                 downloadThread.interrupt();
                 return true;
             }
-        }), true);
+        });
+        progressHandle.start();
+        try {
+            downloadInternal(url, target, progressHandle);
+        } finally {
+            progressHandle.finish();
+        }
     }
 
     /**
@@ -207,28 +213,23 @@ public final class NetworkSupport {
     public static void downloadWithProgress(@NonNull String url, @NonNull File target, @NonNull ProgressHandle progressHandle)
             throws NetworkException, IOException, InterruptedException {
         Parameters.notNull("progressHandle", progressHandle);
-        downloadInternal(url, target, progressHandle, false);
+        downloadInternal(url, target, progressHandle);
     }
 
     @NbBundle.Messages({
         "# {0} - file name",
         "NetworkSupport.progress.download=Downloading {0}",
     })
-    private static void downloadInternal(@NonNull String url, @NonNull File target, @NullAllowed ProgressHandle progressHandle,
-            boolean startFinishProgress) throws NetworkException, IOException, InterruptedException {
+    private static void downloadInternal(@NonNull String url, @NonNull File target, @NullAllowed ProgressHandle progressHandle)
+            throws NetworkException, IOException, InterruptedException {
         Parameters.notNull("url", url);
         Parameters.notNull("target", target);
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Cannot run in UI thread");
         }
-
-        if (progressHandle != null
-                && startFinishProgress) {
-            progressHandle.start();
-        }
         Pair<InputStream, Integer> downloadSetup = prepareDownload(url, progressHandle);
         checkInterrupted();
-        doDownload(url, target, downloadSetup, progressHandle, startFinishProgress);
+        doDownload(url, target, downloadSetup, progressHandle);
     }
 
     @NbBundle.Messages("NetworkSupport.progress.prepare=Preparing download...")
@@ -274,13 +275,12 @@ public final class NetworkSupport {
         return -1;
     }
 
-    private static void doDownload(String url, File target, Pair<InputStream, Integer> downloadSetup, @NullAllowed ProgressHandle progressHandle,
-            boolean startFinishProgress) throws IOException, InterruptedException {
+    private static void doDownload(String url, File target, Pair<InputStream, Integer> downloadSetup, @NullAllowed ProgressHandle progressHandle)
+            throws IOException, InterruptedException {
         if (progressHandle != null) {
             progressHandle.progress(Bundle.NetworkSupport_progress_download(url));
         }
-        InputStream is = downloadSetup.first();
-        try {
+        try (InputStream is = downloadSetup.first()) {
             copyToFile(is, target, progressHandle, downloadSetup.second());
         } catch (IOException ex) {
             // error => ensure file is deleted
@@ -288,12 +288,6 @@ public final class NetworkSupport {
                 // nothing we can do about it
             }
             throw ex;
-        } finally {
-            if (progressHandle != null
-                    && startFinishProgress) {
-                progressHandle.finish();
-            }
-            is.close();
         }
     }
 

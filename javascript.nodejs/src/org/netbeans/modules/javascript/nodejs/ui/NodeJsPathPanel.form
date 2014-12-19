@@ -28,7 +28,6 @@
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="63" max="32767" attributes="0"/>
                       <Component id="downloadSourcesButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="selectSourcesButton" min="-2" max="-2" attributes="0"/>
