@@ -180,6 +180,135 @@
             a handler attached, and the operation deploys multiple files in the target directory.
         </p>
     </usecase>
+    <usecase id="js-wizard" name="Use HTML and JavaScript">
+        <p>
+            There is a way to create a portable wizard (e.g. one that can
+            be executed inside of NetBeans as well as in a browser). The 
+            most portable UI these days is written in HTML. To
+            register such HTML based wizard with your file template, 
+            use <a href="@TOP@/org/netbeans/api/templates/TemplateRegistration.html">@TemplateRegistration</a>
+            annotation and include <code>page()</code> attribute referencing
+            your own HTML page:
+        </p>
+        <pre>
+<b>public class</b> X {
+    {@code @TemplateRegistration}(
+        page = "x.html",
+        scriptEngine = "freemarker",
+        displayName = "JS Wizard",
+        folder = "Other",
+        content = "x.fmk"
+    )
+    <b>public static</b> String jsWizard() {
+        <b>return</b> "yourInitializationCode();";
+    }
+}            
+        </pre>
+        <p>
+            the return value of the annotated method (named <code>jsWizard</code>)
+            should be of type String and its content should be snippet of 
+            JavaScript code to execute inside of your specified HTML page 
+            (e.g. <code>x.html</code>) to create an instance of 
+            <a href="http://knockoutjs.com">KnockoutJS model</a> to 
+            drive the wizard. Here is a sample code for the model:     
+        </p>        
+        <pre>
+<b>function</b> yourInitializationCode() {
+    <b>var</b> ok = ko.observable(false);
+    <b>var</b> msg = ko.observable('');
+    <b>var</b> current = ko.observable('Init');
+    <b>var</b> data = {
+        'errorCode': ko.computed(function() {
+            if ('Init' == current()) <b>return</b> 0;
+            if (!ok()) <b>return</b> 1;
+            if (msg()) <b>return</b> 0;
+            <b>return</b> 2;
+        }),
+        'current': current,
+        'ok': ok,
+        'msg' : msg
+    }
+    ko.applyBindings(data);
+    <b>return</b> data;
+}
+</pre>
+    <p>
+        The model defines wizard composed of few panels (defined in following
+        HTML file) and a verification function (registered as <code>errorCode</code>) 
+        to check if everything is OK. In addition to that it defines 
+        proprietary text value <code>msg</code> which is 
+        going to be filled by the wizard and cannot be empty. Each
+        page of the wizard is registered using a custom
+        <a href="http://knockoutjs.com">Knockout.js</a> binding called
+        <code>step</code>. Here is an HTML page defining three steps:
+    </p>
+<pre>
+&lt;section data-bind="step: { 'id' : 'init', text : 'Initial Page'}" &gt;
+    &lt;p&gt;
+        Write your UI in portable HTML and display it in NetBeans 
+        or on web! Read more at &lt;a href="http://wiki.netbeans.org/HtmlUIForTemplates"&gt;our wiki&lt;/a&gt;...
+    &lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section data-bind="step: 'info'" &gt;
+    &lt;p&gt;
+        Use &lt;a href="http://knockoutjs.com"&gt;knockout.js&lt;/a&gt; bindings 
+        to isolate your view model from the actual look of your HTML
+        page. Bind your view to model written in Java or JavaScript.
+    &lt;/p&gt;
+    &lt;h3&gt;Is everything OK?&lt;/h3&gt;
+    &lt;input type="checkbox" data-bind="checked: ok"/&gt;
+    &lt;h3&gt;How do you feel?&lt;/h3&gt;
+    &lt;input type='text' data-bind="textInput: msg"/&gt;
+&lt;/section&gt;
+
+&lt;section data-bind="step: { 'id' : 'summary' }" &gt;
+    &lt;p&gt;
+        You are feeling &lt;span data-bind="text: msg"&gt;&lt;/span&gt;!
+        Let's proceed to create a file which will express your 
+        feeling by using &lt;a href="http://freemarker.org/"&gt;Freemarker&lt;/a&gt;
+        templating engine and values filled in this wizard.
+    &lt;/p&gt;
+&lt;/section&gt;
+</pre>
+<p>
+    The Next/Finish buttons are controlled by the <code>errorCode</code> property. 
+    If it is non-zero, there is an error and these buttons are disabled. 
+    Also once can use that inside of the HTML page to display user related errors: 
+</p>
+<pre>
+&lt;div data-bind="visible: errorCode() == 1"&gt;
+    &lt;span style="color: red"&gt;Please check you are OK!&lt;/span&gt;
+&lt;/div&gt;
+ 
+&lt;div data-bind="visible: errorCode() == 2"&gt;
+    &lt;span style="color: red"&gt;Tell us how do you feel!&lt;/span&gt;
+&lt;/div&gt;    
+</pre>
+<p>
+The L10N of the wizard is done on the level of HTML pages. 
+The whole page gets translated into different language with appropriate 
+suffix like <code>x_cs.html</code> and it is then 
+selected instead of the default one, when user runs in such locale.
+</p>
+<p>
+When the wizard is successfully finished, all the values 
+specified in the model (except system ones like <code>current</code>,
+<code>errorCode</code>, etc.) are transfered to the templating engine, 
+so they can influence the content of created files. 
+Here is a sample <code>x.fmt</code> content which reuses the <code>msg</code> 
+value provided by the wizard:     
+</p>
+<pre>
+Hi,
+I am Freemarker.
+I feel ${wizard.msg}.    
+</pre>
+<p>
+    When such file is instantiated, the <code>${wizard.msg}</code> is
+    replaced by the actual value taken from the wizard.    
+</p>
+    </usecase>
  </answer>
  <answer id="arch-what">
   <p>
