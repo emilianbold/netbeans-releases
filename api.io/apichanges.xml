@@ -107,6 +107,53 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="hyperlink.intent.support">
+      <api name="io.spi"/>
+      <summary>Add features for dealing with Intent based hyperlinks</summary>
+      <version major="1" minor="1"/>
+      <date day="12" month="12" year="2014"/>
+      <author login="jhavlin"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+          <p>
+              As there are now two types of hyperlinks, which may be handled
+              differently in some situations, we need some way to get info about
+              the type and internals of hyperlinks.
+          </p>
+          <p>
+              Added new enum <a href="@TOP@/org/netbeans/spi/io/support/HyperlinkType.html">HyperlinkType</a>
+              and new methods into class <a href="@TOP@/org/netbeans/spi/io/support/Hyperlinks.html">Hyperlinks</a>:
+          </p>
+          <ul>
+              <li><a href="@TOP@/org/netbeans/spi/io/support/Hyperlinks.html#getType(org.netbeans.api.io.Hyperlink)">Hyperlinks.getType(Hyperlink)</a></li>
+              <li><a href="@TOP@/org/netbeans/spi/io/support/Hyperlinks.html#getIntent(org.netbeans.api.io.Hyperlink)">Hyperlinks.getIntent(Hyperlink)</a></li>
+              <li><a href="@TOP@/org/netbeans/spi/io/support/Hyperlinks.html#getRunnable(org.netbeans.api.io.Hyperlink)">Hyperlinks.getRunnable(Hyperlink)</a></li>
+          </ul>
+      </description>
+      <issue number="249321" />
+    </change>
+    <change id="hyperlink.intent">
+      <api name="io.api"/>
+      <summary>Support hyperlinks based on Intents</summary>
+      <version major="1" minor="1"/>
+      <date day="12" month="12" year="2014"/>
+      <author login="jhavlin"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+          <p>
+              Besides hyperlinks based on Runnables, support also hyperlinks
+              that are defined by an Intent instance.
+          </p>
+          <p>
+              Added new static methods into class <a href="@TOP@/org/netbeans/api/io/Hyperlink.html">Hyperlink</a>:
+          </p>
+          <ul>
+              <li><a href="@TOP@/org/netbeans/api/io/Hyperlink.html#from(org.netbeans.api.intent.Intent)">Hyperlink.from(Intent)</a></li>
+              <li><a href="@TOP@/org/netbeans/api/io/Hyperlink.html#from(org.netbeans.api.intent.Intent, boolean)">Hyperlink.from(Intent, boolean)</a></li>
+          </ul>
+      </description>
+      <issue number="249321" />
+    </change>
     <change id="introduction.api">
       <api name="io.api"/>
       <summary>Introduce new I/O API</summary>

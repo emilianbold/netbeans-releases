@@ -39,24 +39,28 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.io;
+package org.netbeans.spi.io.support;
 
-import org.netbeans.spi.io.support.Hyperlinks;
+import org.netbeans.api.intent.Intent;
+import org.netbeans.api.io.Hyperlink;
 
 /**
  * Type of the hyperlink.
  * <p>
  * Note: New items may be added in the future.
  * </p>
- * <p>
- * Note: When more hyperlink types are added, this enum can be moved to package
- * org.netbeans.spi.io.support, and getType(), getRunnable() (for correct type)
- * methods can be added to {@link Hyperlinks} class. So that implementation can
- * work with specific hyperlink types differently. See bug 247404.
- * </p>
  *
  * @author jhavlin
  */
 public enum HyperlinkType {
-    FROM_RUNNABLE
+    /**
+     * Hyperlink created using {@link Hyperlink#from(java.lang.Runnable)} or
+     * {@link Hyperlink#from(java.lang.Runnable, boolean)}.
+     */
+    FROM_RUNNABLE,
+    /**
+     * Hyperlink created using {@link Hyperlink#from(Intent)} or
+     * {@link Hyperlink#from(Intent, boolean)}.
+     */
+    FROM_INTENT
 }

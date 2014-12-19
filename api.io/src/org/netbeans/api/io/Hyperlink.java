@@ -42,6 +42,7 @@
 package org.netbeans.api.io;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.intent.Intent;
 import org.netbeans.modules.io.HyperlinkAccessor;
 import org.openide.util.Parameters;
 
@@ -103,8 +104,41 @@ public abstract class Hyperlink {
     @NonNull
     public static Hyperlink from(@NonNull Runnable runnable,
             boolean important) {
-        Parameters.notNull("runnable", runnable);
+        Parameters.notNull("runnable", runnable);                       //NOI18N
         return new OnClickHyperlink(runnable, important);
+    }
+
+    /**
+     * Create a new hyperlink for specified {@link Intent}, which will be
+     * executed when the line is clicked.
+     *
+     * @param intent The intent to execute on click.
+     * @return The new hyperlink.
+     */
+    public static Hyperlink from(@NonNull Intent intent) {
+        return from(intent, false);
+    }
+
+    /**
+     * Create a new hyperlink for specified {@link Intent}, which will be
+     * executed when the line is clicked.
+     *
+     * <div class="nonnormative">
+     * <p>
+     * Important hyperlinks can be printed in different color, or can have some
+     * special behavior, e.g. automatic scrolling can be switched off to keep
+     * the important hyperlink visible.
+     * </p>
+     * </div>
+     *
+     * @param intent The intent to execute on click.
+     * @param important True if the hyperlink should be handled as an important
+     * one, false if it is a standard one.
+     * @return The new hyperlink.
+     */
+    public static Hyperlink from(@NonNull Intent intent, boolean important) {
+        Parameters.notNull("intent", intent);                           //NOI18N
+        return new IntentHyperlink(intent, important);
     }
 
     @SuppressWarnings("PackageVisibleInnerClass")
@@ -119,6 +153,21 @@ public abstract class Hyperlink {
 
         public Runnable getRunnable() {
             return runnable;
+        }
+    }
+
+    @SuppressWarnings("PackageVisibleInnerClass")
+    static class IntentHyperlink extends Hyperlink {
+
+        private final Intent intent;
+
+        public IntentHyperlink(Intent intent, boolean important) {
+            super(important);
+            this.intent = intent;
+        }
+
+        public Intent getIntent() {
+            return intent;
         }
     }
 }

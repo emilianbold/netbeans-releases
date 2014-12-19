@@ -41,8 +41,9 @@
  */
 package org.netbeans.api.io;
 
+import org.netbeans.api.intent.Intent;
 import org.netbeans.modules.io.HyperlinkAccessor;
-import org.netbeans.modules.io.HyperlinkType;
+import org.netbeans.spi.io.support.HyperlinkType;
 
 /**
  * Implementation of accessor that enables retrieving information about
@@ -56,6 +57,8 @@ class HyperlinkAccessorImpl extends HyperlinkAccessor {
     public HyperlinkType getType(Hyperlink hyperlink) {
         if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
             return HyperlinkType.FROM_RUNNABLE;
+        } else if (hyperlink instanceof Hyperlink.IntentHyperlink) {
+            return HyperlinkType.FROM_INTENT;
         } else {
             throw new IllegalArgumentException("Unknown hyperlink.");   //NOI18N
         }
@@ -71,7 +74,18 @@ class HyperlinkAccessorImpl extends HyperlinkAccessor {
         if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
             return ((Hyperlink.OnClickHyperlink) hyperlink).getRunnable();
         } else {
-            throw new IllegalArgumentException("Not an ON_CLICK link.");//NOI18N
+            throw new IllegalArgumentException(
+                    "Not an FROM_RUNNABLE link.");                      //NOI18N
+        }
+    }
+
+    @Override
+    public Intent getIntent(Hyperlink hyperlink) {
+        if (hyperlink instanceof Hyperlink.IntentHyperlink) {
+            return ((Hyperlink.IntentHyperlink) hyperlink).getIntent();
+        } else {
+            throw new IllegalArgumentException(
+                    "Not a FROM_INTENT link");                          //NOI18N
         }
     }
 }

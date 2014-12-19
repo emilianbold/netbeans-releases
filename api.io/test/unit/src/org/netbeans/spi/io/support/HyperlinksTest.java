@@ -41,10 +41,12 @@
  */
 package org.netbeans.spi.io.support;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.netbeans.api.intent.Intent;
 import org.netbeans.api.io.Hyperlink;
-import org.netbeans.modules.io.HyperlinkType;
 
 /**
  *
@@ -78,5 +80,13 @@ public class HyperlinksTest {
             }
         }, true);
         assertTrue(Hyperlinks.isImportant(h));
+    }
+
+    @Test
+    public void testIntentHyperlink() throws URISyntaxException {
+        Intent i = new Intent(Intent.ACTION_EDIT, new URI("scheme://abc"));
+        Hyperlink h = Hyperlink.from(i);
+        assertEquals(HyperlinkType.FROM_INTENT, Hyperlinks.getType(h));
+        assertEquals(i, Hyperlinks.getIntent(h));
     }
 }

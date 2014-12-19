@@ -41,8 +41,8 @@
  */
 package org.netbeans.spi.io.support;
 
-import org.netbeans.modules.io.HyperlinkType;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.intent.Intent;
 import org.netbeans.api.io.Hyperlink;
 import org.netbeans.modules.io.HyperlinkAccessor;
 
@@ -63,7 +63,7 @@ public final class Hyperlinks {
      * @return The type of the hyperlink.
      */
     @NonNull
-    static HyperlinkType getType(@NonNull Hyperlink hyperlink) {
+    public static HyperlinkType getType(@NonNull Hyperlink hyperlink) {
         return HyperlinkAccessor.getDefault().getType(hyperlink);
     }
 
@@ -100,8 +100,25 @@ public final class Hyperlinks {
      * @see HyperlinkType
      */
     @NonNull
-    static Runnable getRunnable(@NonNull Hyperlink hyperlink) {
+    public static Runnable getRunnable(@NonNull Hyperlink hyperlink) {
         return HyperlinkAccessor.getDefault().getRunnable(hyperlink);
+    }
+
+    /**
+     * Get intent associated with a hyperlink of type
+     * {@link HyperlinkType#FROM_INTENT}.
+     *
+     * @param hyperlink  The hyperlink to get intent from.
+     *
+     * @return An intent.
+     * @throws IllegalArgumentException if type of the hyperlink is not
+     * {@link HyperlinkType#FROM_INTENT}.
+     * @see #getType(org.netbeans.api.io.Hyperlink)
+     * @see HyperlinkType
+     */
+    @NonNull
+    public static Intent getIntent(@NonNull Hyperlink hyperlink) {
+        return HyperlinkAccessor.getDefault().getIntent(hyperlink);
     }
 
     /**
@@ -113,6 +130,9 @@ public final class Hyperlinks {
         switch (getType(hyperlink)) {
             case FROM_RUNNABLE:
                 getRunnable(hyperlink).run();
+                break;
+            case FROM_INTENT:
+                getIntent(hyperlink).execute(null);
                 break;
             default:
                 break;
