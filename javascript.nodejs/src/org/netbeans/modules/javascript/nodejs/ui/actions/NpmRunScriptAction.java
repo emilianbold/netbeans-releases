@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript.nodejs.ui.actions;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -51,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -93,8 +93,7 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
     static final RequestProcessor RP = new RequestProcessor(NpmRunScriptAction.class);
 
     final Project project;
-    // @GuardedBy("EDT")
-    final List<String> scripts = new ArrayList<>();
+    final List<String> scripts = new CopyOnWriteArrayList<>();
 
 
     public NpmRunScriptAction() {
@@ -102,7 +101,6 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
     }
 
     public NpmRunScriptAction(Project project, Collection<String> scripts) {
-        assert EventQueue.isDispatchThread();
         this.project = project;
         if (scripts != null) {
             this.scripts.addAll(scripts);
@@ -170,7 +168,6 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
     }
 
     private JMenuItem createScriptsMenu() {
-        assert EventQueue.isDispatchThread();
         assert project != null;
         assert !scripts.isEmpty();
         JMenu menu = new JMenu(Bundle.NpmRunScriptAction_name());
