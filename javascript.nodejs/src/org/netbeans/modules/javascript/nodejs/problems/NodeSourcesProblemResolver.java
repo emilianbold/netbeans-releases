@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.nodejs.options;
+package org.netbeans.modules.javascript.nodejs.problems;
 
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.javascript.nodejs.util.ValidationUtils;
-import org.netbeans.modules.web.common.api.ValidationResult;
+import java.util.Objects;
+import java.util.concurrent.Future;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
+import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsCustomizerProvider;
+import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+
+public class NodeSourcesProblemResolver implements ProjectProblemResolver {
+
+    private final Project project;
 
 
-public class NodeJsOptionsValidator {
+    public NodeSourcesProblemResolver(Project project) {
+        assert project != null;
+        this.project = project;
+    }
 
-    private final ValidationResult result = new ValidationResult();
-
-
-    public NodeJsOptionsValidator validate(boolean validateNode, boolean includingNodeSources) {
-        if (validateNode) {
-            validateNode(includingNodeSources);
+    @Override
+    public Future<ProjectProblemsProvider.Result> resolve() {
+        if (NodeJsSupport.forProject(project).getPreferences().isDefaultNode()) {
+            OptionsDisplayer.getDefault().open(NodeJsOptionsPanelController.OPTIONS_PATH);
+        } else {
+            NodeJsCustomizerProvider.openCustomizer(project, NodeJsCustomizerProvider.CUSTOMIZER_IDENT);
         }
-        return validateNpm();
+        return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 
-    public NodeJsOptionsValidator validateNode(boolean includingNodeSources) {
-        NodeJsOptions nodeJsOptions = NodeJsOptions.getInstance();
-        return validateNode(nodeJsOptions.getNode(), includingNodeSources ? nodeJsOptions.getNodeSources() : null);
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(project);
+        return hash;
     }
 
-    public NodeJsOptionsValidator validateNode(String node, @NullAllowed String nodeSources) {
-        ValidationUtils.validateNode(result, node);
-        ValidationUtils.validateNodeSources(result, nodeSources);
-        return this;
-    }
-
-    public NodeJsOptionsValidator validateNpm() {
-        return validateNpm(NodeJsOptions.getInstance().getNpm());
-    }
-
-    public NodeJsOptionsValidator validateNpm(String npm) {
-        ValidationUtils.validateNpm(result, npm);
-        return this;
-    }
-
-    public ValidationResult getResult() {
-        return result;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NodeSourcesProblemResolver other = (NodeSourcesProblemResolver) obj;
+        if (!Objects.equals(project, other.project)) {
+            return false;
+        }
+        return true;
     }
 
 }
