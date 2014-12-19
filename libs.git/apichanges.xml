@@ -111,6 +111,22 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>API for git stash support.</summary>
+            <version major="1" minor="31"/>
+            <date day="19" month="12" year="2014"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                    <li>Adding few new GitClient's methods handling the git stash support.
+                    The API supports creating and applying patches and deleting and listing saved patches.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <issue number="249326"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>Passing messages from running commands to the caller.</summary>
             <version major="1" minor="30"/>
             <date day="11" month="12" year="2014"/>

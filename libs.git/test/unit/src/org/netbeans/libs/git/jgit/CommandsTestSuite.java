@@ -77,6 +77,7 @@ import org.netbeans.libs.git.jgit.commands.RenameTest;
 import org.netbeans.libs.git.jgit.commands.ResetTest;
 import org.netbeans.libs.git.jgit.commands.RevertTest;
 import org.netbeans.libs.git.jgit.commands.SetUpstreamBranchTest;
+import org.netbeans.libs.git.jgit.commands.StashTest;
 import org.netbeans.libs.git.jgit.commands.StatusTest;
 import org.netbeans.libs.git.jgit.commands.SubmoduleTest;
 import org.netbeans.libs.git.jgit.commands.TagTest;
@@ -127,6 +128,7 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(RevertTest.class);
         suite.addTestSuite(ResetTest.class);
         suite.addTestSuite(SetUpstreamBranchTest.class);
+        suite.addTestSuite(StashTest.class);
         suite.addTestSuite(StatusTest.class);
         suite.addTestSuite(SubmoduleTest.class);
         suite.addTestSuite(TagTest.class);
