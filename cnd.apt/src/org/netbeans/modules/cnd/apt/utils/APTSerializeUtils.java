@@ -84,39 +84,6 @@ public class APTSerializeUtils {
     private APTSerializeUtils() {
     }
 
-    /**
-     * @param cacheLocation can be null, in this case standard location 
-     * ${userdir}/var/cache/cnd/model will be used
-     */
-    public static int getUnitId(UnitDescriptor unitDescriptor) {
-        return Repository.getUnitId(unitDescriptor);
-    }
-
-    public static int getUnitId(UnitDescriptor unitDescriptor, int sourceUnitId) {
-        return Repository.getUnitId(unitDescriptor, sourceUnitId);
-    }
-
-    public static CharSequence getUnitName(int unitIndex) {
-        return Repository.getUnitName(unitIndex);
-    }
-
-    public static CharSequence getUnitNameSafe(int unitIndex) {
-        CharSequence unitName = Repository.getUnitName(unitIndex);
-        return unitName == null ? "Unit-" + unitIndex : unitName; // NOI18N
-    }
-
-    public static int getFileIdByName(int unitId, CharSequence fileName) {
-        return Repository.getFileIdByName(unitId, fileName);
-    }
-
-    public static CharSequence getFileNameByIdSafe(int unitId, int fileId) {
-        return Repository.getFileNameByIdSafe(unitId, fileId);
-    }
-
-    public static CharSequence getFileNameById(int unitId, int fileId) {
-        return Repository.getFileNameById(unitId, fileId);
-    }
-
     static public void writeAPT(ObjectOutputStream out, APT apt) throws IOException {
         out.writeObject(apt);
         // the tree structure has a lot of siblings =>
