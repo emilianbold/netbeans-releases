@@ -64,12 +64,12 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.formatters.Formatters;
 import org.netbeans.modules.debugger.jpda.expr.formatters.FormattersLoopControl;
-import org.netbeans.modules.debugger.jpda.ui.DebuggerOutput;
-import org.netbeans.modules.debugger.jpda.ui.IOManager;
 import org.netbeans.modules.debugger.jpda.expr.formatters.VariablesFormatter;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.VariablesFilter;
@@ -95,7 +95,6 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     static Map<Object, String> FORMATTED_CHILDREN_VARS = new WeakHashMap<Object, String>();
 
     //private JPDADebugger debugger;
-    private IOManager ioManager;
     private VariablesFormatter[] formattersWithExpandTestCode;
     private final Object formattersLock = new Object();
     private Properties jpdaProperties;
@@ -110,22 +109,6 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     public VariablesFormatterFilter(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         //debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
-    }
-
-    private IOManager getIOManager() {
-        if (ioManager != null) {
-            return ioManager;
-        }
-        List lamls = lookupProvider.lookup
-            (null, LazyActionsManagerListener.class);
-        for (Iterator i = lamls.iterator (); i.hasNext ();) {
-            Object o = i.next();
-            if (o instanceof DebuggerOutput) {
-                ioManager = ((DebuggerOutput) o).getIOManager ();
-                break;
-            }
-        }
-        return ioManager;
     }
 
     private VariablesFormatter[] getFormatters() {
@@ -636,15 +619,16 @@ public class VariablesFormatterFilter extends VariablesFilterAdapter {
     }
     
     private void printFormattersInLoopDetected(String formattersInLoop) {
-        if (getIOManager() != null) {
+        JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst(null, JPDADebugger.class);
+        if (debugger != null) {
             if (!formattersLoopWarned) {
                 formattersLoopWarned = true;
-                ioManager.println(
+                debugger.getConsoleIO().println(
                     NbBundle.getMessage(VariablesFormatterFilter.class,
                                         "MSG_LoopInTypeFormattingIntroErrorMessage"),
                     null, true);
             }
-            ioManager.println(
+            debugger.getConsoleIO().println(
                     NbBundle.getMessage(VariablesFormatterFilter.class,
                                         "MSG_LoopInTypeFormatting",
                                         formattersInLoop),

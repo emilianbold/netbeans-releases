@@ -85,6 +85,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.api.io.InputOutput;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -106,7 +107,6 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.InputOutput;
 
 /**
  *
@@ -305,7 +305,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                         Value res = ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                         if (res instanceof StringReference) {
                             String reason = ((StringReference) res).value();
-                            InputOutput io = t.getDebugger().getIO();
+                            InputOutput io = t.getDebugger().getConsoleIO().getIO();
                             io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
                             //System.err.println("isHierarchyListenerAdded = false, reason = "+reason);
                         } else {

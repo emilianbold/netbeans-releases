@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.ui;
+package org.netbeans.modules.debugger.jpda.console;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.connect.Connector;
@@ -59,8 +59,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
-
-
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
@@ -72,11 +70,16 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LaunchingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
+import org.netbeans.modules.debugger.jpda.DebuggerConsoleIO;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.SourcePath;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-
 import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 
 /**
@@ -87,17 +90,13 @@ import org.openide.windows.InputOutput;
  *
  * @author   Jan Jancura
  */
-@LazyActionsManagerListener.Registration(path="netbeans-JPDASession/Java")
-public class DebuggerOutput extends LazyActionsManagerListener implements
-PropertyChangeListener {
+public class DebuggerOutput implements PropertyChangeListener {
 
 
     // set of all IOManagers
     private static Set<IOManager> managers = new HashSet<IOManager>();
     
     private JPDADebugger        debugger;
-    //private DebuggerEngine      engine;
-    private SourcePath          engineContext;
     private IOManager           ioManager;
     private ContextProvider     contextProvider;
     
@@ -106,12 +105,9 @@ PropertyChangeListener {
     
 
 
-    public DebuggerOutput (ContextProvider contextProvider) {
+    public DebuggerOutput (JPDADebuggerImpl debugger, ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
-        this.debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
-        //this.engine = (DebuggerEngine) contextProvider.lookupFirst 
-        //    (null, DebuggerEngine.class);
-        engineContext = contextProvider.lookupFirst(null, SourcePath.class);
+        this.debugger = debugger;
         
         // close old tabs
         if (DebuggerManager.getDebuggerManager ().getSessions ().length == 1) {
@@ -128,13 +124,8 @@ PropertyChangeListener {
             title = NbBundle.getMessage 
                 (IOManager.class, "CTL_DebuggerConsole_Title");
         }
-        ioManager = new IOManager (title);
+        ioManager = new IOManager (debugger, title);
         managers.add (ioManager);
-        try {
-            debugger.getClass().getMethod("setIO", InputOutput.class).invoke(debugger, ioManager.getIO());
-        } catch (Exception ex) {
-            Logger.getLogger(DebuggerOutput.class.getName()).log(Level.INFO, "Not able to set debugger's IO", ex);
-        }
         
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
@@ -142,22 +133,22 @@ PropertyChangeListener {
         );
     }
 
-    @Override
-    protected synchronized void destroy () {
+    //@Override
+    private synchronized void destroy () {
         debugger.removePropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
         );
         debugger = null;
-        //engine = null;
-        engineContext = null;
         ioManager = null;
     }
 
+    /*
     @Override
     public String[] getProperties () {
         return new String[] {ActionsManagerListener.PROP_ACTION_PERFORMED};
     }
+    */
 
     @Override
     public void propertyChange (java.beans.PropertyChangeEvent evt) {
@@ -305,6 +296,7 @@ PropertyChangeListener {
                 //e.printStackTrace ();
             }
             ioManager.closeStream ();
+            destroy();
         } else
         if (debuggerState == JPDADebugger.STATE_STOPPED) {
             //DebuggerEngine engine = debugger.getEngine ();
@@ -330,12 +322,12 @@ PropertyChangeListener {
             try {
                 final String sourceName = t.getSourceName (language);
                 String url = null;
-                SourcePath sourcePath;
-                synchronized (this) {
-                    sourcePath = engineContext;
-                }
+                SourcePath sourcePath = contextProvider.lookupFirst(null, SourcePath.class);
                 if (sourcePath != null) {
-                    url = sourcePath.getURL(t, language);
+                    try {
+                        url = sourcePath.getURL(t, language);
+                    } catch (InternalExceptionWrapper | InvalidStackFrameExceptionWrapper |
+                             ObjectCollectedExceptionWrapper | VMDisconnectedExceptionWrapper ex) {}
                 }
 //                String relativePath = EditorContextBridge.getRelativePath 
 //                    (t, language);
@@ -344,12 +336,11 @@ PropertyChangeListener {
 //                        url = engineContext.getURL(relativePath, true);
 //                    }
 //                }
-                final IOManager.Line line;
+                final DebuggerConsoleIO.Line line;
                 if (lineNumber > 0 && url != null) {
-                    line = new IOManager.Line (
+                    line = new DebuggerConsoleIO.Line (
                         url, 
-                        lineNumber,
-                        debugger
+                        lineNumber
                     );
                 } else {
                     line = null;
@@ -445,7 +436,7 @@ PropertyChangeListener {
     
     public void printOperation(JPDAThread t, Operation op, String sourceName,
                                String methodName, int lineNumber,
-                               IOManager.Line line, boolean important) {
+                               DebuggerConsoleIO.Line line, boolean important) {
         String threadName = t.getName();
         List<Operation> lastOperations = t.getLastOperations();
         Operation lastOperation = (lastOperations != null && lastOperations.size() > 0) ?
@@ -507,7 +498,7 @@ PropertyChangeListener {
         String message,
 //        int where,
         String[] args,
-        IOManager.Line line
+        DebuggerConsoleIO.Line line
     ) {
         print(message, args, line, false);
     }
@@ -516,7 +507,7 @@ PropertyChangeListener {
         String message,
 //        int where,
         String[] args,
-        IOManager.Line line,
+        DebuggerConsoleIO.Line line,
         boolean important
     ) {
         String text = (args == null) ?

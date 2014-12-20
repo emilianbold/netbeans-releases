@@ -58,8 +58,6 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.debugger.jpda.ui.BreakpointOutput;
-import org.netbeans.modules.debugger.jpda.ui.DebuggerOutput;
-import org.netbeans.modules.debugger.jpda.ui.IOManager;
 
 import org.netbeans.modules.web.debug.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;

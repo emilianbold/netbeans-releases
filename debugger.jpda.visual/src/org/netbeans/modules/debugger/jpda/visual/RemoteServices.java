@@ -88,6 +88,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.api.io.InputOutput;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayTypeWrapper;
@@ -116,7 +117,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
-import org.openide.windows.InputOutput;
 
 /**
  *
@@ -1059,7 +1059,7 @@ public class RemoteServices {
                                     Value res = ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                                     if (res instanceof StringReference) {
                                         String reason = ((StringReference) res).value();
-                                        InputOutput io = ((JPDAThreadImpl) t).getDebugger().getIO();
+                                        InputOutput io = ((JPDAThreadImpl) t).getDebugger().getConsoleIO().getIO();
                                         io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
                                     }
                                 } else {

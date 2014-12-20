@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.DebuggerConsoleIO;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.ui.models.BreakpointsNodeModel;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -91,7 +92,6 @@ PropertyChangeListener {
         ("\\{=(.*?)\\}");
     private static final String threadStartedCondition = "{? threadStarted}";
 
-    private IOManager               ioManager;
     private JPDADebugger            debugger;
     private ContextProvider         contextProvider;
     private final Object            lock = new Object();
@@ -118,7 +118,6 @@ PropertyChangeListener {
             (DebuggerManager.PROP_BREAKPOINTS, this);
         unhookBreakpoints ();
         synchronized (lock) {
-            ioManager = null;
             debugger = null;
         }
     }
@@ -159,19 +158,9 @@ PropertyChangeListener {
         if (printText == null || printText.length  () == 0) {
             return;
         }
-        synchronized (lock) {
-            if (ioManager == null) {
-                lookupIOManager ();
-                if (ioManager == null) {
-                    return;
-                }
-            }
-        }
         printText = substitute(printText, event);
         synchronized (lock) {
-            if (ioManager != null) {
-                ioManager.println (printText, null);
-            }
+            ((JPDADebuggerImpl) debugger).getConsoleIO().println(printText, null);
         }
     }
 
@@ -243,38 +232,25 @@ PropertyChangeListener {
         if (Breakpoint.VALIDITY.INVALID.equals(newValidity)) {
             String msg = bp.getValidityMessage();
             synchronized (lock) {
-                if (ioManager == null) {
-                    lookupIOManager ();
-                    if (ioManager == null) {
-                        return;
-                    }
-                }
                 String printText = (msg != null) ?
                                    NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpointWithReason", bp.toString(), msg) :
                                    NbBundle.getMessage(BreakpointOutput.class, "MSG_InvalidBreakpoint", bp.toString());
-                IOManager.Line line = null;
+                DebuggerConsoleIO.Line line = null;
                 if (url != null && lineNumber >= 0) {
-                    line = new IOManager.Line (
+                    line = new DebuggerConsoleIO.Line (
                         url,
-                        lineNumber,
-                        debugger
+                        lineNumber
                     );
                 }
-                ioManager.println (printText, null, true);
+                ((JPDADebuggerImpl) debugger).getConsoleIO().println (printText, null, true);
                 if (line != null) {
-                    ioManager.println(
+                    ((JPDADebuggerImpl) debugger).getConsoleIO().println (
                             NbBundle.getMessage(BreakpointOutput.class, "Link_InvalidBreakpoint", bp.toString()),
                             line, true);
                 }
             }
         } else if (Breakpoint.VALIDITY.VALID.equals(newValidity)) {
             synchronized (lock) {
-                if (ioManager == null) {
-                    lookupIOManager ();
-                    if (ioManager == null) {
-                        return;
-                    }
-                }
                 String msg = bp.getValidityMessage();
                 String printText;
                 if (msg != null && msg.trim().length() > 0) {
@@ -282,15 +258,14 @@ PropertyChangeListener {
                 } else {
                     printText = NbBundle.getMessage(BreakpointOutput.class, "MSG_ValidBreakpoint", bp.toString());
                 }
-                IOManager.Line line = null;
+                DebuggerConsoleIO.Line line = null;
                 if (bp instanceof LineBreakpoint) {
-                    line = new IOManager.Line (
+                    line = new DebuggerConsoleIO.Line (
                         ((LineBreakpoint) bp).getURL(),
-                        ((LineBreakpoint) bp).getLineNumber(),
-                        debugger
+                        ((LineBreakpoint) bp).getLineNumber()
                     );
                 }
-                ioManager.println (printText, line, false);
+                ((JPDADebuggerImpl) debugger).getConsoleIO().println (printText, line, false);
             }
         }
     }
@@ -447,12 +422,10 @@ PropertyChangeListener {
                 String msg = e.getCause () != null ? 
                     e.getCause ().getMessage () : e.getMessage ();
                 synchronized (lock) {
-                    if (ioManager != null) {
-                        ioManager.println (
+                    ((JPDADebuggerImpl) debugger).getConsoleIO().println (
                             "Cannot evaluate expression '" + expression + "' : " + msg, 
                             null
                         );
-                    }
                 }
             }
             printText = m.replaceFirst (value);
@@ -518,18 +491,6 @@ PropertyChangeListener {
         }
     }
 
-    private void lookupIOManager () {
-        List lamls = contextProvider.lookup 
-            (null, LazyActionsManagerListener.class);
-        for (Iterator i = lamls.iterator (); i.hasNext ();) {
-            Object o = i.next();
-            if (o instanceof DebuggerOutput) {
-                ioManager = ((DebuggerOutput) o).getIOManager ();
-                break;
-            }
-        }
-    }
-    
     private void hookBreakpoints () {
         Breakpoint [] bpts = DebuggerManager.getDebuggerManager ().
             getBreakpoints ();

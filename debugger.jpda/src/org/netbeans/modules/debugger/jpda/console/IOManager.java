@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,23 +42,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.ui;
+package org.netbeans.modules.debugger.jpda.console;
 
-import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
+import org.netbeans.api.io.Hyperlink;
+import org.netbeans.api.io.IOProvider;
+import org.netbeans.api.io.InputOutput;
+import org.netbeans.api.io.OutputWriter;
+import org.netbeans.modules.debugger.jpda.DebuggerConsoleIO.Line;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputEvent;
-import org.openide.windows.OutputListener;
-import org.openide.windows.OutputWriter;
 
 public class IOManager {
 
@@ -79,20 +77,18 @@ public class IOManager {
     
     // variables ...............................................................
 
+    private final Reference<JPDADebuggerImpl> debuggerRef;
     private final String                    title;
     private InputOutput                     debuggerIO = null;
     private OutputWriter                    debuggerOut;
     private OutputWriter                    debuggerErr;
     private boolean                         closed = false;
     
-    /** output writer Thread */
-    private Hashtable<String, Line>         lines = new Hashtable<String, Line>();
-    private Listener                        listener = new Listener ();
-
     
     // init ....................................................................
     
-    public IOManager(String title) {
+    public IOManager(JPDADebuggerImpl debugger, String title) {
+        this.debuggerRef = new WeakReference<>(debugger);
         this.title = title;
         init();
         //debuggerIO.select();
@@ -101,8 +97,8 @@ public class IOManager {
     private boolean init() {
         if (openDebuggerConsole()) {
             debuggerIO = IOProvider.getDefault ().getIO (title, true);
-            debuggerIO.setFocusTaken (false);
-            debuggerIO.setErrSeparated(false);
+            //debuggerIO.setFocusTaken (false);
+            //debuggerIO.setErrSeparated(false);
             debuggerOut = debuggerIO.getOut ();
             debuggerErr = debuggerIO.getErr();
             return true;
@@ -161,39 +157,30 @@ public class IOManager {
                             output = new ArrayList<Text>(buffer);
                             buffer.clear();
                         }
+                        JPDADebuggerImpl debugger = debuggerRef.get();
                         int i, k = output.size ();
                         for (i = 0; i < k; i++) {
                             Text t = output.get(i);
-                            try {
-                                //if ((t.where & DEBUGGER_OUT) != 0) {
-                                    Listener listener;
-                                    if (t.line != null) {
-                                        listener = IOManager.this.listener;
-                                        lines.put (t.text, t.line);
-                                    } else {
-                                        listener = null;
-                                    }
-                                    if (t.important) {
-                                        if (listener != null) {
-                                            debuggerErr.println(t.text, listener, t.important);
-                                        } else {
-                                            debuggerErr.println(t.text);
-                                        }
-                                        debuggerIO.select();
-                                        debuggerErr.flush();
-                                    } else {
-                                        if (listener != null) {
-                                            debuggerOut.println(t.text, listener, t.important);
-                                        } else {
-                                            debuggerOut.println(t.text);
-                                        }
-                                        debuggerOut.flush();
-                                    }
-                                //}
-                               // if ((t.where & STATUS_OUT) != 0)
-                                    StatusDisplayer.getDefault ().setStatusText (t.text);
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                            if (t.important) {
+                                if (t.line != null) {
+                                    Hyperlink hl = Hyperlink.from(new HyperlinkRunnable(t.line), t.important);
+                                    debuggerErr.println(t.text, hl);
+                                } else {
+                                    debuggerErr.println(t.text);
+                                }
+                                debuggerIO.show();
+                                debuggerErr.flush();
+                            } else {
+                                if (t.line != null) {
+                                    Hyperlink hl = Hyperlink.from(new HyperlinkRunnable(t.line), t.important);
+                                    debuggerOut.println(t.text, hl);
+                                } else {
+                                    debuggerOut.println(t.text);
+                                }
+                                debuggerOut.flush();
+                            }
+                            if (debugger != null) {
+                                debugger.actionStatusDisplayCallback(null, t.text);
                             }
                             if (closed) {
                                 debuggerOut.close ();
@@ -212,7 +199,7 @@ public class IOManager {
         }
     }
     
-    InputOutput getIO() {
+    public InputOutput getIO() {
         return debuggerIO;
     }
 
@@ -227,24 +214,24 @@ public class IOManager {
 
     void close () {
         if (debuggerIO != null) {
-            debuggerIO.closeInputOutput ();
+            debuggerIO.close();
         }
     }
     
     
     // innerclasses ............................................................
     
-    private class Listener implements OutputListener {
-        public void outputLineSelected (OutputEvent ev) {
+    private static final class HyperlinkRunnable implements Runnable {
+        
+        private final Line line;
+        
+        public HyperlinkRunnable(Line line) {
+            this.line = line;
         }
-        public void outputLineAction (OutputEvent ev) {
-            String t = ev.getLine ();
-            Line l = lines.get (t);
-            if (l == null) return;
-            l.show ();
-        }
-        public void outputLineCleared (OutputEvent ev) {
-            lines = new Hashtable<String, Line>();
+
+        @Override
+        public void run() {
+            line.show ();
         }
     }
     
@@ -260,18 +247,4 @@ public class IOManager {
         }
     }
     
-    public final static class Line {
-        private String url;
-        private int lineNumber;
-        private JPDADebugger debugger;
-        
-        public Line (String url, int lineNumber, JPDADebugger debugger) {
-            this.url = url;
-            this.lineNumber = lineNumber;
-        }
-        
-        public void show () {
-            EditorContextBridge.getContext().showSource (url, lineNumber, debugger);
-        }
-    }
 }

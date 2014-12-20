@@ -72,6 +72,8 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.io.InputOutput;
+import org.netbeans.api.io.OutputWriter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
@@ -91,8 +93,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 
 /**
  * Checks the presence of AWT grab status from
@@ -194,12 +194,12 @@ class AWTGrabHandler {
                     boolean successUngrab = ungrabWindow(t, grabbedWindow, 5000, tkt);
                     logger.fine("Grabbed window was ungrabbed: "+successUngrab);
                     if (!successUngrab) {
-                        InputOutput io = debugger.getIO();
+                        InputOutput io = debugger.getConsoleIO().getIO();
                         if (io != null) {
                             OutputWriter ow = io.getErr();
                             ow.println(NbBundle.getMessage(AWTGrabHandler.class, "MSG_GrabNotReleasedDbgContinue"));
                             ow.flush();
-                            io.select();
+                            io.show();
                         }
                     }
                     return successUngrab;

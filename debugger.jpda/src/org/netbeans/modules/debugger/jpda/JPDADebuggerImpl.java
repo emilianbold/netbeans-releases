@@ -113,6 +113,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.io.InputOutput;
 import org.netbeans.modules.debugger.jpda.actions.ActionErrorMessageCallback;
 import org.netbeans.modules.debugger.jpda.actions.ActionMessageCallback;
 import org.netbeans.modules.debugger.jpda.actions.ActionStatusDisplayCallback;
@@ -160,7 +161,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
-import org.openide.windows.InputOutput;
 
 /**
 * Representation of a debugging session.
@@ -217,7 +217,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private Boolean                     stepInterruptByBptResumeDecision = null;
     private boolean                     breakpointsActive = true;
     
-    private InputOutput                 io;
+    private DebuggerConsoleIO           io;
     
     private PeriodicThreadsDump         ptd;
     private boolean                     vmSuspended = false; // true after VM.suspend() was called.
@@ -248,6 +248,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         threadsTranslation = ObjectTranslation.createThreadTranslation(this);
         localsTranslation = ObjectTranslation.createLocalsTranslation(this);
         this.expressionPool = new ExpressionPool();
+        io = new DebuggerConsoleIO(this, lookupProvider);
     }
 
 
@@ -426,11 +427,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
-    public void setIO(InputOutput io) {
-        this.io = io;
-    }
-    
-    public InputOutput getIO() {
+    public DebuggerConsoleIO getConsoleIO() {
         return io;
     }
 

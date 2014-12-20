@@ -202,6 +202,24 @@ public class SourcePath {
         return getURL(StackFrameWrapper.location(sf), stratumn);
     }
     
+    public String getURL(JPDAThread t, String stratum) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper {
+        String url;
+        try {
+            CallStackFrame[] callStacks = t.getCallStack(0, 1);
+            if (callStacks.length > 0) {
+                url = getURL(callStacks[0], stratum);
+            } else {
+                String sourcePath = convertSlash (t.getSourcePath (stratum));
+                url = getURL (sourcePath, true);
+            }
+        } catch (AbsentInformationException e) {
+            String sourcePath = convertClassNameToRelativePath (t.getClassName ());
+            url = getURL (sourcePath, true);
+        }
+        return url;
+        
+    }
+    
     public String getURL (
         Location loc,
         String stratumn
