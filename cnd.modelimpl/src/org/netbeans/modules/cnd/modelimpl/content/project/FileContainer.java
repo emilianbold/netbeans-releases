@@ -177,7 +177,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         CharSequence canonicalPath = getCanonicalKey(path);
         FileEntry newEntry;
         CsmUID<CsmFile> uid = RepositoryUtils.<CsmFile>put(impl);
-        newEntry = new FileEntry(uid, state, path, canonicalPath);
+        newEntry = new FileEntry(uid, state, path, impl.getFileSystem(), canonicalPath);
         FileEntry old;
 
         old = myFiles.put(path, newEntry);
@@ -335,8 +335,8 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 	super.write(aStream);
         PersistentUtils.writeFileSystem(fileSystem, aStream);
 	// maps are concurrent, so we don't need synchronization here
-        writeStringToFileEntryMap(aStream, myFiles);
-        writeStringToStringsArrMap(aStream, canonicFiles);
+        writeFilePathsForFileSystemToFileEntryMap(fileSystem, aStream, myFiles);
+        writeFilePathsForFileSystemToStringsArrMap(fileSystem, aStream, canonicFiles);
 	//trace(canonicFiles, "Wrote in write()");
     }
 
@@ -476,7 +476,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         assert valuesSize == myFiles.size() : "different number of elements " + myFiles.size() + " vs " + valuesSize;
     }
 
-    /*package*/ static void writeStringToFileEntryMap (
+    /*package*/ static void writeFilePathsForFileSystemToFileEntryMap (FileSystem fs, 
             final RepositoryDataOutput output, Map<CharSequence, FileEntry> aMap) throws IOException {
         assert output != null;
         assert aMap != null;
@@ -490,7 +490,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         final Iterator <Map.Entry<CharSequence, FileEntry>> setIterator = entrySet.iterator();
         while (setIterator.hasNext()) {
             final Map.Entry<CharSequence, FileEntry> anEntry = setIterator.next();
-            output.writeFilePath(anEntry.getKey());
+            output.writeFilePathForFileSystem(fs, anEntry.getKey());
             // TODO: replace call above by the next line if no failures in following asserts
             // it allows to eleminate charSeq->fileIndex conversion when fileIndex is 
             // known from fileNew UID kept in value's FileEntry
@@ -520,7 +520,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         }
     }
     
-    private static void writeStringToStringsArrMap (
+    private static void writeFilePathsForFileSystemToStringsArrMap (FileSystem fs,
             final RepositoryDataOutput output,
             final Map<CharSequence, Object/*CharSequence or CharSequence[]*/> aMap) throws IOException {
         
@@ -543,18 +543,18 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             assert value != null;
             assert ((value instanceof CharSequence) || (value instanceof CharSequence[]));
             
-            output.writeFilePath(key);
+            output.writeFilePathForFileSystem(fs, key);
             
             if (value instanceof CharSequence ) {
                 output.writeInt(1);
-                output.writeFilePath((CharSequence)value);
+                output.writeFilePathForFileSystem(fs, (CharSequence)value);
             } else if (value instanceof CharSequence[]) {
                 
                 final CharSequence[] array = (CharSequence[]) value;
                 
                 output.writeInt(array.length);
                 for (int j = 0; j < array.length; j++) {
-                    output.writeFilePath(array[j]);
+                    output.writeFilePathForFileSystem(fs, array[j]);
                 }
             }
         }
@@ -602,18 +602,19 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         return new TreeMap<>(canonicFiles);
     }
 
-    public static FileEntry createFileEntryForMerge(CharSequence fileKey) {
-        return new FileEntry(null, null, fileKey, fileKey);
+    public static FileEntry createFileEntryForMerge(FileSystem fs, CharSequence fileKey) {
+        return new FileEntry(null, null, fileKey, fs, fileKey);
     }
 
     /*package*/ static FileEntry createFileEntry(FileImpl fileImpl) {
         CharSequence path = getFileKey(fileImpl.getAbsolutePath(), false);
-        return new FileEntry(fileImpl.getUID(), null, path, path);
+        return new FileEntry(fileImpl.getUID(), null, path, fileImpl.getFileSystem(), path);
     }
     private static final boolean TRACE = false;
     public static final class FileEntry {
 
         private final CsmUID<CsmFile> fileNew;
+        private final FileSystem fs;
         private final CharSequence canonical;
         private volatile Object data; // either StatePair or List<StatePair>
         private volatile int modCount;
@@ -621,7 +622,8 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         @SuppressWarnings("unchecked")
         private FileEntry (RepositoryDataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
-            canonical = input.readFilePath();
+            fs = input.readFileSystem();
+            canonical = input.readFilePathForFileSystem(fs);
             modCount = input.readInt();
             if (input.readBoolean()) {
                 int cnt = input.readInt();
@@ -647,7 +649,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             }
         }
 
-        private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey, CharSequence canonicalFileKey) {
+        private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey, FileSystem fs, CharSequence canonicalFileKey) {
             this.fileNew = fileNew;
             this.data = (state == null) ? null : new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
 //            if (state == null) {
@@ -655,13 +657,15 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
 //                    CndUtils.assertTrueInConsole(false, "creating null based entry for " + fileKey); // NOI18N
 //                }
 //            }
+            this.fs = fs;
             this.canonical = canonicalFileKey;
             this.modCount = 0;
         }
         
         private void write(final RepositoryDataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
-            output.writeFilePath(canonical);
+            output.writeFileSystem(fs);
+            output.writeFilePathForFileSystem(fs, canonical);
             output.writeInt(modCount);
             Object aData = data;
             output.writeBoolean(aData != null);

@@ -49,9 +49,10 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -68,33 +69,48 @@ public final class LibProjectImpl extends ProjectBase {
     private final CharSequence includePath;
     private final SourceRootContainer projectRoots = new SourceRootContainer(true);
 
-    private LibProjectImpl(ModelImpl model, FileSystem fs, CharSequence includePathName, int sourceUnitId) {
-        super(model, fs, includePathName, includePathName, sourceUnitId);
+    private static void cleanLibraryRepository(FileSystem fs, CharSequence platformProject, boolean articicial, int storageID) {
+        Key key = createLibraryProjectKey(fs, platformProject, storageID);
+        RepositoryUtils.closeUnit(key, null, true);
+    }
+
+    private static Key createLibraryProjectKey(FileSystem fs, CharSequence  platfProj, int storageID) {
+        return KeyUtilities.createLibraryProjectKey(KeyUtilities.createUnitDescriptor(platfProj, fs), storageID);
+    }
+
+    private static ProjectBase readLibraryInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, int storageID) {
+        ProjectBase instance = readInstance(model, createLibraryProjectKey(fs, platformProject, storageID), platformProject, name);
+        return instance;
+    }
+
+    
+    private LibProjectImpl(ModelImpl model, FileSystem fs, CharSequence includePathName, int storageID) {
+        super(model, fs, (Object) includePathName, includePathName, createLibraryProjectKey(fs, includePathName, storageID));
         this.includePath = FilePathCache.getManager().getString(includePathName);
         this.projectRoots.fixFolder(includePathName);
         assert this.includePath != null;
     }
 
-    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, CharSequence includePathName, int sourceUnitId) {
+    public static LibProjectImpl createInstance(ModelImpl model, FileSystem fs, CharSequence includePathName, int storageID) {
         ProjectBase instance = null;
         assert includePathName != null;
         if (TraceFlags.PERSISTENT_REPOSITORY) {
             try {
-                instance = readInstance(model, fs, includePathName, includePathName, sourceUnitId);
+                instance = readLibraryInstance(model, fs, includePathName, includePathName, storageID);
             } catch (Exception e) {
                 // just report to console;
                 // the code below will create project "from scratch"
-                cleanRepository(fs, includePathName, true, sourceUnitId);
+                cleanLibraryRepository(fs, includePathName, true, storageID);
                 DiagnosticExceptoins.register(e);
             }
         }
         if (instance != null && !(instance instanceof LibProjectImpl)) {
             CndUtils.assertTrueInConsole(false, "cannot correctly deserialize library for " + includePathName);
-            cleanRepository(fs, includePathName, true, sourceUnitId);
+            cleanLibraryRepository(fs, includePathName, true, storageID);
             instance = null;
         }
         if (instance == null) {
-            instance = new LibProjectImpl(model, fs, includePathName, sourceUnitId);
+            instance = new LibProjectImpl(model, fs, includePathName, storageID);
         }
         if (CndUtils.isDebugMode()) {
             CndUtils.assertTrue(CharSequences.comparator().compare(includePathName, ((LibProjectImpl) instance).includePath) == 0, includePathName + " vs. " + ((LibProjectImpl) instance).includePath);
@@ -180,12 +196,12 @@ public final class LibProjectImpl extends ProjectBase {
     public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         assert this.includePath != null;
-        aStream.writeFilePath(includePath);
+        aStream.writeFilePathForFileSystem(getFileSystem(), includePath);
     }
 
     public LibProjectImpl(RepositoryDataInput aStream) throws IOException {
         super(aStream);
-        this.includePath = aStream.readFilePath();
+        this.includePath = aStream.readFilePathForFileSystem(getFileSystem());
         assert this.includePath != null;
         setPlatformProject(this.includePath);
     }

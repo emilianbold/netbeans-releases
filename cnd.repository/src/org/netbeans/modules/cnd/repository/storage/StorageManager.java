@@ -171,18 +171,17 @@ public final class StorageManager {
     /**
      * Returns unitID (i.e. 100001) for unitDescriptor and sourceUnitID.
      *
-     * If sourceUnitID == -1 - create a new Storage otherwise use already
+     * If storageID == -1 - create a new Storage otherwise use already
      * existent storage.
      *
      *
      * @param unitDescriptor
-     * @param sourceUnitID
+     * @param storageID
      * @return unitID (i.e. 100001)
      */
-    public int getUnitID(UnitDescriptor unitDescriptor, int sourceUnitID) {
+    public int getUnitID(UnitDescriptor unitDescriptor, int storageID) {
         Storage storage = null;
-        if (sourceUnitID != -1) {
-            int storageID = getStorageID(sourceUnitID);
+        if (storageID != -1) {
             synchronized (lock) {
                 storage = storages.get(storageID);
             }
@@ -291,7 +290,11 @@ public final class StorageManager {
             if (isShuttedDown) {
                 return NULL_STORAGE;
             }
-            return storages.get(storageID);
+            Storage out = storages.get(storageID);
+            if (out == null) {
+                return NULL_STORAGE;
+            }
+            return out;
         }
     }
 
