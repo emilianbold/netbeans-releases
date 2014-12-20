@@ -44,6 +44,7 @@ package org.netbeans.modules.junit.api;
 
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
+import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.filesystems.FileObject;
 
@@ -56,6 +57,22 @@ public class JUnitTestcase extends Testcase{
 
     public JUnitTestcase(String name, String type, TestSession session) {
         super(name, type, session);
+    }
+
+    @Override
+    public String getName() {
+        TestSuite currentSuite = getSession().getCurrentSuite();
+        String className = getClassName();
+        if (className == null || currentSuite == null) {
+            return super.getName();
+        }
+        String suiteName = currentSuite.getName();
+        // if the running suite is actually a test file return just the method name
+        if(suiteName == null || suiteName.equals(className)) {
+            return super.getName();
+        }
+        // the running suite is actually a suite, so return method's full path
+        return className + "." + super.getName();
     }
     
     public FileObject getClassFileObject(){
