@@ -40,8 +40,8 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
 /** This is an interface for <i>smart templating</i> that allows
- * any module to intercept calls to <a href="@org-openide-loaders@/org/openide/loaders/DataObject.html#createFromTemplate(org.openide.loaders.DataFolder, java.lang.String)">
- * DataObject.createFromTemplate()</a>
+ * any module to intercept calls to 
+ * {@link FileBuilder#build()}
  * and handle them themselves. The NetBeans IDE provides default
  * implementation that allows use of Freemarker templating engine.
  * Read more in the <a href="@TOP@/architecture-summary.html#script">howto document</a>.
@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class CreateFromTemplateHandler {
     /** Method that allows a handler to reject a file. If all handlers
-     * reject a file, regular processing defined in {@link DataObject#handleCreateFromTemplate}
+     * reject a file, regular processing defined in {@link FileBuilder#createFromTemplate(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, java.lang.String, java.util.Map, org.netbeans.api.templates.FileBuilder.Mode)}
      * is going to take place.
      * 
      * @param desc

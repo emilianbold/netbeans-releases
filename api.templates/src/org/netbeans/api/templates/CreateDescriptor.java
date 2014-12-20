@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 /**
  * Describes file creation request. The description is produced by the
  * {@link FileBuilder} and is sent out to
- * {@link CreateFromTemplateAttribute} and {@link CreateFromTemplateHandler} 
+ * {@link CreateFromTemplateAttributes} and {@link CreateFromTemplateHandler} 
  * SPIs as the context for their work.
  * <p/>
  * The class is not thread-safe. Do not access the descriptor from a thread other
@@ -63,9 +63,8 @@ public final class CreateDescriptor {
     /**
      * Parameter to enable free file extension mode.
      * By default, the extension of the newly created file will be inherited
-     * from the template. But if {@link #createFromTemplate} is called with this
+     * from the template. But if {@link FileBuilder#createFromTemplate(org.openide.filesystems.FileObject, org.openide.filesystems.FileObject, java.lang.String, java.util.Map, org.netbeans.api.templates.FileBuilder.Mode)} is called with this
      * parameter set to {@link Boolean#TRUE}
-     * (such as from {@link DataObject#createFromTemplate(DataFolder,String,Map)}),
      * and the file name already seems to
      * include an extension (<samp>*.*</samp>), the handler should not append
      * any extension from the template.
@@ -172,7 +171,7 @@ public final class CreateDescriptor {
     /**
      * Provides value for the named key. Values are originally provided by
      * the caller, or the template itself; values can be provided also by
-     * {@link CreateFromTemplateAttribute} implementors.
+     * {@link CreateFromTemplateAttributes} implementors.
      * 
      * @param <T> value type.
      * @param n key name
