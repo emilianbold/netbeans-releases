@@ -188,7 +188,7 @@ public class CndUtils {
 
     public static void assertTrue(boolean value, String prefix, Object message) {
         if (isDebugMode() && !value) {
-            LOG.log(Level.SEVERE, prefix + message, lastAssertion = new Exception(prefix + message));
+            printStackTraceOnce(lastAssertion = new Exception(prefix + message));
         }
     }
 

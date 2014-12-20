@@ -63,8 +63,10 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyHolder;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -134,7 +136,7 @@ public final class LibraryManager {
         CsmUID<CsmProject> projectUid = project.getUID();
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(projectUid)) {
-                CsmUID<CsmProject> library = entry.getLibrary(project.getUnitId());
+                CsmUID<CsmProject> library = entry.getLibrary();
                 CsmProject lib = library.getObject();
                 if (lib instanceof LibProjectImpl) {
                     res.add((LibProjectImpl)lib);
@@ -166,11 +168,11 @@ public final class LibraryManager {
     /**
      * Returns collection uids of artificial libraries used in project
      */
-    public Collection<CsmUID<CsmProject>> getLirariesKeys(CsmUID<CsmProject> projectUid, int unitId) {
+    public Collection<CsmUID<CsmProject>> getLirariesKeys(CsmUID<CsmProject> projectUid) {
         List<CsmUID<CsmProject>> res = new ArrayList<>();
         for (LibraryEntry entry : librariesEntries.values()) {
             if (entry.containsProject(projectUid)) {
-                res.add(entry.getLibrary(unitId));
+                res.add(entry.getLibrary());
             }
         }
         return res;
@@ -396,17 +398,17 @@ public final class LibraryManager {
         LibraryKey libraryKey = new LibraryKey(fs, folder);
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
-            entry = getOrCreateLibrary(libraryKey, project.getUnitId());
+            entry = getOrCreateLibrary(libraryKey);
         }
         if (!entry.containsProject(projectUid)) {
             entry.addProject(projectUid);
             Notificator.instance().registerChangedLibraryDependency(project);
             Notificator.instance().flush(); // should we rely on subsequent flush instead? 
         }
-        return (LibProjectImpl) entry.getLibrary(project.getUnitId()).getObject();
+        return (LibProjectImpl) entry.getLibrary().getObject();
     }
 
-    private LibraryEntry getOrCreateLibrary(LibraryKey libraryKey, final int sourceUnitId) {
+    private LibraryEntry getOrCreateLibrary(LibraryKey libraryKey) {
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
             boolean needFire = false;
@@ -423,7 +425,7 @@ public final class LibraryManager {
 
                     @Override
                     public void run() {
-                        ListenersImpl.getImpl().fireProjectOpened((ProjectBase) passEntry.getLibrary(sourceUnitId).getObject());
+                        ListenersImpl.getImpl().fireProjectOpened((ProjectBase) passEntry.getLibrary().getObject());
                     }
                 }, "postponed library opened " + libraryKey.folder); // NOI18N
             }
@@ -451,7 +453,7 @@ public final class LibraryManager {
     /**
      * Close unused artificial libraries.
      */
-    public void onProjectClose(CsmUID<CsmProject> project, int unitId) {
+    public void onProjectClose(CsmUID<CsmProject> project) {
         List<LibraryEntry> toClose = new ArrayList<>();
         for (LibraryEntry entry : librariesEntries.values()) {
             entry.removeProject(project);
@@ -464,7 +466,7 @@ public final class LibraryManager {
                 librariesEntries.remove(entry.getKey());
             }
         }
-        closeLibraries(toClose, unitId);
+        closeLibraries(toClose);
     }
 
     /*package*/
@@ -492,10 +494,10 @@ public final class LibraryManager {
         }
     }
 
-    private void closeLibraries(Collection<LibraryEntry> entries, int sourceUnitId) {
+    private void closeLibraries(Collection<LibraryEntry> entries) {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         for (LibraryEntry entry : entries) {
-            CsmUID<CsmProject> uid = entry.getLibrary(sourceUnitId);
+            CsmUID<CsmProject> uid = entry.getLibrary();
             ProjectBase lib = (ProjectBase) uid.getObject();
             assert lib != null : "Null project for UID " + uid;
             model.disposeProject(lib);
@@ -505,7 +507,7 @@ public final class LibraryManager {
     /**
      * Write artificial libraries for project
      */
-    /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, RepositoryDataOutput aStream, int unutId) throws IOException {
+    /*package-local*/ void writeProjectLibraries(CsmUID<CsmProject> project, RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
         Set<LibraryKey> keys = new HashSet<>();
         for (Map.Entry<LibraryKey, LibraryEntry> entry : librariesEntries.entrySet()) {
@@ -515,20 +517,20 @@ public final class LibraryManager {
         }        
         aStream.writeInt(keys.size());
         for (LibraryKey libraryKey : keys) {
-            libraryKey.write(aStream, unutId);
+            libraryKey.write(aStream);
         }
     }
 
     /**
      * Read artificial libraries for project
      */
-    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, RepositoryDataInput input, int unitId) throws IOException {
+    /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, RepositoryDataInput input) throws IOException {
         assert input != null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
             for (int i = 0; i < len; i++) {
-                LibraryKey key =  new LibraryKey(input, unitId);
-                LibraryEntry entry =  getOrCreateLibrary(key, unitId);
+                LibraryKey key =  new LibraryKey(input);
+                LibraryEntry entry =  getOrCreateLibrary(key);
                 entry.addProject(project); // no need to notiy here, we are called from project constructor here
             }
         }
@@ -544,19 +546,14 @@ public final class LibraryManager {
             this.folder = folder;
         }
 
-        private LibraryKey(RepositoryDataInput input, int contextProjectID) throws IOException {
+        private LibraryKey(RepositoryDataInput input) throws IOException {
             this.fileSystem = PersistentUtils.readFileSystem(input);
-            int storedContextProjectID = input.readUnitId();
-            assert contextProjectID == storedContextProjectID;
-            int fileIndex = input.readInt();
-            this.folder = APTSerializeUtils.getFileNameById(contextProjectID, fileIndex);
+            this.folder = input.readFilePathForFileSystem(fileSystem);
         }
         
-        private void write(RepositoryDataOutput out, int contextProjectID) throws IOException {            
+        private void write(RepositoryDataOutput out) throws IOException {            
             PersistentUtils.writeFileSystem(fileSystem, out);
-            out.writeUnitId(contextProjectID);
-            int fileIndex = APTSerializeUtils.getFileIdByName(contextProjectID, folder);
-            out.writeInt(fileIndex);
+            out.writeFilePathForFileSystem(fileSystem, folder);
         }
 
         @Override
@@ -610,19 +607,18 @@ public final class LibraryManager {
             return key;
         }
         
-        private CsmUID<CsmProject> getLibrary(int sourceUnitId) {
+        private CsmUID<CsmProject> getLibrary() {
             if (libraryUID == null) {
-                createUID(sourceUnitId);
+                createUID();
             }
             assert libraryUID != null : "libraryUID is null for folder " + getFolder();
             return libraryUID;            
         }
 
-        private synchronized void createUID(int sourceUnitId) {
-            assert Repository.getLayeringSupport(sourceUnitId).getStorageID() == repositoryId;
+        private synchronized void createUID() {
             if (libraryUID == null) {
                 ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
-                LibProjectImpl library = LibProjectImpl.createInstance(model, getFileSystem(), getFolder(), sourceUnitId);
+                LibProjectImpl library = LibProjectImpl.createInstance(model, getFileSystem(), getFolder(), repositoryId);
                 libraryUID = library.getUID();
             }
         }

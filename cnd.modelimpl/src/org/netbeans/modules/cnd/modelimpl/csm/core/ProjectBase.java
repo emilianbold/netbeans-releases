@@ -177,16 +177,8 @@ import org.openide.util.Parameters;
 public abstract class ProjectBase implements CsmProject, Persistent, SelfPersistent, CsmIdentifiable, 
         CndFileSystemProvider.CndFileSystemProblemListener {
 
-    protected ProjectBase(ModelImpl model, NativeProject platformProject, CharSequence name) {
-        this(model, platformProject.getFileSystem(), (Object) platformProject, name, createProjectKey(platformProject));
-    }
-
-    protected ProjectBase(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, int sourceUnitId) {
-        this(model, fs, (Object) platformProject, name, createProjectKey(fs, platformProject, sourceUnitId));
-    }
-
     /** Creates a new instance of CsmProjectImpl */
-    private ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, CharSequence name, Key key) {
+    protected ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, CharSequence name, Key key) {
         namespaces = new ConcurrentHashMap<>();
         this.uniqueName = getUniqueName(fs, platformProject);
         RepositoryUtils.openUnit(key);
@@ -369,34 +361,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         status = newStatus;
     }
 
-    protected static void cleanRepository(NativeProject platformProject, boolean articicial) {
-        Key key = createProjectKey(platformProject);
-        RepositoryUtils.closeUnit(key, null, true);
-    }
-
-    protected static void cleanRepository(FileSystem fs, CharSequence platformProject, boolean articicial, int sourceUnitId) {
-        Key key = createProjectKey(fs, platformProject, sourceUnitId);
-        RepositoryUtils.closeUnit(key, null, true);
-    }
-
-    private static Key createProjectKey(NativeProject platfProj) {
-         return KeyUtilities.createProjectKey(platfProj);
-    }
-
-    private static Key createProjectKey(FileSystem fs, CharSequence  platfProj, int sourceUnitId) {
-        return KeyUtilities.createProjectKey(KeyUtilities.createUnitDescriptor(platfProj, fs), sourceUnitId);
-    }
-
-    protected static ProjectBase readInstance(ModelImpl model, NativeProject platformProject, String name) {
-        return readInstance(model, createProjectKey(platformProject), platformProject, name);
-    }
-
-    protected static ProjectBase readInstance(ModelImpl model, FileSystem fs, CharSequence platformProject, CharSequence name, int sourceUnitId) {
-        ProjectBase instance = readInstance(model, createProjectKey(fs, platformProject, sourceUnitId), platformProject, name);
-        return instance;
-    }
-
-    private static ProjectBase readInstance(ModelImpl model, Key key, Object platformProject, CharSequence name) {
+    protected static ProjectBase readInstance(ModelImpl model, Key key, Object platformProject, CharSequence name) {
 
         long time = 0;
         if (TraceFlags.TIMING) {
@@ -1510,7 +1475,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         APTFileSearch searcher = null;
         UnitDescriptor unitDescriptor = getUnitDescriptor();
         if (unitDescriptor != null) {
-            searcher = APTFileSearch.get(KeyUtilities.createProjectKey(unitDescriptor, -1));
+            searcher = APTFileSearch.get(KeyUtilities.createProjectKey(unitDescriptor));
         }
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, includeFileEntries, searcher);
     }
@@ -1584,9 +1549,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         synchronized (lock) {
             Collection<PreprocessorStatePair> containerStatePairs = entry.getStatePairs();
             if (hasClosedStartEntry(lock, containerStatePairs)) {
+                FileSystem fs = fileImpl.getFileSystem();
                 // need to merge from dependent projects' storages
                 Collection<FileEntry> includedFileEntries = getIncludedFileEntries(lock, fileKey, dependentProjects);
-                FileEntry mergeEntry = FileContainer.createFileEntryForMerge(fileKey);
+                FileEntry mergeEntry = FileContainer.createFileEntryForMerge(fs, fileKey);
                 for (FileEntry fileEntry : includedFileEntries) {
                     for (PreprocessorStatePair pair : fileEntry.getStatePairs()) {
                         if (pair.pcState != FilePreprocessorConditionState.PARSING) {
@@ -2833,28 +2799,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         getFileContainer().putFile(impl, state);
     }
 
-    protected Collection<Key> getLibrariesKeys() {
-        List<Key> res = new ArrayList<>();
-        if (platformProject instanceof NativeProject) {
-            for (NativeProject nativeLib : ((NativeProject) platformProject).getDependences()) {
-                final Key key = createProjectKey(nativeLib);
-                if (key != null) {
-                    res.add(key);
-                }
-            }
-        }
-        // Last dependent project is common library.
-        //final Key lib = KeyUtilities.createProjectKey("/usr/include"); // NOI18N
-        //if (lib != null) {
-        //    res.add(lib);
-        //}
-        if (!isArtificial()) {
-            for (CsmUID<CsmProject> library : getLibraryManager().getLirariesKeys(getUID(), getUnitId())) {
-                res.add(RepositoryUtils.UIDtoKey(library));
-            }
-        }
-        return res;
-    }
+    abstract protected Collection<Key> getLibrariesKeys();
 
     @Override
     public List<CsmProject> getLibraries() {
@@ -3094,6 +3039,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             synchronized (uidLock) {
                 if (uid == null) {
                     uid = out = UIDUtilities.createProjectUID(this);
+                    assert UIDUtilities.getProjectID(uid) == unitId : unitId + " vs. " +  UIDUtilities.getProjectID(uid) + " " + uid;
                     if (TraceFlags.TRACE_CPU_CPP) {System.err.println("getUID for project UID@"+System.identityHashCode(uid) + uid + "on prj@"+System.identityHashCode(this));}
                 }
             }
@@ -3717,7 +3663,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         assert this.name != null;
-        aStream.writeFilePath(name);
+        aStream.writeFilePathForFileSystem(fileSystem, name);
         //PersistentUtils.writeUTF(RepositoryUtils.getUnitName(getUID()), aStream);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
@@ -3728,7 +3674,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ProjectComponent.writeKey(classifierStorageKey, aStream);
         this.includedFileContainer.write(aStream);
 
-        aStream.writeFilePath(this.uniqueName);
+        aStream.writeFilePathForFileSystem(fileSystem, this.uniqueName);
         aStream.writeBoolean(hasFileSystemProblems);
         checkUniqueNameConsistency();
     }
@@ -3753,7 +3699,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null : "default UID factory can not be bull";
 
-        this.name = aStream.readFilePath();
+        this.name = ProjectNameCache.getManager().getString(aStream.readFilePathForFileSystem(fileSystem));
         assert this.name != null : "project name can not be null";
 
         //CharSequence unitName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
@@ -3787,7 +3733,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         includedFileContainer = new IncludedFileContainer(aStream);
         
-        uniqueName = aStream.readFilePath();
+        uniqueName = ProjectNameCache.getManager().getString(aStream.readFilePathForFileSystem(fileSystem));
         assert uniqueName != null : "uniqueName can not be null";
 
         this.model = (ModelImpl) CsmModelAccessor.getModel();

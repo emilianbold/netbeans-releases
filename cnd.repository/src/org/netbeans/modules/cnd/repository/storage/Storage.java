@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,9 +107,9 @@ import org.openide.util.lookup.Lookups;
     // (the same file has the same filePathID in any layer, the dictionary should keep file names for the client)
     private final Map<Integer, FilePathsDictionary> filePathDictionaries = new HashMap<Integer, FilePathsDictionary>();
     // For LayerDescriptor -> map of translation clientFileSystemID => fileSystemIndexInLayer
-    private final Map<LayerDescriptor, Map<Integer, Integer>> fileSystemsTranslationMap = new HashMap<LayerDescriptor, Map<Integer, Integer>>();
+    private final ConcurrentMap<LayerDescriptor, Map<Integer, Integer>> fileSystemsTranslationMap = new ConcurrentHashMap<LayerDescriptor, Map<Integer, Integer>>();
     // For LayerDescriptor -> map of translation clientShortUnitID => unitIDInLayer
-    private final ConcurrentHashMap<LayerDescriptor, Map<Integer, Integer>> unitsTranslationMap = new ConcurrentHashMap<LayerDescriptor, Map<Integer, Integer>>();
+    private final ConcurrentMap<LayerDescriptor, Map<Integer, Integer>> unitsTranslationMap = new ConcurrentHashMap<LayerDescriptor, Map<Integer, Integer>>();
     // Encodes/decodes storage ID into unitID: clientShortUnitID <-> clientLongUnitID
     private final UnitsConverter storageMask;
     private final ReentrantLock storageLock = new ReentrantLock();
@@ -168,8 +169,11 @@ import org.openide.util.lookup.Lookups;
             Map<Integer, Integer> map = fileSystemsTranslationMap.get(ld);
             // map: clientFileSystemID => fileSystemIndexInLayer
             if (map == null) {
-                map = new HashMap<Integer, Integer>();
-                fileSystemsTranslationMap.put(ld, map);
+                map = new ConcurrentHashMap<Integer, Integer>();
+                Map<Integer, Integer> prev = fileSystemsTranslationMap.putIfAbsent(ld, map);
+                if (prev != null) {
+                    map = prev;
+                }
             }
             if (!map.containsKey(clientFileSystemID)) {
                 int matchedFileSystemIndexInLayer = layer.findMatchedFileSystemIndexInLayer(clientFileSystem);
@@ -701,9 +705,9 @@ import org.openide.util.lookup.Lookups;
         try {
             for (Layer layer : layers) {
                 WriteLayerCapability wc = layer.getWriteCapability();
-                UnitIDReadConverterImpl unitIDConverter = new UnitIDReadConverterImpl(layer);
-                Integer unitIDInLayer = unitIDConverter.clientToLayer(clientLongUnitID);
                 if (wc != null) {
+                    UnitIDWriteConverterImpl unitIDConverter = new UnitIDWriteConverterImpl(layer);
+                    Integer unitIDInLayer = unitIDConverter.clientToLayer(clientLongUnitID);
                     wc.removeUnit(unitIDInLayer);
                 }
             }
@@ -716,17 +720,17 @@ import org.openide.util.lookup.Lookups;
         }
     }
 
-    int clientToLayer(final LayerDescriptor layerDescriptor, int clientUnitID) {
-        int clientShortUnitID = storageMask.clientToLayer(clientUnitID);
-        Map<Integer, Integer> unitsMap = unitsTranslationMap.get(layerDescriptor);
-        if (unitsMap == null) {
-            return -1;
-        }        
-        Integer out = unitsMap.get(clientShortUnitID);
-        // check for null in case we recover from broken repository read
-        // #249412 NullPointerException at org.netbeans.modules.cnd.repository.storage.Storage.closeUnit        
-        return out == null ? -1 : out;
-    }
+//    int clientToLayer(final LayerDescriptor layerDescriptor, int clientUnitID) {
+//        int clientShortUnitID = storageMask.clientToLayer(clientUnitID);
+//        Map<Integer, Integer> unitsMap = unitsTranslationMap.get(layerDescriptor);
+//        if (unitsMap == null) {
+//            return -1;
+//        }        
+//        Integer out = unitsMap.get(clientShortUnitID);
+//        // check for null in case we recover from broken repository read
+//        // #249412 NullPointerException at org.netbeans.modules.cnd.repository.storage.Storage.closeUnit        
+//        return out == null ? -1 : out;
+//    }
 
     UnitsConverter getStorageMask() {
         return storageMask;

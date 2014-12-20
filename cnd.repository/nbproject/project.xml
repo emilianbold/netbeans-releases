@@ -11,7 +11,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.30.3</specification-version>
+                        <specification-version>1.30.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -152,7 +152,9 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.cnd.repository</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
