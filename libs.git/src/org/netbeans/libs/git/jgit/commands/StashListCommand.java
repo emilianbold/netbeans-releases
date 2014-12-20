@@ -39,53 +39,67 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.api.io;
+package org.netbeans.libs.git.jgit.commands;
 
-import org.netbeans.api.intent.Intent;
-import org.netbeans.modules.io.HyperlinkAccessor;
-import org.netbeans.spi.io.support.HyperlinkType;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.jgit.GitClassFactory;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.RevisionInfoListener;
 
 /**
- * Implementation of accessor that enables retrieving information about
- * hyperlinks in SPI.
  *
- * @author jhavlin
+ * @author Ondrej Vrabec
  */
-class HyperlinkAccessorImpl extends HyperlinkAccessor {
+public class StashListCommand extends GitCommand {
 
+    private final List<GitRevisionInfo> revisions;
+    private final RevisionInfoListener listener;
+    
+    public StashListCommand (Repository repository, GitClassFactory accessor,
+            ProgressMonitor monitor, RevisionInfoListener listener) {
+        super(repository, accessor, monitor);
+        revisions = new ArrayList<>();
+        this.listener = listener;
+    }
+    
     @Override
-    public HyperlinkType getType(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return HyperlinkType.FROM_RUNNABLE;
-        } else if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return HyperlinkType.FROM_INTENT;
-        } else {
-            throw new IllegalArgumentException("Unknown hyperlink.");   //NOI18N
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        RevWalk fullWalk = new RevWalk(repository);
+        try {
+            Collection<RevCommit> stashes = new Git(repository).stashList().call();
+            for (RevCommit stash : stashes) {
+                addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(stash), repository));
+            }
+        } catch (GitAPIException | IOException ex) {
+            throw new GitException(ex);
+        } finally {
+            fullWalk.release();
         }
     }
 
     @Override
-    public boolean isImportant(Hyperlink hyperlink) {
-        return hyperlink.isImportant();
+    protected String getCommandDescription () {
+        return "git stash list"; //NOI18N
     }
 
-    @Override
-    public Runnable getRunnable(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return ((Hyperlink.OnClickHyperlink) hyperlink).getRunnable();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not an FROM_RUNNABLE link.");                      //NOI18N
-        }
+    public GitRevisionInfo[] getRevisions () {
+        return revisions.toArray(new GitRevisionInfo[revisions.size()]);
     }
 
-    @Override
-    public Intent getIntent(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return ((Hyperlink.IntentHyperlink) hyperlink).getIntent();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not a FROM_INTENT link");                          //NOI18N
-        }
+    private void addRevision (GitRevisionInfo info) {
+        revisions.add(info);
+        listener.notifyRevisionInfo(info);
     }
+    
 }

@@ -39,53 +39,51 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.api.io;
+package org.netbeans.libs.git.jgit.commands;
 
-import org.netbeans.api.intent.Intent;
-import org.netbeans.modules.io.HyperlinkAccessor;
-import org.netbeans.spi.io.support.HyperlinkType;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.jgit.GitClassFactory;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
- * Implementation of accessor that enables retrieving information about
- * hyperlinks in SPI.
  *
- * @author jhavlin
+ * @author Ondrej Vrabec
  */
-class HyperlinkAccessorImpl extends HyperlinkAccessor {
+public class StashDropCommand extends GitCommand {
+    private final int stashIndex;
+    private final boolean all;
 
+    public StashDropCommand (Repository repository, GitClassFactory accessor,
+            int stashIndex, boolean all, ProgressMonitor monitor) {
+        super(repository, accessor, monitor);
+        this.stashIndex = stashIndex;
+        this.all = all;
+    }
+    
     @Override
-    public HyperlinkType getType(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return HyperlinkType.FROM_RUNNABLE;
-        } else if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return HyperlinkType.FROM_INTENT;
-        } else {
-            throw new IllegalArgumentException("Unknown hyperlink.");   //NOI18N
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        try {
+            new Git(repository).stashDrop()
+                    .setAll(all)
+                    .setStashRef(stashIndex)
+                    .call();
+        } catch (GitAPIException ex) {
+            throw new GitException(ex);
         }
     }
 
     @Override
-    public boolean isImportant(Hyperlink hyperlink) {
-        return hyperlink.isImportant();
-    }
-
-    @Override
-    public Runnable getRunnable(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return ((Hyperlink.OnClickHyperlink) hyperlink).getRunnable();
+    protected String getCommandDescription () {
+        if (all) {
+            return "git stash clear"; //NOI18N
         } else {
-            throw new IllegalArgumentException(
-                    "Not an FROM_RUNNABLE link.");                      //NOI18N
+            return new StringBuilder("git stash drop stash@{").append(stashIndex).append("}").toString(); //NOI18N
         }
     }
-
-    @Override
-    public Intent getIntent(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return ((Hyperlink.IntentHyperlink) hyperlink).getIntent();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not a FROM_INTENT link");                          //NOI18N
-        }
-    }
+    
 }
+

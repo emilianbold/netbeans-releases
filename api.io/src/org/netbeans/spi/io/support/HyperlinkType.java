@@ -39,53 +39,28 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.api.io;
+package org.netbeans.spi.io.support;
 
 import org.netbeans.api.intent.Intent;
-import org.netbeans.modules.io.HyperlinkAccessor;
-import org.netbeans.spi.io.support.HyperlinkType;
+import org.netbeans.api.io.Hyperlink;
 
 /**
- * Implementation of accessor that enables retrieving information about
- * hyperlinks in SPI.
+ * Type of the hyperlink.
+ * <p>
+ * Note: New items may be added in the future.
+ * </p>
  *
  * @author jhavlin
  */
-class HyperlinkAccessorImpl extends HyperlinkAccessor {
-
-    @Override
-    public HyperlinkType getType(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return HyperlinkType.FROM_RUNNABLE;
-        } else if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return HyperlinkType.FROM_INTENT;
-        } else {
-            throw new IllegalArgumentException("Unknown hyperlink.");   //NOI18N
-        }
-    }
-
-    @Override
-    public boolean isImportant(Hyperlink hyperlink) {
-        return hyperlink.isImportant();
-    }
-
-    @Override
-    public Runnable getRunnable(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return ((Hyperlink.OnClickHyperlink) hyperlink).getRunnable();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not an FROM_RUNNABLE link.");                      //NOI18N
-        }
-    }
-
-    @Override
-    public Intent getIntent(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return ((Hyperlink.IntentHyperlink) hyperlink).getIntent();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not a FROM_INTENT link");                          //NOI18N
-        }
-    }
+public enum HyperlinkType {
+    /**
+     * Hyperlink created using {@link Hyperlink#from(java.lang.Runnable)} or
+     * {@link Hyperlink#from(java.lang.Runnable, boolean)}.
+     */
+    FROM_RUNNABLE,
+    /**
+     * Hyperlink created using {@link Hyperlink#from(Intent)} or
+     * {@link Hyperlink#from(Intent, boolean)}.
+     */
+    FROM_INTENT
 }

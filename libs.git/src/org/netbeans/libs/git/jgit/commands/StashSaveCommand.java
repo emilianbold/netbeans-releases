@@ -39,53 +39,60 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.api.io;
+package org.netbeans.libs.git.jgit.commands;
 
-import org.netbeans.api.intent.Intent;
-import org.netbeans.modules.io.HyperlinkAccessor;
-import org.netbeans.spi.io.support.HyperlinkType;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.StashCreateCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.jgit.GitClassFactory;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
- * Implementation of accessor that enables retrieving information about
- * hyperlinks in SPI.
  *
- * @author jhavlin
+ * @author Ondrej Vrabec
  */
-class HyperlinkAccessorImpl extends HyperlinkAccessor {
+public class StashSaveCommand extends GitCommand {
+    private final boolean includeUntracked;
+    private final String message;
+    private GitRevisionInfo stash;
 
+    public StashSaveCommand (Repository repository, GitClassFactory accessor,
+            String message, boolean includeUntracked, ProgressMonitor monitor) {
+        super(repository, accessor, monitor);
+        this.message = message;
+        this.includeUntracked = includeUntracked;
+    }
+    
     @Override
-    public HyperlinkType getType(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return HyperlinkType.FROM_RUNNABLE;
-        } else if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return HyperlinkType.FROM_INTENT;
-        } else {
-            throw new IllegalArgumentException("Unknown hyperlink.");   //NOI18N
+    protected void run () throws GitException {
+        Repository repository = getRepository();
+        try {
+            StashCreateCommand cmd = new Git(repository).stashCreate()
+                    .setIncludeUntracked(includeUntracked)
+                    .setWorkingDirectoryMessage(message);
+            RevCommit commit = cmd.call();
+            this.stash = getClassFactory().createRevisionInfo(commit, repository);
+        } catch (GitAPIException ex) {
+            throw new GitException(ex);
         }
     }
 
     @Override
-    public boolean isImportant(Hyperlink hyperlink) {
-        return hyperlink.isImportant();
-    }
-
-    @Override
-    public Runnable getRunnable(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return ((Hyperlink.OnClickHyperlink) hyperlink).getRunnable();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not an FROM_RUNNABLE link.");                      //NOI18N
+    protected String getCommandDescription () {
+        StringBuilder sb = new StringBuilder("git stash save "); //NOI18N
+        if (includeUntracked) {
+            sb.append("--include-untracked "); //NOI18N
         }
+        return sb.append(message).toString();
     }
-
-    @Override
-    public Intent getIntent(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return ((Hyperlink.IntentHyperlink) hyperlink).getIntent();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not a FROM_INTENT link");                          //NOI18N
-        }
+    
+    public GitRevisionInfo getStashedCommit () {
+        return stash;
     }
+    
 }
+

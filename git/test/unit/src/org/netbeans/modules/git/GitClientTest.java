@@ -154,6 +154,11 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setCallback",
                 "setRemote",
                 "setUpstreamBranch",
+                "stashApply",
+                "stashDrop",
+                "stashDropAll",
+                "stashList",
+                "stashSave",
                 "unignore",
                 "updateReference",
                 "updateSubmodules"
@@ -190,6 +195,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "removeRemote",
                 "setCallback",
                 "setRemote",
+                "stashList",
                 "push",
                 "unignore"));
         Field f = GitClient.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
@@ -271,6 +277,11 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setCallback",
                 "setRemote",
                 "setUpstreamBranch",
+                "stashApply",
+                "stashDrop",
+                "stashDropAll",
+                "stashList",
+                "stashSave",
                 "unignore",
                 "updateReference",
                 "updateSubmodules"
@@ -377,6 +388,11 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setCallback",
                 "setRemote",
                 "setUpstreamBranch",
+                "stashApply",
+                "stashDrop",
+                "stashDropAll",
+                "stashList",
+                "stashSave",
                 "unignore",
                 "updateReference",
                 "updateSubmodules"
@@ -553,6 +569,11 @@ public class GitClientTest extends AbstractGitTestCase {
                 "setCallback",
                 "setRemote",
                 "setUpstreamBranch",
+                "stashApply",
+                "stashDrop",
+                "stashDropAll",
+                "stashList",
+                "stashSave",
                 "unignore",
                 "updateReference",
                 "updateSubmodules"
@@ -582,7 +603,8 @@ public class GitClientTest extends AbstractGitTestCase {
                 "removeNotificationListener",
                 "removeRemote",
                 "setCallback",
-                "setRemote"));
+                "setRemote",
+                "stashList"));
         Field f = GitClient.class.getDeclaredField("PARALLELIZABLE_COMMANDS");
         f.setAccessible(true);
         Set<String> actualParallelizableCommands = (Set<String>) f.get(GitClient.class);

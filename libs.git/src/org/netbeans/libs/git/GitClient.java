@@ -100,6 +100,10 @@ import org.netbeans.libs.git.jgit.commands.SetRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import org.netbeans.libs.git.jgit.commands.UnignoreCommand;
 import org.netbeans.libs.git.jgit.commands.SetUpstreamBranchCommand;
+import org.netbeans.libs.git.jgit.commands.StashApplyCommand;
+import org.netbeans.libs.git.jgit.commands.StashDropCommand;
+import org.netbeans.libs.git.jgit.commands.StashListCommand;
+import org.netbeans.libs.git.jgit.commands.StashSaveCommand;
 import org.netbeans.libs.git.jgit.commands.SubmoduleInitializeCommand;
 import org.netbeans.libs.git.jgit.commands.SubmoduleStatusCommand;
 import org.netbeans.libs.git.jgit.commands.SubmoduleUpdateCommand;
@@ -1221,6 +1225,90 @@ public final class GitClient {
                 localBranchName, remoteBranch, monitor);
         cmd.execute();
         return cmd.getTrackingBranch();
+    }
+    
+    /**
+     * Applies a stashed commit identified by the given index to the current
+     * working tree state
+     *
+     * @param stashIndex index identifying the stashed commit to apply, zero
+     * based (0 as the most recent stash).
+     * @param dropStash if <code>true</code> the stashed commit will be dropped
+     * from the stash after it has been successfully applied.
+     * @param monitor progress monitor
+     * @since 1.31
+     * @throws GitException an error occurs.
+     */
+    public void stashApply (int stashIndex, boolean dropStash, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        StashApplyCommand cmd = new StashApplyCommand(repository, getClassFactory(), stashIndex, monitor);
+        cmd.execute();
+        if (dropStash) {
+            stashDrop(stashIndex, monitor);
+        }
+    }
+
+    /**
+     * Drops (deletes) all stashed commits from the stash.
+     *
+     * @param monitor progress monitor
+     * @since 1.31
+     * @throws GitException an error occurs.
+     */
+    public void stashDropAll (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        StashDropCommand cmd = new StashDropCommand(repository, getClassFactory(), -1, true, monitor);
+        cmd.execute();
+    }
+
+    /**
+     * Deletes the stashed commit identified by the given index (zero-based)
+     * from the stash.
+     *
+     * @param stashIndex zero-based index to the stash list (0 as the most
+     * recent stash).
+     * @param monitor progress monitor
+     * @since 1.31
+     * @throws GitException an error occurs.
+     */
+    public void stashDrop (int stashIndex, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        StashDropCommand cmd = new StashDropCommand(repository, getClassFactory(), stashIndex, false, monitor);
+        cmd.execute();
+    }
+
+    /**
+     * Lists saved stashed commits.
+     *
+     * @param monitor progress monitor
+     * @return an array of saved stashed commits.
+     * @since 1.31
+     * @throws GitException an error occurs.
+     */
+    public GitRevisionInfo[] stashList (ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        StashListCommand cmd = new StashListCommand(repository, getClassFactory(), monitor, delegateListener);
+        cmd.execute();
+        return cmd.getRevisions();
+    }
+
+    /**
+     * Saves local uncommitted changes to the git stash and resets the working
+     * tree to the HEAD.
+     *
+     * @param message description of the created stash commit.
+     * @param includeUntracked if <code>true</code> also untracked files will be
+     * stashed and then deleted.
+     * @param monitor progress monitor
+     * @return the stashed commit info.
+     * @since 1.31
+     * @throws GitException an error occurs.
+     */
+    public GitRevisionInfo stashSave (String message, boolean includeUntracked, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        StashSaveCommand cmd = new StashSaveCommand(repository, getClassFactory(), message, includeUntracked, monitor);
+        cmd.execute();
+        return cmd.getStashedCommit();
     }
 
     /**

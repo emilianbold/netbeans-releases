@@ -39,53 +39,56 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.api.io;
+package org.netbeans.modules.git.ui.commit;
 
-import org.netbeans.api.intent.Intent;
-import org.netbeans.modules.io.HyperlinkAccessor;
-import org.netbeans.spi.io.support.HyperlinkType;
+import java.awt.Dimension;
+import java.awt.Font;
+import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 
 /**
- * Implementation of accessor that enables retrieving information about
- * hyperlinks in SPI.
  *
- * @author jhavlin
+ * @author Ondrej Vrabec
  */
-class HyperlinkAccessorImpl extends HyperlinkAccessor {
+public class MessageAreaBuilder {
+    private String accessibleName;
+    private String accessibleDesc;
+    private int numberOfChars;
 
-    @Override
-    public HyperlinkType getType(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return HyperlinkType.FROM_RUNNABLE;
-        } else if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return HyperlinkType.FROM_INTENT;
-        } else {
-            throw new IllegalArgumentException("Unknown hyperlink.");   //NOI18N
+    public MessageArea build () {
+        MessageArea messageTextArea = new MessageArea();
+        if (numberOfChars > 0) {
+            Font orig = messageTextArea.getFont();
+            Font f = Font.decode(Font.MONOSPACED).deriveFont(orig.getStyle(), orig.getSize());
+            messageTextArea.setFont(f);
         }
-    }
-
-    @Override
-    public boolean isImportant(Hyperlink hyperlink) {
-        return hyperlink.isImportant();
-    }
-
-    @Override
-    public Runnable getRunnable(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.OnClickHyperlink) {
-            return ((Hyperlink.OnClickHyperlink) hyperlink).getRunnable();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not an FROM_RUNNABLE link.");                      //NOI18N
+        messageTextArea.setColumns(60); //this determines the preferred width of the whole dialog
+        messageTextArea.setLineWrap(true);
+        messageTextArea.setRows(4);
+        messageTextArea.setTabSize(4);
+        messageTextArea.setWrapStyleWord(true);
+        messageTextArea.setMinimumSize(new Dimension(100, 18));
+        if (accessibleName != null) {
+            messageTextArea.getAccessibleContext().setAccessibleName(accessibleName);
         }
+        messageTextArea.getAccessibleContext().setAccessibleDescription(accessibleDesc);
+        messageTextArea.addMouseListener(new CommitMessageMouseAdapter());
+        messageTextArea.setNumberOfChars(numberOfChars);
+        return messageTextArea;
     }
 
-    @Override
-    public Intent getIntent(Hyperlink hyperlink) {
-        if (hyperlink instanceof Hyperlink.IntentHyperlink) {
-            return ((Hyperlink.IntentHyperlink) hyperlink).getIntent();
-        } else {
-            throw new IllegalArgumentException(
-                    "Not a FROM_INTENT link");                          //NOI18N
-        }
+    public MessageAreaBuilder setAccessibleName (String acsn) {
+        this.accessibleName = acsn;
+        return this;
     }
+
+    public MessageAreaBuilder setAccessibleDescription (String acsd) {
+        this.accessibleDesc = acsd;
+        return this;
+    }
+
+    public MessageAreaBuilder setWraplineHint (int numberOfChars) {
+        this.numberOfChars = numberOfChars;
+        return this;
+    }
+    
 }

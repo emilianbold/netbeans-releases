@@ -39,24 +39,59 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.io;
+package org.netbeans.modules.git.ui.commit;
 
-import org.netbeans.spi.io.support.Hyperlinks;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import javax.swing.JTextArea;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.netbeans.modules.versioning.util.UndoRedoSupport;
 
 /**
- * Type of the hyperlink.
- * <p>
- * Note: New items may be added in the future.
- * </p>
- * <p>
- * Note: When more hyperlink types are added, this enum can be moved to package
- * org.netbeans.spi.io.support, and getType(), getRunnable() (for correct type)
- * methods can be added to {@link Hyperlinks} class. So that implementation can
- * work with specific hyperlink types differently. See bug 247404.
- * </p>
  *
- * @author jhavlin
+ * @author Ondrej Vrabec
  */
-public enum HyperlinkType {
-    FROM_RUNNABLE
+public class MessageArea extends JTextArea {
+    private UndoRedoSupport um;
+    private int messageWidth;
+    
+    @Override
+    public void paint (Graphics g) {
+        super.paint(g);
+        if (messageWidth > 0) {
+            int x = messageWidth * g.getFontMetrics().charWidth(' ');
+            Rectangle rect = getVisibleRect();
+            if (rect.contains(new Point(x, rect.y))) {
+                g.setColor(Color.red);
+                g.drawLine(x, rect.y, x, rect.y + rect.height);
+            }
+        }
+    }
+
+    /**
+     * Must be called when the area is brought to visible.
+     */
+    public void open () {
+        if (um == null) {
+            um = UndoRedoSupport.register(this);
+            Spellchecker.register(this);
+        }
+    }
+
+    /**
+     * Must be called when the area is being discarded,
+     */
+    public void close () {
+        if (um != null) {
+            um.unregister();
+            um = null;
+        }
+    }
+
+    void setNumberOfChars (int numberOfChars) {
+        this.messageWidth = numberOfChars;
+    }
+    
 }

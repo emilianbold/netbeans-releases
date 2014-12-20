@@ -46,6 +46,8 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.text.DateFormat;
+import java.util.Date;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
@@ -111,6 +113,7 @@ public class RevisionInfoPanelController {
     private void resetInfoFields () {
         panel.taMessage.setText(MSG_LOADING);
         panel.tbAuthor.setText(MSG_LOADING);
+        panel.tbDate.setText(MSG_LOADING);
         panel.tbRevisionId.setText(MSG_LOADING);
     }
 
@@ -119,6 +122,10 @@ public class RevisionInfoPanelController {
         panel.tbAuthor.setText(info.getAuthor().toString());
         if (!panel.tbAuthor.getText().isEmpty()) {
             panel.tbAuthor.setCaretPosition(0);
+        }
+        panel.tbDate.setText(DateFormat.getDateTimeInstance().format(new Date(info.getCommitTime())));
+        if (!panel.tbDate.getText().isEmpty()) {
+            panel.tbDate.setCaretPosition(0);
         }
         String id = info.getRevision();
         if (id.length() > 10) {
@@ -134,7 +141,7 @@ public class RevisionInfoPanelController {
             } else if (revision.startsWith(GitUtils.PREFIX_R_REMOTES)) { //NOI18N
                 revision = revision.substring(GitUtils.PREFIX_R_REMOTES.length());
             }
-            panel.tbRevisionId.setText(new StringBuilder(revision).append(getMergedStatus(revisionMerged)).append(" (").append(info.getRevision()).append(')').toString()); //NOI18N
+            panel.tbRevisionId.setText(new StringBuilder(revision).append(getMergedStatus(revisionMerged)).append(" (").append(id).append(')').toString()); //NOI18N
         }
         if (!panel.tbRevisionId.getText().isEmpty()) {
             panel.tbRevisionId.setCaretPosition(0);

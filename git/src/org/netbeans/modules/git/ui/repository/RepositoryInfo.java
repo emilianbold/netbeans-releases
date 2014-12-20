@@ -51,12 +51,14 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -70,6 +72,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClient;
@@ -107,6 +110,10 @@ public class RepositoryInfo {
      * fired when a set of known remotes changes (a remote is added, removed, etc.). Old and new values are instances of {@link Map}&lt;String, GitRemoteConfig&gt;.
      */
     public static final String PROPERTY_REMOTES = "prop.remotes"; //NOI18N
+    /**
+     * fired when a git stash state changes. Old and new values are instances of {@link List}&lt;GitRevisionInfo&gt;.
+     */
+    public static final String PROPERTY_STASH = "prop.stashes"; //NOI18N
 
     private final Reference<File> rootRef;
     private static final WeakHashMap<File, RepositoryInfo> cache = new WeakHashMap<File, RepositoryInfo>(5);
@@ -118,6 +125,7 @@ public class RepositoryInfo {
     private final Map<String, GitBranch> branches;
     private final Map<String, GitTag> tags;
     private final Map<String, GitRemoteConfig> remotes;
+    private final List<GitRevisionInfo> stashes;
 
     private GitBranch activeBranch;
     private GitRepositoryState repositoryState;
@@ -133,6 +141,7 @@ public class RepositoryInfo {
         this.branches = new LinkedHashMap<String, GitBranch>();
         this.tags = new HashMap<String, GitTag>();
         this.remotes = new HashMap<String, GitRemoteConfig>();
+        this.stashes = new ArrayList<>();
         this.activeBranch = GitBranch.NO_BRANCH_INSTANCE;
         this.repositoryState = GitRepositoryState.SAFE;
         propertyChangeSupport = new PropertyChangeSupport(this);
@@ -199,6 +208,7 @@ public class RepositoryInfo {
                     } catch (GitException ex) {
                         LOG.log(logged.add(root.getAbsolutePath() + ex.getMessage()) ? Level.INFO : Level.FINE, null, ex);
                     }
+                    refreshStashes(client);
                     GitRepositoryState newState = client.getRepositoryState(GitUtils.NULL_PROGRESS_MONITOR);
                     // now set new values and fire events when needed
                     setActiveBranch(newBranches);
@@ -242,6 +252,30 @@ public class RepositoryInfo {
                 client.release();
             }
         }
+    }
+
+    /**
+     * Do NOT call from EDT
+     * @return
+     */
+    public List<GitRevisionInfo> refreshStashes () throws GitException {
+        assert !java.awt.EventQueue.isDispatchThread();
+        GitClient client = null;
+        try {
+            File root = rootRef.get();
+            if (root == null) {
+                LOG.log(Level.WARNING, "refreshRemotes (): root is null, it has been collected in the meantime"); //NOI18N
+            } else {
+                LOG.log(Level.FINE, "refreshRemotes (): starting for {0}", root); //NOI18N
+                client = Git.getInstance().getClient(root);
+                refreshStashes(client);
+            }
+        } finally {
+            if (client != null) {
+                client.release();
+            }
+        }
+        return new ArrayList<>(stashes);
     }
 
     public NBGitConfig getNetbeansConfig () {
@@ -333,6 +367,22 @@ public class RepositoryInfo {
         }
     }
 
+    private void setStashes (List<GitRevisionInfo> newStashes) {
+        List<GitRevisionInfo> oldStash;
+        boolean changed = false;
+        synchronized (remotes) {
+            oldStash = new ArrayList<>(stashes);
+            if (!equals(oldStash, newStashes)) {
+                stashes.clear();
+                stashes.addAll(newStashes);
+                changed = true;
+            }
+        }
+        if (changed) {
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_STASH, Collections.unmodifiableList(oldStash), Collections.unmodifiableList(new ArrayList<>(newStashes))));
+        }
+    }
+
     public void addPropertyChangeListener (PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
@@ -411,6 +461,21 @@ public class RepositoryInfo {
         }
         return retval;
     }
+
+    private static boolean equals (List<GitRevisionInfo> oldList, List<GitRevisionInfo> newList) {
+        boolean retval = oldList.size() == newList.size();
+        if (retval) {
+            for (ListIterator<GitRevisionInfo> itOld = oldList.listIterator(), itNew = newList.listIterator(); itOld.hasNext();) {
+                GitRevisionInfo oldInfo = itOld.next();
+                GitRevisionInfo newInfo = itNew.next();
+                if (!oldInfo.getRevision().equals(newInfo.getRevision())) {
+                    retval = false;
+                    break;
+                }
+            }
+        }
+        return retval;
+    }
     
     private static boolean equalsBranches (Map<String, GitBranch> oldBranches, Map<String, GitBranch> newBranches) {
         boolean retval = oldBranches.size() == newBranches.size() && oldBranches.keySet().equals(newBranches.keySet());
@@ -463,6 +528,10 @@ public class RepositoryInfo {
     private void refreshRemotes (GitClient client) throws GitException {
         Map<String, GitRemoteConfig> newRemotes = client.getRemotes(GitUtils.NULL_PROGRESS_MONITOR);
         setRemotes(newRemotes);
+    }
+
+    private void refreshStashes (GitClient client) throws GitException {
+        setStashes(Arrays.asList(client.stashList(GitUtils.NULL_PROGRESS_MONITOR)));
     }
 
     private boolean refreshIfNotLocked () {

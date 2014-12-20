@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.io;
 
+import org.netbeans.api.intent.Intent;
+import org.netbeans.spi.io.support.HyperlinkType;
 import org.netbeans.api.io.Hyperlink;
 
 /**
@@ -82,4 +84,6 @@ public abstract class HyperlinkAccessor {
     public abstract boolean isImportant(Hyperlink hyperlink);
 
     public abstract Runnable getRunnable(Hyperlink hyperlink);
+
+    public abstract Intent getIntent(Hyperlink hyperlink);
 }
