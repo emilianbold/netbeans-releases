@@ -134,8 +134,8 @@ public final class Repository {
     }
 
     // Called concurrently
-    public static int getUnitId(UnitDescriptor unitDescriptor, int sourceUnitId) {
-        return implRef.get().getUnitID(unitDescriptor, sourceUnitId);
+    public static int getUnitIdForStorage(UnitDescriptor unitDescriptor, int storageID) {
+        return implRef.get().getUnitID(unitDescriptor, storageID);
     }
 
     // Called concurrently
