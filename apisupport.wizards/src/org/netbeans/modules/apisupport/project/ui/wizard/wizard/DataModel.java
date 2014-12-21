@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -73,7 +74,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     // first panel data (Wizard Type)
     private boolean branching;
-    private boolean fileTemplateType;
+    private TemplateType fileTemplateType;
     private int nOfSteps;
     
     // second panel data (Name, Icon and Location)
@@ -84,11 +85,30 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     DataModel(final WizardDescriptor wiz) {
         super(wiz);
+        fileTemplateType = isHTMLUIPossible() ? TemplateType.HTML4J : TemplateType.FILE;
+    }
+    
+    final boolean isHTMLUIPossible() {
+        try {
+            SpecificationVersion templates = getModuleInfo().getDependencyVersion("org.netbeans.api.templates");
+            return templates != null;
+        } catch (IOException ex) {
+            return false;
+        }
     }
     
     CreatedModifiedFiles getCreatedModifiedFiles() {
         if (cmf == null) {
-            regenerate();
+            switch (getFileTemplateType()) {
+                case CUSTOM:
+                case FILE:
+                    regenerate();
+                    break;
+                case HTML:
+                case HTML4J:
+                    regenerateHTML();
+                    break;
+            }
         }
         return cmf;
     }
@@ -138,11 +158,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         replaceTokens.put("panelClassNames", panelClassNames); // NOI18N
 
         // generate .java for wizard iterator
-        if (fileTemplateType || branching) {
+        if (fileTemplateType == TemplateType.FILE || branching) {
             String iteratorClass = prefix + "WizardIterator"; // NOI18N
             replaceTokens.put("ITERATOR_CLASS", iteratorClass); // NOI18N
             
-            if (fileTemplateType) {
+            if (fileTemplateType == TemplateType.FILE) {
                 // generate .html description for the template
                 String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase(Locale.ENGLISH) + prefix.substring(1);
                 cmf.add(cmf.createFileWithSubstitutions(getDefaultPackagePath(lowerCasedPrefix, true) + ".html", CreatedModifiedFiles.getTemplate("wizardDescription.html"), Collections.<String,String>emptyMap())); // NOI18N
@@ -191,7 +211,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                     }
                 }
             }
-            FileObject template = CreatedModifiedFiles.getTemplate(fileTemplateType ? "instantiatingIterator.java" : "wizardIterator.java"); // NOI18N
+            FileObject template = CreatedModifiedFiles.getTemplate(
+                fileTemplateType == TemplateType.FILE ? 
+                "instantiatingIterator.java" : "wizardIterator.java" // NOI18N
+            );
             String path = getDefaultPackagePath(iteratorClass + ".java", false); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         } else {
@@ -199,6 +222,61 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             FileObject template = CreatedModifiedFiles.getTemplate("sampleAction.java"); // NOI18N
             cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         }
+    }
+    
+    private void regenerateHTML() {
+        boolean isJava = fileTemplateType == TemplateType.HTML4J;
+        cmf = new CreatedModifiedFiles(getProject());
+        
+        Map<String, Object> basicTokens = new HashMap<String, Object>();
+        basicTokens.put("PACKAGE_NAME", getPackageName()); // NOI18N
+        basicTokens.put("WIZARD_PREFIX", prefix); // NOI18N
+
+        cmf.add(cmf.addModuleDependency("org.netbeans.api.templates")); // NOI18N
+        cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        if (isJava) {
+            cmf.add(cmf.addModuleDependency("net.java.html")); // NOI18N
+            cmf.add(cmf.addModuleDependency("net.java.html.json")); // NOI18N
+        }
+        cmf.add(cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_NEEDS, "org.netbeans.api.templates.wizard")); // NOI18N
+        cmf.add(cmf.addManifestToken(ManifestManager.OPENIDE_MODULE_NEEDS, "javax.script.ScriptEngine.freemarker")); // NOI18N
+        
+        basicTokens.put("HTML4J", isJava);
+        
+        // generate .html description for the template
+        String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase(Locale.ENGLISH) + prefix.substring(1);
+        cmf.add(cmf.createFileWithSubstitutions(
+            getDefaultPackagePath(lowerCasedPrefix, true) + "Descr.html", // NOI18N
+            CreatedModifiedFiles.getTemplate("wizardDescription.html"), // NOI18N
+            Collections.<String,String>emptyMap())); 
+        
+        cmf.add(cmf.createFileWithSubstitutions(
+            getDefaultPackagePath(lowerCasedPrefix, true) + ".html", // NOI18N
+            CreatedModifiedFiles.getTemplate("wizardHTML.html"), // NOI18N
+            basicTokens
+        )); 
+        cmf.add(cmf.createFileWithSubstitutions(
+            getDefaultPackagePath(lowerCasedPrefix, true) + ".fmk", // NOI18N
+            CreatedModifiedFiles.getTemplate("wizardHTML.fmk"), // NOI18N
+            basicTokens
+        )); 
+        String instanceFullPath = category + '/' + lowerCasedPrefix;
+
+        basicTokens.put("TR_folder", category.replaceFirst("^Templates/", ""));
+        basicTokens.put("TR_displayName", displayName);
+        basicTokens.put("TR_description", lowerCasedPrefix + "Descr.html");
+        basicTokens.put("TR_page", lowerCasedPrefix + ".html");
+        basicTokens.put("TR_content", lowerCasedPrefix + ".fmk");
+
+        // Copy wizard icon
+        FileObject origIcon = origIconPath != null ? FileUtil.toFileObject(origIconPath) : null;
+        if (origIcon != null) {
+            String relToSrcDir = addCreateIconOperation(cmf, origIcon);
+            basicTokens.put("TR_iconBase", relToSrcDir);
+        }
+        FileObject template = CreatedModifiedFiles.getTemplate("wizardHTML.java"); // NOI18N
+        String path = getDefaultPackagePath(prefix + ".java", false); // NOI18N
+        cmf.add(cmf.createFileWithSubstitutions(path, template, basicTokens));
     }
     
     private void reset() {
@@ -213,11 +291,11 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         return branching;
     }
     
-    void setFileTemplateType(boolean fileTemplateType) {
+    void setFileTemplateType(TemplateType fileTemplateType) {
         this.fileTemplateType = fileTemplateType;
     }
     
-    boolean isFileTemplateType() {
+    TemplateType getFileTemplateType() {
         return fileTemplateType;
     }
     
@@ -247,5 +325,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         super.setPackageName(packageName);
         reset();
     }
-    
+
+    enum TemplateType {
+        HTML4J, HTML, CUSTOM, FILE
+    }
 }
