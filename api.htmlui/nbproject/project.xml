@@ -42,9 +42,8 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.objectweb.asm</code-name-base>
+                    <code-name-base>org.netbeans.libs.asm</code-name-base>
                     <build-prerequisite/>
-                    <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.awt</code-name-base>
