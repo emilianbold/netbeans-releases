@@ -74,14 +74,12 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -94,13 +92,12 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private final SvnOptionsPanel panel;
     private Repository repository;
     private final AnnotationSettings annotationSettings;
-    private static final HashSet<String> allowedExecutables = new HashSet<>(Arrays.asList(new String[] {"svn", "svn.exe"} )); //NOI18N
-    private static final HashSet<String> allowedLibs = new HashSet<>(Arrays.asList(new String[] {"libsvnjavahl-1.dll", "libsvnjavahl-1.so"} )); //NOI18N
-    private Object currentClient;
-    private final FileSystem fileSystem;
+    private static final HashSet<String> allowedExecutables = new HashSet<>(Arrays.asList(new String[] {"svn"} )); //NOI18N
+    private FileSystem fileSystem;
         
     public SvnOptionsController() {    
         fileSystem = VCSFileProxySupport.getDefaultFileSystem();
+        FileSystem[] fileSystems = VCSFileProxySupport.getFileSystems();
         
         annotationSettings = new AnnotationSettings(fileSystem);
         
@@ -112,17 +109,17 @@ public final class SvnOptionsController extends OptionsPanelController implement
         String tooltip = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS);               
         panel.annotationTextField.setToolTipText(tooltip);                
         panel.addButton.addActionListener(this);         
-        panel.cmbPreferredClient.addActionListener(this);
-        panel.cmbPreferredClient.setRenderer(new DefaultListCellRenderer() {
+        panel.cbBuildHost.addActionListener(this);
+        panel.cbBuildHost.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value == panel.panelCLI) {
-                    value = NbBundle.getMessage(SvnOptionsPanel.class, "LBL_PreferredClient.CLI"); //NOI18N
+                if (value instanceof FileSystem) {
+                    value = ((FileSystem)value).getDisplayName();
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
-        panel.cmbPreferredClient.setModel(new DefaultComboBoxModel(new Object[] { panel.panelCLI}));
+        panel.cbBuildHost.setModel(new DefaultComboBoxModel(fileSystems));
         panel.textPaneClient.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate (HyperlinkEvent e) {
@@ -157,6 +154,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     @Override
     public void update() {
+        fileSystem = (FileSystem) panel.cbBuildHost.getSelectedItem();
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath());
         panel.annotationTextField.setText(SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat());
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput());
@@ -169,18 +167,12 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault(fileSystem).getExludeNewFiles());
         panel.prefixRepositoryPath.setSelected(SvnModuleConfig.getDefault(fileSystem).isRepositoryPathPrefixed());
         panel.cbDetermineBranches.setSelected(SvnModuleConfig.getDefault(fileSystem).isDetermineBranchesEnabled());
-        panel.cmbPreferredClient.setSelectedItem(panel.panelCLI);
-        currentClient = panel.cmbPreferredClient.getSelectedItem();
     }
     
     @Override
     public void applyChanges() {                                 
-        // executable
-        boolean clientChanged = isClientChanged();
-        if (panel.cmbPreferredClient.getSelectedItem() == panel.panelCLI) {
-            SvnModuleConfig.getDefault(fileSystem).setExecutableBinaryPath(panel.executablePathTextField.getText());
-            SvnModuleConfig.getDefault(fileSystem).setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_COMMANDLINE);
-        }
+        SvnModuleConfig.getDefault(fileSystem).setExecutableBinaryPath(panel.executablePathTextField.getText());
+        SvnModuleConfig.getDefault(fileSystem).setPreferredFactoryType(SvnClientFactory.FACTORY_TYPE_COMMANDLINE);
         SvnModuleConfig.getDefault(fileSystem).setAnnotationFormat(panel.annotationTextField.getText());
         SvnModuleConfig.getDefault(fileSystem).setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
         SvnModuleConfig.getDefault(fileSystem).setGetRemoteLocks(panel.cbGetRemoteLocks.isSelected());
@@ -189,10 +181,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
         SvnModuleConfig.getDefault(fileSystem).setRepositoryPathPrefixed(panel.prefixRepositoryPath.isSelected());
         SvnModuleConfig.getDefault(fileSystem).setDetermineBranchesEnabled(panel.cbDetermineBranches.isSelected());
 
-        if (clientChanged) {
-            SvnClientFactory.resetClient();
-            repository = null;
-        }
         // {folder} variable setting
         annotationSettings.applyChanges();
         Subversion.getInstance().getAnnotator().refresh();
@@ -219,7 +207,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
                panel.cbGetRemoteLocks.isSelected() != SvnModuleConfig.getDefault(fileSystem).isGetRemoteLocks() || 
                (repository != null && repository.isChanged()) || 
                annotationSettings.isChanged()
-                || isClientChanged()
                 || SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput() != panel.cbOpenOutputWindow.isSelected()
                 || SvnModuleConfig.getDefault(fileSystem).isAutoLock() != panel.cbAutoLockFiles.isSelected()
                 || SvnModuleConfig.getDefault(fileSystem).getExludeNewFiles() != panel.excludeNewFiles.isSelected()
@@ -227,11 +214,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
                 || SvnModuleConfig.getDefault(fileSystem).isRepositoryPathPrefixed() != panel.prefixRepositoryPath.isSelected();
     }
 
-    private boolean isClientChanged () {
-        Object selectedPanel = panel.cmbPreferredClient.getSelectedItem();
-        return selectedPanel != currentClient;
-    }
-        
     @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(getClass());
@@ -262,28 +244,23 @@ public final class SvnOptionsController extends OptionsPanelController implement
             onManageLabelsClick();
         } else if (evt.getSource() == panel.addButton) {
             onAddClick();
-        } else if (evt.getSource() == panel.cmbPreferredClient) {
-            onPreferredClientChanged();
         }
     }
 
-    private void onPreferredClientChanged () {
-        Object selectedClient = panel.cmbPreferredClient.getSelectedItem();
-        panel.panelCLI.setVisible(false);
-        if (selectedClient == panel.panelCLI) {
-            panel.panelCLI.setVisible(true);
-            // currently no need to restart, change works in the same session
-//            panel.lblRestartWarning.setVisible(SvnClientFactory.isClientAvailable() && !SvnClientFactory.isCLI());
+    private VCSFileProxy getExecutableFile() {
+        if (fileSystem == null) {
+            return null;
         }
-    }
-    
-    private File getExecutableFile() {
         String execPath = panel.executablePathTextField.getText();
-        return FileUtil.normalizeFile(new File(execPath));
+        if (execPath.isEmpty()) {
+            return VCSFileProxy.createFileProxy(fileSystem.getRoot());
+        } else {
+            return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), execPath);
+        }
     }
 
     private void onBrowseClick () {
-        File oldFile = getExecutableFile();
+        VCSFileProxy oldFile = getExecutableFile();
         onBrowse(oldFile, allowedExecutables, panel.executablePathTextField,
                 NbBundle.getMessage(SvnOptionsController.class, "ACSD_BrowseFolder"), //NOI18N
                 NbBundle.getMessage(SvnOptionsController.class, "Browse_title"), //NOI18N
@@ -291,8 +268,11 @@ public final class SvnOptionsController extends OptionsPanelController implement
                 );
     }
                 
-    private void onBrowse (File oldFile, final Set<String> allowedFileNames, JTextField textField, String acsd, String browseTitle, final String fileTypeDesc) {
-        JFileChooser fileChooser = new AccessibleJFileChooser(acsd, oldFile);
+    private void onBrowse (VCSFileProxy oldFile, final Set<String> allowedFileNames, JTextField textField, String acsd, String browseTitle, final String fileTypeDesc) {
+        if (oldFile == null) {
+            return;
+        }
+        JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(browseTitle);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
@@ -306,18 +286,20 @@ public final class SvnOptionsController extends OptionsPanelController implement
                 return fileTypeDesc;
             }
         });
-        fileChooser.showDialog(panel, NbBundle.getMessage(SvnOptionsController.class, "OK_Button")); //NOI18N
-        File f = fileChooser.getSelectedFile();
-        if (f != null) {
-            while (!f.exists() || f.isFile()) {
-                File parent = f.getParentFile();
-                if (parent == null) {
-                    break;
-                } else {
-                    f = parent;
+        int showDialog = fileChooser.showDialog(panel, NbBundle.getMessage(SvnOptionsController.class, "OK_Button")); //NOI18N
+        if (showDialog == JFileChooser.APPROVE_OPTION) {
+            VCSFileProxy f = VCSFileProxySupport.getSelectedFile(fileChooser);
+            if (f != null) {
+                while (!f.exists() || f.isFile()) {
+                    VCSFileProxy parent = f.getParentFile();
+                    if (parent == null) {
+                        break;
+                    } else {
+                        f = parent;
+                    }
                 }
+                textField.setText(f.getPath());
             }
-            textField.setText(f.getAbsolutePath());
         }
     }
 

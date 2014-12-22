@@ -72,8 +72,12 @@ class Commandline {
         this.fileSystem = fileSystem;
         executable = SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath();
         if(executable == null || executable.trim().equals("")) {
-            executable = "svn";                                                 // NOI18N
-        }                      
+            executable = "svn"; // NOI18N
+        } else {
+            if (!executable.endsWith("/svn")) {
+                executable += "/svn";
+            }
+        }
     }
 
     /**
