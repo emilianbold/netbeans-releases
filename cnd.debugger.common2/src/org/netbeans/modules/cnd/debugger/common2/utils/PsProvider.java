@@ -310,7 +310,8 @@ public abstract class PsProvider {
             idx++;
         }
         if ( (idx-1) != res.processes.size()) {     // we should check if the operation has been applied to all processes
-            throw new AssertionError("Process list:" + res.processes.toString() + "\npargs output:" + pargsOutput.toString());
+            logger.info("Process list:" + res.processes.toString() + "\npargs output:" + pargsOutput.toString()); // NOI18N
+            throw new AssertionError("PsProvider failed to match pargs output with ps output");
         }
     }
 
