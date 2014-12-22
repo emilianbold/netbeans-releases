@@ -137,6 +137,11 @@ public class JQueryModel {
         }
 
         @Override
+        public void addDeclaredScope(DeclarationScope scope) {
+            delegate.addDeclaredScope(scope);
+        }
+
+        @Override
         public DeclarationScope getParentScope() {
             return delegate.getParentScope();
         }

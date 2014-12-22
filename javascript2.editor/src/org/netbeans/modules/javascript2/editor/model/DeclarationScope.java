@@ -54,4 +54,5 @@ public interface DeclarationScope {
 
     Collection<? extends DeclarationScope> getChildrenScopes();
 
+    void addDeclaredScope(DeclarationScope scope);
 }

@@ -163,6 +163,14 @@ public final class ModelElementFactory {
         return newFunction(scope, parent, new IdentifierImpl(name, OffsetRange.NONE), realParams, OffsetRange.NONE, sourceLabel);
     }
     
+    public JsFunction newFunction(DeclarationScope scope, JsObject parent, String name, Collection<String> params, OffsetRange range, String sourceLabel) {
+        List<Identifier> realParams = new ArrayList<Identifier>();
+        for (String param : params) {
+            realParams.add(new IdentifierImpl(param, OffsetRange.NONE));
+        } 
+        return newFunction(scope, parent, new IdentifierImpl(name, OffsetRange.NONE), realParams, range, sourceLabel);
+    }
+    
     public JsFunction newFunction(DeclarationScope scope, JsObject parent, Identifier name, List<Identifier> params, OffsetRange range) {
         return newFunction(scope, parent, name, params, range, null);
     }
@@ -477,6 +485,11 @@ public final class ModelElementFactory {
         @Override
         public Collection<? extends DeclarationScope> getChildrenScopes() {
             return delegate.getChildrenScopes();
+        }
+
+        @Override
+        public void addDeclaredScope(DeclarationScope scope) {
+            delegate.addDeclaredScope(scope);
         }
 
         @Override
