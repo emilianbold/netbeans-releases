@@ -525,7 +525,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         
         Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
         for (TestCreatorConfigurationProvider panelProvider : panelProviders) {
-            if (panelProvider.canHandleProject(selectedTestingFramework)) {
+            if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
                 fillFormData();
                 checkAcceptability();
                 TestCreatorConfigurationProvider.Context context = new TestCreatorConfigurationProvider.Context(multipleClasses, new CommonCfgOfCreateCallback(this));
@@ -534,7 +534,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
                 jPanel.remove(layout.getLayoutComponent(BorderLayout.SOUTH));
                 jPanel.add(bottomPanel, BorderLayout.SOUTH);
                 jPanel.revalidate();
-    }
+            }
         }
     }
     
