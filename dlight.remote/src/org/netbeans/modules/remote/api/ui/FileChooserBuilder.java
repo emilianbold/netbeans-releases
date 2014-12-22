@@ -164,7 +164,7 @@ public final class FileChooserBuilder {
     public FileChooserBuilder(ExecutionEnvironment env) {
         this.env = env;
     }
-    
+
     public JFileChooserEx createFileChooser(Callable<String> selectedPath) {
         if (env.isLocal()) {
             return new LocalFileChooserImpl(selectedPath);

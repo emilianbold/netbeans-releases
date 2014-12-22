@@ -106,7 +106,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
         
         panel = new SvnOptionsPanel();
         panel.browseButton.addActionListener(this);
-        panel.browseJavahlButton.addActionListener(this);
         panel.manageConnSettingsButton.addActionListener(this);
         panel.manageLabelsButton.addActionListener(this);
         
@@ -119,15 +118,11 @@ public final class SvnOptionsController extends OptionsPanelController implement
             public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 if (value == panel.panelCLI) {
                     value = NbBundle.getMessage(SvnOptionsPanel.class, "LBL_PreferredClient.CLI"); //NOI18N
-                } else if (value == panel.panelJavahl) {
-                    value = NbBundle.getMessage(SvnOptionsPanel.class, "LBL_PreferredClient.JAVAHL"); //NOI18N
-                } else if (value == panel.panelSvnkit) {
-                    value = NbBundle.getMessage(SvnOptionsPanel.class, "LBL_PreferredClient.SVNKIT"); //NOI18N
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
-        panel.cmbPreferredClient.setModel(new DefaultComboBoxModel(new Object[] { panel.panelCLI, panel.panelJavahl, panel.panelSvnkit }));
+        panel.cmbPreferredClient.setModel(new DefaultComboBoxModel(new Object[] { panel.panelCLI}));
         panel.textPaneClient.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate (HyperlinkEvent e) {
@@ -163,7 +158,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
     @Override
     public void update() {
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath());
-        panel.javahlPathTextField.setText(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath());
         panel.annotationTextField.setText(SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat());
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput());
         panel.cbGetRemoteLocks.setSelected(SvnModuleConfig.getDefault(fileSystem).isGetRemoteLocks());
@@ -221,7 +215,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
     @Override
     public boolean isChanged() {        
         return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath()) ||
-               !panel.javahlPathTextField.getText().equals(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath()) ||
                !panel.annotationTextField.getText().equals(SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat()) || 
                panel.cbGetRemoteLocks.isSelected() != SvnModuleConfig.getDefault(fileSystem).isGetRemoteLocks() || 
                (repository != null && repository.isChanged()) || 
@@ -263,8 +256,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == panel.browseButton) {
             onBrowseClick();
-        } else if(evt.getSource() == panel.browseJavahlButton) {
-            onBrowseJavahlClick();
         } else if(evt.getSource() == panel.manageConnSettingsButton) {
             onManageConnClick();
         } else if(evt.getSource() == panel.manageLabelsButton) {
@@ -279,21 +270,10 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private void onPreferredClientChanged () {
         Object selectedClient = panel.cmbPreferredClient.getSelectedItem();
         panel.panelCLI.setVisible(false);
-        panel.panelJavahl.setVisible(false);
-        panel.panelSvnkit.setVisible(false);
-        panel.lblRestartWarning.setVisible(false);
         if (selectedClient == panel.panelCLI) {
             panel.panelCLI.setVisible(true);
             // currently no need to restart, change works in the same session
 //            panel.lblRestartWarning.setVisible(SvnClientFactory.isClientAvailable() && !SvnClientFactory.isCLI());
-        } else if (selectedClient == panel.panelJavahl) {
-            panel.panelJavahl.setVisible(true);
-            // currently no need to restart, change works in the same session
-//            panel.lblRestartWarning.setVisible(SvnClientFactory.isClientAvailable() && !SvnClientFactory.isJavaHl());
-        } else if (selectedClient == panel.panelSvnkit) {
-            panel.panelSvnkit.setVisible(true);
-            // currently no need to restart, change works in the same session
-//            panel.lblRestartWarning.setVisible(SvnClientFactory.isClientAvailable() && !SvnClientFactory.isSvnKit());
         }
     }
     
@@ -302,11 +282,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
         return FileUtil.normalizeFile(new File(execPath));
     }
 
-    private File getJavahlFolder () {
-        String execPath = panel.javahlPathTextField.getText();
-        return FileUtil.normalizeFile(new File(execPath));
-    }
-    
     private void onBrowseClick () {
         File oldFile = getExecutableFile();
         onBrowse(oldFile, allowedExecutables, panel.executablePathTextField,
@@ -346,14 +321,6 @@ public final class SvnOptionsController extends OptionsPanelController implement
         }
     }
 
-    private void onBrowseJavahlClick () {
-        onBrowse(getJavahlFolder(), allowedLibs, panel.javahlPathTextField,
-                NbBundle.getMessage(SvnOptionsController.class, "ACSD_BrowseJavahlFolder"), //NOI18N
-                NbBundle.getMessage(SvnOptionsController.class, "Browse_Javahl_title"), //NOI18N
-                NbBundle.getMessage(SvnOptionsController.class, "FileChooser.SvnLibs.desc") //NOI18N
-            );
-    }
-    
     private void onManageConnClick() {
         if (repository == null) {
             panel.manageConnSettingsButton.setEnabled(false);
