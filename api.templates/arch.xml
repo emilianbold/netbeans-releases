@@ -309,6 +309,55 @@ I feel ${wizard.msg}.
     replaced by the actual value taken from the wizard.    
 </p>
     </usecase>
+    
+    <usecase id="java-html" name="Use HTML and Java">
+        <p>
+            Some people would rather use Java instead of Java script while
+            getting the portability of the <em>HTML</em>. There is a simple
+            way to rewrite the <em>HTML and JavaScript</em>
+            sample to <b>Java</b>
+            (and possibly run it in a plugin-less browser via 
+            <a onclick="target='_blank'" href="http://bck2brwsr.apidesign.org">bck2brwsr VM</a>). Keep the
+            same HTML, <a onclick="target='_blank'" href="http://freemarker.org/">Freemarker</a>, etc.
+            files - just instead of encoding the logic in JavaScript use Java:
+        </p>
+<pre>
+{@link net.java.html.json.Model @Model}(className = "JavaWizard", properties = {
+    {@link net.java.html.json.Property @Property}(name = "current", type = String.<b>class</b>),
+    {@link net.java.html.json.Property @Property}(name = "ok", type = <b>boolean</b>.<b>class</b>),
+    {@link net.java.html.json.Property @Property}(name = "msg", type = String.<b>class</b>)
+})
+<b>public class</b> JavaWizardCntrl {
+    {@link net.java.html.json.ComputedProperty @ComputedProperty} <b>static int</b> errorCode(
+        String current, boolean ok, String msg
+    ) {
+        if ("Init".equals(current)) <b>return</b> 0;
+        if (!ok) <b>return</b> 1;
+        if (msg == null || msg.isEmpty()) <b>return</b> 2;
+        <b>return</b> 0;
+    }
+ 
+ 
+    {@code @TemplateRegistration}(
+        page = "x.html",
+        scriptEngine = "freemarker",
+        displayName = "HTML/Java Wizard",
+        folder = "Java",
+        content = "x.fmk"
+    )
+    <b>public static</b> JavaWizard javaWizardFactory() {
+        return new JavaWizard("Init", false, "");
+    }
+}            
+</pre>        
+<p>
+    The return value of the annotated method is now an
+    <a onclick="target='_blank'" href="http://bits.netbeans.org/html+java/">HTML/Java</a>
+    model class which can naturally represent the essential 
+    <a onclick="target='_blank'" href="http://knockoutjs.com">Knockout.js</a> objects
+    in Java. 
+</p>
+    </usecase>
  </answer>
  <answer id="arch-what">
   <p>
