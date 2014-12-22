@@ -94,7 +94,8 @@ import org.openide.util.lookup.Lookups;
 /* package */ final class Storage {
 
     private static boolean PRINT_STACK_FILES = CndUtils.getBoolean("cnd.repository.print.stack.wrong.file", true);// NOI18N
-    private static boolean PRINT_STACK_UNITS = CndUtils.getBoolean("cnd.repository.print.stack.wrong.units", true);// NOI18N
+    private static boolean UnitIDReadConverterImpl_layer_to_client = CndUtils.getBoolean("cnd.repository.print.stack.wrong.units.layer_to_client", true);// NOI18N
+    private static boolean UnitIDWriteConverterImpl_client_to_layer = CndUtils.getBoolean("cnd.repository.print.stack.wrong.units.client_to_layer", true);// NOI18N
     private static final Logger LOG = Logger.getLogger("repository.support.filecreate.logger"); //NOI18N
     // A list of all layers that belong to this Storage.
     private final List<Layer> layers;
@@ -372,11 +373,10 @@ import org.openide.util.lookup.Lookups;
     }
 
     private LayerKey getReadLayerKey(Key key, Layer layer) {
-        UnitIDReadConverterImpl unitIDConverter = new UnitIDReadConverterImpl(layer);
-        // 100001
+        //to convert client key to layer key we need to use
+        UnitIDWriteConverterImpl unitIDConverter = new UnitIDWriteConverterImpl(layer);
+        // 100007
         int unitId = key.getUnitId();
-        // 5
-        int clientShortUnitID = storageMask.clientToLayer(unitId);
 
         Integer layerUnitID = unitIDConverter.clientToLayer(unitId);
         if (layerUnitID < 0) {
@@ -421,7 +421,7 @@ import org.openide.util.lookup.Lookups;
         int unit_id_layer_to_read_files_from = -1;
         
         for (Layer layer : layers) {
-            UnitIDReadConverterImpl unitIDConverter = new UnitIDReadConverterImpl(layer);
+            UnitIDWriteConverterImpl unitIDConverter = new UnitIDWriteConverterImpl(layer);
             // 5
             Integer unitIDInLayer = unitIDConverter.clientToLayer(clientUnitID);
             if (unitIDInLayer < 0) {
@@ -867,9 +867,10 @@ import org.openide.util.lookup.Lookups;
          */
         @Override
         public int clientToLayer(int clientLongUnitID) {
-            int clientShortUnitID = storageMask.clientToLayer(clientLongUnitID);
-            final Integer result = map.get(clientShortUnitID);
-            return result == null ? -1 : result.intValue();
+            //should never be called, it is used to read operations
+            //when you read from the disk short unit id and should transform it to
+            //long client unit id (0 -> 100007)
+            throw new InternalError("Should not be called"); // NOI18N
         }
 
         // Gets  as a parameter 5
@@ -911,13 +912,13 @@ import org.openide.util.lookup.Lookups;
                 // TODO: HOW TO DEAL WITH THIS ???
                 UnitDescriptor layerUnit = layer.getUnitsTable().getUnitDescriptor(unitIDInLayer);
                 if (layerUnit == null) {
-                    if (PRINT_STACK_UNITS){
+                    if (UnitIDReadConverterImpl_layer_to_client){
                         //what should we do here?
                         System.err.println("In previous version we had IndexOutOfBounds here! unitID=" + unitIDInLayer + " " //NOI18N
                                 + "not found, current units list is " + layer.getUnitsTable());//NOI18N
                         dumpStorage();
                         //only once
-                        PRINT_STACK_UNITS = false;
+                        UnitIDReadConverterImpl_layer_to_client = false;
                     }
                     //BAD situation!!!!
                     return -1;
@@ -932,7 +933,18 @@ import org.openide.util.lookup.Lookups;
                 map.put(result, unitIDInLayer);
                 updateUnitsTranslationMap(clientUnitDescriptor);
             }
-
+            if (result.equals(-1)) {
+                //can it be ever?
+                if (UnitIDReadConverterImpl_layer_to_client) {
+                    //what should we do here?
+                    System.err.println("UnitIDReadConverterImpl.layerToClient will return -1 as client unit id! unitID=" + unitIDInLayer + " " //NOI18N
+                            + "not found, current units list is " + layer.getUnitsTable());//NOI18N
+                    dumpStorage();
+                    //only once
+                    UnitIDReadConverterImpl_layer_to_client = false;
+                }
+                //BAD situation!!!!
+            }
             return result.equals(-1) ? -1 : storageMask.layerToClient(result);
         }
     }
@@ -978,18 +990,31 @@ import org.openide.util.lookup.Lookups;
             final Integer result;
             synchronized (map) {
                 result = map.get(clientShortUnitID);
-                if (result == null) {
-                    throw new InternalError();
-                }
-                if (result.intValue() == -1) {
+                if (result == null || result == -1) {
+                    //what does it mean? we do not have an information about transformation yet
+                    //but it is the same as -1?
+                    //now I think it is the same situation as -1, so I will just register new unit
                     UnitDescriptor unitDescriptor = clientUnitDescriptorsDictionary.getUnitDescriptor(clientShortUnitID);
+                    if (unitDescriptor == null) {
+                        if (UnitIDWriteConverterImpl_client_to_layer) {
+                            //what should we do here?
+                            System.err.println("UnitIDWriteConverterImpl.clientToLayer. Means somehow it was deleted from the "//NOI18N
+                                    + "units table, even though we never delete data from the units list (see LayerIndex implementation) "//NOI18N
+                                    + "will return -1 as client unit id! unitID=" + clientUnitID + " " //NOI18N
+                                    + "not found, current units list is " + layer.getUnitsTable());//NOI18N
+                            dumpStorage();
+                            //only once
+                            UnitIDWriteConverterImpl_client_to_layer = false;
+                        }
+                        return -1;
+                    }
                     UnitDescriptor layerUnitDescriptor = createLayerUnitDescriptor(layer, unitDescriptor);
                     int res = layer.getWriteCapability().registerNewUnit(layerUnitDescriptor);
                     map.put(clientShortUnitID, res);
                     return res;
                 }
             }
-            return result.intValue();
+            return result;
         }
 
         @Override
