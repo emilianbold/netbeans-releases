@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.repository.impl.spi.LayerKey;
 import org.netbeans.modules.cnd.repository.impl.spi.WriteLayerCapability;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -84,7 +85,9 @@ public final class RepositoryDataOutputStream extends DataOutputStream implement
 
     @Override
     public void writeUnitId(int unitId) throws IOException {
-        writeInt(layersConverterProvider.getWriteUnitsConverter().clientToLayer(unitId));
+        final int unitID = layersConverterProvider.getWriteUnitsConverter().clientToLayer(unitId);
+        CndUtils.assertTrue(unitID > -1, "Impossible on disk unit id: ", unitID); //NOI18N
+        writeInt(unitID);
     }
 
     @Override

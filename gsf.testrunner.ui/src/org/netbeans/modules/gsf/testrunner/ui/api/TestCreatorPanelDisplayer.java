@@ -95,9 +95,12 @@ public final class TestCreatorPanelDisplayer {
         if (!isJ2MEProject) {
             for (Lookup.Item<TestCreatorProvider> provider : providers) {
                 if(provider.getInstance().enable(activatedFOs)) {
-                testingFrameworks.add(provider.getDisplayName());
+                    testingFrameworks.add(provider.getDisplayName());
+                }
             }
         }
+        if(testingFrameworks.isEmpty()) { //no testing frameworks available
+            return;
         }
 	cfg.addTestingFrameworks(testingFrameworks);
 	cfg.setPreselectedLocation(location);

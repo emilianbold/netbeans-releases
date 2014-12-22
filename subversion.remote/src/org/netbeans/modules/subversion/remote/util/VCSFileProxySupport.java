@@ -61,6 +61,7 @@ import javax.swing.JFileChooser;
 import org.netbeans.modules.remote.api.ServerList;
 import org.netbeans.modules.remote.api.ServerRecord;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.subversion.remote.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
@@ -456,11 +457,11 @@ public final class VCSFileProxySupport {
      * @return 
      */
     public static JFileChooser createFileChooser(VCSFileProxy proxy) {
-        throw new UnsupportedOperationException();
+        return RemoteVcsSupport.createFileChooser(proxy);
     }
 
     public static VCSFileProxy getSelectedFile(JFileChooser chooser) {
-        throw new UnsupportedOperationException();
+        return RemoteVcsSupport.getSelectedFile(chooser);
     }
     
     public static FileSystem getDefaultFileSystem() {
@@ -484,21 +485,7 @@ public final class VCSFileProxySupport {
     }
 
     public static FileSystem getFileSystem(VCSFileProxy file) {
-        while(true) {
-            if (file == null) {
-                return null;
-            }
-            FileObject fo = file.toFileObject();
-            if (fo != null) {
-                try {
-                    return fo.getFileSystem();
-                } catch (FileStateInvalidException ex) {
-                    ex.printStackTrace(System.err);
-                    return null;
-                }
-            }
-            file = file.getParentFile();
-        }
+        return RemoteVcsSupport.getFileSystem(file);
     }
     
     public static FileSystem readFileSystem(DataInputStream is) throws IOException {

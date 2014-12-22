@@ -110,6 +110,9 @@ made subject to such option by the copyright holder.
             <file name="wizardDescription.html" url="../wizard/wizardDescription.html"/>
             <file name="wizardIterator.java" url="../wizard/wizardIterator.javx"/>
             <file name="wizardPanel.java" url="../wizard/wizardPanel.javx"/>
+            <file name="wizardHTML.java" url="../wizard/wizardHTML.javx"/>
+            <file name="wizardHTML.html" url="../wizard/wizardHTML.html"/>
+            <file name="wizardHTML.fmk" url="../wizard/wizardHTML.fmk"/>
         </folder>
     </folder>
 </filesystem>

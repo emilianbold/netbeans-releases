@@ -48,9 +48,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.core.NbErrorManager.Exc;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -125,5 +127,22 @@ public class NotifyExcPanelTest extends NbTestCase {
         List<Object> options = Arrays.asList(NotifyExcPanel.computeOptions("prev", "next"));
         
         assertFalse("Does not contain our button: " + options, options.contains(handler.button));
+    }
+    
+    public void testLimitOf20() {
+        NotifyExcPanel.ArrayListPos arr = new NotifyExcPanel.ArrayListPos();
+        for (int i = 0; i < 19; i++) {
+            arr.add(null);
+        }
+        assertEquals("Nineteen elements", 19, arr.size());
+        arr.add(null);
+        assertEquals("Twenty", 20, arr.size());
+        
+        Exc ex = new Exc(null, Level.OFF, new LogRecord[0], new LogRecord[0]);
+        arr.add(ex);
+        
+        assertEquals("Still twenty", 20, arr.size());
+        assertEquals(ex, arr.get(19));
+        
     }
 }
