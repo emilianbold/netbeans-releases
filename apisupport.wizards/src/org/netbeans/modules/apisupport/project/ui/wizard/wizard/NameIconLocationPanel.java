@@ -129,7 +129,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     protected void storeToDataModel() {
         data.setClassNamePrefix(getClassNamePrefix());
         data.setPackageName(packageName.getEditor().getItem().toString());
-        if (data.isFileTemplateType()) {
+        if (data.getFileTemplateType() != DataModel.TemplateType.CUSTOM) {
             data.setDisplayName(displayName.getText());
             if (icon.getText().trim().length() > 0) {
                 data.setIcon(icon.getText().equals(NONE_LABEL) ? null : FileUtil.normalizeFile(new File(icon.getText())));
@@ -139,7 +139,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected void readFromDataModel() {
-        boolean isFileTemplate = data.isFileTemplateType();
+        boolean isFileTemplate = data.getFileTemplateType() != DataModel.TemplateType.CUSTOM;
         displayName.setVisible(isFileTemplate);
         displayNameTxt.setVisible(isFileTemplate);
         category.setVisible(isFileTemplate);
@@ -188,7 +188,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         String pName = packageName.getEditor().getItem().toString().trim();
         if (!Utilities.isJavaIdentifier(getClassNamePrefix())) {
             setError(getMessage("MSG_ClassNameMustBeValidJavaIdentifier"));
-        } else if (data.isFileTemplateType() &&
+        } else if (data.getFileTemplateType() == DataModel.TemplateType.FILE &&
                 (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL))) {
             setError(getMessage("MSG_DisplayNameMustBeEntered"));
         } else if (pName.length() == 0 || !WizardUtils.isValidPackageName(pName)) {

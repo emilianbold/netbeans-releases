@@ -2350,4 +2350,20 @@ org.netbeans.spi.project.libraries.support.ForwardingLibraryImplementation
 org.netbeans.spi.project.libraries.support.LibrariesSupport$ConversionMode
 org.netbeans.spi.project.ui.support.BuildExecutionSupport
 org.openide.filesystems.FileUIUtils
+org.netbeans.modules.parsing.impl.indexing.DefaultCacheFolderProvider
+org.netbeans.modules.parsing.impl.indexing.DefaultCacheFolderProvider$Saver
+org.netbeans.modules.parsing.impl.indexing.IndexingUtils
+org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider
+org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider$Kind
+org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider$Mode
+org.netbeans.modules.parsing.ui.indexing.errors.ErrorAnnotator$RootAddedDeletedListener
+org.netbeans.modules.project.ui.convertor.ProjectConvertorAcceptor
+org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory
+org.netbeans.modules.project.uiapi.ProjectConvertorServiceFactory
+org.netbeans.spi.java.classpath.FlaggedClassPathImplementation
+org.netbeans.spi.java.classpath.GlobalPathRegistryImplementation
+org.netbeans.spi.java.classpath.GlobalPathRegistryImplementation$AccessorImpl
+org.netbeans.spi.project.ProjectInformationProvider
+org.netbeans.spi.project.ui.ProjectConvertor$Result
+org.openide.filesystems.AbstractFileSystem$SymlinkInfo
 

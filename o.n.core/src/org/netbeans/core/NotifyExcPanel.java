@@ -724,6 +724,16 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
             position=0;
         }
 
+        @Override
+        public boolean add(NbErrorManager.Exc e) {
+            if (size() >= 20 && position < size() - 5) {
+                set(size() - 1, e);
+                return true;
+            } else {
+                return super.add(e);
+            }
+        }
+
         protected boolean existsElement () {
             return size()>0;
         }

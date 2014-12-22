@@ -54,6 +54,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.MapFormat;
 
 /**
@@ -250,8 +251,8 @@ public final class FileBuilder {
      * If the {@code name} parameter is null, the function attempts to compute a suitable name
      * from the file.
      * <p/>
-     * The default copy algorithm uses the supplied {@code format} to process tokens. A standard
-     * format (using __TOKEN__) can be obtained by calling {@link #basicFormatter}.
+     * The default copy algorithm uses the supplied {@link Mode#FORMAT} to
+     * process tokens.
      * <p/>
      * If the passed {@code name} is {@code null}, the implementation will pick a free name based on
      * the template's own name (see {@link FileUtil#findFreeFileName}).
