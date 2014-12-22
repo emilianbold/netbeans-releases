@@ -114,7 +114,11 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     public void testExport05() throws Exception {
         checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "mOut.o^utput = 'bug';", false);
     }
-
+    
+    public void testIssue249436_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249436.js", "t^ //cc here", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();

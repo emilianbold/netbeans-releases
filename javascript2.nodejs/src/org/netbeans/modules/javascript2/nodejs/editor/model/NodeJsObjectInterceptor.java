@@ -94,7 +94,7 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
             }
         }
         if (exports != null) {
-            JsFunction module = factory.newFunction((DeclarationScope) global, global, NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + global.getName(), Collections.EMPTY_LIST);
+            JsFunction module = factory.newFunction((DeclarationScope) global, global, NodeJsUtils.FAKE_OBJECT_NAME_PREFIX + global.getName(), Collections.EMPTY_LIST, global.getOffsetRange(), null);
             module.setAnonymous(true);
             List<JsObject> properties = new ArrayList(global.getProperties().values());
             for (JsObject property : properties) {
@@ -109,6 +109,7 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
                 }
             }
             global.addProperty(module.getName(), module);
+            ((DeclarationScope)global).addDeclaredScope(module);
         }
     }
 }

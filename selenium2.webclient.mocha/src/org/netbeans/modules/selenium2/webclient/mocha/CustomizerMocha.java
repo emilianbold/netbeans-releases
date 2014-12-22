@@ -75,6 +75,7 @@ public final class CustomizerMocha extends javax.swing.JPanel {
     private final boolean isSelenium;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final SpinnerNumberModel timeoutModel;
+    private boolean autoDiscovered = false;
 
     private volatile String mochaInstallFolder;
     private volatile int timeout;
@@ -149,6 +150,7 @@ public final class CustomizerMocha extends javax.swing.JPanel {
                 .getResult();
             if(result.isFaultless()) { // mocha is installed in project's local node_modules dir
                 mochaDir = dir;
+                autoDiscovered = true;
             }
         }
         mochaDirTextField.setText(mochaDir);
@@ -174,12 +176,16 @@ public final class CustomizerMocha extends javax.swing.JPanel {
         timeoutModel.addChangeListener(new DefaultChangeListener());
     }
 
+    @NbBundle.Messages({"CustomizerMocha.confirm.autodiscovered.info=Mocha installation dir was auto-discovered. Please confirm by clicking OK."})
     void validateData() {
         assert EventQueue.isDispatchThread();
         mochaInstallFolder = mochaDirTextField.getText();
         validationResult = new MochaPreferencesValidator()
                 .validateMochaInstallFolder(mochaInstallFolder)
                 .getResult();
+        if (autoDiscovered) { // auto-discovered, show confirmation message to the user
+            validationResult.addWarning(new ValidationResult.Message("path", Bundle.CustomizerMocha_confirm_autodiscovered_info())); // NOI18N
+        }
         changeSupport.fireChange();
     }
 

@@ -69,6 +69,7 @@ import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaJSPrefere
 import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaSeleniumPreferences;
 import org.netbeans.modules.selenium2.webclient.mocha.preferences.MochaPreferencesValidator;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileObject;
@@ -127,7 +128,7 @@ public class MochaRunner {
                 .validateMochaInstallFolder(mochaInstallFolder)
                 .getResult();
         if(mochaInstallFolder == null || mochaInstallFolder.isEmpty() || !validationResult.isFaultless()) {
-            Utilities.openCustomizer(p, SeleniumTestingProviders.CUSTOMIZER_SELENIUM_TESTING_IDENT);
+            Utilities.openCustomizer(p, isSelenium ? SeleniumTestingProviders.CUSTOMIZER_SELENIUM_TESTING_IDENT : JsTestingProviders.CUSTOMIZER_IDENT);
             return;
         }
         
