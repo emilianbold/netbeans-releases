@@ -165,9 +165,11 @@ public class NodeJsUtils {
                 // need to parser package.json
                 // find "main" field
                 String valueOfMain = getValueOfMain(packageFO);
-                resultFO = findModuleAsFile (packageFO, valueOfMain);
-                if (resultFO != null) {
-                    return resultFO;
+                if (valueOfMain != null) {
+                    resultFO = findModuleAsFile (packageFO, valueOfMain);
+                    if (resultFO != null) {
+                        return resultFO;
+                    }
                 }
             }
             resultFO = parentFO.getFileObject(module + "/" + INDEX_NAME + '.' + JS_EXT);
