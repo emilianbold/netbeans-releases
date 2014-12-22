@@ -165,10 +165,7 @@ public class Library {
             return false;
         }
         final Library other = (Library) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(this.name, other.name);
     }
 
     /**
@@ -226,13 +223,8 @@ public class Library {
                 return false;
             }
             final Version other = (Version) obj;
-            if (!Objects.equals(this.library, other.library)) {
-                return false;
-            }
-            if (!Objects.equals(this.name, other.name)) {
-                return false;
-            }
-            return true;
+            return Objects.equals(this.library, other.library)
+                    && Objects.equals(this.name, other.name);
         }
 
     }
