@@ -42,10 +42,14 @@
 package org.netbeans.modules.remotefs.versioning.impl;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remotefs.versioning.api.*;
@@ -70,7 +74,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     @Override
     public JFileChooser createFileChooser(VCSFileProxy proxy) {
         FileSystem fs = getFileSystem(proxy);
-        FileChooserBuilder fcb = new FileChooserBuilder(fs);
+        FileChooserBuilder fcb = new FileChooserBuilder(FileSystemProvider.getExecutionEnvironment(fs));
         FileChooserBuilder.JFileChooserEx chooser = fcb.createFileChooser(proxy.getPath());
         return chooser;
     }
@@ -107,5 +111,25 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                 throw new IllegalStateException(ex);
             }
         }
+    }
+
+    @Override
+    public FileSystem[] getFileSystems() {
+        // TODO: get list from cnd.remote !!!
+        List<ExecutionEnvironment> execEnvs = ConnectionManager.getInstance().getRecentConnections();
+        List<FileSystem> fileSystems = new ArrayList<FileSystem>(execEnvs.size());
+        for (ExecutionEnvironment env : execEnvs) {
+            if (env.isRemote()) {
+                fileSystems.add(FileSystemProvider.getFileSystem(env));
+            }
+        }
+        return fileSystems.toArray(new FileSystem[fileSystems.size()]);
+    }
+
+    @Override
+    public FileSystem getDefaultFileSystem() {
+        // TODO: get default from cnd.remote !!!
+        FileSystem[] fsList = getFileSystems();
+        return (fsList.length > 0) ? fsList[0] : null;
     }
 }

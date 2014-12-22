@@ -56,10 +56,13 @@ public interface RemoteVcsSupportImplementation {
      * @param proxy defines FS and initial selection
      * @return file chooser
      */
-    public JFileChooser createFileChooser(VCSFileProxy proxy);
+    JFileChooser createFileChooser(VCSFileProxy proxy);
 
-    public VCSFileProxy getSelectedFile(JFileChooser chooser);
+    VCSFileProxy getSelectedFile(JFileChooser chooser);
 
-    public FileSystem getFileSystem(VCSFileProxy proxy);
+    FileSystem getFileSystem(VCSFileProxy proxy);
 
+    FileSystem[] getFileSystems();
+
+    FileSystem getDefaultFileSystem();
 }

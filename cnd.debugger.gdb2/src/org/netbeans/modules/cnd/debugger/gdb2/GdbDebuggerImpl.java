@@ -1934,8 +1934,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             new MiCommandImpl("-thread-select " + id_no) { // NOI18N
             @Override
                 protected void onDone(MIRecord record) {
-                    requestStack(record);
                     setCurrentThread(index, record, isCurrent);
+                    requestStack(record);
                     finish();
                 }
 	    };
