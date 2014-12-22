@@ -95,6 +95,14 @@ public final class JsTestLocator implements TestLocator {
 
     @Override
     public boolean appliesTo(FileObject fo) {
+        Project project = findProject(fo);
+        if (project == null) {
+            LOGGER.log(Level.INFO, "Project was not found for file {0}", fo);
+            return false;
+        }
+        if (getSourceGroupForSeleniumTests(project, fo) != null) {
+            return false; // disabled for files under Selenium Tests Folder
+        }
         return JS_MIME_TYPE.equals(FileUtil.getMIMEType(fo, JS_MIME_TYPE));
     }
 
@@ -241,6 +249,22 @@ public final class JsTestLocator implements TestLocator {
         assert project != null;
         assert file != null;
         for (SourceGroup sourceGroup : getSourceGroupsForTests(project)) {
+            if (sourceGroup.contains(file)) {
+                return sourceGroup;
+            }
+        }
+        return null;
+    }
+
+    private List<SourceGroup> getSourceGroupsForSeleniumTests(Project project) {
+        return Arrays.asList(ProjectUtils.getSources(project).getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5_TEST_SELENIUM));
+    }
+
+    @CheckForNull
+    private SourceGroup getSourceGroupForSeleniumTests(Project project, FileObject file) {
+        assert project != null;
+        assert file != null;
+        for (SourceGroup sourceGroup : getSourceGroupsForSeleniumTests(project)) {
             if (sourceGroup.contains(file)) {
                 return sourceGroup;
             }
