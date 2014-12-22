@@ -138,6 +138,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<RemoteFileObjectBase>();
     private final RemoteFileZipper remoteFileZipper;
 
+    private final RequestProcessor RP = new RequestProcessor("Connection and R/W change", 1); //NOI18N
+
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
@@ -205,12 +207,21 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         ConnectionManager.getInstance().removeConnectionListener(this);
     }
 
-    @Override
-    public void connected(ExecutionEnvironment env) {
-        readOnlyConnectNotification.compareAndSet(true, false);
-        if (execEnv.equals(env)) {
-            Collection<RemoteFileObjectBase> cachedFileObjects = factory.getCachedFileObjects();            
-            refreshManager.scheduleRefreshOnConnect();
+    private class ConnectionChangeRunnable implements Runnable {
+
+        private final Collection<RemoteFileObjectBase> cachedFileObjects;
+        private final boolean connect;
+
+        public ConnectionChangeRunnable(boolean connect) {
+            this.connect = connect;
+            this.cachedFileObjects = factory.getCachedFileObjects();
+        }
+
+        @Override
+        public void run() {
+            if (connect) {
+                refreshManager.scheduleRefreshOnConnect();
+            }
             for (RemoteFileObjectBase fo : cachedFileObjects) {
                 fo.connectionChanged();
             }
@@ -218,12 +229,18 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     @Override
-    public void disconnected(ExecutionEnvironment env) {
-        readOnlyConnectNotification.compareAndSet(true, false);
+    public void connected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
-            for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
-                fo.connectionChanged();
-            }
+            readOnlyConnectNotification.compareAndSet(true, false);
+            RP.post(new ConnectionChangeRunnable(true));
+        }
+    }
+
+    @Override
+    public void disconnected(ExecutionEnvironment env) {
+        if (execEnv.equals(env)) {
+            readOnlyConnectNotification.compareAndSet(true, false);
+            RP.post(new ConnectionChangeRunnable(false));
         }
         if (ATTR_STATS) { dumpAttrStat(); }
     }
