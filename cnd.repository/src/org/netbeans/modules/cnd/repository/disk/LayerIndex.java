@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.repository.api.RepositoryExceptions;
 import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
 import org.netbeans.modules.cnd.repository.impl.spi.UnitDescriptorsList;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -83,14 +85,7 @@ public final class LayerIndex {
 
         File indexFile = new File(cacheDirectoryFile, INDEX_FILE_NAME); 
         if (recreate) {
-            if (cacheDirectoryFile.canWrite()) {
-                RepositoryImplUtil.deleteDirectory(cacheDirectoryFile, false);
-                fileSystems.clear();
-                units.clear();
-                dependencies.clear();
-                return true;        
-            } 
-            return false;
+            return clearDataImpl();
         }
 
         // If no index file - it's OK.
@@ -99,14 +94,7 @@ public final class LayerIndex {
             //as in this case we will have broken tables for filsystems and units
             //so let's just delete the content of the cache, otherwise we will get a bunch of exceptions
             if (recreateOnFail) {
-                if (cacheDirectoryFile.canWrite()) {
-                    RepositoryImplUtil.deleteDirectory(cacheDirectoryFile, false);
-                    fileSystems.clear();
-                    units.clear();
-                    dependencies.clear();
-                    return true;
-                }
-                return false;
+                return clearDataImpl();
             }
         }
 
@@ -116,11 +104,7 @@ public final class LayerIndex {
             int storedVersion = in.readInt();
             if (storedVersion != persistMechanismVersion) {
                 if (recreateOnFail) {
-                    RepositoryImplUtil.deleteDirectory(cacheDirectoryFile, false);
-                    fileSystems.clear();
-                    units.clear();
-                    dependencies.clear();
-                    return true;
+                    return clearDataImpl();
                 }                
                 return false;
             }
@@ -161,7 +145,11 @@ public final class LayerIndex {
 
                 dependencies.put(unitID, depList);
             }
-            return true;
+            // make sure all is consistent
+            if (checkConsistency()) {
+                return true;
+            }
+            CndUtils.assertTrueInConsole(false, "corrupted load of repository index", this.toString());
         } catch (IOException ex) {
             RepositoryExceptions.throwException(this, ex);
         } finally {
@@ -172,19 +160,30 @@ public final class LayerIndex {
                     RepositoryExceptions.throwException(this, ex);
                 }
             }
-            //need to delete the index file, next time IDE will be started  we will understand if it will not be 
-            //saved on disk that repository is broken
-            indexFile.delete();
+            if (recreateOnFail) {
+                //need to delete the index file, next time IDE will be started  we will understand if it will not be 
+                //saved on disk that repository is broken
+                if (!indexFile.delete()) {
+                    System.err.println("Cannot delete repository index File " + indexFile.getAbsolutePath()); 
+                }
+            }
         }
 
         if (recreateOnFail) {
+            return clearDataImpl();
+        }
+
+        return false;
+    }
+
+    private boolean clearDataImpl() {
+        if (cacheDirectoryFile.canWrite()) {
             RepositoryImplUtil.deleteDirectory(cacheDirectoryFile, false);
             fileSystems.clear();
             units.clear();
             dependencies.clear();
             return true;
         }
-
         return false;
     }
 
@@ -279,4 +278,39 @@ public final class LayerIndex {
     void closeUnit(int unitIdx, boolean cleanRepository, Set<Integer> requiredUnits) {
         dependencies.put(unitIdx, requiredUnits == null ? new ArrayList<Integer>() : new ArrayList<Integer>(requiredUnits));
     }
+
+    private boolean checkConsistency() {
+        Collection<Integer> unitIDs = units.getUnitIDs();
+        for (Integer unit : unitIDs) {
+            if (unit == null || unit < 0) {
+                return false;
+            }
+            for (Integer dep : dependencies.get(unit)) {
+                if (dep == null || dep < 0) {
+                    return false;
+                }
+                if (!unitIDs.contains(dep)) {
+                    return false;
+                }
+            }
+        }
+        for (FileSystem fileSystem : fileSystems) {
+            if (fileSystem == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "LayerIndex{" + "cacheDirectoryFile=" + cacheDirectoryFile + //NOI18N
+                "\n, version=" + version + ", lastModificationTime=" + lastModificationTime + //NOI18N
+                "\n, fileSystems=" + fileSystems + //NOI18N
+                "\n, units=" + units + //NOI18N
+                "\n, dependencies=" + dependencies + //NOI18N
+                '}';//NOI18N
+    }
+    
+    
 }
