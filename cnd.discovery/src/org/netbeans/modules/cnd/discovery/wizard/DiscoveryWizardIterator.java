@@ -75,9 +75,6 @@ public class DiscoveryWizardIterator implements WizardDescriptor.InstantiatingIt
             @Override
             public void run() {
                 try {
-                    if (wizard.isSimpleMode()){
-                        new DiscoveryExtension().canApply(wizard, null);
-                    }
                     DiscoveryProjectGeneratorImpl generator;
                     try {
                         generator = new DiscoveryProjectGeneratorImpl(wizard);
