@@ -236,6 +236,18 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }
 
     @Override
+    public boolean moveProperty(String name, JsObject newParent) {
+        JsObject property = getProperty(name);
+        if (property != null && property instanceof DeclarationScope && newParent instanceof DeclarationScope) {
+            // we need also change the declaration scope
+            getChildrenScopes().remove((DeclarationScope)property);
+            ((DeclarationScopeImpl)newParent).addDeclaredScope((DeclarationScope)property);
+        }
+        return super.moveProperty(name, newParent); 
+    }
+
+    
+    @Override
     public void resolveTypes(JsDocumentationHolder docHolder) {
         super.resolveTypes(docHolder);
         HashSet<String> nameReturnTypes = new HashSet<String>();

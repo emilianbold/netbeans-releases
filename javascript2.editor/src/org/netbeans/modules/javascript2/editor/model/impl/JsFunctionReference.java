@@ -100,4 +100,9 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
         return original.getParentScope();
     }
 
+    @Override
+    public void addDeclaredScope(DeclarationScope scope) {
+        original.addDeclaredScope(scope);
+    }
+    
 }

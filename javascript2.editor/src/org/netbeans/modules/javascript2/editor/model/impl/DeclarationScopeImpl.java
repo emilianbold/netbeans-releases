@@ -77,7 +77,8 @@ public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationSco
         return childrenScopes;
     }
 
-    protected void addDeclaredScope(DeclarationScope scope) {
+    @Override
+    public void addDeclaredScope(DeclarationScope scope) {
         childrenScopes.add(scope);
     }
 
