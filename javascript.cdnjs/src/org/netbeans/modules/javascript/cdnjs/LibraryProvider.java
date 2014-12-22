@@ -57,7 +57,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -67,6 +69,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -223,7 +226,17 @@ public final class LibraryProvider {
     static final String SEARCH_URL_PREFIX =
             System.getProperty("netbeans.cdnjs.searchurl", // NOI18N
             "http://api.cdnjs.com/libraries?fields=description,homepage,assets&search="); // NOI18N
-    
+
+    /**
+     * Comparator that helps to sort library versions.
+     */
+    static final Comparator<Pair<Library.Version, Version>> VERSION_COMPARATOR = new Comparator<Pair<Library.Version, Version>>() {
+        @Override
+        public int compare(Pair<Library.Version, Version> pair1, Pair<Library.Version, Version> pair2) {
+            return Version.Comparator.getInstance(false).compare(pair1.second(), pair2.second());
+        }
+    };
+
     /**
      * Search task - a task that performs one search for libraries matching
      * the given search term.
@@ -362,9 +375,28 @@ public final class LibraryProvider {
                 JSONObject versionData = (JSONObject)versionsData.get(i);
                 versions[i] = createVersion(library, versionData);
             }
+            sort(versions);
             library.setVersions(versions);
 
             return library;
+        }
+
+        /**
+         * Sorts the library versions (in a descending order).
+         * 
+         * @param versions versions to sort.
+         */
+        private void sort(Library.Version[] versions) {
+            Pair<Library.Version,Version>[] pairs = new Pair[versions.length];
+            for (int i=0; i<versions.length; i++) {
+                Library.Version libraryVersion = versions[i];
+                Version version = Version.parse(libraryVersion.getName());
+                pairs[i] = Pair.of(libraryVersion, version);
+            }
+            Arrays.sort(pairs, VERSION_COMPARATOR);
+            for (int i=0; i<versions.length; i++) {
+                versions[i] = pairs[i].first();
+            }
         }
 
         /**
