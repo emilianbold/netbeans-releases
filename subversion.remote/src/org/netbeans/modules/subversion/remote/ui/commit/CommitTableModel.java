@@ -230,6 +230,9 @@ public class CommitTableModel extends AbstractTableModel {
     }
 
     private void defaultCommitOptions() {
+        if (nodes.length == 0) {
+            return;
+        }
         boolean excludeNew = SvnModuleConfig.getDefault(VCSFileProxySupport.getFileSystem(nodes[0].getFile())).getExludeNewFiles();
         commitOptions = SvnUtils.createDefaultCommitOptions(nodes, excludeNew);
         ensureFilesExcluded();
