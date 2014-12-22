@@ -262,6 +262,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.ade</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.remotefs.versioning</friend>
+                <friend>org.netbeans.modules.remotefs.versioning.api</friend>
                 <friend>org.netbeans.modules.subversion.remote</friend>
                 <friend>org.netbeans.modules.versioning</friend>
                 <friend>org.netbeans.modules.versioning.masterfs</friend>
