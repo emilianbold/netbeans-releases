@@ -95,7 +95,19 @@ public final class LayerIndex {
 
         // If no index file - it's OK.
         if (!indexFile.exists()) {
-            return true;
+            //it is not OK if there is a content in this repository but index doesn't exist
+            //as in this case we will have broken tables for filsystems and units
+            //so let's just delete the content of the cache, otherwise we will get a bunch of exceptions
+            if (recreateOnFail) {
+                if (cacheDirectoryFile.canWrite()) {
+                    RepositoryImplUtil.deleteDirectory(cacheDirectoryFile, false);
+                    fileSystems.clear();
+                    units.clear();
+                    dependencies.clear();
+                    return true;
+                }
+                return false;
+            }
         }
 
         DataInputStream in = null;
@@ -160,6 +172,9 @@ public final class LayerIndex {
                     RepositoryExceptions.throwException(this, ex);
                 }
             }
+            //need to delete the index file, next time IDE will be started  we will understand if it will not be 
+            //saved on disk that repository is broken
+            indexFile.delete();
         }
 
         if (recreateOnFail) {

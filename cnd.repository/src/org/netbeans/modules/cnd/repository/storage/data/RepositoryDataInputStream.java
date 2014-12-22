@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.impl.spi.FSConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.FilePathConverter;
 import org.netbeans.modules.cnd.repository.impl.spi.LayerConvertersProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
 
@@ -118,7 +119,9 @@ public final class RepositoryDataInputStream extends DataInputStream implements 
     public int readUnitId() throws IOException {
         int rawData = readInt();
         UnitsConverter unitIDConverter = layersConverterProvider.getReadUnitsConverter();
-        return unitIDConverter == null ? rawData : unitIDConverter.layerToClient(rawData);
+        final int clientUnitID = unitIDConverter == null ? rawData : unitIDConverter.layerToClient(rawData);
+        CndUtils.assertTrue(rawData > -1, "Impossible on disk unit id: ", rawData); //NOI18N
+        return clientUnitID;
     }
 
     @Override
