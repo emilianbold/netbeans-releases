@@ -70,7 +70,6 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -164,10 +163,6 @@ public final class FileChooserBuilder {
 
     public FileChooserBuilder(ExecutionEnvironment env) {
         this.env = env;
-    }
-
-    public FileChooserBuilder(FileSystem fs) {
-        this(FileSystemProvider.getExecutionEnvironment(fs));
     }
 
     public JFileChooserEx createFileChooser(Callable<String> selectedPath) {

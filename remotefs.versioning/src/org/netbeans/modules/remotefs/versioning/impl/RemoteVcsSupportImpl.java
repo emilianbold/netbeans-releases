@@ -74,7 +74,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     @Override
     public JFileChooser createFileChooser(VCSFileProxy proxy) {
         FileSystem fs = getFileSystem(proxy);
-        FileChooserBuilder fcb = new FileChooserBuilder(fs);
+        FileChooserBuilder fcb = new FileChooserBuilder(FileSystemProvider.getExecutionEnvironment(fs));
         FileChooserBuilder.JFileChooserEx chooser = fcb.createFileChooser(proxy.getPath());
         return chooser;
     }
