@@ -466,22 +466,12 @@ public final class VCSFileProxySupport {
     
     public static FileSystem getDefaultFileSystem() {
         // TODO: remove dependencies!
-        FileSystem[] fileSystems = getFileSystems();
-        if (fileSystems.length == 0) {
-            return null;
-        }
-        return fileSystems[0];
+        return RemoteVcsSupport.getDefaultFileSystem();
     }
 
     public static FileSystem[] getFileSystems() {
         // TODO: return list of remote file systems
-        List<FileSystem> res = new ArrayList<>();
-        for(ServerRecord s : ServerList.getRecords()) {
-            if (s.getExecutionEnvironment().isRemote()) {
-                res.add(FileSystemProvider.getFileSystem(s.getExecutionEnvironment()));
-            }
-        }
-        return res.toArray(new FileSystem[res.size()]);
+        return RemoteVcsSupport.getFileSystems();
     }
 
     public static FileSystem getFileSystem(VCSFileProxy file) {

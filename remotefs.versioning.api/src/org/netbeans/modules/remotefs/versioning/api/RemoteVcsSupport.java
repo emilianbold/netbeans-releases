@@ -92,6 +92,22 @@ public final class RemoteVcsSupport {
         return null;
     }
 
+    public static FileSystem[] getFileSystems() {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.getFileSystems();
+        }
+        return new FileSystem[0];
+    }
+
+    public static FileSystem getDefaultFileSystem() {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.getDefaultFileSystem();
+        }
+        return null;
+    }
+
     private static RemoteVcsSupportImplementation getImpl() {
         RemoteVcsSupportImplementation impl = Lookup.getDefault().lookup(RemoteVcsSupportImplementation.class);
         if (impl == null && !providerAbsenceReported) {
