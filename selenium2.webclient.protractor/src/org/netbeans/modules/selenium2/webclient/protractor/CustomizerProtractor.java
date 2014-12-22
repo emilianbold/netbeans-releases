@@ -64,6 +64,7 @@ public class CustomizerProtractor extends javax.swing.JPanel {
 
     private final Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private boolean autoDiscovered = false;
     
     private volatile String protractor;
     private volatile String userConfigurationFile;
@@ -126,6 +127,7 @@ public class CustomizerProtractor extends javax.swing.JPanel {
                 .getResult();
             if(result.isFaultless()) { // protractor executable is installed in project's local node_modules dir
                 protractorExec = exec;
+                autoDiscovered = true;
             }
         }
         protractorDirTextField.setText(protractorExec);
@@ -147,6 +149,7 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         userConfigurationFileTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
+    @NbBundle.Messages({"CustomizerProtractor.confirm.autodiscovered.info=Protractor executable was auto-discovered. Please confirm by clicking OK."})
     void validateData() {
         assert EventQueue.isDispatchThread();
         protractor = protractorDirTextField.getText();
@@ -155,6 +158,9 @@ public class CustomizerProtractor extends javax.swing.JPanel {
                 .validateProtractor(protractor)
                 .validateUserConfigurationFile(project, userConfigurationFile)
                 .getResult();
+        if (autoDiscovered) { // auto-discovered, show confirmation message to the user
+            validationResult.addWarning(new ValidationResult.Message("path", Bundle.CustomizerProtractor_confirm_autodiscovered_info())); // NOI18N
+        }
         changeSupport.fireChange();
     }
 
