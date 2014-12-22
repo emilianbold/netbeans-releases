@@ -590,7 +590,7 @@ public class FileStatusCache {
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
                 symlink = topmost != null && isSymlink(file, topmost);
                 if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
-                    SvnClient client = Subversion.getInstance().getClient(false, new Context(topmost));
+                    SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                     status = SvnUtils.getSingleStatus(client, file);
                     if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
                         status = null;

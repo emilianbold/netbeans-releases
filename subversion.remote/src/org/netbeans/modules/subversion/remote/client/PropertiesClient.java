@@ -212,10 +212,14 @@ public final class PropertiesClient {
     }
 
     private static boolean hasOldMetadata (VCSFileProxy file) {
-        VCSFileProxy parent;
-        return VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR))
-                || (parent = file.getParentFile()) != null 
-                && VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(parent, SvnUtils.SVN_ENTRIES_DIR))
-                && !VCSFileProxy.createFileProxy(parent, SvnUtils.SVN_WC_DB).exists();
+        if (file.isDirectory()) {
+            if (VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR))) {
+                return true;
+            }
+        }
+        VCSFileProxy parent = file.getParentFile();
+        return parent != null &&
+               VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(parent, SvnUtils.SVN_ENTRIES_DIR)) &&
+               !VCSFileProxy.createFileProxy(parent, SvnUtils.SVN_WC_DB).exists();
     }
 }

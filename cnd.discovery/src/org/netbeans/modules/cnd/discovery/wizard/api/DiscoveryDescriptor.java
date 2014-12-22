@@ -95,9 +95,6 @@ public interface DiscoveryDescriptor {
     boolean isInvokeProvider();
     void setInvokeProvider(boolean invoke);
     
-    boolean isSimpleMode();
-    void setSimpleMode(boolean simple);
-
     boolean isIncrementalMode();
     void setIncrementalMode(boolean incremental);
 

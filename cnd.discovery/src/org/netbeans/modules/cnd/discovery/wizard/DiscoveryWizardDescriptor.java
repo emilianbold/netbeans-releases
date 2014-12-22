@@ -86,7 +86,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final WizardConstant<Boolean> INCREMENTAL = new WizardConstant<>("DW:incremental"); // NOI18N
     
     private boolean stateChanged = true;
-    private boolean simple = true;
     private boolean cutResult = false;
     
     public DiscoveryWizardDescriptor(WizardDescriptor.Iterator panels){
@@ -260,16 +259,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         setIncludedFiles(null);
     }
     
-    @Override
-    public boolean isSimpleMode() {
-        return simple;
-    }
-    
-    @Override
-    public void setSimpleMode(boolean simple) {
-        this.simple = simple;
-    }
-
     public boolean isCutResult() {
         return cutResult;
     }
@@ -495,15 +484,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             INVOKE_PROVIDER.put(wizard, invoke);
         }
         
-        @Override
-        public boolean isSimpleMode() {
-            return true;
-        }
-        
-        @Override
-        public void setSimpleMode(boolean simple) {
-        }
-
         public boolean isCutResult() {
             return false;
         }
@@ -747,15 +727,6 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             INVOKE_PROVIDER.toMap(map, invoke);
         }
         
-        @Override
-        public boolean isSimpleMode() {
-            return true;
-        }
-        
-        @Override
-        public void setSimpleMode(boolean simple) {
-        }
-
         public boolean isCutResult() {
             return false;
         }
