@@ -123,7 +123,7 @@ public class MochaRunner {
             return;
         }
         
-        String mochaInstallFolder = MochaSeleniumPreferences.getMochaDir(p);
+        String mochaInstallFolder = isSelenium ? MochaSeleniumPreferences.getMochaDir(p) : MochaJSPreferences.getMochaDir(p);
         ValidationResult validationResult = new MochaPreferencesValidator()
                 .validateMochaInstallFolder(mochaInstallFolder)
                 .getResult();
