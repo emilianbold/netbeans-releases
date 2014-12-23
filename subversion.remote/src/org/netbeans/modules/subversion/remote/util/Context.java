@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,7 +61,7 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Maros Sandor
  */
-public class Context implements Serializable {
+public class Context {
 
     public static final Context Empty = new Context( getEmptyList(), getEmptyList(), getEmptyList() );
 
@@ -185,5 +188,47 @@ public class Context implements Serializable {
 
     public static final List<VCSFileProxy> getEmptyList() {
         return Collections.emptyList();
+    }
+    
+    public void writeObject(ObjectOutput out) throws IOException {
+        out.writeInt(rootFiles.size());
+        for(VCSFileProxy root : rootFiles) {
+            URI uri = VCSFileProxySupport.toURI(root);
+            out.writeObject(uri);
+        }
+        out.writeInt(filteredFiles.size());
+        for(VCSFileProxy root : filteredFiles) {
+            URI uri = VCSFileProxySupport.toURI(root);
+            out.writeObject(uri);
+        }
+        out.writeInt(exclusions.size());
+        for(VCSFileProxy root : exclusions) {
+            URI uri = VCSFileProxySupport.toURI(root);
+            out.writeObject(uri);
+        }
+    }
+
+    public Context(ObjectInput in) throws IOException, ClassNotFoundException {
+        int size = in.readInt();
+        rootFiles = new ArrayList<>(size);
+        for(int i = 0; i < size; i++) {
+            URI uri = (URI)in.readObject();
+            VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
+            rootFiles.add(root);
+        }
+        size = in.readInt();
+        filteredFiles = new ArrayList<>(size);
+        for(int i = 0; i < size; i++) {
+            URI uri = (URI)in.readObject();
+            VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
+            filteredFiles.add(root);
+        }
+        size = in.readInt();
+        exclusions = new ArrayList<>(size);
+        for(int i = 0; i < size; i++) {
+            URI uri = (URI)in.readObject();
+            VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
+            exclusions.add(root);
+        }
     }
 }

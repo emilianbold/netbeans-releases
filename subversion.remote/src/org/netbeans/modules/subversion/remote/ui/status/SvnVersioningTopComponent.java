@@ -111,7 +111,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
-        out.writeObject(context);
+        context.writeObject(out);
         out.writeObject(contentTitle);
         out.writeLong(lastUpdateTimestamp);
     }
@@ -119,7 +119,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
-        context = (Context) in.readObject();
+        context = new Context(in);
         contentTitle = (String) in.readObject();
         lastUpdateTimestamp = in.readLong();
         syncPanel.deserialize();
