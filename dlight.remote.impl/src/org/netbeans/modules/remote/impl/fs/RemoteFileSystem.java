@@ -347,11 +347,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
             if (tmpDir != null && tmpDir.isFolder() && tmpDir.isValid()) {
                 return tmpDir;
+            } else {
+                throw new IOException("Cannot find temporary folder"); // NOI18N
             }
         } catch (CancellationException ex) {
-            //
-        }
-        throw new IOException("Cannot find temporary folder"); // NOI18N
+            throw new IOException("Cannot find temporary folder", ex); // NOI18N
+        }        
     }
     
     @Override
