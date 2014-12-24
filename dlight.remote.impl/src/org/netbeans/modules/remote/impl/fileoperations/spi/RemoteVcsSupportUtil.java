@@ -143,14 +143,14 @@ public class RemoteVcsSupportUtil {
         }
         ExecutionEnvironment env = fs.getExecutionEnvironment();
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new ConnectException(env.getDisplayName() + " not connected"); //NOI28N
+            throw new ConnectException(env.getDisplayName() + " not connected"); // NOI18N
         }
         try {
             FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.lstat(env, path);
             if (statInfo.isLink()) {
                 String target = statInfo.getLinkTarget();
                 if (!target.startsWith("/")) { //NOI18N
-                    target = PathUtilities.normalizeUnixPath(path + "/" + target);
+                    target = PathUtilities.normalizeUnixPath(path + "/" + target); // NOI18N
                 }
                 String nextTarget = getCanonicalPathImpl(fs, target);
                 return (nextTarget == null) ? target : nextTarget;
