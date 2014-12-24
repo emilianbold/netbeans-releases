@@ -331,8 +331,11 @@ public class SvnConfigFiles {
         VCSFileProxy file = null;
         try {
             file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), iniFile);
-            VCSFileProxySupport.mkdirs(file.getParentFile());
-            FileObject fo = file.getParentFile().toFileObject().createData(file.getName());
+            FileObject fo = file.toFileObject();
+            if (fo == null) {
+                VCSFileProxySupport.mkdirs(file.getParentFile());
+                fo = file.getParentFile().toFileObject().createData(file.getName());
+            }
             bos = new BufferedOutputStream(fo.getOutputStream());
             ini.store(bos);
         } catch (IOException ex) {
