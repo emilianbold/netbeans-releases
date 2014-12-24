@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.remotefs.versioning.api.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -65,4 +66,26 @@ public interface RemoteVcsSupportImplementation {
     FileSystem[] getFileSystems();
 
     FileSystem getDefaultFileSystem();
+
+    boolean isSymlink(VCSFileProxy proxy);
+    
+    boolean canRead(VCSFileProxy proxy);
+
+    public boolean canRead(VCSFileProxy base, String subdir);
+
+    public String getCanonicalPath(VCSFileProxy proxy) throws IOException;
+
+    public VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException;
+
+    public boolean isMac(VCSFileProxy proxy);
+
+    public boolean isUnix(VCSFileProxy proxy);
+
+    public long getSize(VCSFileProxy proxy);
+
+    public String getFileSystemKey(FileSystem proxy);
+
+    public String toString(VCSFileProxy proxy);
+
+    public VCSFileProxy fromString(String proxy);
 }

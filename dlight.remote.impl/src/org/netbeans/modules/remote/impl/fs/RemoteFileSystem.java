@@ -69,6 +69,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.actions.FastPasteAction;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
@@ -245,7 +246,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (ATTR_STATS) { dumpAttrStat(); }
     }
     
-    /*package*/ ExecutionEnvironment getExecutionEnvironment() {
+    public ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
     }
 
@@ -830,6 +831,38 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 default:
                     return false;
             }            
+        }            
+    }
+
+    public Boolean vcsSafeIsSymbolicLink(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase removed = externallyRemoved.get();
+        if (removed != null && removed.getPath().equals(path)) {
+            // for an object that is just detected as externally removed
+            // it doesn't make sense to ask remote host whether it is directory
+            return removed.getType() == FileInfoProvider.StatInfo.FileType.SymbolicLink;
+        }
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            return null;
+        } else {
+            return fo.getType() == FileInfoProvider.StatInfo.FileType.SymbolicLink;
+        }            
+    }
+
+    public Boolean vcsSafeCanonicalPathDiffers(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase removed = externallyRemoved.get();
+        if (removed != null && removed.getPath().equals(path)) {
+            // for an object that is just detected as externally removed
+            // it doesn't make sense to ask remote host whether it is directory
+            return removed instanceof RemoteLinkBase;
+        }
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            return null;
+        } else {
+            return fo instanceof RemoteLinkBase;
         }            
     }
 

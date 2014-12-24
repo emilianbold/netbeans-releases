@@ -226,20 +226,15 @@ public final class VCSFileProxySupport {
     }
     
     public static boolean isSymlink(VCSFileProxy file, VCSFileProxy root) {
-        boolean symlink = false;
-        //Path path, checkoutRoot;
-        //path = file.toPath().normalize();
-        //checkoutRoot = root.toPath().normalize();
-        //symlink = isSymlink(path, checkoutRoot);
-        return symlink;
+        return RemoteVcsSupport.isSymlink(file);
     }
     
     public static boolean canRead(VCSFileProxy file) {
-        if (file.exists()) {
-            //TODO: implement it!
-            return true;
-        }
-        return false;
+        return RemoteVcsSupport.canRead(file);
+    }
+    
+    public static boolean canRead(VCSFileProxy base, String subdir) {
+        return RemoteVcsSupport.canRead(base, subdir);
     }
     
     public static OutputStream getOutputStream(VCSFileProxy file) throws IOException {
@@ -269,16 +264,15 @@ public final class VCSFileProxySupport {
     }
     
     public static long length(VCSFileProxy file) {
-        throw new UnsupportedOperationException();
+        return RemoteVcsSupport.getSize(file);
     }
     
     public static String getCanonicalPath(VCSFileProxy file) throws IOException {
-        throw new UnsupportedOperationException();
+        return RemoteVcsSupport.getCanonicalPath(file);
     }
 
     public static VCSFileProxy getCanonicalFile(VCSFileProxy file) throws IOException {
-        //TODO: implement it!
-        return file.normalizeFile();
+        return RemoteVcsSupport.getCanonicalFile(file);
     }
     
     public static VCSFileProxy generateTemporaryFile(VCSFileProxy file, String name) {
@@ -429,28 +423,25 @@ public final class VCSFileProxySupport {
     }
     
     public static boolean isMac(VCSFileProxy file) {
-        //TODO: implement it!
-        return false;
+        return RemoteVcsSupport.isMac(file);
     }
     
     public static boolean isUnix(VCSFileProxy file){
-        //TODO: implement it!
-        return true;
+        return RemoteVcsSupport.isUnix(file);
     }
     
     public static String getFileSystemKey(FileSystem file) {
-        //TODO implement it!
-        return file.toString();
+        return RemoteVcsSupport.getFileSystemKey(file);
     }
     
     public static String toString(VCSFileProxy file) {
-        throw new UnsupportedOperationException();
+        return RemoteVcsSupport.toString(file);
     }
     
     public static VCSFileProxy fromString(String file) {
-        throw new UnsupportedOperationException();
+        return RemoteVcsSupport.fromString(file);
     }
-    
+
     /**
      * 
      * @param proxy defines FS and initial selection

@@ -42,11 +42,13 @@
 package org.netbeans.modules.remotefs.versioning.api;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.remotefs.versioning.spi.RemoteVcsSupportImplementation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.*;
+import static org.openide.util.lookup.Lookups.proxy;
 
 /**
  *
@@ -106,6 +108,94 @@ public final class RemoteVcsSupport {
             return impl.getDefaultFileSystem();
         }
         return null;
+    }
+
+    public static boolean isSymlink(VCSFileProxy proxy) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.isSymlink(proxy);
+        }        
+        return false;
+    }
+
+    public static boolean canRead(VCSFileProxy proxy) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.canRead(proxy);
+        }
+        return false;
+    }
+    
+    public static boolean canRead(VCSFileProxy base, String subdir) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.canRead(base, subdir);
+        }
+        return false;
+    }
+
+    public static VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.getCanonicalFile(proxy);
+        }
+        return proxy;
+    }
+
+    public static String getCanonicalPath(VCSFileProxy proxy) throws IOException {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.getCanonicalPath(proxy);
+        }
+        return proxy.getPath();        
+    }    
+
+    public static boolean isMac(VCSFileProxy proxy) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.isMac(proxy);
+        }
+        return false;
+    }
+
+    public static boolean isUnix(VCSFileProxy proxy) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.isUnix(proxy);
+        }
+        return true;
+    }
+
+    public static long getSize(VCSFileProxy proxy) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.getSize(proxy);
+        }
+        return 0;
+    }
+
+    public static String getFileSystemKey(FileSystem proxy) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.getFileSystemKey(proxy);
+        }
+        return null; // TODO: throw???
+    }
+
+    public static String toString(VCSFileProxy proxy) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.toString(proxy);
+        }
+        return null; // TODO: throw???
+    }
+
+    public static VCSFileProxy fromString(String proxy) {
+        RemoteVcsSupportImplementation impl = getImpl();
+        if (impl != null) {
+            return impl.fromString(proxy);
+        }
+        return null; // TODO: throw???
     }
 
     private static RemoteVcsSupportImplementation getImpl() {
