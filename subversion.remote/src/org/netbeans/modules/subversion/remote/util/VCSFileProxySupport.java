@@ -399,6 +399,11 @@ public final class VCSFileProxySupport {
         }
         return VCSFileProxy.createFileProxy(parent, absPath.substring(1));
     }
+
+    public static VCSFileProxy getResource(FileSystem fileSystem, String absPath) {
+        VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystem.getRoot());
+        return VCSFileProxy.createFileProxy(root, absPath);
+    }
     
     public static VCSFileProxy getHome(VCSFileProxy file){
         //TODO: implement it!
