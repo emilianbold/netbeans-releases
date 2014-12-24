@@ -42,13 +42,17 @@
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
 import junit.framework.Test;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.impl.fs.ReadOnlyDirTestCase;
+import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
+import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -62,47 +66,57 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testCanRead() throws Exception {
-        String path = mkTemp(execEnv, true);
+        String basePath = mkTemp(execEnv, true);
         try {
             final String origFileName = "orig.file";
-            final String origFilePath = path + "/" + origFileName;
+            final String origFilePath = basePath + "/" + origFileName;
+            final String inexistentPath = basePath + "/inexustent_file";
             final String origNotReadableFileName = "not.readab.e.file";
-            final String origNotReadableFilePath = path + "/" + origNotReadableFileName;
-            final String origSubdirPath = path + "/orig.dir";
-            final String origFileInSubdirName = "orig.file_in_dir";
-            final String origFileInSubdirPath = origSubdirPath + "/" + origFileInSubdirName;
-            
-            final String lnkFilePathAbs = path + "/lnk.file.abs";
-            final String lnkFilePathRel1 = path + "/lnk.file.rel.1";
-            final String lnkFilePathRel2 = path + "/lnk.file.rel.2";
-            
-            final String lnkFileInSubdirPathAbs = origSubdirPath + "/lnk.file_in_dir.abs";
-            final String lnkFileInSubdirPathRel = origSubdirPath + "/lnk.file_in_dir.rel";
+            final String origNotReadableFilePath = basePath + "/" + origNotReadableFileName;
+//            final String origSubdirPath = path + "/orig.dir";
+//            final String origFileInSubdirName = "orig.file_in_dir";
+//            final String origFileInSubdirPath = origSubdirPath + "/" + origFileInSubdirName;
+//
+//            final String lnkFilePathAbs = path + "/lnk.file.abs";
+//            final String lnkFilePathRel1 = path + "/lnk.file.rel.1";
+//            final String lnkFilePathRel2 = path + "/lnk.file.rel.2";
+//
+//            final String lnkFileInSubdirPathAbs = origSubdirPath + "/lnk.file_in_dir.abs";
+//            final String lnkFileInSubdirPathRel = origSubdirPath + "/lnk.file_in_dir.rel";
 
             final String script = 
                     "echo abcd > " + origFilePath + "; " +
-                    "mkdir -p " + origSubdirPath + "; " +
-                    "echo qwerty > " + origFileInSubdirPath + "; " +
+//                    "mkdir -p " + origSubdirPath + "; " +
+//                    "echo qwerty > " + origFileInSubdirPath + "; " +
                     "echo asdf22 > " + origNotReadableFilePath + "; " +
                     "chmod -r " + origNotReadableFilePath + "; " +
-                    "cd " + origSubdirPath + "; " +
-                    "ln -s " + origFilePath + " " + lnkFilePathAbs + "; " +
-                    "ln -s " + origFileName + " " + lnkFilePathRel1 + "; " +
-                    "ln -s ./" + origFileName + " " + lnkFilePathRel1 + "; " +
-                    "cd " + origSubdirPath + "; " +
-                    "ln -s " + origFileInSubdirPath + " " + lnkFileInSubdirPathAbs + "; " +
-                    "ln -s " + origFileInSubdirName + " " + lnkFileInSubdirPathRel + "; " +
+//                    "cd " + origSubdirPath + "; " +
+//                    "ln -s " + origFilePath + " " + lnkFilePathAbs + "; " +
+//                    "ln -s " + origFileName + " " + lnkFilePathRel1 + "; " +
+//                    "ln -s ./" + origFileName + " " + lnkFilePathRel2 + "; " +
+//                    "cd " + origSubdirPath + "; " +
+//                    "ln -s " + origFileInSubdirPath + " " + lnkFileInSubdirPathAbs + "; " +
+//                    "ln -s " + origFileInSubdirName + " " + lnkFileInSubdirPathRel + "; " +
                     "";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+
+            assertEquals(true, RemoteVcsSupportUtil.canRead(fs, origFilePath));
+            assertEquals(false, RemoteVcsSupportUtil.canRead(fs, origNotReadableFilePath));
+            assertEquals(false, RemoteVcsSupportUtil.canRead(fs, inexistentPath));
+
+            refreshParentAndRecurse(basePath);
             
             assertEquals(true, RemoteVcsSupportUtil.canRead(fs, origFilePath));
             assertEquals(false, RemoteVcsSupportUtil.canRead(fs, origNotReadableFilePath));
-            
+            assertEquals(false, RemoteVcsSupportUtil.canRead(fs, inexistentPath));
+
         } finally {
-            if (path != null) {
+            if (basePath != null) {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), 
-                        "sh", "-c", "chmod -R 700" + path + "; rm -rf " + path);
+                        "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
             }            
         }
     }
@@ -110,17 +124,17 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
 
     @ForAllEnvironments
     public void testGetCanonicalPath() throws Exception {
-        String path = mkTemp(execEnv, true);
+        String basePath = mkTemp(execEnv, true);
         try {
             final String origFileName = "orig.file";
-            final String origFilePath = path + "/" + origFileName;
-            final String origSubdirPath = path + "/orig.dir";
+            final String origFilePath = basePath + "/" + origFileName;
+            final String origSubdirPath = basePath + "/orig.dir";
             final String origFileInSubdirName = "orig.file_in_dir";
             final String origFileInSubdirPath = origSubdirPath + "/" + origFileInSubdirName;
             
-            final String lnkFilePathAbs = path + "/lnk.file.abs";
-            final String lnkFilePathRel1 = path + "/lnk.file.rel.1";
-            final String lnkFilePathRel2 = path + "/lnk.file.rel.2";
+            final String lnkFilePathAbs = basePath + "/lnk.file.abs";
+            final String lnkFilePathRel1 = basePath + "/lnk.file.rel.1";
+            final String lnkFilePathRel2 = basePath + "/lnk.file.rel.2";
             
             final String lnkFileInSubdirPathAbs = origSubdirPath + "/lnk.file_in_dir.abs";
             final String lnkFileInSubdirPathRel = origSubdirPath + "/lnk.file_in_dir.rel";
@@ -132,22 +146,96 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
                     "cd " + origSubdirPath + "; " +
                     "ln -s " + origFilePath + " " + lnkFilePathAbs + "; " +
                     "ln -s " + origFileName + " " + lnkFilePathRel1 + "; " +
-                    "ln -s ./" + origFileName + " " + lnkFilePathRel1 + "; " +
+                    "ln -s ./" + origFileName + " " + lnkFilePathRel2 + "; " +
                     "cd " + origSubdirPath + "; " +
                     "ln -s " + origFileInSubdirPath + " " + lnkFileInSubdirPathAbs + "; " +
                     "ln -s " + origFileInSubdirName + " " + lnkFileInSubdirPathRel + "; " +
                     "";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
             
+            assertEquals(null, RemoteVcsSupportUtil.getCanonicalPath(fs, origFilePath));
+            assertEquals (origFilePath, RemoteVcsSupportUtil.getCanonicalPath(fs, lnkFilePathAbs));
+
+            refreshParentAndRecurse(basePath);
+
             assertEquals(null, RemoteVcsSupportUtil.getCanonicalPath(fs, origFilePath));
             assertEquals (origFilePath, RemoteVcsSupportUtil.getCanonicalPath(fs, lnkFilePathAbs));
             
         } finally {
-            if (path != null) {
+            if (basePath != null) {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), 
-                        "sh", "-c", "chmod -R 700" + path + "; rm -rf " + path);
-            }            
+                        "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
+            }
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testIsSymbolicLink() throws Exception {
+        String basePath = mkTemp(execEnv, true);
+        try {
+            final String origFileName = "orig.file";
+            final String origFilePath = basePath + "/" + origFileName;
+            final String origSubdirPath = basePath + "/orig.dir";
+            final String origFileInSubdirName = "orig.file_in_dir";
+            final String origFileInSubdirPath = origSubdirPath + "/" + origFileInSubdirName;
+
+            final String lnkFilePathAbs = basePath + "/lnk.file.abs";
+            final String lnkFilePathRel1 = basePath + "/lnk.file.rel.1";
+            final String lnkFilePathRel2 = basePath + "/lnk.file.rel.2";
+
+            final String lnkFileInSubdirPathAbs = origSubdirPath + "/lnk.file_in_dir.abs";
+            final String lnkFileInSubdirPathRel = origSubdirPath + "/lnk.file_in_dir.rel";
+
+            final String script =
+                    "echo abcd > " + origFilePath + "; " +
+                    "mkdir -p " + origSubdirPath + "; " +
+                    "echo q qwerty > " + origFileInSubdirPath + "; " +
+                    "cd " + origSubdirPath + "; " +
+                    "ln -s " + origFilePath + " " + lnkFilePathAbs + "; " +
+                    "ln -s " + origFileName + " " + lnkFilePathRel1 + "; " +
+                    "ln -s ./" + origFileName + " " + lnkFilePathRel2 + "; " +
+                    "cd " + origSubdirPath + "; " +
+                    "ln -s " + origFileInSubdirPath + " " + lnkFileInSubdirPathAbs + "; " +
+                    "ln -s " + origFileInSubdirName + " " + lnkFileInSubdirPathRel + "; " +
+                    "";
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            assertEquals(false, RemoteVcsSupportUtil.isSymbolicLink(fs, origFilePath));
+            assertEquals(true, RemoteVcsSupportUtil.isSymbolicLink(fs, lnkFilePathAbs));
+            assertEquals(true, RemoteVcsSupportUtil.isSymbolicLink(fs, lnkFilePathRel1));
+
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+
+
+            refreshParentAndRecurse(basePath);
+
+
+        } finally {
+            if (basePath != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(),
+                        "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
+            }
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        }
+    }
+
+    private void refreshParentAndRecurse(String path) throws Exception {
+        String parentPath = PathUtilities.getDirName(path);
+        final RemoteFileObject parentFO = getFileObject(parentPath);
+        parentFO.refresh();
+        recurse(parentFO);
+    }
+
+    private void recurse(FileObject fo) {
+        if (fo.isFolder()) {
+            for (FileObject child : fo.getChildren()) {
+                recurse(child);
+            }
         }
     }
 
