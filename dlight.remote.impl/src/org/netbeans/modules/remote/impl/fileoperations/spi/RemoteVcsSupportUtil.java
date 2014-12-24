@@ -87,7 +87,7 @@ public class RemoteVcsSupportUtil {
                 return false;
             }
             try {
-                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, path);
+                FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.lstat(env, path);
                 return statInfo.isLink();
             } catch (InterruptedException ex) {
             } catch (ExecutionException ex) {
