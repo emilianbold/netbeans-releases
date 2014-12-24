@@ -54,10 +54,10 @@ public class SVNNotificationHandler {
     private boolean logEnabled = true;
     private VCSFileProxy baseDir;
     
-    public void notifyListenersOfChange(String path) {
+    public void notifyListenersOfChange(VCSFileProxy path) {
         if (logEnabled) {
             for(ISVNNotifyListener l: notifylisteners) {
-                l.onNotify(null, SVNNodeKind.NONE);
+                l.onNotify(path, SVNNodeKind.NONE);
             }
         }
     }

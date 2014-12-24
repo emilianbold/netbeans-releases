@@ -98,7 +98,7 @@ public class DiffNode extends AbstractNode {
             status = FileInformation.STATUS_VERSIONED_CONFLICT_CONTENT;
         }
         String oldHtmlDisplayName = htmlDisplayName;
-        htmlDisplayName = Subversion.getInstance().getAnnotator().annotateNameHtml(setup.getBaseFile().getName(), info, null);
+        htmlDisplayName = Subversion.getInstance().getAnnotator().annotateNameHtml(setup.getBaseFile().getName(), info, setup.getBaseFile());
         fireDisplayNameChange(oldHtmlDisplayName, htmlDisplayName);
     }
 

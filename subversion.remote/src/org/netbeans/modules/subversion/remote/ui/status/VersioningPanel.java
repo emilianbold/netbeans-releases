@@ -206,6 +206,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     void setContext(Context ctx) {
         context = ctx;
+        if (context != null) {
+            SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences().addPreferenceChangeListener(this);
+        }
         if (EventQueue.isDispatchThread()) {
             syncTable.setTableModel(new SyncFileNode[0]);
         }
@@ -220,7 +223,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     @Override
     public void addNotify() {
         super.addNotify();
-        SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences().addPreferenceChangeListener(this);
+        if (context != null) {
+            SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences().addPreferenceChangeListener(this);
+        }
         subversion.getStatusCache().addVersioningListener(this);
         subversion.getStatusCache().addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);

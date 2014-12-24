@@ -1002,7 +1002,7 @@ public class CommandlineClient implements SvnClient {
                  oldStatus.getTextStatus() != newStatus.getTextStatus() ||
                  oldStatus.getPropStatus() != newStatus.getPropStatus())
             {
-                notificationHandler.notifyListenersOfChange(newStatus.getPath()); /// onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);
+                notificationHandler.notifyListenersOfChange(newStatus.getFile()); /// onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);
             }
        }
     }

@@ -533,7 +533,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 SvnFileNode node = model.getNode(sorter.modelIndex(row));
                 CommitOptions options = model.getOptions(sorter.modelIndex(row));
                 if (!isSelected) {
-                    value = Subversion.getInstance().getAnnotator().annotateNameHtml(node.getFile().getName(), node.getInformation(), null);
+                    value = Subversion.getInstance().getAnnotator().annotateNameHtml(node.getFile().getName(), node.getInformation(), node.getFile());
                 }
                 if (options == CommitOptions.EXCLUDE) {
                     value = "<s>" + value + "</s>"; // NOI18N

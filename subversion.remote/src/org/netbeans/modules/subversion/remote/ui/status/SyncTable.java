@@ -613,7 +613,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                     if (isSelected) {
                         value = "<html><s>" + nodeName + "</s></html>"; // NOI18N
                     } else {
-                        value = "<html><s>" + Subversion.getInstance().getAnnotator().annotateNameHtml(nodeName, node.getFileInformation(), null) + "</s>"; // NOI18N
+                        value = "<html><s>" + Subversion.getInstance().getAnnotator().annotateNameHtml(nodeName, node.getFileInformation(), file) + "</s>"; // NOI18N
                     }
                 }
             }

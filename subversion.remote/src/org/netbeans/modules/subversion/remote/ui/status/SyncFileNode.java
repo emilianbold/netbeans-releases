@@ -183,7 +183,7 @@ public class SyncFileNode extends AbstractNode {
         if (status == FileInformation.STATUS_VERSIONED_MERGE) {
             status = FileInformation.STATUS_VERSIONED_CONFLICT;
         }
-        htmlDisplayName = Subversion.getInstance().getAnnotator().annotateNameHtml(node.getFile().getName(), info, null);
+        htmlDisplayName = Subversion.getInstance().getAnnotator().annotateNameHtml(node.getFile().getName(), info, node.getFile());
         fireDisplayNameChange(node.getName(), node.getName());
     }
 
