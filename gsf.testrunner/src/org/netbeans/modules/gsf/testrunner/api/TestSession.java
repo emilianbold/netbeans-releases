@@ -75,7 +75,6 @@ public class TestSession {
      * name for the output tab.
      */
     private final String name;
-    private final SessionResult result;
     /**
      * The project where this session is invoked.
      */
@@ -116,7 +115,6 @@ public class TestSession {
         this.projectURI = project.getProjectDirectory().toURI();
         this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.sessionType = sessionType;
-        this.result = new SessionResult();
     }
 
     /**
@@ -267,7 +265,6 @@ public class TestSession {
                 }
             }
         }
-        addReportToSessionResult(report);
         return report;
     }
 
@@ -275,16 +272,34 @@ public class TestSession {
 	return (isTestNG && (testcase.getName().startsWith("@AfterMethod ") || testcase.getName().startsWith("@BeforeMethod ") //NOI18N
 		    || testcase.getName().startsWith("@AfterClass ") || testcase.getName().startsWith("@BeforeClass "))); //NOI18N
     }
-
-    private void addReportToSessionResult(Report report) {
-        result.elapsedTime(report.getElapsedTimeMillis());
-        result.failed(report.getFailures());
-        result.passed(report.getDetectedPassedTests());
-        result.passedWithErrors(report.getPassedWithErrors());
-        result.pending(report.getPending());
-        result.errors(report.getErrors());
-        result.skipped(report.getSkipped());
-        result.aborted(report.getAborted());
+    
+    private SessionResult getUpdatedSessionStats() {
+	boolean isTestNG = CommonUtils.getInstance().getTestingFramework().equals(CommonUtils.TESTNG_TF);
+        long totalTime = 0;
+        SessionResult result = new SessionResult();
+        for (Testcase testcase : getAllTestCases()) {
+            if(isTestNGConfigMethod(testcase, isTestNG)) {
+                continue;
+            }
+            totalTime += testcase.getTimeMillis();
+            if (testcase.getStatus() == Status.PASSED) {
+                result.passed(1);
+            } else if (testcase.getStatus() == Status.PASSEDWITHERRORS) {
+                result.passedWithErrors(1);
+            } else if (testcase.getStatus() == Status.ERROR) {
+                result.errors(1);
+            } else if (testcase.getStatus() == Status.FAILED) {
+                result.failed(1);
+            } else if (testcase.getStatus() == Status.PENDING) {
+                result.pending(1);
+            } else if (testcase.getStatus() == Status.SKIPPED) {
+                result.skipped(1);
+            } else if (testcase.getStatus() == Status.ABORTED) {
+                result.aborted(1);
+            }
+        }
+        result.elapsedTime(totalTime);
+        return result;
     }
 
     /**
@@ -318,7 +333,7 @@ public class TestSession {
      * @return the complete results for this session.
      */
     public SessionResult getSessionResult() {
-        return result;
+        return getUpdatedSessionStats();
     }
 
     /**
@@ -337,35 +352,35 @@ public class TestSession {
         private long elapsedTime;
         
         private int failed(int failedCount) {
-            return failed = failedCount;
+            return failed += failedCount;
         }
 
         private int errors(int errorCount) {
-            return errors = errorCount;
+            return errors += errorCount;
         }
 
         private int passed(int passedCount) {
-            return passed = passedCount;
+            return passed += passedCount;
         }
 
         private int passedWithErrors(int passedWithErrorsCount) {
-            return passedWithErrors = passedWithErrorsCount;
+            return passedWithErrors += passedWithErrorsCount;
         }
 
         private int pending(int pendingCount) {
-            return pending = pendingCount;
+            return pending += pendingCount;
         }
 
         private int skipped(int skippedCount) {
-            return skipped = skippedCount;
+            return skipped += skippedCount;
         }
 
         private int aborted(int abortedCount) {
-            return aborted = abortedCount;
+            return aborted += abortedCount;
         }
 
         private long elapsedTime(long time) {
-            return elapsedTime = time;
+            return elapsedTime += time;
         }
 
         public int getErrors() {
@@ -389,7 +404,7 @@ public class TestSession {
         }
 
         public int getTotal() {
-            return getPassed() + getPassedWithErrors() + getFailed() + getErrors() + getPending();
+            return getPassed() + getPassedWithErrors() + getFailed() + getErrors() + getPending() + skipped + aborted;
         }
 
         public long getElapsedTime() {
