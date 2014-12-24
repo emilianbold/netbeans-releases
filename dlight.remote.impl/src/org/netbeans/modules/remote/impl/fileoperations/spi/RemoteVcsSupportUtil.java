@@ -146,7 +146,7 @@ public class RemoteVcsSupportUtil {
             throw new ConnectException(env.getDisplayName() + " not connected"); //NOI28N
         }
         try {
-            FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, path);
+            FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.lstat(env, path);
             if (statInfo.isLink()) {
                 String target = statInfo.getLinkTarget();
                 if (!target.startsWith("/")) { //NOI18N
