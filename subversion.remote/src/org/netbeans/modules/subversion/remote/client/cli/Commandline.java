@@ -140,7 +140,9 @@ class Commandline {
                 }
             }
             for(String line : exitStatus.error.split("\n")) {
-                command.outputText(line);
+                if (!line.isEmpty()) {
+                    command.errorText(line);
+                }
             }
             if(canceled.canceled()) {
                 return;
