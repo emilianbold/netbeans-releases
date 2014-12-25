@@ -268,9 +268,9 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             FileObject fo1 = getFileObject(tempDirFO, resName1);
             FileObject fo2 = getFileObject(tempDirFO, resName2);
             String text1 = readFile(fo1);
-            assertEquals("content of " + fo1.getPath(), refText, text1);
+            assertEquals("content of " + fo1.getPath(), refText + "\n", text1);
             String text2 = readFile(fo1);
-            assertEquals("content of " + fo2.getPath(), refText, text2);
+            assertEquals("content of " + fo2.getPath(), refText + "\n", text2);
         } finally {
             if (tempDir != null) {
                 CommonTasksSupport.rmDir(execEnv, tempDir, true, new OutputStreamWriter(System.err));

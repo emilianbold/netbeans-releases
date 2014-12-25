@@ -173,7 +173,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
 
             assertTrue("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
             CharSequence readContent = readFile(dataFileFO);
-            assertEquals("File content differ", content1, readContent.toString());
+            assertEquals("File content differ", content1 + "\n", readContent.toString());
 
             script =
                     "cd " + baseDir + ";"

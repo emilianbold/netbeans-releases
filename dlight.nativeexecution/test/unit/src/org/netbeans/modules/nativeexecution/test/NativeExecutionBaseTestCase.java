@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.test;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -607,35 +608,26 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
-    public static String readFile(File file) throws IOException {
-        BufferedReader rdr = new BufferedReader(new FileReader(file));
+    public static String readStream(InputStream is) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rdr.readLine()) != null) {
-            sb.append(line).append("\n");
+        char buf[] = new char[4096];
+        int cnt = 0;
+        while ((cnt = reader.read(buf)) != -1) {
+            String text = String.valueOf(buf, 0, cnt);
+            sb.append(text);
         }
-        rdr.close();
+        reader.close();
         return sb.toString();
     }
 
-    protected static String readFile(FileObject fo) throws IOException {
+    public static String readFile(File file) throws IOException {
+        return readStream(new FileInputStream(file));
+    }
+
+    public static String readFile(FileObject fo) throws IOException {
         assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
-        InputStream is = fo.getInputStream();
-        BufferedReader rdr = new BufferedReader(new InputStreamReader(is));
-        try {
-            assertNotNull("Null input stream", is);
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = rdr.readLine()) != null) {
-                if (sb.length() > 0) {
-                    sb.append("\n");
-                }
-                sb.append(line);
-            }
-            return sb.toString();
-        } finally {
-            rdr.close();
-        }
+        return readStream(fo.getInputStream());
     }
 
     /**

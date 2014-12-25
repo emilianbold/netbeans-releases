@@ -245,9 +245,6 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
             w.close();
             RemoteFileObject fo = getFileObject(path);
             String actualText = readFile(fo);
-            if (!actualText.endsWith("\n")) {
-                actualText += "\n"; // workaround for a bug in readFile (fixing can affectother tests, so I'll do it later)
-            }
             assertEquals(text, actualText);
         } finally {
             if (basePath != null) {
