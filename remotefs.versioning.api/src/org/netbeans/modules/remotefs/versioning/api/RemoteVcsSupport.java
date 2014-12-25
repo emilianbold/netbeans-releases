@@ -43,6 +43,7 @@ package org.netbeans.modules.remotefs.versioning.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.remotefs.versioning.spi.RemoteVcsSupportImplementation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -132,6 +133,10 @@ public final class RemoteVcsSupport {
 
     public static VCSFileProxy fromString(String proxy) {
         return getImpl().fromString(proxy);
+    }
+
+    public static OutputStream getOutputStream(VCSFileProxy proxy) throws IOException {
+        return getImpl().getOutputStream(proxy);
     }
 
     private static RemoteVcsSupportImplementation getImpl() {

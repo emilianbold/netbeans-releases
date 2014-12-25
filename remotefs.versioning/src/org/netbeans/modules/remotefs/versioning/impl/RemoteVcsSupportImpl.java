@@ -43,7 +43,9 @@ package org.netbeans.modules.remotefs.versioning.impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -283,6 +285,20 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
             return file.length();
         } else {
             return RemoteVcsSupportUtil.getSize(getFileSystem(proxy), proxy.getPath());
+        }
+    }
+
+    @Override
+    public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException {
+        File file = proxy.toFile();
+        if (file != null) {
+            File parent = file.getParentFile();
+            if (!parent.exists()) {
+                parent.mkdirs();
+            }
+            return new FileOutputStream(file);
+        } else {
+            return RemoteVcsSupportUtil.getOutputStream(getFileSystem(proxy), proxy.getPath());
         }
     }
 

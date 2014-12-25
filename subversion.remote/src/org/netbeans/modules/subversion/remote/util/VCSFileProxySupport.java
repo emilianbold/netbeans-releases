@@ -250,53 +250,7 @@ public final class VCSFileProxySupport {
     }
     
     public static OutputStream getOutputStream(VCSFileProxy file) throws IOException {
-        File toFile = file.toFile();
-        if (toFile != null) {
-            return new FileOutputStream(toFile);
-        } else {
-            FileObject fo = file.toFileObject();
-            if (fo != null) {
-                return fo.getOutputStream();
-            }
-            VCSFileProxy parentFile = file.getParentFile();
-            if (!parentFile.exists()) {
-                mkdirs(parentFile);
-            }
-            // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(parentFile.getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "touch", file.getName());
-            if (!status.isOK()) {
-                ProcessUtils.LOG.log(Level.INFO, status.toString());
-                throw new IOException(status.toString());
-            } else {
-                if (file.exists()) {
-                    VCSFileProxy parent = file.getParentFile();
-                    LinkedList<VCSFileProxy> stack = new LinkedList<VCSFileProxy>();
-                    while(parent != null) {
-                        FileObject parentFO = parent.toFileObject();
-                        if (parentFO != null) {
-                            parentFO.refresh();
-                            while(!stack.isEmpty()) {
-                                parent = stack.removeLast();
-                                parentFO = parent.toFileObject();
-                                if (parentFO != null) {
-                                    parentFO.refresh();
-                                } else {
-                                    throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
-                                }
-                            }
-                            break;
-                        }
-                        stack.addLast(parent);
-                        parent = parent.getParentFile();
-                    }
-                }
-                fo = file.toFileObject();
-                if (fo == null) {
-                    throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
-                }
-                return fo.getOutputStream();
-            }
-        }
+        return RemoteVcsSupport.getOutputStream(file);
     }
     
     public static long length(VCSFileProxy file) {
