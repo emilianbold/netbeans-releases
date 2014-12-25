@@ -135,6 +135,54 @@ public final class HostInfoUtils {
         }
     }
 
+    /**
+     * Tests whether a file <tt>fname</tt> exists in <tt>execEnv</tt> and is a directory
+     * (or is a link to dirctory).
+     * If execEnv refers to a remote host that is not connected yet, a
+     * <tt>ConnectException</tt> is thrown.
+     *
+     * @param execEnv <tt>ExecutionEnvironment</tt> to check for file existence
+     *        in.
+     * @param fname name of file to check for
+     *
+     * @return <tt>true</tt> if file exists, <tt>false</tt> otherwise.
+     *
+     * @throws ConnectException if host, identified by this execution
+     * environment is not connected or operation was terminated.
+     *
+     * @throws InterruptedException if the thread was interrupted.
+     *
+     * @throws IOException if the process could not be created
+     */
+    public static boolean directoryExists(final ExecutionEnvironment execEnv,
+            final String fname)
+            throws ConnectException, IOException, InterruptedException {
+
+        if (execEnv.isLocal()) {
+            return new File(fname).exists();
+        } else {
+            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                throw new ConnectException();
+            }
+
+            try {
+                FileInfoProvider.StatInfo statInfo = SftpSupport.getInstance(execEnv).stat(fname, null).get();
+                return statInfo.isDirectory();
+            } catch (ExecutionException ex) {
+                if (ex.getCause() instanceof SftpIOException) {
+                    SftpIOException e = (SftpIOException) ex.getCause();
+                    if (SftpIOException.SSH_FX_NO_SUCH_FILE == e.getId()) {
+                        return false;
+                    }
+                }
+                if (ex.getCause() instanceof IOException) {
+                    throw (IOException) ex.getCause();
+                }
+                throw new IOException(ex);
+            }
+        }
+    }
+
     public static String searchFile(ExecutionEnvironment execEnv,
             List<String> searchPaths, String file, boolean searchInUserPaths) {
         String result = null;
