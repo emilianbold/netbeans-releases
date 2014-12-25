@@ -141,7 +141,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
 
     private VCSFileProxy getExecutableFile() {
         String execPath = panel.executablePathTextField.getText();
-        VCSFileProxy resource = VCSFileProxySupport.getResource(context.getRootFiles()[0], execPath);
+        VCSFileProxy resource = VCSFileProxySupport.getResource(context.getFileSystem(), execPath);
         return resource.normalizeFile();
     }    
 

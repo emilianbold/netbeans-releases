@@ -136,7 +136,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
     }
 
     VCSFileProxy getToFile() {
-        return VCSFileProxySupport.getResource(fromFile, panel.exportToTextField.getText());
+        return VCSFileProxySupport.getResource(fileSystem, panel.exportToTextField.getText());
     }
 
     @Override
@@ -199,7 +199,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         VCSFileProxy defaultDir = null;
         String current = panel.exportFromTextField.getText();
         if (current != null && !(current.trim().equals(""))) {  // NOI18N
-            VCSFileProxy currentFile = VCSFileProxySupport.getResource(fromFile, current);
+            VCSFileProxy currentFile = VCSFileProxySupport.getResource(fileSystem, current);
             while (currentFile != null && currentFile.exists() == false) {
                 currentFile = currentFile.getParentFile();
             }
@@ -215,7 +215,7 @@ public class Export implements DocumentListener, FocusListener, ActionListener {
         if (defaultDir == null) {
             String coDir = SvnModuleConfig.getDefault(fileSystem).getPreferences().get(EXPORT_FROM_DIRECTORY, null);
             if(coDir != null) {
-                defaultDir = VCSFileProxySupport.getResource(fromFile, coDir);
+                defaultDir = VCSFileProxySupport.getResource(fileSystem, coDir);
             }
         }
         

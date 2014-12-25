@@ -178,7 +178,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
                     Subversion.LOG.fine("outputText [" + line.getPath() + "]");
                 }
-                notificationHandler.notifyListenersOfChange(VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), line.getPath()));
+                notificationHandler.notifyListenersOfChange(VCSFileProxySupport.getResource(fileSystem, line.getPath()));
             }
             notify(line);
             notificationHandler.logMessage(lineString);

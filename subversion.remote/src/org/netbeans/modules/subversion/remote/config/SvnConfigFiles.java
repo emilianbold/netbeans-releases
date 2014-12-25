@@ -413,7 +413,7 @@ public class SvnConfigFiles {
         //T9Y - user svn config files should be changable
         String t9yUserConfigPath = System.getProperty("netbeans.t9y.svn.user.config.path");
         if (t9yUserConfigPath != null && t9yUserConfigPath.length() > 0) {
-            return VCSFileProxySupport.getResource(root, t9yUserConfigPath);
+            return VCSFileProxySupport.getResource(fileSystem, t9yUserConfigPath);
         }
         VCSFileProxy home = VCSFileProxySupport.getHome(root);
         return VCSFileProxy.createFileProxy(home, UNIX_CONFIG_DIR);
@@ -431,7 +431,7 @@ public class SvnConfigFiles {
         //T9Y - nb svn confing should be changable
         String t9yNbConfigPath = System.getProperty("netbeans.t9y.svn.nb.config.path");
         if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
-            return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), t9yNbConfigPath);
+            return VCSFileProxySupport.getResource(fileSystem, t9yNbConfigPath);
         }
         //String nbHome = Places.getUserDirectory().getAbsolutePath();
         //return nbHome + "/config/svn/config/"; // NOI18N
@@ -631,7 +631,7 @@ public class SvnConfigFiles {
      * Return the path for the systemwide command lines configuration directory 
      */
     private static VCSFileProxy getGlobalConfigPath (FileSystem fileSystem) {
-        return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), "/etc/subversion");               // NOI18N
+        return VCSFileProxySupport.getResource(fileSystem, "/etc/subversion");               // NOI18N
     }
 
     private String getProxyPassword(String key) {

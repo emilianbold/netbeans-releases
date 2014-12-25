@@ -89,7 +89,7 @@ public class RelocateCommand extends SvnCommand {
         arguments.add(from);
         arguments.add(to);
         arguments.add(path);    
-        setCommandWorkingDirectory(VCSFileProxySupport.getResource(context.getRootFiles()[0], path));                
+        setCommandWorkingDirectory(VCSFileProxySupport.getResource(context.getFileSystem(), path));                
     }
     
 }

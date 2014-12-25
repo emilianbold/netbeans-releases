@@ -219,7 +219,7 @@ public class OutputLogger implements ISVNNotifyListener {
             Matcher m = p.matcher(message);
             if (m.matches() && m.groupCount() > 0) {
                 String path = m.group(1);
-                VCSFileProxy f = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), path);
+                VCSFileProxy f = VCSFileProxySupport.getResource(fileSystem, path);
                 if (!f.isDirectory()) {
                     ol = new OpenFileOutputListener(f.normalizeFile(), m.start(1));
                     break;

@@ -1033,7 +1033,7 @@ public class SvnClientExceptionHandler {
             Pattern p = Pattern.compile(s, Pattern.DOTALL);
             Matcher m = p.matcher(message);
             if (m.matches()) {
-                return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(context.getFileSystem().getRoot()), m.group(1));
+                return VCSFileProxySupport.getResource(context.getFileSystem(), m.group(1));
             }
         }
         return null;

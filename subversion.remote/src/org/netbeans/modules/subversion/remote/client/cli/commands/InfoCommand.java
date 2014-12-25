@@ -288,7 +288,7 @@ public class InfoCommand extends SvnCommand {
         @Override
         public VCSFileProxy getFile() {
             if (context != null) {
-                return VCSFileProxySupport.getResource(context.getRootFiles()[0], getPath());
+                return VCSFileProxySupport.getResource(context.getFileSystem(), getPath());
             } else {
                 return VCSFileProxySupport.getResource(files[0], getPath());
             }

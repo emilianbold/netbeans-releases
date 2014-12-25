@@ -499,7 +499,7 @@ class DiskMapTurboProvider implements TurboProvider {
     private Map<VCSFileProxy, FileInformation> readValue(DataInputStream dis, String dirPath) throws IOException {
         Map<VCSFileProxy, FileInformation> map = new HashMap<>();
         FileSystem fs = VCSFileProxySupport.readFileSystem(dis);
-        VCSFileProxy dir = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fs.getRoot()), dirPath);
+        VCSFileProxy dir = VCSFileProxySupport.getResource(fs, dirPath);
         int len = dis.readInt();
         while (len-- > 0) {
             int nameLen = dis.readInt();

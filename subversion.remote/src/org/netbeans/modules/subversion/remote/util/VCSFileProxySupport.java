@@ -58,8 +58,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.remote.api.ServerList;
-import org.netbeans.modules.remote.api.ServerRecord;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.subversion.remote.util.ProcessUtils.ExitStatus;
@@ -235,6 +233,19 @@ public final class VCSFileProxySupport {
     
     public static boolean canRead(VCSFileProxy base, String subdir) {
         return RemoteVcsSupport.canRead(base, subdir);
+    }
+    
+    public static boolean createNew(VCSFileProxy file) throws IOException {
+        VCSFileProxy parentFile = file.getParentFile();
+        if (!parentFile.exists()) {
+            mkdirs(parentFile);
+        }
+         ExitStatus status = ProcessUtils.executeInDir(parentFile.getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "touch", file.getName());
+        if (!status.isOK()) {
+            ProcessUtils.LOG.log(Level.INFO, status.toString());
+            throw new IOException(status.toString());
+        }
+        return true;
     }
     
     public static OutputStream getOutputStream(VCSFileProxy file) throws IOException {

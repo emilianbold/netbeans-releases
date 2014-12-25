@@ -255,7 +255,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         if (execPath.isEmpty()) {
             return VCSFileProxy.createFileProxy(fileSystem.getRoot());
         } else {
-            return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), execPath);
+            return VCSFileProxySupport.getResource(fileSystem, execPath);
         }
     }
 

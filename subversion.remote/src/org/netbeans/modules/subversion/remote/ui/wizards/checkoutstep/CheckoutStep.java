@@ -155,7 +155,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     protected void validateBeforeNext() {
         if (validateUserInput(true)) {
             String text = getWorkdirText();
-            VCSFileProxy file = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), text);
+            VCSFileProxy file = VCSFileProxySupport.getResource(fileSystem, text);
             if (!file.exists()) {
                 boolean done = VCSFileProxySupport.mkdirs(file);
                 if (done == false) {
@@ -196,7 +196,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         
         AbstractStep.WizardMessage errorMessage = null;
         if (full) {
-            VCSFileProxy file = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), text);
+            VCSFileProxy file = VCSFileProxySupport.getResource(fileSystem, text);
             if (!file.exists()) {
                 // it's automaticaly create later on, check for permisions here
                 VCSFileProxy parent = file.getParentFile();
@@ -267,7 +267,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         VCSFileProxy defaultDir = null;
         String current = getWorkdirText();
         if (current != null && !(current.trim().equals(""))) {  // NOI18N
-            VCSFileProxy currentFile = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), current);
+            VCSFileProxy currentFile = VCSFileProxySupport.getResource(fileSystem, current);
             while (currentFile != null && !currentFile.exists()) {
                 currentFile = currentFile.getParentFile();
             }
@@ -283,7 +283,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         if (defaultDir == null) {
             String coDir = SvnModuleConfig.getDefault(fileSystem).getPreferences().get(CHECKOUT_DIRECTORY, null);
             if(coDir != null) {
-                VCSFileProxy currentFile = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), coDir);
+                VCSFileProxy currentFile = VCSFileProxySupport.getResource(fileSystem, coDir);
             }            
         }
 
@@ -359,7 +359,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     }
     
     public VCSFileProxy getWorkdir() {
-        return VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), getWorkdirText());
+        return VCSFileProxySupport.getResource(fileSystem, getWorkdirText());
     }        
 
     public RepositoryFile[] getRepositoryFiles() {

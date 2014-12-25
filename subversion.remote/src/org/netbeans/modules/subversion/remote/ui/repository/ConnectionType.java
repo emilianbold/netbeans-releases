@@ -163,7 +163,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
     }
 
     protected void onBrowse(JTextField txt) {
-        VCSFileProxy oldFile = VCSFileProxySupport.getResource(VCSFileProxy.createFileProxy(fileSystem.getRoot()), txt.getText()).normalizeFile();
+        VCSFileProxy oldFile = VCSFileProxySupport.getResource(fileSystem, txt.getText()).normalizeFile();
         JFileChooser fileChooser = VCSFileProxySupport.createFileChooser(oldFile);
         fileChooser.setDialogTitle(NbBundle.getMessage(Repository.class, "Browse_title")); // NOI18N
         fileChooser.setMultiSelectionEnabled(false);
