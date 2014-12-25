@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -120,8 +122,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
@@ -129,6 +133,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
@@ -413,6 +418,18 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
     }
 
+    private boolean directoryExists(ExecutionEnvironment env, String path)
+            throws ConnectException, IOException, InterruptedException {
+
+        // first try via file system
+        FileObject fileObject = FileSystemProvider.getFileObject(env, path);
+        if (fileObject != null) {
+            return fileObject.isFolder();
+        } else {
+            // what if file system just wasn't refresh? try directly
+            return HostInfoUtils.directoryExists(env, path);
+        }
+    }
 
     private Gdb.Factory factory;
 
@@ -437,13 +454,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
             @Override
             public void run() {
-                final boolean exists = CndFileUtils.isExistingDirectory(FileSystemProvider.getFileSystem(executor.getExecutionEnvironment()), finalRunDir);
-                
+                final AtomicBoolean exists = new AtomicBoolean();
+                try {
+                    exists.set(directoryExists(executor.getExecutionEnvironment(), finalRunDir));
+                } catch (IOException ioe) {
+                    exists.set(false); // broken link?
+                } catch (InterruptedException ex) {
+                    return; // cancelled?
+                }                
                 SwingUtilities.invokeLater(new Runnable() {
 
                     @Override
                     public void run() {
-                        if (!exists) {
+                        if (!exists.get()) {
                             NativeDebuggerManager.error(Catalog.format("MSG_NonExistentWorkDir", finalRunDir)); // NOI18N
                             kill();
                             return;
