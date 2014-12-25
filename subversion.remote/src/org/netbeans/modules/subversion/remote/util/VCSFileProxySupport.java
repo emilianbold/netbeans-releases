@@ -129,7 +129,7 @@ public final class VCSFileProxySupport {
             return javaFile.mkdirs();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-p", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(null, null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-p", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
