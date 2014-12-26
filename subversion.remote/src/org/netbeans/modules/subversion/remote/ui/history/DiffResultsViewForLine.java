@@ -146,7 +146,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
             SVNUrl repotUrl = header.getLogInfoHeader().getRepositoryRootUrl();
             SVNUrl fileUrl = repotUrl.appendPath(header.getChangedPath().getPath());
             // through peg revision always except from 'deleting the file', since the file does not exist in the newver revision
-            final DiffStreamSource leftSource = new DiffStreamSource(header.getFile(), repotUrl, fileUrl, revision2, revision2);
+            final DiffStreamSource leftSource = new DiffStreamSource(getFileSystem(), header.getFile(), repotUrl, fileUrl, revision2, revision2);
             final LocalFileDiffStreamSource rightSource = new LocalFileDiffStreamSource(header.getFile(), true);
             this.setCancellableDelegate(new Cancellable() {
                 @Override

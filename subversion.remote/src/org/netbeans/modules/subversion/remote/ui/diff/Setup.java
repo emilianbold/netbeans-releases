@@ -56,6 +56,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
+import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
 
@@ -286,12 +287,12 @@ public final class Setup extends AbstractDiffSetup {
         this.secondRevision = secondRevision;
         this.info = info;
         title = baseFile.getName();
-        firstSource = new org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource(baseFile, 
+        firstSource = new org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource(VCSFileProxySupport.getFileSystem(baseFile), baseFile, 
                 repoUrl, firstFileUrl, firstRevision, firstTitle);
         if (Setup.REVISION_CURRENT.equals(secondRevision)) {
             secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondTitle);
         } else {
-            secondSource = new org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource(baseFile, 
+            secondSource = new org.netbeans.modules.subversion.remote.ui.history.DiffStreamSource(VCSFileProxySupport.getFileSystem(baseFile), baseFile, 
                     repoUrl, secondFileUrl, secondRevision, secondTitle);
         }
     }

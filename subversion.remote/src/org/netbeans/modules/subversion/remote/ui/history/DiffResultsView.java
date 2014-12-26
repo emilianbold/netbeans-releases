@@ -447,6 +447,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     private boolean similarPaths (VCSFileProxy referenceFile, VCSFileProxy file) {
+        if (file == null) {
+            return false;
+        }
         return referenceFile.getName().equals(file.getName())
                 || referenceFile.getPath().equalsIgnoreCase(null);
     }
@@ -498,6 +501,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
             // through peg revision always except from 'deleting the file', since the file does not exist in the newver revision
             s1 = new DiffStreamSource(
+                    getFileSystem(),
                     file1,
                     name1,
                     repoUrl,
@@ -506,6 +510,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                     pegRevision1, title1);
 
             s2 = new DiffStreamSource(
+                    getFileSystem(),
                     event2.getFile(),
                     event2.getName(),
                     repoUrl,
