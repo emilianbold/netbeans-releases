@@ -392,7 +392,12 @@ public final class VCSFileProxySupport {
 
     public static VCSFileProxy getResource(FileSystem fileSystem, String absPath) {
         VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystem.getRoot());
-        return VCSFileProxy.createFileProxy(root, absPath);
+        if (absPath.startsWith("/")) {
+            return VCSFileProxy.createFileProxy(root, absPath.substring(1));
+        } else {
+            // Abs Path should start with "/". Assertion?
+            return VCSFileProxy.createFileProxy(root, absPath);
+        }
     }
     
     public static VCSFileProxy getHome(VCSFileProxy file){
