@@ -128,7 +128,12 @@ public final class VCSFileProxy {
      * @return a VCSFileProxy representing the a file given by the parent and child values
      */
     public static VCSFileProxy createFileProxy(VCSFileProxy parent, String child) {
-        return new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy);   // NOI18N
+        final String p = parent.getPath();
+        if (p.endsWith("/")) {   // NOI18N
+            return new VCSFileProxy(p + child, parent.proxy); 
+        } else {
+            return new VCSFileProxy(p + "/" + child, parent.proxy);   // NOI18N
+        }
     }
     
     static VCSFileProxy createFileProxy(String path) {
@@ -136,7 +141,7 @@ public final class VCSFileProxy {
     }
     
     static VCSFileProxy createFileProxy(VCSFileProxy parent, String child, boolean isDirectory) {
-        VCSFileProxy file = new VCSFileProxy(parent.getPath() + "/" + child, parent.proxy); // NOI18N
+        VCSFileProxy file = createFileProxy(parent, child);
         file.isDirectory = isDirectory;
         return file;
     }
