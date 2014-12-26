@@ -50,7 +50,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -58,6 +57,8 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
+import org.netbeans.modules.remotefs.versioning.spi.VersioningAnnotationProviderImpl;
 import org.netbeans.modules.subversion.remote.api.ISVNStatus;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
@@ -65,8 +66,8 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.utils.TestUtilities;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -81,21 +82,7 @@ import org.openide.util.Utilities;
  * Test is written for 1.7 subversion support, do not even try to run it with 1.6 client
  * @author Tomas Stupka
  */
-public class InterceptorTestCase extends RemoteFileTestBase {
-    public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
-   
-    private VCSFileProxy dataRootDir;
-    private FileStatusCache cache;
-    private SVNUrl repoUrl;
-    private VCSFileProxy wc;
-    private VCSFileProxy wc2;
-    private VCSFileProxy repoDir;
-    private VCSFileProxy repo2Dir;
-    private SVNUrl repo2Url;
-    
-    public InterceptorTestCase(String testName) {
-        super(testName);
-    }
+public class InterceptorTestCase extends RemoteVersioningTestBase {
 
     public InterceptorTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -104,43 +91,11 @@ public class InterceptorTestCase extends RemoteFileTestBase {
     @Override
     protected void setUp() throws Exception {          
         super.setUp();
-        MockServices.setServices(new Class[] {VersioningAnnotationProvider.class, SubversionVCS.class});
-        String remoteDir = mkTempAndRefreshParent(true);
-        ProcessUtils.execute(execEnv, "umask", "0002");
-        FileObject remoteDirFO = rootFO.getFileObject(remoteDir);
-        dataRootDir = VCSFileProxy.createFileProxy(remoteDirFO);
-        String name = getName();
-        name = name.substring(0, name.indexOf('[')).trim();
-        wc = VCSFileProxy.createFileProxy(dataRootDir, name + "_wc");
-        wc2 = VCSFileProxy.createFileProxy(dataRootDir, name + "_wc2");
-        repoDir = VCSFileProxy.createFileProxy(dataRootDir, "repo");
-        String repoPath = repoDir.getPath();
-        if(repoPath.startsWith("/")) {
-            repoPath = repoPath.substring(1, repoPath.length());
-        }
-        repoUrl = new SVNUrl("file:///" + repoPath);
-        
-        repo2Dir = VCSFileProxy.createFileProxy(dataRootDir, "repo2");
-        repo2Url = new SVNUrl(TestUtilities.formatFileURL(repo2Dir));
-
-        System.setProperty("netbeans.user", remoteDir + "/userdir");
-        cache = Subversion.getInstance().getStatusCache();
-        cache.cleanUp();
-        
-        cleanUpWC(wc);
-        cleanUpWC(wc2);
-        initRepo();      
-        
-        VCSFileProxySupport.mkdirs(wc);
-        VCSFileProxySupport.mkdirs(wc2);
-        svnimport();                   
     }
     
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        //cleanUpWC(wc);
-        //cleanUpWC(wc2);
     }
 
     @Override
@@ -174,7 +129,7 @@ public class InterceptorTestCase extends RemoteFileTestBase {
     
 //    public static Test modifySuite() {
 //        TestSuite suite = new TestSuite();
-//        suite.addTest(new InterceptorTestCase("modifyFileOnDemandLock"));
+//        suite.addTest(new InterceptorTestCase("testModifyFileOnDemandLock"));
 //        return(suite);
 //    }
     
@@ -202,7 +157,7 @@ public class InterceptorTestCase extends RemoteFileTestBase {
 //   
 //    public static Test createSuite() {
 //        TestSuite suite = new TestSuite();
-//        suite.addTest(new InterceptorTestCase("createNewFile"));
+//        suite.addTest(new InterceptorTestCase("testCreateNewFile"));
 //        suite.addTest(new InterceptorTestCase("createNewFolder"));
 //        suite.addTest(new InterceptorTestCase("deleteA_CreateA"));
 //        suite.addTest(new InterceptorTestCase("deleteA_CreateAOnDemandLocking"));
@@ -343,7 +298,7 @@ public class InterceptorTestCase extends RemoteFileTestBase {
 //        return(suite);
 //    }
     
-    @ForAllEnvironments
+    //@ForAllEnvironments
     public void testModifyFileOnDemandLock () throws Exception {
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
@@ -662,7 +617,8 @@ public class InterceptorTestCase extends RemoteFileTestBase {
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(folder).getTextStatus());        
     }
 
-    public void createNewFile() throws Exception {
+    @ForAllEnvironments
+    public void testCreateNewFile() throws Exception {
         // init
         VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
         
@@ -3684,7 +3640,7 @@ public class InterceptorTestCase extends RemoteFileTestBase {
         assertEquals(FileInformation.STATUS_UNKNOWN, getStatus(fileB));
     }
     
-    @ForAllEnvironments
+    //@ForAllEnvironments
     public void testIsModifiedAttributeFile () throws Exception {
         // file is outside of versioned space, attribute should be unknown
         
@@ -4250,187 +4206,6 @@ public class InterceptorTestCase extends RemoteFileTestBase {
         assertTrue(fileUnversioned.exists());
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(fileA).getTextStatus());
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(fileA));
-    }
-    
-    class SVNInterceptor extends Handler {
-        @Override
-        public void publish(LogRecord rec) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        @Override
-        public void flush() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void close() throws SecurityException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-    
-    protected void commit(VCSFileProxy folder) throws SVNClientException {
-        TestKit.commit(folder);
-    }
-
-    protected void add(VCSFileProxy file) throws SVNClientException {
-        TestKit.add(file);
-    }
-    
-    private void cleanUpWC(VCSFileProxy wc) throws IOException {
-        if(wc.exists()) {
-            VCSFileProxy[] files = wc.listFiles();
-            if(files != null) {
-                for (VCSFileProxy file : files) {
-                    if(!file.getName().equals("cache")) { // do not delete the cache
-                        FileObject fo = file.toFileObject();
-                        if (fo != null) {
-                            fo.delete();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void assertStatus(SVNStatusKind status, VCSFileProxy wc) throws SVNClientException {
-        ISVNStatus[] values = getClient().getStatus(new VCSFileProxy[]{wc});
-        for (ISVNStatus iSVNStatus : values) {
-            assertEquals(status, iSVNStatus.getTextStatus());
-        }
-    }
- 
-    private ISVNStatus getSVNStatus(VCSFileProxy file) throws SVNClientException {
-        return TestKit.getSVNStatus(file);
-    }
-    
-    private SvnClient getClient() throws SVNClientException  {
-        return TestKit.getClient(VCSFileProxy.createFileProxy(fs.getRoot()));
-    }   
-    
-    private void assertCachedStatus(VCSFileProxy file, int expectedStatus) throws Exception {
-        assert !file.isFile() || expectedStatus != FileInformation.STATUS_VERSIONED_UPTODATE : "doesn't work for dirs with FileInformation.STATUS_VERSIONED_UPTODATE. Use getStatus instead";
-        int status = getCachedStatus(file, expectedStatus);
-        assertEquals(expectedStatus, status);
-    }        
-
-    private int getCachedStatus(VCSFileProxy file, int exceptedStatus) throws Exception, InterruptedException {
-        FileInformation info = null;
-        for (int i = 0; i < 600; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                throw ex;
-            }
-            info = cache.getCachedStatus(file);
-            if (info != null && info.getStatus() == exceptedStatus) {
-                break;
-            }            
-        }
-        if (info == null) {
-            throw new Exception("Cache timeout!");
-        }
-        return info.getStatus();
-    }
-    
-    private int getStatus(VCSFileProxy file) {
-        return cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
-    }
-    
-    private void initRepo() throws MalformedURLException, IOException, InterruptedException, SVNClientException {        
-        TestKit.initRepo(repoDir, wc);
-        TestKit.initRepo(repo2Dir, wc);
-    }
-    
-    private void svnimport() throws SVNClientException, MalformedURLException {
-        TestKit.svnimport(repoDir, wc);
-        TestKit.svnimport(repo2Dir, wc2);
-    }        
-    
-    private void delete(VCSFileProxy file) throws IOException {
-        DataObject dao = DataObject.find(file.toFileObject());    
-        dao.delete();   
-    }   
-    
-    private void waitALittleBit(long t) {
-        try {
-            Thread.sleep(t);  
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private void renameDO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
-        DataObject daoFrom = DataObject.find(from.toFileObject());                
-        daoFrom.rename(to.getName());               
-    }
-    
-    private void renameFO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
-        // ensure parent is known by filesystems
-        // otherwise no event will be thrown
-        FileObject parent = from.getParentFile().toFileObject();
-
-        FileObject foFrom = from.toFileObject();
-        FileLock lock = foFrom.lock();
-        try {
-            foFrom.rename(lock, to.getName(), null);
-        } finally {
-            lock.releaseLock();
-        }
-    }
-    
-    private void moveDO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
-        DataObject daoFrom = DataObject.find(from.toFileObject());    
-        DataObject daoTarget = DataObject.find(to.getParentFile().toFileObject());    
-        daoFrom.move((DataFolder) daoTarget);    
-    }
-
-    private void copyDO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
-        DataObject daoFrom = DataObject.find(from.toFileObject());
-        DataObject daoTarget = DataObject.find(to.getParentFile().toFileObject());
-        daoFrom.copy((DataFolder) daoTarget);
-    }
-    
-    private void moveFO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
-        FileObject foFrom = from.toFileObject();
-        assertNotNull(foFrom);
-        FileObject foTarget = to.getParentFile().toFileObject();
-        assertNotNull(foTarget);
-        FileLock lock = foFrom.lock();
-        try {
-            foFrom.move(lock, foTarget, to.getName(), null);
-        } finally {
-            lock.releaseLock();
-        }        
-    }
-
-    private void copyFO(VCSFileProxy from, VCSFileProxy to) throws DataObjectNotFoundException, IOException {
-        FileObject foFrom = from.toFileObject();
-        assertNotNull(foFrom);
-        FileObject foTarget = to.getParentFile().toFileObject();
-        assertNotNull(foTarget);
-        FileLock lock = foFrom.lock();
-        try {
-            foFrom.copy(foTarget, getName(to), getExt(to));
-        } finally {
-            lock.releaseLock();
-        }
-    }
-
-    private String getName(VCSFileProxy f) {
-        String ret = f.getName();
-        int idx = ret.lastIndexOf(".");
-        return idx > -1 ? ret.substring(0, idx) : ret;
-    }
-
-    private String getExt(VCSFileProxy f) {
-        String ret = f.getName();
-        int idx = ret.lastIndexOf(".");
-        return idx > -1 ? ret.substring(idx) : null;
     }
     
 }

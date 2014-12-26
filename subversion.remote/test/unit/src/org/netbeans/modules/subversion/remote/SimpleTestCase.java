@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.subversion.remote;
 
+import java.util.logging.Level;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
-import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Alexander Simon
+ * @author alsimon
  */
-public class InterceptorTest extends RemoteTestSuiteBase {
-    @SuppressWarnings("unchecked")
-    public InterceptorTest() {
-        this("FileOperations Interceptor API", getTestClasses());
+public class SimpleTestCase extends RemoteVersioningTestBase {
+    
+    public SimpleTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
-
-    @SuppressWarnings("unchecked")
-    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
-        return new Class[] {
-            //InterceptorTestCase.class
-            SimpleTestCase.class
-        };
+        
+    @Override
+    protected void setUp() throws Exception {          
+        super.setUp();
     }
     
-    @SuppressWarnings("unchecked")
-    public static InterceptorTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
-        return new InterceptorTest(testClass.getName(), testClass);
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
-    @SuppressWarnings("unchecked")
-    public static InterceptorTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
-        Class[] classes = new Class[timesToRepeat];
-        for (int i = 0; i < classes.length; i++) {
-            classes[i] = testClass;            
-        }
-        return new InterceptorTest(testClass.getName(), classes);
-    }
-    
-    public InterceptorTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
-        super(name, "remote.platforms", testClasses);
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
 
     public static Test suite() {
-        return new InterceptorTest();
+        return RemoteApiTest.createSuite(InterceptorTestCase.class);
     }
+    
+    @ForAllEnvironments
+    public void testCreateNewFile() throws Exception {
+        // init
+        VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
+        
+        // create
+        FileObject fo = wc.toFileObject();
+        fo.createData(file.getName());
+                                        
+        // test 
+        assertTrue(file.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
+        assertCachedStatus(file, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+    }    
 }
