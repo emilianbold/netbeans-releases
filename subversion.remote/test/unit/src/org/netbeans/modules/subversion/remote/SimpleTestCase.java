@@ -44,10 +44,8 @@ package org.netbeans.modules.subversion.remote;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
@@ -77,10 +75,6 @@ public class SimpleTestCase extends RemoteVersioningTestBase {
         return Level.FINE;
     }
 
-    public static Test suite() {
-        return RemoteApiTest.createSuite(InterceptorTestCase.class);
-    }
-    
     @ForAllEnvironments
     public void testCreateNewFile() throws Exception {
         // init
