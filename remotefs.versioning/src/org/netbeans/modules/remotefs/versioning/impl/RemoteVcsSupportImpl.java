@@ -288,7 +288,8 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
 
     @Override
     public String getFileSystemKey(FileSystem fs) {
-        return FileSystemProvider.toUrl(fs, ""); //NOI18N
+        final String toUrl = FileSystemProvider.toUrl(fs, "/");
+        return toUrl.substring(0, toUrl.indexOf('/')); //NOI18N
     }
 
     @Override

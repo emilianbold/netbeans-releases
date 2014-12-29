@@ -135,13 +135,17 @@ class Commandline {
                 if(Subversion.LOG.isLoggable(Level.FINER)) {
                     Subversion.LOG.log(Level.FINE, "cli: OUTPUT \"{0}\"", exitStatus.output);// NOI18N
                 }
-                for(String line : exitStatus.output.split("\n")) {
-                    command.outputText(line);
+                if (!exitStatus.output.isEmpty()) {
+                    for(String line : exitStatus.output.split("\n")) {
+                        command.outputText(line);
+                    }
                 }
             }
-            for(String line : exitStatus.error.split("\n")) {
-                if (!line.isEmpty()) {
-                    command.errorText(line);
+            if (!exitStatus.error.isEmpty()) {
+                for(String line : exitStatus.error.split("\n")) {
+                    if (!line.isEmpty()) {
+                        command.errorText(line);
+                    }
                 }
             }
             if(canceled.canceled()) {

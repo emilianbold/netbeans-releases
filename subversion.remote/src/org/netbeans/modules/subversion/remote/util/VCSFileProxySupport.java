@@ -55,6 +55,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
@@ -129,7 +130,7 @@ public final class VCSFileProxySupport {
             return javaFile.mkdirs();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-p", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(null, null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-p", file.getPath());
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
@@ -267,9 +268,33 @@ public final class VCSFileProxySupport {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 throw new IOException(status.toString());
             } else {
-                // TODO: make sure that file.exists() returns true
-                parentFile.toFileObject().refresh();
-                return file.toFileObject().getOutputStream();
+                if (file.exists()) {
+                    VCSFileProxy parent = file.getParentFile();
+                    LinkedList<VCSFileProxy> stack = new LinkedList<VCSFileProxy>();
+                    while(parent != null) {
+                        FileObject parentFO = parent.toFileObject();
+                        if (parentFO != null) {
+                            parentFO.refresh();
+                            while(!stack.isEmpty()) {
+                                parent = stack.removeLast();
+                                parentFO = parent.toFileObject();
+                                if (parentFO != null) {
+                                    parentFO.refresh();
+                                } else {
+                                    throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
+                                }
+                            }
+                            break;
+                        }
+                        stack.addLast(parent);
+                        parent = parent.getParentFile();
+                    }
+                }
+                fo = file.toFileObject();
+                if (fo == null) {
+                    throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
+                }
+                return fo.getOutputStream();
             }
         }
     }
