@@ -184,6 +184,27 @@ public class BowerExecutable {
         return result;
     }
 
+    @CheckForNull
+    public JSONObject info(String packageName) {
+        List<String> params = new ArrayList<>();
+        params.add("info"); // NOI18N
+        params.add("--json"); // NOI18N
+        params.add(packageName);
+        JSONObject info = null;
+        try {
+            StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+            Integer exitCode = getExecutable("bower info").additionalParameters(getParams(params)).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            String result = factory.getResult();
+            if (exitCode != null && exitCode == 0) {
+                info = (JSONObject)new JSONParser().parse(result);
+            }
+        } catch (ExecutionException | ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return info;
+    }
+
     private ExternalExecutable getExecutable(String title) {
         assert title != null;
         return new ExternalExecutable(getCommand())
