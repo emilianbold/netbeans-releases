@@ -213,10 +213,6 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     
     private VersioningManager() {
         providersLookupResult = Lookup.getDefault().lookupResult(VCSSystemProvider.class);
-        Collection<? extends VCSSystemProvider> providers = providersLookupResult.allInstances();
-        for (VCSSystemProvider p : providers) {
-            p.addChangeListener(this);
-        }
     }
     
     private void init() {
@@ -224,8 +220,14 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             // initialize VCSContext which in turn initializes SPIAccessor
             // before any other thread touches SPIAccessor
             VCSContext ctx = VCSContext.EMPTY;
-            // do not fire events under lock but asynchronously
-            refreshVersioningSystems(true);
+            synchronized (versioningSystems) {
+                Collection<? extends VCSSystemProvider> providers = providersLookupResult.allInstances();
+                for (VCSSystemProvider p : providers) {
+                    p.addChangeListener(this);
+                }
+                // do not fire events under lock but asynchronously
+                refreshVersioningSystems(true);
+            }
             VersioningSupport.getPreferences().addPreferenceChangeListener(this);
         } finally {
             initialized = true;                                    
