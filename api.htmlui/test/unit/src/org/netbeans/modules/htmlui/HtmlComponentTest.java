@@ -84,7 +84,9 @@ public class HtmlComponentTest {
     
     public static Object onLoad() {
         ctx = BrwsrCtx.findDefault(HtmlComponentTest.class);
-        return new CheckContext().applyBindings();
+        CheckContext cc = new CheckContext();
+        net.java.html.json.Models.applyBindings(cc);
+        return cc;
     }
     
     @Test public void updateContext() throws Exception {
