@@ -43,14 +43,24 @@ package org.netbeans.modules.javascript.bower.exec;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.bower.file.BowerJson;
@@ -65,12 +75,18 @@ import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 public class BowerExecutable {
+    private static final Logger LOGGER = Logger.getLogger(BowerExecutable.class.getName());
 
     public static final String BOWER_NAME;
 
+    public static final String SAVE_PARAM = "--save"; // NOI18N
+    public static final String SAVE_DEV_PARAM = "--save-dev"; // NOI18N
+
     private static final String INSTALL_PARAM = "install"; // NOI18N
+    private static final String UNINSTALL_PARAM = "uninstall"; // NOI18N
 
     protected final Project project;
     protected final String bowerPath;
@@ -132,6 +148,83 @@ public class BowerExecutable {
         return task;
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "BowerExecutable.uninstall=Bower ({0})",
+    })
+    @CheckForNull
+    public Future<Integer> uninstall(String... args) {
+        assert !EventQueue.isDispatchThread();
+        assert project != null;
+        String projectName = BowerUtils.getProjectDisplayName(project);
+        Future<Integer> task = getExecutable(Bundle.BowerExecutable_uninstall(projectName))
+                .additionalParameters(getUninstallParams(args))
+                .run(getDescriptor());
+        assert task != null : bowerPath;
+        return task;
+    }
+
+    @CheckForNull
+    public JSONObject list() {
+        List<String> params = new ArrayList<>();
+        params.add("list"); // NOI18N
+        params.add("--json"); // NOI18N
+        params.add("--offline"); // NOI18N
+        JSONObject info = null;
+        try {
+            StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+            getExecutable("bower list").additionalParameters(getParams(params)).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            String result = factory.getResult();
+            info = (JSONObject)new JSONParser().parse(result);
+        } catch (ExecutionException | ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return info;
+    }
+
+    @CheckForNull
+    public JSONArray search(String searchTerm) {
+        List<String> params = new ArrayList<>();
+        params.add("search"); // NOI18N
+        params.add("--json"); // NOI18N
+        params.add(searchTerm);
+        JSONArray result = null;
+        StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+        try {
+            Integer exitCode = getExecutable("bower search").additionalParameters(getParams(params)).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            String rawResult = factory.getResult();
+            if (exitCode != null && exitCode == 0) {
+                result = (JSONArray)new JSONParser().parse(rawResult);
+            }
+        } catch (ExecutionException | ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return result;
+    }
+
+    @CheckForNull
+    public JSONObject info(String packageName) {
+        List<String> params = new ArrayList<>();
+        params.add("info"); // NOI18N
+        params.add("--json"); // NOI18N
+        params.add(packageName);
+        JSONObject info = null;
+        try {
+            StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+            Integer exitCode = getExecutable("bower info").additionalParameters(getParams(params)).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            String result = factory.getResult();
+            if (exitCode != null && exitCode == 0) {
+                info = (JSONObject)new JSONParser().parse(result);
+            }
+        } catch (ExecutionException | ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return info;
+    }
+
     private ExternalExecutable getExecutable(String title) {
         assert title != null;
         return new ExternalExecutable(getCommand())
@@ -147,6 +240,15 @@ public class BowerExecutable {
                 .optionsPath(BowerOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
+    }
+
+    private static ExecutionDescriptor getSilentDescriptor() {
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .inputVisible(false)
+                .frontWindow(false)
+                .showProgress(false)
+                .charset(StandardCharsets.UTF_8);
     }
 
     private File getWorkDir() {
@@ -165,6 +267,13 @@ public class BowerExecutable {
     private List<String> getInstallParams(String... args) {
         List<String> params = new ArrayList<>(args.length + 1);
         params.add(INSTALL_PARAM);
+        params.addAll(getArgsParams(args));
+        return getParams(params);
+    }
+
+    private List<String> getUninstallParams(String... args) {
+        List<String> params = new ArrayList<>(args.length + 1);
+        params.add(UNINSTALL_PARAM);
         params.addAll(getArgsParams(args));
         return getParams(params);
     }
@@ -214,6 +323,32 @@ public class BowerExecutable {
             sb.append(StringUtils.implode(super.getParams(params), "\" \"")); // NOI18N
             sb.append("\""); // NOI18N
             return Collections.singletonList(sb.toString());
+        }
+
+    }
+
+    private static final class StringBuilderInputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+        private final StringBuilder result = new StringBuilder();
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return new InputProcessor() {
+                @Override
+                public void processInput(char[] chars) throws IOException {
+                    result.append(chars);
+                }
+                @Override
+                public void reset() throws IOException {
+                    result.setLength(0);
+                }
+                @Override
+                public void close() throws IOException {
+                }
+            };
+        }
+
+        String getResult() {
+            return result.toString();
         }
 
     }
