@@ -53,6 +53,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -160,6 +161,27 @@ public class BowerExecutable {
             LOGGER.log(Level.INFO, null, ex);
         }
         return info;
+    }
+
+    @CheckForNull
+    public JSONArray search(String searchTerm) {
+        List<String> params = new ArrayList<>();
+        params.add("search"); // NOI18N
+        params.add("--json"); // NOI18N
+        params.add(searchTerm);
+        JSONArray result = null;
+        StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
+        try {
+            Integer exitCode = getExecutable("bower search").additionalParameters(getParams(params)).
+                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+            String rawResult = factory.getResult();
+            if (exitCode != null && exitCode == 0) {
+                result = (JSONArray)new JSONParser().parse(rawResult);
+            }
+        } catch (ExecutionException | ParseException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return result;
     }
 
     private ExternalExecutable getExecutable(String title) {
