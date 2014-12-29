@@ -518,16 +518,36 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             if (cu instanceof CompilationUnit) {
                 gatherMacros((CompilationUnit)cu);
                 gatherIncludes((CompilationUnit)cu);
+                if (compilerName != null && compilerName.indexOf(" -") > 0) {
+                    // Since 4.7 GNU write flags in the producer attribute
+                    // Example:
+                    // #g++ main.cpp -o .object/debug/main.o -g3 -Wall -std=c++11 -c -I./.object/debug -DDEBUG   -I./include -I./   -O3  -ldl
+                    // DW_AT_producer [DW_FORM_string] GNU C++ 4.8.2 -mtune=generic -march=pentium4 -g3 -O3 -std=c++11
+                    // importantFlags = "-mtune=generic -march=pentium4 -O3 -std=c++11"
+                    if (language == LanguageKind.C) {
+                        Artifacts artifacts = compilerSettings.getDriver().gatherCompilerLine(compilerName, CompileLineOrigin.DwarfCompileLine, false);
+                        if (!artifacts.getImportantFlags().isEmpty()) {
+                            importantFlags = DriverFactory.importantFlagsToString(artifacts);
+                        }
+                    } else if (language == LanguageKind.CPP) {
+                        Artifacts artifacts = compilerSettings.getDriver().gatherCompilerLine(compilerName, CompileLineOrigin.DwarfCompileLine, true);
+                        if (!artifacts.getImportantFlags().isEmpty()) {
+                            importantFlags = DriverFactory.importantFlagsToString(artifacts);
+                        }
+                    }
+                }
             } else if (cu instanceof SourceFile) {
                 processPseudoDwarf((SourceFile) cu);
             }
-            switch(standard) {
-                case C89:
-                    importantFlags = "-std=c89";// NOI18N
-                    break;
-                case C99:
-                    importantFlags = "-std=c99";// NOI18N
-                    break;
+            if (importantFlags == null || importantFlags.isEmpty()) {
+                switch(standard) {
+                    case C89:
+                        importantFlags = "-std=c89";// NOI18N
+                        break;
+                    case C99:
+                        importantFlags = "-std=c99";// NOI18N
+                        break;
+                }
             }
         }
     }
