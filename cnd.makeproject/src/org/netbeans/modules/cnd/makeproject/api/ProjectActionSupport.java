@@ -379,15 +379,28 @@ public class ProjectActionSupport {
             String projectName = ProjectUtils.getInformation(paes[0].getProject()).getDisplayName();
             StringBuilder name = new StringBuilder(projectName);
             name.append(" ("); // NOI18N
+            int counter = 0;
+            boolean skipDebug = paes.length > 1;//skip debug if more then on Debug Action (build, debug) as Debug will be in separate tab
             for (int i = 0; i < paes.length; i++) {
-                if (i >= 2) {
+                if (counter >= 2) {
                     name.append("..."); // NOI18N
                     break;
                 }
-                name.append(paes[i].getActionName());
-                if (i < paes.length - 1) {
+                final Type type = paes[i].getType();
+
+                boolean isDebugAction = type == PredefinedType.DEBUG
+                        || type == PredefinedType.DEBUG_STEPINTO
+                        || type == PredefinedType.DEBUG_TEST
+                        || type == PredefinedType.DEBUG_STEPINTO_TEST;
+                if (skipDebug && isDebugAction) {
+                    continue;
+                }
+                if (counter > 0) {
                     name.append(", "); // NOI18N
                 }
+                counter++;
+                name.append(paes[i].getActionName());
+
             }
             name.append(")"); // NOI18N
             if (paes.length > 0) {
@@ -440,12 +453,13 @@ public class ProjectActionSupport {
 
                     final Type type = currentEvent.getType();
 
-                    // Validate executable
-                    boolean isRunAction = (type == PredefinedType.RUN
-                            || type == PredefinedType.DEBUG
+                    boolean isDebugAction = type == PredefinedType.DEBUG
                             || type == PredefinedType.DEBUG_STEPINTO
                             || type == PredefinedType.DEBUG_TEST
-                            || type == PredefinedType.DEBUG_STEPINTO_TEST
+                            || type == PredefinedType.DEBUG_STEPINTO_TEST;
+                    // Validate executable
+                    boolean isRunAction = (type == PredefinedType.RUN
+                            || isDebugAction
                             || type == PredefinedType.CUSTOM_ACTION);
 
                     if ((isRunAction || type == PredefinedType.CHECK_EXECUTABLE)) {
@@ -479,6 +493,20 @@ public class ProjectActionSupport {
                                 return ioProvider.getIO(tabName, getActions(currentEvent.getActionName()));
                             }
                         };
+                    } else if (isDebugAction) {
+                        //this if fix of bz#249112 - Input doesn't work in "Standard Output" mode (gdb debugger)
+                        //if this is RUN action then input  is required
+                        //some changes in org.netbeans.core.output2.NbIO broke the possibility to reuse IO
+                        //the flag inputClosed in NbIO was set to true and that was the reason
+                        //user could not imput anything
+                        tabBaseName = getTabName(new ProjectActionEvent[]{currentEvent});
+                        tabFactory = new IOTabFactory() {
+
+                            @Override
+                            public InputOutput createNewTab(final String tabName) {
+                                return IOProvider.getDefault().getIO(tabName, getActions(currentEvent.getActionName()));
+                            }
+                        };
                     } else {
                         tabBaseName = getTabName(paes);
                         tabFactory = new IOTabFactory() {
@@ -491,6 +519,9 @@ public class ProjectActionSupport {
                     }
 
                     final InputOutputTab ioTab = tabs.getTab(tabBaseName, tabFactory);
+//                    if (isRunAction) {
+//                        ioTab.resetIO();
+//                    }
 
                     InputOutputTab prevIO = currentIORef.getAndSet(ioTab);
                     if (prevIO != null && prevIO != ioTab) {

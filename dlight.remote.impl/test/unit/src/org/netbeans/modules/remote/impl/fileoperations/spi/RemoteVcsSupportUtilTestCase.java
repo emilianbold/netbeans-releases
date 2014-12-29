@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -215,6 +218,34 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
             refreshParentAndRecurse(basePath);
 
 
+        } finally {
+            if (basePath != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(),
+                        "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
+            }
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testGetOutputStream() throws Exception {
+        String basePath = mkTemp(execEnv, true);
+        try {
+            String subdir = basePath + "/subdir.1/subdir.2";
+            String path = subdir + "/file.1";
+            String text = "12345\n";
+            final String script =
+                    "mkdir -p " + subdir + "; " +
+                    "echo 123 > " + path + "; ";
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            OutputStream os = RemoteVcsSupportUtil.getOutputStream(fs, path);
+            PrintWriter w = new PrintWriter(new OutputStreamWriter(os));
+            w.append(text);
+            w.close();
+            RemoteFileObject fo = getFileObject(path);
+            String actualText = readFile(fo);
+            assertEquals(text, actualText);
         } finally {
             if (basePath != null) {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(),

@@ -39,56 +39,45 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remotefs.versioning.spi;
+package org.netbeans.modules.nativeexecution.test;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import javax.swing.JFileChooser;
-import org.netbeans.modules.remotefs.versioning.api.*;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileSystem;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
+ * Annotate a test method with this annotation in the case you want it to be invoked
+ * for each execution environment specified in .cndtestrc
  *
- * @author vkvashin
+ * To put it more precise:  
+ * 
+ * In the case your method is annotated with this annotation,
+ * NativeExecutionBaseTestSuite.addTest will create an instance of your class
+ * (and run the test method) for each environment specified in given section.
+ *
+ * The constructor with (String, ExecutionEnvironment)
+ * signature will be invoked in this case.
+ *
+ * (Note that such test method should be public, have void return type and no parameters)
+ *
+ * In the case test method it is not annotated, 
+ * constructor with a single String parameter (test name) will be used,
+ * only one instance of the class per test method will be created,
+ * and test method will be run only once.
+ *
+ * All the above is true in the case you use NativeExecutionBaseTestSuite.addTest()
+ * method for adding tests.
+ * Otherwise the annotation is just ignored.
+ *
+ * @author Vladimir Kvashin
  */
-public interface RemoteVcsSupportImplementation {
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ClassForAllEnvironments {
     /**
-     * @param proxy defines FS and initial selection
-     * @return file chooser
+     * In the case section is empty,
+     * default is set via suite constructor
      */
-    JFileChooser createFileChooser(VCSFileProxy proxy);
-
-    VCSFileProxy getSelectedFile(JFileChooser chooser);
-
-    FileSystem getFileSystem(VCSFileProxy proxy);
-
-    FileSystem[] getFileSystems();
-
-    FileSystem getDefaultFileSystem();
-
-    boolean isSymlink(VCSFileProxy proxy);
-    
-    boolean canRead(VCSFileProxy proxy);
-
-    public boolean canRead(VCSFileProxy base, String subdir);
-
-    public String getCanonicalPath(VCSFileProxy proxy) throws IOException;
-
-    public VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException;
-
-    public boolean isMac(VCSFileProxy proxy);
-
-    public boolean isUnix(VCSFileProxy proxy);
-
-    public long getSize(VCSFileProxy proxy);
-
-    public String getFileSystemKey(FileSystem proxy);
-
-    public String toString(VCSFileProxy proxy);
-
-    public VCSFileProxy fromString(String proxy);
-
-    public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
+    String section() default "";
 }

@@ -56,6 +56,8 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -87,6 +89,11 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         return new DelegatingVCS(map);
     }
 
+    // for unit tests only
+    public static DelegatingVCS create(VersioningSystem deleagte) {
+        return new DelegatingVCS(deleagte);
+    }
+
     private DelegatingVCS(Map<?, ?> map) {
         this.map = map;
         this.displayName = (String) map.get("displayName");
@@ -94,6 +101,32 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         Object ilh = map.get("isLocalHistory");
         this.isLocalHistory = ilh != null ? (Boolean) map.get("isLocalHistory") : false;
         VersioningManager.LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", map.get("displayName")); // NOI18N
+    }
+
+    private DelegatingVCS(VersioningSystem delegate) {
+        this.delegate = delegate;
+        String serviceName = "Services/VersioningSystem/"+delegate.getClass().getName().replace('.', '-')+".instance"; // NOI18N
+        FileObject serviceFO = FileUtil.getConfigFile(serviceName); // NOI18N
+        metadataFolderNames = new HashSet<String>();
+        int i = 0;
+        while(true) {
+            String name = (String) serviceFO.getAttribute("metadataFolderName" + i++); // NOI18N
+            if(name == null) {
+                break;
+            }
+            name = parseName(name);
+            if(name == null) {
+                continue;
+            }
+            metadataFolderNames.add(name);
+        }
+        HashMap<String,String> aMap = new HashMap<String,String>();
+        aMap.put("actionsCategory", (String) serviceFO.getAttribute("actionsCategory")); // NOI18N
+        map = aMap;
+        this.displayName = (String) serviceFO.getAttribute("displayName"); // NOI18N
+        this.menuLabel = (String) serviceFO.getAttribute("menuLabel"); // NOI18N
+        this.isLocalHistory = false;
+        VersioningManager.LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", displayName); // NOI18N
     }
 
     @Override

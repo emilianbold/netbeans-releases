@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.test;
 
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.remote.impl.fileoperations.spi.RemoteVcsSupportUtilTestCase;
 import org.netbeans.modules.remote.impl.fs.*;
 
 /**
@@ -67,7 +68,8 @@ public class RemoteApi2Test extends RemoteTestSuiteBase {
            ListenersParityTestCase.class,
            PlainFileWriteEventsTestCase.class,
            FssDispatchedHangupTestCase.class,
-           FileSystemProviderTestCase.class
+           FileSystemProviderTestCase.class,
+           RemoteVcsSupportUtilTestCase.class
         };
     }
     

@@ -39,56 +39,55 @@
  *
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remotefs.versioning.spi;
+package org.netbeans.modules.subversion.remote;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import javax.swing.JFileChooser;
-import org.netbeans.modules.remotefs.versioning.api.*;
+import java.util.logging.Level;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author vkvashin
+ * @author alsimon
  */
-public interface RemoteVcsSupportImplementation {
-
-    /**
-     * @param proxy defines FS and initial selection
-     * @return file chooser
-     */
-    JFileChooser createFileChooser(VCSFileProxy proxy);
-
-    VCSFileProxy getSelectedFile(JFileChooser chooser);
-
-    FileSystem getFileSystem(VCSFileProxy proxy);
-
-    FileSystem[] getFileSystems();
-
-    FileSystem getDefaultFileSystem();
-
-    boolean isSymlink(VCSFileProxy proxy);
+public class SimpleTestCase extends RemoteVersioningTestBase {
     
-    boolean canRead(VCSFileProxy proxy);
+    public SimpleTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
+    }
+        
+    @Override
+    protected void setUp() throws Exception {          
+        super.setUp();
+    }
+    
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
 
-    public boolean canRead(VCSFileProxy base, String subdir);
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
 
-    public String getCanonicalPath(VCSFileProxy proxy) throws IOException;
-
-    public VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException;
-
-    public boolean isMac(VCSFileProxy proxy);
-
-    public boolean isUnix(VCSFileProxy proxy);
-
-    public long getSize(VCSFileProxy proxy);
-
-    public String getFileSystemKey(FileSystem proxy);
-
-    public String toString(VCSFileProxy proxy);
-
-    public VCSFileProxy fromString(String proxy);
-
-    public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
+    @ForAllEnvironments
+    public void testCreateNewFile() throws Exception {
+        // init
+        VCSFileProxy file = VCSFileProxy.createFileProxy(wc, "file");
+        
+        // create
+        FileObject fo = wc.toFileObject();
+        fo.createData(file.getName());
+                                        
+        // test 
+        assertTrue(file.exists());
+        
+        assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());        
+        assertCachedStatus(file, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY);                
+    }    
 }

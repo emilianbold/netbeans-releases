@@ -119,6 +119,10 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable, ISVNN
         }
     }
 
+    public final FileSystem getFileSystem() {
+        return fileSystem;
+    }
+    
     protected abstract void perform();
 
     public synchronized boolean isCanceled() {

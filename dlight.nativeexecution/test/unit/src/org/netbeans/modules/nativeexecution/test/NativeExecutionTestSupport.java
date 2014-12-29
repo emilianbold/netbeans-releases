@@ -285,7 +285,7 @@ public class NativeExecutionTestSupport {
         return environments;
     }
 
-    /*package*/ static String[] getPlatforms(String section, NbTestSuite suite) {
+    public static String[] getPlatforms(String section, NbTestSuite suite) {
         try {
             try {
                 RcFile rcFile = NativeExecutionTestSupport.getRcFile();

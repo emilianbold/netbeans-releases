@@ -88,8 +88,10 @@ public class FileProxyBasedVCSProvider extends VCSSystemProvider implements Look
             for (org.netbeans.modules.versioning.core.spi.VersioningSystem vs : systems) {
                 if(vs instanceof DelegatingVCS) {
                     versioningSystems.add((DelegatingVCS) vs);
+                } else if (!"org.netbeans.modules.versioning.DelegatingVCS".equals(vs.getClass().getName())){
+                    versioningSystems.add(DelegatingVCS.create(vs));
                 }
-            }
+            }           
             return versioningSystems;
         }
     }

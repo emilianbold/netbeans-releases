@@ -63,6 +63,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -80,6 +81,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
     private final SVNUrl    url;
     private final SVNUrl    repoUrl;
     private SvnClient       client;
+    private final FileSystem fileSystem;
 
     /**
      * Null is a valid value if base file does not exist in this revision.
@@ -95,7 +97,8 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */
-    public DiffStreamSource(VCSFileProxy baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String title) {
+    public DiffStreamSource(FileSystem fs, VCSFileProxy baseFile, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String title) {
+        this.fileSystem = fs;
         this.baseFile = baseFile;
         this.baseFileName = baseFile.getName();
         this.revision = this.pegRevision = revision;
@@ -112,7 +115,8 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
      * @param pegRevision file peg revision
      * @param title title to use in diff panel
      */
-    public DiffStreamSource(VCSFileProxy baseFile, String baseFileName, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String pegRevision, String title) {
+    public DiffStreamSource(FileSystem fs, VCSFileProxy baseFile, String baseFileName, SVNUrl repoUrl, SVNUrl fileUrl, String revision, String pegRevision, String title) {
+        this.fileSystem = fs;
         this.baseFile = baseFile;
         this.baseFileName = baseFileName;
         this.revision = revision;
@@ -211,7 +215,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
             mimeType = SvnUtils.getMimeType(baseFile);
         }
         try {
-            File rf = VersionsCache.getInstance(VCSFileProxySupport.getFileSystem(baseFile)).getFileRevision(repoUrl, url, revision, pegRevision, baseFileName);
+            File rf = VersionsCache.getInstance(fileSystem).getFileRevision(repoUrl, url, revision, pegRevision, baseFileName);
             if (rf == null) {
                 remoteFile = null;
                 return;

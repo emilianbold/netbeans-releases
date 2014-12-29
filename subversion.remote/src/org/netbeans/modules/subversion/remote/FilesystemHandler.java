@@ -590,6 +590,9 @@ class FilesystemHandler extends VCSInterceptor {
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "afterCreate {0}", file);
         }
+        if (file == null) {
+            return;
+        }
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             // not interested in .svn events
             return;
@@ -597,44 +600,47 @@ class FilesystemHandler extends VCSInterceptor {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                if (file == null) return;
-                // I. refresh cache
-                int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
-                if ((status & FileInformation.STATUS_MANAGED) == 0) {
-                    return;
-                }
-                if (file.isDirectory()) {
-                    // II. refresh the whole dir
-                    cache.directoryContentChanged(file);
-                } else if ((status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 && file.exists()) {
-                    // file exists but it's status is set to deleted
-                    VCSFileProxy temporary = VCSFileProxySupport.generateTemporaryFile(file.getParentFile(), file.getName());
-                    try {
-                        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
-                        if (VCSFileProxySupport.renameTo(file, temporary)) {
-                            client.revert(file, false);
-                            VCSFileProxySupport.delete(file);
-                        } else {
-                            Subversion.LOG.log(Level.WARNING, "FileSystemHandler.afterCreate: cannot rename {0} to {1}", new Object[] { file, temporary }); //NOI18N
-                            client.addFile(file); // at least add the file so it is not deleted
-                        }
-                    } catch (SVNClientException ex) {
-                        Subversion.LOG.log(Level.INFO, null, ex);
-                    } finally {
-                        if (temporary.exists()) {
-                            try {
-                                if (!VCSFileProxySupport.renameTo(temporary, file)) {
-                                    Subversion.LOG.log(Level.WARNING, "FileSystemHandler.afterCreate: cannot rename {0} back to {1}, {1} exists={2}", new Object[] { temporary, file, file.exists() }); //NOI18N
-                                    VCSFileProxySupport.copyFile(temporary, file);
-                                }
-                            } catch (IOException ex) {
-                                Subversion.LOG.log(Level.INFO, "FileSystemHandler.afterCreate: cannot copy {0} back to {1}", new Object[] { temporary, file }); //NOI18N
-                            } finally {
-                                VCSFileProxySupport.delete(temporary);
-                            }
-                        }
-                        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
+                try {
+                    // I. refresh cache
+                    int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
+                    if ((status & FileInformation.STATUS_MANAGED) == 0) {
+                        return;
                     }
+                    if (file.isDirectory()) {
+                        // II. refresh the whole dir
+                        cache.directoryContentChanged(file);
+                    } else if ((status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) != 0 && file.exists()) {
+                        // file exists but it's status is set to deleted
+                        VCSFileProxy temporary = VCSFileProxySupport.generateTemporaryFile(file.getParentFile(), file.getName());
+                        try {
+                            SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
+                            if (VCSFileProxySupport.renameTo(file, temporary)) {
+                                client.revert(file, false);
+                                VCSFileProxySupport.delete(file);
+                            } else {
+                                Subversion.LOG.log(Level.WARNING, "FileSystemHandler.afterCreate: cannot rename {0} to {1}", new Object[] { file, temporary }); //NOI18N
+                                client.addFile(file); // at least add the file so it is not deleted
+                            }
+                        } catch (SVNClientException ex) {
+                            Subversion.LOG.log(Level.INFO, null, ex);
+                        } finally {
+                            if (temporary.exists()) {
+                                try {
+                                    if (!VCSFileProxySupport.renameTo(temporary, file)) {
+                                        Subversion.LOG.log(Level.WARNING, "FileSystemHandler.afterCreate: cannot rename {0} back to {1}, {1} exists={2}", new Object[] { temporary, file, file.exists() }); //NOI18N
+                                        VCSFileProxySupport.copyFile(temporary, file);
+                                    }
+                                } catch (IOException ex) {
+                                    Subversion.LOG.log(Level.INFO, "FileSystemHandler.afterCreate: cannot copy {0} back to {1}", new Object[] { temporary, file }); //NOI18N
+                                } finally {
+                                    VCSFileProxySupport.delete(temporary);
+                                }
+                            }
+                            cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
+                        }
+                    }
+                } catch (Throwable t) {
+                    Subversion.LOG.log(Level.INFO, null, t);
                 }
             }
         });

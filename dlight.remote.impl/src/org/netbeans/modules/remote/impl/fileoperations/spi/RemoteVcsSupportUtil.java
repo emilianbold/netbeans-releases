@@ -44,9 +44,12 @@ package org.netbeans.modules.remote.impl.fileoperations.spi;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.net.ConnectException;
 import java.nio.channels.InterruptedByTimeoutException;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import javax.imageio.IIOException;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -56,7 +59,9 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Static methods that are need for RemoteVcsSupportImpl
@@ -102,29 +107,6 @@ public class RemoteVcsSupportUtil {
             return false;
         }
     }
-    
-//    /** returns fully resolved canonical path or NULL if this is not a symbolic link */
-//    private static String resolveLink(ExecutionEnvironment env, String path) {
-//        try {
-//            FileInfoProvider.StatInfo statInfo = RemoteFileSystemTransport.stat(env, path);
-//            if (statInfo.isLink()) {
-//                String target = statInfo.getLinkTarget();
-//                if (!target.startsWith("/")) { //NOI18N
-//                    target = PathUtilities.normalizeUnixPath(path + "/" + target);
-//                }
-//                String nextTarget = resolveLink(env, target);
-//                return (nextTarget == null) ? target : nextTarget;
-//            } else {
-//                return null;
-//            }
-//        } catch (InterruptedException ex) {
-//        } catch (ExecutionException ex) {
-//            if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
-//                return path; // TODO: think over whether this is correct
-//            }
-//            ex.printStackTrace(System.err);
-//        }        
-//    }
 
     /** returns fully resolved canonical path or NULL if this is not a symbolic link */
     public static String getCanonicalPath(FileSystem fileSystem, String path) throws IOException {
@@ -207,5 +189,27 @@ public class RemoteVcsSupportUtil {
         } else {
             return 0; // TODO: should it be -1?
         }
+    }
+
+    public static OutputStream getOutputStream(FileSystem fileSystem, String path) throws IOException {            
+        FileObject fo = fileSystem.findResource(path);
+        if (fo == null)  {
+            String parentPath = PathUtilities.getDirName(path);
+            FileObject parentFO = fileSystem.findResource(parentPath);
+            while (parentFO == null) {
+                parentPath = PathUtilities.getDirName(path);
+                parentFO = fileSystem.findResource(parentPath);
+            }
+            if (parentFO == null) {
+                throw new IOException(new NullPointerException());
+            }
+            parentFO.refresh();
+        }
+
+        fo = fileSystem.findResource(path);
+        if (fo == null) {
+            fo = FileUtil.createData(fileSystem.getRoot(), path);
+        }
+        return fo.getOutputStream();
     }
 }

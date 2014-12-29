@@ -221,16 +221,9 @@ public class SvnClientFactory {
      * @return
      */
     public static boolean isInitialized (Context context) {
-        VCSFileProxy[] rootFiles = context.getRootFiles();
-        if (rootFiles.length > 0) {
-            VCSFileProxy root = rootFiles[0];
-            FileObject fo = root.toFileObject();
-            try {
-                FileSystem fs = fo.getFileSystem();
-                return instances.get(fs) != null;
-            } catch (FileStateInvalidException ex) {
-                ex.printStackTrace(System.err);
-            }
+        FileSystem fs = context.getFileSystem();
+        if (fs != null) {
+            return instances.get(fs) != null;
         }
         return false;
     }

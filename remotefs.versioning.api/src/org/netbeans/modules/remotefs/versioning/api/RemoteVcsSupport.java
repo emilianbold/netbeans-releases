@@ -43,6 +43,7 @@ package org.netbeans.modules.remotefs.versioning.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.remotefs.versioning.spi.RemoteVcsSupportImplementation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -70,143 +71,80 @@ public final class RemoteVcsSupport {
             chooser.setSelectedFile(file);
             return  chooser;
         } else {
-            RemoteVcsSupportImplementation impl = getImpl();
-            if (impl!= null) {
-                return impl.createFileChooser(proxy);
-            }
+            return getImpl().createFileChooser(proxy);
         }
-        return null;
     }
 
     public static VCSFileProxy getSelectedFile(JFileChooser chooser) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.getSelectedFile(chooser);
-        }
-        return null;
+        return getImpl().getSelectedFile(chooser);
     }
 
     public static FileSystem getFileSystem(VCSFileProxy proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.getFileSystem(proxy);
-        }
-        return null;
+        return getImpl().getFileSystem(proxy);
     }
 
     public static FileSystem[] getFileSystems() {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.getFileSystems();
-        }
-        return new FileSystem[0];
+        return getImpl().getFileSystems();
     }
 
     public static FileSystem getDefaultFileSystem() {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.getDefaultFileSystem();
-        }
-        return null;
+        return getImpl().getDefaultFileSystem();
     }
 
     public static boolean isSymlink(VCSFileProxy proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.isSymlink(proxy);
-        }        
-        return false;
+        return getImpl().isSymlink(proxy);
     }
 
     public static boolean canRead(VCSFileProxy proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.canRead(proxy);
-        }
-        return false;
+        return getImpl().canRead(proxy);
     }
     
     public static boolean canRead(VCSFileProxy base, String subdir) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.canRead(base, subdir);
-        }
-        return false;
+        return getImpl().canRead(base, subdir);
     }
 
     public static VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.getCanonicalFile(proxy);
-        }
-        return proxy;
+        return getImpl().getCanonicalFile(proxy);
     }
 
     public static String getCanonicalPath(VCSFileProxy proxy) throws IOException {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.getCanonicalPath(proxy);
-        }
-        return proxy.getPath();        
+        return getImpl().getCanonicalPath(proxy);
     }    
 
     public static boolean isMac(VCSFileProxy proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.isMac(proxy);
-        }
-        return false;
+        return getImpl().isMac(proxy);
     }
 
     public static boolean isUnix(VCSFileProxy proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.isUnix(proxy);
-        }
-        return true;
+        return getImpl().isUnix(proxy);
     }
 
     public static long getSize(VCSFileProxy proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.getSize(proxy);
-        }
-        return 0;
+        return getImpl().getSize(proxy);
     }
 
     public static String getFileSystemKey(FileSystem proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.getFileSystemKey(proxy);
-        }
-        return null; // TODO: throw???
+        return getImpl().getFileSystemKey(proxy);
     }
 
     public static String toString(VCSFileProxy proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.toString(proxy);
-        }
-        return null; // TODO: throw???
+        return getImpl().toString(proxy);
     }
 
     public static VCSFileProxy fromString(String proxy) {
-        RemoteVcsSupportImplementation impl = getImpl();
-        if (impl != null) {
-            return impl.fromString(proxy);
-        }
-        return null; // TODO: throw???
+        return getImpl().fromString(proxy);
+    }
+
+    public static OutputStream getOutputStream(VCSFileProxy proxy) throws IOException {
+        return getImpl().getOutputStream(proxy);
     }
 
     private static RemoteVcsSupportImplementation getImpl() {
         RemoteVcsSupportImplementation impl = Lookup.getDefault().lookup(RemoteVcsSupportImplementation.class);
-        if (impl == null && !providerAbsenceReported) {
-            providerAbsenceReported = true;
-            Exceptions.printStackTrace(new IllegalStateException("No provider found for " + //NOI18N
-                    RemoteVcsSupportImplementation.class.getName() ));
+        if (impl == null) {
+            throw new IllegalStateException("No provider found for " + //NOI18N
+                    RemoteVcsSupportImplementation.class.getName());
         }
         return impl;
     }
-
-    private static volatile boolean providerAbsenceReported = false;
 }

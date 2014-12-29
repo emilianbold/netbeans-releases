@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remotefs.versioning.spi;
+package org.netbeans.modules.subversion.remote;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import javax.swing.JFileChooser;
-import org.netbeans.modules.remotefs.versioning.api.*;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileSystem;
+import junit.framework.Test;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.remote.test.RemoteTestSuiteBase;
 
 /**
  *
- * @author vkvashin
+ * @author Alexander Simon
  */
-public interface RemoteVcsSupportImplementation {
+public class SimpleTest extends RemoteTestSuiteBase {
+    @SuppressWarnings("unchecked")
+    public SimpleTest() {
+        this("FileOperations Interceptor API", getTestClasses());
+    }
 
-    /**
-     * @param proxy defines FS and initial selection
-     * @return file chooser
-     */
-    JFileChooser createFileChooser(VCSFileProxy proxy);
-
-    VCSFileProxy getSelectedFile(JFileChooser chooser);
-
-    FileSystem getFileSystem(VCSFileProxy proxy);
-
-    FileSystem[] getFileSystems();
-
-    FileSystem getDefaultFileSystem();
-
-    boolean isSymlink(VCSFileProxy proxy);
+    @SuppressWarnings("unchecked")
+    /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
+        return new Class[] {
+            SimpleTestCase.class
+        };
+    }
     
-    boolean canRead(VCSFileProxy proxy);
+    @SuppressWarnings("unchecked")
+    public static SimpleTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass) {
+        return new SimpleTest(testClass.getName(), testClass);
+    }
 
-    public boolean canRead(VCSFileProxy base, String subdir);
+    @SuppressWarnings("unchecked")
+    public static SimpleTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
+        Class[] classes = new Class[timesToRepeat];
+        for (int i = 0; i < classes.length; i++) {
+            classes[i] = testClass;            
+        }
+        return new SimpleTest(testClass.getName(), classes);
+    }
+    
+    public SimpleTest(String name, Class<? extends NativeExecutionBaseTestCase>... testClasses) {
+        super(name, "remote.platforms", testClasses);
+    }
 
-    public String getCanonicalPath(VCSFileProxy proxy) throws IOException;
-
-    public VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException;
-
-    public boolean isMac(VCSFileProxy proxy);
-
-    public boolean isUnix(VCSFileProxy proxy);
-
-    public long getSize(VCSFileProxy proxy);
-
-    public String getFileSystemKey(FileSystem proxy);
-
-    public String toString(VCSFileProxy proxy);
-
-    public VCSFileProxy fromString(String proxy);
-
-    public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
+    public static Test suite() {
+        return new SimpleTest();
+    }
 }

@@ -566,7 +566,12 @@ final class RepositoryRevision {
     private VCSFileProxy computeFile(String path) {
         for (String s : pathToRoot.keySet()) {
             if (path.startsWith(s)) {
-                return VCSFileProxy.createFileProxy(pathToRoot.get(s), path.substring(s.length()));
+                final String rest = path.substring(s.length());
+                if (rest.isEmpty()) {
+                    return pathToRoot.get(s);
+                } else {
+                    return VCSFileProxy.createFileProxy(pathToRoot.get(s), rest);
+                }
             }
         }
         return null;
