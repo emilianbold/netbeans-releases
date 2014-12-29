@@ -82,7 +82,11 @@ public class BowerExecutable {
 
     public static final String BOWER_NAME;
 
+    public static final String SAVE_PARAM = "--save"; // NOI18N
+    public static final String SAVE_DEV_PARAM = "--save-dev"; // NOI18N
+
     private static final String INSTALL_PARAM = "install"; // NOI18N
+    private static final String UNINSTALL_PARAM = "uninstall"; // NOI18N
 
     protected final Project project;
     protected final String bowerPath;
@@ -139,6 +143,22 @@ public class BowerExecutable {
         String projectName = BowerUtils.getProjectDisplayName(project);
         Future<Integer> task = getExecutable(Bundle.BowerExecutable_install(projectName))
                 .additionalParameters(getInstallParams(args))
+                .run(getDescriptor());
+        assert task != null : bowerPath;
+        return task;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "BowerExecutable.uninstall=Bower ({0})",
+    })
+    @CheckForNull
+    public Future<Integer> uninstall(String... args) {
+        assert !EventQueue.isDispatchThread();
+        assert project != null;
+        String projectName = BowerUtils.getProjectDisplayName(project);
+        Future<Integer> task = getExecutable(Bundle.BowerExecutable_uninstall(projectName))
+                .additionalParameters(getUninstallParams(args))
                 .run(getDescriptor());
         assert task != null : bowerPath;
         return task;
@@ -247,6 +267,13 @@ public class BowerExecutable {
     private List<String> getInstallParams(String... args) {
         List<String> params = new ArrayList<>(args.length + 1);
         params.add(INSTALL_PARAM);
+        params.addAll(getArgsParams(args));
+        return getParams(params);
+    }
+
+    private List<String> getUninstallParams(String... args) {
+        List<String> params = new ArrayList<>(args.length + 1);
+        params.add(UNINSTALL_PARAM);
         params.addAll(getArgsParams(args));
         return getParams(params);
     }
