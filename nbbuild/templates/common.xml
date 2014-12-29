@@ -102,10 +102,10 @@ made subject to such option by the copyright holder.
         <tstamp>
             <format property="module.build.started.time" pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/>
         </tstamp>
-        <condition property="asm.jar" value="${nbplatform.active.dir}/platform/modules/org-objectweb-asm.jar">
-            <available file="${nbplatform.active.dir}/platform//modules/org-objectweb-asm.jar"/>
+        <condition property="asm.jar" value="${nbplatform.active.dir}/platform/core/asm-all-5.0.1.jar">
+            <available file="${nbplatform.active.dir}/platform/core/asm-all-5.0.1.jar"/>
         </condition>
-        <property name="asm.jar" location="${o.objectweb.asm.dir}/modules/org-objectweb-asm.jar"/>
+        <property name="asm.jar" location="${libs.asm.dir}/core/asm-all-5.0.1.jar"/>
     </target>
 
     <target name="-release.dir">
