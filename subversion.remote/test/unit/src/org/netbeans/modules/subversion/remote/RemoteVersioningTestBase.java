@@ -42,6 +42,9 @@
 package org.netbeans.modules.subversion.remote;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -50,8 +53,12 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import junit.framework.Test;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.test.ClassForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.netbeans.modules.remotefs.versioning.spi.FilesystemInterceptorProviderImpl;
@@ -90,6 +97,51 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     
     public RemoteVersioningTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+    }
+    
+    protected static final void addTest(NbTestSuite suite, Class<? extends NativeExecutionBaseTestCase> testClass, String testName)  {
+        try {
+            Method test = testClass.getDeclaredMethod(testName);
+            if (test == null) {
+                System.err.println("Not found test "+testClass.getName()+"."+testName);
+                return;
+            }
+            ClassForAllEnvironments forAllEnvAnnotation = testClass.getAnnotation(ClassForAllEnvironments.class);
+            String envSection = forAllEnvAnnotation.section();
+            if (envSection == null || envSection.length() == 0) {
+                envSection = "remote.platforms";
+            }
+            Constructor forAllEnvConstructor = null;
+            for(Constructor constructor : testClass.getConstructors()) {
+                Class[] parameterTypes = constructor.getParameterTypes();
+                if (parameterTypes.length == 2 && 
+                    parameterTypes[0].equals(String.class) &&
+                    parameterTypes[1].equals(ExecutionEnvironment.class)) {
+                    forAllEnvConstructor = constructor;
+                }
+            }
+            if (forAllEnvConstructor==null) {
+                System.err.println("Not found constructor "+testClass.getName()+"(String, ExecutionEnvironment)");
+            }
+            String[] platforms = NativeExecutionTestSupport.getPlatforms(envSection, suite);
+            for (String platform : platforms) {
+                suite.addTest((Test) forAllEnvConstructor.newInstance(testName, NativeExecutionTestSupport.getTestExecutionEnvironment(platform)));
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InstantiationException ex) {
+            ex.printStackTrace(System.err);
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace(System.err);
+        } catch (IllegalArgumentException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace(System.err);
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace(System.err);
+        } catch (SecurityException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
         
     @Override
@@ -146,7 +198,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     }
 
     public static Test suite() {
-        return RemoteApiTest.createSuite(InterceptorTestCase.class);
+        return RemoteApiTest.createSuite(InterceptorTest.class);
     }
     
     protected void commit(VCSFileProxy folder) throws SVNClientException {
