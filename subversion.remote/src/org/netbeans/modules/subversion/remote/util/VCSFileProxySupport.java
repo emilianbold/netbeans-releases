@@ -89,7 +89,7 @@ public final class VCSFileProxySupport {
     public static void delete(VCSFileProxy file) {
         File javaFile = file.toFile();
         if (javaFile != null) {
-            javaFile.delete();
+            deleteRecursively(javaFile);
         } else {
             // TODO: rewrite it with using sftp
             ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
@@ -99,6 +99,18 @@ public final class VCSFileProxySupport {
             }
         }
     }
+    
+    private static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    deleteRecursively(files[i]);
+                }
+            }
+        }
+         file.delete();
+     }
     
     public static void deleteOnExit(VCSFileProxy file) {
         //TODO: implemetn it!

@@ -57,7 +57,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase;
@@ -232,6 +231,10 @@ abstract public class FileOperationsProvider {
                     return res.booleanValue();
                 }
             }
+            return existsSafe(file);
+        }
+
+        protected boolean existsSafe(FileProxyO file) {
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }
@@ -253,8 +256,20 @@ abstract public class FileOperationsProvider {
 
         protected FileObject toFileObject(FileProxyO path) {
             FileObject root = getRoot();
-            return root.getFileObject(path.getPath());
+            fo = root.getFileObject(path.getPath());
+            if (fo == null && existsSafe(path)) {
+                String parent = PathUtilities.getDirName(path.getPath());
+                if (parent != null) {
+                    FileObject parentFO = root.getFileObject(parent);
+                    if (parentFO != null && parentFO.isValid()) {
+                        parentFO.refresh();
+                        fo = root.getFileObject(path.getPath());
+                    }
+                }
+            }
+            return fo;
         }
+        private FileObject fo;
 
         protected InputStream getInputStream(FileObject fo, boolean checkLock) throws FileNotFoundException {
             if (fo instanceof RemoteFileObject) {
