@@ -777,7 +777,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
 
         @Override
         public int getRowCount() {
-            return dependencies.size();
+            return (dependencies == null) ? 0 : dependencies.size();
         }
 
         @Override
