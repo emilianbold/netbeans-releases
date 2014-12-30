@@ -46,7 +46,9 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -325,6 +327,12 @@ public class LibraryProvider {
                 String libraryName = (String)libraryInfo.get("name"); // NOI18N
                 libraries[i] = new Library(libraryName);
             }
+            Arrays.sort(libraries, new Comparator<Library>() {
+                @Override
+                public int compare(Library library1, Library library2) {
+                    return library1.getName().compareTo(library2.getName());
+                }
+            });
             return libraries;
         }
 
