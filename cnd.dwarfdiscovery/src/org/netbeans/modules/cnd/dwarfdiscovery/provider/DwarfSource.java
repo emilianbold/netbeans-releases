@@ -518,7 +518,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             if (cu instanceof CompilationUnit) {
                 gatherMacros((CompilationUnit)cu);
                 gatherIncludes((CompilationUnit)cu);
-                if (compilerName != null && compilerName.indexOf(" -") > 0) {
+                if (compilerName != null && compilerName.indexOf(" -") > 0) { // NOI18N
                     // Since 4.7 GNU write flags in the producer attribute
                     // Example:
                     // #g++ main.cpp -o .object/debug/main.o -g3 -Wall -std=c++11 -c -I./.object/debug -DDEBUG   -I./include -I./   -O3  -ldl

@@ -183,7 +183,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                 return false;
             }
             String path = base.getPath().trim();
-            path += ((path.endsWith("/") || subdir.startsWith("/")) ? "" : "/") + subdir;
+            path += ((path.endsWith("/") || subdir.startsWith("/")) ? "" : "/") + subdir; // NOI18N
             return RemoteVcsSupportUtil.canRead(getFileSystem(base), path);
         }
     }    
@@ -304,7 +304,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
 
     @Override
     public String getFileSystemKey(FileSystem fs) {
-        final String toUrl = FileSystemProvider.toUrl(fs, "/");
+        final String toUrl = FileSystemProvider.toUrl(fs, "/"); // NOI18N
         return toUrl.substring(0, toUrl.indexOf('/')); //NOI18N
     }
 
