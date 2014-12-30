@@ -140,6 +140,13 @@ abstract class JsonFile {
     }
 
     /**
+     * Refreshes the file (when it was modified externally).
+     */
+    public void refresh() {
+        FileUtil.toFileObject(getJson()).refresh();
+    }
+
+    /**
      * Returns <b>shallow</b> copy of the content.
      * <p>
      * <b>WARNING:</b> Do not modify the content directly!
