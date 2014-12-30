@@ -197,10 +197,6 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         return Level.FINE;
     }
 
-    public static Test suite() {
-        return RemoteApiTest.createSuite(InterceptorTest.class);
-    }
-    
     protected void commit(VCSFileProxy folder) throws SVNClientException {
         TestKit.commit(folder);
     }
