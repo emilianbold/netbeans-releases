@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.bower.file;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.BufferedReader;
@@ -57,17 +58,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Pair;
 
 // XXX could be api class
@@ -204,6 +213,232 @@ abstract class JsonFile {
             }
         }
         return null;
+    }
+
+    /**
+     * Set new value of the given field.
+     * @param fieldHierarchy field (together with its hierarchy) to be changed
+     * @param value new value of any type, e.g. new project name
+     * @throws IOException if any error occurs
+     */
+    public synchronized void setContent(final List<String> fieldHierarchy, final Object value) throws IOException {
+        assert fieldHierarchy != null;
+        assert !fieldHierarchy.isEmpty();
+        assert value != null;
+        assert !EventQueue.isDispatchThread();
+        assert exists();
+        initContent();
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(getJson()));
+        EditorCookie editorCookie = dataObject.getLookup().lookup(EditorCookie.class);
+        assert editorCookie != null : "No EditorCookie for " + dataObject;
+        boolean modified = editorCookie.isModified();
+        StyledDocument document = editorCookie.getDocument();
+        if (document == null) {
+            document = editorCookie.openDocument();
+        }
+        assert document != null;
+        final StyledDocument documentRef = document;
+        NbDocument.runAtomic(document, new Runnable() {
+            @Override
+            public void run() {
+                setContent(documentRef, fieldHierarchy, value);
+            }
+        });
+        if (!modified) {
+            editorCookie.saveDocument();
+        }
+        clear(false);
+    }
+
+    void setContent(Document document, List<String> fieldHierarchy, Object value) {
+        String text;
+        try {
+            text = document.getText(0, document.getLength());
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            assert false;
+            return;
+        }
+        List<String> fields = new ArrayList<>(fieldHierarchy);
+        int fieldIndex = -1;
+        int closestFieldIndex = -1;
+        int level = -1;
+        int searchInLevel = 0;
+        String field = null;
+        for (int i = 0; i < text.length(); i++) {
+            if (field == null) {
+                field = "\"" + JSONValue.escape(fields.get(searchInLevel)) + "\""; // NOI18N
+            }
+            char ch = text.charAt(i);
+            if (ch == '{') {
+                level++;
+                continue;
+            } else if (ch == '}') {
+                level--;
+                continue;
+            } else if (Character.isWhitespace(ch)) {
+                continue;
+            }
+            if (level != searchInLevel) {
+                continue;
+            }
+            if (ch == '"'
+                    && text.substring(i).startsWith(field)) {
+                // match
+                closestFieldIndex = i;
+                searchInLevel++;
+                if (searchInLevel >= fields.size()) {
+                    fieldIndex = i;
+                    break;
+                }
+                i += field.length();
+                field = null;
+            }
+        }
+        assert field != null;
+        if (fieldIndex == -1) {
+            // remove found fields
+            while (searchInLevel > 0) {
+                fields.remove(0);
+                searchInLevel--;
+            }
+            // insert missing fields
+            insertNewField(document, fields, value, text, closestFieldIndex);
+            return;
+        }
+        int colonIndex = -1;
+        for (int i = fieldIndex + field.length(); i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            switch (ch) {
+                case ' ':
+                    // noop
+                    break;
+                case ':':
+                    colonIndex = i;
+                    break;
+                default:
+                    // unexpected
+                    return;
+            }
+            if (colonIndex != -1) {
+                break;
+            }
+        }
+        if (colonIndex == -1) {
+            return;
+        }
+        int valueStartIndex = -1;
+        for (int i = colonIndex + 1; i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            if (!Character.isWhitespace(ch)) {
+                valueStartIndex = i;
+                break;
+            }
+        }
+        if (valueStartIndex == -1) {
+            return;
+        }
+        char valueFirstChar = text.charAt(valueStartIndex);
+        int valueEndIndex = -1;
+        for (int i = valueStartIndex + 1; i < text.length(); ++i) {
+            char ch = text.charAt(i);
+            if (valueFirstChar == '"') {
+                if (ch == '"') {
+                    valueEndIndex = i + 1;
+                }
+            } else if (Character.isDigit(ch)
+                    || ch == '.') {
+                // number
+                continue;
+            } else {
+                valueEndIndex = i;
+            }
+            if (valueEndIndex != -1) {
+                break;
+            }
+        }
+        if (valueEndIndex == -1) {
+            return;
+        }
+        insertValue(document, valueStartIndex, valueEndIndex, JSONValue.toJSONString(value), !(value instanceof String) && !(value instanceof Number));
+    }
+
+    private void insertNewField(Document document, List<String> fieldHierarchy, Object value, String text, int index) {
+        int startIndex = index;
+        boolean commaBefore;
+        if (startIndex == -1) {
+            startIndex = text.lastIndexOf('}'); // NOI18N
+            if (startIndex != -1) {
+                for (;;) {
+                    char ch = text.charAt(--startIndex);
+                    if (!Character.isWhitespace(ch)) {
+                        startIndex++;
+                        break;
+                    }
+                }
+            }
+            commaBefore = true;
+        } else {
+            startIndex = text.indexOf('{', startIndex); // NOI18N
+            if (startIndex != -1) {
+                startIndex++;
+            }
+            commaBefore = false;
+        }
+        if (startIndex == -1) {
+            startIndex = text.length();
+        }
+        StringBuilder sb = new StringBuilder();
+        if (commaBefore) {
+            sb.append(','); // NOI18N
+            sb.append('\n'); // NOI18N
+        }
+        int braces = -1;
+        for (String field : fieldHierarchy) {
+            if (braces > -1) {
+                sb.append('{'); // NOI18N
+                sb.append('\n'); // NOI18N
+            }
+            sb.append('"'); // NOI18N
+            sb.append(JSONValue.escape(field));
+            sb.append('"'); // NOI18N
+            sb.append(':'); // NOI18N
+            braces++;
+        }
+        sb.append(JSONValue.toJSONString(value));
+        for (int i = 0; i < braces; i++) {
+            sb.append('}'); // NOI18N
+            sb.append('\n'); // NOI18N
+        }
+        if (!commaBefore) {
+            sb.append(','); // NOI18N
+        }
+        insertValue(document, startIndex, -1, sb.toString(), true);
+    }
+
+    private void insertValue(Document document, int valueStartIndex, int valueEndIndex, String value, boolean format) {
+        try {
+            if (valueEndIndex != -1) {
+                document.remove(valueStartIndex, valueEndIndex - valueStartIndex);
+            }
+            document.insertString(valueStartIndex, value, null);
+            if (format) {
+                reformat(document, valueStartIndex, valueStartIndex + value.length());
+            }
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            assert false;
+        }
+    }
+
+    private void reformat(Document document, int startOffset, int endOffset) throws BadLocationException {
+        Reformat reformat = Reformat.get(document);
+        reformat.lock();
+        try {
+            reformat.reformat(startOffset, endOffset);
+        } finally {
+            reformat.unlock();
+        }
     }
 
     private void initContent() {
