@@ -111,20 +111,20 @@ public class StatusCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-	arguments.add("status");
-        arguments.add("--xml");
+	arguments.add("status"); //NOI18N
+        arguments.add("--xml"); //NOI18N
         if (getAll) {
-            arguments.add("-v");
-            arguments.add("--no-ignore"); 
+            arguments.add("-v"); //NOI18N
+            arguments.add("--no-ignore"); //NOI18N
         }
         if (!descend) {
-            arguments.add("-N");
+            arguments.add("-N"); //NOI18N
         }
         if (checkUpdates) {
-            arguments.add("-u");
+            arguments.add("-u"); //NOI18N
         }
         if (ignoreExternals) {
-            arguments.add("--ignore-externals");
+            arguments.add("--ignore-externals"); //NOI18N
         }
 	arguments.add(files);        
     }
@@ -314,7 +314,7 @@ public class StatusCommand extends SvnCommand {
                     String path = values.get(PATH_ATTRIBUTE);
                     
                     if (values.get(WC_ST_ELEMENT_NAME) == null) {
-                        throw new SAXException("'wc-status' tag expected under 'entry'");
+                        throw new SAXException("'wc-status' tag expected under 'entry'"); //NOI18N
                     }
                             
                     SVNStatusKind wcStatus = SVNStatusKind.fromString(values.get(WC_ITEM_ATTR));
@@ -337,11 +337,11 @@ public class StatusCommand extends SvnCommand {
                     if(values.get(LOCK_ELEMENT_NAME) != null) {
                         token = values.get(TOKEN_ELEMENT_NAME);
                         if (token == null) {
-                            throw new SAXException("'token' tag expected under 'lock'");
+                            throw new SAXException("'token' tag expected under 'lock'"); //NOI18N
                         }
                         owner = values.get(OWNER_ELEMENT_NAME);
                         if (owner == null) {
-                            throw new SAXException("'owner' tag expected under 'lock'");
+                            throw new SAXException("'owner' tag expected under 'lock'"); //NOI18N
                         }
                         lockComment = values.get(COMMENT_ELEMENT_NAME);
                         lockCreated = getDate(values.get(CREATED_ELEMENT_NAME));
@@ -378,7 +378,7 @@ public class StatusCommand extends SvnCommand {
         }
 
         private boolean getBoolean(String value) {
-            return value != null && value.trim().equals("true");
+            return value != null && value.trim().equals("true"); //NOI18N
         }
 
         private String toString(int length, char[] ch, int start) {
@@ -397,7 +397,7 @@ public class StatusCommand extends SvnCommand {
                 } catch (NumberFormatException ex) {
                     Subversion.LOG.log(Level.INFO, dateValue, ex);
                 } catch (Exception ex) {
-                    Subversion.LOG.log(Level.SEVERE, "Cannot parse date: " + dateValue, ex);
+                    Subversion.LOG.log(Level.SEVERE, "Cannot parse date: " + dateValue, ex); //NOI18N
                 }
             }
             return date;
@@ -405,7 +405,7 @@ public class StatusCommand extends SvnCommand {
         
         private SVNRevision.Number getRevision(String revisionValue) {
             SVNRevision.Number rev = null;
-            if (revisionValue != null && !revisionValue.trim().equals("")) {
+            if (revisionValue != null && !revisionValue.trim().equals("")) { //NOI18N
                 try {
                     rev = new SVNRevision.Number(Long.parseLong(revisionValue));
                 } catch (NumberFormatException e) {

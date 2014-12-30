@@ -129,7 +129,7 @@ public abstract class ContextAction extends NodeAction {
         // just them.
         // The same (global save) logic is in CVS, no complaint
         LifecycleManager.getDefault().saveAll();
-        Utils.logVCSActionEvent("SVN");
+        Utils.logVCSActionEvent("SVN"); //NOI18N
         performContextAction(nodes);           
     }
 

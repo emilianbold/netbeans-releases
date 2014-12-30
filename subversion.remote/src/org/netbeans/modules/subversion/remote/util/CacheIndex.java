@@ -60,7 +60,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  */
 public abstract class CacheIndex {
 
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.turbo.CacheIndex");
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.turbo.CacheIndex"); //NOI18N
     private Map<VCSFileProxy, Set<VCSFileProxy>> index = new ConcurrentHashMap<>();
 
     public CacheIndex() { }

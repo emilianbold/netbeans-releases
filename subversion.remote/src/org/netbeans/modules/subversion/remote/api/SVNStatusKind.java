@@ -46,20 +46,20 @@ package org.netbeans.modules.subversion.remote.api;
  * @author Alexander Simon
  */
 public enum SVNStatusKind {
-    NONE("none"),
-    NORMAL("normal"),
-    ADDED("added"),
-    MISSING("missing"),
-    INCOMPLETE("incomplete"),
-    DELETED("deleted"),
-    REPLACED("replaced"),
-    MODIFIED("modified"),
-    MERGED("merged"),
-    CONFLICTED("conflicted"),
-    OBSTRUCTED("obstructed"),
-    IGNORED("ignored"),
-    EXTERNAL("external"),
-    UNVERSIONED("unversioned");
+    NONE("none"), //NOI18N
+    NORMAL("normal"), //NOI18N
+    ADDED("added"), //NOI18N
+    MISSING("missing"), //NOI18N
+    INCOMPLETE("incomplete"), //NOI18N
+    DELETED("deleted"), //NOI18N
+    REPLACED("replaced"), //NOI18N
+    MODIFIED("modified"), //NOI18N
+    MERGED("merged"), //NOI18N
+    CONFLICTED("conflicted"), //NOI18N
+    OBSTRUCTED("obstructed"), //NOI18N
+    IGNORED("ignored"), //NOI18N
+    EXTERNAL("external"), //NOI18N
+    UNVERSIONED("unversioned"); //NOI18N
 
     private final String value;
     private SVNStatusKind(String value) {
@@ -71,7 +71,7 @@ public enum SVNStatusKind {
                 return r;
             }
         }
-        if ("non-svn".equals(s)) {
+        if ("non-svn".equals(s)) { //NOI18N
             return NONE;
         }
         return null;

@@ -94,6 +94,7 @@ import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsActio
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -509,7 +510,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
     }
 
-    @NbBundle.Messages({
+    @Messages({
         "# {0} - revision number", "MSG_RollbackTo.menuItem=Rollback to {0}",
         "MSG_RollbackToPrevious.menuItem=Rollback to previous Revision"
     })

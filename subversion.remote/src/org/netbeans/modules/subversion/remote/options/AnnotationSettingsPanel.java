@@ -151,11 +151,11 @@ public class AnnotationSettingsPanel extends javax.swing.JPanel {
     private void initModel() {
         expresionsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"", ""}
+                {"", ""} //NOI18N
             },
             new String [] {
-                org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.expresionsTable.column1.name"),
-                org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.expresionsTable.column2.name")
+                org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.expresionsTable.column1.name"), //NOI18N
+                org.openide.util.NbBundle.getMessage(AnnotationSettingsPanel.class, "AnnotationSettingsPanel.expresionsTable.column2.name") //NOI18N
             }
         ) {
             Class[] types = new Class [] {

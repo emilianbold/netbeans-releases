@@ -85,18 +85,18 @@ public class MergeCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("merge");
+        arguments.add("merge"); //NOI18N
         if (!rec) {
-            arguments.add("-N");
+            arguments.add("-N"); //NOI18N
         }
         if (force) {
-            arguments.add("--force");
+            arguments.add("--force"); //NOI18N
         }
         if (dry) {
-            arguments.add("--dry-run");
+            arguments.add("--dry-run"); //NOI18N
         }        	        
         if (ignoreAncestry) {
-            arguments.add("--ignore-ancestry");
+            arguments.add("--ignore-ancestry"); //NOI18N
         }
         if (startUrl.equals(endUrl)) {
             arguments.add(startUrl);
@@ -111,7 +111,7 @@ public class MergeCommand extends SvnCommand {
 
     @Override
     public void errorText(String line) {
-        if (line.startsWith("svn: warning:")) {
+        if (line.startsWith("svn: warning:")) { //NOI18N
             return;
         }
         super.errorText(line);

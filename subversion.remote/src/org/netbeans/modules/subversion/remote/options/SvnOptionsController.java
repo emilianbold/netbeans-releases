@@ -335,8 +335,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
     }
     
     private void onManageLabelsClick() {     
-        String labelFormat = panel.annotationTextField.getText().replaceAll(" ", "");        
-        annotationSettings.show(labelFormat != null && labelFormat.indexOf("{folder}") > -1);                
+        String labelFormat = panel.annotationTextField.getText().replaceAll(" ", ""); //NOI18N  
+        annotationSettings.show(labelFormat != null && labelFormat.indexOf("{folder}") > -1); //NOI18N         
     }
     
     private class LabelVariable {
@@ -401,7 +401,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
             
             String variable = "";
             for (int i = 0; i < selection.length; i++) {
-                variable += "{" + ((LabelVariable)selection[i]).getVariable() + "}";
+                variable += "{" + ((LabelVariable)selection[i]).getVariable() + "}"; //NOI18N
             }
 
             String annotation = panel.annotationTextField.getText();

@@ -136,7 +136,7 @@ public class DiffStreamSource extends StreamSource {
             if (revision == null || remoteFile == null) {
                 return null;
             }
-            if (!mimeType.startsWith("text/")) {
+            if (!mimeType.startsWith("text/")) { //NOI18N
                 return null;
             } else {
                 return org.netbeans.modules.versioning.util.Utils.createReader(remoteFile.toFileObject());

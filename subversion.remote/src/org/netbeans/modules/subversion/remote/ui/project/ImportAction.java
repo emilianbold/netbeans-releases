@@ -145,7 +145,7 @@ public final class ImportAction implements ActionListener, HelpCtx.Provider {
             return;
         }
           
-        Utils.logVCSActionEvent("SVN");                                 
+        Utils.logVCSActionEvent("SVN"); //NOI18N
 
         assert roots.size() == 1; // ensured through isEnabled
         

@@ -74,9 +74,9 @@ public class RevertCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
-        arguments.add("revert");
+        arguments.add("revert"); //NOI18N
         if (recursive) {
-            arguments.add("-R");
+            arguments.add("-R"); //NOI18N
         }
         arguments.addFileArguments(files);
         setCommandWorkingDirectory(files);                

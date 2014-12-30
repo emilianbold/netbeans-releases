@@ -283,7 +283,7 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
         if(wizard.useName()) {
             folder = wizard.getRepositoryFolder();
         } else {
-            folder = "\\1";
+            folder = "\\1"; //NOI18N
         }        
         addRow(pattern, folder);    
     } 

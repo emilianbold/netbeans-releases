@@ -74,10 +74,10 @@ public abstract class VCSNotificationDisplayer {
      * @return
      */
     protected String trim(String str) {
-        if (str.startsWith("/")) {
+        if (str.startsWith("/")) { //NOI18N
             str = str.substring(1, str.length());
         }
-        if (str.endsWith("/")) {
+        if (str.endsWith("/")) { //NOI18N
             str = str.substring(0, str.length() - 1);
         }
         return str;

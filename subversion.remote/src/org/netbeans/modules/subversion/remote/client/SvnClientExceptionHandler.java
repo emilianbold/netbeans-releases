@@ -100,6 +100,7 @@ import org.openide.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NetworkSettings;
 import org.openide.util.actions.SystemAction;
 
@@ -383,18 +384,18 @@ public class SvnClientExceptionHandler {
     private String getRealmFromException() {        
         String exceptionMessage = exception.getMessage().toLowerCase();             
         String[] errorMessages = new String[] {
-            "host not found (", 
-            "could not connect to server (", 
-            "could not resolve hostname (", 
-            "issuer is not trusted (",
-            "authorization failed ("
+            "host not found (",  //NOI18N
+            "could not connect to server (",  //NOI18N
+            "could not resolve hostname (",  //NOI18N
+            "issuer is not trusted (", //NOI18N
+            "authorization failed (" //NOI18N
         };        
         for(String errorMessage : errorMessages) {
             int idxL = exceptionMessage.indexOf(errorMessage);
             if(idxL < 0) {
                 continue;
             }
-            int idxR = exceptionMessage.indexOf(")", idxL + errorMessage.length());
+            int idxR = exceptionMessage.indexOf(")", idxL + errorMessage.length()); //NOI18N
             if(idxR < 0) {
                 continue;
             }
@@ -510,7 +511,7 @@ public class SvnClientExceptionHandler {
           Subversion.LOG.info("connectProxy: adding proxy authorization field"); //NOI18N
           sb.append("Proxy-Authorization: Basic ").append(Base64Encoder.encode((userName + ":" + password).getBytes())).append("\r\n"); //NOI18N
       }
-      String connectString = sb.append("\r\n").toString();
+      String connectString = sb.append("\r\n").toString(); //NOI18N
       byte connectBytes[];
       try {
          connectBytes = connectString.getBytes(CHARSET_NAME);
@@ -679,7 +680,7 @@ public class SvnClientExceptionHandler {
 
     static boolean isOperationCancelled(String message) {
         message = message.toLowerCase();
-        return message.indexOf("operation canceled") > -1
+        return message.indexOf("operation canceled") > -1 //NOI18N
                 || message.contains("closedchannelexception"); //NOI18N - canceling a command while in svnkit/sqljet throws ClosedChannelException, no CanceledEx
     }
 
@@ -711,7 +712,7 @@ public class SvnClientExceptionHandler {
         msg = msg.toLowerCase();
         return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
                (msg.contains("svn:") && msg.contains("url") && msg.contains("non-existent in")) || //NOI18N
-               (msg.indexOf("bad url passed to ra layer") > - 1 );
+               (msg.indexOf("bad url passed to ra layer") > - 1 ); //NOI18N
     }
 
     private static boolean isNoHostConnection(String msg) {
@@ -833,7 +834,7 @@ public class SvnClientExceptionHandler {
     
     public static boolean isNoCliSvnClient(String msg) {
         msg = msg.toLowerCase();
-        return (msg.indexOf("command line client adapter is not available") > -1) || 
+        return (msg.indexOf("command line client adapter is not available") > -1) ||  //NOI18N
                (msg.indexOf(CommandlineClient.ERR_CLI_NOT_AVALABLE) > -1);
     }
 
@@ -948,7 +949,7 @@ public class SvnClientExceptionHandler {
         msc.show();
     }
     
-    @NbBundle.Messages({
+    @Messages({
         "MSG_Error_TooOldWC=Working copy is too old for the currently used Subversion client.\n"
             + "You'll need to manually upgrade the working copy."
     })
@@ -961,7 +962,7 @@ public class SvnClientExceptionHandler {
             msg = exMsg + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OutOfDate") + "\n"; // NOI18N
         } else if(isWrongUUID(msg)) {
             msg = exMsg + "\n\n" + org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_RelocateWrongUUID") + "\n"; // NOI18N
-        } else if (isTooOldWorkingCopy(msg) && (msg.contains("svn upgrade")
+        } else if (isTooOldWorkingCopy(msg) && (msg.contains("svn upgrade") //NOI18N
                 || msg.contains("working copy format of ") && msg.contains("is too old") //NOI18N
                 || msg.contains("needs to be upgraded"))) { //NOI18N
             msg = Bundle.MSG_Error_TooOldWC() + "\n\n" + exMsg + "\n"; //NOI18N
@@ -973,8 +974,8 @@ public class SvnClientExceptionHandler {
 
     public static String parseExceptionMessage(SVNClientException ex) {
         String msg = ex.getMessage();
-        msg = msg.replace("svn: warning: ", "");
-        msg = msg.replace("svn: ", "");
+        msg = msg.replace("svn: warning: ", ""); //NOI18N
+        msg = msg.replace("svn: ", ""); //NOI18N
         if (isTooOldClientForWC(msg)) {
             // add an additional message for old clients
             msg += NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_OldClient");    // NOI18N

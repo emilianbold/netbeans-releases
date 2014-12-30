@@ -75,9 +75,9 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class LogCommand extends SvnCommand {
 
-    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //NOI18N
     static {        
-        dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));       
+        dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT")); //NOI18N
     }
     
     private byte[] output;
@@ -156,7 +156,7 @@ public class LogCommand extends SvnCommand {
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
         // verbose
-        arguments.add("log");        
+        arguments.add("log"); //NOI18N
         arguments.add(revStart, revEnd);
         
         switch(type) {
@@ -164,7 +164,7 @@ public class LogCommand extends SvnCommand {
                 if (pegRevision == null) {
                     arguments.add(file);
                 } else {
-                    arguments.add(file.getPath() + "@" + pegRevision);
+                    arguments.add(file.getPath() + "@" + pegRevision); //NOI18N
                 }
                 break;
             case url:
@@ -178,17 +178,17 @@ public class LogCommand extends SvnCommand {
                 }        
                 break;
             default:
-                throw new IllegalStateException("Illegal logtype: " + type);          
+                throw new IllegalStateException("Illegal logtype: " + type); //NOI18N
         }             
-        arguments.add("--xml");        
+        arguments.add("--xml"); //NOI18N
         if(fetchChangePath) {
-            arguments.add("-v");            
+            arguments.add("-v"); //NOI18N    
         }
         if (stopOnCopy) {
-            arguments.add("--stop-on-copy");   
+            arguments.add("--stop-on-copy"); //NOI18N
         }            
         if (limit > 0) {
-            arguments.add("--limit");
+            arguments.add("--limit"); //NOI18N
             arguments.add(Long.toString(limit));
         }
     }
@@ -261,8 +261,8 @@ public class LogCommand extends SvnCommand {
                 List<Path> paths = getPathList();
                 Path path = new Path();
                 path.action = elementAttributes.getValue(ACTION_ATTRIBUTE).charAt(0);
-                path.copyPath = elementAttributes.getValue("copyfrom-path");
-                path.copyRev = elementAttributes.getValue("copyfrom-rev");
+                path.copyPath = elementAttributes.getValue("copyfrom-path"); //NOI18N
+                path.copyRev = elementAttributes.getValue("copyfrom-rev"); //NOI18N
                 paths.add(path);                
             } else if(values != null) {
                 values.put(tag, "");
@@ -296,11 +296,11 @@ public class LogCommand extends SvnCommand {
                                                                                        
                     String author = (String) values.get(AUTHOR_ELEMENT_NAME);
                     if(author == null) {
-                        author = "";
+                        author = ""; //NOI18N
                     }
                     Date date = null;
                     String dateValue = (String) values.get(DATE_ELEMENT_NAME);                                                
-                    if (dateValue == null) throw new SAXException("'date' tag expected under 'logentry'");                        
+                    if (dateValue == null) throw new SAXException("'date' tag expected under 'logentry'"); //NOI18N
                     try {
                         date = dateFormat.parse(dateValue);
                     } catch (ParseException ex) {
@@ -309,7 +309,7 @@ public class LogCommand extends SvnCommand {
                     }
                     String msg = (String) values.get(MSG_ELEMENT_NAME);
                     if(msg == null) {
-                        msg = "";
+                        msg = ""; //NOI18N
                     }
 
                     SVNRevision.Number rev = getRevision((String) values.get(REVISION_ATTRIBUTE));
@@ -412,32 +412,32 @@ public class LogCommand extends SvnCommand {
 
         @Override
         public long getTimeMicros() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public long getTimeMillis() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public long getNumberOfChildren() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public ISVNLogMessage[] getChildMessages() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void addChild(ISVNLogMessage arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public boolean hasChildren() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
     }    
             

@@ -47,9 +47,9 @@ package org.netbeans.modules.subversion.remote.api;
  */
 public class SVNConflictVersion {
     public enum NodeKind {
-        none("none"),
-        file("file"),
-        directory("directory");
+        none("none"), //NOI18N
+        file("file"), //NOI18N
+        directory("directory"); //NOI18N
 
         private final String value;
         private NodeKind(String value) {

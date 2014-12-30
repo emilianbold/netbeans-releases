@@ -83,9 +83,9 @@ import org.openide.util.RequestProcessor;
  */
 public class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
 
-    public static final String IMPORT_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.import";
-    public static final String CHECKOUT_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout";
-    public static final String URL_PATTERN_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.urlPattern";
+    public static final String IMPORT_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.import"; //NOI18N
+    public static final String CHECKOUT_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout"; //NOI18N
+    public static final String URL_PATTERN_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.urlPattern"; //NOI18N
     
     private Repository repository;        
     private RepositoryStepPanel panel;    

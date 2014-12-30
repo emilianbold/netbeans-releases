@@ -197,16 +197,16 @@ public class CLIStatus implements ISVNStatus {
 
     @Override
     public boolean isFileExternal() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String getMovedFromAbspath () {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException(); 
     }
 
     @Override
     public String getMovedToAbspath () {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 }

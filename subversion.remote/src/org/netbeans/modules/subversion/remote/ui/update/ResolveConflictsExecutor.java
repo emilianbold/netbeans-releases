@@ -97,7 +97,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     private String rightFileRevision = null;
 
     private final VCSFileProxy file;
-    private static final String NESTED_CONFLICT = "NESTED_CONFLICT";
+    private static final String NESTED_CONFLICT = "NESTED_CONFLICT"; //NOI18N
 
     public ResolveConflictsExecutor(VCSFileProxy file) {
         super(VCSFileProxySupport.getFileSystem(file));

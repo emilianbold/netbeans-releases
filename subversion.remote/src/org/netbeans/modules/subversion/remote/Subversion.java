@@ -96,9 +96,9 @@ public class Subversion {
      * Fired when textual annotations and badges have changed. The NEW value is Set<File> of files that changed or NULL
      * if all annotaions changed.
      */
-    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
+    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; //NOI18N
 
-    static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged";
+    static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; //NOI18N
 
     /**
      * Results in refresh of annotations and diff sidebars
@@ -130,7 +130,7 @@ public class Subversion {
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote");
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote"); //NOI18N
 
     private Result<? extends VCSHyperlinkProvider> hpResult;
 
@@ -645,11 +645,11 @@ public class Subversion {
             SvnClientFactory.checkClientAvailable(context);
             original = VersionsCache.getInstance(context.getFileSystem()).getBaseRevisionFile(workingCopy);
             if (original == null) {
-                throw new IOException("Unable to get BASE revision of " + workingCopy);
+                throw new IOException("Unable to get BASE revision of " + workingCopy); //NOI18N
             }
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(VCSFileProxySupport.getOutputStream(originalFile), original.getInputStream(false));
         } catch (IOException e) {
-            LOG.log(Level.INFO, "Unable to get original file", e);
+            LOG.log(Level.INFO, "Unable to get original file", e); //NOI18N
         } catch (SVNClientException ex) {
             Subversion.LOG.log(Level.INFO, "Subversion.getOriginalFile: file is managed but svn client is unavailable (file {0})", workingCopy.getPath()); //NOI18N
             if (Subversion.LOG.isLoggable(Level.FINE)) {

@@ -116,7 +116,7 @@ public class CatCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("cat");        
+        arguments.add("cat"); //NOI18N
         switch(type) {
             case url: 
                 if (pegRevision == null) {
@@ -130,7 +130,7 @@ public class CatCommand extends SvnCommand {
                 setCommandWorkingDirectory(file);
                 break;
             default :    
-                throw new IllegalStateException("Illegal cattype: " + type);                             
+                throw new IllegalStateException("Illegal cattype: " + type); //NOI18N
         }                
         arguments.add(rev);
     }    

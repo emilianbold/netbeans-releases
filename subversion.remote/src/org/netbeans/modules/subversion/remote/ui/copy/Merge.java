@@ -71,6 +71,7 @@ import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -638,7 +639,7 @@ public class Merge extends CopyDialog implements ItemListener {
 
     }               
 
-    @NbBundle.Messages({
+    @Messages({
         "CTL_Merge_ReintegrateBranch=Reintegrate Feature Branch",
         "CTL_Merge_ReintegrateBranchDesc=Merge all changes from a feature branch not yet present in the working copy."
     })

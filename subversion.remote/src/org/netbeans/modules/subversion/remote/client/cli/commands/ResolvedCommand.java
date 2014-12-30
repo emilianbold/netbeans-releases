@@ -74,9 +74,9 @@ public class ResolvedCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
-        arguments.add("resolved");
+        arguments.add("resolved"); //NOI18N
         if (recursive) {
-            arguments.add("-R");
+            arguments.add("-R"); //NOI18N
         }
         arguments.add(file);    
         setCommandWorkingDirectory(file);        

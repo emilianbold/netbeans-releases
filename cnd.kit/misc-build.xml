@@ -200,6 +200,12 @@ made subject to such option by the copyright holder.
             <arg value="i18n-check-local.sh"/>
         </exec>
     </target>
+
+    <target name="bundle-check" description="Bundle check for CND modules">
+        <exec executable="sh">
+            <arg value="bundle-check.sh"/>
+        </exec>
+    </target>
     
     <target name="CheckSignatures" description="Sig Test for CND/DLight modules">
         <subant buildpath="${nbroot}" target="check-sigtests-version">

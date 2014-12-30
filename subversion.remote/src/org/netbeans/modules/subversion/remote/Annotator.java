@@ -114,11 +114,11 @@ public class Annotator extends VCSAnnotator {
 
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
 
-    public static final String ANNOTATION_REVISION    = "revision";
-    public static final String ANNOTATION_STATUS      = "status";
-    public static final String ANNOTATION_LOCK        = "lock";
-    public static final String ANNOTATION_FOLDER      = "folder";
-    public static final String ANNOTATION_MIME_TYPE   = "mime_type";
+    public static final String ANNOTATION_REVISION    = "revision"; //NOI18N
+    public static final String ANNOTATION_STATUS      = "status"; //NOI18N
+    public static final String ANNOTATION_LOCK        = "lock"; //NOI18N
+    public static final String ANNOTATION_FOLDER      = "folder"; //NOI18N
+    public static final String ANNOTATION_MIME_TYPE   = "mime_type"; //NOI18N
     public static final String ANNOTATION_COMMIT_REVISION = "commit_revision"; //NOI18N
     public static final String ANNOTATION_COMMIT_DATE = "date"; //NOI18N
     public static final String ANNOTATION_COMMIT_AUTHOR = "author"; //NOI18N
@@ -159,15 +159,15 @@ public class Annotator extends VCSAnnotator {
         }
         String string = SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
         if (string != null && !string.trim().equals("")) { // NOI18N
-            af.mimeTypeFlag = string.contains("{mime_type}");
+            af.mimeTypeFlag = string.contains("{mime_type}"); //NOI18N
             string = SvnUtils.createAnnotationFormat(string);
             if (!SvnUtils.isAnnotationFormatValid(string)) {
-                Subversion.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults");
+                Subversion.LOG.log(Level.WARNING, "Bad annotation format, switching to defaults"); //NOI18N
                 string = org.openide.util.NbBundle.getMessage(Annotator.class, "Annotator.defaultFormat"); // NOI18N
-                af.mimeTypeFlag = string.contains("{4}");
+                af.mimeTypeFlag = string.contains("{4}"); //NOI18N
             }
             af.format = new MessageFormat(string);
-            af.emptyFormat = af.format.format(new String[] {"", "", "", "", "", "", "", "", ""} , new StringBuffer(), null).toString().trim();
+            af.emptyFormat = af.format.format(new String[] {"", "", "", "", "", "", "", "", ""} , new StringBuffer(), null).toString().trim(); //NOI18N
         }
         return af;
     }
@@ -193,7 +193,7 @@ public class Annotator extends VCSAnnotator {
      * also return the original name String
      */
     public String annotateNameHtml(String name, FileInformation info, VCSFileProxy file) {
-        if(!checkClientAvailable("annotateNameHtml", file == null ? new VCSFileProxy[0] : new VCSFileProxy[] {file})) {
+        if(!checkClientAvailable("annotateNameHtml", file == null ? new VCSFileProxy[0] : new VCSFileProxy[] {file})) { //NOI18N
             return name;
         }
         name = htmlEncode(name);
@@ -208,7 +208,7 @@ public class Annotator extends VCSAnnotator {
                 textAnnotation = formatAnnotation(info, file);
             } else {
                 String lockString = getLockString(info.getStatus());
-                String lockStringAnnPart = (lockString.isEmpty() ? "" : (lockString + "; "));
+                String lockStringAnnPart = (lockString.isEmpty() ? "" : (lockString + "; ")); //NOI18N
                 String sticky = cache.getLabelsCache().getLabelInfo(file, false).getStickyString();
                 if (status == FileInformation.STATUS_VERSIONED_UPTODATE && "".equals(sticky)) { //NOI18N
                     textAnnotation = lockString;  // NOI18N
@@ -306,9 +306,9 @@ public class Annotator extends VCSAnnotator {
 
         String annotation = af.format.format(arguments, new StringBuffer(), null).toString().trim();
         if(annotation.equals(af.emptyFormat)) {
-            return "";
+            return ""; //NOI18N
         } else {
-            return " " + annotation;
+            return " " + annotation; //NOI18N
         }
     }
 
@@ -486,11 +486,11 @@ public class Annotator extends VCSAnnotator {
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             if (noneVersioned) {
                 // XXX use Actions.forID
-                Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance");
+                Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance"); //NOI18N
                 if(a != null) {
                     actions.add(a);
                 }
-                a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-project-ImportAction.instance");
+                a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-project-ImportAction.instance"); //NOI18N
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
                 }            
@@ -513,7 +513,7 @@ public class Annotator extends VCSAnnotator {
                 actions.add(null);
                 
                 actions.add(new CopyMenu(destination, null));
-                Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance");
+                Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance"); //NOI18N
                 if(a != null) actions.add(a);
                 actions.add(null);
                 
@@ -526,7 +526,7 @@ public class Annotator extends VCSAnnotator {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
             Lookup context = ctx.getElements();
             if (noneVersioned) {
-                Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.remote.ui.project.ImportAction");
+                Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.remote.ui.project.ImportAction"); //NOI18N
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
                 }            
@@ -553,7 +553,7 @@ public class Annotator extends VCSAnnotator {
                 actions.add(null);
                 
                 actions.add(new CopyMenu(destination, context));
-                Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.remote.ui.checkout.CheckoutAction");
+                Action a = Actions.forID("Subversion", "org.netbeans.modules.subversion.remote.ui.checkout.CheckoutAction"); //NOI18N
                 if(a != null) {
                     actions.add(a);
                 }

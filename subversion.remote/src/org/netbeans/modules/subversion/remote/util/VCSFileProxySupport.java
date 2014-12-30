@@ -89,15 +89,28 @@ public final class VCSFileProxySupport {
     public static void delete(VCSFileProxy file) {
         File javaFile = file.toFile();
         if (javaFile != null) {
-            javaFile.delete();
+            deleteRecursively(javaFile);
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "rm", "-rf", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
+                    "rm", "-rf", file.getPath()); //NOI18N
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
             }
         }
     }
+    
+    private static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    deleteRecursively(files[i]);
+                }
+            }
+        }
+         file.delete();
+     }
     
     public static void deleteOnExit(VCSFileProxy file) {
         //TODO: implemetn it!
@@ -113,7 +126,8 @@ public final class VCSFileProxySupport {
             return javaFile.mkdir();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(file.getParentFile().getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
+                    "mkdir", file.getPath()); //NOI18N
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
@@ -130,7 +144,8 @@ public final class VCSFileProxySupport {
             return javaFile.mkdirs();
         } else {
             // TODO: rewrite it with using sftp
-            ExitStatus status = ProcessUtils.executeInDir(null, null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "mkdir", "-p", file.getPath());
+            ExitStatus status = ProcessUtils.executeInDir(null, null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
+                    "mkdir", "-p", file.getPath()); //NOI18N
             if (!status.isOK()) {
                 ProcessUtils.LOG.log(Level.INFO, status.toString());
                 return false;
@@ -194,10 +209,10 @@ public final class VCSFileProxySupport {
             URI res = fo.toURI();
             for (int i = segments.size() - 1; i >= 0; i--) {
                 String path;
-                if (res.getPath().endsWith("/")) {
+                if (res.getPath().endsWith("/")) { //NOI18N
                     path = res.getPath()+segments.get(i);
                 } else {
-                    path = res.getPath()+"/"+segments.get(i);
+                    path = res.getPath()+"/"+segments.get(i); //NOI18N
                 }
                 res = new URI(res.getScheme(), res.getUserInfo(), res.getHost(), res.getPort(), path, res.getQuery(), res.getFragment());
             }
@@ -241,7 +256,8 @@ public final class VCSFileProxySupport {
         if (!parentFile.exists()) {
             mkdirs(parentFile);
         }
-         ExitStatus status = ProcessUtils.executeInDir(parentFile.getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file), "touch", file.getName());
+         ExitStatus status = ProcessUtils.executeInDir(parentFile.getPath(), null, false, new ProcessUtils.Canceler(), VersioningSupport.createProcessBuilder(file),
+                 "touch", file.getName()); //NOI18N
         if (!status.isOK()) {
             ProcessUtils.LOG.log(Level.INFO, status.toString());
             throw new IOException(status.toString());
@@ -392,7 +408,7 @@ public final class VCSFileProxySupport {
 
     public static VCSFileProxy getResource(FileSystem fileSystem, String absPath) {
         VCSFileProxy root = VCSFileProxy.createFileProxy(fileSystem.getRoot());
-        if (absPath.startsWith("/")) {
+        if (absPath.startsWith("/")) { //NOI18N
             return VCSFileProxy.createFileProxy(root, absPath.substring(1));
         } else {
             // Abs Path should start with "/". Assertion?
@@ -412,7 +428,7 @@ public final class VCSFileProxySupport {
      */
     public static VCSFileProxy getRemotePeristenceFolder(FileSystem fileSystem) throws FileStateInvalidException, IOException {
         FileObject tmpDir = fileSystem.getTempFolder();
-        String userName = "user"; //RemoteExecutionEnvironment.getUser();
+        String userName = "user";  //NOI18N //RemoteExecutionEnvironment.getUser();
         String folderName = "svn_" + userName; // NOI18N
         FileObject res = tmpDir.getFileObject(folderName);
         if (res == null || !res.isValid()) {

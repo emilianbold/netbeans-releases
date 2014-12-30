@@ -73,7 +73,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ListCommand extends SvnCommand {
 
-    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //NOI18N
 
     private byte[] output;
     private final SVNUrl url;
@@ -85,7 +85,7 @@ public class ListCommand extends SvnCommand {
         this.url = url;
         this.revision = revision;
         this.recursive = recursive;
-        dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));        
+        dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT")); //NOI18N
     }
     
     @Override
@@ -105,11 +105,11 @@ public class ListCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("list");
+        arguments.add("list"); //NOI18N
         if (recursive) {
-            arguments.add("-R");
+            arguments.add("-R"); //NOI18N
         }        
-        arguments.add("--xml");
+        arguments.add("--xml"); //NOI18N
         arguments.add(revision);
         arguments.add(url); 
     }
@@ -156,9 +156,9 @@ public class ListCommand extends SvnCommand {
         private static final String PATH_ATTRIBUTE      = "path";   // NOI18N        
         private static final String REVISION_ATTRIBUTE  = "revision";   // NOI18N
 
-        private static final String REVISION_ATTR       = "revision_attr";
-        private static final String KIND_ATTR           = "kind_attr";
-        private static final String PATH_ATTR           = "path_attr";;
+        private static final String REVISION_ATTR       = "revision_attr"; //NOI18N
+        private static final String KIND_ATTR           = "kind_attr"; //NOI18N
+        private static final String PATH_ATTR           = "path_attr"; //NOI18N
         
         private final List<ISVNDirEntry> entries = new ArrayList<>();        
 //        <?xml version="1.0"?>
@@ -216,12 +216,12 @@ public class ListCommand extends SvnCommand {
                 if(values != null) {
                     String name = values.get(NAME_ELEMENT_NAME);
                     if (name == null) {
-                        throw new SAXException("'name' tag expected under 'entry'");
+                        throw new SAXException("'name' tag expected under 'entry'"); //NOI18N
                     }
                                                                     
                     String commit = values.get(COMMIT_ELEMENT_NAME);
                     if (commit == null) {
-                        throw new SAXException("'commit' tag expected under 'entry'");
+                        throw new SAXException("'commit' tag expected under 'entry'"); //NOI18N
                     }
                     
                     String author = values.get(AUTHOR_ELEMENT_NAME);
@@ -238,7 +238,7 @@ public class ListCommand extends SvnCommand {
                     
                     SVNRevision.Number revision = null;
                     String revisionValue = values.get(REVISION_ATTR);
-                    if(revisionValue != null && !revisionValue.trim().equals("")) {
+                    if(revisionValue != null && !revisionValue.trim().equals("")) { //NOI18N
                         try {
                             revision = new SVNRevision.Number(Long.parseLong(revisionValue));
                         } catch (NumberFormatException e) {
@@ -249,13 +249,13 @@ public class ListCommand extends SvnCommand {
                     long size = 0;
                     String kindValue = values.get(KIND_ATTR);
                     SVNNodeKind kind = SVNNodeKind.UNKNOWN;
-                    if ("file".equals(kindValue)) {
+                    if ("file".equals(kindValue)) { //NOI18N
                         
                         kind = SVNNodeKind.FILE;					
                         
                         String sizeValue = values.get(SIZE_ELEMENT_NAME);
                         if (sizeValue == null) {
-                            throw new SAXException("'size' tag expected under 'entry'");
+                            throw new SAXException("'size' tag expected under 'entry'"); //NOI18N
                         }                        
                         try {
                             size = Long.parseLong(sizeValue);
@@ -263,7 +263,7 @@ public class ListCommand extends SvnCommand {
                             // ignore
                         }
                         
-                    } else if ("dir".equals(kindValue)) {
+                    } else if ("dir".equals(kindValue)) { //NOI18N
                         kind = SVNNodeKind.DIR;
                     }
                                         

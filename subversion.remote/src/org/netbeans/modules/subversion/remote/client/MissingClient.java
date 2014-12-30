@@ -65,6 +65,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -105,7 +106,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         }
     }
     
-    @NbBundle.Messages({
+    @Messages({
         "FileChooser.SvnExecutables.desc=SVN Executables"
     })
     private void onBrowseClick() {

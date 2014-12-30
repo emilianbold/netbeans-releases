@@ -208,7 +208,7 @@ public abstract class CopyDialog {
                     }
                 }
             }
-            if (recentUrl.endsWith("/" + fileName) && relatedLocations.size() < 10) {
+            if (recentUrl.endsWith("/" + fileName) && relatedLocations.size() < 10) { //NOI18N
                 // this is a relevant (3) url, so add it
                 if (pathInBranch == null && preselectedPath == null) {
                     preselectedPath = recentUrl;
@@ -223,7 +223,7 @@ public abstract class CopyDialog {
             if (branchPathSegments[0] != null) {
                 pref = branchPathSegments[0] + pref;
             }
-            String loc = pref + "/" + pathInBranch;
+            String loc = pref + "/" + pathInBranch; //NOI18N
             locations.put(loc, getHtmlVersion(pref, pathInBranch));
             model.add(loc);
             model.add(SEP);

@@ -73,13 +73,14 @@ import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.text.NbDocument;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Maros Sandor
  */
-@NbBundle.Messages({
+@Messages({
     "CTL_MenuItem_HideAnnotations=Hide A&nnotations",
     "CTL_MenuItem_HideAnnotations_Context=Hide A&nnotations",
     "CTL_MenuItem_HideAnnotations_Context_Multiple=Hide A&nnotations",

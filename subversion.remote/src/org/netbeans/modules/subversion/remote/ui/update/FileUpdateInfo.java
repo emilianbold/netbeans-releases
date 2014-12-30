@@ -50,7 +50,7 @@ public class FileUpdateInfo {
      * C  Conflict
      * G  Merged
      */
-    private static final String KNOWN_ACTIONS = "ADUCG ";         
+    private static final String KNOWN_ACTIONS = "ADUCG "; //NOI18N
         
     public static final int ACTION_TYPE_FILE                 = 1;
     public static final int ACTION_TYPE_PROPERTY             = 2;
@@ -67,7 +67,7 @@ public class FileUpdateInfo {
     private final VCSFileProxy file;    
     private final int action;
     
-    private static final Pattern pattern = Pattern.compile("^([ADUCG ])([ADUCG ])([B ])( *)(.+)$");
+    private static final Pattern pattern = Pattern.compile("^([ADUCG ])([ADUCG ])([B ])( *)(.+)$"); //NOI18N
 
     FileUpdateInfo(VCSFileProxy file, int action) {
         this.file   = file;
@@ -98,7 +98,7 @@ public class FileUpdateInfo {
         }
 
         FileUpdateInfo[] fui = new FileUpdateInfo[2];
-        int fileAction = parseAction(fileActionValue.charAt(0)) | (broken.equals("B") ? ACTION_LOCK_BROKEN : 0);
+        int fileAction = parseAction(fileActionValue.charAt(0)) | (broken.equals("B") ? ACTION_LOCK_BROKEN : 0); //NOI18N
         int propertyAction = parseAction(propertyActionValue.charAt(0));
         final VCSFileProxy aFile = VCSFileProxySupport.getResource(root, filePath).normalizeFile();
         fui[0] = fileAction != 0 ? new FileUpdateInfo(aFile, fileAction | ACTION_TYPE_FILE) : null;

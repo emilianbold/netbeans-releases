@@ -53,6 +53,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -64,7 +65,7 @@ public final class DiffMenu extends DynamicMenu {
     private final VCSAnnotator.ActionDestination dest;
     private final Lookup lkp;
 
-    @NbBundle.Messages({
+    @Messages({
         "CTL_MenuItem_DiffMenu=&Diff",
         "CTL_MenuItem_DiffMenu.popup=Diff",
         "LBL_DiffToAction_PopupName=Diff To...",

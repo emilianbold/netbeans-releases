@@ -394,8 +394,8 @@ public class VCSHyperlinkSupport {
                 iconStyle = sd.addStyle(iconStyleName, null);
                 StyleConstants.setIcon(iconStyle, kenaiUser.getIcon());
             }
-            sd.insertString(sd.getLength(), " ", style);
-            sd.insertString(sd.getLength(), " ", iconStyle);
+            sd.insertString(sd.getLength(), " ", style); //NOI18N
+            sd.insertString(sd.getLength(), " ", iconStyle); //NOI18N
         }
     }
 

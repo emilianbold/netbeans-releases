@@ -256,7 +256,7 @@ public class ParserSvnStatus implements ISVNStatus {
 
     @Override
     public boolean isFileExternal() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
     }
 
     @Override

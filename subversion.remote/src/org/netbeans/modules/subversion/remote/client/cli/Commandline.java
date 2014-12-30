@@ -71,11 +71,11 @@ class Commandline {
     Commandline(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
         executable = SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath();
-        if(executable == null || executable.trim().equals("")) {
+        if(executable == null || executable.trim().equals("")) { //NOI18N
             executable = "svn"; // NOI18N
         } else {
-            if (!executable.endsWith("/svn")) {
-                executable += "/svn";
+            if (!executable.endsWith("/svn")) { //NOI18N
+                executable += "/svn"; //NOI18N
             }
         }
     }
@@ -105,7 +105,7 @@ class Commandline {
         canceled = new Canceler();
         command.prepareCommand();        
         
-        String cmd = executable + " " + command.getStringCommand();
+        String cmd = executable + " " + command.getStringCommand(); //NOI18N
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "cli: Executing \"{0}\"", cmd);          // NOI18N
             Subversion.LOG.fine("cli: Creating process...");                        // NOI18N
@@ -136,13 +136,13 @@ class Commandline {
                     Subversion.LOG.log(Level.FINE, "cli: OUTPUT \"{0}\"", exitStatus.output);// NOI18N
                 }
                 if (exitStatus.output!= null && !exitStatus.output.isEmpty()) {
-                    for(String line : exitStatus.output.split("\n")) {
+                    for(String line : exitStatus.output.split("\n")) { //NOI18N
                         command.outputText(line);
                     }
                 }
             }
             if (exitStatus.error != null && !exitStatus.error.isEmpty()) {
-                for(String line : exitStatus.error.split("\n")) {
+                for(String line : exitStatus.error.split("\n")) { //NOI18N
                     if (!line.isEmpty()) {
                         command.errorText(line);
                     }

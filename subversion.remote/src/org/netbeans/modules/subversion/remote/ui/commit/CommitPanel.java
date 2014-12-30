@@ -308,7 +308,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             JTabbedPane hooksTabbedPane = new JTabbedPane();
             for (SvnHook hook : hooks) {
                 hooksTabbedPane.add(hook.createComponent(hookContext),
-                                    hook.getDisplayName().replaceAll("\\&", ""));
+                                    hook.getDisplayName().replaceAll("\\&", "")); //NOI18N
             }
             hooksSectionPanel.add(hooksTabbedPane);
         }
@@ -320,8 +320,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private void onBrowseRecentMessages() {
         StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(prefs);
-        String message = selector.getRecentMessage(getMessage("CTL_CommitForm_RecentTitle"),
-                                               getMessage("CTL_CommitForm_RecentPrompt"),
+        String message = selector.getRecentMessage(getMessage("CTL_CommitForm_RecentTitle"), //NOI18N
+                                               getMessage("CTL_CommitForm_RecentPrompt"), //NOI18N
             Utils.getStringList(prefs, CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             messageTextArea.replaceSelection(message);

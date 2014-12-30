@@ -80,19 +80,19 @@ public class SVNRevision {
     }
     
     public static SVNRevision getRevision(String revision, SimpleDateFormat aDateFormat) throws ParseException {
-        if (revision == null || revision.equals("")) {
+        if (revision == null || revision.equals("")) { //NOI18N
             return null;
         }
-        if (revision.compareToIgnoreCase("HEAD") == 0) {
+        if (revision.compareToIgnoreCase("HEAD") == 0) { //NOI18N
             return HEAD;
         }
-        if (revision.compareToIgnoreCase("BASE") == 0) {
+        if (revision.compareToIgnoreCase("BASE") == 0) { //NOI18N
             return BASE;
         }
-        if (revision.compareToIgnoreCase("COMMITED") == 0) {
+        if (revision.compareToIgnoreCase("COMMITED") == 0) { //NOI18N
             return COMMITTED;
         }
-        if (revision.compareToIgnoreCase("PREV") == 0) {
+        if (revision.compareToIgnoreCase("PREV") == 0) { //NOI18N
             return PREVIOUS;
         }
         int revisionNumber = Integer.parseInt(revision);
@@ -114,17 +114,17 @@ public class SVNRevision {
     public String toString() {
         switch(kind) {
             case base:
-                return "BASE";
+                return "BASE"; //NOI18N
             case committed:
-                return "COMMITTED";
+                return "COMMITTED"; //NOI18N
             case head:
-                return "HEAD";
+                return "HEAD"; //NOI18N
             case previous:
-                return "PREV";
+                return "PREV"; //NOI18N
             case unspecified:
-                return "START";
+                return "START"; //NOI18N
             case working:
-                return "WORKING";
+                return "WORKING"; //NOI18N
             case date:
             case number:
             default:
@@ -155,7 +155,7 @@ public class SVNRevision {
     }
     
     public static class DateSpec extends SVNRevision {
-        private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US);
+        private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.US); //NOI18N
 
         protected final Date revDate;
 
@@ -170,7 +170,7 @@ public class SVNRevision {
 
         @Override
         public String toString() {
-            return "{"+dateFormat.format(revDate)+"}";
+            return "{"+dateFormat.format(revDate)+"}"; //NOI18N
         }
     }
 }

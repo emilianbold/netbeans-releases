@@ -77,64 +77,64 @@ import org.xml.sax.helpers.DefaultHandler;
 public class EntriesCache {
 
     private static final String SVN_THIS_DIR = "svn:this_dir"; // NOI18N
-    private static final String DELIMITER = "\f";
+    private static final String DELIMITER = "\f"; //NOI18N
     static final String ATTR_TREE_CONFLICTS = "tree-conflicts"; //NOI18N
-    public static final String WC17FORMAT = "WC1_7Format";
+    public static final String WC17FORMAT = "WC1_7Format"; //NOI18N
 
     /**
      * The order as it is defined should be the same as how the Subvesion entries handler
      * expects to read the entries file.  This ordering is based on Subversion 1.4.0
      */
     static String[] entryFileAttributes = new String[] {
-        "name",
-        "kind",
-        "revision",
-        "url",
-        "repos",
-        "schedule",
-        "text-time",
-        "checksum",
-        "committed-date",
-        "committed-rev",
-        "last-author",
-        "has-props",
-        "has-prop-mods",
-        "cachable-props",
-        "present-props",
-        "prop-reject-file",
-        "conflict-old",
-        "conflict-new",
-        "conflict-wrk",
-        "copied",
-        "copyfrom-url",
-        "copyfrom-rev",
-        "deleted",
-        "absent",
-        "incomplete",
-        "uuid",
-        "lock-token",
-        "lock-owner",
-        "lock-comment",
-        "lock-creation-date",
-        "changelist",
-        "keep-local",
-        "working-size",
-        "depth",
+        "name", //NOI18N
+        "kind", //NOI18N
+        "revision", //NOI18N
+        "url", //NOI18N
+        "repos", //NOI18N
+        "schedule", //NOI18N
+        "text-time", //NOI18N
+        "checksum", //NOI18N
+        "committed-date", //NOI18N
+        "committed-rev", //NOI18N
+        "last-author", //NOI18N
+        "has-props", //NOI18N
+        "has-prop-mods", //NOI18N
+        "cachable-props", //NOI18N
+        "present-props", //NOI18N
+        "prop-reject-file", //NOI18N
+        "conflict-old", //NOI18N
+        "conflict-new", //NOI18N
+        "conflict-wrk", //NOI18N
+        "copied", //NOI18N
+        "copyfrom-url", //NOI18N
+        "copyfrom-rev", //NOI18N
+        "deleted", //NOI18N
+        "absent", //NOI18N
+        "incomplete", //NOI18N
+        "uuid", //NOI18N
+        "lock-token", //NOI18N
+        "lock-owner", //NOI18N
+        "lock-comment", //NOI18N
+        "lock-creation-date", //NOI18N
+        "changelist", //NOI18N
+        "keep-local", //NOI18N
+        "working-size", //NOI18N
+        "depth", //NOI18N
         ATTR_TREE_CONFLICTS
     };
 
     private static final Set<String> BOOLEAN_ATTRIBUTES = new java.util.HashSet<>();
     static {
-        BOOLEAN_ATTRIBUTES.add("has-props");
-        BOOLEAN_ATTRIBUTES.add("has-prop-mods");
-        BOOLEAN_ATTRIBUTES.add("copied");
-        BOOLEAN_ATTRIBUTES.add("deleted");
+        BOOLEAN_ATTRIBUTES.add("has-props"); //NOI18N
+        BOOLEAN_ATTRIBUTES.add("has-prop-mods"); //NOI18N
+        BOOLEAN_ATTRIBUTES.add("copied"); //NOI18N
+        BOOLEAN_ATTRIBUTES.add("deleted"); //NOI18N
     }
     private static final Set<String> DATE_ATTRIBUTES = new java.util.HashSet<>();
     static {
-        DATE_ATTRIBUTES.add("committed-date");
-        DATE_ATTRIBUTES.add("lock-creation-date");
-        DATE_ATTRIBUTES.add("text-time");
+        DATE_ATTRIBUTES.add("committed-date"); //NOI18N
+        DATE_ATTRIBUTES.add("lock-creation-date"); //NOI18N
+        DATE_ATTRIBUTES.add("text-time"); //NOI18N
     }
 
     private final static int MAX_SIZE;
@@ -142,7 +142,7 @@ public class EntriesCache {
     static {
         int ms;
         try {
-            ms = Integer.parseInt(System.getProperty("org.netbeans.modules.subversion.entriescache.max_size", "200"));
+            ms = Integer.parseInt(System.getProperty("org.netbeans.modules.subversion.entriescache.max_size", "200")); //NOI18N
         } catch (NumberFormatException e) {
             ms = -1;
         }
@@ -242,15 +242,15 @@ public class EntriesCache {
 
     private EntryAttributes getMergedAttributes(EntryAttributes ea) throws SAXException {
         for(String fileName : ea.keySet()) {
-            String kind = ea.get(fileName).get("kind");
+            String kind = ea.get(fileName).get("kind"); //NOI18N
             if (kind == null) {
                 // missing svn node type (dir or file) - svn allows that and considers such node to be missing.
-                Subversion.LOG.log(Level.INFO, "File " + fileName + " is missing - metadata: " + ea.get(fileName));
-                Subversion.LOG.log(Level.WARNING, "File " + fileName + " probably does not exist on the hard drive, please check your working copy.");
-                kind = "file";
-                ea.get(fileName).put("kind", kind);
+                Subversion.LOG.log(Level.INFO, "File " + fileName + " is missing - metadata: " + ea.get(fileName)); //NOI18N
+                Subversion.LOG.log(Level.WARNING, "File " + fileName + " probably does not exist on the hard drive, please check your working copy."); //NOI18N
+                kind = "file"; //NOI18N
+                ea.get(fileName).put("kind", kind); //NOI18N
             }
-            boolean isDirectory = kind.equals("dir");
+            boolean isDirectory = kind.equals("dir"); //NOI18N
             Map<String, String> attributes = mergeThisDirAttributes(isDirectory, fileName, ea);
             if(isDirectory) {
                 attributes.put(WorkingCopyDetails.IS_HANDLED, (ea.get(SVN_THIS_DIR).get("deleted") == null) ? "true" : "false");  // NOI18N
@@ -284,13 +284,13 @@ public class EntriesCache {
             } else if(isDirectory) {
                 attributes.put(key, value);
             } else {
-                if(key.equals("url")) {
+                if(key.equals("url")) { //NOI18N
                     if( attributes.get(key) == null ) {
-                        attributes.put(key, value + "/" + fileName);
+                        attributes.put(key, value + "/" + fileName); //NOI18N
                     }
-                } else if( key.equals("uuid") ||
-                           key.equals("repos") ||
-                           key.equals("revision") ||
+                } else if( key.equals("uuid") || //NOI18N
+                           key.equals("repos") || //NOI18N
+                           key.equals("revision") || //NOI18N
                            key.equals(WorkingCopyDetails.VERSION_ATTR_KEY)) {
                     if( attributes.get(key) == null ) {
                         attributes.put(key, value);
@@ -299,7 +299,7 @@ public class EntriesCache {
                     SVNConflictDescriptor desc = getConflictDescriptor(fileName, value);
                     if (desc != null) {
                         attributes.put(WorkingCopyDetails.ATTR_TREE_CONFLICT_DESCRIPTOR, value);
-                        attributes.put(WorkingCopyDetails.IS_HANDLED, ea.containsKey(fileName) && ea.get("deleted") == null ? "true" : "false");
+                        attributes.put(WorkingCopyDetails.IS_HANDLED, ea.containsKey(fileName) && ea.get("deleted") == null ? "true" : "false"); //NOI18N
                     }
                 }
             }
@@ -312,7 +312,7 @@ public class EntriesCache {
         //If it is a number, its the new format.
         //Otherwise, treat it as XML
         boolean isXml = false;
-        BufferedReader fileReader = new BufferedReader(new InputStreamReader(entriesFile.getInputStream(false), "UTF8"));
+        BufferedReader fileReader = new BufferedReader(new InputStreamReader(entriesFile.getInputStream(false), "UTF8")); //NOI18N
         try {
             String firstLine = fileReader.readLine();
             try {
@@ -367,14 +367,14 @@ public class EntriesCache {
         while (nextLine != null) {
             if (attrIndex == 0) {
                 entryName = nextLine;
-                if (entryName.equals("")) {
+                if (entryName.equals("")) { //NOI18N
                     entryName = SVN_THIS_DIR;
                 }
             }
 
-            if (!("".equals(nextLine))) {
+            if (!("".equals(nextLine))) { //NOI18N
                 if (isBooleanValue(entryFileAttributes[attrIndex])) {
-                    nextLine = "true";
+                    nextLine = "true"; //NOI18N
                 }
                 attributes.put(entryFileAttributes[attrIndex], nextLine);
             }

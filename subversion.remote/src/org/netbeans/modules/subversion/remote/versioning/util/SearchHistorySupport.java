@@ -57,7 +57,7 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class SearchHistorySupport {
 
-    public static final String PROVIDED_EXTENSIONS_SEARCH_HISTORY = "ProvidedExtensions.SearchHistorySupport";
+    public static final String PROVIDED_EXTENSIONS_SEARCH_HISTORY = "ProvidedExtensions.SearchHistorySupport"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(SearchHistorySupport.class.getName());
 

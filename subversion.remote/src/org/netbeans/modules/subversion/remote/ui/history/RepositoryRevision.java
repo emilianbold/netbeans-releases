@@ -70,6 +70,7 @@ import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -283,14 +284,14 @@ final class RepositoryRevision {
             return action;
         }
     
-        @NbBundle.Messages({
+        @Messages({
             "CTL_Action.ViewCurrent.name=View Current"
         })
         Action[] getActions () {
             if (actions == null) {
                 actions = new ArrayList<>();
-                boolean rollbackToEnabled = getFile() != null && getChangedPath().getAction() != 'D';
-                boolean rollbackChangeEnabled = getFile() != null && (getChangedPath().getAction() != 'D' || !getFile().exists());
+                boolean rollbackToEnabled = getFile() != null && getChangedPath().getAction() != 'D'; //NOI18N
+                boolean rollbackChangeEnabled = getFile() != null && (getChangedPath().getAction() != 'D' || !getFile().exists()); //NOI18N
                 boolean viewEnabled = rollbackToEnabled && !getFile().isDirectory();
                 if (rollbackChangeEnabled) {
                     actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_RollbackChange")) { //NOI18N
@@ -420,12 +421,12 @@ final class RepositoryRevision {
                     if(path == null) {
                         try {
                             path = SvnUtils.getRelativePath(selectionRoot);
-                            if (!path.startsWith("/")) { //NOI18B
-                                path = "/" + path; //NOI18B
+                            if (!path.startsWith("/")) {  //NOI18N
+                                path = "/" + path;  //NOI18N
                             }
                         } catch (SVNClientException ex) {
                             Subversion.LOG.log(Level.INFO, selectionRoot.getPath(), ex);
-                            path = "/"; //NOI18B
+                            path = "/";  //NOI18N
                         }
                     }
                     return path;
@@ -545,9 +546,9 @@ final class RepositoryRevision {
                     String action = Character.toString(path.getAction());
                     if (path.getAction() == 'A' && path.getCopySrcPath() != null) {
                         if (removedPaths.contains(path.getCopySrcPath())) {
-                            action = "R"; // rename
+                            action = "R";  //NOI18N // rename
                         } else {
-                            action = "C"; // copied
+                            action = "C";  //NOI18N // copied
                         }
                     }
                     Event event = new Event(path, underRoots, action);

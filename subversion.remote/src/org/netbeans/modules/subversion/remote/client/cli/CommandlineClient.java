@@ -111,6 +111,7 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -126,7 +127,7 @@ public class CommandlineClient implements SvnClient {
     private final Commandline cli;
     private final FileSystem fileSystem;
 
-    public static final String ERR_CLI_NOT_AVALABLE = "commandline is not available";
+    public static final String ERR_CLI_NOT_AVALABLE = "commandline is not available"; //NOI18N
     private static boolean supportedMetadataFormat;
 
     public CommandlineClient(FileSystem fileSystem) {
@@ -152,9 +153,9 @@ public class CommandlineClient implements SvnClient {
             checkErrors(cmd);
             if(!cmd.checkForErrors()) {
                 if (cmd.isUnsupportedVersion()) {
-                    Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.5");
+                    Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.5"); //NOI18N
                 }
-                throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());
+                throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput()); //NOI18N
             } else {
                 return supportedMetadataFormat = cmd.isMetadataFormatSupported();
             }
@@ -258,7 +259,7 @@ public class CommandlineClient implements SvnClient {
                 exec(cmd);
                 break;
             } catch (SVNClientException e) {
-                if (e.getMessage().startsWith("svn: Attempted to lock an already-locked dir")) {
+                if (e.getMessage().startsWith("svn: Attempted to lock an already-locked dir")) { //NOI18N
                     if (Subversion.LOG.isLoggable(Level.FINE)) {
                         Subversion.LOG.fine("ComandlineClient.comit() : " + e.getMessage());
                     }
@@ -671,7 +672,7 @@ public class CommandlineClient implements SvnClient {
         for(ISVNProperty property : getProperties(file)) {
             if (ISVNProperty.IGNORE.equals(property.getName())) {
                 String value = property.getValue();
-                for(String s : value.split("\n")) {
+                for(String s : value.split("\n")) { //NOI18N
                     if (!s.isEmpty()) {
                         res.add(s);
                     }
@@ -1041,22 +1042,22 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public void unlock(VCSFileProxy[] vcsFileProxy, boolean b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean cancel() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public SVNUrl getSvnUrl() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     class NotificationHandler extends SVNNotificationHandler {
@@ -1094,7 +1095,7 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    @NbBundle.Messages({
+    @Messages({
         "MSG_Error.reintegrateBranchWithCLI.CLIforced=Reintegrating branch is not supported with commandline client.",
         "MSG_Error.reintegrateBranchWithCLI=Reintegrating branch is not supported with commandline client.\nPlease switch to SVNKit or JavaHL."
     })
@@ -1105,7 +1106,7 @@ public class CommandlineClient implements SvnClient {
     }
 
     @Override
-    @NbBundle.Messages({
+    @Messages({
         "MSG_Error.diffSummaryWithCLI.CLIforced=Diffing between revision trees is not supported with commandline client.",
         "MSG_Error.diffSummaryWithCLI=Diffing between revision trees is not supported with commandline client.\nPlease switch to SVNKit or JavaHL."
     })

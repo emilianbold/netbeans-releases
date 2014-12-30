@@ -113,7 +113,7 @@ public class RelocateAction extends ContextAction {
 
     @Override
     protected String getBaseName(Node[] activatedNodes) {
-        return "CTL_Relocate_Title";
+        return "CTL_Relocate_Title"; //NOI18N
     }
 
     @Override

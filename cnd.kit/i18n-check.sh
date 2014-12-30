@@ -30,7 +30,7 @@ fi
 
 cd ${WORKSPACE}
 
-perl nbbuild/misc/i18ncheck.pl cnd* asm* dlight* remotefs* lib.terminalemulator/src terminal | grep -v "/versioning/core/" | grep -v "/test/" | grep -v "cnd.antlr/" | grep -v "generated/" | grep -v "parser/FortranLexicalPrepass.java" | grep -v "parser/FortranTokenStream.java" | tee ${LOG}
+perl nbbuild/misc/i18ncheck.pl cnd* asm* dlight* remotefs* subversion.remote/src lib.terminalemulator/src terminal | grep -v "/versioning/core/" | grep -v "/test/" | grep -v "cnd.antlr/" | grep -v "generated/" | grep -v "parser/FortranLexicalPrepass.java" | grep -v "parser/FortranTokenStream.java" | tee ${LOG}
 cnt=`cat ${LOG} | wc -l`
 if [ ${cnt} -gt 0 ]; then
 	echo "I18n check FAILED"

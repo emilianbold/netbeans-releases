@@ -57,6 +57,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -68,7 +69,7 @@ public final class UpdateMenu extends DynamicMenu {
     private final ActionDestination dest;
     private final Lookup lkp;
 
-    @NbBundle.Messages({
+    @Messages({
         "CTL_MenuItem_UpdateMenu=&Update",
         "CTL_MenuItem_UpdateMenu.popup=Update"
     })

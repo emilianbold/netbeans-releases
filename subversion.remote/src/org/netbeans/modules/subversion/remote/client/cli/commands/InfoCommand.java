@@ -71,7 +71,7 @@ import org.openide.filesystems.FileSystem;
  */
 public class InfoCommand extends SvnCommand {
 
-    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss Z");
+    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss Z"); //NOI18N
 
     private enum InfoType {
         files,
@@ -123,7 +123,7 @@ public class InfoCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("info");
+        arguments.add("info"); //NOI18N
         // XXX arguments.add("--xml");           
         if(revision != null) { 
             arguments.add(revision);
@@ -137,7 +137,7 @@ public class InfoCommand extends SvnCommand {
                 // XXX peg unsupported
                 break;
             default:
-                throw new IllegalStateException("Unsupported infotype: " + type);    
+                throw new IllegalStateException("Unsupported infotype: " + type); //NOI18N
         }        
     }
 
@@ -159,24 +159,24 @@ public class InfoCommand extends SvnCommand {
         for (int i = 0; i < output.size(); i++) {
 
             String outputLine = output.get(i);
-            if(outputLine == null || outputLine.trim().equals("")) {
+            if(outputLine == null || outputLine.trim().equals("")) { //NOI18N
                 continue;
             }
             
-            if(outputLine.startsWith("Path:")) {
+            if(outputLine.startsWith("Path:")) { //NOI18N
                 if(map != null) {
                     infos.add(new Info(map));            
                 }
                 map = new HashMap<>();
             }
             
-            int idx = outputLine.indexOf(':');            
+            int idx = outputLine.indexOf(':'); //NOI18N
             String info = outputLine.substring(0, idx);
             if (info.startsWith(INFO_LOCK_COMMENT)) {
                 // comment is the last one, so let's finnish this
                 while( ++i < output.size()) {                    
                     comment.append(output.get(i));
-                    comment.append('\n');    
+                    comment.append('\n'); //NOI18N
                 }
                 map.put(INFO_LOCK_COMMENT, comment.toString());
             }
@@ -190,7 +190,7 @@ public class InfoCommand extends SvnCommand {
             infos.add(new Info(map));
         }
         if (infos.size() == 0 && url != null) {
-            Subversion.LOG.warning("InfoCommand: Map is null for: " + output);
+            Subversion.LOG.warning("InfoCommand: Map is null for: " + output); //NOI18N
         }
         return infos.toArray(new Info[infos.size()]);
     }
@@ -326,7 +326,7 @@ public class InfoCommand extends SvnCommand {
 
         @Override
         public int getDepth() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -351,18 +351,18 @@ public class InfoCommand extends SvnCommand {
     private static final String INFO_LAST_CHANGED_REVISION      = "Last Changed Rev";       // NOI18N
     private static final String INFO_LAST_CHANGED_DATE          = "Last Changed Date";      // NOI18N
     private static final String INFO_TEXT_LAST_UPDATED          = "Text Last Updated";      // NOI18N
-    private static final String INFO_SCHEDULE                   = "Schedule";               
-    private static final String INFO_COPIED_FROM_URL            = "Copied From URL";
-    private static final String INFO_COPIED_FROM_REV            = "Copied From Rev";
-    private static final String INFO_PROPS_LAST_UPDATED         = "Properties Last Updated";
+    private static final String INFO_SCHEDULE                   = "Schedule";               //NOI18N
+    private static final String INFO_COPIED_FROM_URL            = "Copied From URL";        //NOI18N
+    private static final String INFO_COPIED_FROM_REV            = "Copied From Rev";        //NOI18N
+    private static final String INFO_PROPS_LAST_UPDATED         = "Properties Last Updated";//NOI18N
     private static final String INFO_REPOSITORY_UUID            = "Repository UUID";        // NOI18N
     private static final String INFO_LOCK_OWNER                 = "Lock Owner";             // NOI18N    
     private static final String INFO_LOCK_CREATION_DATE         = "Lock Created";           // NOI18N
     private static final String INFO_LOCK_COMMENT               = "Lock Comment";           // NOI18N    
 
-    private static final String INFO_CONFLICT_PREVIOUS_BASE     = "Conflict Previous Base File";
-    private static final String INFO_CONFLICT_PREVIOUS_WORKING  = "Conflict Previous Working File";
-    private static final String INFO_CONFLICT_CURRENT_BASE      = "Conflict Current Base File";
+    private static final String INFO_CONFLICT_PREVIOUS_BASE     = "Conflict Previous Base File"; //NOI18N
+    private static final String INFO_CONFLICT_PREVIOUS_WORKING  = "Conflict Previous Working File"; //NOI18N
+    private static final String INFO_CONFLICT_CURRENT_BASE      = "Conflict Current Base File"; //NOI18N
     
     private SVNUrl getSVNUrl(String url) {
         try {

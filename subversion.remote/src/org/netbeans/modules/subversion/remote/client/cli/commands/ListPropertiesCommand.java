@@ -103,9 +103,9 @@ public class ListPropertiesCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("proplist");
+        arguments.add("proplist"); //NOI18N
         if (rec) {
-            arguments.add("-R");
+            arguments.add("-R"); //NOI18N
         }			        
         switch (type) {
             case file:
@@ -119,15 +119,15 @@ public class ListPropertiesCommand extends SvnCommand {
                 }
                 break;
             default:
-                throw new IllegalStateException("Illegal gettype: " + type);                             
+                throw new IllegalStateException("Illegal gettype: " + type); //NOI18N
         }        
     }
 
     @Override
     public void outputText(String lineString) {
         if(lineString == null || 
-           lineString.trim().equals("") || 
-           lineString.startsWith("Properties on '")) 
+           lineString.trim().equals("") || //NOI18N
+           lineString.startsWith("Properties on '")) //NOI18N
         {
             return;
         }

@@ -314,7 +314,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         } catch (SVNClientException e) {
             return;
         }
-        Utils.logVCSClientEvent("SVN", "CLI");   
+        Utils.logVCSClientEvent("SVN", "CLI"); //NOI18N
         metricsAlreadyLogged = true;
     }
     

@@ -103,7 +103,7 @@ class UpdateResultNode extends AbstractNode {
 
     @Override
     public String getName() {
-        String name = info.getFile().getName() + ( (info.getAction() & FileUpdateInfo.ACTION_TYPE_PROPERTY) != 0 ? " - Property" : "" );        
+        String name = info.getFile().getName() + ( (info.getAction() & FileUpdateInfo.ACTION_TYPE_PROPERTY) != 0 ? " - Property" : "" ); //NOI18N
         return name;
     }
     
@@ -235,7 +235,7 @@ class UpdateResultNode extends AbstractNode {
             super(COLUMN_NAME_STATUS, String.class, NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Name"), NbBundle.getMessage(UpdateResultNode.class, "LBL_Status_Desc"));            
             shortPath = getLocation();
             String sortable = Integer.toString(info.getAction());
-            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + UpdateResultNode.this.getName());
+            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + UpdateResultNode.this.getName()); //NOI18N
         }
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {

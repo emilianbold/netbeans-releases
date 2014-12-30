@@ -63,15 +63,15 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  * @author Ed Hillmann
  */
 public class WorkingCopyDetails {
-    static final String FILE_ATTRIBUTE_VALUE = "file";  // NOI18
-    static final String IS_HANDLED = "handled";
-    private static final char SLASH_N = '\n';
-    private static final char SLASH_R = '\r';
+    static final String FILE_ATTRIBUTE_VALUE = "file"; //NOI18N
+    static final String IS_HANDLED = "handled"; //NOI18N
+    private static final char SLASH_N = '\n'; //NOI18N
+    private static final char SLASH_R = '\r'; //NOI18N
 
-    static final String VERSION_ATTR_KEY = "wc-version";
-    static final String VERSION_UNKNOWN = "";
-    static final String VERSION_13 = "1.3";
-    static final String VERSION_14 = "1.4";
+    static final String VERSION_ATTR_KEY = "wc-version"; //NOI18N
+    static final String VERSION_UNKNOWN = ""; //NOI18N
+    static final String VERSION_13 = "1.3"; //NOI18N
+    static final String VERSION_14 = "1.4"; //NOI18N
     static final String ATTR_TREE_CONFLICT_DESCRIPTOR = "is-in-conflict"; //NOI18N
 
     private final VCSFileProxy file;
@@ -411,15 +411,15 @@ public class WorkingCopyDetails {
      * Assumes that textBaseFile exists
      */
     private boolean isModifiedByLine(String rawKeywords) throws IOException {
-        if(rawKeywords == null || rawKeywords.equals("")) {
+        if(rawKeywords == null || rawKeywords.equals("")) { //NOI18N
             return false;
         }
         boolean returnValue = false;
 
         List<String> keywordsList = new ArrayList<>();
         
-        rawKeywords = rawKeywords.replaceAll("\n", " ");
-        rawKeywords = rawKeywords.replaceAll("\t", " ");        
+        rawKeywords = rawKeywords.replaceAll("\n", " "); //NOI18N
+        rawKeywords = rawKeywords.replaceAll("\t", " "); //NOI18N   
         keywordsList.addAll(normalizeKeywords(rawKeywords.split(" ")));             // NOI18N          
 
         String[] keywords = keywordsList.toArray(new String[keywordsList.size()]);
@@ -523,17 +523,17 @@ public class WorkingCopyDetails {
                         fileIdx += keyword.length(); 
                         boolean isKeyword = true;
                         // 3. now check if there is somthing like "$", ":$" after the keyword                                
-                        if(checkFollowingString(baseLine, fileIdx + 1, "$")) {
+                        if(checkFollowingString(baseLine, fileIdx + 1, "$")) { //NOI18N
                             fileIdx += 1;
-                        } else if(checkFollowingString(baseLine, fileIdx + 1, ":$")) { 
+                        } else if(checkFollowingString(baseLine, fileIdx + 1, ":$")) { //NOI18N
                             fileIdx += 2;    
-                        } else if(checkFollowingString(baseLine, fileIdx + 1, "::")) {
+                        } else if(checkFollowingString(baseLine, fileIdx + 1, "::")) { //NOI18N
                             int spaces = getSpacesCount(baseLine, fileIdx + 3);
                             if(spaces <= 0) {
                                 return false;
                             }
                             fileIdx += spaces + 3;                                
-                        } else if(checkFollowingString(baseLine, fileIdx + 1, ":")) {
+                        } else if(checkFollowingString(baseLine, fileIdx + 1, ":")) { //NOI18N
                             int spaces = getSpacesCount(baseLine, fileIdx + 2);
                             if(spaces > 0) {
                                 fileIdx += spaces + 2;
@@ -551,7 +551,7 @@ public class WorkingCopyDetails {
                         // 4. it was a correctly closed keyword -> skip the chars until the next '$'
                         // for the modified file - '$Id: '
                         modifiedIdx += keyword.length() + 1;       //                  
-                        while(++modifiedIdx < modifiedLine.length() && modifiedLine.charAt(modifiedIdx) != '$');
+                        while(++modifiedIdx < modifiedLine.length() && modifiedLine.charAt(modifiedIdx) != '$'); //NOI18N
 
                         if(modifiedIdx >= modifiedLine.length()) {
                             // modified line is done but we found a keyword -> wrong

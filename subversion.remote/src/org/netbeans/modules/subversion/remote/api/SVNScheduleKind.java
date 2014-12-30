@@ -46,10 +46,10 @@ package org.netbeans.modules.subversion.remote.api;
  * @author Alexander Simon
  */
 public enum SVNScheduleKind {
-    NORMAL("normal"),
-    ADD("add"),
-    DELETE("delete"),
-    REPLACE("replace");
+    NORMAL("normal"), //NOI18N
+    ADD("add"), //NOI18N
+    DELETE("delete"), //NOI18N
+    REPLACE("replace"); //NOI18N
     
     private final String value;
     private SVNScheduleKind(String value) {

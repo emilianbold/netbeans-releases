@@ -57,6 +57,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -64,7 +65,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Ondra Vrabec
  */
-@NbBundle.Messages({
+@Messages({
     "CTL_MenuItem_IgnoreMenu=&Ignore",
     "CTL_MenuItem_IgnoreMenu.popupName=Ignore"
 })

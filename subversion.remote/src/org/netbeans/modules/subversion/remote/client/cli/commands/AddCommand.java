@@ -71,9 +71,9 @@ public class AddCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("add");
+        arguments.add("add"); //NOI18N
         if (!recursive) {
-            arguments.add("-N");
+            arguments.add("-N"); //NOI18N
         }			
         arguments.addFileArguments(files);        
         setCommandWorkingDirectory(files);        
@@ -86,7 +86,7 @@ public class AddCommand extends SvnCommand {
     
     @Override
     public void errorText(String line) {
-        if (line.startsWith("svn: warning:")) { // ignore warnings           
+        if (line.startsWith("svn: warning:")) {  //NOI18N // ignore warnings           
             return;
         }
         super.errorText(line);

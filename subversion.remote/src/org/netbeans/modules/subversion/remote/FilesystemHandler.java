@@ -491,11 +491,11 @@ class FilesystemHandler extends VCSInterceptor {
                                 } else if (copyFile(from, to)) {
                                     if (Subversion.LOG.isLoggable(Level.FINE)) {
                                         Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
-                                                + ": copying between different repositories {0} to {1}", new Object[] {from, to});
+                                                + ": copying between different repositories {0} to {1}", new Object[] {from, to}); //NOI18N
                                     }
                                 } else {
                                     Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
-                                            + ": cannot copy {0} to {1}", new Object[] {from, to});
+                                            + ": cannot copy {0} to {1}", new Object[] {from, to}); //NOI18N
                                 }
                             }
                         }
@@ -669,9 +669,9 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public Object getAttribute(final VCSFileProxy file, String attrName) {
-        if("ProvidedExtensions.RemoteLocation".equals(attrName)) {
+        if("ProvidedExtensions.RemoteLocation".equals(attrName)) { //NOI18N
             return getRemoteRepository(file);
-        } else if("ProvidedExtensions.Refresh".equals(attrName)) {
+        } else if("ProvidedExtensions.Refresh".equals(attrName)) { //NOI18N
             return new Runnable() {
                 @Override
                 public void run() {
@@ -698,7 +698,7 @@ class FilesystemHandler extends VCSInterceptor {
             };
         } else if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
             return new SvnSearchHistorySupport(file);
-        } else if ("ProvidedExtensions.VCSIsModified".equals(attrName)) {
+        } else if ("ProvidedExtensions.VCSIsModified".equals(attrName)) { //NOI18N
 
             if (file == null) {
                 return null;
@@ -992,13 +992,13 @@ class FilesystemHandler extends VCSInterceptor {
                                     remove = true;
                                 } else {
                                     Subversion.LOG.log(Level.WARNING, FilesystemHandler.class.getName()
-                                            + ": cannot rename {0} to {1}", new Object[] {from, to});
+                                            + ": cannot rename {0} to {1}", new Object[] {from, to}); //NOI18N
                                 }
                                 if (remove) {
                                     client.remove(new VCSFileProxy[] {from}, force);
                                     if (Subversion.LOG.isLoggable(Level.FINE)) {
                                         Subversion.LOG.log(Level.FINE, FilesystemHandler.class.getName()
-                                                + ": moving between different repositories {0} to {1}", new Object[] {from, to});
+                                                + ": moving between different repositories {0} to {1}", new Object[] {from, to}); //NOI18N
                                     }
                                 }
                             }

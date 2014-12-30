@@ -113,7 +113,7 @@ public class KVFile {
             if (value == null) {
                 return null;
             }
-            return new String(value, "UTF8");
+            return new String(value, "UTF8"); //NOI18N
         } catch (UnsupportedEncodingException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);            
             return null;
@@ -198,7 +198,7 @@ public class KVFile {
                int valueLength = readEntryLength(is);   // value length
                byte[] value = new byte[valueLength];
                is.read(value);
-               Key key = new Key(keyIdx, new String(keyName, "UTF8"));
+               Key key = new Key(keyIdx, new String(keyName, "UTF8")); //NOI18N
                setKey(key);
                getMap().put(key, value);
                is.read(); // skip '\n'
@@ -274,7 +274,7 @@ public class KVFile {
                 sb.append("V "); // NOI18N
                 sb.append(value.length);
                 sb.append("\n"); // NOI18N
-                os.write(sb.toString().getBytes("UTF8"));    
+                os.write(sb.toString().getBytes("UTF8")); //NOI18N
                 os.write(value);            
                 os.write("\n".getBytes()); // NOI18N
             }
