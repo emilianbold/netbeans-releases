@@ -67,6 +67,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -111,7 +112,7 @@ public class UpgradeAction extends ContextAction {
         upgrade(false, root);
     }
 
-    @NbBundle.Messages({
+    @Messages({
         "# {0} - path to a folder", "MSG_UpgradeAction_statusBar_upgraded=Working Copy at {0} upgraded successfully."
     })
     private void upgrade (boolean explicitelyInvoked, VCSFileProxy ... roots) {

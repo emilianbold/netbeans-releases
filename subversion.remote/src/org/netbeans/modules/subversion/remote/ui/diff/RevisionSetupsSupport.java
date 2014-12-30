@@ -80,6 +80,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -298,7 +299,7 @@ class RevisionSetupsSupport {
     private String getRelativePath (VCSFileProxy root, VCSFileProxy f) {
         String path = "";
         while (f != null && !f.equals(root)) {
-            path = f.getName() + "/" + path;
+            path = f.getName() + "/" + path; //NOI18N
             f = f.getParentFile();
         }
         if (f == null) {
@@ -333,11 +334,11 @@ class RevisionSetupsSupport {
         wcSetups.remove(file);
         Setup setup = new Setup(file, repositoryUrl,
                 leftUrl, added ? null : leftRevision.toString(),
-                SVNUrlUtils.getRelativePath(repositoryUrl, leftUrl) + "@" + leftRevision,
+                SVNUrlUtils.getRelativePath(repositoryUrl, leftUrl) + "@" + leftRevision, //NOI18N
                 rightUrl, deleted ? null : rightRevision,
                 Setup.REVISION_CURRENT.equals(rightRevision)
-                ? file.getName() + "@" + rightRevision
-                : SVNUrlUtils.getRelativePath(repositoryUrl, rightUrl) + "@" + rightRevision,
+                ? file.getName() + "@" + rightRevision //NOI18N
+                : SVNUrlUtils.getRelativePath(repositoryUrl, rightUrl) + "@" + rightRevision, //NOI18N
                 fi);
         setup.setNode(new DiffNode(setup, new SvnFileNode(file), FileInformation.STATUS_ALL));
         return setup;
@@ -392,7 +393,7 @@ class RevisionSetupsSupport {
                     if (addAll || summary.getDiffKind() == SVNDiffSummary.SVNDiffKind.DELETED 
                             && containsAllParents(filePath, deletedPaths)
                             // diff for package but a subpackage was deleted or a file somewhere lower in the subtree
-                            && !(flatFile && (summary.getNodeKind() == SVNNodeKind.DIR || filePath.contains("/")))
+                            && !(flatFile && (summary.getNodeKind() == SVNNodeKind.DIR || filePath.contains("/"))) //NOI18N
                             // if skipped path contains its ancestor, it means the ancestor exists locally
                             // and the file deletion will be handled there (and correct BASE revision will be set)
                             && !isSkippedInParent(skippedPaths, filePath))
@@ -448,7 +449,7 @@ class RevisionSetupsSupport {
 
     private void cacheSummaries (SVNDiffSummary[] diffSummaries, SVNUrl leftUrl,
             SVNRevision leftRevision, SVNRevision rightRevision) {
-        String revisionString = "@" + leftRevision + ":" + rightRevision;
+        String revisionString = "@" + leftRevision + ":" + rightRevision; //NOI18N
         Map<String, List<SVNDiffSummary>> sums = new LinkedHashMap<>();
         sums.put("", new ArrayList<SVNDiffSummary>(diffSummaries.length));
         for (SVNDiffSummary s : diffSummaries) {
@@ -460,11 +461,11 @@ class RevisionSetupsSupport {
                     sums.put(path, list);
                 }
                 String suffix = s.getPath().substring(path.length());
-                if (suffix.startsWith("/")) {
+                if (suffix.startsWith("/")) { //NOI18N
                     suffix = suffix.substring(1);
                 }
                 list.add(new SVNDiffSummary(suffix, s.getDiffKind(), s.propsChanged(), s.getNodeKind()));
-                int index = path.lastIndexOf("/");
+                int index = path.lastIndexOf("/"); //NOI18N
                 if (index > -1) {
                     path = path.substring(0, index);
                 } else if (!path.isEmpty()) {
@@ -480,7 +481,7 @@ class RevisionSetupsSupport {
             if (e.getKey().isEmpty()) {
                 key = leftUrl.toString();
             } else {
-                key = leftUrl.toString() + "/" + e.getKey();
+                key = leftUrl.toString() + "/" + e.getKey(); //NOI18N
             }
             key += revisionString;
             diffSummaryCache.put(key, summaryArray);
@@ -488,7 +489,7 @@ class RevisionSetupsSupport {
     }
 
     private SVNDiffSummary[] getCachedSummaries (SVNUrl url, SVNRevision leftRevision, SVNRevision rightRevision) {
-        String revisionString = "@" + leftRevision + ":" + rightRevision;
+        String revisionString = "@" + leftRevision + ":" + rightRevision; //NOI18N
         boolean direct = true;
         while (url != null) {
             SVNDiffSummary[] sums = diffSummaryCache.get(url.toString() + revisionString);
@@ -502,12 +503,12 @@ class RevisionSetupsSupport {
     }
 
     private void cacheParentMissing (SVNUrl url, SVNRevision revision) {
-        missingURLs.add(url.toString() + "@" + revision);
+        missingURLs.add(url.toString() + "@" + revision); //NOI18N
     }
 
     private boolean parentMissing (SVNUrl url, SVNRevision revision) {
         while (url != null) {
-            if (missingURLs.contains(url.toString() + "@" + revision)) {
+            if (missingURLs.contains(url.toString() + "@" + revision)) { //NOI18N
                 return true;
             }
             url = url.getParent();
@@ -520,7 +521,7 @@ class RevisionSetupsSupport {
             if (!deletedPaths.contains(filePath)) {
                 return false;
             }
-            int pos = filePath.lastIndexOf("/");
+            int pos = filePath.lastIndexOf("/"); //NOI18N
             if (pos > -1) {
                 filePath = filePath.substring(0, pos);
             } else {
@@ -548,7 +549,7 @@ class RevisionSetupsSupport {
             return name;
         }
         
-        @NbBundle.Messages({
+        @Messages({
             "LBL_DiffRevisions.status.added=Added",
             "LBL_DiffRevisions.status.removed=Removed",
             "LBL_DiffRevisions.status.modified=Modified",

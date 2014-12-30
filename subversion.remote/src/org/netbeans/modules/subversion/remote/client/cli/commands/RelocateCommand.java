@@ -81,10 +81,10 @@ public class RelocateCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
-        arguments.add("switch");
-        arguments.add("--relocate");
+        arguments.add("switch"); //NOI18N
+        arguments.add("--relocate"); //NOI18N
         if (!rec) {
-            arguments.add("-N");
+            arguments.add("-N"); //NOI18N
         }            
         arguments.add(from);
         arguments.add(to);

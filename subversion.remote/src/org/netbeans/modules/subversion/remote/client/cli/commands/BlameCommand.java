@@ -75,9 +75,9 @@ import org.xml.sax.helpers.DefaultHandler;
 public class BlameCommand extends SvnCommand {
 
     // XXX merge
-    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"); //NOI18N
     static {        
-        dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));       
+        dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT")); //NOI18N
     }
 
     private enum BlameType {
@@ -134,8 +134,8 @@ public class BlameCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("blame");        
-        arguments.add("--xml");        
+        arguments.add("blame"); //NOI18N
+        arguments.add("--xml"); //NOI18N
         if(revStart != null) {
             arguments.add(revStart, revEnd);        
         } else {
@@ -150,7 +150,7 @@ public class BlameCommand extends SvnCommand {
                 setCommandWorkingDirectory(file);
                 break;
             default :    
-                throw new IllegalStateException("Illegal blametype: " + type);                             
+                throw new IllegalStateException("Illegal blametype: " + type); //NOI18N
         }
     }  
     

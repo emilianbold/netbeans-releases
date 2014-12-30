@@ -67,11 +67,6 @@ public class LabelsPanel extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
 
-        labelsList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "item1", "item2", "item3" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jScrollPane1.setViewportView(labelsList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

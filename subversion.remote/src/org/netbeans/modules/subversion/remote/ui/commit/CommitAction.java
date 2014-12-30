@@ -102,13 +102,14 @@ import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Commit action
  *
  * @author Petr Kuzel
  */
-@NbBundle.Messages({
+@Messages({
     "CTL_MenuItem_Commit=Co&mmit...",
     "CTL_MenuItem_Commit_Context=Co&mmit...",
     "CTL_MenuItem_Commit_Context_Multiple=Co&mmit Files...",
@@ -117,7 +118,7 @@ import org.openide.util.NbBundle;
 })
 public class CommitAction extends ContextAction {
 
-    public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
+    public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; //NOI18N
     private static final String PANEL_PREFIX = "commit"; //NOI18N
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/remote/resources/icons/commit.png"; //NOI18N
     private static final long COMMIT_PAUSE = Long.getLong("versioning.subversion.commit.pause", 5000); //NOI18N

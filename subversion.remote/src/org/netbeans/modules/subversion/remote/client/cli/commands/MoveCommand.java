@@ -82,11 +82,11 @@ public class MoveCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("move");        
+        arguments.add("move"); //NOI18N
         arguments.add(fromFile);
         arguments.add(toFile.getPath());
         if(force) {
-            arguments.add("--force");                    
+            arguments.add("--force"); //NOI18N
         }
         setCommandWorkingDirectory(new VCSFileProxy[] {fromFile, toFile});                
     }    

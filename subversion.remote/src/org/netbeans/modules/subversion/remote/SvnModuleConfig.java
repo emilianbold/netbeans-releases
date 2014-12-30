@@ -130,7 +130,7 @@ public class SvnModuleConfig {
 
     public Preferences getPreferences() {
         if (fileSystem == null) {
-            return NbPreferences.forModule(SvnModuleConfig.class).node("commonRemoteSubversion");
+            return NbPreferences.forModule(SvnModuleConfig.class).node("commonRemoteSubversion"); //NOI18N
         } else {
             return NbPreferences.forModule(SvnModuleConfig.class).node(VCSFileProxySupport.getFileSystemKey(fileSystem));
         }
@@ -181,7 +181,7 @@ public class SvnModuleConfig {
     }
     
     public String getDefaultAnnotationFormat() {
-        return "[{" + Annotator.ANNOTATION_STATUS + "} {" + Annotator.ANNOTATION_FOLDER + "}]";
+        return "[{" + Annotator.ANNOTATION_STATUS + "} {" + Annotator.ANNOTATION_FOLDER + "}]"; //NOI18N
     }
 
     public void setAnnotationFormat(String annotationFormat) {
@@ -201,11 +201,11 @@ public class SvnModuleConfig {
     }
 
     public String getFileSelectorPreset(String hash) {
-        return getPreferences().get(FILE_SELECTOR_PREFIX + "-" + hash, "");
+        return getPreferences().get(FILE_SELECTOR_PREFIX + "-" + hash, ""); //NOI18N
     }
 
     public void setFileSelectorPreset(String hash, String path) {
-        getPreferences().put(FILE_SELECTOR_PREFIX + "-" + hash, path);
+        getPreferences().put(FILE_SELECTOR_PREFIX + "-" + hash, path); //NOI18N
     }
     
     public boolean getShowFileAllInfo() {

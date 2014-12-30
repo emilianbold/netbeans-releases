@@ -562,7 +562,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setSelected(value == null ? false : (Boolean) value);
-            Color c = renderer.getTableCellRendererComponent(table, "value", isSelected, hasFocus, row, column).getBackground();
+            Color c = renderer.getTableCellRendererComponent(table, "value", isSelected, hasFocus, row, column).getBackground(); //NOI18N
             setBackground(new Color(c.getRGB()));
             setOpaque(true);
             setHorizontalAlignment(SwingConstants.LEFT);

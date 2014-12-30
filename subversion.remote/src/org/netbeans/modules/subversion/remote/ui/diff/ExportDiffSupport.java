@@ -330,7 +330,7 @@ public abstract class ExportDiffSupport {
 
     public static abstract class ExportDiffProvider {
         private PropertyChangeSupport support = new PropertyChangeSupport(this);
-        private final static String EVENT_DATA_CHANGED = "ExportDiff.data.changed";
+        private final static String EVENT_DATA_CHANGED = "ExportDiff.data.changed"; //NOI18N
 
         /**
          * Sets the files for which this provider should provide

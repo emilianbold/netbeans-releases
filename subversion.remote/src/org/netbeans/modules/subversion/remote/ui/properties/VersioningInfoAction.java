@@ -69,13 +69,14 @@ import org.netbeans.modules.subversion.remote.versioning.util.VersioningInfo;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
  * 
  * @author Peter Pis
  */
-@NbBundle.Messages({
+@Messages({
     "CTL_MenuItem_VersioningInfoAction=Versionin&g Info",
     "CTL_VersioningInfoAction=Versionin&g Info"
 })

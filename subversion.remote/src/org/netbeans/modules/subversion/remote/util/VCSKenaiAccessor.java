@@ -72,7 +72,7 @@ public abstract class VCSKenaiAccessor {
      */
     public final static String PROP_KENAI_VCS_NOTIFICATION = "kenai.vcs.notification"; // NOI18N
 
-    protected static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.VCSKenaiSupport");
+    protected static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning.util.VCSKenaiSupport"); //NOI18N
 
     /**
      * A Kenai service

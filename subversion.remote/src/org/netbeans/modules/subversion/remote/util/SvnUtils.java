@@ -126,21 +126,21 @@ import org.openide.windows.TopComponent;
  */
 public class SvnUtils {
 
-    public static final String SVN_ADMIN_DIR = ".svn";
-    public static final String SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries";
-    public static final String SVN_WC_DB = SVN_ADMIN_DIR + "/wc.db";
+    public static final String SVN_ADMIN_DIR = ".svn"; //NOI18N
+    public static final String SVN_ENTRIES_DIR = SVN_ADMIN_DIR + "/entries"; //NOI18N
+    public static final String SVN_WC_DB = SVN_ADMIN_DIR + "/wc.db"; //NOI18N
     private static final Pattern metadataPattern;
 
     public static final HashSet<Character> autoEscapedCharacters = new HashSet<>(6);
     static {
-        metadataPattern = Pattern.compile(".*\\" + "/" + SVN_ADMIN_DIR.replace(".", "\\.") + "(\\" + "/" + ".*|$)");
-        autoEscapedCharacters.add(';');
-        autoEscapedCharacters.add('?');
-        autoEscapedCharacters.add('#');
-        autoEscapedCharacters.add('%');
-        autoEscapedCharacters.add('[');
-        autoEscapedCharacters.add(']');
-        autoEscapedCharacters.add(' ');
+        metadataPattern = Pattern.compile(".*\\" + "/" + SVN_ADMIN_DIR.replace(".", "\\.") + "(\\" + "/" + ".*|$)"); //NOI18N
+        autoEscapedCharacters.add(';'); //NOI18N
+        autoEscapedCharacters.add('?'); //NOI18N
+        autoEscapedCharacters.add('#'); //NOI18N
+        autoEscapedCharacters.add('%'); //NOI18N
+        autoEscapedCharacters.add('['); //NOI18N
+        autoEscapedCharacters.add(']'); //NOI18N
+        autoEscapedCharacters.add(' '); //NOI18N
     }
 
     private static Reference<Context>  contextCached = new WeakReference<>(null);
@@ -729,7 +729,7 @@ public class SvnUtils {
                 }
             }
 
-            path.insert(0, file.getName()).insert(0, "/");
+            path.insert(0, file.getName()).insert(0, "/"); //NOI18N
             VCSFileProxy parent = file.getParentFile();
             lastManaged = file;
             if (parent == null) {
@@ -888,7 +888,7 @@ public class SvnUtils {
                         bytes[ib] = byteList.get(ib);
                     }
                     try {
-                        sb.append(new String(bytes, "UTF8"));
+                        sb.append(new String(bytes, "UTF8")); //NOI18N
                     } catch (Exception e) {
                         Subversion.LOG.log(Level.INFO, null, e);  // oops
                     }
@@ -957,7 +957,7 @@ public class SvnUtils {
      * @return
      */
     public static String fixLineEndings(String text) {
-        return text.replaceAll("\r\n", "\n").replace('\r', '\n');
+        return text.replaceAll("\r\n", "\n").replace('\r', '\n'); //NOI18N
     }
 
     public static boolean hasMetadata (VCSFileProxy file) {
@@ -1447,20 +1447,20 @@ public class SvnUtils {
         FileObject fo = file.toFileObject();
         String foMime;
         if (fo == null) {
-            foMime = "content/unknown";
+            foMime = "content/unknown"; //NOI18N
         } else {
             foMime = fo.getMIMEType();
         }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
-            if(foMime.startsWith("text/")) {
+            if(foMime.startsWith("text/")) { //NOI18N
                 return foMime;
             }
-            return org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
+            return org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream"; //NOI18N
         } else {
             PropertiesClient client = new PropertiesClient(file);
             try {
-                byte [] mimeProperty = client.getProperties().get("svn:mime-type");
+                byte [] mimeProperty = client.getProperties().get("svn:mime-type"); //NOI18N
                 if (mimeProperty != null) {
                     String mimePath = new String(mimeProperty);
                     int pos = mimePath.indexOf('/');
@@ -1475,7 +1475,7 @@ public class SvnUtils {
                         }
                     }
                 }
-                return org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(file) ? foMime : "application/octet-stream";
+                return org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(file) ? foMime : "application/octet-stream"; //NOI18N
             } catch (IOException e) {
                 return foMime;
             }
@@ -1613,7 +1613,7 @@ public class SvnUtils {
     private static Logger TY9_LOG = null;
     public static void logT9Y(String msg) {
         if(TY9_LOG == null) {
-            TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y");
+            TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y"); //NOI18N
         }
         TY9_LOG.log(Level.FINEST, msg);
     }
@@ -1702,7 +1702,7 @@ public class SvnUtils {
             return false;
         }
 
-        return javaVMName.toLowerCase().contains("64-bit");
+        return javaVMName.toLowerCase().contains("64-bit"); //NOI18N
     }
 
     public static CommitOptions[] createDefaultCommitOptions(SvnFileNode[] nodes, boolean excludeNew) {
@@ -1880,8 +1880,8 @@ public class SvnUtils {
             Set<VCSFileProxy> recursiveRoots = indexingFiles.get();
             if (recursiveRoots != null) {
                 assert indexingFilesSubtree(recursiveRoots, files) 
-                        : "Recursive call does not permit different roots: " 
-                        + recursiveRoots + " vs. " + Arrays.asList(files);
+                        : "Recursive call does not permit different roots: "  //NOI18N
+                        + recursiveRoots + " vs. " + Arrays.asList(files); //NOI18N
                 return callable.call();
             } else {
                 try {

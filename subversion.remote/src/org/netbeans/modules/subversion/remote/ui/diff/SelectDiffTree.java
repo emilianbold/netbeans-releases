@@ -63,6 +63,7 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -74,7 +75,7 @@ public class SelectDiffTree extends CopyDialog implements PropertyChangeListener
     private final VCSFileProxy root;
     private final RepositoryFile repositoryFile;
         
-    @NbBundle.Messages({
+    @Messages({
         "# {0} - repository file name", "CTL_SelectDiffTree_Title=Select Tree To Diff - {0}",
         "CTL_SelectDiffTree_okButton=Select",
         "CTL_SelectDiffTree_RepositoryFile=Repository File",

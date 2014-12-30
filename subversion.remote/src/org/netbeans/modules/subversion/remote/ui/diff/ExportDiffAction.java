@@ -347,7 +347,7 @@ public class ExportDiffAction extends ContextAction {
         VCSFileProxy file = setup.getBaseFile();
         try {
             InputStream is;
-            if (!SvnUtils.getMimeType(file).startsWith("text/") && differences.length == 0) {
+            if (!SvnUtils.getMimeType(file).startsWith("text/") && differences.length == 0) { //NOI18N
                 // assume the file is binary 
                 is = new ByteArrayInputStream(exportBinaryFile(file).getBytes("utf8"));  // NOI18N
             } else {

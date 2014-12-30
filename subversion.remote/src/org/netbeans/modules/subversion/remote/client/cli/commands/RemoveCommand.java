@@ -69,9 +69,9 @@ public class RemoveCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("remove");                
+        arguments.add("remove"); //NOI18N
         if (force) {
-            arguments.add("--force");
+            arguments.add("--force"); //NOI18N
         }                
         arguments.addFileArguments(files);
     }    

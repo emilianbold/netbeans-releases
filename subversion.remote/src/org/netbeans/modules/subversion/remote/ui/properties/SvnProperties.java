@@ -78,6 +78,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -89,16 +90,16 @@ public final class SvnProperties implements ActionListener {
 
     /** Subversion properties that may be set only on directories */
     private static final HashSet<String> DIR_ONLY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] {
-                                                            "svn:ignore",
-                                                            "svn:externals"}));
+                                                            "svn:ignore", //NOI18N
+                                                            "svn:externals"})); //NOI18N
  
     /** Subversion properties that may be set only on files (not directories) */
     private static final HashSet<String> FILE_ONLY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] {
-                                                            "svn:eol-style",
-                                                            "svn:executable",
-                                                            "svn:keywords",
-                                                            "svn:needs-lock",
-                                                            "svn:mime-type"}));
+                                                            "svn:eol-style", //NOI18N
+                                                            "svn:executable", //NOI18N
+                                                            "svn:keywords", //NOI18N
+                                                            "svn:needs-lock", //NOI18N
+                                                            "svn:mime-type"})); //NOI18N
 
     private static final HashSet<String> MIXED_PROPERTIES = new HashSet<>(DIR_ONLY_PROPERTIES.size() + FILE_ONLY_PROPERTIES.size());
     static {
@@ -221,7 +222,7 @@ public final class SvnProperties implements ActionListener {
         setLoadedValueFile(source);
         StringBuilder txtValue = new StringBuilder();
         txtValue.append(NbBundle.getMessage(SvnProperties.class, "Binary_Content"));
-        txtValue.append("\n");
+        txtValue.append("\n"); //NOI18N
         try {
             txtValue.append(VCSFileProxySupport.getCanonicalPath(source));
         } catch (IOException ex) {
@@ -464,7 +465,7 @@ public final class SvnProperties implements ActionListener {
         }
     }
 
-    @NbBundle.Messages({
+    @Messages({
         "LBL_SvnProperties.RecursiveDelete.title=Recursively Delete Property",
         "# {0} - svn property name",
         "MSG_SvnProperties.RecursiveDelete.question=Do you want to recursively delete property {0}?"

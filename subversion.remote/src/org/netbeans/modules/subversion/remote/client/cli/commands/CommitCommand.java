@@ -76,12 +76,12 @@ public class CommitCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("commit");
+        arguments.add("commit"); //NOI18N
         if (keepLocks) {
-            arguments.add("--no-unlock");                                
+            arguments.add("--no-unlock"); //NOI18N
         }
         if(!recursive) {
-            arguments.add("-N");
+            arguments.add("-N"); //NOI18N
         }
         arguments.addMessage(message);	        
         arguments.addFileArguments(files);

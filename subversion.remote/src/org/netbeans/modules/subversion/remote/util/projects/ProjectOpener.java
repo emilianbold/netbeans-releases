@@ -82,9 +82,9 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
     private final ProjectOpenerType type;
 
     public enum ProjectOpenerType {
-        EXPORT("EXPORT_"),
-        CHECKOUT("CHECKOUT_"),
-        CLONE("CLONE_");
+        EXPORT("EXPORT_"), //NOI18N
+        CHECKOUT("CHECKOUT_"), //NOI18N
+        CLONE("CLONE_"); //NOI18N
         private final String prefix;
         private ProjectOpenerType(String prefix) {
             this.prefix = prefix;

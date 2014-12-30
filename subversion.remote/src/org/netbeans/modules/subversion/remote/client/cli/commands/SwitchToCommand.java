@@ -75,11 +75,11 @@ public class SwitchToCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
-        arguments.add("switch");
+        arguments.add("switch"); //NOI18N
         arguments.add(url);
         arguments.add(file.getPath());
         if (!rec) {
-            arguments.add("-N");               
+            arguments.add("-N"); //NOI18N
         }
         arguments.add(rev);       
         setCommandWorkingDirectory(file);

@@ -56,6 +56,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -67,7 +68,7 @@ public final class PatchesMenu extends DynamicMenu {
     private final ActionDestination dest;
     private final Lookup lkp;
 
-    @NbBundle.Messages({
+    @Messages({
         "CTL_MenuItem_ExportMenu=&Patches",
         "CTL_MenuItem_ExportMenu.popup=Patches",
         "CTL_PopupName.PatchAction=Apply Diff Patch..."

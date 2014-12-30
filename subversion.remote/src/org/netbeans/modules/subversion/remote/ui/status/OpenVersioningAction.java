@@ -71,7 +71,7 @@ import org.openide.awt.ActionRegistration;
 })
 public class OpenVersioningAction extends ShowAllChangesAction {
     
-    public static final String ICON_BASE = "org/netbeans/modules/subversion/remote/resources/icons/versioning-view.png";
+    public static final String ICON_BASE = "org/netbeans/modules/subversion/remote/resources/icons/versioning-view.png"; //NOI18N
     
     public OpenVersioningAction() {
         putValue("noIconInMenu", Boolean.FALSE); // NOI18N

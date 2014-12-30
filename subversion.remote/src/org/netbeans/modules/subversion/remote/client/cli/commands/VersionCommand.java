@@ -72,7 +72,7 @@ public class VersionCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("--version");                
+        arguments.add("--version"); //NOI18N
     }
 
     @Override
@@ -104,21 +104,21 @@ public class VersionCommand extends SvnCommand {
 
             outputProduced = true;
 
-            int pos = string.indexOf(" version ");
+            int pos = string.indexOf(" version "); //NOI18N
             if (pos > -1) {
-                Subversion.LOG.log(Level.INFO, "Commandline client version: {0}", string.substring(pos + 9));
+                Subversion.LOG.log(Level.INFO, "Commandline client version: {0}", string.substring(pos + 9)); //NOI18N
             }
 
-            if(string.indexOf("version 0.")  > -1 ||
-               string.indexOf("version 1.0") > -1 ||
-               string.indexOf("version 1.1") > -1 ||
-               string.indexOf("version 1.2") > -1 ||
-               string.indexOf("version 1.3") > -1 ||
-               string.indexOf("version 1.4") > -1) {
+            if(string.indexOf("version 0.")  > -1 || //NOI18N
+               string.indexOf("version 1.0") > -1 || //NOI18N
+               string.indexOf("version 1.1") > -1 || //NOI18N
+               string.indexOf("version 1.2") > -1 || //NOI18N
+               string.indexOf("version 1.3") > -1 || //NOI18N
+               string.indexOf("version 1.4") > -1) { //NOI18N
                 unsupportedVersion = true;
                 return false;
-            } else if(string.indexOf("version 1.5")  > -1 
-                    || string.indexOf("version 1.6") > -1) {
+            } else if(string.indexOf("version 1.5")  > -1  //NOI18N
+                    || string.indexOf("version 1.6") > -1) { //NOI18N
                 supportedMetadataFormat = true;
             }
         }

@@ -72,7 +72,7 @@ public class CopyCommand extends SvnCommand {
     private SVNRevision rev;
     private boolean makeParents;
 
-    public static final String MAKE_PARENTS_ARGUMENT = "--parents";
+    public static final String MAKE_PARENTS_ARGUMENT = "--parents"; //NOI18N
 
     public CopyCommand(FileSystem fileSystem, SVNUrl fromUrl, SVNUrl toUrl, String msg, SVNRevision rev) {
         super(fileSystem);
@@ -132,7 +132,7 @@ public class CopyCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("copy");        
+        arguments.add("copy"); //NOI18N
         switch(type) {
             case url2url: 
                 arguments.add(fromUrl);
@@ -160,7 +160,7 @@ public class CopyCommand extends SvnCommand {
                 setCommandWorkingDirectory(fromFile);
                 break;
             default :    
-                throw new IllegalStateException("Illegal copytype: " + type);                             
+                throw new IllegalStateException("Illegal copytype: " + type); //NOI18N
         }                
         arguments.addMessage(msg);
         if (makeParents) {

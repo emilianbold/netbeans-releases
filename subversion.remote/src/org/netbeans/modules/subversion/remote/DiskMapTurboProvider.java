@@ -70,6 +70,7 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Storage of file attributes with shortcut to retrieve all stored values.
@@ -464,15 +465,15 @@ class DiskMapTurboProvider implements TurboProvider {
      */
     private void logCorruptedCacheFile(File file, int itemIndex, EOFException e) {
         try {
-            File tmpFile = File.createTempFile("svn_", ".bin");
-            Subversion.LOG.log(Level.INFO, "Corrupted cache file " + file.getAbsolutePath() + " at position " + itemIndex, e);
+            File tmpFile = File.createTempFile("svn_", ".bin"); //NOI18N
+            Subversion.LOG.log(Level.INFO, "Corrupted cache file " + file.getAbsolutePath() + " at position " + itemIndex, e); //NOI18N
             FileUtils.copyFile(file, tmpFile);
             byte[] contents = FileUtils.getFileContentsAsByteArray(tmpFile);
-            Subversion.LOG.log(Level.INFO, "Corrupted cache file length: {0}", contents.length);
+            Subversion.LOG.log(Level.INFO, "Corrupted cache file length: {0}", contents.length); //NOI18N
             String encodedContent = Base64Encoder.encode(contents); // log the file contents
-            Subversion.LOG.log(Level.INFO, "Corrupted cache file content:\n{0}\n", encodedContent);
-            Exception ex = new Exception("Corrupted cache file \"" + file.getAbsolutePath() + "\", please report in subversion module issues and attach "
-                    + tmpFile.getAbsolutePath() + " plus the IDE message log", e);
+            Subversion.LOG.log(Level.INFO, "Corrupted cache file content:\n{0}\n", encodedContent); //NOI18N
+            Exception ex = new Exception("Corrupted cache file \"" + file.getAbsolutePath() + "\", please report in subversion module issues and attach " //NOI18N
+                    + tmpFile.getAbsolutePath() + " plus the IDE message log", e); //NOI18N
             Subversion.LOG.log(Level.INFO, null, ex);
         } catch (IOException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);
@@ -488,7 +489,7 @@ class DiskMapTurboProvider implements TurboProvider {
     }
 
     private String readChars(DataInputStream dis, int len) throws IOException {
-        if (len < 0 || len > 1024 * 1024 * 10) throw new EOFException("Len: " + len); // preventing from OOME
+        if (len < 0 || len > 1024 * 1024 * 10) throw new EOFException("Len: " + len);  //NOI18N// preventing from OOME
         StringBuilder sb = new StringBuilder(len);
         while (len-- > 0) {
             sb.append(dis.readChar());
@@ -617,7 +618,7 @@ class DiskMapTurboProvider implements TurboProvider {
         }
     }
 
-    @NbBundle.Messages({
+    @Messages({
         "# {0} - number of changes", "# {1} - the biggest unversioned folders",
         "MSG_FileStatusCache.cacheTooBig.newFiles.text=Subversion cache contains {0} locally new (uncommitted) files. "
             + "That many uncommitted files may cause performance problems when accessing the working copy. "
@@ -640,7 +641,7 @@ class DiskMapTurboProvider implements TurboProvider {
         LOG.log(Level.WARNING, Bundle.MSG_FileStatusCache_cacheTooBig_newFiles_text(locallyNewFiles, biggestFolders));
     }
 
-    @NbBundle.Messages({
+    @Messages({
         "# {0} - number of changes", "# {1} - checkouts with the highest number of modifications",
         "MSG_FileStatusCache.cacheTooBig.text=Subversion cache contains {0} locally modified files. "
             + "That many uncommitted files may cause performance problems when accessing the working copy. "

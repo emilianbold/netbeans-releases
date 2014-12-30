@@ -72,10 +72,10 @@ import org.openide.loaders.DataObjectNotFoundException;
  */
 public class DiffNode extends AbstractNode {
     
-    static final String COLUMN_NAME_NAME = "name";
-    static final String COLUMN_NAME_PROPERTY = "property";
-    static final String COLUMN_NAME_STATUS = "status";
-    static final String COLUMN_NAME_LOCATION = "location";
+    static final String COLUMN_NAME_NAME = "name"; //NOI18N
+    static final String COLUMN_NAME_PROPERTY = "property"; //NOI18N
+    static final String COLUMN_NAME_STATUS = "status"; //NOI18N
+    static final String COLUMN_NAME_LOCATION = "location"; //NOI18N
         
     private final Setup     setup;
     private String          htmlDisplayName;

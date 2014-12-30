@@ -148,7 +148,7 @@ public class VersionsCache {
                 return cachedFile;
             }
         } catch (SVNClientException ex) {
-            throw new IOException("Can not load: " + url + " in revision: " + revision, ex);
+            throw new IOException("Can not load: " + url + " in revision: " + revision, ex); //NOI18N
         }
     }
 
@@ -245,7 +245,7 @@ public class VersionsCache {
                 }
                 return VCSFileProxy.createFileProxy(createContent(base.getName(), in));
             } catch (SVNClientException ex) {
-                throw new IOException("Can not load: " + base.getPath() + " in revision: " + revision, ex);
+                throw new IOException("Can not load: " + base.getPath() + " in revision: " + revision, ex); //NOI18N
             }
         }
     }

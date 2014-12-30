@@ -71,9 +71,9 @@ public class PropertyDelCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("propdel");                
+        arguments.add("propdel"); //NOI18N
         if(recursivelly) {
-            arguments.add("-R");
+            arguments.add("-R"); //NOI18N
         }        
         arguments.add(propName);
         arguments.add(file);                                 

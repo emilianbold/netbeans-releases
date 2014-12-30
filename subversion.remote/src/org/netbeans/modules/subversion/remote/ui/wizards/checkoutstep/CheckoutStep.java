@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
  */
 public class CheckoutStep extends AbstractStep implements ActionListener, DocumentListener, FocusListener, ItemListener {
 
-    public static final String CHECKOUT_DIRECTORY = "checkoutStep.checkoutDirectory";
+    public static final String CHECKOUT_DIRECTORY = "checkoutStep.checkoutDirectory"; //NOI18N
     
     private CheckoutPanel workdirPanel;
     private RepositoryPaths repositoryPaths;
@@ -364,7 +364,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
 
     public RepositoryFile[] getRepositoryFiles() {
         try {            
-            return repositoryPaths.getRepositoryFiles(".");
+            return repositoryPaths.getRepositoryFiles("."); //NOI18N
         } catch (MalformedURLException ex) {
             Subversion.LOG.log(Level.INFO, null, ex); // should not happen
         }
@@ -409,7 +409,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         
         String repositoryFolder = repositoryFiles[0].getFileUrl().getLastPathSegment().trim();                           
         if(repositoryFolder.equals("")  ||      // the skip option doesn't make sense if there is no one, 
-           repositoryFolder.equals("."))        // or more as one folder to be checked out  
+           repositoryFolder.equals(".")) //NOI18N // or more as one folder to be checked out  
         {
             resetWorkingDirLevelCheckBox();
             refreshWorkingCopy(repositoryFiles);
@@ -417,7 +417,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         } else {                        
             workdirPanel.atWorkingDirLevelCheckBox.setText (
                     NbBundle.getMessage(CheckoutStep.class, 
-                                        "CTL_Checkout_CheckoutContentFolder", 
+                                        "CTL_Checkout_CheckoutContentFolder",  //NOI18N
                                          new Object[] {repositoryFolder})
             );
             workdirPanel.atWorkingDirLevelCheckBox.setEnabled(true);                

@@ -385,8 +385,8 @@ public class Utils {
             for (int i = 0; i < keys.length; i++) {
                 String k = keys[i];
                 if (k != null && k.startsWith(key)) {
-                    int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1));
-                    retval.add(idx + "." + prefs.get(k, null));
+                    int idx = Integer.parseInt(k.substring(k.lastIndexOf('.') + 1)); //NOI18N
+                    retval.add(idx + "." + prefs.get(k, null)); //NOI18N
                 }
             }
             List<String> rv = new ArrayList<String>(retval.size());
@@ -416,13 +416,13 @@ public class Utils {
             String[] keys = prefs.keys();
             for (int i = 0; i < keys.length; i++) {
                 String k = keys[i];
-                if (k != null && k.startsWith(key + ".")) {
+                if (k != null && k.startsWith(key + ".")) { //NOI18N
                     prefs.remove(k);
                 }
             }
             int idx = 0;
             for (String s : value) {
-                prefs.put(key + "." + idx++, s);
+                prefs.put(key + "." + idx++, s); //NOI18N
             }
         } catch (BackingStoreException ex) {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, null, ex);

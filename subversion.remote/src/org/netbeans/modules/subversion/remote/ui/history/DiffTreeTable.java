@@ -243,7 +243,7 @@ class DiffTreeTable extends OutlineView {
                         } catch (CharConversionException e1) {
                             Logger.getLogger(DiffTreeTable.class.getName()).log(Level.INFO, "Can not HTML escape: ", tooltip);  //NOI18N
                         }
-                        if (tooltip.contains("\n")) {
+                        if (tooltip.contains("\n")) { //NOI18N
                             tooltip = "<html><body><p>" + tooltip.replace("\n", "<br>") + "</p></body></html>"; //NOI18N
                             c.setToolTipText(tooltip);
                         }

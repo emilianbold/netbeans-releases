@@ -68,13 +68,14 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Show basic conflict resolver UI (provided by the diff module) and resolves tree conflicts.
  *
  * @author Petr Kuzel
  */
-@NbBundle.Messages({
+@Messages({
     "ResolveConflicts=Resolve Con&flicts...",
     "ResolveConflicts_Context=Resolve Con&flicts...",
     "ResolveConflicts_Context_Multiple=Resolve Con&flicts...",

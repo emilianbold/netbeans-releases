@@ -145,7 +145,7 @@ public class SvnConfigFiles {
             // copy config file
             config = copyConfigFileToIDEConfigDir("config", new ConfigIniFilePatcher());    // NOI18N
             // get the system servers file
-            svnServers = loadSystemIniFile("servers");
+            svnServers = loadSystemIniFile("servers"); //NOI18N
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
@@ -213,7 +213,7 @@ public class SvnConfigFiles {
                 setExternalCommand(SvnUtils.getTunnelName(url.getProtocol()), rc.getExternalCommand());
             }
             boolean hasPassphrase = false;
-            if(url.getProtocol().startsWith("https")) {
+            if(url.getProtocol().startsWith("https")) { //NOI18N
                 hasPassphrase = setSSLCert(rc, nbGlobalSection);
             }
             hasPassphrase = setProxy(url, nbGlobalSection) | hasPassphrase;
@@ -240,9 +240,9 @@ public class SvnConfigFiles {
         if(certPassword.equals("")) { // NOI18N
             return false;
         }
-        nbGlobalSection.put("ssl-client-cert-file", certFile);
+        nbGlobalSection.put("ssl-client-cert-file", certFile); //NOI18N
         if (!DO_NOT_SAVE_PASSPHRASE) {
-            nbGlobalSection.put("ssl-client-cert-password", certPassword);
+            nbGlobalSection.put("ssl-client-cert-password", certPassword); //NOI18N
             return true;
         }
         return false;
@@ -307,13 +307,13 @@ public class SvnConfigFiles {
         if (command == null) {
             return;
         }
-        Ini.Section tunnels = getSection(config, "tunnels", true);
+        Ini.Section tunnels = getSection(config, "tunnels", true); //NOI18N
         tunnels.put(tunnelName, command);
         storeIni(config, "config");                                                     // NOI18N
     }
 
     public String getExternalCommand(String tunnelName) {
-        Ini.Section tunnels = getSection(config, "tunnels", true);
+        Ini.Section tunnels = getSection(config, "tunnels", true); //NOI18N
         String cmd = tunnels.get(tunnelName);
         return cmd != null ? cmd : "";        
     }
@@ -499,8 +499,8 @@ public class SvnConfigFiles {
      * @return true if the host name or IP address matches with the values String, otherwise false.
      */
     private boolean matchSegments(String value, String host) {
-        value = value.replace(".", "\\.");
-        value = value.replace("*", ".*");
+        value = value.replace(".", "\\."); //NOI18N
+        value = value.replace("*", ".*"); //NOI18N
         Matcher m = Pattern.compile(value).matcher(host);
         return m.matches();
     }

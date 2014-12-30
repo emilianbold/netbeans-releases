@@ -370,7 +370,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
         @Override
         protected void updateVisibility(String url) {
-            panel.sslPanel.setVisible(url.startsWith("https:"));
+            panel.sslPanel.setVisible(url.startsWith("https:")); //NOI18N
         }
     }
 
@@ -423,7 +423,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
             try {
                 SVNUrl repositoryUrl = rc.getSvnUrl();
-                if(repositoryUrl.getProtocol().startsWith("svn+")) {
+                if(repositoryUrl.getProtocol().startsWith("svn+")) { //NOI18N
                     SvnConfigFiles.getInstance(fileSystem).setExternalCommand(SvnUtils.getTunnelName(repositoryUrl.getProtocol()), panel.tunnelCommandTextField.getText());
                 }
             } catch (MalformedURLException mue) {
@@ -439,16 +439,16 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
         @Override
         protected boolean isValid(RepositoryConnection rc) {
-            return !(rc.getUrl().startsWith("svn+") && panel.tunnelCommandTextField.getText().trim().equals(""));
+            return !(rc.getUrl().startsWith("svn+") && panel.tunnelCommandTextField.getText().trim().equals("")); //NOI18N
         }
 
         @Override
         public void onSelectedRepositoryChange(String urlString) {
-            if(urlString.startsWith("svn+")) {
+            if(urlString.startsWith("svn+")) { //NOI18N
                 String tunnelName = SvnUtils.getTunnelName(urlString).trim();
-                if( panel.tunnelCommandTextField.getText().trim().equals("") &&
+                if( panel.tunnelCommandTextField.getText().trim().equals("") && //NOI18N
                     tunnelName != null &&
-                    !tunnelName.equals("") )
+                    !tunnelName.equals("") ) //NOI18N
                 {
                     panel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance(fileSystem).getExternalCommand(tunnelName));
                 }

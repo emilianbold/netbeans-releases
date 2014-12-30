@@ -201,7 +201,7 @@ class BranchPicker {
                 value = "<html><strong>" + value + "</strong></html>"; //NOI18N
             } else {
                 String sValue = (String) value;
-                for (String pref : new String[] { branchesFolderPrefix + PREFIX_BRANCHES + "/", branchesFolderPrefix + PREFIX_TAGS + "/" }) {
+                for (String pref : new String[] { branchesFolderPrefix + PREFIX_BRANCHES + "/", branchesFolderPrefix + PREFIX_TAGS + "/" }) { //NOI18N
                     if (sValue.startsWith(pref)) {
                         value = "<html>" + pref + "<strong>" + sValue.substring(pref.length()) + "</strong></html>"; //NOI18N
                     }

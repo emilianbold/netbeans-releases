@@ -87,7 +87,7 @@ public class MkdirCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
-        arguments.add("mkdir");        
+        arguments.add("mkdir"); //NOI18N
         switch(type) {
             case url:
                 arguments.addMessage(message);	        
@@ -97,7 +97,7 @@ public class MkdirCommand extends SvnCommand {
                 arguments.add(file);
                 break;
             default:
-                throw new IllegalStateException("Illegal mkdirtype: " + type);          
+                throw new IllegalStateException("Illegal mkdirtype: " + type); //NOI18N
         }        
     }
     

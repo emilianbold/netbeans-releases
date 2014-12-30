@@ -52,7 +52,7 @@ import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 //@OptionsPanelController.Keywords(keywords={"svn", "subversion", "#SvnOptionsPanel.kw1", "#SvnOptionsPanel.kw2", "#SvnOptionsPanel.kw3",
 //    "#SvnOptionsPanel.kw4", "#SvnOptionsPanel.kw5"}, location="Team", tabTitle="#CTL_OptionsPanel.title")
-@NbBundle.Messages({
+@Messages({
     "CTL_OptionsPanel.title=Versioning",
     "SvnOptionsPanel.kw1=versioning",
     "SvnOptionsPanel.kw2=preferred client",
@@ -92,8 +92,8 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     Collection<String> getKeywords () {
         if (keywords == null) {
             keywords = new String[] {
-                "SVN",
-                "SUBVERSION",
+                "SVN", //NOI18N
+                "SUBVERSION", //NOI18N
                 Bundle.SvnOptionsPanel_kw1().toUpperCase(),
                 Bundle.SvnOptionsPanel_kw2().toUpperCase(),
                 Bundle.SvnOptionsPanel_kw3().toUpperCase(),

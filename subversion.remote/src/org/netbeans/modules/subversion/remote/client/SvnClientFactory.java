@@ -78,7 +78,7 @@ public class SvnClientFactory {
     private SVNClientException exception;
     private final FileSystem fileSystem;
 
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.client.SvnClientFactory");
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.client.SvnClientFactory"); //NOI18N
     public static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
     public static final String DEFAULT_FACTORY = FACTORY_TYPE_COMMANDLINE; // javahl is default
     private static boolean cli16Version;
@@ -191,7 +191,7 @@ public class SvnClientFactory {
             if(factoryType.trim().equals(FACTORY_TYPE_COMMANDLINE)) {
                 setupCommandline();
             } else {              
-                throw new SVNClientException("Unknown factory: " + factoryType);
+                throw new SVNClientException("Unknown factory: " + factoryType); //NOI18N
             }
         } catch (SVNClientException e) {
             exception = e;
@@ -257,8 +257,8 @@ public class SvnClientFactory {
             return false; 
         }
         LOG.fine("svn client isn't set on path yet. Will check known locations...");
-        String[] locations = new String[] {"/usr/local/bin/", "/usr/bin/"};
-        String name = "svn";
+        String[] locations = new String[] {"/usr/local/bin/", "/usr/bin/"}; //NOI18N
+        String name = "svn"; //NOI18N
         for (String loc : locations) {
             File file = new File(loc, name);
             LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });

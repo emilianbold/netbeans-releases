@@ -130,7 +130,7 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
     
     private void setInvalid(AbstractStep.WizardMessage msg) {
         invalid(msg);
-        urlPatternPanel.previewLabel.setText(" ");
+        urlPatternPanel.previewLabel.setText(" "); //NOI18N
     }
     
     private void refreshPreview() {              
@@ -138,41 +138,41 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
     }   
     
     private String getGroupiefiedPath(int depth, boolean html) {
-        String[] segments = urlPatternPanel.repositoryPathTextField.getText().split("/");
+        String[] segments = urlPatternPanel.repositoryPathTextField.getText().split("/"); //NOI18N
         StringBuilder ret = new StringBuilder();
         for(int i = 0; i < segments.length; i++) {
             if(i == depth) {
-                ret.append("/(");
+                ret.append("/("); //NOI18N
                 if(html) {
-                    ret.append("<b>");
+                    ret.append("<b>"); //NOI18N
                 }
                 ret.append(segments[i]);
                 if(html) {
-                    ret.append("</b>");
+                    ret.append("</b>"); //NOI18N
                 }
-                ret.append(")");
+                ret.append(")"); //NOI18N
             } else {
-                ret.append("/");
+                ret.append("/"); //NOI18N
                 ret.append(segments[i]);
             }                        
         }
         if(depth >= segments.length) {
             for(int i = segments.length; i <= depth; i++) {
                 if(i == depth) {                    
-                    ret.append("/");                    
+                    ret.append("/"); //NOI18N
                     if(html) {
-                        ret.append("<b>");
+                        ret.append("<b>"); //NOI18N
                     }
-                    ret.append("(.+?)");                    
+                    ret.append("(.+?)"); //NOI18N
                     if(html) {
-                        ret.append("</b>");
+                        ret.append("</b>"); //NOI18N
                     }
                 } else {
-                    ret.append("/.*");
+                    ret.append("/.*"); //NOI18N
                 }                        
             }            
         }
-        ret.append("/.*");
+        ret.append("/.*"); //NOI18N
         return ret.toString();
     }
     
@@ -222,26 +222,26 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
     private String getPattern(boolean html) {
         StringBuilder preview = new StringBuilder();                
         if(html) {
-            preview.append("<html>");
+            preview.append("<html>"); //NOI18N
         }        
         if(urlPatternPanel.anyURLCheckBox.isSelected()) {
-            preview.append(".*");
+            preview.append(".*"); //NOI18N
         } else {
             preview.append(repositoryPaths.getRepositoryUrl().toString());
         }
         if(urlPatternPanel.useFolderRadioButton.isSelected()) {
-            preview.append("/");
+            preview.append("/"); //NOI18N
             if(html) {
-                preview.append("<b>");
+                preview.append("<b>"); //NOI18N
             }
             preview.append(urlPatternPanel.repositoryPathTextField.getText());            
             if(html) {
-                preview.append("</b>");
+                preview.append("</b>"); //NOI18N
             }
-            preview.append("/.*");
+            preview.append("/.*"); //NOI18N
         } else {
             String depthString = (String) urlPatternPanel.depthComboBox.getSelectedItem();
-            if(depthString.equals("")) {
+            if(depthString.equals("")) { //NOI18N
                 preview.append(getGroupiefiedPath(0, html));
             } else {
                 preview.append(getGroupiefiedPath(Integer.parseInt(depthString), html));
@@ -249,7 +249,7 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
         }        
         
         if(html) {
-            preview.append("</html>");
+            preview.append("</html>"); //NOI18N
         }
         return preview.toString();
     }

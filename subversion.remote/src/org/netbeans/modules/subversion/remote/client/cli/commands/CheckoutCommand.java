@@ -75,12 +75,12 @@ public class CheckoutCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {
-        arguments.add("co");        
+        arguments.add("co"); //NOI18N
         arguments.add(revision);
         arguments.add(url); 
         arguments.add(file);
         if (!recursive) {
-            arguments.add("-N");
+            arguments.add("-N"); //NOI18N
         }
         setCommandWorkingDirectory(file);
     }

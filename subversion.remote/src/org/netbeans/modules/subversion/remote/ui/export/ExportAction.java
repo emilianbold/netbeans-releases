@@ -134,7 +134,7 @@ public class ExportAction extends ContextAction {
                             return;
                         }
                         if(export.getScanAfterExport()) {
-                            CheckoutCompleted cc = new CheckoutCompleted(toFile, new String[] {"."});
+                            CheckoutCompleted cc = new CheckoutCompleted(toFile, new String[] {"."}); //NOI18N
                             if (isCanceled()) {
                                 return;
                             }

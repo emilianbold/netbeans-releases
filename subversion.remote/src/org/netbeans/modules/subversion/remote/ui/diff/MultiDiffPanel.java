@@ -122,6 +122,7 @@ import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -493,8 +494,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private void initNextPrevActions() {
         nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-next.png"))) {  // NOI18N
             {
-                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/diff/Bundle").
-                                                   getString("CTL_DiffPanel_Next_Tooltip"));                
+                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/diff/Bundle"). //NOI18N
+                                                   getString("CTL_DiffPanel_Next_Tooltip")); //NOI18N
             }
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -503,8 +504,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         };
         prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/diff-prev.png"))) { // NOI18N
             {
-                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/diff/Bundle").
-                                                   getString("CTL_DiffPanel_Prev_Tooltip"));                
+                putValue(Action.SHORT_DESCRIPTION, java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/remote/ui/diff/Bundle"). //NOI18N
+                                                   getString("CTL_DiffPanel_Prev_Tooltip")); //NOI18N
             }
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1127,7 +1128,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         refreshSetupsSupport = supp;
     }
     
-    @NbBundle.Messages({
+    @Messages({
         "MSG_Revision_Select_Tooltip=Select a tree to diff"
     })
     private static class RepositoryFileCellRenderer extends DefaultListCellRenderer {
@@ -1137,7 +1138,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             String tooltip = null;
             if (value instanceof RepositoryFile) {
                 RepositoryFile repoFile = (RepositoryFile) value;
-                value = repoFile.getName() + "@" + repoFile.getRevision().toString() + " - " + repoFile.getPath();
+                value = repoFile.getName() + "@" + repoFile.getRevision().toString() + " - " + repoFile.getPath(); //NOI18N
                 tooltip = repoFile.toString();
             } else if (value instanceof String) {
                 value = "<html><i>" + value + "</i></html>"; //NOI18N

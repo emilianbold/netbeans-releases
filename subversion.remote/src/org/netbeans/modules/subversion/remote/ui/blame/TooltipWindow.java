@@ -264,8 +264,8 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 textPane = new JTextPane();
                 StyledDocument doc = (StyledDocument) textPane.getDocument();
                 
-                Style normalStyle = textPane.getStyle("normal");
-                Style hyperlinkStyle = textPane.addStyle("hyperlink", normalStyle);
+                Style normalStyle = textPane.getStyle("normal"); //NOI18N
+                Style hyperlinkStyle = textPane.addStyle("hyperlink", normalStyle); //NOI18N
                 StyleConstants.setForeground(hyperlinkStyle, LINK_COLOR == null ? Color.BLUE : LINK_COLOR);
                 StyleConstants.setUnderline(hyperlinkStyle, true);
                 
@@ -273,7 +273,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 StyleConstants.setForeground(authorStyle, LINK_COLOR == null ? Color.BLUE : LINK_COLOR);
                 
                 // revision
-                doc.insertString(doc.getLength(), annotateLine.getRevision() + " - ", normalStyle);
+                doc.insertString(doc.getLength(), annotateLine.getRevision() + " - ", normalStyle); //NOI18N
                 
                 // author
                 {
@@ -301,9 +301,9 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 }
 
                 // date
-                doc.insertString(doc.getLength(), " ", normalStyle);
+                doc.insertString(doc.getLength(), " ", normalStyle); //NOI18N
                 doc.insertString(doc.getLength(), DateFormat.getDateInstance().format(annotateLine.getDate()), normalStyle);
-                doc.insertString(doc.getLength(), "\n", normalStyle);
+                doc.insertString(doc.getLength(), "\n", normalStyle); //NOI18N
                 
                 // commit msg
                 {
@@ -353,7 +353,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 }
                 textPane.setPreferredSize(new Dimension(maxWidth * 7 / 6, height));
                 if (!textPane.isEditable()) {
-                    textPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$");
+                    textPane.putClientProperty("HighlightsLayerExcludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"); //NOI18N
                 }
                 textPane.addMouseListener(TooltipWindow.this);
                 textPane.addMouseMotionListener(TooltipWindow.this);

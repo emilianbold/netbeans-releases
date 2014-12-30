@@ -57,8 +57,8 @@ import org.openide.util.NbBundle;
  */
 public class PropertiesTableModel extends AbstractTableModel {
     
-    static final String COLUMN_NAME_NAME = "name";
-    static final String COLUMN_NAME_VALUE = "value";
+    static final String COLUMN_NAME_NAME = "name"; //NOI18N
+    static final String COLUMN_NAME_VALUE = "value"; //NOI18N
     
     private SvnPropertiesNode[] nodes;
     private String[] columns;
@@ -130,7 +130,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         } else if (clm.equals(COLUMN_NAME_VALUE)) {
             return nodes[rowIndex].getValue();
         }
-        throw new IllegalArgumentException("The column index is out of index: " + columnIndex);
+        throw new IllegalArgumentException("The column index is out of index: " + columnIndex); //NOI18N
     }
 
     

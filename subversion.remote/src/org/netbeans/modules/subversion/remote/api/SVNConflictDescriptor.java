@@ -47,10 +47,10 @@ package org.netbeans.modules.subversion.remote.api;
  */
 public class SVNConflictDescriptor {
     public enum Operation {
-        _none("none"),
-        _update("update"),
-        _switch("switch"),
-        _merge("merge");
+        _none("none"), //NOI18N
+        _update("update"), //NOI18N
+        _switch("switch"), //NOI18N
+        _merge("merge"); //NOI18N
         
         private final String value;
         private Operation(String value) {
@@ -67,15 +67,15 @@ public class SVNConflictDescriptor {
     }
 
     public enum Reason {
-        edited("edited"),
-        obstructed("obstructed"),
-        deleted("deleted"),
-        missing("missing"),
-        unversioned("unversioned"),
-        added("added"),
-        replaced("replaced"),
-        moved_away("moved_away"),
-        moved_here("moved_here");
+        edited("edited"), //NOI18N
+        obstructed("obstructed"), //NOI18N
+        deleted("deleted"), //NOI18N
+        missing("missing"), //NOI18N
+        unversioned("unversioned"), //NOI18N
+        added("added"), //NOI18N
+        replaced("replaced"), //NOI18N
+        moved_away("moved_away"), //NOI18N
+        moved_here("moved_here"); //NOI18N
         
         private final String value;
         private Reason(String value) {
@@ -92,9 +92,9 @@ public class SVNConflictDescriptor {
     }
 
     public enum Action {
-        edit("edited"),
-        add("added"),
-        delete("deleted");
+        edit("edited"), //NOI18N
+        add("added"), //NOI18N
+        delete("deleted"); //NOI18N
         
         private final String value;
         private Action(String value) {

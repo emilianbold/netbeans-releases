@@ -49,17 +49,17 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
  */
 public interface ISVNProperty {
     
-    public static final String MIME_TYPE = "svn:mime-type";
-    public static final String IGNORE = "svn:ignore";
-    public static final String EOL_STYLE = "svn:eol-style";
-    public static final String KEYWORDS = "svn:keywords";
-    public static final String EXECUTABLE = "svn:executable";
-    public static final String EXECUTABLE_VALUE = "*";
-    public static final String EXTERNALS = "svn:externals";
-    public static final String REV_AUTHOR = "svn:author";
-    public static final String REV_LOG = "svn:log";
-    public static final String REV_DATE = "svn:date";
-    public static final String REV_ORIGINAL_DATE = "svn:original-date";
+    public static final String MIME_TYPE = "svn:mime-type"; //NOI18N
+    public static final String IGNORE = "svn:ignore"; //NOI18N
+    public static final String EOL_STYLE = "svn:eol-style"; //NOI18N
+    public static final String KEYWORDS = "svn:keywords"; //NOI18N
+    public static final String EXECUTABLE = "svn:executable"; //NOI18N
+    public static final String EXECUTABLE_VALUE = "*"; //NOI18N
+    public static final String EXTERNALS = "svn:externals"; //NOI18N
+    public static final String REV_AUTHOR = "svn:author"; //NOI18N
+    public static final String REV_LOG = "svn:log"; //NOI18N
+    public static final String REV_DATE = "svn:date"; //NOI18N
+    public static final String REV_ORIGINAL_DATE = "svn:original-date"; //NOI18N
 
     String getName();
 

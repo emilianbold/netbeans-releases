@@ -121,8 +121,8 @@ public class PropertyGetCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("propget");
-	arguments.add("--strict");
+        arguments.add("propget"); //NOI18N
+	arguments.add("--strict"); //NOI18N
 	arguments.add(name);
         switch (type) {
             case file:
@@ -133,7 +133,7 @@ public class PropertyGetCommand extends SvnCommand {
                 arguments.add(url, peg);        
                 break;
             default: 
-                throw new IllegalStateException("Illegal gettype: " + type);    
+                throw new IllegalStateException("Illegal gettype: " + type); //NOI18N
         }	
     }    
 }

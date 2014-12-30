@@ -203,7 +203,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
 
     private int getLastLineIndex (final StreamSource ss) {
         String mimeType = ss.getMIMEType();
-        if (mimeType == null || !mimeType.startsWith("text/")) {
+        if (mimeType == null || !mimeType.startsWith("text/")) { //NOI18N
             Subversion.LOG.log(Level.INFO, "Wrong mime type");
             return 0;
         }
@@ -275,7 +275,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
         if (showLineInLocal) {
             currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.LineNumber, lineNumber);
         } else {
-            currentDiff.getJComponent().putClientProperty("diff.smartScrollDisabled", Boolean.TRUE);
+            currentDiff.getJComponent().putClientProperty("diff.smartScrollDisabled", Boolean.TRUE); //NOI18N
             currentDiff.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, lineNumber);
         }
     }
@@ -324,7 +324,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
 
         @Override
         public Reader createReader() throws IOException {
-            if (mimeType == null || !mimeType.startsWith("text/")) {
+            if (mimeType == null || !mimeType.startsWith("text/")) { //NOI18N
                 return null;
             } else {
                 return org.netbeans.modules.versioning.util.Utils.createReader(file.toFileObject());

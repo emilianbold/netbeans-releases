@@ -68,10 +68,10 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-@VersioningSystem.Registration(displayName="#CTL_Subversion_DisplayName", 
-    menuLabel="#CTL_Subversion_MainMenu", 
-    metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"}, 
-    actionsCategory="RemoteSubversion")
+@VersioningSystem.Registration(displayName="#CTL_Subversion_DisplayName",  //NOI18N
+    menuLabel="#CTL_Subversion_MainMenu",  //NOI18N
+    metadataFolderNames={".svn:getenv:SVN_ASP_DOT_NET_HACK:null", "_svn:getenv:SVN_ASP_DOT_NET_HACK:notnull"},  //NOI18N
+    actionsCategory="RemoteSubversion") //NOI18N
 public class SubversionVCS extends VersioningSystem implements PropertyChangeListener, VersioningListener, PreferenceChangeListener {
 
     /**

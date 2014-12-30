@@ -94,7 +94,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
           
     @Override
     public void actionPerformed(ActionEvent ae) {
-        org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("SVN");
+        org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("SVN"); //NOI18N
         performCheckout(false);
     }
         

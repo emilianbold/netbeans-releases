@@ -76,15 +76,15 @@ public class UpdateCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
-        arguments.add("update");
+        arguments.add("update"); //NOI18N
         if (!recursive) {
-            arguments.add("-N");
+            arguments.add("-N"); //NOI18N
         }
         if(rev != null) {
             arguments.add(rev);
         }
         if(ignoreExternals) {
-            arguments.add("--ignore-externals");
+            arguments.add("--ignore-externals"); //NOI18N
         }
         arguments.add("--force"); // NOI18N - permits update when locally new file conflicts with the one in repository
         for (VCSFileProxy file : files) {

@@ -74,11 +74,11 @@ public class ImportCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {                     
-        arguments.add("import");
+        arguments.add("import"); //NOI18N
         arguments.add(file.getPath());
         arguments.addNonExistent(url);
         if(!recursive) {
-            arguments.add("-N");
+            arguments.add("-N"); //NOI18N
         }
         arguments.addMessage(message);	        
         setCommandWorkingDirectory(file);

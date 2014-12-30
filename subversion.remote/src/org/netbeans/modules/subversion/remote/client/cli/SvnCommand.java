@@ -191,7 +191,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     @Override
     public void errorText(String line) {
-        if (line.toLowerCase().contains("killed by signal")) {
+        if (line.toLowerCase().contains("killed by signal")) { //NOI18N
             // commandline normal output on linux for ssh connections
             return;
         }
@@ -274,9 +274,9 @@ public abstract class SvnCommand implements CommandNotificationListener {
         StringBuilder cmd = new StringBuilder(100);
         boolean psswd = false;
         for (String arg : args) {            
-            cmd.append(psswd && scramble ? "******" : arg);
+            cmd.append(psswd && scramble ? "******" : arg); //NOI18N
             cmd.append(' ');
-            if(scramble) psswd = arg.equals("--password");
+            if(scramble) psswd = arg.equals("--password"); //NOI18N
         }
         cmd.delete(cmd.length() - 1, cmd.length());
         return cmd;
@@ -298,13 +298,13 @@ public abstract class SvnCommand implements CommandNotificationListener {
     }
     
     protected String createTempCommandFile(String[] lines) throws IOException {
-        VCSFileProxy targetFile = VCSFileProxySupport.createTempFile(getTempCommandFolder(true), "svn_", "", true);
+        VCSFileProxy targetFile = VCSFileProxySupport.createTempFile(getTempCommandFolder(true), "svn_", "", true); //NOI18N
 
         PrintWriter writer = null; 
         try {
             writer = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(targetFile)));
             for (int i = 0; i < lines.length; i++) {
-                writer.print(i < lines.length -1 ? lines[i] + "\n" : lines[i]);
+                writer.print(i < lines.length -1 ? lines[i] + "\n" : lines[i]); //NOI18N
             }
         } finally {
             if(writer!=null) {
@@ -317,7 +317,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     protected void config(VCSFileProxy configDir, String username, String password, Arguments arguments) {
         arguments.addConfigDir(configDir);
-        arguments.add("--non-interactive");
+        arguments.add("--non-interactive"); //NOI18N
         arguments.addCredentials(username, password);
     }
 
@@ -382,10 +382,10 @@ public abstract class SvnCommand implements CommandNotificationListener {
         }
 
         public void add(SVNRevision rev1, SVNRevision rev2) {
-            add("-r");   
-            add( (rev1 == null || rev1.toString().trim().equals("") ? "HEAD" : rev1.toString() ) + 
-                 ":" +
-                 (rev2 == null || rev2.toString().trim().equals("") ? "HEAD" : rev2.toString() ) ); 
+            add("-r"); //NOI18N
+            add( (rev1 == null || rev1.toString().trim().equals("") ? "HEAD" : rev1.toString() ) + //NOI18N
+                 ":" + //NOI18N
+                 (rev2 == null || rev2.toString().trim().equals("") ? "HEAD" : rev2.toString() ) ); //NOI18N
         }
         
         public void add(SVNUrl url, SVNRevision pegging) {
@@ -395,17 +395,17 @@ public abstract class SvnCommand implements CommandNotificationListener {
         }
         
         public void add(SVNRevision revision) {
-            add("-r");   
-            add(revision == null || revision.toString().trim().equals("") ? "HEAD" : revision.toString());
+            add("-r"); //NOI18N
+            add(revision == null || revision.toString().trim().equals("") ? "HEAD" : revision.toString()); //NOI18N
         }                    
 
         public void addPathArguments(String... paths) throws IOException {        
-            add("--targets");
+            add("--targets"); //NOI18N
             add(createTempCommandFile(paths));
         }
         
         public void addFileArguments(VCSFileProxy... files) throws IOException {        
-            add("--targets");
+            add("--targets"); //NOI18N
             add(createTempCommandFile(files));
         }
 
@@ -414,7 +414,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
             for (int i = 0; i < urls.length; i++) {
                 paths[i] = makeCliUrlString(urls[i], true);
             }
-            add("--targets");
+            add("--targets"); //NOI18N
             add(createTempCommandFile(paths));
         }
 
@@ -432,36 +432,36 @@ public abstract class SvnCommand implements CommandNotificationListener {
         }
 
         private String makeCliUrlString(SVNUrl url, SVNRevision pegRev) {
-            return encodeUrl(url).toString() + '@' + (pegRev == null ? "HEAD" : pegRev);
+            return encodeUrl(url).toString() + '@' + (pegRev == null ? "HEAD" : pegRev); //NOI18N
         }
         
         public void addMessage(String message) throws IOException {
             if(message == null) {
                 return;
             }
-            add("--force-log");
-            add("-F");                
-            String msgFile = createTempCommandFile((message != null) ? message : "");
+            add("--force-log"); //NOI18N
+            add("-F"); //NOI18N             
+            String msgFile = createTempCommandFile((message != null) ? message : ""); //NOI18N
             add(msgFile);                               		
         }
         
         public void addConfigDir(VCSFileProxy configDir) {            
             if (configDir != null) {
-                arguments.add("--config-dir");
+                arguments.add("--config-dir"); //NOI18N
                 arguments.add(configDir);
             }
         }         
     
         public void addCredentials(String user, String psswd) {
-            if(user == null || user.trim().equals("")) {
+            if(user == null || user.trim().equals("")) { //NOI18N
                 return;
             }            
-            add("--username");                               		
+            add("--username"); //NOI18N                      		
             add(user);
             if(psswd == null) {
-                psswd = "";
+                psswd = ""; //NOI18N
             }
-            add("--password");                               		
+            add("--password"); //NOI18N                      		
             add(psswd);                      		
         }
     

@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public class RepositoryConnection {
     
-    private static final String RC_DELIMITER = "~=~";
+    private static final String RC_DELIMITER = "~=~"; //NOI18N
     
     private String url;   
     private String username;
@@ -96,7 +96,7 @@ public class RepositoryConnection {
     }
 
     public String getUsername() {
-        return username == null ? "" : username;
+        return username == null ? "" : username; //NOI18N
     }
 
     /**
@@ -218,7 +218,7 @@ public class RepositoryConnection {
         int idx = urlString.lastIndexOf('@');
         int hostIdx = urlString.indexOf("://");                         // NOI18N
         int firstSlashIdx = urlString.indexOf("/", hostIdx + 3);        // NOI18N
-        if (urlString.contains("\\")) {
+        if (urlString.contains("\\")) { //NOI18N
             throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_InvalidSvnUrl", urlString)); //NOI18N
         }
         if(idx < 0 || firstSlashIdx < 0 || idx < firstSlashIdx) {
@@ -313,7 +313,7 @@ public class RepositoryConnection {
         boolean save        = l > 4 && !fields[4].equals("") ? Boolean.parseBoolean(fields[4]) : true;
         String certFile     = l > 5 && !fields[5].equals("") ? fields[5] : null;
         String certPassword = l > 6 && !fields[6].equals("") ? Scrambler.getInstance().descramble(fields[6]) : null;
-        String portNumberString = l > 7 ? fields[7] : "-1";
+        String portNumberString = l > 7 ? fields[7] : "-1"; //NOI18N
         int portNumber = -1;
         try {
             portNumber = Integer.parseInt(portNumberString);

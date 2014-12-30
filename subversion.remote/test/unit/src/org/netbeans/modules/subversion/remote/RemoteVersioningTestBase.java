@@ -188,8 +188,8 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        //cleanUpWC(wc);
-        //cleanUpWC(wc2);
+        cleanUpWC(wc);
+        cleanUpWC(wc2);
     }
 
     @Override

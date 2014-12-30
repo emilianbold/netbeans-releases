@@ -72,6 +72,7 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -83,13 +84,13 @@ import org.openide.util.TaskListener;
  */
 public class SvnSearch implements ActionListener, DocumentListener {
     
-    public final static String SEACRH_HELP_ID_CHECKOUT = "org.netbeans.modules.subversion.ui.search.checkout"; 
-    public final static String SEACRH_HELP_ID_SWITCH = "org.netbeans.modules.subversion.ui.search.switch"; 
-    public final static String SEACRH_HELP_ID_COPY = "org.netbeans.modules.subversion.ui.search.copy"; 
-    public final static String SEACRH_HELP_ID_URL_PATTERN = "org.netbeans.modules.subversion.ui.search.urlpattern"; 
-    public final static String SEACRH_HELP_ID_MERGE = "org.netbeans.modules.subversion.ui.search.merge"; 
-    public final static String SEACRH_HELP_ID_REVERT = "org.netbeans.modules.subversion.ui.search.revert";     
-    public final static String SEARCH_HELP_ID_UPDATE = "org.netbeans.modules.subversion.ui.search.update"; 
+    public final static String SEACRH_HELP_ID_CHECKOUT = "org.netbeans.modules.subversion.ui.search.checkout"; //NOI18N
+    public final static String SEACRH_HELP_ID_SWITCH = "org.netbeans.modules.subversion.ui.search.switch"; //NOI18N
+    public final static String SEACRH_HELP_ID_COPY = "org.netbeans.modules.subversion.ui.search.copy"; //NOI18N
+    public final static String SEACRH_HELP_ID_URL_PATTERN = "org.netbeans.modules.subversion.ui.search.urlpattern"; //NOI18N
+    public final static String SEACRH_HELP_ID_MERGE = "org.netbeans.modules.subversion.ui.search.merge"; //NOI18N
+    public final static String SEACRH_HELP_ID_REVERT = "org.netbeans.modules.subversion.ui.search.revert"; //NOI18N
+    public final static String SEARCH_HELP_ID_UPDATE = "org.netbeans.modules.subversion.ui.search.update"; //NOI18N
     public final static String SEARCH_HELP_ID_SELECT_DIFF_TREE = "org.netbeans.modules.subversion.ui.search.selectdifftree"; //NOI18N
     
     private static final String DATE_FROM = "svnSearch.dateFrom";    // NOI18N
@@ -136,7 +137,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
         }
     }
     
-    @NbBundle.Messages({
+    @Messages({
         "# {0} - resource URL",
         "MSG_SvnSearch.error.pathNotFound=Resource does not exist: {0}"
     })
@@ -175,7 +176,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                     if (SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {
                         for (int i=0; i < paths.length; ++i) {
                             String path = paths[i];
-                            while (path.endsWith("/")) {
+                            while (path.endsWith("/")) { //NOI18N
                                 path = path.substring(0, path.length() - 1);
                             }
                             if (ex.getMessage().contains(path)) {
@@ -262,7 +263,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
     
     private SVNRevision getRevisionFrom() {
         String value = panel.dateFromTextField.getText().trim();
-        if(value.equals("")) {
+        if(value.equals("")) { //NOI18N
             return new SVNRevision.Number(1);
         }
         try {

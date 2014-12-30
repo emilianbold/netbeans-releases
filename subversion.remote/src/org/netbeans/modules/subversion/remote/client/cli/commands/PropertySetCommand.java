@@ -98,9 +98,9 @@ public class PropertySetCommand extends SvnCommand {
     
     @Override
     public void prepareCommand(Arguments arguments) throws IOException {        
-        arguments.add("propset");        
+        arguments.add("propset"); //NOI18N
         if(recursivelly) {
-            arguments.add("-R");
+            arguments.add("-R"); //NOI18N
         }
         switch (type) {
             case string: 
@@ -116,12 +116,12 @@ public class PropertySetCommand extends SvnCommand {
                 break;
             case file:     
                 arguments.add(propName);
-                arguments.add("-F");                
+                arguments.add("-F"); //NOI18N
                 arguments.add(propFile);		
                 arguments.add(file);
                 break;
             default :    
-                throw new IllegalStateException("Illegal proptype: " + type);                             
+                throw new IllegalStateException("Illegal proptype: " + type); //NOI18N
         }        
     }    
 }

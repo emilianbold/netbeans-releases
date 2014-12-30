@@ -78,15 +78,15 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     private static final Color REMOTE_MODIFICATION_COLOR;
     private static final Color TEXT_ANNOTATION_COLOR;
     static {
-        Color c = UIManager.getColor("nb.versioning.added.color");
+        Color c = UIManager.getColor("nb.versioning.added.color"); //NOI18N
         ADDED_COLOR = c == null ? new Color(0, 0x80, 0) : c;
-        c = UIManager.getColor("nb.versioning.modified.color");
+        c = UIManager.getColor("nb.versioning.modified.color"); //NOI18N
         MODIFIED_COLOR = c == null ? new Color(0, 0, 0xff) : c;
-        c = UIManager.getColor("nb.versioning.deleted.color");
+        c = UIManager.getColor("nb.versioning.deleted.color"); //NOI18N
         DELETED_COLOR = c == null ? new Color(0x99, 0x99, 0x99) : c;
-        c = UIManager.getColor("nb.versioning.conflicted.color");
+        c = UIManager.getColor("nb.versioning.conflicted.color"); //NOI18N
         CONFLICTED_COLOR = c == null ? new Color(0xff, 0, 0) : c;
-        c = UIManager.getColor("nb.versioning.ignored.color");
+        c = UIManager.getColor("nb.versioning.ignored.color"); //NOI18N
         IGNORED_COLOR = c == null ? new Color(0x99, 0x99, 0x99) : c;
         c = UIManager.getColor("nb.versioning.remotemodification.color"); //NOI18N
         REMOTE_MODIFICATION_COLOR = c == null ? new Color(0, 0, 0) : c;

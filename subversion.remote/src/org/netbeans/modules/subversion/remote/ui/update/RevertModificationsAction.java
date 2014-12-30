@@ -214,7 +214,7 @@ public class RevertModificationsAction extends ContextAction {
                                                      files[i], false, recursive);
                                     } else {
                                         assert targetInterval.startRevision instanceof SVNRevision.Number
-                                               : "The revision has to be a Number when trying to undelete file!";
+                                               : "The revision has to be a Number when trying to undelete file!"; //NOI18N
                                         client.copy(url, files[i], targetInterval.startRevision);
                                     }
                                 }

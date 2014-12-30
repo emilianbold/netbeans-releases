@@ -78,8 +78,7 @@ public class ControlPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/remote/resources/icons/warning.gif"))); // NOI18N
-        warningLabel.setText("jLabel1");
+        warningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/subversion/resources/icons/warning.gif"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

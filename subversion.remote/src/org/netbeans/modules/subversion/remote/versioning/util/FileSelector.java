@@ -119,11 +119,6 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
 
         jLabel1.setText(text);
 
-        filesList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         filesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(filesList);
 
@@ -219,7 +214,7 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
         }
         String hash = null;
         try {
-            hash = org.netbeans.modules.versioning.util.Utils.getHash("MD5", sb.toString().getBytes());
+            hash = org.netbeans.modules.versioning.util.Utils.getHash("MD5", sb.toString().getBytes()); //NOI18N
         } catch (NoSuchAlgorithmException ex) {
             LOG.log(Level.SEVERE, null, ex); // should not happen
         }
@@ -227,11 +222,11 @@ public class FileSelector extends javax.swing.JPanel implements ListSelectionLis
     }
 
     public String getFileSelectorPreset(String hash) {
-        return pref.get(FILE_SELECTOR_PREFIX + "-" + hash, "");
+        return pref.get(FILE_SELECTOR_PREFIX + "-" + hash, ""); //NOI18N
     }
 
     public void setFileSelectorPreset(String hash, String path) {
-        pref.put(FILE_SELECTOR_PREFIX + "-" + hash, path);
+        pref.put(FILE_SELECTOR_PREFIX + "-" + hash, path); //NOI18N
     }
 
 

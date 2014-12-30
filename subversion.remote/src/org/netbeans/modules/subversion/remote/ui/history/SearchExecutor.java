@@ -251,7 +251,7 @@ class SearchExecutor extends SvnProgressSupport {
                 for (VCSFileProxy file : files) {
                     ISVNInfo info = client.getInfoFromWorkingCopy(file);
                     String p = SvnUtils.getRelativePath(file);
-                    if(p != null && p.startsWith("/")) {
+                    if(p != null && p.startsWith("/")) { //NOI18N
                         p = p.substring(1, p.length());
                     }
                     paths[idx++] = p;
