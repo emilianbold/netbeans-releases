@@ -2030,14 +2030,6 @@ public class SvnUtils {
      * @param file file/directory to delete
      */
     public static void deleteRecursively(VCSFileProxy file) {
-        if (file.isDirectory()) {
-            VCSFileProxy[] files = file.listFiles();
-            if (files != null) {
-                for (int i = 0; i < files.length; i++) {
-                    deleteRecursively(files[i]);
-                }
-            }
-        }
         VCSFileProxySupport.delete(file);
     }
 
