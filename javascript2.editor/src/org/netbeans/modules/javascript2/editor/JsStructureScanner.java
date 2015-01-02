@@ -271,55 +271,89 @@ public class JsStructureScanner implements StructureScanner {
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         long start = System.currentTimeMillis(); 
-        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
-         
-        TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
-        TokenSequence ts = th.tokenSequence(language);
-        List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
-        List<FoldingItem> stack = new ArrayList<FoldingItem>();
-
-        for (TokenSequenceIterator tsi = new TokenSequenceIterator(list, false); tsi.hasMore();) {
-            ts = tsi.getSequence();
-
-            TokenId tokenId;
-            JsTokenId lastContextId = null;
-            int functionKeywordPosition = 0;
-            ts.moveStart();
-            while (ts.moveNext()) {
-                tokenId = ts.token().id();
-                if (tokenId == JsTokenId.DOC_COMMENT) {
-                    // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
-                    int startOffset = ts.offset() + 3;
-                    int endOffset = ts.offset() + ts.token().length() - 2;
-                    appendFold(folds, FoldType.DOCUMENTATION.code(),  info.getSnapshot().getOriginalOffset(startOffset),
-                            info.getSnapshot().getOriginalOffset(endOffset));
-                } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
-                    int startOffset = ts.offset() + 2;
-                    int endOffset = ts.offset() + ts.token().length() - 2;
-                    appendFold(folds, FoldType.COMMENT.code(), info.getSnapshot().getOriginalOffset(startOffset),
-                            info.getSnapshot().getOriginalOffset(endOffset));
-                } else if (((JsTokenId) tokenId).isKeyword()) {
-                    lastContextId = (JsTokenId) tokenId;
-                    if(lastContextId == JsTokenId.KEYWORD_FUNCTION) {
-                        functionKeywordPosition = ts.offset();
+        Map<String, List<OffsetRange>> folds;
+        String mimeType = info.getSnapshot().getMimeType();
+        if (JsTokenId.JSON_MIME_TYPE.equals(mimeType)) {
+            folds = foldsJson(info);
+        } else {
+            folds = new HashMap<String, List<OffsetRange>>();
+            TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
+            TokenSequence ts = th.tokenSequence(language);
+            List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
+            List<FoldingItem> stack = new ArrayList<FoldingItem>();
+            for (TokenSequenceIterator tsi = new TokenSequenceIterator(list, false); tsi.hasMore();) {
+                ts = tsi.getSequence();
+                TokenId tokenId;
+                JsTokenId lastContextId = null;
+                int functionKeywordPosition = 0;
+                ts.moveStart();
+                while (ts.moveNext()) {
+                    tokenId = ts.token().id();
+                    if (tokenId == JsTokenId.DOC_COMMENT) {
+                        // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
+                        int startOffset = ts.offset() + 3;
+                        int endOffset = ts.offset() + ts.token().length() - 2;
+                        appendFold(folds, FoldType.DOCUMENTATION.code(),  info.getSnapshot().getOriginalOffset(startOffset),
+                                info.getSnapshot().getOriginalOffset(endOffset));
+                    } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
+                        int startOffset = ts.offset() + 2;
+                        int endOffset = ts.offset() + ts.token().length() - 2;
+                        appendFold(folds, FoldType.COMMENT.code(), info.getSnapshot().getOriginalOffset(startOffset),
+                                info.getSnapshot().getOriginalOffset(endOffset));
+                    } else if (((JsTokenId) tokenId).isKeyword()) {
+                        lastContextId = (JsTokenId) tokenId;
+                        if(lastContextId == JsTokenId.KEYWORD_FUNCTION) {
+                            functionKeywordPosition = ts.offset();
+                        }
+                    } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                        String kind;
+                        if (lastContextId == JsTokenId.KEYWORD_FUNCTION && isNotAnonymousFunction(ts, functionKeywordPosition)) {
+                            kind = FoldType.MEMBER.code();
+                        } else {
+                            kind = FoldType.CODE_BLOCK.code();
+                        }
+                        stack.add(new FoldingItem(kind, ts.offset()));
+                    } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
+                        FoldingItem fromStack = stack.remove(stack.size() - 1);
+                        appendFold(folds, fromStack.kind, info.getSnapshot().getOriginalOffset(fromStack.start),
+                                info.getSnapshot().getOriginalOffset(ts.offset() + 1));
                     }
-                } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
-                    String kind;
-                    if (lastContextId == JsTokenId.KEYWORD_FUNCTION && isNotAnonymousFunction(ts, functionKeywordPosition)) {
-                        kind = FoldType.MEMBER.code();
-                    } else {
-                        kind = FoldType.CODE_BLOCK.code();
-                    }
-                    stack.add(new FoldingItem(kind, ts.offset()));
-                } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
-                    FoldingItem fromStack = stack.remove(stack.size() - 1);
-                    appendFold(folds, fromStack.kind, info.getSnapshot().getOriginalOffset(fromStack.start),
-                            info.getSnapshot().getOriginalOffset(ts.offset() + 1));
                 }
             }
         }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Folding took %s ms", (end - start));
+        return folds;
+    }
+    
+    private Map<String, List<OffsetRange>> foldsJson(ParserResult info) {
+        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
+        TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
+        TokenSequence ts = th.tokenSequence(language);
+        List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
+        List<FoldingItem> stack = new ArrayList<FoldingItem>();
+        for (TokenSequenceIterator tsi = new TokenSequenceIterator(list, false); tsi.hasMore();) {
+            ts = tsi.getSequence();
+            TokenId tokenId;
+            ts.moveStart();
+            while (ts.moveNext()) {
+                tokenId = ts.token().id();
+                if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                    stack.add(new FoldingItem(JsonFoldTypeProvider.OBJECT.code(), ts.offset()));
+                } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
+                    FoldingItem fromStack = stack.remove(stack.size() - 1);
+                    appendFold(folds, fromStack.kind, info.getSnapshot().getOriginalOffset(fromStack.start),
+                            info.getSnapshot().getOriginalOffset(ts.offset() + 1));
+                } else if (tokenId == JsTokenId.BRACKET_LEFT_BRACKET) {
+                    stack.add(new FoldingItem(JsonFoldTypeProvider.ARRAY.code(), ts.offset()));
+                } else if (tokenId == JsTokenId.BRACKET_RIGHT_BRACKET && !stack.isEmpty()) {
+                    FoldingItem fromStack = stack.remove(stack.size() - 1);
+                    appendFold(folds, fromStack.kind, info.getSnapshot().getOriginalOffset(fromStack.start),
+                            info.getSnapshot().getOriginalOffset(ts.offset() + 1));
+                }
+
+            }
+        }
         return folds;
     }
 

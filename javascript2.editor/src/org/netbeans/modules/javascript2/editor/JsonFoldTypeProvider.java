@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.api.editor.fold.FoldTemplate;
+import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.spi.editor.fold.FoldTypeProvider;
+import org.openide.util.NbBundle;
+
 /**
  *
- * @author Petr Hejl
+ * @author Petr Pisl
  */
-public class JsonStructureScannerTest extends JsonTestBase {
+@MimeRegistration(mimeType = "text/x-json", service = FoldTypeProvider.class, position = 1102)
+public class JsonFoldTypeProvider implements FoldTypeProvider {
     
-    public JsonStructureScannerTest(String testName) {
-        super(testName);
+    private final Collection<FoldType>   types = new ArrayList<FoldType>(4);
+
+    @NbBundle.Messages({
+        "FT_Label_Object-block=Objects",
+        "FT_display_Object-block={...}",
+        "FT_display_default=..."
+    })
+    public static final FoldType OBJECT = FoldType.create("code-object", Bundle.FT_Label_Object_block(), 
+            new FoldTemplate(1, 1, Bundle.FT_display_Object_block()));
+    
+    @NbBundle.Messages({
+        "FT_Label_Array-block=Arrays",
+        "FT_display_Array-block=[...]"
+    })
+    public static final FoldType ARRAY = FoldType.create("code-array", Bundle.FT_Label_Array_block(), 
+            new FoldTemplate(1, 1, Bundle.FT_display_Array_block()));
+    
+    public JsonFoldTypeProvider() {
+        types.add(OBJECT);
+        types.add(ARRAY);
     }
     
-    public void testFolds01() throws Exception {
-        checkFolds("testfiles/simple.json");
+    @Override
+    public Collection getValues(Class type) {
+        return types;
     }
 
-    public void testStructure01() throws Exception {
-        checkStructure("testfiles/simple.json");
+    @Override
+    public boolean inheritable() {
+        return false;
     }
-
-    public void testJsonFold() throws Exception {
-        checkFolds("testfiles/structure/issue249517.json");
-    }
+    
 }
