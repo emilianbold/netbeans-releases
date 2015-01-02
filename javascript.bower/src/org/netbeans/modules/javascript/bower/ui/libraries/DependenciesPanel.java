@@ -784,6 +784,9 @@ public class DependenciesPanel extends javax.swing.JPanel {
         }
 
         @Override
+        @NbBundle.Messages({
+            "DependenciesPanel.table.latestVersionPlaceholder=latest"
+        })
         public Object getValueAt(int rowIndex, int columnIndex) {
             Dependency dependency = dependencies.get(rowIndex);
             Object value;
@@ -795,6 +798,8 @@ public class DependenciesPanel extends javax.swing.JPanel {
                         value = dependency.getInstalledVersion();
                         if (value == null) {
                             value = VersionColumnRenderer.NO_VERSION;
+                        } else if (Library.Version.LATEST_VERSION_PLACEHOLDER.equals(value)) {
+                            value = Bundle.DependenciesPanel_table_latestVersionPlaceholder();
                         }
                     } else {
                         value = VersionColumnRenderer.CHECKING;
@@ -812,7 +817,11 @@ public class DependenciesPanel extends javax.swing.JPanel {
                         if (latestVersion.equals(dependency.getInstalledVersion())) {
                             value = VersionColumnRenderer.UP_TO_DATE;
                         } else {
-                            value = latestVersion;
+                            if (Library.Version.LATEST_VERSION_PLACEHOLDER.equals(latestVersion)) {
+                                value = Bundle.DependenciesPanel_table_latestVersionPlaceholder();
+                            } else {
+                                value = latestVersion;
+                            }
                         }
                     }
                     break;
