@@ -172,6 +172,8 @@ public class Library {
      * Version of a the package/library.
      */
     public static class Version {
+        /** This is a placeholder for a name of a version of a library that doesn't specify (names of) versions. */
+        public static final String LATEST_VERSION_PLACEHOLDER = "\t";
         /** Owning library. */
         private final Library library;
         /** Name/number of the version. */

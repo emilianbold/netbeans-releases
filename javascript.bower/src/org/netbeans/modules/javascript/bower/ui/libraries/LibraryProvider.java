@@ -215,10 +215,11 @@ public class LibraryProvider {
                             JSONObject metaInfo = (JSONObject)libraryInfo.get("pkgMeta"); // NOI18N
                             if (metaInfo != null) {
                                 String versionName = (String)metaInfo.get("version"); // NOI18N
-                                if (versionName != null) {
-                                    String libraryName = key.toString();
-                                    result.put(libraryName, versionName);
+                                if (versionName == null) {
+                                    versionName = Library.Version.LATEST_VERSION_PLACEHOLDER;
                                 }
+                                String libraryName = key.toString();
+                                result.put(libraryName, versionName);
                             }
                         }
                     }
@@ -258,14 +259,20 @@ public class LibraryProvider {
 
         Library.Version latestVersion = null;
         JSONArray versionArray = (JSONArray)info.get("versions"); // NOI18N
-        Library.Version[] versions = new Library.Version[versionArray.size()];
-        for (int i=0; i<versionArray.size(); i++) {
-            String versionName = (String)versionArray.get(i);
-            Library.Version version = new Library.Version(library, versionName);
-            if (versionName.equals(latestVersionName)) {
-                latestVersion = version;
+        Library.Version[] versions;
+        if (versionArray != null && versionArray.size() != 0) {
+            versions = new Library.Version[versionArray.size()];
+            for (int i=0; i<versionArray.size(); i++) {
+                String versionName = (String)versionArray.get(i);
+                Library.Version version = new Library.Version(library, versionName);
+                if (versionName.equals(latestVersionName)) {
+                    latestVersion = version;
+                }
+                versions[i] = version;
             }
-            versions[i] = version;
+        } else {
+            // Some packages (like torelativetime) do not specify version names
+            versions = new Library.Version[] { new Library.Version(library, Library.Version.LATEST_VERSION_PLACEHOLDER) };
         }
         library.setVersions(versions);
         library.setLatestVersion(latestVersion == null ? versions[0] : latestVersion);

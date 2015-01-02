@@ -391,7 +391,13 @@ public class LibrariesPanel extends javax.swing.JPanel {
                     try {
                         // bower install name#versionToInstall
                         String saveParameter = getSaveParameter(dependencyType);
-                        Future<Integer> future = executable.install(saveParameter, name + "#" + versionToInstall); // NOI18N
+                        String versionParameter;
+                        if (Library.Version.LATEST_VERSION_PLACEHOLDER.equals(versionToInstall)) {
+                            versionParameter = name;
+                        } else {
+                            versionParameter = name + "#" + versionToInstall; // NOI18N
+                        }
+                        Future<Integer> future = executable.install(saveParameter, versionParameter);
                         if (future != null) {
                             result = future.get();
                         }

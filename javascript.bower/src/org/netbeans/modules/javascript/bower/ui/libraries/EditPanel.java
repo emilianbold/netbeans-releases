@@ -289,7 +289,11 @@ public class EditPanel extends javax.swing.JPanel {
         lastSelectedVersion = (Library.Version)installVersionCombo.getSelectedItem();
         if ((lastSelectedVersionName == null || lastSelectedVersionName.equals(requiredVersion))
                 && lastSelectedVersion != null) {
-            requiredVersionField.setText(lastSelectedVersion.getName());
+            String newRequiredVersion = lastSelectedVersion.getName();
+            if (Library.Version.LATEST_VERSION_PLACEHOLDER.equals(newRequiredVersion)) {
+                newRequiredVersion = "*"; // NOI18N
+            }
+            requiredVersionField.setText(newRequiredVersion);
         }
     }//GEN-LAST:event_installVersionComboActionPerformed
 
@@ -305,12 +309,19 @@ public class EditPanel extends javax.swing.JPanel {
      */
     private class VersionRenderer extends DefaultListCellRenderer {
 
-        @NbBundle.Messages({"EditPanel.loadingVersions=Loading..."})
+        @NbBundle.Messages({
+            "EditPanel.loadingVersions=Loading...",
+            "EditPanel.latestVersionPlaceholder=latest"
+        })
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             Object renderedValue;
             if (value instanceof Library.Version) {
-                renderedValue = ((Library.Version)value).getName();
+                String versionName = ((Library.Version)value).getName();
+                if (Library.Version.LATEST_VERSION_PLACEHOLDER.equals(versionName)) {
+                    versionName = Bundle.EditPanel_latestVersionPlaceholder();
+                }
+                renderedValue = versionName;
             } else {
                 renderedValue = value;
             }
