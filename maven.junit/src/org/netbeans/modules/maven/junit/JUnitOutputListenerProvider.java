@@ -505,6 +505,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     public @Override void sequenceFail(String sequenceId, OutputVisitor visitor) {
         // try to get the failed test class. How can this be solved if it is not the first one in the list?
         if(surefireRunningInParallel) {
+            if(runningTestClassesInParallel.isEmpty()) {
+                // no test case is currently running, so do nothing (is this a more serious failure?)
+                return;
+            }
             runningTestClass = runningTestClassesInParallel.get(0);
         }
         sequenceEnd(sequenceId, visitor);
