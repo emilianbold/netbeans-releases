@@ -278,7 +278,7 @@ public final class CdnjsLibraries {
         @NbBundle.Messages({
             "# {0} - library name",
             "# {1} - library version",
-            "CdnjsLibraryNode.description={0}: {1}",
+            "CdnjsLibraryNode.description={0}: {1}"
         })
         @Override
         public String getShortDescription() {

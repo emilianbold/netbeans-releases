@@ -425,7 +425,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
         "DependenciesPanel.alsoDependency=It is also {0} dependency. ",
         "DependenciesPanel.addAndKeep=Add and Keep Existing",
         "DependenciesPanel.addAndRemove=Add and Remove Existing",
-        "DependenciesPanel.cancel=Cancel",
+        "DependenciesPanel.cancel=Cancel"
     })
     private boolean checkOtherDependencyTypes(String libraryName) {
         List<Dependency.Type> types = allDependencies.otherDependencyTypes(libraryName, dependencyType);
@@ -769,7 +769,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
             "DependenciesPanel.table.libraryColumn=Package",
             "DependenciesPanel.table.requiredVersionColumn=Required Version",
             "DependenciesPanel.table.installedVersionColumn=Installed Version",
-            "DependenciesPanel.table.latestVersionColumn=Latest Version",
+            "DependenciesPanel.table.latestVersionColumn=Latest Version"
         })
         public String getColumnName(int column) {
             String columnName;

@@ -547,7 +547,7 @@ public class SelectionPanel extends javax.swing.JPanel {
         @NbBundle.Messages({
             "SelectionPanel.version.unknown=Version information not available",
             "SelectionPanel.version.checking=Checking for updates ...",
-            "SelectionPanel.version.uptodate=Up to date",
+            "SelectionPanel.version.uptodate=Up to date"
         })
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             String icon = null;
@@ -595,7 +595,7 @@ public class SelectionPanel extends javax.swing.JPanel {
         @NbBundle.Messages({
             "SelectionPanel.table.libraryColumn=Library",
             "SelectionPanel.table.versionColumn=Version",
-            "SelectionPanel.table.latestVersionColumn=Latest Version",
+            "SelectionPanel.table.latestVersionColumn=Latest Version"
         })
         public String getColumnName(int column) {
             String columnName;
