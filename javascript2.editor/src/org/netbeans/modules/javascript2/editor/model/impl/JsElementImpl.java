@@ -44,6 +44,8 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -78,6 +80,8 @@ import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.VARIA
  */
 public abstract class JsElementImpl implements JsElement {
 
+    private static final Logger LOG = Logger.getLogger(JsElementImpl.class.getSimpleName());
+    
     private FileObject fileObject;
 
     private final String name;
@@ -97,6 +101,9 @@ public abstract class JsElementImpl implements JsElement {
             @NullAllowed String mimeType, @NullAllowed String sourceLabel) {
         this.fileObject = fileObject;
         this.name = name;
+        if (offsetRange.getStart() > offsetRange.getEnd()) {
+            LOG.log(Level.WARNING, "Suspicious offset range of element at \n", new Throwable());
+        }
         this.offsetRange = offsetRange;
         this.modifiers = modifiers == null ? Collections.EMPTY_SET: modifiers;
         this.isDeclared = isDeclared;
