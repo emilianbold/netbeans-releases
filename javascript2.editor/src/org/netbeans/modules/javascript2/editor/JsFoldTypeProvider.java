@@ -44,11 +44,9 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import org.netbeans.api.editor.fold.FoldTemplate;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.spi.editor.fold.FoldTypeProvider;
-import org.openide.util.NbBundle;
 
 /**
  *
