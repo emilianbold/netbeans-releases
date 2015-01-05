@@ -240,6 +240,9 @@ public class SearchPanel extends javax.swing.JPanel {
         });
     }
 
+    @NbBundle.Messages({
+        "SearchPanel.message.loadingOfDetailFailed=Loading of package detail failed! :-("
+    })
     private void updateLibraryDetail(String libraryName, Library libraryDetails) {
         assert EventQueue.isDispatchThread();
         synchronized (this) {
@@ -247,7 +250,8 @@ public class SearchPanel extends javax.swing.JPanel {
                 return;
             }
         }
-        loadingLabel.setText(null);
+        loadingLabel.setText((libraryName != null) && (libraryDetails == null)
+                ? Bundle.SearchPanel_message_loadingOfDetailFailed() : null);
         boolean emptySelection = (libraryDetails == null);
         String description = null;
         String keywords = null;
