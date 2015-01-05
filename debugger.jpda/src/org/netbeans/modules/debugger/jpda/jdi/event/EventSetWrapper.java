@@ -80,6 +80,10 @@ public final class EventSetWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
             retValue = err;
@@ -112,6 +116,10 @@ public final class EventSetWrapper {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (java.lang.IllegalThreadStateException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper(ex);
@@ -148,6 +156,10 @@ public final class EventSetWrapper {
             return 0;
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             return 0;
         } catch (Error err) {
             retValue = err;
@@ -186,6 +198,10 @@ public final class EventSetWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
             retValue = err;
