@@ -62,6 +62,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
@@ -218,9 +219,8 @@ public class ReturnEncapsulation {
         final Element exprElement = info.getTrees().getElement(exprPath);
         final TypeMirror exprType = info.getTrees().getTypeMirror(exprPath);
         if (exprElement == null ||
-            exprType == null ||
-            exprElement.getKind() != ElementKind.FIELD ||
-            exprType.getKind() == TypeKind.ERROR) {
+            !Utilities.isValidType(exprType) ||
+            exprElement.getKind() != ElementKind.FIELD) {
             return null;
         }
         if (exprElement.getModifiers().contains(Modifier.FINAL)) {

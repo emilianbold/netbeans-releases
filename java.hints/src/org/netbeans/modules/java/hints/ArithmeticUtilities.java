@@ -287,7 +287,10 @@ public class ArithmeticUtilities {
                 return null;
             }
             TypeMirror castee = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getExpression()));
-            if (castee != null && info.getTypes().isAssignable(castee, target)) {
+            if (!Utilities.isValidType(castee)) {
+                return null;
+            }
+            if (info.getTypes().isAssignable(castee, target)) {
                 return result;
             }
             // a constant of primitive type may be casted / wrapped to the wrapper type
@@ -336,6 +339,9 @@ public class ArithmeticUtilities {
             }
             Object result = null;
             TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getType()));
+            if (!Utilities.isValidType(tm)) {
+                return null;
+            }
             // casting to some non-char primitive type, perform unary numeric promotion JLS 5.6.1
             if (tm.getKind() != TypeKind.CHAR && op instanceof Character) {
                 op = Integer.valueOf(((Character)op).charValue());
@@ -567,7 +573,7 @@ public class ArithmeticUtilities {
                                         left == NULL ?  node.getRightOperand() : 
                                                         node.getLeftOperand()
                             ));
-                            if (m != null && !PRIMITIVE_KINDS.contains(m.getKind())) {
+                            if (Utilities.isValidType(m) && !PRIMITIVE_KINDS.contains(m.getKind())) {
                                 result = left == right;
                             }
                         }
@@ -594,7 +600,7 @@ public class ArithmeticUtilities {
                             // cannot accept primitives, boxing conversion does not apply
                             TypeMirror m = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), 
                                     left == NULL ? node.getRightOperand() : node.getLeftOperand()));
-                            if (m != null && !PRIMITIVE_KINDS.contains(m.getKind())) {
+                            if (Utilities.isValidType(m) && !PRIMITIVE_KINDS.contains(m.getKind())) {
                                 result = left != right;
                             }
                         }

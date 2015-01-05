@@ -108,7 +108,7 @@ public class SuspiciousToArray {
         CompilationInfo ci = ctx.getInfo();
         
         TypeMirror colType = ci.getTrees().getTypeMirror(colPath);
-        if (colType.getKind() != TypeKind.DECLARED) {
+        if (colType == null || colType.getKind() != TypeKind.DECLARED) {
             return null;
         }
         TreePath arrPath = ctx.getVariables().get("$arr"); // NOI18N

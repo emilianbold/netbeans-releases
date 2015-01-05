@@ -51,6 +51,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
@@ -86,9 +87,9 @@ public class ManualArrayCopy {
         TypeMirror sourceType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$arr"));
         TypeMirror targetType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$tarr"));
 
-        if (   !ctx.getInfo().getTypes().isSubtype(sourceType, targetType)
-            || sourceType.getKind() == TypeKind.ERROR)
+        if (!Utilities.isValidType(sourceType) || !Utilities.isValidType(targetType) || !ctx.getInfo().getTypes().isSubtype(sourceType, targetType)) {
             return null;
+        }
 
         String startSource;
         String startTarget;

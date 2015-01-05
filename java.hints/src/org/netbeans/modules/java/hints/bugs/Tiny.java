@@ -146,7 +146,7 @@ public class Tiny {
             TreePath obj = ctx.getVariables().get(objName);
             TypeMirror type = ctx.getInfo().getTrees().getTypeMirror(obj);
 
-            if (type != null && type.getKind() != TypeKind.ERROR && type.getKind() != TypeKind.ARRAY) {
+            if (Utilities.isValidType(type) && type.getKind() != TypeKind.ARRAY) {
                 String treeDisplayName = Utilities.shortDisplayName(ctx.getInfo(), (ExpressionTree) obj.getLeaf());
                 String displayName = NbBundle.getMessage(Tiny.class, "ERR_system_arraycopy_notarray", treeDisplayName);
                 

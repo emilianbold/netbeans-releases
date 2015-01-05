@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.bugs;
 import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
@@ -81,7 +82,7 @@ public class CastVSInstanceOf {
         TypeMirror tm2 = ctx.getInfo().getTrees().getTypeMirror(castClass);
         Types t = ctx.getInfo().getTypes();
 
-        if (tm1 == null || tm2 == null) {
+        if (!(Utilities.isValidType(tm1) && Utilities.isValidType(tm2))) {
             return null;
         }
 

@@ -65,7 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
 *
 * @author  Jaroslav Tulach
 */
-@ServiceProvider(service=CreateFromTemplateHandler.class)
+@ServiceProvider(service=CreateFromTemplateHandler.class, position = 1000)
 public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandler {
 
     public static final String SCRIPT_ENGINE_ATTR = "javax.script.ScriptEngine";

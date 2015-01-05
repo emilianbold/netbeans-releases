@@ -139,13 +139,12 @@ public class ThrowableNotThrown {
         }
         TypeMirror tm = ctx.getInfo().getTrees().getTypeMirror(p);
         Element el = ctx.getInfo().getElements().getTypeElement("java.lang.Throwable"); // NOI18N
-        if (el == null) {
+        if (!Utilities.isValidType(tm)) {
             // bad JDK ?
             return null;
         }
         TypeMirror b = el.asType();
-        if (tm == null || tm.getKind() == TypeKind.ERROR || 
-            tm.getKind() == TypeKind.OTHER || !ctx.getInfo().getTypes().isAssignable(tm, b)) {
+        if (!Utilities.isValidType(b) || !ctx.getInfo().getTypes().isAssignable(tm, b)) {
             // does not return Throwable
             return null;
         }

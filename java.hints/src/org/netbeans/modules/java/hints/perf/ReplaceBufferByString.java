@@ -384,6 +384,9 @@ public class ReplaceBufferByString {
     }
     
     private static boolean isPrimitiveType(TypeMirror tm) {
+        if (tm == null) {
+            return false;
+        }
         switch(tm.getKind()) {
             case BOOLEAN:
             case BYTE:
