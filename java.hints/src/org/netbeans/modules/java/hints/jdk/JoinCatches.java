@@ -76,6 +76,7 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -115,7 +116,7 @@ public class JoinCatches {
             VariableElement excVar = (VariableElement) ctx.getInfo().getTrees().getElement(mainVar);
             TypeMirror mainVarType = ctx.getInfo().getTrees().getTypeMirror(mainVar);
 
-            if (mainVarType == null || mainVarType.getKind() == TypeKind.ERROR) continue;
+            if (!Utilities.isValidType(mainVarType)) continue;
 
             Map<TypeMirror, Integer> duplicates = new LinkedHashMap<TypeMirror, Integer>();
 
@@ -137,7 +138,7 @@ public class JoinCatches {
 
                     TypeMirror varType = ctx.getInfo().getTrees().getTypeMirror(var);
 
-                    if (varType == null || varType.getKind() == TypeKind.ERROR) continue;
+                    if (!Utilities.isValidType(varType)) continue;
 
                     boolean subtype = false;
 

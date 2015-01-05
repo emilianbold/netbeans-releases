@@ -280,7 +280,7 @@ public class MalformedFormatString {
                     continue;
                 }
                 TypeMirror tm = ctx.getInfo().getTrees().getTypeMirror(paramList.get(argIndex));
-                if (tm == null) {
+                if (!Utilities.isValidType(tm)) {
                     continue;
                 }
                 TypeKind tk = tm.getKind();

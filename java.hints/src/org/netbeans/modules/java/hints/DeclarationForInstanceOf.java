@@ -120,7 +120,7 @@ public class DeclarationForInstanceOf implements TreeRule {
         TreePath expression = new TreePath(treePath, leaf.getExpression());
         TypeMirror expressionType = info.getTrees().getTypeMirror(expression);
         
-        if (expressionType == null || !info.getTypeUtilities().isCastable(expressionType, castTo)) {
+        if (!(Utilities.isValidType(castTo) && Utilities.isValidType(expressionType)) || !info.getTypeUtilities().isCastable(expressionType, castTo)) {
             return null;
         }
         

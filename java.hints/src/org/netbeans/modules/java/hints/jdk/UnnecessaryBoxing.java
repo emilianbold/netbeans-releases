@@ -145,7 +145,7 @@ public class UnnecessaryBoxing {
         
         TreePath vp = ctx.getVariables().get("$v"); // NOI18N
         TypeMirror exprType = ci.getTrees().getTypeMirror(vp);
-        if (!exprType.getKind().isPrimitive()) {
+        if (exprType == null || !exprType.getKind().isPrimitive()) {
             return null;
         }
         
@@ -235,7 +235,7 @@ public class UnnecessaryBoxing {
         
         TypeMirror pt = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(prevPath)); // assume boxed
         TypeMirror ot = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(otherPath));
-        if (pt == null || ot == null) {
+        if (!(Utilities.isValidType(pt) && Utilities.isValidType(ot))) {
             return null;
         }
         ExpectedTypeResolver res = new ExpectedTypeResolver(expr, prevPath, ci);
@@ -268,6 +268,9 @@ public class UnnecessaryBoxing {
         TreePath prevPath = new TreePath(expr, prev);
         
         TypeMirror pt = Utilities.unboxIfNecessary(ci, ci.getTrees().getTypeMirror(prevPath)); // assume boxed
+        if (!Utilities.isValidType(pt)) {
+            return false;
+        }
         ExpectedTypeResolver res = new ExpectedTypeResolver(expr, prevPath, ci);
         List<? extends TypeMirror> types = res.scan(expr, null);
         if (types == null) {

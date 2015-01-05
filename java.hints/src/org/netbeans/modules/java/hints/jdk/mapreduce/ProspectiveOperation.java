@@ -210,7 +210,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 
     private boolean isString(ExpressionTree reducingVariable) {
         TypeMirror tm = this.workingCopy.getTrees().getTypeMirror(TreePath.getPath(this.workingCopy.getCompilationUnit(), this.reducingVariable));
-        return tm.toString().equals("java.lang.String");
+        return tm != null && tm.toString().equals("java.lang.String");
     }
 
     private static boolean isInteger(ExpressionTree reducingVariable, CompilationInfo workingCopy) {
@@ -223,7 +223,7 @@ import org.netbeans.api.java.source.WorkingCopy;
         if (typeEl != null) {
             TypeMirror integer = typeEl.asType();
 
-            if (workingCopy.getTypeUtilities().isCastable(tm, integer)) {
+            if (tm != null && workingCopy.getTypeUtilities().isCastable(tm, integer)) {
                 return true;
             }
         }

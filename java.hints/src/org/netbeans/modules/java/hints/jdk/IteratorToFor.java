@@ -310,7 +310,7 @@ public class IteratorToFor {
     private static boolean iterable(HintContext ctx, TreePath collection, TreePath type) {
         TypeMirror collectionType = ctx.getInfo().getTrees().getTypeMirror(collection);
         TypeElement iterable = ctx.getInfo().getElements().getTypeElement("java.lang.Iterable");
-        if (collectionType == null || iterable == null) return false;
+        if (!Utilities.isValidType(collectionType) || iterable == null) return false;
         TypeMirror typeMirror = ctx.getInfo().getTrees().getTypeMirror(type);
         if (typeMirror != null && typeMirror.getKind().isPrimitive()) {
             typeMirror = ctx.getInfo().getTypes().boxedClass((PrimitiveType)typeMirror).asType();
@@ -376,7 +376,10 @@ public class IteratorToFor {
             }
             
             TypeMirror arrType = ctx.getWorkingCopy().getTrees().getTypeMirror(arr);
-            
+            if (!Utilities.isValidType(arrType)) {
+                // FIXME - report
+                return;
+            }
             TypeMirror variableType;
             
             if (arrType.getKind() == TypeKind.ARRAY) {

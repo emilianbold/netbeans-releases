@@ -105,7 +105,7 @@ public class ArrayAccess implements ErrorRule<Void> {
     }
     
     private static boolean isSubType(CompilationInfo info, TypeMirror onType, String expectedType) {
-        if (onType == null) return false;
+        if (!Utilities.isValidType(onType)) return false;
         
         TypeElement expectedTypeElement = info.getElements().getTypeElement(expectedType);
         

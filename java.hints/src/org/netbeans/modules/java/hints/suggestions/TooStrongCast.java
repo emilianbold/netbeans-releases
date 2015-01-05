@@ -133,17 +133,20 @@ public class TooStrongCast {
         TypeCastTree tct = (TypeCastTree)ctx.getPath().getLeaf();
         TreePath realExpressionPath = new TreePath(ctx.getPath(), tct.getExpression());
         TypeMirror casteeType = info.getTrees().getTypeMirror(realExpressionPath);
-        if (casteeType == null) {
+        if (!Utilities.isValidType(casteeType)) {
             return null;
         }
         String lst = null;
         List<TypeMirror> filteredTypes = new ArrayList<TypeMirror>(types.size());
         TypeMirror castType = info.getTrees().getTypeMirror(new TreePath(ctx.getPath(), tct.getType()));
+        if (!Utilities.isValidType(castType)) {
+            return null;
+        }
         TypeMirror castErasure = info.getTypes().erasure(castType);
         CharSequence currentTypeName = info.getTypeUtilities().getTypeName(castType);
         for (Iterator<? extends TypeMirror> it = types.iterator(); it.hasNext(); ) {
             TypeMirror tm = it.next();
-            if (tm.getKind() == TypeKind.ERROR) {
+            if (!Utilities.isValidType(tm)) {
                 continue;
             }
             if (tm.getKind() == TypeKind.TYPEVAR) {

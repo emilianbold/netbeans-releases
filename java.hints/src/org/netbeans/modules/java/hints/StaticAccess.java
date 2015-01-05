@@ -50,6 +50,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -77,7 +78,7 @@ public class StaticAccess {
         TreePath expr = new TreePath(treePath, expression);
         
         TypeMirror tm = info.getTrees().getTypeMirror(expr);
-        if (tm == null) {
+        if (!Utilities.isValidType(tm)) {
             return null;
         }
         Element el = info.getTypes().asElement(tm);
