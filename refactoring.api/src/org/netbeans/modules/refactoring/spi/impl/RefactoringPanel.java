@@ -786,7 +786,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                 final RefactoringElement e = (RefactoringElement) it.next();
                                 TreeElement treeElement = null;
                                 if(callback != null || // #217986, not really nice
-                                        e.include(filtersManager)) {
+                                        filtersManager == null || e.include(filtersManager)) {
                                     treeElement = TreeElementFactory.getTreeElement(e);
                                     createNode(treeElement, nodes, root);
                                 } else {
