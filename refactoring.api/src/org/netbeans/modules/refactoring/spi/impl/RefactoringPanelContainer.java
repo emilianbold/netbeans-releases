@@ -252,6 +252,38 @@ public class RefactoringPanelContainer extends TopComponent {
     }
     
     @Override
+    public boolean requestFocusInWindow() {
+        boolean value = super.requestFocusInWindow();
+        Component comp = getRefactoringPanelComp();
+        if(comp != null) {
+            return comp.requestFocusInWindow();
+        } else {
+            return value;
+        }
+    }
+
+    //#41258: In the SDI, requestFocus is called rather than requestFocusInWindow:
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        Component comp = getRefactoringPanelComp();
+        if(comp != null) {
+            comp.requestFocus();
+        }
+    }
+    
+    private Component getRefactoringPanelComp() {
+        RefactoringPanel.checkEventThread();
+        Component comp = getComponentCount() > 0 ? getComponent(0) : null;
+        if (comp instanceof JTabbedPane) {
+            JTabbedPane tabs = (JTabbedPane) comp;
+            return tabs.getSelectedComponent();
+        } else {
+            return comp;
+        }
+    }
+    
+    @Override
     protected String preferredID() {
         return "RefactoringPanel"; // NOI18N
     }
