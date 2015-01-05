@@ -712,10 +712,42 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return false;
         }
         if (property instanceof JsObjectImpl) {
+            String oldFQN = property.getFullyQualifiedName();
             ((JsObjectImpl)property).setParent(newParent);
             newParent.addProperty(name, property);
+            String newFQN = property.getFullyQualifiedName();
+            JsObject global = ModelUtils.getGlobalObject(this);
+            if (global instanceof JsObjectImpl) {
+                ((JsObjectImpl)global).correctAssignmentsInModel(oldFQN, newFQN);
+            }
             return properties.remove(name) != null;
         }
         return false;
+    }
+    
+    private void correctAssignmentsInModel (String fromType, String toType) {
+        correctAssignments(fromType, toType);
+        for (JsObject property: getProperties().values()) {
+            if (property instanceof JsObjectImpl) {
+                ((JsObjectImpl)property).correctAssignmentsInModel(fromType, toType);
+            }
+        }
+    }
+    
+    private void correctAssignments(String fromType, String toType) {
+        for (Integer offset: assignments.keySet()) {
+            Collection<TypeUsage> types = assignments.get(offset);
+            TypeUsage typeR = null;
+            for (TypeUsage type : types) {
+                if (type.getType().equals(fromType)) {
+                    typeR = type;
+                    break;
+                } 
+            }
+            if (typeR != null) {
+                types.remove(typeR);
+                types.add(new TypeUsageImpl(toType, typeR.getOffset(), typeR.isResolved()));
+            }
+        }
     }
 }
