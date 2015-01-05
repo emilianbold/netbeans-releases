@@ -52,7 +52,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.modules.javascript2.nodejs.TestProjectSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -118,6 +117,10 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     
     public void testIssue249436_01() throws Exception {
         checkCompletion("TestNavigation/public_html/js/cc01/issue249436.js", "t^ //cc here", false);
+    }
+    
+    public void testIssue249632() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249632.js", "rnewe.rgetAttempt().a^a;", false);
     }
     
     @Override

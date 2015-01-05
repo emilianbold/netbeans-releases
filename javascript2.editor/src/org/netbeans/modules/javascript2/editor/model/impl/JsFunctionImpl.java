@@ -312,5 +312,21 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 //    public String toString() {
 //        return "JsFunctionImpl{" + "declarationName=" + getDeclarationName() + ", parent=" + getParent() + ", kind=" + kind + ", parameters=" + parameters + ", returnTypes=" + returnTypes + '}';
 //    }
+
+    @Override
+    protected void correctTypes(String fromType, String toType) {
+        super.correctTypes(fromType, toType);
+        String typeR;
+        String typeFQN;
+        Set<TypeUsage> copy = new HashSet<TypeUsage>(returnTypes);
+        for (TypeUsage type : copy) {
+            typeFQN = type.getType();
+            typeR = replaceTypeInFQN(typeFQN, fromType, toType);
+            if (typeR != null) {
+                returnTypes.remove(type);
+                returnTypes.add(new TypeUsageImpl(typeR, type.getOffset(), type.isResolved()));
+            }
+        }
+    }
     
 }
