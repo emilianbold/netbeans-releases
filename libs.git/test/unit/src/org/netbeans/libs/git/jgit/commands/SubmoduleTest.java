@@ -49,7 +49,9 @@ import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.URIish;
+import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitSubmoduleStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
@@ -244,6 +246,9 @@ public class SubmoduleTest extends AbstractGitTestCase {
         client.reset("master", GitClient.ResetType.HARD, NULL_PROGRESS_MONITOR);
         assertTrue(submoduleFolder1.exists());
         assertTrue(submoduleFolder2.exists());
+        // must clear temporary git pool instances
+        // submodule commands initialize submodules with .git as a link to parent/.git/... folders
+        ApiUtils.clearRepositoryPool();
     }
 
     private void assertStatus (GitSubmoduleStatus status, GitSubmoduleStatus.StatusType statusKind,

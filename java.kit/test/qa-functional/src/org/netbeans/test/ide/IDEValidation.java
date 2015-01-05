@@ -965,18 +965,11 @@ public class IDEValidation extends JellyTestCase {
             // wait status text "Thread main stopped at SampleClass1.java:"
             // increase timeout to 60 seconds
             MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
-            String labelLine = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle",
-                    "CTL_Thread_stopped",
-                    new String[]{"main", SAMPLE1_FILE_NAME, null, String.valueOf(insertLine)}); // NOI18N
-            stt.waitText(labelLine);
+            stt.waitText("Thread main stopped at SampleClass1.java:" + insertLine);
             // continue debugging
             new ContinueAction().perform();
             // check the second breakpoint reached
-            // wait status text "Thread main stopped at SampleClass1.java:"
-            String labelLine1 = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle",
-                    "CTL_Thread_stopped",
-                    new String[]{"main", SAMPLE1_FILE_NAME, null, String.valueOf(insertLine)}); // NOI18N
-            stt.waitText(labelLine1);
+            stt.waitText("Thread main stopped at SampleClass1.java:" + (insertLine + 1));
             // check "Hello" was printed out in Output
             OutputTabOperator oto = new OutputTabOperator("debug-single"); // NOI18N
             // wait until text Hello is not written in to the Output
