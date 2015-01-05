@@ -606,7 +606,7 @@ public class Reindenter implements IndentTask {
                                 currentIndent += (cs.getIndentSize() - cs.getIndentSize() / 2);
                                 break;
                         }
-                    } else if (prevTokenLineStartOffset >= 0) {
+                    } else if (prevTokenLineStartOffset >= 0 && prevTokenLineStartOffset > context.lineStartOffset(lastPos)) {
                         currentIndent = context.lineIndent(prevTokenLineStartOffset);
                     } else {
                         int i = getCurrentIndent(path.get(1), path);
