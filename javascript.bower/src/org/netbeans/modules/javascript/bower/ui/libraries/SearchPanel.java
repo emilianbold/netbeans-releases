@@ -54,6 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListModel;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Panel for searching of Bower libraries.
@@ -61,12 +62,16 @@ import org.openide.util.NbBundle;
  * @author Jan Stola
  */
 public class SearchPanel extends javax.swing.JPanel {
+    /** Request processor used by this class. */
+    private static final RequestProcessor RP = new RequestProcessor(SearchPanel.class);
     /** Listener for library provider. */
     private final Listener listener = new Listener();
     /** The last search term. */
     private String lastSearchTerm;
     /** Library provider used by this panel. */
     private final LibraryProvider libraryProvider;
+    /** Selected library. */
+    private Library selectedLibrary;
 
     /**
      * Creates a new {@code SearchPanel}.
@@ -201,23 +206,64 @@ public class SearchPanel extends javax.swing.JPanel {
      * 
      * @param library selected library (or {@code null} when no library is selected).
      */
+    @NbBundle.Messages({
+        "SearchPanel.message.loadingDetail=Loading..."
+    })
     private void librarySelected(Library library) {
-        boolean emptySelection = (library == null);
+        assert EventQueue.isDispatchThread();
+        synchronized (this) {
+            selectedLibrary = library;
+        }
+        updateLibraryDetail(null, null);
+        if (library == null) {
+            return;
+        }
+        loadingLabel.setText(Bundle.SearchPanel_message_loadingDetail());
+        final String libraryName = library.getName();
+        RP.post(new Runnable() { 
+            @Override
+            public void run() {
+                String selectedLibraryName;
+                synchronized (SearchPanel.this) {
+                    selectedLibraryName = (selectedLibrary == null) ? null : selectedLibrary.getName();
+                }
+                if (libraryName.equals(selectedLibraryName)) {
+                    final Library details = libraryProvider.libraryDetails(libraryName, false);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateLibraryDetail(libraryName, details);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void updateLibraryDetail(String libraryName, Library libraryDetails) {
+        assert EventQueue.isDispatchThread();
+        synchronized (this) {
+            if (libraryName != null && selectedLibrary != null && !libraryName.equals(selectedLibrary.getName())) {
+                return;
+            }
+        }
+        loadingLabel.setText(null);
+        boolean emptySelection = (libraryDetails == null);
         String description = null;
         String keywords = null;
         if (!emptySelection) {
-            if (!library.getDescription().isEmpty()) {
-                description = "<html>" + library.getDescription(); // NOI18N
+            if (!libraryDetails.getDescription().isEmpty()) {
+                description = "<html>" + libraryDetails.getDescription(); // NOI18N
             }
-            if (library.getKeywords().length > 0) {
+            if (libraryDetails.getKeywords().length > 0) {
                 StringBuilder keywordsText = new StringBuilder("<html>"); // NOI18N
-                for (String keyword : library.getKeywords()) {
+                for (String keyword : libraryDetails.getKeywords()) {
                     keywordsText.append(keyword).append(" "); // NOI18N
                 }
                 keywords = keywordsText.toString();
             }
-            Dependency dependency = new Dependency(library.getName());
-            Library.Version latestVersion = library.getLatestVersion();
+            Dependency dependency = new Dependency(libraryDetails.getName());
+            Library.Version latestVersion = libraryDetails.getLatestVersion();
             if (latestVersion != null) {
                 String versionName = latestVersion.getName();
                 dependency.setInstalledVersion(versionName);
@@ -269,6 +315,7 @@ public class SearchPanel extends javax.swing.JPanel {
         keywordsLabel = new javax.swing.JLabel();
         keywordsComponent = new javax.swing.JLabel();
         editPanel = new org.netbeans.modules.javascript.bower.ui.libraries.EditPanel();
+        loadingLabel = new javax.swing.JLabel();
         addButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         searchLabel = new javax.swing.JLabel();
@@ -290,6 +337,9 @@ public class SearchPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(keywordsLabel, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.keywordsLabel.text")); // NOI18N
 
+        loadingLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        loadingLabel.setEnabled(false);
+
         javax.swing.GroupLayout searchPanelLayout = new javax.swing.GroupLayout(searchPanel);
         searchPanel.setLayout(searchPanelLayout);
         searchPanelLayout.setHorizontalGroup(
@@ -304,7 +354,8 @@ public class SearchPanel extends javax.swing.JPanel {
                     .addComponent(descriptionComponent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(keywordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(keywordsComponent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(editPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(editPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(loadingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         searchPanelLayout.setVerticalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -323,7 +374,8 @@ public class SearchPanel extends javax.swing.JPanel {
                         .addComponent(keywordsComponent)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(editPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(loadingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -405,6 +457,7 @@ public class SearchPanel extends javax.swing.JPanel {
     private javax.swing.JLabel keywordsLabel;
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JList<Library> librariesList;
+    private javax.swing.JLabel loadingLabel;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JButton searchButton;
