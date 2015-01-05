@@ -45,6 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
@@ -593,5 +594,22 @@ public class IgnoreTest extends AbstractGitTestCase {
         
         assertEquals(new File(workDir, Constants.GITIGNORE_FILENAME), client.ignore(new File[] { f }, NULL_PROGRESS_MONITOR)[0]);
         assertEquals("/nbproject/file", read(new File(workDir, Constants.GITIGNORE_FILENAME)));
+    }
+    
+    public void test242551_DoubleStarPattern () throws Exception {
+        File f = new File(new File(workDir, "AAA/BBB/CCC"), "file");
+        f.getParentFile().mkdirs();
+        f.createNewFile();
+        
+        GitClient client = getClient(workDir);
+        
+        Map<File, GitStatus> statuses = client.getStatus(new File[0], NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, f, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
+        
+        File ignoreFile = new File(workDir, ".gitignore");
+        write(ignoreFile, "AAA/**/file");
+        
+        statuses = client.getStatus(new File[0], NULL_PROGRESS_MONITOR);
+        assertEquals(Status.STATUS_IGNORED, statuses.get(f).getStatusIndexWC());
     }
 }
