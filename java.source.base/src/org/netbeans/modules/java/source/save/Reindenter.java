@@ -576,6 +576,8 @@ public class Reindenter implements IndentTask {
                 token = findFirstNonWhitespaceToken(startOffset, endOffset);
                 nextTokenId = token != null ? token.token().id() : null;
                 if (nextTokenId == null || nextTokenId != JavaTokenId.RBRACE) {
+                    token = findFirstOtherToken(startOffset, lastPos + 1, EnumSet.of(JavaTokenId.WHITESPACE));
+                    int prevTokenLineStartOffset = token != null ? context.lineStartOffset(token.offset()) : -1;
                     t = null;
                     boolean isNextLabeledStatement = false;
                     Iterator<? extends StatementTree> it = ((BlockTree)last).getStatements().iterator();
@@ -586,11 +588,11 @@ public class Reindenter implements IndentTask {
                             break;
                         }
                         t = st;
-                    }
+                    }                    
                     if (isNextLabeledStatement && cs.absoluteLabelIndent()) {
                         currentIndent = 0;
                     } else if (t != null) {
-                        int i = getCurrentIndent(t, path);
+                        int i = sp.getEndPosition(cut, t) < prevTokenLineStartOffset ? context.lineIndent(prevTokenLineStartOffset) : getCurrentIndent(t, path);
                         currentIndent = i < 0 ? currentIndent + cs.getIndentSize() : i;
                     } else if (isStatic) {
                         currentIndent += cs.getIndentSize();
@@ -604,6 +606,8 @@ public class Reindenter implements IndentTask {
                                 currentIndent += (cs.getIndentSize() - cs.getIndentSize() / 2);
                                 break;
                         }
+                    } else if (prevTokenLineStartOffset >= 0 && prevTokenLineStartOffset > context.lineStartOffset(lastPos)) {
+                        currentIndent = context.lineIndent(prevTokenLineStartOffset);
                     } else {
                         int i = getCurrentIndent(path.get(1), path);
                         currentIndent = (i < 0 ? currentIndent : i) + cs.getIndentSize();
@@ -877,6 +881,10 @@ public class Reindenter implements IndentTask {
     }
 
     private TokenSequence<JavaTokenId> findFirstNonWhitespaceToken(int startOffset, int endOffset) {
+        return findFirstOtherToken(startOffset, endOffset, EnumSet.of(JavaTokenId.WHITESPACE, JavaTokenId.LINE_COMMENT, JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT));
+    }
+    
+    private TokenSequence<JavaTokenId> findFirstOtherToken(int startOffset, int endOffset, EnumSet<JavaTokenId> ids) {
         if (startOffset == endOffset) {
             return null;
         }
@@ -886,14 +894,8 @@ public class Reindenter implements IndentTask {
             if (backward && ts.offset() < endOffset || !backward && ts.offset() > endOffset) {
                 return null;
             }
-            switch (ts.token().id()) {
-                case WHITESPACE:
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                case JAVADOC_COMMENT:
-                    break;
-                default:
-                    return ts;
+            if (!ids.contains(ts.token().id())) {
+                return ts;
             }
         }
         return null;
