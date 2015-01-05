@@ -106,8 +106,7 @@ public class DebugProjectActionTest extends JellyTestCase {
             // wait status text "Finished building SampleProject (debug)."
             statusTextTracer.waitText(finishedMessage);
             // wait status text "User program finished"
-            String finishedLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
-            statusTextTracer.waitText(finishedLabel); // NOI18N
+            statusTextTracer.waitText("User program finished"); // NOI18N
         } catch (JemmyException e) {
             log("debugOutput.txt", new OutputTabOperator("SampleProject").getText()); // NOI18N
             throw e;
