@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.nodejs.editor;
 
@@ -52,6 +52,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.modules.javascript2.nodejs.TestProjectSupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -62,9 +63,9 @@ import org.openide.util.test.MockLookup;
  *
  * @author Petr Pisl
  */
-public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
+public class NodeJsCodeCompletionWithJsRunTimeTest extends JsCodeCompletionBase {
 
-    public NodeJSCodeCompletionTest(String testName) throws IOException {
+    public NodeJsCodeCompletionWithJsRunTimeTest(String testName) throws IOException {
         super(testName);
     }
 
@@ -86,46 +87,14 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
             MockLookup.setInstances(lookupAll.toArray());
 
     }
-
-    public void testBasicExport01() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/foo2.js", "+ circle.^area(4));", false);
-    }
-
-    public void testBasicExport02() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/testAddress.js", "as.^print();", false);
-    }
     
-    public void testExport01() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "var mess = require('./simpleModule').m^essage;", false);
-    }
-    
-    public void testExport02() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "simple.m^essage.setCode(23);", false);
-    }
-    
-    public void testExport03() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "simple.message.se^tCode(23);", false);
-    }
-    
-    public void testExport04() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "mess.set^Code(25);", false);
-    }
-    
-    public void testExport05() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/testcc01.js", "mOut.o^utput = 'bug';", false);
-    }
-    
-    public void testIssue249436_01() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/issue249436.js", "t^ //cc here", false);
-    }
-    
-    public void testIssue249632() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/issue249632.js", "rnewe.rgetAttempt().a^a;", false);
+    public void testIssue249630() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249630.js", "rfnc.rinn.rda.getM^onth();", false);
     }
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>();
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
 
         cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/TestNavigation/public_html/")));
         return Collections.singletonMap(
@@ -143,4 +112,5 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     protected boolean cleanCacheDir() {
         return false;
     }
+    
 }

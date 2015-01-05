@@ -55,7 +55,7 @@ var newe = new fnc();
 
 //cc;1;fnc.inn.da.;0;getDate,getDay,hasOwnProperty;getDay;fnc.inn.da.getDay();ale,bar,pokus,a1
 
-//cc;1;fnc.inn.log.;0;messages,owner,hasOwnProperty;message;fnc.inn.log.messages;ale,bar,pokus,a1
+//cc;1;fnc.inn.log.;0;messages,owner,hasOwnProperty;messages;fnc.inn.log.messages;ale,bar,pokus,a1
 
 //cc;1;newe.getAttempt().;0;aa,ab,hasOwnProperty;aa;newe.getAttempt().aa;ver,da,pokus,a1
 
