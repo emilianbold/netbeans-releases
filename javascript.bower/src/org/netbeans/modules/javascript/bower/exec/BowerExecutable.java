@@ -48,7 +48,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -213,16 +215,33 @@ public class BowerExecutable {
         JSONObject info = null;
         try {
             StringBuilderInputProcessorFactory factory = new StringBuilderInputProcessorFactory();
-            Integer exitCode = getExecutable("bower info").additionalParameters(getParams(params)).
-                    redirectErrorStream(false).runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
-            String result = factory.getResult();
-            if (exitCode != null && exitCode == 0) {
-                info = (JSONObject)new JSONParser().parse(result);
-            }
+            Integer exitCode = getExecutable("bower info"). // NOI18N
+                    additionalParameters(getParams(params)).
+                    redirectErrorStream(false).
+                    environmentVariables(doNotAskForPasswordEnvironmentVariables()).
+                    runAndWait(getSilentDescriptor(), factory, ""); // NOI18N
+                String result = factory.getResult();
+                if (exitCode != null && exitCode == 0) {
+                    info = (JSONObject)new JSONParser().parse(result);
+                }
         } catch (ExecutionException | ParseException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
         return info;
+    }
+
+    /**
+     * Returns environment variables that ensure that git (invoked by Bower)
+     * doesn't ask for username and password.
+     * 
+     * @return map with environment variables that ensure that empty strings
+     * are used as username and password for git.
+     */
+    private Map<String,String> doNotAskForPasswordEnvironmentVariables() {
+        Map<String,String> map = new HashMap<>();
+        map.put("SSH_ASKPASS", "echo"); // NOI18N
+        map.put("GIT_ASKPASS", "echo"); // NOI18N
+        return map;
     }
 
     private ExternalExecutable getExecutable(String title) {
