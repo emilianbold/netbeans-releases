@@ -151,6 +151,9 @@ public class Lambda {
                 } else {
                     return null;
                 }
+                if (tree == null) {
+                    return null;
+                }
             } else {
                 return null;
             }
