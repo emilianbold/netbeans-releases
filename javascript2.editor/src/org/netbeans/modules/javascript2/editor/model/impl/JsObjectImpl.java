@@ -718,18 +718,21 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             String newFQN = property.getFullyQualifiedName();
             JsObject global = ModelUtils.getGlobalObject(this);
             if (global instanceof JsObjectImpl) {
-                ((JsObjectImpl)global).correctAssignmentsInModel(oldFQN, newFQN);
+                ((JsObjectImpl)global).correctAssignmentsInModel(oldFQN, newFQN, new HashSet<String>());
             }
             return properties.remove(name) != null;
         }
         return false;
     }
     
-    private void correctAssignmentsInModel (String fromType, String toType) {
-        correctTypes(fromType, toType);
-        for (JsObject property: getProperties().values()) {
-            if (property instanceof JsObjectImpl) {
-                ((JsObjectImpl)property).correctAssignmentsInModel(fromType, toType);
+    private void correctAssignmentsInModel (String fromType, String toType, Set<String> done) {
+        if (!done.contains(getFullyQualifiedName())) {
+            done.add(getFullyQualifiedName());
+            correctTypes(fromType, toType);
+            for (JsObject property: getProperties().values()) {
+                if (property instanceof JsObjectImpl) {
+                    ((JsObjectImpl)property).correctAssignmentsInModel(fromType, toType, done);
+                }
             }
         }
     }
