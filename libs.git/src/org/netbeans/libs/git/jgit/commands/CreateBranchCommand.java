@@ -44,6 +44,8 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.api.CreateBranchCommand.SetupUpstreamMode;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -70,6 +72,7 @@ public class CreateBranchCommand extends GitCommand {
     private final String branchName;
     private GitBranch branch;
     private final ProgressMonitor monitor;
+    private static final Logger LOG = Logger.getLogger(CreateBranchCommand.class.getName());
 
     public CreateBranchCommand (Repository repository, GitClassFactory gitFactory, String branchName, String revision, ProgressMonitor monitor) {
         super(repository, gitFactory, monitor);
@@ -104,6 +107,10 @@ public class CreateBranchCommand extends GitCommand {
         branchCmd.run();
         Map<String, GitBranch> branches = branchCmd.getBranches();
         branch = branches.get(createdBranchName);
+        if (branch == null) {
+            LOG.log(Level.WARNING, "Branch {0}/{1} probably created but not in the branch list: {2}",
+                    new Object[] { branchName, createdBranchName, branches.keySet() });
+        }
     }
 
     @Override

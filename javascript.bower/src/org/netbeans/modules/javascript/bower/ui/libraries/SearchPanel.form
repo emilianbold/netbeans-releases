@@ -19,6 +19,7 @@
                       <Component id="keywordsLabel" alignment="0" max="32767" attributes="0"/>
                       <Component id="keywordsComponent" max="32767" attributes="0"/>
                       <Component id="editPanel" alignment="0" max="32767" attributes="0"/>
+                      <Component id="loadingLabel" max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -41,7 +42,8 @@
                           <Component id="keywordsComponent" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="editPanel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="loadingLabel" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -96,6 +98,12 @@
         <Component class="javax.swing.JLabel" name="keywordsComponent">
         </Component>
         <Component class="org.netbeans.modules.javascript.bower.ui.libraries.EditPanel" name="editPanel">
+        </Component>
+        <Component class="javax.swing.JLabel" name="loadingLabel">
+          <Properties>
+            <Property name="horizontalAlignment" type="int" value="0"/>
+            <Property name="enabled" type="boolean" value="false"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

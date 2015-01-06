@@ -80,6 +80,10 @@ public final class StackFrameWrapper {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -121,6 +125,10 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -162,6 +170,10 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -203,6 +215,10 @@ public final class StackFrameWrapper {
             return java.util.Collections.emptyMap();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             return java.util.Collections.emptyMap();
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -244,6 +260,10 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -285,6 +305,10 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -320,6 +344,10 @@ public final class StackFrameWrapper {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
@@ -362,6 +390,10 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -403,6 +435,10 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -444,6 +480,10 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -491,6 +531,10 @@ public final class StackFrameWrapper {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;
@@ -538,6 +582,10 @@ public final class StackFrameWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.InvalidStackFrameException ex) {
             retValue = ex;

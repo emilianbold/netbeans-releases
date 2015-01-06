@@ -80,6 +80,10 @@ public final class ArrayReferenceWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             retValue = ex;
@@ -121,6 +125,10 @@ public final class ArrayReferenceWrapper {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             retValue = ex;
@@ -162,6 +170,10 @@ public final class ArrayReferenceWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             retValue = ex;
@@ -203,6 +215,10 @@ public final class ArrayReferenceWrapper {
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             return java.util.Collections.emptyList();
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             retValue = ex;
@@ -244,6 +260,10 @@ public final class ArrayReferenceWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             retValue = ex;
@@ -285,6 +305,10 @@ public final class ArrayReferenceWrapper {
             return 0;
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             return 0;
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             retValue = ex;
@@ -326,6 +350,10 @@ public final class ArrayReferenceWrapper {
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             retValue = ex;
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             retValue = ex;
@@ -361,6 +389,10 @@ public final class ArrayReferenceWrapper {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
@@ -389,6 +421,10 @@ public final class ArrayReferenceWrapper {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
@@ -417,6 +453,10 @@ public final class ArrayReferenceWrapper {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
         } catch (com.sun.jdi.VMDisconnectedException ex) {
+            if (a instanceof com.sun.jdi.Mirror) {
+                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
+                vm.dispose();
+            }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.ObjectCollectedException ex) {
             throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);

@@ -712,10 +712,62 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return false;
         }
         if (property instanceof JsObjectImpl) {
+            String oldFQN = property.getFullyQualifiedName();
             ((JsObjectImpl)property).setParent(newParent);
             newParent.addProperty(name, property);
+            String newFQN = property.getFullyQualifiedName();
+            JsObject global = ModelUtils.getGlobalObject(this);
+            if (global instanceof JsObjectImpl) {
+                ((JsObjectImpl)global).correctAssignmentsInModel(oldFQN, newFQN);
+            }
             return properties.remove(name) != null;
         }
         return false;
+    }
+    
+    private void correctAssignmentsInModel (String fromType, String toType) {
+        correctTypes(fromType, toType);
+        for (JsObject property: getProperties().values()) {
+            if (property instanceof JsObjectImpl) {
+                ((JsObjectImpl)property).correctAssignmentsInModel(fromType, toType);
+            }
+        }
+    }
+    
+    protected void correctTypes(String fromType, String toType) {
+        for (Integer offset: assignments.keySet()) {
+            Collection<TypeUsage> types = assignments.get(offset);
+            List<TypeUsage> copy = new ArrayList(types);
+            String typeR = null;
+            for (TypeUsage type : copy) {
+                typeR = replaceTypeInFQN(type.getType(), fromType, toType);
+                if (typeR != null) {
+                    types.remove(type);
+                    types.add(new TypeUsageImpl(typeR, type.getOffset(), type.isResolved()));
+                }
+            }
+        }
+    }
+    
+    /**
+     * 
+     * @param typeFQN type that where should be changed
+     * @param fromType  the old type or part of a type
+     * @param toType    the new type or part of a type
+     * @return null, if it's not possible to replace or the result FQN
+     */
+    protected String replaceTypeInFQN(String typeFQN, String fromType, String toType) {
+        String typeR = null;
+        if (typeFQN.equals(fromType)) {
+            typeR = toType;
+        } else {
+            int index = typeFQN.indexOf(fromType);
+            if (index > -1 && !typeFQN.contains(toType)
+                    && (index == 0 || typeFQN.charAt(index - 1) == '.')
+                    && ((index + fromType.length()) == typeFQN.length() || typeFQN.charAt(index + fromType.length()) == '.')) {
+                typeR = typeFQN.replace(fromType, toType);
+            }
+        }
+        return typeR;
     }
 }

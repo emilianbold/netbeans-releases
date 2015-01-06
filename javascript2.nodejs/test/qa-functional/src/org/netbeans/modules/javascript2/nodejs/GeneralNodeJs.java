@@ -212,14 +212,14 @@ public class GeneralNodeJs extends JellyTestCase {
         Component findComponent = optionsOper.findSubComponent(new JTabbedPaneOperator.JTabbedPaneFinder());
         JTabbedPaneOperator tabbedPane = new JTabbedPaneOperator((JTabbedPane) findComponent);
         tabbedPane.selectPage("Node.js");
-        JButtonOperator downloadBtn = new JButtonOperator(tabbedPane, "Download Sources");
+        JButtonOperator downloadBtn = new JButtonOperator(tabbedPane, "Download");
         downloadBtn.press();
-        evt.waitNoEvent(500);
+        evt.waitNoEvent(1000);
         long defaultTimeout = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout");
 
         try {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentEnabledTimeout", 30000);
-            downloadBtn = new JButtonOperator(tabbedPane, "Download Sources");
+            downloadBtn = new JButtonOperator(tabbedPane, "Download");
             Waiter waiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object obj) {
                     if (((JButtonOperator) obj).isEnabled()) {

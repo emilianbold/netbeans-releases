@@ -617,6 +617,9 @@ public class Generate {
             if (com.sun.jdi.InternalException.class.equals(cex)) {
                 w.write(reportOfJDIException(className, mName, "ex"));
             }
+            if (com.sun.jdi.VMDisconnectedException.class.equals(cex)) {
+                w.write(disposeVMOnVMDisconnectedException(className, mName));
+            }
             if (defaultReturn != null && SILENT_EXCEPTIONS.contains(cex)) {
                 w.write("            return "+defaultReturn+";\n");
             } else {
@@ -1244,6 +1247,18 @@ public class Generate {
         } else {
             return JDI_EXC_REPORT1+ex+JDI_EXC_REPORT2;
         }
+    }
+    
+    private static String disposeVMOnVMDisconnectedException(String className, String methodName) {
+        if (com.sun.jdi.VirtualMachine.class.getName().equals(className) &&
+            (methodName.equals("exit") || methodName.equals("dispose"))) {
+            return ""; // Ignore
+        }
+        // We should not have to do this. See #243837
+        return "            if (a instanceof com.sun.jdi.Mirror) {\n" +
+               "                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();\n" +
+               "                vm.dispose();\n" +
+               "            }\n";
     }
 
     public static void main(String[] args) {
