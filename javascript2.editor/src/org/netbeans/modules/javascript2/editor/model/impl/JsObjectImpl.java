@@ -758,14 +758,25 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
      */
     protected String replaceTypeInFQN(String typeFQN, String fromType, String toType) {
         String typeR = null;
+        if (typeFQN.isEmpty()) {
+            return null;
+        }
         if (typeFQN.equals(fromType)) {
             typeR = toType;
         } else {
             int index = typeFQN.indexOf(fromType);
+            if (typeFQN.startsWith(SemiTypeResolverVisitor.ST_START_DELIMITER)) {
+                // it's semitype. we need to mask the semitypes
+                int delEndIndex = typeFQN.indexOf(';');
+                if (delEndIndex > 0 && index < delEndIndex) {
+                    index = typeFQN.indexOf(fromType, delEndIndex);
+                } 
+                 
+            }
             if (index > -1 && !typeFQN.contains(toType)
-                    && (index == 0 || typeFQN.charAt(index - 1) == '.')
+                    && (index == 0 || typeFQN.charAt(index - 1) == '.' || typeFQN.charAt(index - 1) == ';')
                     && ((index + fromType.length()) == typeFQN.length() || typeFQN.charAt(index + fromType.length()) == '.')) {
-                typeR = typeFQN.replace(fromType, toType);
+                typeR = typeFQN.substring(0, index) + toType + typeFQN.substring(index + fromType.length());
             }
         }
         return typeR;
