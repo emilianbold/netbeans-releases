@@ -1257,7 +1257,9 @@ public class Generate {
         // We should not have to do this. See #243837
         return "            if (a instanceof com.sun.jdi.Mirror) {\n" +
                "                com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();\n" +
-               "                vm.dispose();\n" +
+               "                try {\n"+
+               "                    vm.dispose();\n" +
+               "                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}\n"+
                "            }\n";
     }
 
