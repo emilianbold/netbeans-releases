@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToNodeSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ContextAwareAction;
@@ -318,6 +319,8 @@ public class DOMNode extends AbstractNode {
                 }
                 actions.add(action);
             }
+            actions.add(null);
+            actions.add(SystemAction.get(PropertiesAction.class));
         }
         return actions.toArray(new Action[actions.size()]);
     }
