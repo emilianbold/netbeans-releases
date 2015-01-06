@@ -375,6 +375,7 @@ class TypingCompletion {
         if (ts == null) {
             return caretOffset;
         }
+        boolean firstToken = true;
         while (ts.offset() < rowEnd) {
             switch (ts.token().id()) {
                 case SEMICOLON:
@@ -405,7 +406,13 @@ class TypingCompletion {
                         return ts.offset();
                     }
                     break;
+                case COMMA:
+                    if (firstToken) {
+                        return caretOffset;
+                    }
+                    break;
             }
+            firstToken = false;
             if (!ts.moveNext()) {
                 break;
             }

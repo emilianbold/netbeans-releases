@@ -245,6 +245,25 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         validate();
         inited=true;
     }
+    
+    @Override
+    public boolean requestFocusInWindow() {
+        boolean value = super.requestFocusInWindow();
+        if(this.tree != null) {
+            return this.tree.requestFocusInWindow();
+        } else {
+            return value;
+        }
+    }
+
+    //#41258: In the SDI, requestFocus is called rather than requestFocusInWindow:
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        if(this.tree != null) {
+            this.tree.requestFocus();
+        }
+    }
 
     /**
      * Returns the toolbar. In this default implementation, toolbar is
@@ -767,7 +786,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                 final RefactoringElement e = (RefactoringElement) it.next();
                                 TreeElement treeElement = null;
                                 if(callback != null || // #217986, not really nice
-                                        e.include(filtersManager)) {
+                                        filtersManager == null || e.include(filtersManager)) {
                                     treeElement = TreeElementFactory.getTreeElement(e);
                                     createNode(treeElement, nodes, root);
                                 } else {

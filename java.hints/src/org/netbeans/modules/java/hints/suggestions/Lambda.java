@@ -293,7 +293,7 @@ public class Lambda {
             TypeMirror samType = copy.getTrees().getTypeMirror(ctx.getPath());
             
             if (samType == null || samType.getKind() != TypeKind.DECLARED) {
-                //XXX
+                // FIXME: report
                 return ;
             }
             
@@ -410,7 +410,7 @@ public class Lambda {
             final WorkingCopy copy = ctx.getWorkingCopy();
             TypeMirror samType = copy.getTrees().getTypeMirror(ctx.getPath());
             if (samType == null || samType.getKind() != TypeKind.DECLARED) {
-                //XXX
+                // FIXME: report
                 return ;
             }
 

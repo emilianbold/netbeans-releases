@@ -405,7 +405,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         }
         TypeMirror otherType = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), otherExpression));
         TypeMirror thisType = info.getTrees().getTypeMirror(getExpressionWithoutCasts());
-        if (otherType == null || thisType == null) {
+        if (!(Utilities.isValidType(otherType) && Utilities.isValidType(thisType))) {
             return null;
         }
 
@@ -539,7 +539,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
             MethodTree mt = (MethodTree) parents.getLeaf();
             for (ExpressionTree etree : mt.getThrows()) {
                 TypeMirror m = info.getTrees().getTypeMirror(new TreePath(parents, etree));
-                if (!result.contains(m)) {
+                if (m != null && !result.contains(m)) {
                     result.add(m);
                 }
             }
@@ -578,7 +578,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
     public List<? extends TypeMirror> visitMethodInvocation(MethodInvocationTree node, Object p) {
         TypeMirror execType = info.getTrees().getTypeMirror(
                 new TreePath(getCurrentPath(), node.getMethodSelect()));
-        if (execType.getKind() != TypeKind.EXECUTABLE) {
+        if (execType == null || execType.getKind() != TypeKind.EXECUTABLE) {
             return null;
         }
         return visitMethodOrNew(node, p, node.getArguments(),
@@ -678,7 +678,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
     @Override
     public List<? extends TypeMirror> visitNewClass(NewClassTree node, Object p) {
         TypeMirror tm = info.getTrees().getTypeMirror(getCurrentPath());
-        if (tm.getKind() != TypeKind.DECLARED) {
+        if (tm == null || tm.getKind() != TypeKind.DECLARED) {
             return null;
         }
         Element el = info.getTrees().getElement(getCurrentPath());
@@ -830,6 +830,9 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
             } else {
                 rhsType = expType;
             }
+            if (lhsType == null || rhsType == null) {
+                return null;
+            }
             if (lhsType.getKind() == TypeKind.DOUBLE) {
                 rettype = lhsType;
             } else if (rhsType.getKind() == TypeKind.DOUBLE) {
@@ -878,7 +881,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
                         TreePath expPath = getExpressionWithoutCasts();
                         TypeMirror expType = info.getTrees().getTypeMirror(expPath);
                         
-                        if (expType.getKind().isPrimitive() && expType.getKind() != followed.getKind()) {
+                        if (expType != null && expType.getKind().isPrimitive() && expType.getKind() != followed.getKind()) {
                             // if the cast is to more narrow type, permit it, as it looses precision, and potential produces a different value. Other
                             // hint / warning should take care of precision loss.
                             if (expType.getKind() != TypeKind.CHAR && followed.getKind().ordinal() < expType.getKind().ordinal()) {
@@ -969,7 +972,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
             // if the casted type is a primitive, the cast is NOT redundant as member select is applied to
             // the originally primitive value.
             TypeMirror castedType = info.getTrees().getTypeMirror(casted);
-            if (castedType.getKind().isPrimitive()) {
+            if (castedType != null && castedType.getKind().isPrimitive()) {
                 notRedundant = true;
             }
         }
@@ -1184,7 +1187,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
     @Override
     public List<? extends TypeMirror> visitEnhancedForLoop(EnhancedForLoopTree node, Object p) {
         TypeMirror varType = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), node.getVariable()));
-        if (varType.getKind() == TypeKind.ERROR) {
+        if (!Utilities.isValidType(varType)) {
             return null;
         } else {
             TypeMirror arrayType = info.getTypes().getArrayType(varType);

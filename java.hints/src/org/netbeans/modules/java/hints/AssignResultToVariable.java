@@ -171,6 +171,7 @@ public class AssignResultToVariable extends AbstractHint {
             
             TypeMirror type = info.getTrees().getTypeMirror(treePath);
             
+            // could use Utilities.isValidType, but NOT_ACCEPTABLE_TYPE_KINDS does the check as well
             if (type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
                 return null;
             }

@@ -96,6 +96,9 @@ public class RenameConstructor implements ErrorRule<Void> {
             Types types = compilationInfo.getTypes();
             TreeUtilities tu = compilationInfo.getTreeUtilities();
             TypeMirror type = types.erasure(trees.getTypeMirror(treePath));
+            if (!Utilities.isValidType(type)) {
+                return null;
+            }
             for (Tree member : ct.getMembers()) {
                 TreePath memberPath = new TreePath(parentPath, member);
                 if (member.getKind() == Kind.METHOD && "<init>".contentEquals(((MethodTree)member).getName()) //NOI18N

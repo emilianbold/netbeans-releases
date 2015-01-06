@@ -452,7 +452,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
                 ExecutableElement ee = (ExecutableElement) superConstructor;
                 TypeMirror nctTypes = copy.getTrees().getTypeMirror(newClassToConvert);
                 
-                if (nctTypes.getKind() == TypeKind.ERROR) {
+                if (!Utilities.isValidType(nctTypes)) {
                     // issue #236082: try again, but strip the parent statement; must reattribute the part of the tree
                     TreePath skipPath = new TreePath(parentPath, newClassToConvert.getLeaf());
                     copy.getTreeUtilities().attributeTree(newClassToConvert.getLeaf(), copy.getTrees().getScope(skipPath));

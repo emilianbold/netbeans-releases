@@ -535,7 +535,7 @@ public class ConvertToLambdaPreconditionChecker {
     private void verifyTargetType() {
 
         TypeMirror expectedType = findExpectedType(pathToNewClassTree);
-        if (expectedType == null || expectedType.getKind() == TypeKind.ERROR) {
+        if (!Utilities.isValidType(expectedType)) {
             foundErroneousTargetType = true;
             return;
         }

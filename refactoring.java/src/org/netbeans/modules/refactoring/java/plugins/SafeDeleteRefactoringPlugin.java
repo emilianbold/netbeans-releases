@@ -244,7 +244,8 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                     public void run(CompilationController javac) throws Exception {
                         javac.toPhase(JavaSource.Phase.RESOLVED);
                         TreePath selectedTree = tph.resolve(javac);
-                        if (!TreeUtilities.CLASS_TREE_KINDS.contains(selectedTree.getParentPath().getLeaf().getKind())
+                        if (selectedTree != null && selectedTree.getParentPath() != null
+                                && !TreeUtilities.CLASS_TREE_KINDS.contains(selectedTree.getParentPath().getLeaf().getKind())
                                 && selectedTree.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT
                                 && selectedTree.getLeaf().getKind() == Tree.Kind.VARIABLE) {
                             switch (selectedTree.getParentPath().getLeaf().getKind()) {
