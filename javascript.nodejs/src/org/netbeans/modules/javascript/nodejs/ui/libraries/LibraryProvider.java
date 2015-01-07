@@ -314,19 +314,22 @@ public class LibraryProvider {
             String header = lines[0];
             int descriptionIndex = header.indexOf("DESCRIPTION"); // NOI18N
             int authorIndex = header.indexOf("AUTHOR"); // NOI18N
+            int dateIndex = header.indexOf("DATE"); // NOI18N
             int versionIndex = header.indexOf("VERSION"); // NOI18N
             int keywordsIndex = header.indexOf("KEYWORDS"); // NOI18N
             List<Library> libraryList = new LinkedList<>();
+            String name = ""; // NOI18N
             String description = ""; // NOI18N
             for (int i=lines.length-1; i>=1; i--) {
                 String line = lines[i];
-                String name = line.substring(0,descriptionIndex).trim();
+                String namePart = line.substring(0,descriptionIndex).trim();
+                name = namePart.trim() + name;
                 int length = line.length();
                 String descriptionPart = length < authorIndex
                         ? line.substring(descriptionIndex).trim()
                         : line.substring(descriptionIndex, authorIndex).trim();
                 description = descriptionPart + "\n" + description; // NOI18N
-                if (!"".equals(name)) { // NOI18N
+                if (length >= dateIndex && !Character.isWhitespace(line.charAt(dateIndex))) {
                     String versionName = length < keywordsIndex
                             ? line.substring(versionIndex).trim()
                             : line.substring(versionIndex, keywordsIndex).trim();
@@ -341,6 +344,7 @@ public class LibraryProvider {
                     Library.Version version = new Library.Version(library, versionName);
                     library.setLatestVersion(version);
                     libraryList.add(0, library);
+                    name = ""; // NOI18N
                     description = ""; // NOI18N
                 }
             }
