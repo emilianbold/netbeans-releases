@@ -114,7 +114,7 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         return null;
     }
 
-    @NbBundle.Messages({"CustomizerProtractor.protractor.dir.info=Full path of protractor (typically node_modules/.bin/protractor).",
+    @NbBundle.Messages({"CustomizerProtractor.protractor.dir.info=Full path of protractor (typically node_modules/protractor/bin/protractor).",
     "CustomizerProtractor.user.configuration.file.info=Full path to configuration file."})
     private void init() {
         assert EventQueue.isDispatchThread();
