@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.javascript2.nodejs.editor;
 
+import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -70,6 +74,11 @@ public class NodeJsDeclarationFinder implements DeclarationFinder {
             String module = pathToken.text().toString();
             FileObject moduleFO = NodeJsUtils.findModuleFile(snapshot.getSource().getFileObject(), module);
             if (moduleFO != null) {
+                if (NodeJsDataProvider.getDefault(moduleFO).getRuntimeModules().contains(module)) {
+                    ElementHandle eh = new NodeJsElement(moduleFO, module, NodeJsDataProvider.getDefault(moduleFO).getDocForModule(module), ElementKind.FILE);
+                    return new DeclarationLocation(moduleFO, 0, eh);
+                }
+                
                 return new DeclarationLocation(moduleFO, 0);
             }
         }
