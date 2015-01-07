@@ -82,7 +82,9 @@ public final class EventSetWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -118,7 +120,9 @@ public final class EventSetWrapper {
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (java.lang.IllegalThreadStateException ex) {
@@ -158,7 +162,9 @@ public final class EventSetWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return 0;
         } catch (Error err) {
@@ -200,7 +206,9 @@ public final class EventSetWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
