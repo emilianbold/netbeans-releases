@@ -72,25 +72,21 @@ public final class GitURI {
      * @throws URISyntaxException if the given string has unsupported format
      */
     public GitURI(String uriString) throws URISyntaxException {
-        try {
-            this.uri = new URIish(uriString);
+        this.uri = new URIish(uriString);
 
-            // WORKAROUND:
-            // new URIish("https://foo.bar").getHost() returns null
-            // new URIish("https://foo.bar").getPath() returns foo.bar
-            // it should work instead like
-            // new URIish("https://foo.bar/").getHost() returns foo.bar
-            // new URIish("https://foo.bar/").getPath() returns null
-            String scheme = uri.getScheme();
-            if(scheme != null && 
-               !scheme.startsWith("file:") && 
-               uri.getHost() == null && 
-               !uriString.endsWith("/")) 
-            {
-                uri = new URIish(uriString + "/");
-            }
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            throw new URISyntaxException(uriString, "Invalid escape sequence");
+        // WORKAROUND:
+        // new URIish("https://foo.bar").getHost() returns null
+        // new URIish("https://foo.bar").getPath() returns foo.bar
+        // it should work instead like
+        // new URIish("https://foo.bar/").getHost() returns foo.bar
+        // new URIish("https://foo.bar/").getPath() returns null
+        String scheme = uri.getScheme();
+        if(scheme != null && 
+           !scheme.startsWith("file:") && 
+           uri.getHost() == null && 
+           !uriString.endsWith("/")) 
+        {
+            uri = new URIish(uriString + "/");
         }
     }
 

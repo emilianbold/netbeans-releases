@@ -61,8 +61,7 @@ public class GitURITest extends AbstractGitTestCase {
         String failingUri = "http://aaa/abc%2test";
         try {
             new URIish(failingUri);
-            fail("Should remove the WA and exception catch in new GitURI");
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        } catch (URISyntaxException ex) {
             // OK
         }
         try {
