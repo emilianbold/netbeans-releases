@@ -73,11 +73,13 @@ public final class TestRunnerReporter {
 
     private final String NB_LINE;
     
-    static final Pattern OK_PATTERN = Pattern.compile("^ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
-    static final Pattern OK_SKIP_PATTERN = Pattern.compile("^ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*) # SKIP -, suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*)"); // NOI18N
-    static final Pattern NOT_OK_PATTERN = Pattern.compile("^not ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
-    static final Pattern SESSION_START_PATTERN = Pattern.compile("^1\\.\\.(?<TOTAL>[\\d]+)"); // NOI18N
-    static final Pattern SESSION_END_PATTERN = Pattern.compile("^tests (?<TOTAL>[\\d]+), pass (?<PASS>[\\d]+), fail (?<FAIL>[\\d]+), skip (?<SKIP>[\\d]+)"); // NOI18N
+    static final Pattern MULTI_CAPABILITIES = Pattern.compile("\\[launcher\\] Running (?<MULTICAPABILITIES>[\\d]+) instances of WebDriver"); // NOI18N
+    static final String CAPABILITY = "(\\[(?<BROWSER>.*) #(?<CAPABILITY>[\\d]+)\\] )?"; // NOI18N
+    static final Pattern OK_PATTERN = Pattern.compile("^" + CAPABILITY + "([^(not )]*)ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
+    static final Pattern OK_SKIP_PATTERN = Pattern.compile("^" + CAPABILITY + "([^(not )]*)ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*) # SKIP -, suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*)"); // NOI18N
+    static final Pattern NOT_OK_PATTERN = Pattern.compile("^" + CAPABILITY + "(.*)not ok (?<INDEX>[\\d]+) (?<FULLTITLE>.*), suite=(?<SUITE>.*), testcase=(?<TESTCASE>.*), duration=(?<DURATION>[\\d]+)"); // NOI18N
+    static final Pattern SESSION_START_PATTERN = Pattern.compile("^" + CAPABILITY + "1\\.\\.(?<TOTAL>[\\d]+)"); // NOI18N
+    static final Pattern SESSION_END_PATTERN = Pattern.compile("^" + CAPABILITY + "(.*)tests (?<TOTAL>[\\d]+), pass (?<PASS>[\\d]+), fail (?<FAIL>[\\d]+), skip (?<SKIP>[\\d]+)"); // NOI18N
     static final String SKIP = " # SKIP -"; // NOI18N
 
     private final RunInfo runInfo;
@@ -93,6 +95,8 @@ public final class TestRunnerReporter {
     private String testcase;
     private long duration;
     private final boolean showOutput;
+    private int multiCapabilities = 0;
+    private String browser;
 
     public TestRunnerReporter(RunInfo runInfo, String reporterSuffix) {
         assert runInfo != null;
@@ -107,22 +111,35 @@ public final class TestRunnerReporter {
      */
     public String processLine(String logMessage) {
         int index = logMessage.indexOf(NB_LINE);
+        String line = removeEscapeCharachters(logMessage).replace(NB_LINE, "");
+        
+        Matcher matcher;
+        matcher = MULTI_CAPABILITIES.matcher(line);
+        if(matcher.find()) {
+            multiCapabilities = Integer.parseInt(matcher.group("MULTICAPABILITIES"));
+            return logMessage;
+        }
+        
         if(index == -1) {
             return logMessage;
         }
-        String line = removeEscapeCharachters(logMessage.substring(index)).replace(NB_LINE, "");
         
-        Matcher matcher;
         matcher = SESSION_START_PATTERN.matcher(line);
         if (matcher.find()) {
-            sessionStarted(line);
+            // in "multi capability" mode session is started only once
+            if (multiCapabilities == 0 || (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) {
+                sessionStarted(line);
+            }
             return showOutput ? line : null;
         }
 
         matcher = SESSION_END_PATTERN.matcher(line);
         if (matcher.find()) {
             handleTrouble();
-            sessionFinished(line);
+            // in "multi capability" mode session is finished only once
+            if (multiCapabilities == 0 || (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == multiCapabilities)) {
+                sessionFinished(line);
+            }
             return showOutput ? "" : null;
         }
 
@@ -158,15 +175,30 @@ public final class TestRunnerReporter {
             return output2display;
         }
         if(trouble != null) {
-            stackTrace.add(line);
+            stackTrace.add(getStacktrace(line));
         }
         return showOutput ? line : null;
+    }
+    
+    private String getStacktrace(String line) {
+        if (multiCapabilities > 0) { // remove browser info from stacktrace
+            return line.replaceFirst(CAPABILITY, "");
+        }
+        return line;
+    }
+    
+    private String getSuiteName(String suite) {
+        if(browser == null) {
+            return suite;
+        }
+        return "[" + browser + "] " + suite;
     }
     
     private String parseTestResult(Matcher matcher) {
         handleTrouble();
         testIndex = Integer.parseInt(matcher.group("INDEX"));
-        String suite = matcher.group("SUITE");
+        browser = matcher.group("BROWSER");
+        String suite = getSuiteName(matcher.group("SUITE"));
         testcase = matcher.group("TESTCASE");
         if (matcher.pattern().pattern().equals(NOT_OK_PATTERN.pattern())) {
             trouble = new Trouble(false);
@@ -316,7 +348,7 @@ public final class TestRunnerReporter {
 
         // at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29
         // at notify (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:465:12)
-        static final Pattern FILE_LINE_PATTERN = Pattern.compile("at([^/]+)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
+        static final Pattern FILE_LINE_PATTERN = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
 
         final Project project;
 
