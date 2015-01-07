@@ -82,7 +82,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -124,7 +126,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -166,7 +170,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -208,7 +214,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -250,7 +258,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -292,7 +302,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -334,7 +346,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -376,7 +390,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -418,7 +434,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -460,7 +478,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -502,7 +522,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -544,7 +566,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -586,7 +610,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -628,7 +654,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -670,7 +698,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -712,7 +742,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -754,7 +786,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -796,7 +830,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -838,7 +874,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -880,7 +918,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -922,7 +962,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -964,7 +1006,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1006,7 +1050,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1048,7 +1094,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1084,7 +1132,9 @@ public final class EventRequestManagerWrapper {
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } finally {
@@ -1114,7 +1164,9 @@ public final class EventRequestManagerWrapper {
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
@@ -1146,7 +1198,9 @@ public final class EventRequestManagerWrapper {
         } catch (com.sun.jdi.VMDisconnectedException ex) {
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (com.sun.jdi.request.InvalidRequestStateException ex) {
@@ -1184,7 +1238,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1226,7 +1282,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1268,7 +1326,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1310,7 +1370,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1352,7 +1414,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1394,7 +1458,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1436,7 +1502,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1478,7 +1546,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1520,7 +1590,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1562,7 +1634,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1604,7 +1678,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1646,7 +1722,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1688,7 +1766,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1730,7 +1810,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1772,7 +1854,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1814,7 +1898,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1856,7 +1942,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1898,7 +1986,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -1940,7 +2030,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -1982,7 +2074,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -2024,7 +2118,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -2066,7 +2162,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
@@ -2108,7 +2206,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             return java.util.Collections.emptyList();
         } catch (Error err) {
@@ -2150,7 +2250,9 @@ public final class EventRequestManagerWrapper {
             retValue = ex;
             if (a instanceof com.sun.jdi.Mirror) {
                 com.sun.jdi.VirtualMachine vm = ((com.sun.jdi.Mirror) a).virtualMachine();
-                vm.dispose();
+                try {
+                    vm.dispose();
+                } catch (com.sun.jdi.VMDisconnectedException vmdex) {}
             }
             throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         } catch (Error err) {
