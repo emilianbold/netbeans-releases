@@ -249,7 +249,7 @@ public class ApiTest extends NbTestCase {
         assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://www.netbeans.org/"));
         assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn://vcs-test.cz.oracle.com:9630"));
         assertEquals(true, org.netbeans.modules.subversion.api.Subversion.isRepository("svn+ssh://vcs-test.cz.oracle.com/usr/svnrepo"));
-        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://vcs-test.cz.oracle.com:440/svnsecure"));
+        assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("https://vcs-test.cz.oracle.com/svnsecure"));
         assertEquals(false, org.netbeans.modules.subversion.api.Subversion.isRepository("http://vcs-test.cz.oracle.com/svnrepo"));
     }
 
