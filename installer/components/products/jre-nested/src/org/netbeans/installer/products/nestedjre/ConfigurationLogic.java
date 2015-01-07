@@ -36,16 +36,22 @@
  * the option applies only if the new code is made subject to such option by the
  * copyright holder.
  */
+package org.netbeans.installer.products.nestedjre;
 
-package org.netbeans.installer.products.jdk;
-
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
-import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
+import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardComponent;
@@ -55,40 +61,77 @@ import org.netbeans.installer.wizard.components.WizardComponent;
  * @author Libor Fischmeistr
  */
 public class ConfigurationLogic extends ProductConfigurationLogic {
-    
+
     public ConfigurationLogic() throws InitializationException {
-        
+
     }
-    
+
     @Override
     public void install(final Progress progress) throws InstallationException {
-        LogManager.log("===== INSTALUJI JRE =====");        
-        progress.setPercentage(Progress.COMPLETE);
-    }  
-    
-    @Override
-    public void uninstall(final Progress progress) throws UninstallationException {
-        
+        final Product product = getProduct();
+        final File installLocation = product.getInstallationLocation();
+        final File jvmTempLocation = new File(System.getProperty("java.home"));
+        final FilesList filesList = product.getInstalledFiles();
+
+        try {
+            FilesList copiedFiles = FileUtils.copyFile(jvmTempLocation, installLocation, true, progress);
+
+            List<File> deletedFiles = deletePacks(copiedFiles);
+            List<File> files = copiedFiles.toList();
+            files.removeAll(deletedFiles);
+            
+            filesList.add(files);
+        } catch (IOException ex) {
+            Logger.getLogger(ConfigurationLogic.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         progress.setPercentage(Progress.COMPLETE);
     }
-    
+
+    @Override
+    public void uninstall(final Progress progress) throws UninstallationException {
+
+        progress.setPercentage(Progress.COMPLETE);
+    }
+
     @Override
     public List<WizardComponent> getWizardComponents() {
         return Collections.EMPTY_LIST;
     }
-    
+
     @Override
     public boolean registerInSystem() {
         return false;
     }
-    
+
     @Override
     public boolean allowModifyMode() {
         return false;
     }
-    
+
     @Override
     public RemovalMode getRemovalMode() {
         return RemovalMode.ALL;
+    }
+
+    private List<File> deletePacks(FilesList filesList) {
+        List<File> deleted = new ArrayList();
+        
+        if (filesList != null) {
+            List<File> files = filesList.toList();
+
+            for (File file : files) {
+                if (file.getName().endsWith("pack.gz")) {
+                    try {
+                        FileUtils.deleteFile(file);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ConfigurationLogic.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    deleted.add(file);
+                }
+            }
+        }
+        
+        return deleted;
     }
 }
