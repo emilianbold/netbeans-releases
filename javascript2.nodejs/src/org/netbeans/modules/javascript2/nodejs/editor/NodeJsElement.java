@@ -114,7 +114,7 @@ public class NodeJsElement implements ElementHandle {
     public OffsetRange getOffsetRange(ParserResult result) {
         return OffsetRange.NONE;
     }
-
+    
     public String getDocumentation() {
         return documentation;
     }
