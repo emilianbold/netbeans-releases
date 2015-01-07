@@ -71,6 +71,7 @@ public class CommitPanel extends javax.swing.JPanel {
     private final GitCommitParameters parameters;
     private String headCommitMessage;
     private boolean commitMessageEdited;
+    private static final int TITLE_WIDTH;
     private static final int MESSAGE_WIDTH;
     static {
         int width = Integer.getInteger("versioning.git.commitMessageWidth", 72); //NOI18N
@@ -80,6 +81,13 @@ public class CommitPanel extends javax.swing.JPanel {
             width = 72;
         }
         MESSAGE_WIDTH = width;
+        width = Integer.getInteger("versioning.git.commitMessageTitleWidth", 0); //NOI18N
+        if (width < 0) {
+            // 50 is a good practise according to
+            // http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+            width = 50;
+        }
+        TITLE_WIDTH = width;
     }
     private boolean opened;
 
@@ -289,6 +297,7 @@ public class CommitPanel extends javax.swing.JPanel {
     private javax.swing.JLabel messageLabel;
     final org.netbeans.modules.git.ui.commit.MessageArea messageTextArea = new org.netbeans.modules.git.ui.commit.MessageAreaBuilder()
     .setWraplineHint(MESSAGE_WIDTH)
+    .setTitleHint(TITLE_WIDTH)
     .setAccessibleName(getMessage("ACSN_CommitForm_Message"))
     .setAccessibleDescription(getMessage("ACSD_CommitForm_Message"))
     .build()

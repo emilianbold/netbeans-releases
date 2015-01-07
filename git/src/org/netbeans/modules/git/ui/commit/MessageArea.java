@@ -43,7 +43,6 @@ package org.netbeans.modules.git.ui.commit;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JTextArea;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
@@ -56,16 +55,30 @@ import org.netbeans.modules.versioning.util.UndoRedoSupport;
 public class MessageArea extends JTextArea {
     private UndoRedoSupport um;
     private int messageWidth;
+    private int titleWidth;
     
     @Override
     public void paint (Graphics g) {
         super.paint(g);
-        if (messageWidth > 0) {
-            int x = messageWidth * g.getFontMetrics().charWidth(' ');
-            Rectangle rect = getVisibleRect();
-            if (rect.contains(new Point(x, rect.y))) {
+        int charWidth = g.getFontMetrics().charWidth(' ');
+        int bodyLineStarts = 0;
+        int charHeight = g.getFontMetrics().getHeight();
+        Rectangle visibleRect = getVisibleRect();
+        if (titleWidth > 0) {
+            int x = titleWidth * charWidth;
+            Rectangle intersect = visibleRect.intersection(new Rectangle(x, 0, 1, charHeight));
+            if (!intersect.isEmpty()) {
                 g.setColor(Color.red);
-                g.drawLine(x, rect.y, x, rect.y + rect.height);
+                g.drawLine(x, intersect.y, x, intersect.y + intersect.height);
+            }
+            bodyLineStarts = 2 * charHeight;
+        }
+        if (messageWidth > 0) {
+            int x = messageWidth * charWidth;
+            Rectangle intersect = visibleRect.intersection(new Rectangle(x, bodyLineStarts, 1, visibleRect.height));
+            if (!intersect.isEmpty()) {
+                g.setColor(Color.red);
+                g.drawLine(x, bodyLineStarts, x, bodyLineStarts + intersect.height);
             }
         }
     }
@@ -92,6 +105,10 @@ public class MessageArea extends JTextArea {
 
     void setNumberOfChars (int numberOfChars) {
         this.messageWidth = numberOfChars;
+    }
+
+    void setNumberOfTitleChars (int numberOfTitleChars) {
+        this.titleWidth = numberOfTitleChars;
     }
     
 }
