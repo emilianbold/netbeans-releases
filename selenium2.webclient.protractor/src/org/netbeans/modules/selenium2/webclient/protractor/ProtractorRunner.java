@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -145,11 +146,13 @@ class ProtractorRunner {
         } else {
             ArrayList<String> files2test = new ArrayList<>();
             for(FileObject fo : activatedFOs) {
-                String file2test = FileUtil.toFile(fo).getAbsolutePath();
-                if(file2test != null) {
-                    if(!files2test.contains(file2test)) {
-                        files2test.add(file2test);
+                if(fo.isFolder()) { // recursively add all specs under this folder
+                    Enumeration<? extends FileObject> children = fo.getChildren(true);
+                    while (children.hasMoreElements()) {
+                        add2specs(children.nextElement(), files2test);
                     }
+                } else {
+                    add2specs(fo, files2test);
                 }
             }
             String specs2test = files2test.toString();
@@ -196,6 +199,15 @@ class ProtractorRunner {
                 });
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    private static void add2specs(FileObject fo, ArrayList<String> files2test) {
+        String file2test = FileUtil.toFile(fo).getAbsolutePath();
+        if (file2test != null) {
+            if (!files2test.contains(file2test)) {
+                files2test.add(file2test);
             }
         }
     }
