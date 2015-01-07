@@ -140,4 +140,9 @@ public class JsObjectReference extends JsObjectImpl implements JsReference {
         return original.getDocumentation(); 
     }
 
+    @Override
+    protected void correctTypes(String fromType, String toType) {
+        //Do nothing
+    }
+    
 }

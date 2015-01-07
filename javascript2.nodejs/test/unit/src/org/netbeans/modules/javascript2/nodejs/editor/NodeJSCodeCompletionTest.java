@@ -123,6 +123,10 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("TestNavigation/public_html/js/cc01/issue249632.js", "rnewe.rgetAttempt().a^a;", false);
     }
     
+    public void testIssue249628() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249628.js", "instRef.^rage();", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();
