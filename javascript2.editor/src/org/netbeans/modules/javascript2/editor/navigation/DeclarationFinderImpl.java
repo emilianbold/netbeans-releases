@@ -123,14 +123,14 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                         int docTsOffset = LexUtilities.getLexerOffset(jsResult, ts.offset());
                                         if (!(docTsOffset <= docOffset && docOffset <= (docTsOffset + ts.token().length()))) {
                                             // return the declaration only if it's not the same identifier
-                                            return new DeclarationLocation(fo, docOffset);
+                                            return new DeclarationLocation(fo, docOffset, object);
                                         }
                                     }
                                 }
                             }
                         } else {
                             // TODO we need to solve to translating model offsets to the doc offset for other files?
-                            return new DeclarationLocation(fo, getDeclarationOffset(object));
+                            return new DeclarationLocation(fo, getDeclarationOffset(object), object);
                         }
                         
                     }
@@ -150,11 +150,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         if (fo.equals(snapshot.getSource().getFileObject())) {
                             int docOffset = LexUtilities.getLexerOffset(jsResult, getDeclarationOffset(object));
                             if (docOffset > -1) {
-                                return new DeclarationLocation(fo, docOffset);
+                                return new DeclarationLocation(fo, docOffset, object);
                             }
                         } else {
                             // TODO we need to solve to translating model offsets to the doc offset for other files?
-                            return new DeclarationLocation(fo, getDeclarationOffset(object));
+                            return new DeclarationLocation(fo, getDeclarationOffset(object), object);
                         }
                         
                     }

@@ -43,6 +43,8 @@ package org.netbeans.modules.selenium2.webclient.protractor;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -55,6 +57,7 @@ import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -120,7 +123,28 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         assert EventQueue.isDispatchThread();
         // get saved protractor executable if previously set from protractor preferences
         String protractorExec = ProtractorPreferences.getProtractor(project);
-        if(protractorExec == null) { // protractor executable not set yet, try searching for it in project's local node_modules dir
+        if(protractorExec == null) {
+            // not set yet, so search for it in user's PATH
+            String userPath = System.getenv("PATH"); // NOI18N
+            if(userPath != null) {
+                List<String> paths = Arrays.asList(userPath.split(File.pathSeparator));
+                String execName = Utilities.isWindows() ? "protractor.cmd" : "protractor"; // NOI18N
+                for (String path : paths) {
+                    if (path.endsWith(execName)) {
+                        ValidationResult result = new ProtractorPreferencesValidator()
+                                .validateProtractor(path)
+                                .getResult();
+                        if (result.isFaultless()) { // protractor executable is globally installed and in user's PATH
+                            protractorExec = path;
+                            autoDiscovered = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if(protractorExec == null) {
+            // not found in user's PATH, so search for it in project's local node_modules dir
             String exec = new File(FileUtil.toFile(project.getProjectDirectory()), "node_modules/protractor/bin/protractor").getAbsolutePath();
             ValidationResult result = new ProtractorPreferencesValidator()
                 .validateProtractor(exec)
@@ -134,8 +158,8 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         protractorDirInfoLabel.setText(Bundle.CustomizerProtractor_protractor_dir_info());
         
         // get saved user configuration file if previously set from protractor preferences
-        String serverJar = ProtractorPreferences.getUserConfigurationFile(project);
-        userConfigurationFileTextField.setText(serverJar);
+        String configFile = ProtractorPreferences.getUserConfigurationFile(project);
+        userConfigurationFileTextField.setText(configFile);
         userConfigurationFileInfoLabel.setText(Bundle.CustomizerProtractor_user_configuration_file_info());
         // listeners
         addListeners();

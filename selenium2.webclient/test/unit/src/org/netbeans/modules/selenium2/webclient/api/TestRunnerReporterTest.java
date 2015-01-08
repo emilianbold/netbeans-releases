@@ -62,17 +62,23 @@ public class TestRunnerReporterTest extends TestCase {
         Pattern pattern = TestRunnerReporter.CallStackCallback.FILE_LINE_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
-            {"at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
-            {"at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
+            {"at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", null, null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
+            {"at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", null, null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
+            {"[chrome #1] at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", "chrome", "1", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
+            {"[chrome #1] at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", "chrome", "1", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
+            {"[chrome #1]   at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", "chrome", "1", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
+            {"[chrome #1]   at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", "chrome", "1", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
             String string = matchingStrings[i][0];
             Matcher matcher = pattern.matcher(string);
             assertTrue("should match: " + string, matcher.find());
-            assertEquals(matchingStrings[i][1], matcher.group("FILE"));
-            assertEquals(matchingStrings[i][2], matcher.group("LINE"));
-            assertEquals(matchingStrings[i][3], matcher.group("COLUMN"));
+            assertEquals(matchingStrings[i][1], matcher.group("BROWSER"));
+            assertEquals(matchingStrings[i][2], matcher.group("CAPABILITY"));
+            assertEquals(matchingStrings[i][3], matcher.group("FILE"));
+            assertEquals(matchingStrings[i][4], matcher.group("LINE"));
+            assertEquals(matchingStrings[i][5], matcher.group("COLUMN"));
         }
     }
     
@@ -81,19 +87,22 @@ public class TestRunnerReporterTest extends TestCase {
         Pattern pattern = TestRunnerReporter.OK_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
-            {"ok 1 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=1234", "1", "Google Search should append query to title", "Google Search", "should append query to title", "1234"},
-//            {"not ok 1 Google Search should append query to title", "1", "Google Search should append query to title"},
+            {"ok 1 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=1234", null, null, "1", "Google Search should append query to title", "Google Search", "should append query to title", "1234"},
+            {"[chrome #1] ok 2 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=1234", "chrome", "1", "2", "Google Search should append query to title", "Google Search", "should append query to title", "1234"},
+            {"[chrome #1] .F..ok 2 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=1234", "chrome", "1", "2", "Google Search should append query to title", "Google Search", "should append query to title", "1234"},
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
             String string = matchingStrings[i][0];
             Matcher matcher = pattern.matcher(string);
             assertTrue("should match: " + string, matcher.find());
-            assertEquals(matchingStrings[i][1], matcher.group("INDEX"));
-            assertEquals(matchingStrings[i][2], matcher.group("FULLTITLE"));
-            assertEquals(matchingStrings[i][3], matcher.group("SUITE"));
-            assertEquals(matchingStrings[i][4], matcher.group("TESTCASE"));
-            assertEquals(matchingStrings[i][5], matcher.group("DURATION"));
+            assertEquals(matchingStrings[i][1], matcher.group("BROWSER"));
+            assertEquals(matchingStrings[i][2], matcher.group("CAPABILITY"));
+            assertEquals(matchingStrings[i][3], matcher.group("INDEX"));
+            assertEquals(matchingStrings[i][4], matcher.group("FULLTITLE"));
+            assertEquals(matchingStrings[i][5], matcher.group("SUITE"));
+            assertEquals(matchingStrings[i][6], matcher.group("TESTCASE"));
+            assertEquals(matchingStrings[i][7], matcher.group("DURATION"));
         }
     }
     
@@ -102,17 +111,21 @@ public class TestRunnerReporterTest extends TestCase {
         Pattern pattern = TestRunnerReporter.OK_SKIP_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
-            {"ok 1 Google Search should append query to title # SKIP -, suite=Google Search, testcase=should append query to title", "1", "Google Search should append query to title", "Google Search", "should append query to title"}
+            {"ok 1 Google Search should append query to title # SKIP -, suite=Google Search, testcase=should append query to title", null, null, "1", "Google Search should append query to title", "Google Search", "should append query to title"},
+            {"[chrome #1] ok 1 Google Search should append query to title # SKIP -, suite=Google Search, testcase=should append query to title", "chrome", "1", "1", "Google Search should append query to title", "Google Search", "should append query to title"},
+            {"[chrome #1] .F..ok 1 Google Search should append query to title # SKIP -, suite=Google Search, testcase=should append query to title", "chrome", "1", "1", "Google Search should append query to title", "Google Search", "should append query to title"},
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
             String string = matchingStrings[i][0];
             Matcher matcher = pattern.matcher(string);
             assertTrue("should match: " + string, matcher.find());
-            assertEquals(matchingStrings[i][1], matcher.group("INDEX"));
-            assertEquals(matchingStrings[i][2], matcher.group("FULLTITLE"));
-            assertEquals(matchingStrings[i][3], matcher.group("SUITE"));
-            assertEquals(matchingStrings[i][4], matcher.group("TESTCASE"));
+            assertEquals(matchingStrings[i][1], matcher.group("BROWSER"));
+            assertEquals(matchingStrings[i][2], matcher.group("CAPABILITY"));
+            assertEquals(matchingStrings[i][3], matcher.group("INDEX"));
+            assertEquals(matchingStrings[i][4], matcher.group("FULLTITLE"));
+            assertEquals(matchingStrings[i][5], matcher.group("SUITE"));
+            assertEquals(matchingStrings[i][6], matcher.group("TESTCASE"));
         }
     }
     
@@ -121,19 +134,22 @@ public class TestRunnerReporterTest extends TestCase {
         Pattern pattern = TestRunnerReporter.NOT_OK_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
-            {"not ok 2 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=2345", "2", "Google Search should append query to title", "Google Search", "should append query to title", "2345"},
-//            {"ok 1 Google Search should append query to title", "1", "Google Search should append query to title"},
+            {"not ok 2 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=2345", null, null, "2", "Google Search should append query to title", "Google Search", "should append query to title", "2345"},
+            {"[chrome #1] not ok 2 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=2345", "chrome", "1", "2", "Google Search should append query to title", "Google Search", "should append query to title", "2345"},
+            {"[chrome #1] .F..not ok 2 Google Search should append query to title, suite=Google Search, testcase=should append query to title, duration=2345", "chrome", "1", "2", "Google Search should append query to title", "Google Search", "should append query to title", "2345"},
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
             String string = matchingStrings[i][0];
             Matcher matcher = pattern.matcher(string);
             assertTrue("should match: " + string, matcher.find());
-            assertEquals(matchingStrings[i][1], matcher.group("INDEX"));
-            assertEquals(matchingStrings[i][2], matcher.group("FULLTITLE"));
-            assertEquals(matchingStrings[i][3], matcher.group("SUITE"));
-            assertEquals(matchingStrings[i][4], matcher.group("TESTCASE"));
-            assertEquals(matchingStrings[i][5], matcher.group("DURATION"));
+            assertEquals(matchingStrings[i][1], matcher.group("BROWSER"));
+            assertEquals(matchingStrings[i][2], matcher.group("CAPABILITY"));
+            assertEquals(matchingStrings[i][3], matcher.group("INDEX"));
+            assertEquals(matchingStrings[i][4], matcher.group("FULLTITLE"));
+            assertEquals(matchingStrings[i][5], matcher.group("SUITE"));
+            assertEquals(matchingStrings[i][6], matcher.group("TESTCASE"));
+            assertEquals(matchingStrings[i][7], matcher.group("DURATION"));
         }
     }
     
@@ -142,15 +158,17 @@ public class TestRunnerReporterTest extends TestCase {
         Pattern pattern = TestRunnerReporter.SESSION_START_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
-            {"1..8", "8"},
-//            {"ok 1 Google Search should append query to title", "1", "Google Search should append query to title"},
+            {"1..8", null, null, "8"},
+            {"[chrome #1] 1..8", "chrome", "1", "8"},
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
             String string = matchingStrings[i][0];
             Matcher matcher = pattern.matcher(string);
             assertTrue("should match: " + string, matcher.find());
-            assertEquals(matchingStrings[i][1], matcher.group("TOTAL"));
+            assertEquals(matchingStrings[i][1], matcher.group("BROWSER"));
+            assertEquals(matchingStrings[i][2], matcher.group("CAPABILITY"));
+            assertEquals(matchingStrings[i][3], matcher.group("TOTAL"));
         }
     }
     
@@ -159,17 +177,38 @@ public class TestRunnerReporterTest extends TestCase {
         Pattern pattern = TestRunnerReporter.SESSION_END_PATTERN;
         
         final String[][] matchingStrings = new String[][]{
-            {"tests 8, pass 6, fail 2, skip 1", "8", "6", "2", "1"},
+            {"tests 8, pass 6, fail 2, skip 1", null, null, "8", "6", "2", "1"},
+            {"[chrome #1] tests 8, pass 6, fail 2, skip 1", "chrome", "1", "8", "6", "2", "1"},
+            {"[chrome #1] .F..tests 8, pass 6, fail 2, skip 1", "chrome", "1", "8", "6", "2", "1"},
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
             String string = matchingStrings[i][0];
             Matcher matcher = pattern.matcher(string);
             assertTrue("should match: " + string, matcher.find());
-            assertEquals(matchingStrings[i][1], matcher.group("TOTAL"));
-            assertEquals(matchingStrings[i][2], matcher.group("PASS"));
-            assertEquals(matchingStrings[i][3], matcher.group("FAIL"));
-            assertEquals(matchingStrings[i][4], matcher.group("SKIP"));
+            assertEquals(matchingStrings[i][1], matcher.group("BROWSER"));
+            assertEquals(matchingStrings[i][2], matcher.group("CAPABILITY"));
+            assertEquals(matchingStrings[i][3], matcher.group("TOTAL"));
+            assertEquals(matchingStrings[i][4], matcher.group("PASS"));
+            assertEquals(matchingStrings[i][5], matcher.group("FAIL"));
+            assertEquals(matchingStrings[i][6], matcher.group("SKIP"));
         }
     }
+    
+    @Test
+    public void testMultiCapabilities() throws Exception {
+        Pattern pattern = TestRunnerReporter.MULTI_CAPABILITIES;
+        
+        final String[][] matchingStrings = new String[][]{
+            {"[launcher] Running 2 instances of WebDriver", "2"},
+        };
+
+        for (int i = 0; i < matchingStrings.length; i++) {
+            String string = matchingStrings[i][0];
+            Matcher matcher = pattern.matcher(string);
+            assertTrue("should match: " + string, matcher.find());
+            assertEquals(matchingStrings[i][1], matcher.group("MULTICAPABILITIES"));
+        }
+    }
+    
 }
