@@ -320,19 +320,40 @@ public class LibraryProvider {
             List<Library> libraryList = new LinkedList<>();
             String name = ""; // NOI18N
             String description = ""; // NOI18N
+            String versionName = ""; // NOI18N
             for (int i=lines.length-1; i>=1; i--) {
                 String line = lines[i];
+                int length = line.length();
+
+                // Name
                 String namePart = line.substring(0,descriptionIndex).trim();
                 name = namePart.trim() + name;
-                int length = line.length();
+
+                // Description
                 String descriptionPart = length < authorIndex
                         ? line.substring(descriptionIndex).trim()
                         : line.substring(descriptionIndex, authorIndex).trim();
                 description = descriptionPart + "\n" + description; // NOI18N
+
+                // Version
+                String versionNamePart;
+                if (length < versionIndex) {
+                    versionNamePart = "";
+                } else if (length < keywordsIndex) {
+                    versionNamePart = line.substring(versionIndex);
+                } else {
+                    versionNamePart = line.substring(versionIndex, keywordsIndex);
+                }
+                versionNamePart = versionNamePart.trim();
+                // multiline versions end with '...' character
+                if (versionNamePart.endsWith("\u2026")) { // NOI18N
+                    versionNamePart = versionNamePart.substring(0, versionNamePart.length()-1);
+                }
+                versionName = versionNamePart + versionName;
+
+                // The first line (but the last one we are processing as we go
+                // from the back) describing this library
                 if (length >= dateIndex && !Character.isWhitespace(line.charAt(dateIndex))) {
-                    String versionName = length < keywordsIndex
-                            ? line.substring(versionIndex).trim()
-                            : line.substring(versionIndex, keywordsIndex).trim();
                     String keywords = length < keywordsIndex
                             ? "" // NOI18N
                             : line.substring(keywordsIndex).trim();
@@ -346,6 +367,7 @@ public class LibraryProvider {
                     libraryList.add(0, library);
                     name = ""; // NOI18N
                     description = ""; // NOI18N
+                    versionName = ""; // NOI18N
                 }
             }
             return libraryList.toArray(new Library[libraryList.size()]);
