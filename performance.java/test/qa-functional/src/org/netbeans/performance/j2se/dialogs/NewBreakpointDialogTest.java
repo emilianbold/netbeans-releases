@@ -41,65 +41,71 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of New Breakpoint Dialog
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class NewBreakpointDialogTest extends PerformanceTestCase {
 
     private String MENU, TITLE;
-    
-    /** Creates a new instance of NewBreakpointDialog */
+
+    /**
+     * Creates a new instance of NewBreakpointDialog
+     *
+     * @param testName test name
+     */
     public NewBreakpointDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of NewBreakpointDialog */
+
+    /**
+     * Creates a new instance of NewBreakpointDialog
+     *
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public NewBreakpointDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(NewBreakpointDialogTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(NewBreakpointDialogTest.class)
+                .suite();
     }
 
     public void testNewBreakpointDialog() {
         doMeasurement();
-    }    
-    
+    }
+
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","Menu/RunProject") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_AddBreakpoint");
-        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_Breakpoint_Title");
+        MENU = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_AddBreakpoint");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Breakpoint_Title");
     }
-    
+
+    @Override
     public void prepare() {
-   }
-    
+    }
+
+    @Override
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU, "|");
         return new NbDialogOperator(TITLE);
     }
-    
 }
