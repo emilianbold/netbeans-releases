@@ -76,7 +76,7 @@
             <Property name="rows" type="int" value="5"/>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.git.ui.commit.MessageAreaBuilder()&#xa;.setWraplineHint(MESSAGE_WIDTH)&#xa;.setAccessibleName(Bundle.ACSN_SaveStash_Message())&#xa;.setAccessibleDescription(Bundle.ACSD_SaveStash_Message())&#xa;.build()"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.git.ui.commit.MessageAreaBuilder()&#xa;.setWraplineHint(MESSAGE_WIDTH)&#xa;.setTitleHint(TITLE_WIDTH)&#xa;.setAccessibleName(Bundle.ACSN_SaveStash_Message())&#xa;.setAccessibleDescription(Bundle.ACSD_SaveStash_Message())&#xa;.build()"/>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
         </Component>

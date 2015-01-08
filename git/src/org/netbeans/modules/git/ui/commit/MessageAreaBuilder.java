@@ -53,10 +53,11 @@ public class MessageAreaBuilder {
     private String accessibleName;
     private String accessibleDesc;
     private int numberOfChars;
+    private int numberOfTitleChars;
 
     public MessageArea build () {
         MessageArea messageTextArea = new MessageArea();
-        if (numberOfChars > 0) {
+        if (numberOfChars > 0 || numberOfTitleChars > 0) {
             Font orig = messageTextArea.getFont();
             Font f = Font.decode(Font.MONOSPACED).deriveFont(orig.getStyle(), orig.getSize());
             messageTextArea.setFont(f);
@@ -72,6 +73,7 @@ public class MessageAreaBuilder {
         }
         messageTextArea.getAccessibleContext().setAccessibleDescription(accessibleDesc);
         messageTextArea.addMouseListener(new CommitMessageMouseAdapter());
+        messageTextArea.setNumberOfTitleChars(numberOfTitleChars);
         messageTextArea.setNumberOfChars(numberOfChars);
         return messageTextArea;
     }
@@ -88,6 +90,11 @@ public class MessageAreaBuilder {
 
     public MessageAreaBuilder setWraplineHint (int numberOfChars) {
         this.numberOfChars = numberOfChars;
+        return this;
+    }
+
+    public MessageAreaBuilder setTitleHint (int numberOfTitleChars) {
+        this.numberOfTitleChars = numberOfTitleChars;
         return this;
     }
     
