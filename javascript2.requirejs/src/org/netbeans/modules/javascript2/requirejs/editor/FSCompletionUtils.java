@@ -71,6 +71,7 @@ public class FSCompletionUtils {
 
     final static String GO_UP = "../"; //NOI18N
     private static final String SLASH = "/"; //NOI18N
+    private static final String FILE = "file"; // URI scheme
     
     public static List<CompletionProposal> computeRelativeItems(
             Collection<? extends FileObject> relativeTo,
@@ -119,8 +120,10 @@ public class FSCompletionUtils {
                     File toFile = FileUtil.toFile(f);
                     if (toFile != null) {
                         URI resolve = Utilities.toURI(toFile).resolve(pathPrefix).normalize();
-                        File normalizedFile = FileUtil.normalizeFile(Utilities.toFile(resolve));
-                        f = FileUtil.toFileObject(normalizedFile);
+                        if (resolve.getScheme() == null || FILE.equals(resolve.getScheme())) {
+                            File normalizedFile = FileUtil.normalizeFile(Utilities.toFile(resolve));
+                            f = FileUtil.toFileObject(normalizedFile);
+                        }
                     } else {
                         f = f.getFileObject(pathPrefix);
                     }
