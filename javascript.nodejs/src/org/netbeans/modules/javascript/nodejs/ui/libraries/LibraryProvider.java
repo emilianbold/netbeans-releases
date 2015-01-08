@@ -354,17 +354,22 @@ public class LibraryProvider {
                 // The first line (but the last one we are processing as we go
                 // from the back) describing this library
                 if (length >= dateIndex && !Character.isWhitespace(line.charAt(dateIndex))) {
-                    String keywords = length < keywordsIndex
-                            ? "" // NOI18N
-                            : line.substring(keywordsIndex).trim();
-                    Library library = new Library(name);
-                    library.setDescription(description.trim());
-                    if (!keywords.isEmpty()) {
-                        library.setKeywords(keywords.split(" ")); // NOI18N
+                    // Some libraries (like jquery.tap.js or elasticsearch-jquery)
+                    // are broken. They don't have any version in npm meta-data
+                    // and cannot be installed => skip them.
+                    if (!versionName.isEmpty()) {
+                        String keywords = length < keywordsIndex
+                                ? "" // NOI18N
+                                : line.substring(keywordsIndex).trim();
+                        Library library = new Library(name);
+                        library.setDescription(description.trim());
+                        if (!keywords.isEmpty()) {
+                            library.setKeywords(keywords.split(" ")); // NOI18N
+                        }
+                        Library.Version version = new Library.Version(library, versionName);
+                        library.setLatestVersion(version);
+                        libraryList.add(0, library);
                     }
-                    Library.Version version = new Library.Version(library, versionName);
-                    library.setLatestVersion(version);
-                    libraryList.add(0, library);
                     name = ""; // NOI18N
                     description = ""; // NOI18N
                     versionName = ""; // NOI18N
