@@ -41,65 +41,69 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.dialogs;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.j2se.setup.J2SESetup;
 
 /**
  * Test of Libraries Manager
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class LibrariesManagerTest extends PerformanceTestCase {
 
     private String MENU, TITLE;
 
-    /** Creates a new instance of LibrariesManager */
+    /**
+     * Creates a new instance of LibrariesManager
+     * @param testName test name
+     */
     public LibrariesManagerTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
-    
-    /** Creates a new instance of LibrariesManager */
+
+    /**
+     * Creates a new instance of LibrariesManager
+     * @param testName test name
+     * @param performanceDataName data name
+     */
     public LibrariesManagerTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(LibrariesManagerTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration()
+                .addTest(J2SESetup.class, "testCloseMemoryToolbar")
+                .addTest(LibrariesManagerTest.class)
+                .suite();
     }
-    
+
     public void testLibrariesManager() {
         doMeasurement();
     }
-        
+
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.project.libraries.ui.Bundle","CTL_LibrariesManager");
-        TITLE = Bundle.getStringTrimmed("org.netbeans.api.project.libraries.Bundle","TXT_LibrariesManager");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.project.libraries.ui.Bundle", "CTL_LibrariesManager");
+        TITLE = Bundle.getStringTrimmed("org.netbeans.api.project.libraries.Bundle", "TXT_LibrariesManager");
     }
-    
+
+    @Override
     public void prepare() {
-   }
-    
+    }
+
+    @Override
     public ComponentOperator open() {
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU, "|");
         return new NbDialogOperator(TITLE);
     }
-    
 }
