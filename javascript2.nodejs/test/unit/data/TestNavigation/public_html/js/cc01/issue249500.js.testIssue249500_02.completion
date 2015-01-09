@@ -1,0 +1,6 @@
+Code completion result for source line:
+p|;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      process                         [PUBLIC]   <font color=#999999>NodeJS</font>
+VARIABLE   pes: Number                     [PRIVATE]  issue249500.js
