@@ -201,17 +201,14 @@ public final class TargetChooserPanel<T> implements WizardDescriptor.Panel {
         }
     }
 
+    @Override
     public void storeSettings(Object settings) {
-        if ( WizardDescriptor.PREVIOUS_OPTION.equals( 
-                ((WizardDescriptor)settings).getValue() ) ) 
-        {
+        if ( WizardDescriptor.PREVIOUS_OPTION.equals(((WizardDescriptor)settings).getValue())
+                || WizardDescriptor.CANCEL_OPTION.equals(((WizardDescriptor)settings).getValue())
+                || WizardDescriptor.CLOSED_OPTION.equals(((WizardDescriptor)settings).getValue())) {
             return;
         }
-        if ( WizardDescriptor.CANCEL_OPTION.equals( 
-                ((WizardDescriptor)settings).getValue() ) ) 
-        {
-            return;
-        }
+
         if( isValid() ) {
             File f = new File(myGui.getCreatedFilePath());
             File ff = new File(f.getParentFile().getPath());
