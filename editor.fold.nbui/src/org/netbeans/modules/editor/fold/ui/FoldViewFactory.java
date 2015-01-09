@@ -120,11 +120,15 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     private Preferences         prefs;
     
     private int viewFlags = 0;
+    
+    private final FoldHierarchyListener weakL;
 
     public FoldViewFactory(View documentView) {
         super(documentView);
         foldHierarchy = FoldHierarchy.get(textComponent());
-        foldHierarchy.addFoldHierarchyListener(this);
+        // the view factory may get eventually GCed, but the FoldHierarchy can survive, snce it is tied to the component.
+        weakL = WeakListeners.create(FoldHierarchyListener.class, this, foldHierarchy);
+        foldHierarchy.addFoldHierarchyListener(weakL);
         viewFoldsExpanded = Boolean.TRUE.equals(textComponent().getClientProperty(VIEW_FOLDS_EXPANDED_PROPERTY));
         
         String mime = DocumentUtilities.getMimeType(document());
