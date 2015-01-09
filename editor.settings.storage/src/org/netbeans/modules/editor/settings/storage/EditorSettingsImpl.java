@@ -62,9 +62,13 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import static org.netbeans.modules.editor.settings.storage.api.EditorSettings.PROP_CURRENT_KEY_MAP_PROFILE;
 import org.netbeans.modules.editor.settings.storage.api.FontColorSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettingsFactory;
 import org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -524,7 +528,7 @@ public class EditorSettingsImpl extends EditorSettings {
         return pd == null || !pd.isRollbackAllowed();
     }
     
-    private String currentKeyMapProfile;
+    private volatile String currentKeyMapProfile;
     
     /**
      * Returns name of current keymap profile.
@@ -543,8 +547,55 @@ public class EditorSettingsImpl extends EditorSettings {
             if (currentKeyMapProfile == null) {
                 currentKeyMapProfile = DEFAULT_PROFILE;
             }
+            tracker = new KeymapProfileTracker(fo);
         }
         return currentKeyMapProfile;
+    }
+    
+    // just to keep the object alive
+    private KeymapProfileTracker tracker;
+    
+    /**
+     * Tracks changes to the keymap profile attribute; changes are refired
+     * as editor settings changes and mirrored to the currentKeymapProfile property
+     */
+    private class KeymapProfileTracker extends FileChangeAdapter {
+        private FileObject keymapFolder;
+
+        public KeymapProfileTracker(FileObject keymapFolder) {
+            this.keymapFolder = keymapFolder;
+            if (keymapFolder != null) {
+                keymapFolder.addFileChangeListener(this);
+            } else {
+                FileUtil.getConfigRoot().addFileChangeListener(this);
+            }
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            if (FATTR_CURRENT_KEYMAP_PROFILE.equals(fe.getName())) {
+                Object n = fe.getNewValue();
+                Object o = fe.getOldValue();
+                
+                String ov = o == null ? DEFAULT_PROFILE : o.toString();
+                String nv = n == null ? DEFAULT_PROFILE : n.toString();
+                
+                currentKeyMapProfile = nv;
+                pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, ov, nv);
+            }
+        }
+        
+        
+        @Override
+        public synchronized void fileFolderCreated(FileEvent fe) {
+            FileObject f = fe.getFile();
+            if (keymapFolder == null && KEYMAPS_FOLDER.equals(f.getNameExt()) && f.getParent() == FileUtil.getConfigRoot()) {
+                // keymap folder is created -> start listening on it
+                keymapFolder = f;
+                f.addFileChangeListener(this);
+            }
+        }
+        
     }
     
     /**
@@ -553,6 +604,7 @@ public class EditorSettingsImpl extends EditorSettings {
      * @param profile a profile name
      */
     public void setCurrentKeyMapProfile (String keyMapName) {
+        /*
         String oldKeyMap = getCurrentKeyMapProfile ();
         if (oldKeyMap.equals (keyMapName)) return;
 
@@ -571,6 +623,7 @@ public class EditorSettingsImpl extends EditorSettings {
         
         // Notify others
         pcs.firePropertyChange (PROP_CURRENT_KEY_MAP_PROFILE, oldKeyMap, currentKeyMapProfile);
+        */
     }
     
     // support methods .........................................................
