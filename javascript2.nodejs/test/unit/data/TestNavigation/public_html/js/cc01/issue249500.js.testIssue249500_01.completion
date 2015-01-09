@@ -1,0 +1,7 @@
+Code completion result for source line:
+a|;
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      ale                             [PRIVATE]  issue249500.js
+VARIABLE   arguments: Arguments            [PRIVATE]  <font color=#999999>issue249500.js</font>
+VARIABLE   as: Module address              [PUBLIC]   testAddress.js
