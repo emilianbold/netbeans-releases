@@ -308,8 +308,9 @@ public final class JPDAMethodChooserUtils {
                                                 params.locations[params.selectedIndex], expr.getInterval(),
                                                 true, MethodEntry.DIRECT);
             params.continuedDirectly = true;
+        } else {
+            params.continuedDirectly = false;
         }
-        params.continuedDirectly = false;
         return params;
     }
 
