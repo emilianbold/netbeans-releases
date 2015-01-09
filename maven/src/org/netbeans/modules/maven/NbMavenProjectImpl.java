@@ -877,7 +877,12 @@ public final class NbMavenProjectImpl implements Project {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Project) {
-            NbMavenProjectImpl impl = ((Project) obj).getLookup().lookup(NbMavenProjectImpl.class);
+            NbMavenProjectImpl impl;
+            if (obj instanceof NbMavenProjectImpl) {
+                impl = ((NbMavenProjectImpl) obj);
+            } else {
+                impl = ((Project) obj).getLookup().lookup(NbMavenProjectImpl.class);
+            }
             if (impl != null) {
                 return getPOMFile().equals(impl.getPOMFile());
             }
