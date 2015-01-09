@@ -43,6 +43,7 @@ package org.netbeans.modules.selenium2.webclient.protractor;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.event.ChangeListener;
@@ -128,15 +129,26 @@ public class CustomizerProtractor extends javax.swing.JPanel {
             String userPath = System.getenv("PATH"); // NOI18N
             if(userPath != null) {
                 List<String> paths = Arrays.asList(userPath.split(File.pathSeparator));
-                String execName = Utilities.isWindows() ? "protractor.cmd" : "protractor"; // NOI18N
+                final String execName = Utilities.isWindows() ? "protractor.cmd" : "protractor"; // NOI18N
                 for (String path : paths) {
-                    if (path.endsWith(execName)) {
-                        ValidationResult result = new ProtractorPreferencesValidator()
-                                .validateProtractor(path)
-                                .getResult();
-                        if (result.isFaultless()) { // protractor executable is globally installed and in user's PATH
-                            protractorExec = path;
+                    File file = new File(path);
+                    if (file.isFile()) {
+                        if (path.endsWith(execName)) {
+                            if (isProtractorExecValid(path)) { // protractor executable is globally installed and in user's PATH
+                                protractorExec = path;
+                                break;
+                            }
+                        }
+                    } else {
+                        String[] list = file.list(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File dir, String name) {
+                                return name.endsWith(execName);
+                            }
+                        });
+                        if(list.length == 1) { // protractor executable is globally installed and the containing directory is in user's PATH
                             autoDiscovered = true;
+                            protractorExec = path.endsWith(File.separator) ? path + execName : path + File.separator + execName;
                             break;
                         }
                     }
@@ -146,12 +158,8 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         if(protractorExec == null) {
             // not found in user's PATH, so search for it in project's local node_modules dir
             String exec = new File(FileUtil.toFile(project.getProjectDirectory()), "node_modules/protractor/bin/protractor").getAbsolutePath();
-            ValidationResult result = new ProtractorPreferencesValidator()
-                .validateProtractor(exec)
-                .getResult();
-            if(result.isFaultless()) { // protractor executable is installed in project's local node_modules dir
+            if(isProtractorExecValid(exec)) { // protractor executable is installed in project's local node_modules dir
                 protractorExec = exec;
-                autoDiscovered = true;
             }
         }
         protractorDirTextField.setText(protractorExec);
@@ -165,6 +173,17 @@ public class CustomizerProtractor extends javax.swing.JPanel {
         addListeners();
         // initial validation
         validateData();
+    }
+    
+    private boolean isProtractorExecValid(String path) {
+        ValidationResult result = new ProtractorPreferencesValidator()
+                .validateProtractor(path)
+                .getResult();
+        if (result.isFaultless()) {
+            autoDiscovered = true;
+            return true;
+        }
+        return false;
     }
 
     private void addListeners() {
