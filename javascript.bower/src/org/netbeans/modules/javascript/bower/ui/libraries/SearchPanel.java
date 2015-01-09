@@ -248,6 +248,7 @@ public class SearchPanel extends javax.swing.JPanel {
     }
 
     @NbBundle.Messages({
+        "SearchPanel.nodeDescription=<No Description>",
         "SearchPanel.message.loadingOfDetailFailed=Loading of package detail failed! :-("
     })
     private void updateLibraryDetail(String libraryName, Library libraryDetails) {
@@ -263,8 +264,12 @@ public class SearchPanel extends javax.swing.JPanel {
         String description = null;
         String keywords = null;
         String homePage = null;
+        boolean descriptionEnabled = true;
         if (!emptySelection) {
-            if (!libraryDetails.getDescription().isEmpty()) {
+            if (libraryDetails.getDescription().isEmpty()) {
+                description = Bundle.SearchPanel_nodeDescription();
+                descriptionEnabled = false;
+            } else {
                 description = "<html>" + libraryDetails.getDescription(); // NOI18N
             }
             if (libraryDetails.getKeywords().length > 0) {
@@ -284,12 +289,18 @@ public class SearchPanel extends javax.swing.JPanel {
             editPanel.setDependency(dependency);
             homePage = libraryDetails.getHomePage();
         }
+
         descriptionComponent.setText(description);
-        keywordsComponent.setText(keywords);
         descriptionComponent.setVisible(description != null);
+        descriptionComponent.setEnabled(descriptionEnabled);
+
+        keywordsComponent.setText(keywords);
+        keywordsComponent.setVisible(keywords != null);
         keywordsLabel.setVisible(keywords != null);
+
         editPanel.setVisible(!emptySelection);
         addButton.setEnabled(!emptySelection);
+
         homePageLinkLabel.setText(homePage);
         homePageLabel.setVisible(homePage != null);
         homePageLinkLabel.setVisible(homePage != null);
