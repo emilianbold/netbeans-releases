@@ -246,7 +246,8 @@ public class LibraryProvider {
             latestVersionName = (String)latestSection.get("version"); // NOI18N
             String description = (String)latestSection.get("description"); // NOI18N
             library.setDescription(description);
-            //String homepage = (String)latestSection.get("homepage"); // NOI18N
+            String homepage = (String)latestSection.get("homepage"); // NOI18N
+            library.setHomePage(homepage);
             JSONArray keywordsArray = (JSONArray)latestSection.get("keywords"); // NOI18N
             if (keywordsArray != null) {
                 String[] keywords = new String[keywordsArray.size()];
