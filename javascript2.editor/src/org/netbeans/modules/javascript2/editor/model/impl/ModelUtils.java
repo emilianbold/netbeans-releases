@@ -1214,9 +1214,14 @@ public class ModelUtils {
     private static void resolveAssignments(Model model, JsIndex jsIndex, String fqn, int offset,  List<TypeUsage> resolved, Set<String> alreadyProcessed) {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
-            if (!fqn.startsWith("@")) {
+            String fqnCorrected = fqn;
+            if (fqnCorrected.startsWith(SemiTypeResolverVisitor.ST_EXP) && !fqnCorrected.contains(SemiTypeResolverVisitor.ST_CALL)) {
+                fqnCorrected = fqnCorrected.substring(fqnCorrected.indexOf(SemiTypeResolverVisitor.ST_EXP) + SemiTypeResolverVisitor.ST_EXP.length());
+                fqnCorrected = fqnCorrected.replace(SemiTypeResolverVisitor.ST_PRO, ".");   //NOI18N
+            }
+            if (!fqnCorrected.startsWith("@")) {
                 if (jsIndex != null) {
-                    Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(fqn, JsIndex.FIELD_ASSIGNMENTS);
+                    Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(fqnCorrected, JsIndex.FIELD_ASSIGNMENTS);
                     boolean hasAssignments = false;
                     boolean isType = false;
                     for (IndexResult indexResult: indexResults) {
@@ -1235,7 +1240,7 @@ public class ModelUtils {
                         }
                     }
                     if (indexResults.isEmpty()) {
-                        JsObject found = ModelUtils.findJsObjectByName(model.getGlobalObject(), fqn);
+                        JsObject found = ModelUtils.findJsObjectByName(model.getGlobalObject(), fqnCorrected);
                         if (found != null) {
                             Collection<? extends TypeUsage> assignments = found.getAssignments();
                             if (!assignments.isEmpty()) {
@@ -1259,9 +1264,9 @@ public class ModelUtils {
                         }
                     }
 
-                    Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+                    Collection<IndexedElement> properties = jsIndex.getProperties(fqnCorrected);
                     for (IndexedElement property : properties) {
-                        if (property.getFQN().startsWith(fqn) && (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName()))) {
+                        if (property.getFQN().startsWith(fqnCorrected) && (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName()))) {
                             isType = true;
                             break;
                         }
@@ -1269,7 +1274,7 @@ public class ModelUtils {
 
 
                     if(!hasAssignments || isType) {
-                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, offset, true));
+                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqnCorrected, offset, true));
                     }
                 }
             } else {
