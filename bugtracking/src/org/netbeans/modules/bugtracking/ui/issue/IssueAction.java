@@ -154,7 +154,7 @@ public class IssueAction extends SystemAction {
             @Override
             public void run() {
                 UIUtils.setWaitCursor(true);
-                final IssueTopComponent tc = IssueTopComponent.find(issueId);
+                final IssueTopComponent tc = IssueTopComponent.find(issueId, repositoryParam);
                 final boolean tcOpened = tc.isOpened();
                 final IssueImpl issue = tc.getIssue();
                 if (issue == null) {
