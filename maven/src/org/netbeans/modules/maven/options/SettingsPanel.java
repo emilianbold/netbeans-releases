@@ -105,6 +105,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private final TextValueCompleter completer;
     private final ActionListener   listItemChangedListener;
     private final List<String>       userDefinedMavenRuntimes = new ArrayList<String>();
+    private final List<String>       userDefinedMavenRuntimesStored = new ArrayList<String>();
     private final List<String>       predefinedRuntimes = new ArrayList<String>();
     private final DefaultComboBoxModel mavenHomeDataModel = new DefaultComboBoxModel();
     private String             mavenRuntimeHome = null;
@@ -997,8 +998,10 @@ public class SettingsPanel extends javax.swing.JPanel {
                     public void run() {
                         predefinedRuntimes.clear();
                         userDefinedMavenRuntimes.clear();
+                        userDefinedMavenRuntimesStored.clear();
                         predefinedRuntimes.addAll(predefined);
                         userDefinedMavenRuntimes.addAll(user);
+                        userDefinedMavenRuntimesStored.addAll(user);
 
                         comMavenHome.removeActionListener(listItemChangedListener);
                         mavenHomeDataModel.removeAllElements();
@@ -1161,7 +1164,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         if (predefinedRuntimes.size() > 1) {
             runtimes.add(0, predefinedRuntimes.get(1));
         }
-        isChanged |= !MavenSettings.getDefault().getUserDefinedMavenRuntimes().equals(runtimes);
+        isChanged |= !userDefinedMavenRuntimesStored.equals(runtimes);
         String cl = mavenRuntimeHome;
         //MEVENIDE-553
         File command = (cl == null || cl.isEmpty()) ? null : new File(cl);
