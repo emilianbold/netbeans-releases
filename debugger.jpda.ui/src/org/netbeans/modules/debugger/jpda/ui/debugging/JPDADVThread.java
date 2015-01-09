@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.AbstractList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
@@ -172,13 +173,15 @@ public class JPDADVThread implements DVThread, WeakCacheMap.KeyedValue<JPDAThrea
     
     private class PropertyChangeProxyListener implements PropertyChangeListener {
         
-        private final List<PropertyChangeListener> listeners = new LinkedList<>();
+        private final List<PropertyChangeListener> listeners = new CopyOnWriteArrayList<>();
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             PropertyChangeEvent proxyEvent = new PropertyChangeEvent(JPDADVThread.this, evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
             proxyEvent.setPropagationId(evt.getPropagationId());
-            
+            for (PropertyChangeListener pchl : listeners) {
+                pchl.propertyChange(proxyEvent);
+            }
         }
         
         void add(PropertyChangeListener pcl) {
