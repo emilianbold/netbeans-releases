@@ -297,9 +297,21 @@ public abstract class PositionEstimator {
             if (cut.getTypeDecls().isEmpty()) {
                 return diffContext.origText.length();
             } else {
-                Tree t = cut.getTypeDecls().get(0);
+                int tdpos = 0;
                 SourcePositions positions = diffContext.trees.getSourcePositions();
-                int typeDeclStart = (int) positions.getStartPosition(cut, t);
+                int typeDeclStart;
+                do {
+                    Tree t = cut.getTypeDecls().get(tdpos);
+                    typeDeclStart = (int) positions.getStartPosition(cut, t);
+                    if (t.getKind() == Tree.Kind.CLASS ||
+                        t.getKind() == Tree.Kind.INTERFACE || 
+                        t.getKind() == Tree.Kind.ENUM) {
+                        break;
+                    }
+                    tdpos++;
+                    // as if no decls are available
+                    typeDeclStart = diffContext.origText.length();
+                } while (tdpos < cut.getTypeDecls().size());
                 seq.move(typeDeclStart);
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
                     resultPos = seq.offset() + seq.token().length();

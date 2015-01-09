@@ -622,12 +622,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      * @param issueId
      * @return
      */
-    public static synchronized IssueTopComponent find(String issueId) {
+    static synchronized IssueTopComponent find(String issueId, RepositoryImpl repo) {
         assert issueId != null;
         for (IssueTopComponent tc : openIssues) {
             IssueImpl i = tc.getIssue();
             if(i == null) continue;
-            if (issueId.equals(i.getID())) {
+            if (issueId.equals(i.getID()) && i.getRepositoryImpl().equals(repo)) {
                 return tc;
             }
         }

@@ -302,7 +302,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
         
         // lookup didn't work try simple navigation in the text component
         JTextComponent component = wpt.getComponent();
-        if (component != null) {
+        if (component != null && component.getCaret() != null) {
             component.setCaretPosition(offset);
             component.requestFocusInWindow();
         }

@@ -729,18 +729,28 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         rebuild(false);
     }
     
+    private DocumentListener wUpdateL;
+    private DocumentListener wDocL;
+    
     public void rebuild(boolean doRelease) {
         Document doc = getComponent().getDocument();
+        AbstractDocument adoc;
+        boolean releaseOnly; // only release the current hierarchy root folds
+
         // Stop listening on the original document
         if (lastDocument != null) {
             // Remove document listener with specific priority
-            invokeUpdateListener(doc, updateListener, false);
-            DocumentUtilities.removeDocumentListener(lastDocument, this, DocumentListenerPriority.FOLD_UPDATE);
+            if (wUpdateL != null) {
+                invokeUpdateListener(doc, wUpdateL, false);
+            }
+            if (wDocL != null) {
+                DocumentUtilities.removeDocumentListener(lastDocument, wDocL, DocumentListenerPriority.FOLD_UPDATE);
+            }
             lastDocument = null;
+            wUpdateL = null;
+            wDocL = null;
         }
 
-        AbstractDocument adoc;
-        boolean releaseOnly; // only release the current hierarchy root folds
         if (doc instanceof AbstractDocument) {
             adoc = (AbstractDocument)doc;
             releaseOnly = false;
@@ -748,11 +758,11 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             adoc = null;
             releaseOnly = true;
         }
-        
+
         if (!foldingEnabled) { // folding not enabled => release
             releaseOnly = true;
         }
-        
+
         releaseOnly |= doRelease;
         
         if (adoc != null) {
@@ -764,8 +774,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             if (!releaseOnly) {
                 lastDocument = adoc;
                 // Add document listener with specific priority
-                DocumentUtilities.addDocumentListener(lastDocument, this, DocumentListenerPriority.FOLD_UPDATE);
-                invokeUpdateListener(doc, updateListener, true);
+                DocumentUtilities.addDocumentListener(lastDocument, wDocL = WeakListeners.document(this, lastDocument), DocumentListenerPriority.FOLD_UPDATE);
+                invokeUpdateListener(doc,  wUpdateL = WeakListeners.document(updateListener, doc), true);
                 suspended = false;
             }
         }

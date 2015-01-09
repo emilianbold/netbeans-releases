@@ -254,7 +254,7 @@ class QuickSearchPopup extends javax.swing.JPanel
 
         // first add opened issues
         Set<String> ids = new HashSet<String>();
-        addIssues(getByIdOrSummary(getOpenIssues(), criteria), ids);
+        addIssues(getByIdOrSummary(getOpenIssues(repository), criteria), ids);
 
         // all localy known issues
         Collection<QueryImpl> queries = repository.getQueries();
@@ -629,7 +629,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
                     currentHitlist = new ArrayList<PopupItem>();
                     Set<String> ids = new HashSet<String>();
-                    addIssues(getByIdOrSummary(getOpenIssues(), criteria), ids);
+                    addIssues(getByIdOrSummary(getOpenIssues(repository), criteria), ids);
 
                     Collection<IssueImpl> issues = repository.simpleSearch(criteria);
                     addIssues(issues, ids);
@@ -684,13 +684,13 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
      * 
      * @return issues
      */
-    private static Collection<IssueImpl> getOpenIssues() {
+    private static Collection<IssueImpl> getOpenIssues(RepositoryImpl repo) {
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
         List<IssueImpl> issues = new ArrayList<IssueImpl>();
         for (TopComponent tc : tcs) {
             if(tc instanceof IssueTopComponent) {
                 IssueImpl issue = ((IssueTopComponent)tc).getIssue();
-                if(issue != null && !issue.isNew()) {
+                if(issue != null && !issue.isNew() && issue.getRepositoryImpl().equals(repo)) {
                     issues.add(issue);
                 }
             }

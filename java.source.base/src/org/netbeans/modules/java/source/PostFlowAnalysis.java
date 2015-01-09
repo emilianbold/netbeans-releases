@@ -167,8 +167,13 @@ public class PostFlowAnalysis extends TreeScanner {
         }
         if (tree.sym == null || tree.sym.owner == null || tree.type == null || tree.type == syms.unknownType)
             return;
+        Scope s = tree.sym.owner.members();
+        if (s == null) {
+            // err symbols may produce null scope, see #249472
+            return;
+        }
         Type type = types.erasure(tree.type);
-        for (Scope.Entry e = tree.sym.owner.members().lookup(tree.name);
+        for (Scope.Entry e = s.lookup(tree.name);
              e.sym != null;
              e = e.next()) {
             if (e.sym != tree.sym &&
