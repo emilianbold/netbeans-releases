@@ -124,7 +124,15 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
     }
     
     public void testIssue249628() throws Exception {
-        checkCompletion("TestNavigation/public_html/js/cc01/issue249628.js", "instRef.^rage();", false);
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249629.js", "instRef.rprops.^b;", false);
+    }
+    
+    public void testIssue249500_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "a^;", false);
+    }
+    
+    public void testIssue249500_02() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/cc01/issue249500.js", "p^;", false);
     }
     
     @Override
