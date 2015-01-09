@@ -805,15 +805,41 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
         refreshKeymapNames();
     }
     
+    /** The name of the default profile. */
+    private static final String DEFAULT_PROFILE = "NetBeans"; //NOI18N
+    private static final String FATTR_CURRENT_KEYMAP_PROFILE = "currentKeymap";      // NOI18N
+
     private String cachedProfile;
     
     public String getCurrentProfile() {
+        if (cachedProfile == null) {
+            FileObject fo = FileUtil.getConfigFile (KEYMAPS_FOLDER);
+            if (fo != null) {
+                Object o = fo.getAttribute (FATTR_CURRENT_KEYMAP_PROFILE);
+                if (o instanceof String) {
+                    cachedProfile = (String) o;
+                }
+            }
+            if (cachedProfile == null) {
+                cachedProfile = DEFAULT_PROFILE;
+            }
+        }
         return cachedProfile;
     }
 
     public void setCurrentProfile(String profileName) {
         // cached mainly because of tests; the physical storage is implemented by EditorsBridge.
         this.cachedProfile = profileName;
+        // Persist the change
+        try {
+            FileObject fo = FileUtil.getConfigFile (KEYMAPS_FOLDER);
+            if (fo == null) {
+                fo = FileUtil.getConfigRoot ().createFolder (KEYMAPS_FOLDER);
+            }
+            fo.setAttribute (FATTR_CURRENT_KEYMAP_PROFILE, profileName);
+        } catch (IOException ex) {
+            LOG.log(Level.WARNING, "Can't persist change in current keymap profile.", ex); //NOI18N
+        }
     }
 
     /**

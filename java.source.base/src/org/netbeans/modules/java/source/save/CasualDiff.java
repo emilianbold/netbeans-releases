@@ -483,6 +483,8 @@ public class CasualDiff {
     {
         CasualDiff td = new CasualDiff(context, diffContext, treeUtilities, tree2Tag, tree2Doc, tag2Span, oldTrees);
         td.oldTopLevel = diffContext.origUnit;
+        // TODO: the package name actually ends at the end of the name, so the semicolon could be treated as part
+        // of the diffed list
         int start = td.oldTopLevel.getPackageName() != null ? td.endPos(td.oldTopLevel.getPackageName()) : 0;
 
         List<JCImport> originalJC = new LinkedList<JCImport>();
