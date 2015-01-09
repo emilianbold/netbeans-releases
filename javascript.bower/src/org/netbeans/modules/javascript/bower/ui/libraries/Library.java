@@ -60,6 +60,8 @@ public class Library {
     private String description;
     /** Keywords for the library. */
     private String[] keywords;
+    /** Home-page of the library. */
+    private String homePage;
 
     /**
      * Creates a new {@code Library} with the given name.
@@ -149,6 +151,24 @@ public class Library {
      */
     void setKeywords(String[] keywords) {
         this.keywords = keywords;
+    }
+
+    /**
+     * Returns the home page of this library.
+     * 
+     * @return home page of this library.
+     */
+    public String getHomePage() {
+        return homePage;
+    }
+
+    /**
+     * Sets the home page of this library.
+     * 
+     * @param homePage home page of this library.
+     */
+    void setHomePage(String homePage) {
+        this.homePage = homePage;
     }
 
     @Override
