@@ -98,6 +98,9 @@ public class DragAndDropFeedbackVisualizer {
             
             tabRectangle.width = Math.min( maxHeight, tabRectangle.width );
         }
+        if( tabRectangle.width <= 0 || tabRectangle.height <= 0 || size.width <= 0 || size.height <= 0 ) {
+            return null;
+        }
         DragWindow w = new DragWindow( source, tabRectangle, new Dimension(size), source.getTopComponentAt(idx) );
 
         size.width += 2; //left & right 'border'
