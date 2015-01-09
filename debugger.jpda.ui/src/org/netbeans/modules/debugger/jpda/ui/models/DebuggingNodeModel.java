@@ -778,6 +778,11 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
     
     private void fireDisplayNameChanged (Object node) {
+        if (node instanceof JPDAThread) {
+            node = dvSupport.get((JPDAThread) node);
+        } else if (node instanceof JPDAThreadGroup) {
+            node = dvSupport.get((JPDAThreadGroup) node);
+        }
         List<ModelListener> ls;
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
